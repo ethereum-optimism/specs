@@ -1,0 +1,65 @@
+version: 2.1
+
+parameters:
+  ci_builder_image:
+    type: string
+    default: us-docker.pkg.dev/oplabs-tools-artifacts/images/ci-builder:v0.35.0
+  base_image:
+    type: string
+    default: ubuntu-2204:2022.07.1
+
+commands:
+  notify-failures-on-develop:
+    description: "Notify Slack"
+    parameters:
+      channel:
+        type: string
+        default: C03N11M0BBN
+    steps:
+      - slack/notify:
+          channel: << parameters.channel >>
+          event: fail
+          template: basic_fail_1
+          branch_pattern: develop
+
+jobs:
+  lint:
+    docker:
+      - image: <<pipeline.parameters.ci_builder_image>>
+    steps:
+      - checkout
+      - run:
+          name: Install deps
+          command: just deps
+      - run:
+          name: markdown lint
+          command: just lint-specs-md-check
+      - run:
+          name: toc lint
+          command: just lint-specs-toc-check
+
+  lint-links:
+    machine:
+      image: <<pipeline.parameters.base_image>>
+    steps:
+      - checkout
+      - run:
+          name: Lint check
+          command: just lint-links
+      - notify-failures-on-develop:
+          channel: C055R639XT9 #notify-link-check
+
+workflows:
+  main:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+    jobs:
+      - lint
+
+  scheduled-link-check:
+    when:
+      equal: [ build_daily, <<pipeline.schedule.name>> ]
+    jobs:
+      - lint-links:
+          context: slack

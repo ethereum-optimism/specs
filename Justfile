@@ -1,10 +1,10 @@
-dependencies:
+deps:
     pnpm i --frozen-lockfile
 
-lint-specs-check:
+lint-specs-md-check:
     npx markdownlint-cli2 "./specs/**/*.md"
 
-lint-specs-fix:
+lint-specs-md-fix:
     npx markdownlint-cli2-fix "./specs/**/*.md"
 
 lint-specs-toc:
