@@ -7,7 +7,7 @@ lint-specs-md-check:
 lint-specs-md-fix:
     npx markdownlint-cli2-fix "./specs/**/*.md"
 
-lint-specs-toc:
+lint-specs-toc-check:
     npx doctoc '--title=**Table of Contents**' ./specs
 
 lint-links:
