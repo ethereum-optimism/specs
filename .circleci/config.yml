@@ -26,7 +26,7 @@ commands:
           branch_pattern: develop
 
 jobs:
-  lint:
+  lint-specs:
     docker:
       - image: <<pipeline.parameters.ci_builder_image>>
     steps:
@@ -53,14 +53,14 @@ jobs:
           channel: C055R639XT9 #notify-link-check
 
 workflows:
-  main:
+  specs-check:
     when:
       not:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
-      - lint
+      - lint-specs
 
-  scheduled-link-check:
+  scheduled-links-check:
     when:
       equal: [ build_daily, <<pipeline.schedule.name>> ]
     jobs:
