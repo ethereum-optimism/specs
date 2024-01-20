@@ -150,6 +150,7 @@ The `commitment` is part of the key.
 Each element is proven with a point-evaluation.
 
 Key: `5 ++ keccak256(commitment ++ z)[1:]`, where:
+
 - `5` is the type byte
 - `++` is concatenation
 - `commitment` is a bytes48, representing the KZG commitment.
