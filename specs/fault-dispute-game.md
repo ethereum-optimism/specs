@@ -35,7 +35,7 @@
 
 ## Overview
 
-The Fault Dispute Game (FDG) is a specific type of [dispute game](./dispute-game-interface.md) that verifies the
+The Fault Dispute Game (FDG) is a specific type of [dispute game](dispute-game-interface.md) that verifies the
 validity of a root claim by iteratively bisecting over [output roots][g-output-root] and execution traces of single
 block state transitions down to a single instruction step. It relies on a Virtual Machine (VM) to falsify invalid
 claims made at a single instruction step.
@@ -115,7 +115,7 @@ $2^{d-1}$ positions, where $d$ is the `MAX_GAME_DEPTH` (unless $d=0$, in which c
 The full game tree, with a layer of the tree allocated to output bisection, and sub-trees after an arbitrary split
 depth, looks like:
 
-![ob-tree](./assets/ob-tree.png)
+![ob-tree](assets/ob-tree.png)
 
 ### Position
 

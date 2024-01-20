@@ -342,11 +342,11 @@ The predeploy stores the following values:
 - `sequenceNumber` (`uint64`): This equals the L2 block number relative to the start of the epoch,
   i.e. the L2 block distance to the L2 block height that the L1 attributes last changed,
   and reset to 0 at the start of a new epoch.
-- System configurables tied to the L1 block, see [System configuration specification](./system_config.md):
+- System configurables tied to the L1 block, see [System configuration specification](system_config.md):
   - `batcherHash` (`bytes32`): A versioned commitment to the batch-submitter(s) currently operating.
   - `overhead` (`uint256`): The L1 fee overhead to apply to L1 cost computation of transactions in this L2 block.
     The `overhead` value is dropped as it is no longer used in the
-    [Ecotone L1 fee formula](./exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da).
+    [Ecotone L1 fee formula](exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da).
   - `scalar` (`uint256`): The L1 fee scalar to apply to L1 cost computation of transactions in this L2 block.
 - With the Ecotone upgrade, the predeploy additionally stores:
   - `blobBaseFee` (`uint256`)
@@ -429,7 +429,7 @@ transaction are determined by the corresponding `TransactionDeposited` event emi
 The deposit contract is deployed to L1. Deposited transactions are derived from the values in
 the `TransactionDeposited` event(s) emitted by the deposit contract.
 
-The deposit contract is responsible for maintaining the [guaranteed gas market](./guaranteed-gas-market.md),
+The deposit contract is responsible for maintaining the [guaranteed gas market](guaranteed-gas-market.md),
 charging deposits for gas to be used on L2, and ensuring that the total amount of guaranteed
 gas in a single L1 block does not exceed the L2 block gas limit.
 

@@ -22,7 +22,7 @@
 This document is a high-level technical overview of the Optimism protocol. It aims to explain how the protocol works in
 an informal manner, and direct readers to other parts of the specification so that they may learn more.
 
-This document assumes you've read the [introduction](./introduction.md).
+This document assumes you've read the [introduction](introduction.md).
 
 ## Architecture Design Goals
 
@@ -44,7 +44,7 @@ mechanisms.
 
 ## Components
 
-![Components](./assets/components.svg)
+![Components](assets/components.svg)
 
 ### L1 Components
 
@@ -58,7 +58,7 @@ token deposits (tokens are locked on L1, then minted on L2 via a deposited trans
   - Transaction batches include L2 transaction calldata, timestamps, and ordering information.
   - The BatchInbox is a regular EOA address. This lets us pass on gas cost savings by not executing any EVM code.
 
-- **L2OutputOracle**: A smart contract that stores [L2 output roots](./glossary.md#l2-output) for use with withdrawals
+- **L2OutputOracle**: A smart contract that stores [L2 output roots](glossary.md#l2-output) for use with withdrawals
 and fault proofs.
 
 ### L2 Components
@@ -77,7 +77,7 @@ and fault proofs.
   - Sync state to other L2 nodes for fast onboarding.
   - Serves the Engine API to the rollup node.
 - **Batch Submitter**
-  - A background process that submits [transaction batches](./glossary.md#sequencer-batch) to the `BatchInbox` address.
+  - A background process that submits [transaction batches](glossary.md#sequencer-batch) to the `BatchInbox` address.
 - **Output Submitter**
   - A background process that submits L2 output commitments to the `L2OutputOracle`.
 
@@ -85,7 +85,7 @@ and fault proofs.
 
 **Spec links:**
 
-- [Execution Engine](./exec-engine.md)
+- [Execution Engine](exec-engine.md)
 
 Since the EE uses Geth under the hood, Optimism uses Geth's built-in peer-to-peer network and transaction pool to
 propagate transactions. The same network can also be used to propagate submitted blocks and support snap-sync.
@@ -95,7 +95,7 @@ however, and is provided as a convenience to lower latency for verifiers and the
 
 The below diagram illustrates how the sequencer and verifiers fit together:
 
-![Propagation](./assets/propagation.svg)
+![Propagation](assets/propagation.svg)
 
 ## Key Interactions In Depth
 
@@ -103,7 +103,7 @@ The below diagram illustrates how the sequencer and verifiers fit together:
 
 **Spec links:**
 
-- [Deposits](./deposits.md)
+- [Deposits](deposits.md)
 
 Optimism supports two types of deposits: user deposits, and L1 attributes deposits. To perform a user deposit, users
 call the `depositTransaction` method on the `OptimismPortal` contract. This in turn emits `TransactionDeposited` events,
@@ -163,7 +163,7 @@ the L2 chain at worst after `SEQUENCING_WINDOW_SIZE` L1 blocks have passed.
 The following diagram describes this relationship, and how L2 blocks are derived from L1 blocks (L1 info transactions
 have been elided):
 
-![Epochs and Sequencing Windows](./assets/sequencer-block-gen.svg)
+![Epochs and Sequencing Windows](assets/sequencer-block-gen.svg)
 
 #### Block Derivation Loop
 
@@ -199,4 +199,4 @@ returned in step 2. The tip of the L2 chain is now the block created in step 1.
 
 The swimlane diagram below visualizes the process:
 
-![Engine API](./assets/engine.svg)
+![Engine API](assets/engine.svg)

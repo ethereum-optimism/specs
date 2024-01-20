@@ -560,7 +560,7 @@ L2 derivation inputs include:
 [system-config]: glossary.md#system-configuration
 
 This term refers to the collection of dynamically configurable rollup parameters maintained
-by the [`SystemConfig`](./system_config.md) contract on L1 and read by the L2 [derivation] process.
+by the [`SystemConfig`](system_config.md) contract on L1 and read by the L2 [derivation] process.
 These parameters enable keys to be rotated regularly and external cost parameters to be adjusted
 without the network upgrade overhead of a hardfork.
 
@@ -754,7 +754,7 @@ proof][fault-proof].
 An on-chain *interactive* proof, performed by [validators][validator], that demonstrates that a [sequencer] provided
 erroneous [output roots][l2-output].
 
-cf. [Fault Proofs](./fault-proof.md)
+cf. [Fault Proofs](fault-proof.md)
 
 ## Time Slot
 

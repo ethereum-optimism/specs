@@ -12,7 +12,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-[Deposited transactions](./glossary.md#deposited-transaction) are transactions on L2 that are
+[Deposited transactions](glossary.md#deposited-transaction) are transactions on L2 that are
 initiated on L1. The gas that they use on L2 is bought on L1 via a gas burn (or a direct payment
 in the future). We maintain a fee market and hard cap on the amount of gas provided to all deposits
 in a single L1 block.

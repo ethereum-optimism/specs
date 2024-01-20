@@ -57,12 +57,12 @@ While this process is conceptually a pure function from the L1 chain to the L2 c
 L2 chain is extended whenever new L1 blocks are added to the L1 chain. Similarly, the L2 chain re-organizes whenever the
 L1 chain [re-organizes][g-reorg].
 
-For a complete specification of the L2 block derivation, refer to the [L2 block derivation document](./derivation.md).
+For a complete specification of the L2 block derivation, refer to the [L2 block derivation document](derivation.md).
 
 ## L2 Output RPC method
 
 The Rollup node has its own RPC method, `optimism_outputAtBlock` which returns a 32
-byte hash corresponding to the [L2 output root](./proposals.md#l2-output-commitment-construction).
+byte hash corresponding to the [L2 output root](proposals.md#l2-output-commitment-construction).
 
 [SSZ]: https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md
 
@@ -129,11 +129,11 @@ The input and return types here are as defined by the [engine API specs][engine-
 The rollup-node should monitor the recommended and required protocol version by monitoring
 the Protocol Version contract on L1, as specified in the [Superchain Version Signaling specifications].
 
-[Superchain Version Signaling specifications]: ./superchain-upgrades.md#superchain-version-signaling
+[Superchain Version Signaling specifications]: superchain-upgrades.md#superchain-version-signaling
 
 This can be implemented through polling in the [Driver](#driver) loop.
 After polling the Protocol Version, the rollup node SHOULD communicate it with the execution-engine through an
-[`engine_signalSuperchainV1`](./exec-engine.md#enginesignalsuperchainv1) call.
+[`engine_signalSuperchainV1`](exec-engine.md#enginesignalsuperchainv1) call.
 
 The rollup node SHOULD warn the user when the recommended version is newer than
 the current version supported by the rollup node.

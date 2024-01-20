@@ -85,9 +85,9 @@ The proxies are backed by vault contract deployments, based on `FeeVault`, to ro
 
 | Vault Name          | Predeploy                                                |
 |---------------------|----------------------------------------------------------|
-| Sequencer Fee Vault | [`SequencerFeeVault`](./predeploys.md#SequencerFeeVault) |
-| Base Fee Vault      | [`BaseFeeVault`](./predeploys.md#BaseFeeVault)           |
-| L1 Fee Vault        | [`L1FeeVault`](./predeploys.md#L1FeeVault)               |
+| Sequencer Fee Vault | [`SequencerFeeVault`](predeploys.md#SequencerFeeVault) |
+| Base Fee Vault      | [`BaseFeeVault`](predeploys.md#BaseFeeVault)           |
+| L1 Fee Vault        | [`L1FeeVault`](predeploys.md#L1FeeVault)               |
 
 ### Priority fees (Sequencer Fee Vault)
 
@@ -339,7 +339,7 @@ SuperchainSignal: {
 ```
 
 `ProtocolVersion`: encoded for RPC as defined in
-[Protocol Version format specification](./superchain-upgrades.md#protocol-version-format).
+[Protocol Version format specification](superchain-upgrades.md#protocol-version-format).
 
 Parameters:
 

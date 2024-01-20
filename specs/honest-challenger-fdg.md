@@ -13,7 +13,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-The honest challenger is an agent interacting in the [Fault Dispute Game](./fault-dispute-game.md)
+The honest challenger is an agent interacting in the [Fault Dispute Game](fault-dispute-game.md)
 (FDG) that supports honest claims and disputes false claims.
 An honest challenger strives to ensure a correct, truthful, game resolution.
 The honest challenger is also _rational_ as any deviation from its behavior will result in
@@ -30,8 +30,8 @@ The Honest Challenger has two primary duties:
 The honest challenger polls the `DisputeGameFactory` contract for new and on-going Fault
 Dispute Games.
 For verifying the legitimacy of claims, it relies on a synced, trusted rollup node
-as well as a trace provider (ex: [Cannon](./cannon-fault-proof-vm.md)).
-The trace provider must be configured with the [ABSOLUTE_PRESTATE](./fault-dispute-game.md#execution-trace)
+as well as a trace provider (ex: [Cannon](cannon-fault-proof-vm.md)).
+The trace provider must be configured with the [ABSOLUTE_PRESTATE](fault-dispute-game.md#execution-trace)
 of the FDG being interacted with to generate the traces needed to make truthful claims.
 
 ## FDG Responses
@@ -41,9 +41,9 @@ of the FDG being interacted with to generate the traces needed to make truthful 
 When a `FaultDisputeGame` is created, the honest challenger has two possible correct responses
 to its root claim:
 
-1. [**Attack**](./fault-dispute-game.md#attack) if they disagree with the root claim.
+1. [**Attack**](fault-dispute-game.md#attack) if they disagree with the root claim.
 The root claim commits to the entire execution trace, so the first move here is to
-attack with the [ClaimHash](./fault-dispute-game.md#claims) at the midpoint
+attack with the [ClaimHash](fault-dispute-game.md#claims) at the midpoint
 instruction within their execution trace.
 2. **Do Nothing** if they agree with the root claim. They do nothing because if the root
 claim is left un-countered, the game resolves to their agreement.
@@ -52,12 +52,12 @@ claims made against the root claim - in effect, "playing the game".
 
 ### Counter Claims
 
-For every claim made in a dispute game with a [game tree](./fault-dispute-game.md#game-tree)
+For every claim made in a dispute game with a [game tree](fault-dispute-game.md#game-tree)
 depth in the range of `[1, MAX_DEPTH]`, the honest challenger processes them and performs
 a response.
 
 To determine the appropriate response, the challenger first needs to know which
-[_team_](./fault-dispute-game.md#team-dynamics) it belongs to.
+[_team_](fault-dispute-game.md#team-dynamics) it belongs to.
 This determines the set of claims it should respond to in the FDG.
 If the agent determines itself to be a Defender, which aims to support the root claim,
 then it must dispute claims positioned at odd depths in the game tree.
@@ -74,8 +74,8 @@ then the claim is countered.
 
 The last step is to determine whether the claim has a valid commitment (i.e. `ClaimHash`).
 If the `ClaimHash` matches the honest challenger's at the same trace index, then we
-disagree with the claim's stance by moving to [defend](./fault-dispute-game.md#defend).
-Otherwise, the claim is [attacked](./fault-dispute-game.md#attack).
+disagree with the claim's stance by moving to [defend](fault-dispute-game.md#defend).
+Otherwise, the claim is [attacked](fault-dispute-game.md#attack).
 
 The following pseudocode illustrates the response logic.
 
@@ -124,13 +124,13 @@ against these claims (valid defined by the response in [Counter Claims](#counter
 the only option for an honest challenger is to execute a VM step on-chain to disprove the claim at `MAX_GAME_DEPTH`.
 
 Similar to the above section, the honest challenger will issue an
-[attack step](./fault-dispute-game.md#step-types) when in response to such claims with
+[attack step](fault-dispute-game.md#step-types) when in response to such claims with
 invalid `ClaimHash` commitments. Otherwise, it issues a _defense step_.
 
 ## Resolution
 
-When the [chess clock](./fault-dispute-game.md#game-clock) of a
-[subgame root](./fault-dispute-game.md#resolution) has run out, the subgame can be resolved.
+When the [chess clock](fault-dispute-game.md#game-clock) of a
+[subgame root](fault-dispute-game.md#resolution) has run out, the subgame can be resolved.
 The honest challenger should resolve all subgames in bottom-up order, until the subgame
 rooted at the FDG root is resolved.
 

@@ -18,18 +18,18 @@ be attached to an output proposal. In this case, the bond will be paid in ether.
 
 By requiring a bond to be posted with an output proposal, spam and invalid outputs
 are disincentivized. Explicitly, if invalid outputs are proposed, challenge agents
-can delete the invalid output via a [dispute-game](./dispute-game-interface.md) and seize the
+can delete the invalid output via a [dispute-game](dispute-game-interface.md) and seize the
 proposer's bond. So, posting invalid outputs is directly disincentivized in this way
 since the proposer would lose their bond if the challenge agents seize it.
 
 Concretely, outputs will be permissionlessly proposed to the `L2OutputOracle` contract.
 When submitting an output proposal, the ether value is sent as the bond. This bond is
 then held by a bond manager contract. The bond manager contract is responsible for
-both the [dispute-games](./dispute-game-interface.md) and the `L2OutputOracle` (further detailed
-in [proposals](./proposals.md)).
+both the [dispute-games](dispute-game-interface.md) and the `L2OutputOracle` (further detailed
+in [proposals](proposals.md)).
 
 The bond manager will need to handle bond logic for a variety of different
-[dispute-games](./dispute-game-interface.md). In the simplest "attestation" dispute game,
+[dispute-games](dispute-game-interface.md). In the simplest "attestation" dispute game,
 bonds will not be required since the attestors are a permissioned set of trusted entities.
 But in more complex games, such as the fault dispute game, challengers and defenders
 perform a series of alternating onchain transactions requiring bonds at each step.

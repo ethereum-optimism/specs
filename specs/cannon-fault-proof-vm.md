@@ -152,10 +152,10 @@ The VM does not support Linux open(2). However, the VM can read from and write t
 | stdin | 0 | read-only standard input stream. |
 | stdout | 1 | write-only standard output stream. |
 | stderr | 2 | write-only standard error stream. |
-| hint response | 3 | read-only. Used to read the status of [pre-image hinting](./fault-proof.md#hinting). |
-| hint request | 4 | write-only. Used to provide [pre-image hints](./fault-proof.md#hinting) |
-| pre-image response | 5 | read-only. Used to [read pre-images](./fault-proof.md#pre-image-communication). |
-| pre-image request | 6 | write-only. Used to [request pre-images](./fault-proof.md#pre-image-communication). |
+| hint response | 3 | read-only. Used to read the status of [pre-image hinting](fault-proof.md#hinting). |
+| hint request | 4 | write-only. Used to provide [pre-image hints](fault-proof.md#hinting) |
+| pre-image response | 5 | read-only. Used to [read pre-images](fault-proof.md#pre-image-communication). |
+| pre-image request | 6 | write-only. Used to [request pre-images](fault-proof.md#pre-image-communication). |
 
 Syscalls referencing unknown file descriptors fail with an `EBADF` errno as done on Linux.
 

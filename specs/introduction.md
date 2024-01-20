@@ -79,7 +79,7 @@ proofs can also be plugged in once they have been made feasible.
 
 There are three actors in Optimism: users, sequencers, and verifiers.
 
-![Network Overview](./assets/network-participants-overview.svg)
+![Network Overview](assets/network-participants-overview.svg)
 
 ### Users
 
@@ -131,16 +131,16 @@ Users will often begin their L2 journey by depositing ETH from L1.
 Once they have ETH to pay fees, they'll start sending transactions on L2.
 The following diagram demonstrates this interaction and all key Optimism components which are or should be utilized:
 
-![Diagram of Depositing and Sending Transactions](./assets/sequencer-handling-deposits-and-transactions.svg)
+![Diagram of Depositing and Sending Transactions](assets/sequencer-handling-deposits-and-transactions.svg)
 
 Links to components mentioned in this diagram:
 
 <!-- - Batch Inbox (WIP) -->
-- [Rollup Node](./rollup-node.md)
-- [Execution Engine](./exec-engine.md)
+- [Rollup Node](rollup-node.md)
+- [Execution Engine](exec-engine.md)
 <!-- - Sequencer Batch Submitter (WIP) -->
-- [L2 Output Oracle](./proposals.md#l2-output-oracle-smart-contract)
-- [L2 Output Submitter](./proposals.md#proposing-l2-output-commitments)
+- [L2 Output Oracle](proposals.md#l2-output-oracle-smart-contract)
+- [L2 Output Submitter](proposals.md#proposing-l2-output-commitments)
 <!-- - Fault Proof VM (WIP) -->
 
 ### Withdrawing
@@ -148,11 +148,11 @@ Links to components mentioned in this diagram:
 Just as important as depositing, it is critical that users can withdraw from the rollup. Withdrawals are initiated by
 normal transactions on L2, but then completed using a transaction on L1 after the dispute period has elapsed.
 
-![Diagram of Withdrawing](./assets/user-withdrawing-to-l1.svg)
+![Diagram of Withdrawing](assets/user-withdrawing-to-l1.svg)
 
 Links to components mentioned in this diagram:
 
-- [L2 Output Oracle](./proposals.md#l2-output-oracle-smart-contract)
+- [L2 Output Oracle](proposals.md#l2-output-oracle-smart-contract)
 
 ## Next Steps
 

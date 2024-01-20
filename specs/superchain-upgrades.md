@@ -174,7 +174,7 @@ Signaling is done through a L1 smart-contract that is monitored by the OP-Stack 
 Not all components of the OP-Stack are required to directly monitor L1 however:
 cross-component APIs like the Engine API may be used to forward the Protocol Version signals,
 to keep components encapsulated from L1.
-See [`engine_signalOPStackVersionV1`](./exec-engine.md#enginesignalopstackversionv1).
+See [`engine_signalOPStackVersionV1`](exec-engine.md#enginesignalopstackversionv1).
 
 ### `ProtocolVersions` L1 contract
 
@@ -276,8 +276,8 @@ Summary of changes:
   enabling the data to be safely synced between independent L2 nodes.
 - The L1-cost function was corrected to more closely match pre-Bedrock behavior.
 
-The [deposit specification](./deposits.md) specifies the deposit changes of the Regolith upgrade in more detail.
-The [execution engine specification](./exec-engine.md) specifies the L1 cost function difference.
+The [deposit specification](deposits.md) specifies the deposit changes of the Regolith upgrade in more detail.
+The [execution engine specification](exec-engine.md) specifies the L1 cost function difference.
 
 The Regolith upgrade uses a *L2 block-timestamp* activation-rule, and is specified in both the
 rollup-node (`regolith_time`) and execution engine (`config.regolithTime`).
@@ -291,13 +291,13 @@ The Canyon upgrade contains the Shapella upgrade from L1 and some minor protocol
   - [EIP-3855: PUSH0 instruction](https://eips.ethereum.org/EIPS/eip-3855)
   - [EIP-3860: Limit and meter initcode](https://eips.ethereum.org/EIPS/eip-3860)
   - [EIP-4895: Beacon chain push withdrawals as operations](https://eips.ethereum.org/EIPS/eip-4895)
-    - [Withdrawals are prohibited in P2P Blocks](./rollup-node-p2p.md#block-validation)
-    - [Withdrawals should be set to the empty array with Canyon](./derivation.md#building-individual-payload-attributes)
+    - [Withdrawals are prohibited in P2P Blocks](rollup-node-p2p.md#block-validation)
+    - [Withdrawals should be set to the empty array with Canyon](derivation.md#building-individual-payload-attributes)
   - [EIP-6049: Deprecate SELFDESTRUCT](https://eips.ethereum.org/EIPS/eip-6049)
-- [Modifies the EIP-1559 Denominator](./exec-engine.md#1559-parameters)
-- [Channel Ordering Fix](./derivation.md#reading)
-- [Adds the deposit nonce & deposit nonce version to the deposit receipt hash](./deposits.md#deposit-receipt)
-- [Deploys the create2Deployer to `0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2`](./predeploys.md#create2deployer)
+- [Modifies the EIP-1559 Denominator](exec-engine.md#1559-parameters)
+- [Channel Ordering Fix](derivation.md#reading)
+- [Adds the deposit nonce & deposit nonce version to the deposit receipt hash](deposits.md#deposit-receipt)
+- [Deploys the create2Deployer to `0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2`](predeploys.md#create2deployer)
 
 The Canyon upgrade uses a *L2 block-timestamp* activation-rule, and is specified in both the
 rollup-node (`canyon_time`) and execution engine (`config.canyonTime`). Shanghai time in the
@@ -305,7 +305,7 @@ execution engine should be set to the same time as the Canyon time.
 
 ## Delta
 
-The Delta upgrade consists of a single consensus-layer feature: [Span Batches](./span-batches.md).
+The Delta upgrade consists of a single consensus-layer feature: [Span Batches](span-batches.md).
 
 The Delta upgrade uses a *L2 block-timestamp* activation-rule, and is specified only in the rollup-node (`delta_time`).
 
@@ -318,14 +318,14 @@ Dencun Upgrade:
 - Cancun (Execution Layer):
   - [EIP-1153: Transient storage opcodes](https://eips.ethereum.org/EIPS/eip-1153)
   - [EIP-4844: Shard Blob Transactions](https://eips.ethereum.org/EIPS/eip-4844)
-    - [Blob transactions are disabled](./exec-engine.md#ecotone-disable-blob-transactions)
+    - [Blob transactions are disabled](exec-engine.md#ecotone-disable-blob-transactions)
   - [EIP-4788: Beacon block root in the EVM](https://eips.ethereum.org/EIPS/eip-4788)
-    - [The L1 beacon block root is embedded into L2](./exec-engine.md#ecotone-beacon-block-root)
-    - [The Beacon roots contract deployment is automated](./derivation.md#ecotone-beacon-block-roots-contract-deployment-eip-4788)
+    - [The L1 beacon block root is embedded into L2](exec-engine.md#ecotone-beacon-block-root)
+    - [The Beacon roots contract deployment is automated](derivation.md#ecotone-beacon-block-roots-contract-deployment-eip-4788)
   - [EIP-5656: MCOPY - Memory copying instruction](https://eips.ethereum.org/EIPS/eip-5656)
   - [EIP-6780: SELFDESTRUCT only in same transaction](https://eips.ethereum.org/EIPS/eip-6780)
   - [EIP-7516: BLOBBASEFEE opcode](https://eips.ethereum.org/EIPS/eip-7516)
-    - [BLOBBASEFEE always pushes 1 onto the stack](./exec-engine.md#ecotone-disable-blob-transactions)
+    - [BLOBBASEFEE always pushes 1 onto the stack](exec-engine.md#ecotone-disable-blob-transactions)
 - Deneb (Consensus Layer): *not applicable to L2*
   - [EIP-7044: Perpetually Valid Signed Voluntary Exits](https://eips.ethereum.org/EIPS/eip-7044)
   - [EIP-7045: Increase Max Attestation Inclusion Slot](https://eips.ethereum.org/EIPS/eip-7045)
@@ -333,10 +333,10 @@ Dencun Upgrade:
 
 Data Availability (DA) upgrade:
 
-- Blobs Data Availability: support blobs DA the [L1 Data-retrieval stage](./derivation.md#ecotone-blob-retrieval).
+- Blobs Data Availability: support blobs DA the [L1 Data-retrieval stage](derivation.md#ecotone-blob-retrieval).
 - Rollup fee update: support blobs DA in
-  [L1 Data Fee computation](./exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da)
-- Auto-upgrading and extension of the [L1 Attributes Predeployed Contract](./deposits.md#ecotone-l1block-upgrade)
+  [L1 Data Fee computation](exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da)
+- Auto-upgrading and extension of the [L1 Attributes Predeployed Contract](deposits.md#ecotone-l1block-upgrade)
   (also known as `L1Block` predeploy)
 
 ## Fjord

@@ -17,7 +17,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 The `SystemConfig` is a contract on L1 that can emit rollup configuration changes as log events.
-The rollup [block derivation process](./derivation.md) picks up on these log events and applies the changes.
+The rollup [block derivation process](derivation.md) picks up on these log events and applies the changes.
 
 ## System config contents (version 0)
 
@@ -78,7 +78,7 @@ Invalid and unrecognized scalar event-data should be ignored,
 and the last valid configuration should continue to be utilized.
 
 The `baseFeeScalar` and `blobBaseFeeScalar` are incorporated into the L2 through the
-[Ecotone L1 attributes deposit transaction calldata](./deposits.md#l1-attributes---ecotone).
+[Ecotone L1 attributes deposit transaction calldata](deposits.md#l1-attributes---ecotone).
 
 Future upgrades of the `SystemConfig` contract may provide additional typed getters/setters
 for the versioned scalar information.

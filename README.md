@@ -6,32 +6,32 @@ that maintains 1:1 compatibility with Ethereum.
 
 ## Specification Contents
 
-- [Introduction](introduction.md)
-- [Overview](overview.md)
-- [Deposits](deposits.md)
-- [Withdrawals](withdrawals.md)
-- [Execution Engine](exec-engine.md)
-- [L2 Output Root Proposals](proposals.md)
-- [Rollup Node](rollup-node.md)
-- [Rollup Node P2p](rollup-node-p2p.md)
-- [L2 Chain Derivation](derivation.md)
-- [Superchain Upgrades](superchain-upgrades.md)
-- [System Config](system_config.md)
-- [Batch Submitter](batcher.md)
-- [Guaranteed Gas Market](guaranteed-gas-market.md)
-- [Messengers](messengers.md)
-- [Bridges](bridges.md)
-- [Predeploys](predeploys.md)
-- [Glossary](glossary.md)
+- [Introduction](specs/introduction.md)
+- [Overview](specs/overview.md)
+- [Deposits](specs/deposits.md)
+- [Withdrawals](specs/withdrawals.md)
+- [Execution Engine](specs/exec-engine.md)
+- [L2 Output Root Proposals](specs/proposals.md)
+- [Rollup Node](specs/rollup-node.mdode.md)
+- [Rollup Node P2p](specs/rollup-node-p2p.md)
+- [L2 Chain Derivation](specs/derivation.md)
+- [Superchain Upgrades](specs/superchain-upgrades.md)
+- [System Config](specs/system_config.md)
+- [Batch Submitter](specs/batcher.md)
+- [Guaranteed Gas Market](specs/guaranteed-gas-market.md)
+- [Messengers](specs/messengers.md)
+- [Bridges](specs/bridges.md)
+- [Predeploys](specs/predeploys.md)
+- [Glossary](specs/glossary.md)
 
 ### Experimental
 
 Specifications of new features in active development.
 
-- [Fault Proof](./fault-proof.md)
-- [Dispute Game Interface](./dispute-game-interface.md)
-- [Fault Dispute Game](./fault-dispute-game.md)
-- [Cannon VM](./cannon-fault-proof-vm.md)
+- [Fault Proof](specs/fault-proof.md)
+- [Dispute Game Interface](specs/dispute-game-interface.md)
+- [Fault Dispute Game](specs/fault-dispute-game.md)
+- [Cannon VM](specs/cannon-fault-proof-vm.md)
 
 ## Design Goals
 

@@ -254,7 +254,7 @@ data-availability layer may support.
 
 All of this is illustrated in the following diagram. Explanations below.
 
-![batch derivation chain diagram](./assets/batch-deriv-chain.svg)
+![batch derivation chain diagram](assets/batch-deriv-chain.svg)
 
 The first line represents L1 blocks with their numbers. The boxes under the L1 blocks represent [batcher
 transactions][g-batcher-transaction] included within the block. The squiggles under the L1 blocks represent
@@ -1131,7 +1131,7 @@ A deposit transaction is derived with the following attributes:
 - `mint`: `0`
 - `value`: `0`
 - `gasLimit`: `375,000`
-- `data`: `0x60806040523480156100105...` ([full bytecode](./bytecode/ecotone-l1-block-deployment.txt))
+- `data`: `0x60806040523480156100105...` ([full bytecode](bytecode/ecotone-l1-block-deployment.txt))
 - `sourceHash`: `0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8`,
   computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Deployment"
 
@@ -1172,7 +1172,7 @@ A deposit transaction is derived with the following attributes:
 - `mint`: `0`
 - `value`: `0`
 - `gasLimit`: `1,000,000`
-- `data`: `0x60806040523480156100...` ([full bytecode](./bytecode/ecotone-gas-price-oracle-deployment.txt))
+- `data`: `0x60806040523480156100...` ([full bytecode](bytecode/ecotone-gas-price-oracle-deployment.txt))
 - `sourceHash`: `0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42`
   computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Deployment"
 

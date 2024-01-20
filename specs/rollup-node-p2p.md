@@ -1,6 +1,6 @@
 # Rollup-node P2P interface
 
-The [rollup node](./rollup-node.md) has an optional peer-to-peer (P2P) network service to improve the latency between
+The [rollup node](rollup-node.md) has an optional peer-to-peer (P2P) network service to improve the latency between
 the view of sequencers and the rest of the network by bypassing the L1 in the happy case,
 without relying on a single centralized endpoint.
 
