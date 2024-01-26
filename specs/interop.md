@@ -318,7 +318,29 @@ a `uint8` "interopSetSize" parameter prefixes tightly packed `uint256` values th
 
 ## Fault Proof
 
-__TODO__
+Pseudocode for the `op-program`
+
+```python
+# abort program when tick reaches the future, beyond the latest L1 block
+
+# calculate the L2 block outputs
+num_l2_execution_steps = l2_chain_configs.length + 1 # add 1 to include consolidation step, transitioning from pending outputs to outputs
+l2_execution_step = tick % num_l2_execution_steps
+is_consolidation_step = l2_execution_step == num_l2_execution_steps - 1
+# the last tick of each L2 execution step is a consolidation
+if not is_consolidation_step:
+	chain_to_execute = l2_chain_configs[l2_execution_step]
+	inputs_for_chain = derive(chain_to_execute, timestemp)
+	new_pending_output = execute_chain(chain_to_execute, inputs_for_chain)
+	l2_pending_outputs[chain_to_execute] = new_pending_output
+	return
+
+# consolidate
+new_outputs = verify_cross_chain_messages(l2_pending_outputs)
+l2_outputs = new_outputs
+```
+
+TODO: more description
 
 ## Sequencer Policy
 
