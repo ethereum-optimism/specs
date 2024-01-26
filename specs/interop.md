@@ -1,13 +1,5 @@
 # Interoperability
 
-TODO: fault proofs section
-TODO: non binding to a remote domain, allows anycast functionality
-TODO:
- - rename to dependency set
- - rename local to source
- - rename remote to destination
- - block extradata needs merklized cross chain messages
-
 The ability for a blockchain to easily read the state of another blockchain is called interoperability.
 Low latency interoperability allows for horizontally scalable blockchains, a key feature of the superchain.
 
@@ -18,29 +10,29 @@ network upgrade will be included in this document in the future.
 
 | Term          | Definition                                               |
 |---------------|----------------------------------------------------------|
-| Local Chain   | A blockchain that includes an initiating message |
-| Remote Chain  | A blockchain that includes a relaying message |
-| Initiating Message | A transaction submitted to a local chain that authorizes execution on a remote chain |
-| Relaying Message | A transaction submitted to a remote chain that corresponds to an initiating message |
+| Source Chain   | A blockchain that includes an initiating message |
+| Destination Chain  | A blockchain that includes a relaying message |
+| Initiating Message | A transaction submitted to a source chain that authorizes execution on a destination chain |
+| Relaying Message | A transaction submitted to a destination chain that corresponds to an initiating message |
 | Cross Chain Message | The cumulative execution and side effects of the initiating message and relaying message |
-| Interop Set | The set of chains that originate initiating transactions where the relaying transactions are valid |
+| Dependency Set | The set of chains that originate initiating transactions where the relaying transactions are valid |
 
 A total of two transactions are required to complete a cross chain message. The first transaction is submitted
-to the local chain which authorizes execution on a remote chain. The second transaction is submitted to a
-remote chain, where the block builder SHOULD only include it if they are certain that the first transaction was
-included in the local chain.
+to the source chain which authorizes execution on a destination chain. The second transaction is submitted to a
+destination chain, where the block builder SHOULD only include it if they are certain that the first transaction was
+included in the source chain.
 
 The term "block builder" is used interchangeably with the term "sequencer" for the purposes of this document but they need not be the same
 entity in practice.
 
-## The Interop Set
+## The Dependency Set
 
-The interop set defines the set of chains that a remote chains allows as local chains. Another way of
-saying it is that the interop set defines the set of initiating messages that are valid for a relaying
+The dependency set defines the set of chains that a destination chains allows as source chains. Another way of
+saying it is that the dependency set defines the set of initiating messages that are valid for a relaying
 message to be included. A relaying message MUST have an initiating message that is included in a chain
-in the interop set.
+in the dependency set.
 
-The interop set is defined by chain id. Since it is impossible to enforce uniqueness of chain ids,
+The dependency set is defined by chain id. Since it is impossible to enforce uniqueness of chain ids,
 social consensus MUST be used to determine the chain that represents the canonical chain id. This
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
 of relaying messages. 
@@ -80,7 +72,7 @@ The derivation pipeline enforces invariants on safe blocks that include relaying
 - The relaying message MUST have a corresponding initiating message
 - The initiating message that corresponds to a relaying message MUST come from an allowed chain (dependency set)
 
-Blocks that contain transactions that relay cross domain messages to the remote chain where the
+Blocks that contain transactions that relay cross domain messages to the destination chain where the
 initiating transaction does not exist MUST be considered invalid and MUST not be allowed by the
 derivation pipeline to be considered safe.
 
@@ -95,7 +87,7 @@ Deposit transactions (force inclusion transactions) give censorship resistance t
 The derivation pipeline must gracefully handle the case in which a user uses a deposit transaction to
 relay a cross chain message. To not couple preconfirmation security to consensus, deposit transactions
 that relay cross chain messages MUST have an initiating message that is considered safe. This relaxes
-a strict synchrony assumption on the sequencer that it MUST have all unsafe blocks of remote chains
+a strict synchrony assumption on the sequencer that it MUST have all unsafe blocks of destination chains
 as fast as possible to ensure that it is building correct blocks. It also prevents a class of attacks
 where the user can send a relaying message before the initiating message and trick the derivation pipeline
 into reorganizing the sequencer.
@@ -104,7 +96,7 @@ into reorganizing the sequencer.
 
 The initiating messages for all relaying messages MUST be resolved as safe before an L2 block can transition from being unsafe to safe.
 Users MAY optimistically accept unsafe blocks without any verification of the relaying messages. They SHOULD optimistically verify
-the initiating messages exist in remote unsafe blocks to more quickly reorganize out invalid blocks.
+the initiating messages exist in destination unsafe blocks to more quickly reorganize out invalid blocks.
 
 ## State Transition Function
 
@@ -140,11 +132,11 @@ Two new system level predeploys are introduced for managing cross chain messagin
 
 Address: `0x4200000000000000000000000000000000000023`
 
-The `CrossL2Outbox` is responsible for initiating a cross chain message on the local chain.
+The `CrossL2Outbox` is responsible for initiating a cross chain message on the source chain.
 For every cross chain message that is sent, it MUST emit an event that indicates the existence
 of the cross chain message.
 
-The event SHOULD make it as cheap as possible for the remote chain to look up the existence
+The event SHOULD make it as cheap as possible for the destination chain to look up the existence
 of the initiating transaction when verifying the relaying transaction.
 
 #### Initiating Messages
@@ -164,7 +156,9 @@ event MessagePassed(
 );
 ```
 
-The chain id is of the local chain.
+The chain id is of the source chain. Note that the chain id of the destination chain is not specified
+as part of the cross chain message. This means that the cross chain message is valid to be played
+on any destination chain. Binding to a particular destination chain can be implemented at the application layer.
 
 The `messageHash` and chain id uniquely identify the existence of an initiating message and SHOULD
 be used by a block builder to ensure the existence of the initiating message when verifying the relaying
@@ -198,14 +192,14 @@ function hashCrossChainMessage(CrossChainMessage memory _msg) pure returns (byte
 
 Address: `0x4200000000000000000000000000000000000022`
 
-The `CrossL2Inbox` is responsible for relaying a cross chain message on the remote chain.
+The `CrossL2Inbox` is responsible for relaying a cross chain message on the destination chain.
 It is permissionless to finalize a cross chain message on behalf of any user. Certain protocol
 enforced invariants must be preserved to ensure safety of the protocol.
 
 #### Invariants
 
 - The timestamp of relaying message MUST be greater than or equal to the timestamp of the initiating message
-- The chain id of the initiating message MUST be in the interop set
+- The chain id of the initiating message MUST be in the dependency set
 - The relaying message MUST be initiated by an externally owned account such that the top level EVM call frame enters the `CrossL2Inbox`
 
 ##### Only EOA Invariant
@@ -220,7 +214,7 @@ The `CrossL2Inbox` MUST be initially set in state with an ether balance of `type
 There is no reason for a user to send [value](https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L53)
 to the `CrossL2Inbox` so there is no need to worry about overflows. This initial balance exists to
 provide liquidity for cross chain transfers of ether in a completely backwards compatible way.
-The `CrossL2Inbox` MUST only transfer out ether if the caller is the `CrossL2Outbox` from a remote
+The `CrossL2Inbox` MUST only transfer out ether if the caller is the `CrossL2Outbox` from a destination
 chain.
 
 #### Relaying Messages
@@ -248,26 +242,26 @@ Without the check onchain, the block builder would need to hash the `CrossChainM
 
 The `L1Block` contract is updated to include the set of allowed chains. The L1 Atrributes transaction
 sets the set of allowed chains. The `L1Block` contract MUST provide a public getter to check is a particular
-chain is in the interop set.
+chain is in the dependency set.
 
 The `setL1BlockValuesInterop()` function MUST be called on every block after the interop upgrade block.
 The interop upgrade block itself MUST include a call to `setL1BlockValuesEcotone`.
 
 ## SystemConfig
 
-The `SystemConfig` is updated to manage the interop set. The chain operator can add or remove chains from the interop set
-through the `SystemConfig`. A new `ConfigUpdate` event `UpdateType` enum is added that corresponds to a change in the interop set.
+The `SystemConfig` is updated to manage the dependency set. The chain operator can add or remove chains from the dependency set
+through the `SystemConfig`. A new `ConfigUpdate` event `UpdateType` enum is added that corresponds to a change in the dependency set.
 
-The `SystemConfig` MUST enforce that the maximum size of the interop set is `type(uint8).max` or 255.
+The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
 
 ### `INTEROP_SET` UpdateType
 
-When a `ConfigUpdate` event is emitted where the `UpdateType` is `INTEROP_SET`, the L2 network will update its interop set.
-The chain operator SHOULD be able to add or remove chains from the interop set.
+When a `ConfigUpdate` event is emitted where the `UpdateType` is `INTEROP_SET`, the L2 network will update its dependency set.
+The chain operator SHOULD be able to add or remove chains from the dependency set.
 
 ## L1Attributes
 
-The L1 Atrributes transaction is updated to include the interop set. Since the interop set is dynamically sized,
+The L1 Atrributes transaction is updated to include the dependency set. Since the dependency set is dynamically sized,
 a `uint8` "interopSetSize" parameter prefixes tightly packed `uint256` values that represent each chain id.
 
 | Input arg         | Type                    | Calldata bytes          | Segment |
@@ -285,10 +279,14 @@ a `uint8` "interopSetSize" parameter prefixes tightly packed `uint256` values th
 | interopSetSize    | uint8                   | 164-165                 | 6       |
 | chainIds          | [interopSetSize]uint256 | 165-(32*interopSetSize) | 6+      |
 
+## Fault Proof
+
+__TODO__
+
 ## Sequencer Policy
 
 The sequencer can include relaying transactions that have corresponding initiating transactions
-that only have preconfirmation levels of security if they trust the remote sequencer. Using an
+that only have preconfirmation levels of security if they trust the destination sequencer. Using an
 allowlist and identity turns sequencing into an interated game which increases the ability for
 sequencers to trust each other. Better preconfirmation technology will help to scale the sequencer
 set to untrusted actors.
@@ -318,15 +316,15 @@ of the sequencer will result in the production of invalid blocks.
 
 ### Dynamic Size of L1 Attributes Transaction
 
-The L1 Attributes transaction includes the interop set which is dynamically sized. This means that
+The L1 Attributes transaction includes the dependency set which is dynamically sized. This means that
 the worst case (largest size) transaction must be accounted for when ensuring that it is not possible
 to create a block that has force inclusion transactions that go over the L2 block gas limit.
 It MUST be impossible to produce an L2 block that consumes more than the L2 block gas limit.
-Limiting the interop set size is an easy way to ensure this.
+Limiting the dependency set size is an easy way to ensure this.
 
-### Maximum Size of the Interop Set
+### Maximum Size of the Dependency Set
 
-The maximum size of the interop set is constrained by the L2 block gas limit. The larger the interop set,
+The maximum size of the dependency set is constrained by the L2 block gas limit. The larger the dependency set,
 the more costly it is to fully verify the network. It also makes the block building role more centralized
 as it requires more hardware to verify relaying transactions before inclusion.
 
