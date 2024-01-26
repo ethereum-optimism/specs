@@ -251,7 +251,8 @@ but the matching L1-origin information may not be present at the time of activat
 - `v3.0.0`: 2023 Jun 6th - Bedrock, including the Regolith hardfork improvements, first deployed on OP-Mainnet.
 - `v4.0.0`: 2024 Jan 11th - Canyon network upgrade.
   [Governance proposal](https://gov.optimism.io/t/final-upgrade-proposal-2-canyon-network-upgrade/7088).
-- `v5.0.0-1`: Delta - Proposed for Feb 22, 2024. [Governance Proposal](https://gov.optimism.io/t/final-upgrade-proposal-3-delta-network-upgrade/7310)
+- `v5.0.0-1`: Delta - Proposed for Feb 22, 2024.
+  [Governance Proposal](https://gov.optimism.io/t/final-upgrade-proposal-3-delta-network-upgrade/7310)
 - `v6.0.0-1`: Ecotone - Very experimental, in development.
 
 ## Post-Bedrock Network upgrades
