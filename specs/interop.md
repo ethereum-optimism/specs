@@ -21,7 +21,7 @@
       - [Relaying Messages](#relaying-messages)
     - [L1Block](#l1block)
   - [SystemConfig](#systemconfig)
-    - [`INTEROP_SET` UpdateType](#interop_set-updatetype)
+    - [`DEPENDENCY_SET` UpdateType](#dependency_set-updatetype)
   - [L1Attributes](#l1attributes)
   - [Fault Proof](#fault-proof)
   - [Sequencer Policy](#sequencer-policy)
@@ -291,9 +291,9 @@ through the `SystemConfig`. A new `ConfigUpdate` event `UpdateType` enum is adde
 
 The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
 
-### `INTEROP_SET` UpdateType
+### `DEPENDENCY_SET` UpdateType
 
-When a `ConfigUpdate` event is emitted where the `UpdateType` is `INTEROP_SET`, the L2 network will update its dependency set.
+When a `ConfigUpdate` event is emitted where the `UpdateType` is `DEPENDENCY_SET`, the L2 network will update its dependency set.
 The chain operator SHOULD be able to add or remove chains from the dependency set.
 
 ## L1Attributes
