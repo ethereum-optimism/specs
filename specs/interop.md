@@ -164,6 +164,8 @@ event MessagePassed(
 );
 ```
 
+The chain id is of the local chain.
+
 The `messageHash` and chain id uniquely identify the existence of an initiating message and SHOULD
 be used by a block builder to ensure the existence of the initiating message when verifying the relaying
 transaction. `messageHash` SHOULD be `indexed` to allow for easy filtering of logs.
@@ -228,14 +230,19 @@ of the function that is used to execute relaying messages. Both the block builde
 this information to ensure that all system invariants are held.
 
 ```solidity
-function relayMessage(CrossChainMessage memory _msg) pure returns (bytes32) {
+function relayMessage(bytes32 _hash, CrossChainMessage memory _msg) public {
     require(msg.sender == tx.origin);
+    require(_hash == hashCrossChainMessage(_msg));
     require(_msg.timestamp >= block.timestamp);
     require(L1Block.isInInteropSet(_msg.chainid));
 
     // rest of implementation
 }
 ```
+
+By including the hash in the calldata, it makes static analysis much easier for block builders.
+Without the check onchain, the block builder would need to hash the `CrossChainMessage` to build the
+`eth_getLogs` query. With the hash onchain, the block builder can directly trust the hash.
 
 ### L1Block
 
@@ -285,6 +292,14 @@ that only have preconfirmation levels of security if they trust the remote seque
 allowlist and identity turns sequencing into an interated game which increases the ability for
 sequencers to trust each other. Better preconfirmation technology will help to scale the sequencer
 set to untrusted actors.
+
+## Block Building
+
+The block builder SHOULD use static analysis on relaying messages to verify that the initiating
+message exists. When a transaction has a top level [to](https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L52)
+field that is equal to the `CrossL2Inbox` and the 4byte selector in the calldata matches `keccak256("relayMessage(bytes32,CrossChainMessage)")[0:4]`,
+the block builder should use the chain id that is encoded in the `CrossChainMessage` to know which chain includes the initiating
+transaction and then use the `_hash` to populate an `eth_getLogs` query to check for the existence of the initiating message.
 
 ## Security Considerations
 
