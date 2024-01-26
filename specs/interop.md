@@ -1,3 +1,40 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Interoperability](#interoperability)
+  - [Overview](#overview)
+  - [The Dependency Set](#the-dependency-set)
+    - [Chain ID](#chain-id)
+  - [Interop Network Upgrade](#interop-network-upgrade)
+  - [Derivation Pipeline](#derivation-pipeline)
+    - [Depositing a Relaying Message](#depositing-a-relaying-message)
+    - [Safety](#safety)
+  - [State Transition Function](#state-transition-function)
+  - [Predeploys](#predeploys)
+    - [CrossL2Outbox](#crossl2outbox)
+      - [Initiating Messages](#initiating-messages)
+    - [CrossL2Inbox](#crossl2inbox)
+      - [Invariants](#invariants)
+        - [Only EOA Invariant](#only-eoa-invariant)
+        - [Transferring Ether in a Cross Chain Message](#transferring-ether-in-a-cross-chain-message)
+      - [Relaying Messages](#relaying-messages)
+    - [L1Block](#l1block)
+  - [SystemConfig](#systemconfig)
+    - [`INTEROP_SET` UpdateType](#interop_set-updatetype)
+  - [L1Attributes](#l1attributes)
+  - [Fault Proof](#fault-proof)
+  - [Sequencer Policy](#sequencer-policy)
+  - [Block Building](#block-building)
+  - [Security Considerations](#security-considerations)
+    - [Forced Inclusion of Cross Chain Messages](#forced-inclusion-of-cross-chain-messages)
+    - [Cross Chain Message Latency](#cross-chain-message-latency)
+    - [Dynamic Size of L1 Attributes Transaction](#dynamic-size-of-l1-attributes-transaction)
+    - [Maximum Size of the Dependency Set](#maximum-size-of-the-dependency-set)
+    - [Mempool](#mempool)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Interoperability
 
 The ability for a blockchain to easily read the state of another blockchain is called interoperability.
@@ -35,7 +72,7 @@ in the dependency set.
 The dependency set is defined by chain id. Since it is impossible to enforce uniqueness of chain ids,
 social consensus MUST be used to determine the chain that represents the canonical chain id. This
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
-of relaying messages. 
+of relaying messages.
 
 ### Chain ID
 
