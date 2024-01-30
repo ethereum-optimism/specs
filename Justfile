@@ -1,6 +1,9 @@
 deps:
     pnpm i --frozen-lockfile
 
+serve:
+    npx mdstart specs
+
 lint-specs-md-check:
     npx markdownlint-cli2 "./specs/**/*.md"
 
@@ -12,5 +15,5 @@ lint-specs-toc-check:
 
 lint-links:
     docker run --init -it -v `pwd`:/input lycheeverse/lychee --verbose --no-progress --exclude-loopback \
-    		--exclude twitter.com --exclude explorer.optimism.io --exclude linux-mips.org --exclude vitalik.ca \
-    		--exclude-mail /input/README.md "/input/specs/**/*.md"
+        --exclude twitter.com --exclude explorer.optimism.io --exclude linux-mips.org --exclude vitalik.ca \
+        --exclude-mail /input/README.md "/input/specs/**/*.md"
