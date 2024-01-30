@@ -12,7 +12,7 @@ that maintains 1:1 compatibility with Ethereum.
 - [Withdrawals](specs/withdrawals.md)
 - [Execution Engine](specs/exec-engine.md)
 - [L2 Output Root Proposals](specs/proposals.md)
-- [Rollup Node](specs/rollup-node.mdode.md)
+- [Rollup Node](specs/rollup-node.md)
 - [Rollup Node P2p](specs/rollup-node-p2p.md)
 - [L2 Chain Derivation](specs/derivation.md)
 - [Superchain Upgrades](specs/superchain-upgrades.md)
