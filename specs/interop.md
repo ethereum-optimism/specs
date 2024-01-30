@@ -41,6 +41,9 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+TODO: rename low level relaying message to finalizing message so the relayMessage can be a property 
+of the messenger
+
 # Interoperability
 
 The ability for a blockchain to easily read the state of another blockchain is called interoperability.
@@ -280,6 +283,12 @@ The `onlyEOA` invariant on relaying a cross chain message enables static analysi
 This allows for the derivation pipeline and block builders to reject relaying messages that do not
 have a corresponding initiating message.
 
+It may be possible to relax this invariant in the future if the block building process is efficient
+enough to do full simulations to gain the information required to verify the existence of the
+initiating transaction. This would be done by adding an additional function to the `CrossL2Inbox`
+in the future. One possible way to handle explicit denial of service attacks is to utilize identity
+in iterated games such that the block builder can ban identities that submit malicious transactions.
+
 #### Relaying Messages
 
 All of the information required to satisfy the invariants MUST be included to or committed to in the calldata
@@ -349,11 +358,11 @@ function sendMessage(uint256 _destination, address _target, bytes calldata _mess
 ##### Relaying Messages
 
 ```solidity
-function relayMessage(uint256 _source, uint256 _nonce, address _sender, address _target, uint256 _value, bytes memory _message) external {
+function relayMessage(uint256 _destination, uint256 _nonce, address _sender, address _target, uint256 _value, bytes memory _message) external {
     require(msg.sender == address(CROSS_L2_INBOX));
-    require(_source == block.chainid);
+    require(_destination == block.chainid);
 
-    bytes32 messageHash = keccak256(abi.encode(_source, _nonce, _sender, _target, _value, _message));
+    bytes32 messageHash = keccak256(abi.encode(_destination, _nonce, _sender, _target, _value, _message));
     require(sentMessages[messageHash] == false);
 
     xDomainMsgSender = _sender;
