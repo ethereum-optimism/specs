@@ -17,8 +17,12 @@
     - [CrossL2Inbox](#crossl2inbox)
       - [Invariants](#invariants)
         - [Only EOA Invariant](#only-eoa-invariant)
-        - [Transferring Ether in a Cross Chain Message](#transferring-ether-in-a-cross-chain-message)
       - [Relaying Messages](#relaying-messages)
+    - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
+      - [Transferring Ether in a Cross Chain Message](#transferring-ether-in-a-cross-chain-message)
+      - [Interfaces](#interfaces)
+        - [Sending Messages](#sending-messages)
+        - [Relaying Messages](#relaying-messages-1)
     - [L1Block](#l1block)
   - [SystemConfig](#systemconfig)
     - [`DEPENDENCY_SET` UpdateType](#dependency_set-updatetype)
@@ -26,12 +30,14 @@
   - [Fault Proof](#fault-proof)
   - [Sequencer Policy](#sequencer-policy)
   - [Block Building](#block-building)
+  - [Sponsorship](#sponsorship)
   - [Security Considerations](#security-considerations)
     - [Forced Inclusion of Cross Chain Messages](#forced-inclusion-of-cross-chain-messages)
     - [Cross Chain Message Latency](#cross-chain-message-latency)
     - [Dynamic Size of L1 Attributes Transaction](#dynamic-size-of-l1-attributes-transaction)
     - [Maximum Size of the Dependency Set](#maximum-size-of-the-dependency-set)
     - [Mempool](#mempool)
+    - [Reliance on History](#reliance-on-history)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
