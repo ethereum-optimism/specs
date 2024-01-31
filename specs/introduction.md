@@ -42,14 +42,21 @@ anywhere.
 In order to scale Ethereum without sacrificing security, we must preserve 3 critical properties of Ethereum layer 1:
 liveness, availability, and validity.
 
-1. **Liveness** - Anyone must be able to extend the rollup chain by sending transactions at any time. - There are two ways transactions can be sent to the rollup chain: 1) via the sequencer, and 2) directly on layer 1.
-   The sequencer provides low latency & low cost transactions, while sending transactions directly to layer 1 provides
-   censorship resistance.
-1. **Availability** - Anyone must be able to download the rollup chain. - All information required to derive the chain is embedded into layer 1 blocks. That way as long as the layer 1
-   chain is available, so is the rollup.
-1. **Validity** - All transactions must be correctly executed and all withdrawals correctly processed. - The rollup state and withdrawals are managed on an L1 contract called the `L2OutputOracle`. This oracle is
-   guaranteed to _only_ finalize correct (ie. valid) rollup block hashes given a **single honest verifier** assumption. If
-   there is ever an invalid block hash asserted on layer 1, an honest verifier will prove it is invalid and win a bond.
+1. **Liveness**
+   - Anyone must be able to extend the rollup chain by sending transactions at any time.
+   - There are two ways transactions can be sent to the rollup chain: 1) via the sequencer, and 2) directly on layer 1.
+     The sequencer provides low latency & low cost transactions, while sending transactions directly to layer 1 provides
+     censorship resistance.
+1. **Availability**
+   - Anyone must be able to download the rollup chain.
+   - All information required to derive the chain is embedded into layer 1 blocks. That way as long as the layer 1
+     chain is available, so is the rollup.
+1. **Validity**
+   - All transactions must be correctly executed and all withdrawals correctly processed.
+   - The rollup state and withdrawals are managed on an L1 contract called the `L2OutputOracle`. This oracle is
+     guaranteed to _only_ finalize correct (ie. valid) rollup block hashes given a **single honest verifier**
+     assumption. If there is ever an invalid block hash asserted on layer 1, an honest verifier will prove it is
+     invalid and win a bond.
 
 **Footnote**: There are two main ways to enforce validity of a rollup: fault proofs (optimistic rollup) and validity
 proofs (zkRollup). For the purposes of this spec we only focus on fault proofs but it is worth noting that validity
@@ -82,8 +89,10 @@ The sequencer:
 1. Accepts user off-chain transactions
 2. Observes on-chain transactions (primarily, deposit events coming from L1)
 3. Consolidates both kinds of transactions into L2 blocks with a specific ordering.
-4. Propagates consolidated L2 blocks to L1, by submitting two things as calldata to L1: - The pending off-chain transactions accepted in step 1. - Sufficient information about the ordering of the on-chain transactions to successfully reconstruct the blocks
-   from step 3., purely by watching L1.
+4. Propagates consolidated L2 blocks to L1, by submitting two things as calldata to L1:
+   - The pending off-chain transactions accepted in step 1.
+   - Sufficient information about the ordering of the on-chain transactions to successfully reconstruct the blocks
+     from step 3., purely by watching L1.
 
 The sequencer also provides access to block data as early as step 3., so that users may access real-time state in
 advance of L1 confirmation if they so choose.

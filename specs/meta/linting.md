@@ -11,7 +11,8 @@ See
 - [markdownlint rule reference](https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md)
 - [example .markdownlint.json file](https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc)
 
-Justification for linting rules in [.markdownlint.json](https://github.com/ethereum-optimism/specs/blob/main/.markdownlint.json):
+Justification for linting rules in
+[.markdownlint.json](https://github.com/ethereum-optimism/specs/blob/main/.markdownlint.json):
 
 - _line_length_ (`!strict && stern`): don't trip up on url lines
 - _no-blanks-blockquote_: enable multiple consecutive blockquotes separated by white lines

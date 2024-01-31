@@ -244,7 +244,8 @@ To verify a claim about L2 state, the program first reproduces
 the L2 state by applying L1 data to prior agreed L2 history.
 
 This process is also known as the [L2 derivation process](../../protocol/derivation.md),
-and matches the processing in the [rollup node](../../protocol/rollup-node.md) and [execution-engine](../../protocol/exec-engine.md).
+and matches the processing in the [rollup node](../../protocol/rollup-node.md) and
+[execution-engine](../../protocol/exec-engine.md).
 
 The difference is that rather than retrieving inputs from an RPC and applying state changes to disk,
 the inputs are loaded through the [pre-image oracle][oracle] and the changes accumulate in memory.
@@ -298,7 +299,8 @@ to then make a statement about the claim with the final exit code.
 A disputed output-root may be disproven by first producing the output-root, and then comparing it:
 
 1. Retrieve the output attributes from the L2 chain view: the state-root, block-hash, withdrawals storage-root.
-2. Compute the output-root, as the [proposer should compute it](../../protocol/proposals.md#l2-output-commitment-construction).
+2. Compute the output-root, as the
+   [proposer should compute it](../../protocol/proposals.md#l2-output-commitment-construction).
 3. If the output-root matches the `claim`, exit with code 0. Otherwise, exit with code 1.
 
 > Note: the dispute game interface is actively changing, and may require additional claim assertions.
@@ -346,7 +348,8 @@ Requests the host to prepare the L2 MPT node preimage with the given `<nodehash>
 #### `l2-output <outputroot>`
 
 Requests the host to prepare the L2 Output at the l2 output root `<outputroot>`.
-The L2 Output is the preimage of a [computed output root](../../protocol/proposals.md#l2-output-commitment-construction).
+The L2 Output is the preimage of a
+[computed output root](../../protocol/proposals.md#l2-output-commitment-construction).
 
 ## Fault Proof VM
 
