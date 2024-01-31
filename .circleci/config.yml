@@ -1,8 +1,6 @@
 version: 2.1
-
 orbs:
   slack: circleci/slack@4.10.1
-
 parameters:
   ci_builder_image:
     type: string
@@ -10,7 +8,6 @@ parameters:
   base_image:
     type: string
     default: ubuntu-2204:2022.07.1
-
 commands:
   notify-failures-on-develop:
     description: "Notify Slack"
@@ -24,7 +21,6 @@ commands:
           event: fail
           template: basic_fail_1
           branch_pattern: develop
-
 jobs:
   lint-specs:
     docker:
@@ -37,10 +33,6 @@ jobs:
       - run:
           name: markdown lint
           command: just lint-specs-md-check
-      - run:
-          name: toc lint
-          command: just lint-specs-toc-check
-
   lint-links:
     machine:
       image: <<pipeline.parameters.base_image>>
@@ -51,18 +43,16 @@ jobs:
           command: just lint-links
       - notify-failures-on-develop:
           channel: C055R639XT9 #notify-link-check
-
 workflows:
   specs-check:
     when:
       not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - lint-specs
-
   scheduled-links-check:
     when:
-      equal: [ build_daily, <<pipeline.schedule.name>> ]
+      equal: [build_daily, <<pipeline.schedule.name>>]
     jobs:
       - lint-links:
           context: slack

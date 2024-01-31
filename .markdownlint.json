@@ -7,6 +7,7 @@
     "tables": false
   },
   "no-blanks-blockquote": false,
+  "no-empty-links": false,
   "single-title": false,
   "no-emphasis-as-heading": false
 }
