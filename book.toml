@@ -1,0 +1,19 @@
+[book]
+authors = ["optimism-collective"]
+language = "en"
+multilingual = false
+src = "src"
+title = "OP Stack Specification"
+
+[preprocessor.katex]
+after = ["links"]
+
+[preprocessor.toc]
+command = "mdbook-toc"
+renderer = ["html"]
+
+[output.html]
+default-theme = "ayu"
+additional-js = ["src/static/solidity.min.js"]
+
+[output.linkcheck]
