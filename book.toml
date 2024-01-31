@@ -12,8 +12,11 @@ after = ["links"]
 command = "mdbook-toc"
 renderer = ["html"]
 
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
 [output.html]
 default-theme = "ayu"
-additional-js = ["specs/static/solidity.min.js"]
+additional-js = ["specs/static/solidity.min.js", "specs/static/mermaid.min.js", "specs/static/mermaid-init.js"]
 
 [output.linkcheck]

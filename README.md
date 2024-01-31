@@ -24,7 +24,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 **`mdbook` + plugins**
 
 ```sh
-cargo install mdbook mdbook-katex mdbook-toc mdbook-linkcheck
+cargo install mdbook mdbook-katex mdbook-toc mdbook-linkcheck mdbook-mermaid
 ```
 
 ### Serving the book locally
