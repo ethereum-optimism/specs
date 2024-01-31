@@ -41,9 +41,6 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-TODO: rename low level relaying message to finalizing message so the relayMessage can be a property 
-of the messenger
-
 # Interoperability
 
 The ability for a blockchain to easily read the state of another blockchain is called interoperability.
@@ -57,11 +54,11 @@ network upgrade will be included in this document in the future.
 | Term          | Definition                                               |
 |---------------|----------------------------------------------------------|
 | Source Chain   | A blockchain that includes an initiating message |
-| Destination Chain  | A blockchain that includes a relaying message |
+| Destination Chain  | A blockchain that includes an executing message |
 | Initiating Message | A transaction submitted to a source chain that authorizes execution on a destination chain |
-| Relaying Message | A transaction submitted to a destination chain that corresponds to an initiating message |
-| Cross Chain Message | The cumulative execution and side effects of the initiating message and relaying message |
-| Dependency Set | The set of chains that originate initiating transactions where the relaying transactions are valid |
+| Executing Message | A transaction submitted to a destination chain that corresponds to an initiating message |
+| Cross Chain Message | The cumulative execution and side effects of the initiating message and executing message |
+| Dependency Set | The set of chains that originate initiating transactions where the executing transactions are valid |
 
 A total of two transactions are required to complete a cross chain message. The first transaction is submitted
 to the source chain which authorizes execution on a destination chain. The second transaction is submitted to a
@@ -74,14 +71,14 @@ entity in practice.
 ## The Dependency Set
 
 The dependency set defines the set of chains that a destination chains allows as source chains. Another way of
-saying it is that the dependency set defines the set of initiating messages that are valid for a relaying
-message to be included. A relaying message MUST have an initiating message that is included in a chain
+saying it is that the dependency set defines the set of initiating messages that are valid for an executing
+message to be included. An executing message MUST have an initiating message that is included in a chain
 in the dependency set.
 
 The dependency set is defined by chain id. Since it is impossible to enforce uniqueness of chain ids,
 social consensus MUST be used to determine the chain that represents the canonical chain id. This
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
-of relaying messages.
+of executing messages.
 
 ### Chain ID
 
@@ -115,21 +112,21 @@ The exact definitions for these upgrade transactions are still to be defined.
 
 ## Derivation Pipeline
 
-The derivation pipeline enforces invariants on safe blocks that include relaying transactions.
+The derivation pipeline enforces invariants on safe blocks that include executing messages.
 
-- The relaying message MUST have a corresponding initiating message
-- The initiating message that corresponds to a relaying message MUST come from an allowed chain (dependency set)
+- The executing message MUST have a corresponding initiating message
+- The initiating message that corresponds to an executing message MUST come from an allowed chain (dependency set)
 
 Blocks that contain transactions that relay cross domain messages to the destination chain where the
 initiating transaction does not exist MUST be considered invalid and MUST not be allowed by the
 derivation pipeline to be considered safe.
 
 There is no concept of replay protection within the protocol since there is no replay protection
-mechanism that fits well for all applications. Users MAY submit an arbitrary number of relaying
+mechanism that fits well for all applications. Users MAY submit an arbitrary number of executing
 messages per initiating message. This greatly simplifies the protocol and allows for
 applications to build application specific replay protection.
 
-### Depositing a Relaying Message
+### Depositing an Executing Message
 
 Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
 The derivation pipeline must gracefully handle the case in which a user uses a deposit transaction to
@@ -137,13 +134,13 @@ relay a cross chain message. To not couple preconfirmation security to consensus
 that relay cross chain messages MUST have an initiating message that is considered safe. This relaxes
 a strict synchrony assumption on the sequencer that it MUST have all unsafe blocks of destination chains
 as fast as possible to ensure that it is building correct blocks. It also prevents a class of attacks
-where the user can send a relaying message before the initiating message and trick the derivation pipeline
+where the user can send an executing message before the initiating message and trick the derivation pipeline
 into reorganizing the sequencer.
 
 ### Safety
 
-The initiating messages for all relaying messages MUST be resolved as safe before an L2 block can transition from being unsafe to safe.
-Users MAY optimistically accept unsafe blocks without any verification of the relaying messages. They SHOULD optimistically verify
+The initiating messages for all executing messages MUST be resolved as safe before an L2 block can transition from being unsafe to safe.
+Users MAY optimistically accept unsafe blocks without any verification of the executing messages. They SHOULD optimistically verify
 the initiating messages exist in destination unsafe blocks to more quickly reorganize out invalid blocks.
 
 ## State Transition Function
@@ -152,8 +149,8 @@ After the full execution of a block, the set of `MessagePassed` events emitted f
 This commitment MUST be included as the block header's [extra data field][block-extra-data]. The events are serialized with using
 [Simple Serialize][ssz] aka SSZ.
 
-[block-extra-data]: (https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L115)
-[ssz]: (https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md)
+[block-extra-data]: https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L115
+[ssz]: https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md
 
 | Name          | Value |
 |---------------|-------------------------------------|
@@ -190,7 +187,9 @@ For every cross chain message that is sent, it MUST emit an event that indicates
 of the cross chain message.
 
 The event SHOULD make it as cheap as possible for the destination chain to look up the existence
-of the initiating transaction when verifying the relaying transaction.
+of the initiating transaction when verifying the executing message.
+
+TODO: `curl`
 
 #### Initiating Messages
 
@@ -234,8 +233,8 @@ as part of the cross chain message. This means that the cross chain message is v
 on any destination chain. Binding to a particular destination chain can be implemented at the application layer.
 
 The `messageHash` and chain id uniquely identify the existence of an initiating message and SHOULD
-be used by a block builder to ensure the existence of the initiating message when verifying the relaying
-transaction. `messageHash` SHOULD be `indexed` to allow for easy filtering of logs.
+be used by a block builder to ensure the existence of the initiating message when verifying the executing
+message. `messageHash` SHOULD be `indexed` to allow for easy filtering of logs.
 
 A cross chain message is defined in the following format:
 
@@ -266,21 +265,21 @@ function hashCrossChainMessage(CrossChainMessage memory _msg) pure returns (byte
 
 Address: `0x4200000000000000000000000000000000000022`
 
-The `CrossL2Inbox` is responsible for relaying a cross chain message on the destination chain.
-It is permissionless to finalize a cross chain message on behalf of any user. Certain protocol
+The `CrossL2Inbox` is responsible for executing a cross chain message on the destination chain.
+It is permissionless to execute a cross chain message on behalf of any user. Certain protocol
 enforced invariants must be preserved to ensure safety of the protocol.
 
 #### Invariants
 
-- The timestamp of relaying message MUST be less than or equal to the timestamp of the initiating message
+- The timestamp of executing message MUST be less than or equal to the timestamp of the initiating message
 - The chain id of the initiating message MUST be in the dependency set
-- The relaying message MUST be initiated by an externally owned account such that the top level EVM call frame enters the `CrossL2Inbox`
-- The chain id of the initiating message MUST not be the chain id of the relaying message
+- The executing message MUST be initiated by an externally owned account such that the top level EVM call frame enters the `CrossL2Inbox`
+- The chain id of the initiating message MUST not be the chain id of the executing message
 
 ##### Only EOA Invariant
 
-The `onlyEOA` invariant on relaying a cross chain message enables static analysis on relaying messages.
-This allows for the derivation pipeline and block builders to reject relaying messages that do not
+The `onlyEOA` invariant on executing a cross chain message enables static analysis on executing messages.
+This allows for the derivation pipeline and block builders to reject executing messages that do not
 have a corresponding initiating message.
 
 It may be possible to relax this invariant in the future if the block building process is efficient
@@ -289,10 +288,10 @@ initiating transaction. This would be done by adding an additional function to t
 in the future. One possible way to handle explicit denial of service attacks is to utilize identity
 in iterated games such that the block builder can ban identities that submit malicious transactions.
 
-#### Relaying Messages
+#### Executing Messages
 
 All of the information required to satisfy the invariants MUST be included to or committed to in the calldata
-of the function that is used to execute relaying messages. Both the block builder and the smart contract use
+of the function that is used to execute messages. Both the block builder and the smart contract use
 this information to ensure that all system invariants are held.
 
 ```solidity
@@ -321,7 +320,7 @@ Address: `0x4200000000000000000000000000000000000024`
 The `L2ToL2CrossDomainMessenger` is a higher level abstraction on top of the `CrossL2Outbox` that
 provides features necessary for secure transfers of `ether` and ERC20 tokens between L2 chains.
 Messages sent through the `L2ToL2CrossDomainMessenger` on the source chain receive both replay protection
-as well as domain binding, ie the relaying transaction can only be valid on a single chain.
+as well as domain binding, ie the executing transaction can only be valid on a single chain.
 
 #### Transferring Ether in a Cross Chain Message
 
@@ -355,7 +354,7 @@ function sendMessage(uint256 _destination, address _target, bytes calldata _mess
 }
 ```
 
-##### Relaying Messages
+##### Executing Messages
 
 ```solidity
 function relayMessage(uint256 _destination, uint256 _nonce, address _sender, address _target, uint256 _value, bytes memory _message) external {
@@ -433,7 +432,7 @@ The insight is that the fault proof program can be a superset of the state trans
 
 ## Sequencer Policy
 
-The sequencer can include relaying transactions that have corresponding initiating transactions
+The sequencer can include executing transactions that have corresponding initiating transactions
 that only have preconfirmation levels of security if they trust the destination sequencer. Using an
 allowlist and identity turns sequencing into an interated game which increases the ability for
 sequencers to trust each other. Better preconfirmation technology will help to scale the sequencer
@@ -441,18 +440,18 @@ set to untrusted actors.
 
 ## Block Building
 
-The block builder SHOULD use static analysis on relaying messages to verify that the initiating
+The block builder SHOULD use static analysis on executing messages to verify that the initiating
 message exists. When a transaction has a top level [to][tx-to] field that is equal to the `CrossL2Inbox`
 and the 4byte selector in the calldata matches the `relayMessage(bytes32,CrossChainMessage)` interface
 the block builder should use the chain id that is encoded in the `CrossChainMessage` to know which chain includes the initiating
 transaction and then use the `_hash` to populate an `eth_getLogs` query to check for the existence of the initiating message.
 
-[tx-to]: (https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L52)
+[tx-to]: https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L52
 
 ## Sponsorship
 
-If a user does not have ether to pay for the gas of a relaying message, application layer sponsorship solutions can be created.
-It is possible to create an MEV incentive by paying `tx.origin` in the relaying message. This can be done by wrapping the
+If a user does not have ether to pay for the gas of an executing message, application layer sponsorship solutions can be created.
+It is possible to create an MEV incentive by paying `tx.origin` in the executing message. This can be done by wrapping the
 `L2ToL2CrossDomainMessenger` with a pair of relaying contracts.
 
 ## Security Considerations
@@ -466,17 +465,17 @@ all chains in the network decide to send cross chain messages to the same chain 
 "Forced inclusion" transactions are good for censorship resistance. In the worst case of censoring sequencers, it will
 take at most 2 sequencing windows for the cross chain message to be processed. The initiating transaction can be sent
 via a deposit which MUST be included in the source chain or the sequencer will be reorganized at the end of the sequencing
-window that includes the deposit transaction. If the relaying transaction is censored, it will take another sequencing window
-of time to force the inclusion of the relaying message per the [spec][depositing-a-relaying-message].
+window that includes the deposit transaction. If the executing transaction is censored, it will take another sequencing window
+of time to force the inclusion of the executing message per the [spec][depositing-an-executing-message].
 
 TODO: verify exact timing of when reorg happens with deposits that are skipped
 
-[depositing-a-relaying-message]: (interop.md#depositing-a-relaying-message)
+[depositing-an-executing-message]: #depositing-an-executing-message
 
 ### Cross Chain Message Latency
 
 The latency at which a cross chain message is relayed from the moment at which it was initiated is bottlenecked by
-the security of the preconfirmations. An initiating transaction and a relaying transaction MAY have the same timestamp,
+the security of the preconfirmations. An initiating transaction and a executing transaction MAY have the same timestamp,
 meaning that a secure preconfirmation scheme enables atomic cross chain composability. Any sort of equivocation on behalf
 of the sequencer will result in the production of invalid blocks.
 
@@ -492,11 +491,11 @@ Limiting the dependency set size is an easy way to ensure this.
 
 The maximum size of the dependency set is constrained by the L2 block gas limit. The larger the dependency set,
 the more costly it is to fully verify the network. It also makes the block building role more centralized
-as it requires more hardware to verify relaying transactions before inclusion.
+as it requires more hardware to verify executing transactions before inclusion.
 
 ### Mempool
 
-Since the validation of the relaying message relies on a remote RPC request, this introduces a denial of
+Since the validation of the execuing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
 The mempool SHOULD perform cheaper checks before any sort of network access is performed. The results
 of the check SHOULD be cached such that another request does not need to be performed when building the
@@ -508,4 +507,4 @@ When fully executing historical blocks, a dependency on historical receipts from
 [EIP-4444][eip-4444] will eventually provide a solution for making historical receipts available without
 needing to require increasingly large execution client databases.
 
-[eip-4444]: (https://eips.ethereum.org/EIPS/eip-4444)
+[eip-4444]: https://eips.ethereum.org/EIPS/eip-4444
