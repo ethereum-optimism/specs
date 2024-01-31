@@ -1,0 +1,648 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Deposits - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html" class="active"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="deposits"><a class="header" href="#deposits">Deposits</a></h1>
+<!-- All glossary references in this file. -->
+<p><a href="../glossary.html#deposited">Deposited transactions</a>, also known as <a href="../glossary.html#deposits">deposits</a> are transactions which
+are initiated on L1, and executed on L2. This document outlines a new <a href="../glossary.html#transaction-type">transaction
+type</a> for deposits. It also describes how deposits are initiated on L1, along
+with the authorization and validation conditions on L2.</p>
+<p><strong>Vocabulary note</strong>: <em>deposited transaction</em> refers specifically to an L2 transaction, while
+<em>deposit</em> can refer to the transaction at various stages (for instance when it is deposited on L1).</p>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#the-deposited-transaction-type">The Deposited Transaction Type</a>
+<ul>
+<li><a href="#source-hash-computation">Source hash computation</a></li>
+<li><a href="#kinds-of-deposited-transactions">Kinds of Deposited Transactions</a></li>
+<li><a href="#validation-and-authorization-of-deposited-transactions">Validation and Authorization of Deposited Transactions</a></li>
+<li><a href="#execution">Execution</a>
+<ul>
+<li><a href="#nonce-handling">Nonce Handling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#deposit-receipt">Deposit Receipt</a></li>
+<li><a href="#l1-attributes-deposited-transaction">L1 Attributes Deposited Transaction</a>
+<ul>
+<li><a href="#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a>
+<ul>
+<li><a href="#l1-attributes---bedrock-canyon-delta">L1 Attributes - Bedrock, Canyon, Delta</a></li>
+<li><a href="#l1-attributes---ecotone">L1 Attributes - Ecotone</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#special-accounts-on-l2">Special Accounts on L2</a>
+<ul>
+<li><a href="#l1-attributes-depositor-account">L1 Attributes Depositor Account</a></li>
+<li><a href="#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a>
+<ul>
+<li><a href="#l1-attributes-predeployed-contract-reference-implementation">L1 Attributes Predeployed Contract: Reference Implementation</a></li>
+<li><a href="#ecotone-l1block-upgrade">Ecotone L1Block upgrade</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#user-deposited-transactions">User-Deposited Transactions</a>
+<ul>
+<li><a href="#deposit-contract">Deposit Contract</a>
+<ul>
+<li><a href="#address-aliasing">Address Aliasing</a></li>
+<li><a href="#deposit-contract-implementation-optimism-portal">Deposit Contract Implementation: Optimism Portal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="the-deposited-transaction-type"><a class="header" href="#the-deposited-transaction-type">The Deposited Transaction Type</a></h2>
+<p><a href="../glossary.html#deposited">Deposited transactions</a> have the following notable distinctions from existing
+transaction types:</p>
+<ol>
+<li>They are derived from Layer 1 blocks, and must be included as part of the protocol.</li>
+<li>They do not include signature validation (see <a href="#user-deposited-transactions">User-Deposited Transactions</a>
+for the rationale).</li>
+<li>They buy their L2 gas on L1 and, as such, the L2 gas is not refundable.</li>
+</ol>
+<p>We define a new <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> compatible transaction type with the prefix <code>0x7E</code> to represent a deposit transaction.</p>
+<p>A deposit has the following fields
+(rlp encoded in the order they appear here):</p>
+<ul>
+<li><code>bytes32 sourceHash</code>: the source-hash, uniquely identifies the origin of the deposit.</li>
+<li><code>address from</code>: The address of the sender account.</li>
+<li><code>address to</code>: The address of the recipient account, or the null (zero-length) address if the
+deposited transaction is a contract creation.</li>
+<li><code>uint256 mint</code>: The ETH value to mint on L2.</li>
+<li><code>uint256 value</code>: The ETH value to send to the recipient account.</li>
+<li><code>uint64 gas</code>: The gas limit for the L2 transaction.</li>
+<li><code>bool isSystemTx</code>: If true, the transaction does not interact with the L2 block gas pool.
+<ul>
+<li>Note: boolean is disabled (enforced to be <code>false</code>) starting from the Regolith upgrade.</li>
+</ul>
+</li>
+<li><code>bytes data</code>: The calldata.</li>
+</ul>
+<p>In contrast to <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> transactions, this transaction type:</p>
+<ul>
+<li>Does not include a <code>nonce</code>, since it is identified by the <code>sourceHash</code>.
+API responses still include a <code>nonce</code> attribute:
+<ul>
+<li>Before Regolith: the <code>nonce</code> is always <code>0</code></li>
+<li>With Regolith: the <code>nonce</code> is set to the <code>depositNonce</code> attribute of the corresponding transaction receipt.</li>
+</ul>
+</li>
+<li>Does not include signature information, and makes the <code>from</code> address explicit.
+API responses contain zeroed signature <code>v</code>, <code>r</code>, <code>s</code> values for backwards compatibility.</li>
+<li>Includes new <code>sourceHash</code>, <code>from</code>, <code>mint</code>, and <code>isSystemTx</code> attributes.
+API responses contain these as additional fields.</li>
+</ul>
+<p>We select <code>0x7E</code> because transaction type identifiers are currently allowed to go up to <code>0x7F</code>.
+Picking a high identifier minimizes the risk that the identifier will be used be claimed by another
+transaction type on the L1 chain in the future. We don't pick <code>0x7F</code> itself in case it becomes used
+for a variable-length encoding scheme.</p>
+<h3 id="source-hash-computation"><a class="header" href="#source-hash-computation">Source hash computation</a></h3>
+<p>The <code>sourceHash</code> of a deposit transaction is computed based on the origin:</p>
+<ul>
+<li>User-deposited:
+<code>keccak256(bytes32(uint256(0)), keccak256(l1BlockHash, bytes32(uint256(l1LogIndex))))</code>.
+Where the <code>l1BlockHash</code>, and <code>l1LogIndex</code> all refer to the inclusion of the deposit log event on L1.
+<code>l1LogIndex</code> is the index of the deposit event log in the combined list of log events of the block.</li>
+<li>L1 attributes deposited:
+<code>keccak256(bytes32(uint256(1)), keccak256(l1BlockHash, bytes32(uint256(seqNumber))))</code>.
+Where <code>l1BlockHash</code> refers to the L1 block hash of which the info attributes are deposited.
+And <code>seqNumber = l2BlockNum - l2EpochStartBlockNum</code>,
+where <code>l2BlockNum</code> is the L2 block number of the inclusion of the deposit tx in L2,
+and <code>l2EpochStartBlockNum</code> is the L2 block number of the first L2 block in the epoch.</li>
+<li>Upgrade-deposited: <code>keccak256(bytes32(uint256(2)), keccak256(intent))</code>.
+Where <code>intent</code> is a UTF-8 byte string, identifying the upgrade intent.</li>
+</ul>
+<p>Without a <code>sourceHash</code> in a deposit, two different deposited transactions could have the same exact hash.</p>
+<p>The outer <code>keccak256</code> hashes the actual uniquely identifying information with a domain,
+to avoid collisions between different types of sources.</p>
+<p>We do not use the sender's nonce to ensure uniqueness because this would require an extra L2 EVM state read from the
+<a href="../glossary.html#execution-engine">execution engine</a> during block-derivation.</p>
+<h3 id="kinds-of-deposited-transactions"><a class="header" href="#kinds-of-deposited-transactions">Kinds of Deposited Transactions</a></h3>
+<p>Although we define only one new transaction type, we can distinguish between two kinds of deposited
+transactions, based on their positioning in the L2 block:</p>
+<ol>
+<li>The first transaction MUST be a <a href="#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a>, followed by</li>
+<li>an array of zero-or-more <a href="#user-deposited-transactions">user-deposited transactions</a>
+submitted to the deposit feed contract on L1 (called <code>OptimismPortal</code>).
+User-deposited transactions are only present in the first block of a L2 epoch.</li>
+</ol>
+<p>We only define a single new transaction type in order to minimize modifications to L1 client
+software, and complexity in general.</p>
+<h3 id="validation-and-authorization-of-deposited-transactions"><a class="header" href="#validation-and-authorization-of-deposited-transactions">Validation and Authorization of Deposited Transactions</a></h3>
+<p>As noted above, the deposited transaction type does not include a signature for validation. Rather,
+authorization is handled by the <a href="../glossary.html#L2-chain-derivation">L2 chain derivation</a> process, which when correctly
+applied will only derive transactions with a <code>from</code> address attested to by the logs of the <a href="#deposit-contract">L1
+deposit contract</a>.</p>
+<h3 id="execution"><a class="header" href="#execution">Execution</a></h3>
+<p>In order to execute a deposited transaction:</p>
+<p>First, the balance of the <code>from</code> account MUST be increased by the amount of <code>mint</code>.
+This is unconditional, and does not revert on deposit failure.</p>
+<p>Then, the execution environment for a deposited transaction is initialized based on the
+transaction's attributes, in exactly the same manner as it would be for an EIP-155 transaction.</p>
+<p>The deposit transaction is processed exactly like a type-3 (EIP-1559) transaction, with the exception of:</p>
+<ul>
+<li>No fee fields are verified: the deposit does not have any, as it pays for gas on L1.</li>
+<li>No <code>nonce</code> field is verified: the deposit does not have any, it's uniquely identified by its <code>sourceHash</code>.</li>
+<li>No access-list is processed: the deposit has no access-list, and it is thus processed as if the access-list is empty.</li>
+<li>No check if <code>from</code> is an Externally Owner Account (EOA): the deposit is ensured not to be an EOA through L1 address
+masking, this may change in future L1 contract-deployments to e.g. enable an account-abstraction like mechanism.</li>
+<li>Before the Regolith upgrade:
+<ul>
+<li>The execution output states a non-standard gas usage:
+<ul>
+<li>If <code>isSystemTx</code> is false: execution output states it uses <code>gasLimit</code> gas.</li>
+<li>If <code>isSystemTx</code> is true: execution output states it uses <code>0</code> gas.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>No gas is refunded as ETH. (either by not refunding or utilizing the fact the gas-price of the deposit is <code>0</code>)</li>
+<li>No transaction priority fee is charged. No payment is made to the block fee-recipient.</li>
+<li>No L1-cost fee is charged, as deposits are derived from L1 and do not have to be submitted as data back to it.</li>
+<li>No base fee is charged. The total base fee accounting does not change.</li>
+</ul>
+<p>Note that this includes contract-deployment behavior like with regular transactions, and gas
+metering is the same (with the exception of fee related changes above), including metering of
+intrinsic gas.</p>
+<p>Any non-EVM state-transition error emitted by the EVM execution is processed in a special way:</p>
+<ul>
+<li>It is transformed into an EVM-error:
+i.e. the deposit will always be included, but its receipt will indicate a failure
+if it runs into a non-EVM state-transition error, e.g. failure to transfer the specified
+<code>value</code> amount of ETH due to insufficient account-balance.</li>
+<li>The world state is rolled back to the start of the EVM processing, after the minting part of the deposit.</li>
+<li>The <code>nonce</code> of <code>from</code> in the world state is incremented by 1, making the error equivalent to a native EVM failure.
+Note that a previous <code>nonce</code> increment may have happened during EVM processing, but this would be rolled back first.</li>
+</ul>
+<p>Finally, after the above processing, the execution post-processing runs the same:
+i.e. the gas pool and receipt are processed identical to a regular transaction.
+Starting with the Regolith upgrade however, the receipt of deposit transactions is extended with an additional
+<code>depositNonce</code> value, storing the <code>nonce</code> value of the <code>from</code> sender as registered <em>before</em> the EVM processing.</p>
+<p>Note that the gas used as stated by the execution output is subtracted from the gas pool,
+but this execution output value has special edge cases before the Regolith upgrade.</p>
+<p>Note for application developers: because <code>CALLER</code> and <code>ORIGIN</code> are set to <code>from</code>, the
+semantics of using the <code>tx.origin == msg.sender</code> check will not work to determine whether
+or not a caller is an EOA during a deposit transaction. Instead, the check could only be useful for
+identifying the first call in the L2 deposit transaction. However this check does still satisfy
+the common case in which developers are using this check to ensure that the <code>CALLER</code> is unable to
+execute code before and after the call.</p>
+<h4 id="nonce-handling"><a class="header" href="#nonce-handling">Nonce Handling</a></h4>
+<p>Despite the lack of signature validation, we still increment the nonce of the <code>from</code> account when a
+deposit transaction is executed. In the context of a deposit-only roll up, this is not necessary
+for transaction ordering or replay prevention, however it maintains consistency with the use of
+nonces during <a href="https://github.com/ethereum/execution-specs/blob/617903a8f8d7b50cf71bf1aa733c37897c8d75c1/src/ethereum/frontier/utils/address.py#L40">contract creation</a>. It may also simplify integration with downstream
+tooling (such as wallets and block explorers).</p>
+<h2 id="deposit-receipt"><a class="header" href="#deposit-receipt">Deposit Receipt</a></h2>
+<p>Transaction receipts use standard typing as per <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.
+The Deposit transaction receipt type is equal to a regular receipt,
+but extended with an optional <code>depositNonce</code> field.</p>
+<p>The RLP-encoded consensus-enforced fields are:</p>
+<ul>
+<li><code>postStateOrStatus</code> (standard): this contains the transaction status, see <a href="https://eips.ethereum.org/EIPS/eip-658">EIP-658</a>.</li>
+<li><code>cumulativeGasUsed</code> (standard): gas used in the block thus far, including this transaction.
+<ul>
+<li>The actual gas used is derived from the difference in <code>CumulativeGasUsed</code> with the previous transaction.</li>
+<li>Starting with Regolith, this accounts for the actual gas usage by the deposit, like regular transactions.</li>
+</ul>
+</li>
+<li><code>bloom</code> (standard): bloom filter of the transaction logs.</li>
+<li><code>logs</code> (standard): log events emitted by the EVM processing.</li>
+<li><code>depositNonce</code> (unique extension): Optional field. The deposit transaction persists the nonce used during execution.</li>
+<li><code>depositNonceVersion</code> (unique extension): Optional field. The value must be 1 if the field is present
+<ul>
+<li>Before Canyon, these <code>depositNonce</code> &amp; <code>depositNonceVersion</code> fields must always be omitted.</li>
+<li>With Canyon, these <code>depositNonce</code> &amp; <code>depositNonceVersion</code> fields must always be included.</li>
+</ul>
+</li>
+</ul>
+<p>Starting with Regolith, the receipt API responses utilize the receipt changes for more accurate response data:</p>
+<ul>
+<li>The <code>depositNonce</code> is included in the receipt JSON data in API responses</li>
+<li>For contract-deployments (when <code>to == null</code>), the <code>depositNonce</code> helps derive the correct <code>contractAddress</code> meta-data,
+instead of assuming the nonce was zero.</li>
+<li>The <code>cumulativeGasUsed</code> accounts for the actual gas usage, as metered in the EVM processing.</li>
+</ul>
+<h2 id="l1-attributes-deposited-transaction"><a class="header" href="#l1-attributes-deposited-transaction">L1 Attributes Deposited Transaction</a></h2>
+<p>An <a href="../glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a> is a deposit transaction sent to the <a href="#l1-attributes-predeployed-contract">L1
+attributes predeployed contract</a>.</p>
+<p>This transaction MUST have the following values:</p>
+<ol>
+<li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0001</code> (the address of the
+<a href="#l1-attributes-depositor-account">L1 Attributes depositor account</a>)</li>
+<li><code>to</code> is <code>0x4200000000000000000000000000000000000015</code> (the address of the <a href="#l1-attributes-predeployed-contract">L1 attributes predeployed
+contract</a>).</li>
+<li><code>mint</code> is <code>0</code></li>
+<li><code>value</code> is <code>0</code></li>
+<li><code>gasLimit</code> is set to 150,000,000 prior to the Regolith upgrade, and 1,000,000 after.</li>
+<li><code>isSystemTx</code> is set to <code>true</code> prior to the Regolith upgrade, and <code>false</code> after.</li>
+<li><code>data</code> is an encoded call to the <a href="#l1-attributes-predeployed-contract">L1 attributes predeployed contract</a> that
+depends on the upgrades that are active (see below).</li>
+</ol>
+<p>This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
+<code>gasLimit</code>, as it is considered part of state-transition processing.</p>
+<h3 id="l1-attributes-deposited-transaction-calldata"><a class="header" href="#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a></h3>
+<h4 id="l1-attributes---bedrock-canyon-delta"><a class="header" href="#l1-attributes---bedrock-canyon-delta">L1 Attributes - Bedrock, Canyon, Delta</a></h4>
+<p>The <code>data</code> field of the L1 attributes deposited transaction is an <a href="https://docs.soliditylang.org/en/v0.8.10/abi-spec.html">ABI</a> encoded call to the
+<code>setL1BlockValues()</code> function with correct values associated with the corresponding L1 block
+(cf. <a href="#l1-attributes-predeployed-contract-reference-implementation">reference implementation</a>).</p>
+<h4 id="l1-attributes---ecotone"><a class="header" href="#l1-attributes---ecotone">L1 Attributes - Ecotone</a></h4>
+<p>On the Ecotone activation block, and if Ecotone is not activated at Genesis,
+the L1 Attributes Transaction includes a call to <code>setL1BlockValues()</code>
+because the L1 Attributes transaction precedes the <a href="derivation.html#network-upgrade-automation-transactions">Ecotone Upgrade Transactions</a>,
+meaning that <code>setL1BlockValuesEcotone</code> is not guaranteed to exist yet.</p>
+<p>Every subsequent L1 Attributes transaction should include a call to the <code>setL1BlockValuesEcotone()</code> function.
+The input args are no longer ABI encoded function parameters,
+but are instead packed into 5 32-byte aligned segments (starting after the function selector).
+Each unsigned integer argument is encoded as big-endian using a number of bytes corresponding to the underlying type.
+The overall calldata layout is as follows:</p>
+<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
+<tr><td>{0x440a5e20}</td><td></td><td>0-3</td><td>n/a</td></tr>
+<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
+<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
+<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
+<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
+<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
+<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
+<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
+<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
+<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
+</tbody></table>
+</div>
+<p>Total calldata length MUST be exactly 164 bytes, implying the sixth and final segment is only
+partially filled. This helps to slow database growth as every L2 block includes a L1 Attributes
+deposit transaction.</p>
+<p>In the first L2 block after the Ecotone activation block, the Ecotone L1 attributes are first used.</p>
+<p>The pre-Ecotone values are migrated over 1:1.
+Blocks after the Ecotone activation block contain all pre-Ecotone values 1:1,
+and also set the following new attributes:</p>
+<ul>
+<li>The <code>baseFeeScalar</code> is set to the pre-Ecotone <code>scalar</code> value.</li>
+<li>The <code>blobBaseFeeScalar</code> is set to <code>0</code>.</li>
+<li>The pre-Ecotone <code>overhead</code> attribute is dropped.</li>
+<li>The <code>blobBaseFee</code> is set to the L1 blob base fee of the L1 origin block.
+Or <code>1</code> if the L1 block does not support blobs.
+The <code>1</code> value is derived from the EIP-4844 <code>MIN_BLOB_GASPRICE</code>.</li>
+</ul>
+<h2 id="special-accounts-on-l2"><a class="header" href="#special-accounts-on-l2">Special Accounts on L2</a></h2>
+<p>The L1 attributes deposit transaction involves two special purpose accounts:</p>
+<ol>
+<li>The L1 attributes depositor account</li>
+<li>The L1 attributes predeployed contract</li>
+</ol>
+<h3 id="l1-attributes-depositor-account"><a class="header" href="#l1-attributes-depositor-account">L1 Attributes Depositor Account</a></h3>
+<p>The depositor account is an <a href="../glossary.html#eoa">EOA</a> with no known private key. It has the address
+<code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0001</code>. Its value is returned by the <code>CALLER</code> and <code>ORIGIN</code>
+opcodes during execution of the L1 attributes deposited transaction.</p>
+<h3 id="l1-attributes-predeployed-contract"><a class="header" href="#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a></h3>
+<p>A predeployed contract on L2 at address <code>0x4200000000000000000000000000000000000015</code>, which holds
+certain block variables from the corresponding L1 block in storage, so that they may be accessed
+during the execution of the subsequent deposited transactions.</p>
+<p>The predeploy stores the following values:</p>
+<ul>
+<li>L1 block attributes:
+<ul>
+<li><code>number</code> (<code>uint64</code>)</li>
+<li><code>timestamp</code> (<code>uint64</code>)</li>
+<li><code>basefee</code> (<code>uint256</code>)</li>
+<li><code>hash</code> (<code>bytes32</code>)</li>
+</ul>
+</li>
+<li><code>sequenceNumber</code> (<code>uint64</code>): This equals the L2 block number relative to the start of the epoch,
+i.e. the L2 block distance to the L2 block height that the L1 attributes last changed,
+and reset to 0 at the start of a new epoch.</li>
+<li>System configurables tied to the L1 block, see <a href="system_config.html">System configuration specification</a>:
+<ul>
+<li><code>batcherHash</code> (<code>bytes32</code>): A versioned commitment to the batch-submitter(s) currently operating.</li>
+<li><code>overhead</code> (<code>uint256</code>): The L1 fee overhead to apply to L1 cost computation of transactions in this L2 block.
+The <code>overhead</code> value is dropped as it is no longer used in the
+<a href="exec-engine.html#ecotone-l1-cost-fee-changes-eip-4844-da">Ecotone L1 fee formula</a>.</li>
+<li><code>scalar</code> (<code>uint256</code>): The L1 fee scalar to apply to L1 cost computation of transactions in this L2 block.</li>
+</ul>
+</li>
+<li>With the Ecotone upgrade, the predeploy additionally stores:
+<ul>
+<li><code>blobBaseFee</code> (<code>uint256</code>)</li>
+<li><code>baseFeeScalar</code> (<code>uint32</code>): system configurable to scale the <code>basefee</code> in the Ecotone l1 cost computation</li>
+<li><code>blobBasefeeScalar</code> (<code>uint32</code>): system configurable to scale the <code>blobBaseFee</code> in the Ecotone l1 cost computation</li>
+</ul>
+</li>
+</ul>
+<p>The <code>overhead</code> and <code>scalar</code> values can continue to be accessed after the Ecotone activation block,
+but no longer have any effect on system operation.</p>
+<p>The contract implements an authorization scheme, such that it only accepts state-changing calls from
+the <a href="#l1-attributes-depositor-account">depositor account</a>.</p>
+<p>The contract has the following solidity interface, and can be interacted with according to the
+<a href="https://docs.soliditylang.org/en/v0.8.10/abi-spec.html">contract ABI specification</a>.</p>
+<h4 id="l1-attributes-predeployed-contract-reference-implementation"><a class="header" href="#l1-attributes-predeployed-contract-reference-implementation">L1 Attributes Predeployed Contract: Reference Implementation</a></h4>
+<p>A reference implementation of the L1 Attributes predeploy contract can be found in <a href="https://github.com/ethereum-optimism/optimism/blob/d48b45954c381f75a13e61312da68d84e9b41418/packages/contracts-bedrock/src/L2/L1Block.sol">L1Block.sol</a>.</p>
+<p>After running <code>pnpm build</code> in the <code>packages/contracts-bedrock</code> directory, the bytecode to add to
+the genesis file will be located in the <code>deployedBytecode</code> field of the build artifacts file at
+<code>/packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json</code>.</p>
+<h4 id="ecotone-l1block-upgrade"><a class="header" href="#ecotone-l1block-upgrade">Ecotone L1Block upgrade</a></h4>
+<p>The L1 Attributes Predeployed contract, <code>L1Block.sol</code>, is upgraded as part of the Ecotone upgrade.
+The version is incremented to <code>1.2.0</code>, one new storage slot is introduced, and one existing slot
+begins to store additional data:</p>
+<ul>
+<li><code>blobBaseFee</code> (<code>uint256</code>): The L1 blob base fee.</li>
+<li><code>blobBaseFeeScalar</code> (<code>uint32</code>): The scalar value applied to the L1 blob base fee portion of the L1 cost.</li>
+<li><code>baseFeeScalar</code> (<code>uint32</code>): The scalar value applied to the L1 base fee portion of the L1 cost.</li>
+</ul>
+<p>The function called by the L1 attributes transaction depends on the network upgrade:</p>
+<ul>
+<li>Before the Ecotone activation:
+<ul>
+<li><code>setL1BlockValues</code> is called, following the pre-Ecotone L1 attributes rules.</li>
+</ul>
+</li>
+<li>At the Ecotone activation block:
+<ul>
+<li><code>setL1BlockValues</code> function MUST be called, except if activated at genesis.
+The contract is upgraded later in this block, to support <code>setL1BlockValuesEcotone</code>.</li>
+</ul>
+</li>
+<li>After the Ecotone activation:
+<ul>
+<li><code>setL1BlockValues</code> function is deprecated and MUST never be called.</li>
+<li><code>setL1BlockValuesEcotone</code> MUST be called with the new Ecotone attributes.</li>
+</ul>
+</li>
+</ul>
+<p><code>setL1BlockValuesEcotone</code> uses a tightly packed encoding for its parameters, which is described in
+<a href="#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a>.</p>
+<h2 id="user-deposited-transactions"><a class="header" href="#user-deposited-transactions">User-Deposited Transactions</a></h2>
+<p><a href="../glossary.html#user-deposited-transaction">User-deposited transactions</a> are <a href="#the-deposited-transaction-type">deposited transactions</a>
+generated by the <a href="../glossary.html#L2-chain-derivation">L2 Chain Derivation</a> process. The content of each user-deposited
+transaction are determined by the corresponding <code>TransactionDeposited</code> event emitted by the
+<a href="#deposit-contract">deposit contract</a> on L1.</p>
+<ol>
+<li><code>from</code> is unchanged from the emitted value (though it may
+have been transformed to an alias in <code>OptimismPortal</code>, the deposit feed contract).</li>
+<li><code>to</code> is any 20-byte address (including the zero address)
+<ul>
+<li>In case of a contract creation (cf. <code>isCreation</code>), this address is set to <code>null</code>.</li>
+</ul>
+</li>
+<li><code>mint</code> is set to the emitted value.</li>
+<li><code>value</code> is set to the emitted value.</li>
+<li><code>gaslimit</code> is unchanged from the emitted value. It must be at least 21000.</li>
+<li><code>isCreation</code> is set to <code>true</code> if the transaction is a contract creation, <code>false</code> otherwise.</li>
+<li><code>data</code> is unchanged from the emitted value. Depending on the value of <code>isCreation</code> it is handled
+as either calldata or contract initialization code.</li>
+<li><code>isSystemTx</code> is set by the rollup node for certain transactions that have unmetered execution.
+It is <code>false</code> for user deposited transactions</li>
+</ol>
+<h3 id="deposit-contract"><a class="header" href="#deposit-contract">Deposit Contract</a></h3>
+<p>The deposit contract is deployed to L1. Deposited transactions are derived from the values in
+the <code>TransactionDeposited</code> event(s) emitted by the deposit contract.</p>
+<p>The deposit contract is responsible for maintaining the <a href="guaranteed-gas-market.html">guaranteed gas market</a>,
+charging deposits for gas to be used on L2, and ensuring that the total amount of guaranteed
+gas in a single L1 block does not exceed the L2 block gas limit.</p>
+<p>The deposit contract handles two special cases:</p>
+<ol>
+<li>A contract creation deposit, which is indicated by setting the <code>isCreation</code> flag to <code>true</code>.
+In the event that the <code>to</code> address is non-zero, the contract will revert.</li>
+<li>A call from a contract account, in which case the <code>from</code> value is transformed to its L2
+<a href="#address-aliasing">alias</a>.</li>
+</ol>
+<h4 id="address-aliasing"><a class="header" href="#address-aliasing">Address Aliasing</a></h4>
+<p>If the caller is a contract, the address will be transformed by adding
+<code>0x1111000000000000000000000000000000001111</code> to it. The math is <code>unchecked</code> and done on a
+Solidity <code>uint160</code> so the value will overflow. This prevents attacks in which a
+contract on L1 has the same address as a contract on L2 but doesn't have the same code. We can safely ignore this
+for EOAs because they're guaranteed to have the same &quot;code&quot; (i.e. no code at all). This also makes
+it possible for users to interact with contracts on L2 even when the Sequencer is down.</p>
+<h4 id="deposit-contract-implementation-optimism-portal"><a class="header" href="#deposit-contract-implementation-optimism-portal">Deposit Contract Implementation: Optimism Portal</a></h4>
+<p>A reference implementation of the deposit contract can be found in <a href="https://github.com/ethereum-optimism/optimism/blob/d48b45954c381f75a13e61312da68d84e9b41418/packages/contracts-bedrock/src/L1/OptimismPortal.sol">OptimismPortal.sol</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/messengers.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/withdrawals.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/messengers.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/withdrawals.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Rollup Node - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html" class="active"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="rollup-node-specification"><a class="header" href="#rollup-node-specification">Rollup Node Specification</a></h1>
+<!-- All glossary references in this file. -->
+<p>The <a href="../glossary.html#rollup-node">rollup node</a> is the component responsible for <a href="../glossary.html#L2-chain-derivation">deriving the L2 chain</a> from L1 blocks
+(and their associated <a href="../glossary.html#receipt">receipts</a>).</p>
+<p>The part of the rollup node that derives the L2 chain is called the <a href="../glossary.html#rollup-driver">rollup driver</a>. This document is
+currently only concerned with the specification of the rollup driver.</p>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#driver">Driver</a>
+<ul>
+<li><a href="#derivation">Derivation</a></li>
+</ul>
+</li>
+<li><a href="#l2-output-rpc-method">L2 Output RPC method</a>
+<ul>
+<li><a href="#structures">Structures</a>
+<ul>
+<li><a href="#blockid">BlockID</a></li>
+<li><a href="#l1blockref">L1BlockRef</a></li>
+<li><a href="#l2blockref">L2BlockRef</a></li>
+<li><a href="#syncstatus">SyncStatus</a></li>
+</ul>
+</li>
+<li><a href="#output-method-api">Output Method API</a></li>
+</ul>
+</li>
+<li><a href="#protocol-version-tracking">Protocol Version tracking</a></li>
+</ul>
+<h2 id="driver"><a class="header" href="#driver">Driver</a></h2>
+<p>The task of the <a href="../glossary.html#rollup-driver">driver</a> in the <a href="../glossary.html#rollup-node">rollup node</a>
+is to manage the <a href="../glossary.html#L2-chain-derivation">derivation</a> process:</p>
+<ul>
+<li>Keep track of L1 head block</li>
+<li>Keep track of the L2 chain sync progress</li>
+<li>Iterate over the derivation steps as new inputs become available</li>
+</ul>
+<h3 id="derivation"><a class="header" href="#derivation">Derivation</a></h3>
+<p>This process happens in three steps:</p>
+<ol>
+<li>Select inputs from the L1 chain, on top of the last L2 block:
+a list of blocks, with transactions and associated data and receipts.</li>
+<li>Read L1 information, deposits, and sequencing batches in order to generate <a href="../glossary.html#payload-attributes">payload attributes</a>
+(essentially <a href="../glossary.html#block">a block without output properties</a>).</li>
+<li>Pass the payload attributes to the <a href="../glossary.html#execution-engine">execution engine</a>, so that the L2 block (including <a href="../glossary.html#block">output block
+properties</a>) may be computed.</li>
+</ol>
+<p>While this process is conceptually a pure function from the L1 chain to the L2 chain, it is in practice incremental. The
+L2 chain is extended whenever new L1 blocks are added to the L1 chain. Similarly, the L2 chain re-organizes whenever the
+L1 chain <a href="../glossary.html#re-organization">re-organizes</a>.</p>
+<p>For a complete specification of the L2 block derivation, refer to the <a href="derivation.html">L2 block derivation document</a>.</p>
+<h2 id="l2-output-rpc-method"><a class="header" href="#l2-output-rpc-method">L2 Output RPC method</a></h2>
+<p>The Rollup node has its own RPC method, <code>optimism_outputAtBlock</code> which returns a 32
+byte hash corresponding to the <a href="proposals.html#l2-output-commitment-construction">L2 output root</a>.</p>
+<h3 id="structures"><a class="header" href="#structures">Structures</a></h3>
+<p>These define the types used by rollup node API methods.
+The types defined here are extended from the <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#structures">engine API specs</a>.</p>
+<h4 id="blockid"><a class="header" href="#blockid">BlockID</a></h4>
+<ul>
+<li><code>hash</code>: <code>DATA</code>, 32 Bytes</li>
+<li><code>number</code>: <code>QUANTITY</code>, 64 Bits</li>
+</ul>
+<h4 id="l1blockref"><a class="header" href="#l1blockref">L1BlockRef</a></h4>
+<ul>
+<li><code>hash</code>: <code>DATA</code>, 32 Bytes</li>
+<li><code>number</code>: <code>QUANTITY</code>, 64 Bits</li>
+<li><code>parentHash</code>: <code>DATA</code>, 32 Bytes</li>
+<li><code>timestamp</code>: <code>QUANTITY</code>, 64 Bits</li>
+</ul>
+<h4 id="l2blockref"><a class="header" href="#l2blockref">L2BlockRef</a></h4>
+<ul>
+<li><code>hash</code>: <code>DATA</code>, 32 Bytes</li>
+<li><code>number</code>: <code>QUANTITY</code>, 64 Bits</li>
+<li><code>parentHash</code>: <code>DATA</code>, 32 Bytes</li>
+<li><code>timestamp</code>: <code>QUANTITY</code>, 64 Bits</li>
+<li><code>l1origin</code>: <code>BlockID</code></li>
+<li><code>sequenceNumber</code>: <code>QUANTITY</code>, 64 Bits - distance to first block of epoch</li>
+</ul>
+<h4 id="syncstatus"><a class="header" href="#syncstatus">SyncStatus</a></h4>
+<p>Represents a snapshot of the rollup driver.</p>
+<ul>
+<li><code>current_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
+<li><code>current_l1_finalized</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
+<li><code>head_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
+<li><code>safe_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
+<li><code>finalized_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
+<li><code>unsafe_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
+<li><code>safe_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
+<li><code>finalized_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
+<li><code>pending_safe_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
+<li><code>queued_unsafe_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
+</ul>
+<h3 id="output-method-api"><a class="header" href="#output-method-api">Output Method API</a></h3>
+<p>The input and return types here are as defined by the <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#structures">engine API specs</a>.</p>
+<ul>
+<li>method: <code>optimism_outputAtBlock</code></li>
+<li>params:
+<ol>
+<li><code>blockNumber</code>: <code>QUANTITY</code>, 64 bits - L2 integer block number.</li>
+</ol>
+</li>
+<li>returns:
+<ol>
+<li><code>version</code>: <code>DATA</code>, 32 Bytes - the output root version number, beginning with 0.</li>
+<li><code>outputRoot</code>: <code>DATA</code>, 32 Bytes - the output root.</li>
+<li><code>blockRef</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
+<li><code>withdrawalStorageRoot</code>: 32 bytes - storage root of the <code>L2toL1MessagePasser</code> contract.</li>
+<li><code>stateRoot</code>: <code>DATA</code>: 32 bytes - the state root.</li>
+<li><code>syncStatus</code>: <code>Object</code> - instance of <a href="#syncstatus"><code>SyncStatus</code></a>.</li>
+</ol>
+</li>
+</ul>
+<h2 id="protocol-version-tracking"><a class="header" href="#protocol-version-tracking">Protocol Version tracking</a></h2>
+<p>The rollup-node should monitor the recommended and required protocol version by monitoring
+the Protocol Version contract on L1, as specified in the <a href="superchain-upgrades.html#superchain-version-signaling">Superchain Version Signaling specifications</a>.</p>
+<p>This can be implemented through polling in the <a href="#driver">Driver</a> loop.
+After polling the Protocol Version, the rollup node SHOULD communicate it with the execution-engine through an
+<a href="exec-engine.html#enginesignalsuperchainv1"><code>engine_signalSuperchainV1</code></a> call.</p>
+<p>The rollup node SHOULD warn the user when the recommended version is newer than
+the current version supported by the rollup node.</p>
+<p>The rollup node SHOULD take safety precautions if it does not meet the required protocol version.
+This may include halting the engine, with consent of the rollup node operator.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/exec-engine.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/rollup-node-p2p.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/exec-engine.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/rollup-node-p2p.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

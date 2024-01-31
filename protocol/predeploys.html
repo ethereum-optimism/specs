@@ -1,0 +1,515 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Predeploys - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html" class="active"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#legacymessagepasser">LegacyMessagePasser</a></li>
+<li><a href="#l2tol1messagepasser">L2ToL1MessagePasser</a></li>
+<li><a href="#deployerwhitelist">DeployerWhitelist</a></li>
+<li><a href="#legacyerc20eth">LegacyERC20ETH</a></li>
+<li><a href="#weth9">WETH9</a></li>
+<li><a href="#l2crossdomainmessenger">L2CrossDomainMessenger</a></li>
+<li><a href="#l2standardbridge">L2StandardBridge</a></li>
+<li><a href="#l1blocknumber">L1BlockNumber</a></li>
+<li><a href="#gaspriceoracle">GasPriceOracle</a></li>
+<li><a href="#l1block">L1Block</a></li>
+<li><a href="#proxyadmin">ProxyAdmin</a></li>
+<li><a href="#sequencerfeevault">SequencerFeeVault</a></li>
+<li><a href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a></li>
+<li><a href="#optimismmintableerc721factory">OptimismMintableERC721Factory</a></li>
+<li><a href="#basefeevault">BaseFeeVault</a></li>
+<li><a href="#l1feevault">L1FeeVault</a></li>
+<li><a href="#schemaregistry">SchemaRegistry</a></li>
+<li><a href="#eas">EAS</a></li>
+<li><a href="#create2deployer">create2Deployer</a></li>
+</ul>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p><a href="../glossary.html#predeployed-contract-predeploy">Predeployed smart contracts</a> exist on Optimism
+at predetermined addresses in the genesis state. They are similar to precompiles but instead run
+directly in the EVM instead of running native code outside of the EVM.</p>
+<p>Predeploys are used instead of precompiles to make it easier for multiclient
+implementations as well as allowing for more integration with hardhat/foundry
+network forking.</p>
+<p>Predeploy addresses exist in 1 byte namespace <code>0x42000000000000000000000000000000000000xx</code>.
+Proxies are set at each possible predeploy address except for the
+<code>GovernanceToken</code> and the <code>ProxyAdmin</code>.</p>
+<p>The <code>LegacyERC20ETH</code> predeploy lives at a special address <code>0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000</code>
+and there is no proxy deployed at that account.</p>
+<p>The following table includes each of the predeploys. The system version
+indicates when the predeploy was introduced. The possible values are <code>Legacy</code>
+or <code>Bedrock</code> or <code>Canyon</code>. Deprecated contracts should not be used.</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Address</th><th>Introduced</th><th>Deprecated</th><th>Proxied</th></tr></thead><tbody>
+<tr><td>LegacyMessagePasser</td><td>0x4200000000000000000000000000000000000000</td><td>Legacy</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>DeployerWhitelist</td><td>0x4200000000000000000000000000000000000002</td><td>Legacy</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>LegacyERC20ETH</td><td>0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000</td><td>Legacy</td><td>Yes</td><td>No</td></tr>
+<tr><td>WETH9</td><td>0x4200000000000000000000000000000000000006</td><td>Legacy</td><td>No</td><td>No</td></tr>
+<tr><td>L2CrossDomainMessenger</td><td>0x4200000000000000000000000000000000000007</td><td>Legacy</td><td>No</td><td>Yes</td></tr>
+<tr><td>L2StandardBridge</td><td>0x4200000000000000000000000000000000000010</td><td>Legacy</td><td>No</td><td>Yes</td></tr>
+<tr><td>SequencerFeeVault</td><td>0x4200000000000000000000000000000000000011</td><td>Legacy</td><td>No</td><td>Yes</td></tr>
+<tr><td>OptimismMintableERC20Factory</td><td>0x4200000000000000000000000000000000000012</td><td>Legacy</td><td>No</td><td>Yes</td></tr>
+<tr><td>L1BlockNumber</td><td>0x4200000000000000000000000000000000000013</td><td>Legacy</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>GasPriceOracle</td><td>0x420000000000000000000000000000000000000F</td><td>Legacy</td><td>No</td><td>Yes</td></tr>
+<tr><td>GovernanceToken</td><td>0x4200000000000000000000000000000000000042</td><td>Legacy</td><td>No</td><td>No</td></tr>
+<tr><td>L1Block</td><td>0x4200000000000000000000000000000000000015</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>L2ToL1MessagePasser</td><td>0x4200000000000000000000000000000000000016</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>L2ERC721Bridge</td><td>0x4200000000000000000000000000000000000014</td><td>Legacy</td><td>No</td><td>Yes</td></tr>
+<tr><td>OptimismMintableERC721Factory</td><td>0x4200000000000000000000000000000000000017</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>ProxyAdmin</td><td>0x4200000000000000000000000000000000000018</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>BaseFeeVault</td><td>0x4200000000000000000000000000000000000019</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>L1FeeVault</td><td>0x420000000000000000000000000000000000001a</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>SchemaRegistry</td><td>0x4200000000000000000000000000000000000020</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>EAS</td><td>0x4200000000000000000000000000000000000021</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>create2Deployer</td><td>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</td><td>Canyon</td><td>No</td><td>No</td></tr>
+</tbody></table>
+</div>
+<h2 id="legacymessagepasser"><a class="header" href="#legacymessagepasser">LegacyMessagePasser</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/legacy/LegacyMessagePasser.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000000</code></p>
+<p>The <code>LegacyMessagePasser</code> contract stores commitments to withdrawal
+transactions before the Bedrock upgrade. A merkle proof to a particular
+storage slot that commits to the withdrawal transaction is used as part
+of the withdrawing transaction on L1. The expected account that includes
+the storage slot is hardcoded into the L1 logic. After the bedrock upgrade,
+the <code>L2ToL1MessagePasser</code> is used instead. Finalizing withdrawals from this
+contract will no longer be supported after the Bedrock and is only left
+to allow for alternative bridges that may depend on it. This contract does
+not forward calls to the <code>L2ToL1MessagePasser</code> and calling it is considered
+a no-op in context of doing withdrawals through the <code>CrossDomainMessenger</code>
+system.</p>
+<p>Any pending withdrawals that have not been finalized are migrated to the
+<code>L2ToL1MessagePasser</code> as part of the upgrade so that they can still be
+finalized.</p>
+<h2 id="l2tol1messagepasser"><a class="header" href="#l2tol1messagepasser">L2ToL1MessagePasser</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L2ToL1MessagePasser.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000016</code></p>
+<p>The <code>L2ToL1MessagePasser</code> stores commitments to withdrawal transactions.
+When a user is submitting the withdrawing transaction on L1, they provide a
+proof that the transaction that they withdrew on L2 is in the <code>sentMessages</code>
+mapping of this contract.</p>
+<p>Any withdrawn ETH accumulates into this contract on L2 and can be
+permissionlessly removed from the L2 supply by calling the <code>burn()</code> function.</p>
+<h2 id="deployerwhitelist"><a class="header" href="#deployerwhitelist">DeployerWhitelist</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/legacy/DeployerWhitelist.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000002</code></p>
+<p>The <code>DeployerWhitelist</code> is a predeploy that was used to provide additional safety
+during the initial phases of Optimism.
+It previously defined the accounts that are allowed to deploy contracts to the network.</p>
+<p>Arbitrary contract deployment was subsequently enabled and it is not possible to turn
+off. In the legacy system, this contract was hooked into <code>CREATE</code> and
+<code>CREATE2</code> to ensure that the deployer was allowlisted.</p>
+<p>In the Bedrock system, this contract will no longer be used as part of the
+<code>CREATE</code> codepath.</p>
+<p>This contract is deprecated and its usage should be avoided.</p>
+<h2 id="legacyerc20eth"><a class="header" href="#legacyerc20eth">LegacyERC20ETH</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/legacy/LegacyERC20ETH.sol">Implementation</a></p>
+<p>Address: <code>0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000</code></p>
+<p>The <code>LegacyERC20ETH</code> predeploy represents all ether in the system before the
+Bedrock upgrade. All ETH was represented as an ERC20 token and users could opt
+into the ERC20 interface or the native ETH interface.</p>
+<p>The upgrade to Bedrock migrates all ether out of this contract and moves it to
+its native representation. All of the stateful methods in this contract will
+revert after the Bedrock upgrade.</p>
+<p>This contract is deprecated and its usage should be avoided.</p>
+<h2 id="weth9"><a class="header" href="#weth9">WETH9</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/vendor/WETH9.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000006</code></p>
+<p><code>WETH9</code> is the standard implementation of Wrapped Ether on Optimism. It is a
+commonly used contract and is placed as a predeploy so that it is at a
+deterministic address across Optimism based networks.</p>
+<h2 id="l2crossdomainmessenger"><a class="header" href="#l2crossdomainmessenger">L2CrossDomainMessenger</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L2CrossDomainMessenger.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000007</code></p>
+<p>The <code>L2CrossDomainMessenger</code> gives a higher level API for sending cross domain
+messages compared to directly calling the <code>L2ToL1MessagePasser</code>.
+It maintains a mapping of L1 messages that have been relayed to L2
+to prevent replay attacks and also allows for replayability if the L1 to L2
+transaction reverts on L2.</p>
+<p>Any calls to the <code>L1CrossDomainMessenger</code> on L1 are serialized such that they
+go through the <code>L2CrossDomainMessenger</code> on L2.</p>
+<p>The <code>relayMessage</code> function executes a transaction from the remote domain while
+the <code>sendMessage</code> function sends a transaction to be executed on the remote
+domain through the remote domain's <code>relayMessage</code> function.</p>
+<h2 id="l2standardbridge"><a class="header" href="#l2standardbridge">L2StandardBridge</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L2StandardBridge.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000010</code></p>
+<p>The <code>L2StandardBridge</code> is a higher level API built on top of the
+<code>L2CrossDomainMessenger</code> that gives a standard interface for sending ETH or
+ERC20 tokens across domains.</p>
+<p>To deposit a token from L1 to L2, the <code>L1StandardBridge</code> locks the token and
+sends a cross domain message to the <code>L2StandardBridge</code> which then mints the
+token to the specified account.</p>
+<p>To withdraw a token from L2 to L1, the user will burn the token on L2 and the
+<code>L2StandardBridge</code> will send a message to the <code>L1StandardBridge</code> which will
+unlock the underlying token and transfer it to the specified account.</p>
+<p>The <code>OptimismMintableERC20Factory</code> can be used to create an ERC20 token contract
+on a remote domain that maps to an ERC20 token contract on the local domain
+where tokens can be deposited to the remote domain. It deploys an
+<code>OptimismMintableERC20</code> which has the interface that works with the
+<code>StandardBridge</code>.</p>
+<p>This contract can also be deployed on L1 to allow for L2 native tokens to be
+withdrawn to L1.</p>
+<h2 id="l1blocknumber"><a class="header" href="#l1blocknumber">L1BlockNumber</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/legacy/L1BlockNumber.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000013</code></p>
+<p>The <code>L1BlockNumber</code> returns the last known L1 block number. This contract was
+introduced in the legacy system and should be backwards compatible by calling
+out to the <code>L1Block</code> contract under the hood.</p>
+<p>It is recommended to use the <code>L1Block</code> contract for getting information about
+L1 on L2.</p>
+<h2 id="gaspriceoracle"><a class="header" href="#gaspriceoracle">GasPriceOracle</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/GasPriceOracle.sol">Implementation</a></p>
+<p>Address: <code>0x420000000000000000000000000000000000000F</code></p>
+<p>In the legacy system, the <code>GasPriceOracle</code> was a permissioned contract
+that was pushed the L1 base fee and the L2 gas price by an offchain actor.
+The offchain actor observes the L1 blockheaders to get the
+L1 base fee as well as the gas usage on L2 to compute what the L2 gas price
+should be based on a congestion control algorithm.</p>
+<p>After Bedrock, the <code>GasPriceOracle</code> is no longer a permissioned contract
+and only exists to preserve the API for offchain gas estimation. The
+function <code>getL1Fee(bytes)</code> accepts an unsigned RLP transaction and will return
+the L1 portion of the fee. This fee pays for using L1 as a data availability
+layer and should be added to the L2 portion of the fee, which pays for
+execution, to compute the total transaction fee.</p>
+<p>The values used to compute the L1 portion of the fee prior to the Ecotone upgrade are:</p>
+<ul>
+<li>scalar</li>
+<li>overhead</li>
+<li>decimals</li>
+</ul>
+<p>After the Bedrock upgrade, these values are instead managed by the
+<code>SystemConfig</code> contract on L1. The <code>scalar</code> and <code>overhead</code> values
+are sent to the <code>L1Block</code> contract each block and the <code>decimals</code> value
+has been hardcoded to 6.</p>
+<p>Following the Ecotone upgrade, the values used for L1 fee computation are:</p>
+<ul>
+<li>l1BaseFeeScalar</li>
+<li>l1BlobBaseFeeScalar</li>
+<li>decimals</li>
+</ul>
+<p>These values are managed by the <code>SystemConfig</code> contract on the L1. The<code>decimals</code> remains hardcoded
+to 6, and the old <code>scalar</code> and <code>overhead</code> values are ignored.</p>
+<h2 id="l1block"><a class="header" href="#l1block">L1Block</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L1Block.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000015</code></p>
+<p>The <a href="../glossary.html#l1-attributes-predeployed-contract">L1Block</a> was introduced in Bedrock and is responsible for
+maintaining L1 context in L2. This allows for L1 state to be accessed in L2.</p>
+<h2 id="proxyadmin"><a class="header" href="#proxyadmin">ProxyAdmin</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/ProxyAdmin.sol">ProxyAdmin</a>
+Address: <code>0x4200000000000000000000000000000000000018</code></p>
+<p>The <code>ProxyAdmin</code> is the owner of all of the proxy contracts set at the
+predeploys. It is itself behind a proxy. The owner of the <code>ProxyAdmin</code> will
+have the ability to upgrade any of the other predeploy contracts.</p>
+<h2 id="sequencerfeevault"><a class="header" href="#sequencerfeevault">SequencerFeeVault</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/SequencerFeeVault.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000011</code></p>
+<p>The <code>SequencerFeeVault</code> accumulates any transaction priority fee and is the value of
+<code>block.coinbase</code>.
+When enough fees accumulate in this account, they can be withdrawn to an immutable L1 address.</p>
+<p>To change the L1 address that fees are withdrawn to, the contract must be
+upgraded by changing its proxy's implementation key.</p>
+<h2 id="optimismmintableerc20factory"><a class="header" href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/OptimismMintableERC20Factory.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000012</code></p>
+<p>The <code>OptimismMintableERC20Factory</code> is responsible for creating ERC20 contracts on L2 that can be
+used for depositing native L1 tokens into. These ERC20 contracts can be created permisionlessly
+and implement the interface required by the <code>StandardBridge</code> to just work with deposits and withdrawals.</p>
+<p>Each ERC20 contract that is created by the <code>OptimismMintableERC20Factory</code> allows for the <code>L2StandardBridge</code> to mint
+and burn tokens, depending on if the user is depositing from L1 to L2 or withdrawing from L2 to L1.</p>
+<h2 id="optimismmintableerc721factory"><a class="header" href="#optimismmintableerc721factory">OptimismMintableERC721Factory</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/OptimismMintableERC721Factory.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000017</code></p>
+<p>The <code>OptimismMintableERC721Factory</code> is responsible for creating ERC721 contracts on L2 that can be used for
+depositing native L1 NFTs into.</p>
+<h2 id="basefeevault"><a class="header" href="#basefeevault">BaseFeeVault</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/BaseFeeVault.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000019</code></p>
+<p>The <code>BaseFeeVault</code> predeploy receives the base fees on L2. The base fee is not
+burnt on L2 like it is on L1. Once the contract has received a certain amount
+of fees, the ETH can be withdrawn to an immutable address on
+L1.</p>
+<h2 id="l1feevault"><a class="header" href="#l1feevault">L1FeeVault</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L1FeeVault.sol">Implementation</a></p>
+<p>Address: <code>0x420000000000000000000000000000000000001a</code></p>
+<p>The <code>L1FeeVault</code> predeploy receives the L1 portion of the transaction fees.
+Once the contract has received a certain amount of fees, the ETH can be
+withdrawn to an immutable address on L1.</p>
+<h2 id="schemaregistry"><a class="header" href="#schemaregistry">SchemaRegistry</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/EAS/SchemaRegistry.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000020</code></p>
+<p>The <code>SchemaRegistry</code> predeploy implements the global attestation schemas for the <code>Ethereum Attestation Service</code>
+protocol.</p>
+<h2 id="eas"><a class="header" href="#eas">EAS</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/EAS/EAS.sol">Implementation</a></p>
+<p>Address: <code>0x4200000000000000000000000000000000000021</code></p>
+<p>The <code>EAS</code> predeploy implements the <code>Ethereum Attestation Service</code> protocol.</p>
+<h2 id="create2deployer"><a class="header" href="#create2deployer">create2Deployer</a></h2>
+<p><a href="https://github.com/mdehoog/create2deployer/blob/69b9a8e112b15f9257ce8c62b70a09914e7be29c/contracts/Create2Deployer.sol">Implementation</a></p>
+<p>The create2Deployer is a nice Solidity wrapper around the CREATE2 opcode. It provides the following ABI.</p>
+<pre><code class="language-solidity">    /**
+     * @dev Deploys a contract using `CREATE2`. The address where the
+     * contract will be deployed can be known in advance via {computeAddress}.
+     *
+     * The bytecode for a contract can be obtained from Solidity with
+     * `type(contractName).creationCode`.
+     *
+     * Requirements:
+     * - `bytecode` must not be empty.
+     * - `salt` must have not been used for `bytecode` already.
+     * - the factory must have a balance of at least `value`.
+     * - if `value` is non-zero, `bytecode` must have a `payable` constructor.
+     */
+    function deploy(uint256 value, bytes32 salt, bytes memory code) public;
+    /**
+     * @dev Deployment of the {ERC1820Implementer}.
+     * Further information: https://eips.ethereum.org/EIPS/eip-1820
+     */
+    function deployERC1820Implementer(uint256 value, bytes32 salt);
+    /**
+     * @dev Returns the address where a contract will be stored if deployed via {deploy}.
+     * Any change in the `bytecodeHash` or `salt` will result in a new destination address.
+     */
+    function computeAddress(bytes32 salt, bytes32 codeHash) public view returns (address);
+    /**
+     * @dev Returns the address where a contract will be stored if deployed via {deploy} from a
+     * contract located at `deployer`. If `deployer` is this contract's address, returns the
+     * same value as {computeAddress}.
+     */
+    function computeAddressWithDeployer(
+        bytes32 salt,
+        bytes32 codeHash,
+        address deployer
+    ) public pure returns (address);
+</code></pre>
+<p>Address: <code>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</code></p>
+<p>When Canyon activates, the contract code at <code>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</code> is set to
+<code>0x6080604052600436106100435760003560e01c8063076c37b21461004f578063481286e61461007157806356299481146100ba57806366cfa057146100da57600080fd5b3661004a57005b600080fd5b34801561005b57600080fd5b5061006f61006a366004610327565b6100fa565b005b34801561007d57600080fd5b5061009161008c366004610327565b61014a565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b3480156100c657600080fd5b506100916100d5366004610349565b61015d565b3480156100e657600080fd5b5061006f6100f53660046103ca565b610172565b61014582826040518060200161010f9061031a565b7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe082820381018352601f90910116604052610183565b505050565b600061015683836102e7565b9392505050565b600061016a8484846102f0565b949350505050565b61017d838383610183565b50505050565b6000834710156101f4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f437265617465323a20696e73756666696369656e742062616c616e636500000060448201526064015b60405180910390fd5b815160000361025f576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f437265617465323a2062797465636f6465206c656e677468206973207a65726f60448201526064016101eb565b8282516020840186f5905073ffffffffffffffffffffffffffffffffffffffff8116610156576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601960248201527f437265617465323a204661696c6564206f6e206465706c6f790000000000000060448201526064016101eb565b60006101568383305b6000604051836040820152846020820152828152600b8101905060ff815360559020949350505050565b61014e806104ad83390190565b6000806040838503121561033a57600080fd5b50508035926020909101359150565b60008060006060848603121561035e57600080fd5b8335925060208401359150604084013573ffffffffffffffffffffffffffffffffffffffff8116811461039057600080fd5b809150509250925092565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6000806000606084860312156103df57600080fd5b8335925060208401359150604084013567ffffffffffffffff8082111561040557600080fd5b818601915086601f83011261041957600080fd5b81358181111561042b5761042b61039b565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156104715761047161039b565b8160405282815289602084870101111561048a57600080fd5b826020860160208301376000602084830101528095505050505050925092509256fe608060405234801561001057600080fd5b5061012e806100206000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063249cb3fa14602d575b600080fd5b603c603836600460b1565b604e565b60405190815260200160405180910390f35b60008281526020818152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915281205460ff16608857600060aa565b7fa2ef4600d742022d532d4747cb3547474667d6f13804902513b2ec01c848f4b45b9392505050565b6000806040838503121560c357600080fd5b82359150602083013573ffffffffffffffffffffffffffffffffffffffff8116811460ed57600080fd5b80915050925092905056fea26469706673582212205ffd4e6cede7d06a5daf93d48d0541fc68189eeb16608c1999a82063b666eb1164736f6c63430008130033a2646970667358221220fdc4a0fe96e3b21c108ca155438d37c9143fb01278a3c1d274948bad89c564ba64736f6c63430008130033</code>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/safe-liveness-checking.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/preinstalls.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/safe-liveness-checking.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/preinstalls.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

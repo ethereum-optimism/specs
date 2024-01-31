@@ -1,0 +1,439 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Withdrawals - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html" class="active"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="withdrawals"><a class="header" href="#withdrawals">Withdrawals</a></h1>
+<!-- All glossary references in this file. -->
+<p><a href="../glossary.html#withdrawal">Withdrawals</a> are cross domain transactions which are initiated on L2, and finalized by a transaction
+executed on L1. Notably, withdrawals may be used by an L2 account to call an L1 contract, or to transfer ETH from
+an L2 account to an L1 account.</p>
+<p><strong>Vocabulary note</strong>: <em>withdrawal</em> can refer to the transaction at various stages of the process, but we introduce
+more specific terms to differentiate:</p>
+<ul>
+<li>A <em>withdrawal initiating transaction</em> refers specifically to a transaction on L2 sent to the Withdrawals predeploy.</li>
+<li>A <em>withdrawal proving transaction</em> refers specifically to an L1 transaction
+which proves the withdrawal is correct (that it has been included in a merkle
+tree whose root is available on L1).</li>
+<li>A <em>withdrawal finalizing transaction</em> refers specifically to an L1 transaction which finalizes and relays the
+withdrawal.</li>
+</ul>
+<p>Withdrawals are initiated on L2 via a call to the Message Passer predeploy contract, which records the important
+properties of the message in its storage.
+Withdrawals are proven on L1 via a call to the <code>OptimismPortal</code>, which proves the inclusion of this withdrawal message.
+Withdrawals are finalized on L1 via a call to the <code>OptimismPortal</code> contract,
+which verifies that the fault challenge period has passed since the withdrawal message has been proved.</p>
+<p>In this way, withdrawals are different from <a href="../glossary.html#deposits">deposits</a> which make use of a special transaction type in the
+<a href="../glossary.html#execution-engine">execution engine</a> client. Rather, withdrawals transaction must use smart contracts on L1 for
+finalization.</p>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#withdrawal-flow">Withdrawal Flow</a>
+<ul>
+<li><a href="#on-l2">On L2</a></li>
+<li><a href="#on-l1">On L1</a></li>
+</ul>
+</li>
+<li><a href="#the-l2tol1messagepasser-contract">The L2ToL1MessagePasser Contract</a>
+<ul>
+<li><a href="#addresses-are-not-aliased-on-withdrawals">Addresses are not Aliased on Withdrawals</a></li>
+</ul>
+</li>
+<li><a href="#the-optimism-portal-contract">The Optimism Portal Contract</a></li>
+<li><a href="#withdrawal-verification-and-finalization">Withdrawal Verification and Finalization</a></li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#key-properties-of-withdrawal-verification">Key Properties of Withdrawal Verification</a></li>
+<li><a href="#handling-successfully-verified-messages-that-fail-when-relayed">Handling Successfully Verified Messages That Fail When Relayed</a></li>
+<li><a href="#optimismportal-can-send-arbitrary-messages-on-l1">OptimismPortal can send arbitrary messages on L1</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="withdrawal-flow"><a class="header" href="#withdrawal-flow">Withdrawal Flow</a></h2>
+<p>We first describe the end to end flow of initiating and finalizing a withdrawal:</p>
+<h3 id="on-l2"><a class="header" href="#on-l2">On L2</a></h3>
+<p>An L2 account sends a withdrawal message (and possibly also ETH) to the <code>L2ToL1MessagePasser</code> predeploy contract.
+This is a very simple contract that stores the hash of the withdrawal data.</p>
+<h3 id="on-l1"><a class="header" href="#on-l1">On L1</a></h3>
+<ol>
+<li>A <a href="../glossary.html#withdrawals">relayer</a> submits a withdrawal proving transaction with the required inputs
+to the <code>OptimismPortal</code> contract.
+The relayer is not necessarily the same entity which initiated the withdrawal on L2.
+These inputs include the withdrawal transaction data, inclusion proofs, and a block number. The block number
+must be one for which an L2 output root exists, which commits to the withdrawal as registered on L2.</li>
+<li>The <code>OptimismPortal</code> contract retrieves the output root for the given block number from the <code>L2OutputOracle</code>'s
+<code>getL2Output()</code> function, and performs the remainder of the verification process internally.</li>
+<li>If proof verification fails, the call reverts. Otherwise the hash is recorded to prevent it from being re-proven.
+Note that the withdrawal can be proven more than once if the corresponding output root changes.</li>
+<li>After the withdrawal is proven, it enters a 7 day challenge period, allowing time for other network participants
+to challenge the integrity of the corresponding output root.</li>
+<li>Once the challenge period has passed, a relayer submits a withdrawal finalizing transaction to the
+<code>OptimismPortal</code> contract.
+The relayer doesn't need to be the same entity that initiated the withdrawal on L2.</li>
+<li>The <code>OptimismPortal</code> contract receives the withdrawal transaction data and verifies that the withdrawal has
+both been proven and passed the challenge period.</li>
+<li>If the requirements are not met, the call reverts. Otherwise the call is forwarded, and the hash is recorded to
+prevent it from being replayed.</li>
+</ol>
+<h2 id="the-l2tol1messagepasser-contract"><a class="header" href="#the-l2tol1messagepasser-contract">The L2ToL1MessagePasser Contract</a></h2>
+<p>A withdrawal is initiated by calling the L2ToL1MessagePasser contract's <code>initiateWithdrawal</code> function.
+The L2ToL1MessagePasser is a simple predeploy contract at <code>0x4200000000000000000000000000000000000016</code>
+which stores messages to be withdrawn.</p>
+<pre><code class="language-js">interface L2ToL1MessagePasser {
+    event MessagePassed(
+        uint256 indexed nonce, // this is a global nonce value for all withdrawal messages
+        address indexed sender,
+        address indexed target,
+        uint256 value,
+        uint256 gasLimit,
+        bytes data,
+        bytes32 withdrawalHash
+    );
+
+    event WithdrawerBalanceBurnt(uint256 indexed amount);
+
+    function burn() external;
+
+    function initiateWithdrawal(address _target, uint256 _gasLimit, bytes memory _data) payable external;
+
+    function messageNonce() public view returns (uint256);
+
+    function sentMessages(bytes32) view external returns (bool);
+}
+
+</code></pre>
+<p>The <code>MessagePassed</code> event includes all of the data that is hashed and
+stored in the <code>sentMessages</code> mapping, as well as the hash itself.</p>
+<h3 id="addresses-are-not-aliased-on-withdrawals"><a class="header" href="#addresses-are-not-aliased-on-withdrawals">Addresses are not Aliased on Withdrawals</a></h3>
+<p>When a contract makes a deposit, the sender's address is <a href="deposits.html#address-aliasing">aliased</a>. The same is not true
+of withdrawals, which do not modify the sender's address. The difference is that:</p>
+<ul>
+<li>on L2, the deposit sender's address is returned by the <code>CALLER</code> opcode, meaning a contract cannot easily tell if the
+call originated on L1 or L2, whereas</li>
+<li>on L1, the withdrawal sender's address is accessed by calling the <code>l2Sender()</code> function on the <code>OptimismPortal</code>
+contract.</li>
+</ul>
+<p>Calling <code>l2Sender()</code> removes any ambiguity about which domain the call originated from. Still, developers will need to
+recognize that having the same address does not imply that a contract on L2 will behave the same as a contract on L1.</p>
+<h2 id="the-optimism-portal-contract"><a class="header" href="#the-optimism-portal-contract">The Optimism Portal Contract</a></h2>
+<p>The Optimism Portal serves as both the entry and exit point to the Optimism L2. It is a contract which inherits from
+the <a href="deposits.html#deposit-contract">OptimismPortal</a> contract, and in addition provides the following interface for
+withdrawals:</p>
+<ul>
+<li><a href="https://github.com/ethereum-optimism/optimism/blob/08daf8dbd38c9ffdbd18fc9a211c227606cdb0ad/packages/contracts-bedrock/src/libraries/Types.sol#L62-L69"><code>WithdrawalTransaction</code> type</a></li>
+<li><a href="https://github.com/ethereum-optimism/optimism/blob/08daf8dbd38c9ffdbd18fc9a211c227606cdb0ad/packages/contracts-bedrock/src/libraries/Types.sol#L25-L30"><code>OutputRootProof</code> type</a></li>
+</ul>
+<pre><code class="language-js">interface OptimismPortal {
+
+    event WithdrawalFinalized(bytes32 indexed withdrawalHash, bool success);
+
+
+    function l2Sender() returns(address) external;
+
+    function proveWithdrawalTransaction(
+        Types.WithdrawalTransaction memory _tx,
+        uint256 _l2OutputIndex,
+        Types.OutputRootProof calldata _outputRootProof,
+        bytes[] calldata _withdrawalProof
+    ) external;
+
+    function finalizeWithdrawalTransaction(
+        Types.WithdrawalTransaction memory _tx
+    ) external;
+}
+</code></pre>
+<h2 id="withdrawal-verification-and-finalization"><a class="header" href="#withdrawal-verification-and-finalization">Withdrawal Verification and Finalization</a></h2>
+<p>The following inputs are required to prove and finalize a withdrawal:</p>
+<ul>
+<li>Withdrawal transaction data:
+<ul>
+<li><code>nonce</code>: Nonce for the provided message.</li>
+<li><code>sender</code>: Message sender address on L2.</li>
+<li><code>target</code>: Target address on L1.</li>
+<li><code>value</code>: ETH to send to the target.</li>
+<li><code>data</code>: Data to send to the target.</li>
+<li><code>gasLimit</code>: Gas to be forwarded to the target.</li>
+</ul>
+</li>
+<li>Proof and verification data:
+<ul>
+<li><code>l2OutputIndex</code>: The index in the L2 outputs where the applicable output root may be found.</li>
+<li><code>outputRootProof</code>: Four <code>bytes32</code> values which are used to derive the output root.</li>
+<li><code>withdrawalProof</code>: An inclusion proof for the given withdrawal in the L2ToL1MessagePasser contract.</li>
+</ul>
+</li>
+</ul>
+<p>These inputs must satisfy the following conditions:</p>
+<ol>
+<li>The <code>l2OutputIndex</code> must be the index in the L2 outputs that contains the applicable output root.</li>
+<li><code>L2OutputOracle.getL2Output(l2OutputIndex)</code> returns a non-zero <code>OutputProposal</code>.</li>
+<li>The keccak256 hash of the <code>outputRootProof</code> values is equal to the <code>outputRoot</code>.</li>
+<li>The <code>withdrawalProof</code> is a valid inclusion proof demonstrating that a hash of the Withdrawal transaction data
+is contained in the storage of the L2ToL1MessagePasser contract on L2.</li>
+</ol>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="key-properties-of-withdrawal-verification"><a class="header" href="#key-properties-of-withdrawal-verification">Key Properties of Withdrawal Verification</a></h3>
+<ol>
+<li>
+<p>It should not be possible to 'double spend' a withdrawal, ie. to relay a withdrawal on L1 which does not
+correspond to a message initiated on L2. For reference, see <a href="https://gerhard-wagner.medium.com/double-spending-bug-in-polygons-plasma-bridge-2e0954ccadf1">this writeup</a> of a vulnerability
+of this type found on Polygon.</p>
+</li>
+<li>
+<p>For each withdrawal initiated on L2 (i.e. with a unique <code>messageNonce()</code>), the following properties must hold:</p>
+<ol>
+<li>It should only be possible to prove the withdrawal once, unless the outputRoot for the withdrawal
+has changed.</li>
+<li>It should only be possible to finalize the withdrawal once.</li>
+<li>It should not be possible to relay the message with any of its fields modified, ie.
+<ol>
+<li>Modifying the <code>sender</code> field would enable a 'spoofing' attack.</li>
+<li>Modifying the <code>target</code>, <code>data</code>, or <code>value</code> fields would enable an attacker to dangerously change the
+intended outcome of the withdrawal.</li>
+<li>Modifying the <code>gasLimit</code> could make the cost of relaying too high, or allow the relayer to cause execution
+to fail (out of gas) in the <code>target</code>.</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="handling-successfully-verified-messages-that-fail-when-relayed"><a class="header" href="#handling-successfully-verified-messages-that-fail-when-relayed">Handling Successfully Verified Messages That Fail When Relayed</a></h3>
+<p>If the execution of the relayed call fails in the <code>target</code> contract, it is unfortunately not possible to determine
+whether or not it was 'supposed' to fail, and whether or not it should be 'replayable'. For this reason, and to
+minimize complexity, we have not provided any replay functionality, this may be implemented in external utility
+contracts if desired.</p>
+<h3 id="optimismportal-can-send-arbitrary-messages-on-l1"><a class="header" href="#optimismportal-can-send-arbitrary-messages-on-l1">OptimismPortal can send arbitrary messages on L1</a></h3>
+<p>The <code>L2ToL1MessagePasser</code> contract's <code>initiateWithdrawal</code> function accepts a <code>_target</code> address and <code>_data</code> bytes,
+which is passed to a <code>CALL</code> opcode on L1 when <code>finalizeWithdrawalTransaction</code> is called after the challenge
+period. This means that, by design, the <code>OptimismPortal</code> contract can be used to send arbitrary transactions on
+the L1, with the <code>OptimismPortal</code> as the <code>msg.sender</code>.</p>
+<p>This means users of the <code>OptimismPortal</code> contract should be careful what permissions they grant to the portal.
+For example, any ERC20 tokens mistakenly sent to the <code>OptimismPortal</code> contract are essentially lost, as they can
+be claimed by anybody that pre-approves transfers of this token out of the portal, using the L2 to initiate the
+approval and the L1 to prove and finalize the approval (after the challenge period).</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/deposits.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/guaranteed-gas-market.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/deposits.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/guaranteed-gas-market.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

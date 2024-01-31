@@ -1,0 +1,432 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>OP Stack Protocol - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html" class="active"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="optimism-overview"><a class="header" href="#optimism-overview">Optimism Overview</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#architecture-design-goals">Architecture Design Goals</a></li>
+<li><a href="#components">Components</a>
+<ul>
+<li><a href="#l1-components">L1 Components</a></li>
+<li><a href="#l2-components">L2 Components</a></li>
+<li><a href="#transactionblock-propagation">Transaction/Block Propagation</a></li>
+</ul>
+</li>
+<li><a href="#key-interactions-in-depth">Key Interactions In Depth</a>
+<ul>
+<li><a href="#deposits">Deposits</a></li>
+<li><a href="#block-derivation">Block Derivation</a>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#epochs-and-the-sequencing-window">Epochs and the Sequencing Window</a></li>
+<li><a href="#block-derivation-loop">Block Derivation Loop</a></li>
+</ul>
+</li>
+<li><a href="#engine-api">Engine API</a></li>
+</ul>
+</li>
+</ul>
+<p>This document is a high-level technical overview of the Optimism protocol. It aims to explain how the protocol works in
+an informal manner, and direct readers to other parts of the specification so that they may learn more.</p>
+<p>This document assumes you've read the <a href="../introduction.html">introduction</a>.</p>
+<h2 id="architecture-design-goals"><a class="header" href="#architecture-design-goals">Architecture Design Goals</a></h2>
+<ul>
+<li><strong>Execution-Level EVM Equivalence:</strong> The developer experience should be identical to L1 except where L2 introduces a
+fundamental difference.
+<ul>
+<li>No special compiler.</li>
+<li>No unexpected gas costs.</li>
+<li>Transaction traces work out-of-the-box.</li>
+<li>All existing Ethereum tooling works - all you have to do is change the chain ID.</li>
+</ul>
+</li>
+<li><strong>Maximal compatibility with ETH1 nodes:</strong> The implementation should minimize any differences with a vanilla Geth
+node, and leverage as many existing L1 standards as possible.
+<ul>
+<li>The execution engine/rollup node uses the ETH2 Engine API to build the canonical L2 chain.</li>
+<li>The execution engine leverages Geth's existing mempool and sync implementations, including snap sync.</li>
+</ul>
+</li>
+<li><strong>Minimize state and complexity:</strong>
+<ul>
+<li>Whenever possible, services contributing to the rollup infrastructure are stateless.</li>
+<li>Stateful services can recover to full operation from a fresh DB using the peer-to-peer network and on-chain sync
+mechanisms.</li>
+<li>Running a replica is as simple as running a Geth node.</li>
+</ul>
+</li>
+</ul>
+<h2 id="components"><a class="header" href="#components">Components</a></h2>
+<p><img src="../static/assets/components.svg" alt="Components" /></p>
+<h3 id="l1-components"><a class="header" href="#l1-components">L1 Components</a></h3>
+<ul>
+<li>
+<p><strong>OptimismPortal</strong>: A feed of L2 transactions which originated as smart contract calls in the L1 state.</p>
+<ul>
+<li>The <code>OptimismPortal</code> contract emits <code>TransactionDeposited</code> events, which the rollup driver reads in order to process
+deposits.</li>
+<li>Deposits are guaranteed to be reflected in the L2 state within the <em>sequencing window</em>.</li>
+<li>Beware that <em>transactions</em> are deposited, not tokens. However deposited transactions are a key part of implementing
+token deposits (tokens are locked on L1, then minted on L2 via a deposited transaction).</li>
+</ul>
+</li>
+<li>
+<p><strong>BatchInbox</strong>: An L1 address to which the Batch Submitter submits transaction batches.</p>
+<ul>
+<li>Transaction batches include L2 transaction calldata, timestamps, and ordering information.</li>
+<li>The BatchInbox is a regular EOA address. This lets us pass on gas cost savings by not executing any EVM code.</li>
+</ul>
+</li>
+<li>
+<p><strong>L2OutputOracle</strong>: A smart contract that stores <a href="../glossary.html#l2-output">L2 output roots</a> for use with withdrawals
+and fault proofs.</p>
+</li>
+</ul>
+<h3 id="l2-components"><a class="header" href="#l2-components">L2 Components</a></h3>
+<ul>
+<li><strong>Rollup Node</strong>:
+<ul>
+<li>A standalone, stateless binary.</li>
+<li>Receives L2 transactions from users.</li>
+<li>Syncs and verifies rollup data on L1.</li>
+<li>Applies rollup-specific block production rules to synthesize blocks from L1.</li>
+<li>Appends blocks to the L2 chain using the Engine API.</li>
+<li>Handles L1 reorgs.</li>
+<li>Distributes unsubmitted blocks to other rollup nodes.</li>
+</ul>
+</li>
+<li><strong>Execution Engine (EE)</strong>:
+<ul>
+<li>A vanilla Geth node with minor modifications to support Optimism.</li>
+<li>Maintains L2 state.</li>
+<li>Sync state to other L2 nodes for fast onboarding.</li>
+<li>Serves the Engine API to the rollup node.</li>
+</ul>
+</li>
+<li><strong>Batch Submitter</strong>
+<ul>
+<li>A background process that submits <a href="../glossary.html#sequencer-batch">transaction batches</a> to the <code>BatchInbox</code> address.</li>
+</ul>
+</li>
+<li><strong>Output Submitter</strong>
+<ul>
+<li>A background process that submits L2 output commitments to the <code>L2OutputOracle</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="transactionblock-propagation"><a class="header" href="#transactionblock-propagation">Transaction/Block Propagation</a></h3>
+<p><strong>Spec links:</strong></p>
+<ul>
+<li><a href="exec-engine.html">Execution Engine</a></li>
+</ul>
+<p>Since the EE uses Geth under the hood, Optimism uses Geth's built-in peer-to-peer network and transaction pool to
+propagate transactions. The same network can also be used to propagate submitted blocks and support snap-sync.</p>
+<p>Unsubmitted blocks, however, are propagated using a separate peer-to-peer network of Rollup Nodes. This is optional,
+however, and is provided as a convenience to lower latency for verifiers and their JSON-RPC clients.</p>
+<p>The below diagram illustrates how the sequencer and verifiers fit together:</p>
+<p><img src="../static/assets/propagation.svg" alt="Propagation" /></p>
+<h2 id="key-interactions-in-depth"><a class="header" href="#key-interactions-in-depth">Key Interactions In Depth</a></h2>
+<h3 id="deposits"><a class="header" href="#deposits">Deposits</a></h3>
+<p><strong>Spec links:</strong></p>
+<ul>
+<li><a href="deposits.html">Deposits</a></li>
+</ul>
+<p>Optimism supports two types of deposits: user deposits, and L1 attributes deposits. To perform a user deposit, users
+call the <code>depositTransaction</code> method on the <code>OptimismPortal</code> contract. This in turn emits <code>TransactionDeposited</code> events,
+which the rollup node reads during block derivation.</p>
+<p>L1 attributes deposits are used to register L1 block attributes (number, timestamp, etc.) on L2 via a call to the L1
+Attributes Predeploy. They cannot be initiated by users, and are instead added to L2 blocks automatically by the rollup
+node.</p>
+<p>Both deposit types are represented by a single custom EIP-2718 transaction type on L2.</p>
+<h3 id="block-derivation"><a class="header" href="#block-derivation">Block Derivation</a></h3>
+<h4 id="overview"><a class="header" href="#overview">Overview</a></h4>
+<p>The rollup chain can be deterministically derived given an L1 Ethereum chain. The fact that the entire rollup chain can
+be derived based on L1 blocks is <em>what makes Optimism a rollup</em>. This process can be represented as:</p>
+<pre><code class="language-text">derive_rollup_chain(l1_blockchain) -&gt; rollup_blockchain
+</code></pre>
+<p>Optimism's block derivation function is designed such that it:</p>
+<ul>
+<li>Requires no state other than what is easily accessible using L1 and L2 execution engine APIs.</li>
+<li>Supports sequencers and sequencer consensus.</li>
+<li>Is resilient to sequencer censorship.</li>
+</ul>
+<h4 id="epochs-and-the-sequencing-window"><a class="header" href="#epochs-and-the-sequencing-window">Epochs and the Sequencing Window</a></h4>
+<p>The rollup chain is subdivided into epochs. There is a 1:1 correspondence between L1 block numbers and epoch numbers.</p>
+<p>For L1 block number <code>n</code>, there is a corresponding rollup epoch <code>n</code> which can only be derived after a <em>sequencing window</em>
+worth of blocks has passed, i.e. after L1 block number <code>n + SEQUENCING_WINDOW_SIZE</code> is added to the L1 chain.</p>
+<p>Each epoch contains at least one block. Every block in the epoch contains an L1 info transaction which contains
+contextual information about L1 such as the block hash and timestamp. The first block in the epoch also contains all
+deposits initiated via the <code>OptimismPortal</code> contract on L1. All L2 blocks can also contain <em>sequenced transactions</em>,
+i.e. transactions submitted directly to the sequencer.</p>
+<p>Whenever the sequencer creates a new L2 block for a given epoch, it must submit it to L1 as part of a <em>batch</em>, within
+the epoch's sequencing window (i.e. the batch must land before L1 block <code>n + SEQUENCING_WINDOW_SIZE</code>). These batches are
+(along with the <code>TransactionDeposited</code> L1 events) what allows the derivation of the L2 chain from the L1 chain.</p>
+<p>The sequencer does not need for a L2 block to be batch-submitted to L1 in order to build on top of it. In fact, batches
+typically contain multiple L2 blocks worth of sequenced transactions. This is what enables
+<em>fast transaction confirmations</em> on the sequencer.</p>
+<p>Since transaction batches for a given epoch can be submitted anywhere within the sequencing window, verifiers must
+search all blocks within the window for transaction batches. This protects against the uncertainty of transaction
+inclusion of L1. This uncertainty is also why we need the sequencing window in the first place: otherwise the sequencer
+could retroactively add blocks to an old epoch, and validators wouldn't know when they can finalize an epoch.</p>
+<p>The sequencing window also prevents censorship by the sequencer: deposits made on a given L1 block will be included in
+the L2 chain at worst after <code>SEQUENCING_WINDOW_SIZE</code> L1 blocks have passed.</p>
+<p>The following diagram describes this relationship, and how L2 blocks are derived from L1 blocks (L1 info transactions
+have been elided):</p>
+<p><img src="../static/assets/sequencer-block-gen.svg" alt="Epochs and Sequencing Windows" /></p>
+<h4 id="block-derivation-loop"><a class="header" href="#block-derivation-loop">Block Derivation Loop</a></h4>
+<p>A sub-component of the rollup node called the <em>rollup driver</em> is actually responsible for performing block derivation.
+The rollup driver is essentially an infinite loop that runs the block derivation function. For each epoch, the block
+derivation function performs the following steps:</p>
+<ol>
+<li>Downloads deposit and transaction batch data for each block in the sequencing window.</li>
+<li>Converts the deposit and transaction batch data into payload attributes for the Engine API.</li>
+<li>Submits the payload attributes to the Engine API, where they are converted into blocks and added to the canonical
+chain.</li>
+</ol>
+<p>This process is then repeated with incrementing epochs until the tip of L1 is reached.</p>
+<h3 id="engine-api"><a class="header" href="#engine-api">Engine API</a></h3>
+<p>The rollup driver doesn't actually create blocks. Instead, it directs the execution engine to do so via the Engine API.
+For each iteration of the block derivation loop described above, the rollup driver will craft a <em>payload attributes</em>
+object and send it to the execution engine. The execution engine will then convert the payload attributes object into a
+block, and add it to the chain. The basic sequence of the rollup driver is as follows:</p>
+<ol>
+<li>Call <a href="derivation.html#engine-api-usage">fork choice updated</a> with the payload attributes object. We'll skip over the details of the
+fork choice state parameter for now - just know that one of its fields is the L2 chain's <code>headBlockHash</code>, and that it
+is set to the block hash of the tip of the L2 chain. The Engine API returns a payload ID.</li>
+<li>Call <a href="derivation.html#engine-api-usage">get payload</a> with the payload ID returned in step 1. The engine API returns a payload object
+that includes a block hash as one of its fields.</li>
+<li>Call <a href="derivation.html#engine-api-usage">new payload</a> with the payload returned in step 2. (Ectone blocks, must use V3, pre-Ecotone
+blocks MUST use the V2 version)</li>
+<li>Call <a href="derivation.html#engine-api-usage">fork choice updated</a> with the fork choice parameter's <code>headBlockHash</code> set to the block hash
+returned in step 2. The tip of the L2 chain is now the block created in step 1.</li>
+</ol>
+<p>The swimlane diagram below visualizes the process:</p>
+<p><img src="../static/assets/engine.svg" alt="Engine API" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/bridges.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/bridges.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

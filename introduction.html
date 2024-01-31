@@ -1,0 +1,382 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Introduction - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="introduction.html" class="active"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#foundations">Foundations</a>
+<ul>
+<li><a href="#what-is-ethereum-scalability">What is Ethereum scalability?</a></li>
+<li><a href="#what-is-an-optimistic-rollup">What is an Optimistic Rollup?</a></li>
+<li><a href="#what-is-evm-equivalence">What is EVM Equivalence?</a></li>
+<li><a href="#-all-together-now-">🎶 All together now 🎶</a></li>
+</ul>
+</li>
+<li><a href="#protocol-guarantees">Protocol Guarantees</a></li>
+<li><a href="#network-participants">Network Participants</a>
+<ul>
+<li><a href="#users">Users</a></li>
+<li><a href="#sequencers">Sequencers</a></li>
+<li><a href="#verifiers">Verifiers</a></li>
+</ul>
+</li>
+<li><a href="#key-interaction-diagrams">Key Interaction Diagrams</a>
+<ul>
+<li><a href="#depositing-and-sending-transactions">Depositing and Sending Transactions</a></li>
+<li><a href="#withdrawing">Withdrawing</a></li>
+</ul>
+</li>
+<li><a href="#next-steps">Next Steps</a></li>
+</ul>
+<p>Optimism is an <em>EVM equivalent</em>, <em>optimistic rollup</em> protocol designed to <em>scale Ethereum</em> while remaining maximally
+compatible with existing Ethereum infrastructure. This document provides an overview of the protocol to provide context
+for the rest of the specification.</p>
+<h2 id="foundations"><a class="header" href="#foundations">Foundations</a></h2>
+<h3 id="what-is-ethereum-scalability"><a class="header" href="#what-is-ethereum-scalability">What is Ethereum scalability?</a></h3>
+<p>Scaling Ethereum means increasing the number of useful transactions the Ethereum network can process. Ethereum's
+limited resources, specifically bandwidth, computation, and storage, constrain the number of transactions which can be
+processed on the network. Of the three resources, computation and storage are currently the most significant
+bottlenecks. These bottlenecks limit the supply of transactions, leading to extremely high fees. Scaling ethereum and
+reducing fees can be achieved by better utilizing bandwidth, computation and storage.</p>
+<h3 id="what-is-an-optimistic-rollup"><a class="header" href="#what-is-an-optimistic-rollup">What is an Optimistic Rollup?</a></h3>
+<p><a href="https://vitalik.ca/general/2021/01/05/rollup.html">Optimistic rollup</a> is a layer 2 scalability technique which
+increases the computation &amp; storage capacity of Ethereum without sacrificing security or decentralization. Transaction
+data is submitted on-chain but executed off-chain. If there is an error in the off-chain execution, a fault proof can
+be submitted on-chain to correct the error and protect user funds. In the same way you don't go to court unless there
+is a dispute, you don't execute transactions on on-chain unless there is an error.</p>
+<h3 id="what-is-evm-equivalence"><a class="header" href="#what-is-evm-equivalence">What is EVM Equivalence?</a></h3>
+<p><a href="https://medium.com/ethereum-optimism/introducing-evm-equivalence-5c2021deb306">EVM Equivalence</a> is complete compliance
+with the state transition function described in the Ethereum yellow paper, the formal definition of the protocol. By
+conforming to the Ethereum standard across EVM equivalent rollups, smart contract developers can write once and deploy
+anywhere.</p>
+<h3 id="-all-together-now-"><a class="header" href="#-all-together-now-">🎶 All together now 🎶</a></h3>
+<p><strong>Optimism is an <em>EVM equivalent</em>, <em>optimistic rollup</em> protocol designed to <em>scale Ethereum</em>.</strong></p>
+<h2 id="protocol-guarantees"><a class="header" href="#protocol-guarantees">Protocol Guarantees</a></h2>
+<p>In order to scale Ethereum without sacrificing security, we must preserve 3 critical properties of Ethereum layer 1:
+liveness, availability, and validity.</p>
+<ol>
+<li><strong>Liveness</strong>
+<ul>
+<li>Anyone must be able to extend the rollup chain by sending transactions at any time.</li>
+<li>There are two ways transactions can be sent to the rollup chain: 1) via the sequencer, and 2) directly on layer 1.
+The sequencer provides low latency &amp; low cost transactions, while sending transactions directly to layer 1 provides
+censorship resistance.</li>
+</ul>
+</li>
+<li><strong>Availability</strong>
+<ul>
+<li>Anyone must be able to download the rollup chain.</li>
+<li>All information required to derive the chain is embedded into layer 1 blocks. That way as long as the layer 1
+chain is available, so is the rollup.</li>
+</ul>
+</li>
+<li><strong>Validity</strong>
+<ul>
+<li>All transactions must be correctly executed and all withdrawals correctly processed.</li>
+<li>The rollup state and withdrawals are managed on an L1 contract called the <code>L2OutputOracle</code>. This oracle is
+guaranteed to <em>only</em> finalize correct (ie. valid) rollup block hashes given a <strong>single honest verifier</strong>
+assumption. If there is ever an invalid block hash asserted on layer 1, an honest verifier will prove it is
+invalid and win a bond.</li>
+</ul>
+</li>
+</ol>
+<p><strong>Footnote</strong>: There are two main ways to enforce validity of a rollup: fault proofs (optimistic rollup) and validity
+proofs (zkRollup). For the purposes of this spec we only focus on fault proofs but it is worth noting that validity
+proofs can also be plugged in once they have been made feasible.</p>
+<h2 id="network-participants"><a class="header" href="#network-participants">Network Participants</a></h2>
+<p>There are three actors in Optimism: users, sequencers, and verifiers.</p>
+<p><img src="./static/assets/network-participants-overview.svg" alt="Network Overview" /></p>
+<h3 id="users"><a class="header" href="#users">Users</a></h3>
+<p>At the heart of the network are users (us!). Users can:</p>
+<ol>
+<li>Deposit or withdraw arbitrary transactions on L2 by sending data to a contract on Ethereum mainnet.</li>
+<li>Use EVM smart contracts on layer 2 by sending transactions to the sequencers.</li>
+<li>View the status of transactions using block explorers provided by network verifiers.</li>
+</ol>
+<h3 id="sequencers"><a class="header" href="#sequencers">Sequencers</a></h3>
+<p>The sequencer is the primary block producer.
+There may be one sequencer <strong>or</strong> many using a consensus protocol.
+For 1.0.0, there is just one sequencer (currently operated under the oversight of the Optimism Foundation).
+In general, specifications may use &quot;the sequencer&quot; to be a stand-in term
+for the consensus protocol operated by multiple sequencers.</p>
+<p>The sequencer:</p>
+<ol>
+<li>Accepts user off-chain transactions</li>
+<li>Observes on-chain transactions (primarily, deposit events coming from L1)</li>
+<li>Consolidates both kinds of transactions into L2 blocks with a specific ordering.</li>
+<li>Propagates consolidated L2 blocks to L1, by submitting two things as calldata to L1:
+<ul>
+<li>The pending off-chain transactions accepted in step 1.</li>
+<li>Sufficient information about the ordering of the on-chain transactions to successfully reconstruct the blocks
+from step 3., purely by watching L1.</li>
+</ul>
+</li>
+</ol>
+<p>The sequencer also provides access to block data as early as step 3., so that users may access real-time state in
+advance of L1 confirmation if they so choose.</p>
+<h3 id="verifiers"><a class="header" href="#verifiers">Verifiers</a></h3>
+<p>Verifiers serve two purposes:</p>
+<ol>
+<li>Serving rollup data to users; and</li>
+<li>Verifying rollup integrity and disputing invalid assertions.</li>
+</ol>
+<p>In order for the network to remain secure there must be <strong>at least</strong> one honest verifier who is able to verify the
+integrity of the rollup chain &amp; serve blockchain data to users.</p>
+<h2 id="key-interaction-diagrams"><a class="header" href="#key-interaction-diagrams">Key Interaction Diagrams</a></h2>
+<p>The following diagrams demonstrate how protocol components are utilized during key user interactions in order to
+provide context when diving into any particular component specification.</p>
+<h3 id="depositing-and-sending-transactions"><a class="header" href="#depositing-and-sending-transactions">Depositing and Sending Transactions</a></h3>
+<p>Users will often begin their L2 journey by depositing ETH from L1.
+Once they have ETH to pay fees, they'll start sending transactions on L2.
+The following diagram demonstrates this interaction and all key Optimism components which are or should be utilized:</p>
+<p><img src="./static/assets/sequencer-handling-deposits-and-transactions.svg" alt="Diagram of Depositing and Sending Transactions" /></p>
+<p>Links to components mentioned in this diagram:</p>
+<!-- - Batch Inbox (WIP) -->
+<ul>
+<li><a href="./protocol/rollup-node.html">Rollup Node</a></li>
+<li><a href="./protocol/exec-engine.html">Execution Engine</a></li>
+<li><a href="./protocol/proposals.html#l2-output-oracle-smart-contract">L2 Output Oracle</a></li>
+<li><a href="./protocol/proposals.html#proposing-l2-output-commitments">L2 Output Submitter</a><!-- - Sequencer Batch Submitter (WIP) -->
+<!-- - Fault Proof VM (WIP) -->
+</li>
+</ul>
+<h3 id="withdrawing"><a class="header" href="#withdrawing">Withdrawing</a></h3>
+<p>Just as important as depositing, it is critical that users can withdraw from the rollup. Withdrawals are initiated by
+normal transactions on L2, but then completed using a transaction on L1 after the dispute period has elapsed.</p>
+<p><img src="./static/assets/user-withdrawing-to-l1.svg" alt="Diagram of Withdrawing" /></p>
+<p>Links to components mentioned in this diagram:</p>
+<ul>
+<li><a href="./protocol/proposals.html#l2-output-oracle-smart-contract">L2 Output Oracle</a></li>
+</ul>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>This is a choose your own adventure. Are you interested in how a verifier works under the hood? Maybe you want to dive
+deep into the bit flippin' Fault Proof VM? All key components have been linked at least once in this doc, so you should
+now have the context you need to dive in deeper. <a href="https://www.youtube.com/watch?v=e5PnuIRnJW8">The world is yours</a>!</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="root.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="protocol/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="root.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="protocol/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="specs/static/solidity.min.js"></script>
+        <script src="specs/static/mermaid.min.js"></script>
+        <script src="specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

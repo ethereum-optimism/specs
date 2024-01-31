@@ -1,0 +1,533 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Superchain Upgrades - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html" class="active"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="superchain-upgrades"><a class="header" href="#superchain-upgrades">Superchain Upgrades</a></h1>
+<p>Superchain upgrades, also known as forks or hardforks, implement consensus-breaking changes.</p>
+<p>A Superchain upgrade requires the node software to support up to a given Protocol Version.
+The version indicates support, the upgrade indicates the activation of new functionality.</p>
+<p>This document lists the protocol versions of the OP-Stack, starting at the Bedrock upgrade,
+as well as the default Superchain Targets.</p>
+<p>Activation rule parameters of network upgrades are configured as part of the Superchain Target specification:
+chains following the same Superchain Target upgrade synchronously.</p>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#protocol-version">Protocol Version</a>
+<ul>
+<li><a href="#protocol-version-format">Protocol Version Format</a>
+<ul>
+<li><a href="#build-identifier">Build identifier</a></li>
+<li><a href="#major-versions">Major versions</a></li>
+<li><a href="#minor-versions">Minor versions</a></li>
+<li><a href="#patch-versions">Patch versions</a></li>
+<li><a href="#pre-releases">Pre-releases</a></li>
+</ul>
+</li>
+<li><a href="#protocol-version-exposure">Protocol Version Exposure</a></li>
+</ul>
+</li>
+<li><a href="#superchain-target">Superchain Target</a>
+<ul>
+<li><a href="#superchain-version-signaling">Superchain Version signaling</a></li>
+<li><a href="#protocolversions-l1-contract"><code>ProtocolVersions</code> L1 contract</a></li>
+</ul>
+</li>
+<li><a href="#activation-rules">Activation rules</a>
+<ul>
+<li><a href="#l2-block-number-based-activation-deprecated">L2 Block-number based activation (deprecated)</a></li>
+<li><a href="#l2-block-timestamp-based-activation">L2 Block-timestamp based activation</a></li>
+</ul>
+</li>
+<li><a href="#op-stack-protocol-versions">OP-Stack Protocol versions</a></li>
+<li><a href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a>
+<ul>
+<li><a href="#regolith">Regolith</a></li>
+</ul>
+</li>
+<li><a href="#canyon">Canyon</a></li>
+<li><a href="#delta">Delta</a></li>
+<li><a href="#ecotone">Ecotone</a></li>
+<li><a href="#fjord">Fjord</a></li>
+</ul>
+<h2 id="protocol-version"><a class="header" href="#protocol-version">Protocol Version</a></h2>
+<p>The Protocol Version documents the progression of the total set of canonical OP-Stack specifications.
+Components of the OP-Stack implement the subset of their respective protocol component domain,
+up to a given Protocol Version of the OP-Stack.</p>
+<p>OP-Stack mods, i.e. non-canonical extensions to the OP-Stack, are not included in the versioning of the Protocol.
+Instead, mods must specify which upstream Protocol Version they are based on and where breaking changes are made.
+This ensures tooling of the OP-Stack can be shared and collaborated on with OP-Stack mods.</p>
+<p>The Protocol Version is NOT a hardfork identifier, but rather indicates software-support for a well-defined set
+of features introduced in past and future hardforks, not the activation of said hardforks.</p>
+<p>Changes that can be included in prospective Protocol Versions may be included in the specifications as proposals,
+with explicit notice of the Protocol Version they are based on.
+This enables an iterative integration process into the canonical set of specifications,
+but does not guarantee the proposed specifications become canonical.</p>
+<p>Note that the Protocol Version only applies to the Protocol specifications with the Superchain Targets specified within.
+This versioning is independent of the <a href="https://semver.org/">Semver</a> versioning used in OP Stack smart-contracts,
+and the <a href="https://semver.org/">Semver</a>-versioned reference software of the OP-Stack.</p>
+<h3 id="protocol-version-format"><a class="header" href="#protocol-version-format">Protocol Version Format</a></h3>
+<p>The Protocol Version is <a href="https://semver.org/">Semver</a>-compatible.
+It is encoded as a single 32 bytes long <code>&lt;protocol version&gt;</code>.
+The version must be encoded as 32 bytes of <code>DATA</code> in JSON RPC usage.</p>
+<p>The encoding is typed, to ensure future-compatibility.</p>
+<pre><code class="language-text">&lt;protocol version&gt; ::= &lt;version-type&gt;&lt;typed-payload&gt;
+&lt;version-type&gt; ::= &lt;uint8&gt;
+&lt;typed-payload&gt; ::= &lt;31 bytes&gt;
+</code></pre>
+<p>version-type <code>0</code>:</p>
+<pre><code class="language-text">&lt;reserved&gt;&lt;build&gt;&lt;major&gt;&lt;minor&gt;&lt;patch&gt;&lt;pre-release&gt;
+&lt;reserved&gt; ::= &lt;7 zeroed bytes&gt;
+&lt;build&gt; ::= &lt;8 bytes&gt;
+&lt;major&gt; ::= &lt;big-endian uint32&gt;
+&lt;minor&gt; ::= &lt;big-endian uint32&gt;
+&lt;patch&gt; ::= &lt;big-endian uint32&gt;
+&lt;pre-release&gt; ::= &lt;big-endian uint32&gt;
+</code></pre>
+<p>The <code>&lt;reserved&gt;</code> bytes of the Protocol Version are reserved for future extensions.</p>
+<p>Protocol versions with a different <code>&lt;version-type&gt;</code> should not be compared directly.</p>
+<h4 id="build-identifier"><a class="header" href="#build-identifier">Build identifier</a></h4>
+<p>The <code>&lt;build&gt;</code> identifier, as defined by <a href="https://semver.org/">Semver</a>, is ignored when determining version precedence.
+The <code>&lt;build&gt;</code> must be non-zero to apply to the protocol version.</p>
+<p>Modifications of the OP-Stack should define a <code>&lt;build&gt;</code> to distinguish from the canonical protocol feature-set.
+Changes to the <code>&lt;build&gt;</code> may be encoded in the <code>&lt;build&gt;</code> itself to stay aligned with the upstream protocol.
+The major/minor/patch versions should align with that of the upstream protocol that the modifications are based on.
+Users of the protocol can choose to implement custom support for the alternative <code>&lt;build&gt;</code>,
+but may work out of the box if the major features are consistent with that of the upstream protocol version.</p>
+<p>The 8 byte <code>&lt;build&gt;</code> identifier may be presented as a string for human readability if the contents are alpha-numeric,
+including <code>-</code> and <code>.</code>, as outlined in the <a href="https://semver.org/">Semver</a> format specs. Trailing <code>0</code> bytes can be used for padding.
+It may be presented as <code>0x</code>-prefixed hex string otherwise.</p>
+<h4 id="major-versions"><a class="header" href="#major-versions">Major versions</a></h4>
+<p>Major version changes indicate support for new consensus-breaking functionality.
+Major versions should retain support for functionality of previous major versions for
+syncing/indexing of historical chain data.
+Implementations may drop support for previous Major versions, when there are viable alternatives,
+e.g. <code>l2geth</code> for pre-Bedrock data.</p>
+<h4 id="minor-versions"><a class="header" href="#minor-versions">Minor versions</a></h4>
+<p>Minor version changes indicate support for backward compatible extensions,
+including backward-compatible additions to the set of chains in a Superchain Target.
+Backward-compatibility is defined by the requirement for existing end-users to upgrade nodes and tools or not.
+Minor version changes may also include optional offchain functionality, such as additional syncing protocols.</p>
+<h4 id="patch-versions"><a class="header" href="#patch-versions">Patch versions</a></h4>
+<p>Patch version changes indicate backward compatible bug fixes and improvements.</p>
+<h4 id="pre-releases"><a class="header" href="#pre-releases">Pre-releases</a></h4>
+<p>Pre-releases of the protocol are proposals: these are not stable targets for production usage.
+A pre-release might not satisfy the intended compatibility requirements as denoted by its associated normal version.
+The <code>&lt;pre-release&gt;</code> must be non-zero to apply to the protocol version.
+The <code>&lt;pre-release&gt;</code> <code>0</code>-value is reserved for non-prereleases, i.e. <code>v3.1.0</code> is higher than <code>v3.1.0-1</code>.</p>
+<p>Node-software may support a pre-release, but must not activate any protocol changes without the user explicitly
+opting in through the means of a feature-flag or configuration change.</p>
+<p>A pre-release is not an official version and is meant for protocol developers to communicate an experimental changeset
+before the changeset is reviewed by governance. Pre-releases are subject to change.</p>
+<h3 id="protocol-version-exposure"><a class="header" href="#protocol-version-exposure">Protocol Version Exposure</a></h3>
+<p>The Protocol Version is not exposed to the application-layer environment:
+hardforks already expose the change of functionality upon activation as required,
+and the Protocol Version is meant for offchain usage only.
+The protocol version indicates support rather than activation of functionality.
+There is one exception however: signaling by onchain components to offchain components.
+More about this in <a href="#superchain-version-signaling">Superchain Version signaling</a>.</p>
+<h2 id="superchain-target"><a class="header" href="#superchain-target">Superchain Target</a></h2>
+<p>Changes to the L2 state-transition function are transitioned into deterministically across all nodes
+through an <strong>activation rule</strong>.</p>
+<p>Changes to L1 smart-contracts must be compatible with the latest activated L2 functionality,
+and are executed through <strong>L1 contract-upgrades</strong>.</p>
+<p>A Superchain Target defines a set of activation rules and L1 contract upgrades shared between OP-Stack chains,
+to upgrade the chains collectively.</p>
+<h3 id="superchain-version-signaling"><a class="header" href="#superchain-version-signaling">Superchain Version signaling</a></h3>
+<p>Each Superchain Target tracks the protocol changes, and signals the <code>recommended</code> and <code>required</code>
+Protocol Version ahead of activation of new breaking functionality.</p>
+<ul>
+<li><code>recommended</code>: a signal in advance of a network upgrade, to alert users of the protocol change to be prepared for.
+Node software is recommended to signal the recommendation to users through logging and metrics.</li>
+<li><code>required</code>: a signal shortly in advance of a breaking network upgrade, to alert users of breaking changes.
+Users may opt in to elevated alerts or preventive measures, to ensure consistency with the upgrade.</li>
+</ul>
+<p>Signaling is done through a L1 smart-contract that is monitored by the OP-Stack software.
+Not all components of the OP-Stack are required to directly monitor L1 however:
+cross-component APIs like the Engine API may be used to forward the Protocol Version signals,
+to keep components encapsulated from L1.
+See <a href="exec-engine.html#enginesignalopstackversionv1"><code>engine_signalOPStackVersionV1</code></a>.</p>
+<h3 id="protocolversions-l1-contract"><a class="header" href="#protocolversions-l1-contract"><code>ProtocolVersions</code> L1 contract</a></h3>
+<p>The <code>ProtocolVersions</code> contract on L1 enables L2 nodes to pick up on superchain protocol version signals.</p>
+<p>The interface is:</p>
+<ul>
+<li>Required storage slot: <code>bytes32(uint256(keccak256(&quot;protocolversion.required&quot;)) - 1)</code></li>
+<li>Recommended storage slot: <code>bytes32(uint256(keccak256(&quot;protocolversion.recommended&quot;)) - 1)</code></li>
+<li>Required getter: <code>required()</code> returns <code>ProtocolVersion</code></li>
+<li>Recommended getter <code>recommended()</code> returns <code>ProtocolVersion</code></li>
+<li>Version updates also emit a typed event:
+<code>event ConfigUpdate(uint256 indexed version, UpdateType indexed updateType, bytes data)</code></li>
+</ul>
+<h2 id="activation-rules"><a class="header" href="#activation-rules">Activation rules</a></h2>
+<p>The below L2-block based activation rules may be applied in two contexts:</p>
+<ul>
+<li>The rollup node, specified through the rollup configuration (known as <code>rollup.json</code>),
+referencing L2 blocks (or block input-attributes) that pass through the derivation pipeline.</li>
+<li>The execution engine, specified through the chain configuration (known as the <code>config</code> part of <code>genesis.json</code>),
+referencing blocks or input-attributes that are part of, or applied to, the L2 chain.</li>
+</ul>
+<p>For both types of configurations, some activation parameters may apply to all chains within the superchain,
+and are then retrieved from the superchain target configuration.</p>
+<h3 id="l2-block-number-based-activation-deprecated"><a class="header" href="#l2-block-number-based-activation-deprecated">L2 Block-number based activation (deprecated)</a></h3>
+<p>Activation rule: <code>upgradeNumber != null &amp;&amp; block.number &gt;= upgradeNumber</code></p>
+<p>Starting at, and including, the L2 <code>block</code> with <code>block.number &gt;= upgradeNumber</code>, the upgrade rules apply.
+If the upgrade block-number <code>upgradeNumber</code> is not specified in the configuration, the upgrade is ignored.</p>
+<p>This block number based method has commonly been used in L1 up until the Bellatrix/Paris upgrade, a.k.a. The Merge,
+which was upgraded through special rules.</p>
+<p>This method is not superchain-compatible, as the activation-parameter is chain-specific
+(different chains may have different block-heights at the same moment in time).</p>
+<p>This applies to the L2 block number, not to the L1-origin block number.
+This means that an L2 upgrade may be inactive, and then active, without changing the L1-origin.</p>
+<h3 id="l2-block-timestamp-based-activation"><a class="header" href="#l2-block-timestamp-based-activation">L2 Block-timestamp based activation</a></h3>
+<p>Activation rule: <code>upgradeTime != null &amp;&amp; block.timestamp &gt;= upgradeTime</code></p>
+<p>Starting at, and including, the L2 <code>block</code> with <code>block.timestamp &gt;= upgradeTime</code>, the upgrade rules apply.
+If the upgrade block-timestamp <code>upgradeTime</code> is not specified in the configuration, the upgrade is ignored.</p>
+<p>This is the preferred superchain upgrade activation-parameter type:
+it is synchronous between all L2 chains and compatible with post-Merge timestamp-based chain upgrades in L1.</p>
+<p>This applies to the L2 block timestamp, not to the L1-origin block timestamp.
+This means that an L2 upgrade may be inactive, and then active, without changing the L1-origin.</p>
+<p>This timestamp based method has become the default on L1 after the Bellatrix/Paris upgrade, a.k.a. The Merge,
+because it can be planned in accordance with beacon-chain epochs and slots.</p>
+<p>Note that the L2 version is not limited to timestamps that match L1 beacon-chain slots or epochs.
+A timestamp may be chosen to be synchronous with a specific slot or epoch on L1,
+but the matching L1-origin information may not be present at the time of activation on L2.</p>
+<h2 id="op-stack-protocol-versions"><a class="header" href="#op-stack-protocol-versions">OP-Stack Protocol versions</a></h2>
+<ul>
+<li><code>v1.0.0</code>: 2021 Jan 16th - Mainnet Soft Launch, based on OVM.
+(<a href="https://medium.com/ethereum-optimism/mainnet-soft-launch-7cacc0143cd5">announcement</a>)</li>
+<li><code>v1.1.0</code>: 2021 Aug 19th - Community launch.
+(<a href="https://medium.com/ethereum-optimism/community-launch-7c9a2a9d3e84">announcement</a>)</li>
+<li><code>v2.0.0</code>: 2021 Nov 12th - the EVM-Equivalence update, also known as OVM 2.0 and chain regenesis.
+(<a href="https://twitter.com/optimismfnd/status/1458953238867165192">announcement</a>)</li>
+<li><code>v2.1.0</code>: 2022 May 31st - Optimism Collective.
+(<a href="https://optimism.mirror.xyz/gQWKlrDqHzdKPsB1iUnI-cVN3v0NvsWnazK7ajlt1fI">announcement</a>).</li>
+<li><code>v3.0.0-1</code>: 2023 Jan 13th - Bedrock pre-release, deployed on OP-Goerli, and later Base-Goerli.</li>
+<li><code>v3.0.0</code>: 2023 Jun 6th - Bedrock, including the Regolith hardfork improvements, first deployed on OP-Mainnet.</li>
+<li><code>v4.0.0</code>: 2024 Jan 11th - Canyon network upgrade.
+<a href="https://gov.optimism.io/t/final-upgrade-proposal-2-canyon-network-upgrade/7088">Governance proposal</a>.</li>
+<li><code>v5.0.0-1</code>: Delta - Proposed for Feb 22, 2024.
+<a href="https://gov.optimism.io/t/final-upgrade-proposal-3-delta-network-upgrade/7310">Governance Proposal</a></li>
+<li><code>v6.0.0-1</code>: Ecotone - Very experimental, in development.</li>
+</ul>
+<h2 id="post-bedrock-network-upgrades"><a class="header" href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a></h2>
+<h3 id="regolith"><a class="header" href="#regolith">Regolith</a></h3>
+<p>The Regolith upgrade, named after a material best described as &quot;deposited dust on top of a layer of bedrock&quot;,
+implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
+the Bedrock Optimism Goerli testnet.</p>
+<p>Summary of changes:</p>
+<ul>
+<li>The <code>isSystemTx</code> boolean is disabled, system transactions now use the same gas accounting rules as regular deposits.</li>
+<li>The actual deposit gas-usage is recorded in the receipt of the deposit transaction,
+and subtracted from the L2 block gas-pool.
+Unused gas of deposits is not refunded with ETH however, as it is burned on L1.</li>
+<li>The <code>nonce</code> value of the deposit sender account, before the transaction state-transition, is recorded in a new
+optional field (<code>depositNonce</code>), extending the transaction receipt (i.e. not present in pre-Regolith receipts).</li>
+<li>The recorded deposit <code>nonce</code> is used to correct the transaction and receipt metadata in RPC responses,
+including the <code>contractAddress</code> field of deposits that deploy contracts.</li>
+<li>The <code>gas</code> and <code>depositNonce</code> data is committed to as part of the consensus-representation of the receipt,
+enabling the data to be safely synced between independent L2 nodes.</li>
+<li>The L1-cost function was corrected to more closely match pre-Bedrock behavior.</li>
+</ul>
+<p>The <a href="deposits.html">deposit specification</a> specifies the deposit changes of the Regolith upgrade in more detail.
+The <a href="exec-engine.html">execution engine specification</a> specifies the L1 cost function difference.</p>
+<p>The Regolith upgrade uses a <em>L2 block-timestamp</em> activation-rule, and is specified in both the
+rollup-node (<code>regolith_time</code>) and execution engine (<code>config.regolithTime</code>).</p>
+<h2 id="canyon"><a class="header" href="#canyon">Canyon</a></h2>
+<p>The Canyon upgrade contains the Shapella upgrade from L1 and some minor protocol fixes.</p>
+<ul>
+<li>Shapella Upgrade
+<ul>
+<li><a href="https://eips.ethereum.org/EIPS/eip-3651">EIP-3651: Warm COINBASE</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-3855">EIP-3855: PUSH0 instruction</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-3860">EIP-3860: Limit and meter initcode</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-4895">EIP-4895: Beacon chain push withdrawals as operations</a>
+<ul>
+<li><a href="rollup-node-p2p.html#block-validation">Withdrawals are prohibited in P2P Blocks</a></li>
+<li><a href="derivation.html#building-individual-payload-attributes">Withdrawals should be set to the empty array with Canyon</a></li>
+</ul>
+</li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-6049">EIP-6049: Deprecate SELFDESTRUCT</a></li>
+</ul>
+</li>
+<li><a href="exec-engine.html#1559-parameters">Modifies the EIP-1559 Denominator</a></li>
+<li><a href="derivation.html#reading">Channel Ordering Fix</a></li>
+<li><a href="deposits.html#deposit-receipt">Adds the deposit nonce &amp; deposit nonce version to the deposit receipt hash</a></li>
+<li><a href="predeploys.html#create2deployer">Deploys the create2Deployer to <code>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</code></a></li>
+</ul>
+<p>The Canyon upgrade uses a <em>L2 block-timestamp</em> activation-rule, and is specified in both the
+rollup-node (<code>canyon_time</code>) and execution engine (<code>config.canyonTime</code>). Shanghai time in the
+execution engine should be set to the same time as the Canyon time.</p>
+<h2 id="delta"><a class="header" href="#delta">Delta</a></h2>
+<p>The Delta upgrade consists of a single consensus-layer feature: <a href="span-batches.html">Span Batches</a>.</p>
+<p>The Delta upgrade uses a <em>L2 block-timestamp</em> activation-rule, and is specified only in the rollup-node (<code>delta_time</code>).</p>
+<h2 id="ecotone"><a class="header" href="#ecotone">Ecotone</a></h2>
+<p>The Ecotone upgrade contains the Dencun upgrade from L1, and adopts EIP-4844 blobs for data-availability.</p>
+<p>Dencun Upgrade:</p>
+<ul>
+<li>Cancun (Execution Layer):
+<ul>
+<li><a href="https://eips.ethereum.org/EIPS/eip-1153">EIP-1153: Transient storage opcodes</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844: Shard Blob Transactions</a>
+<ul>
+<li><a href="exec-engine.html#ecotone-disable-blob-transactions">Blob transactions are disabled</a></li>
+</ul>
+</li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788: Beacon block root in the EVM</a>
+<ul>
+<li><a href="exec-engine.html#ecotone-beacon-block-root">The L1 beacon block root is embedded into L2</a></li>
+<li><a href="derivation.html#ecotone-beacon-block-roots-contract-deployment-eip-4788">The Beacon roots contract deployment is automated</a></li>
+</ul>
+</li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-5656">EIP-5656: MCOPY - Memory copying instruction</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-6780">EIP-6780: SELFDESTRUCT only in same transaction</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7516">EIP-7516: BLOBBASEFEE opcode</a>
+<ul>
+<li><a href="exec-engine.html#ecotone-disable-blob-transactions">BLOBBASEFEE always pushes 1 onto the stack</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Deneb (Consensus Layer): <em>not applicable to L2</em>
+<ul>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7044">EIP-7044: Perpetually Valid Signed Voluntary Exits</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7045">EIP-7045: Increase Max Attestation Inclusion Slot</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7514">EIP-7514: Add Max Epoch Churn Limit</a></li>
+</ul>
+</li>
+</ul>
+<p>Data Availability (DA) upgrade:</p>
+<ul>
+<li>Blobs Data Availability: support blobs DA the <a href="derivation.html#ecotone-blob-retrieval">L1 Data-retrieval stage</a>.</li>
+<li>Rollup fee update: support blobs DA in
+<a href="exec-engine.html#ecotone-l1-cost-fee-changes-eip-4844-da">L1 Data Fee computation</a></li>
+<li>Auto-upgrading and extension of the <a href="deposits.html#ecotone-l1block-upgrade">L1 Attributes Predeployed Contract</a>
+(also known as <code>L1Block</code> predeploy)</li>
+</ul>
+<h2 id="fjord"><a class="header" href="#fjord">Fjord</a></h2>
+<p>Name of the next upgrade after Ecotone. Placeholder for development coordination.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/superchain-configuration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/system_config.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/superchain-configuration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/system_config.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

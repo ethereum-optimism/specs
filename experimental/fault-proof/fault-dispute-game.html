@@ -1,0 +1,615 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Fault Dispute Game - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/fault-dispute-game.html" class="active"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="fault-dispute-game"><a class="header" href="#fault-dispute-game">Fault Dispute Game</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#virtual-machine-vm">Virtual Machine (VM)</a></li>
+<li><a href="#preimageoracle">PreimageOracle</a></li>
+<li><a href="#execution-trace">Execution Trace</a></li>
+<li><a href="#claims">Claims</a></li>
+<li><a href="#dag">DAG</a></li>
+<li><a href="#subgame">Subgame</a></li>
+<li><a href="#game-tree">Game Tree</a></li>
+<li><a href="#position">Position</a></li>
+<li><a href="#game_duration">GAME_DURATION</a></li>
+</ul>
+</li>
+<li><a href="#game-mechanics">Game Mechanics</a>
+<ul>
+<li><a href="#actors">Actors</a></li>
+<li><a href="#moves">Moves</a>
+<ul>
+<li><a href="#attack">Attack</a></li>
+<li><a href="#defend">Defend</a></li>
+</ul>
+</li>
+<li><a href="#step">Step</a></li>
+<li><a href="#step-types">Step Types</a></li>
+<li><a href="#preimageoracle-interaction">PreimageOracle Interaction</a></li>
+<li><a href="#team-dynamics">Team Dynamics</a></li>
+<li><a href="#game-clock">Game Clock</a></li>
+<li><a href="#resolution">Resolution</a></li>
+</ul>
+</li>
+</ul>
+<!-- Glossary References -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The Fault Dispute Game (FDG) is a specific type of <a href="dispute-game-interface.html">dispute game</a> that verifies the
+validity of a root claim by iteratively bisecting over <a href="../../glossary.html#L2-output-root">output roots</a> and execution traces of single
+block state transitions down to a single instruction step. It relies on a Virtual Machine (VM) to falsify invalid
+claims made at a single instruction step.</p>
+<p>Actors, i.e. Players, interact with the game by making claims that dispute other claims in the FDG.
+Each claim made narrows the range over the entire historical state of L2, until the source of dispute is a single
+state transition. Once a time limit is reached, the dispute game is <em>resolved</em>, based on claims made that are disputed
+and which aren't, to determine the winners of the game.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="virtual-machine-vm"><a class="header" href="#virtual-machine-vm">Virtual Machine (VM)</a></h3>
+<p>This is a state transition function (STF) that takes a <em>pre-state</em> and computes the post-state.
+The VM may access data referenced during the STF and as such, it also accepts a <em>proof</em> of this data.
+Typically, the pre-state contains a commitment to the <em>proof</em> to verify the integrity of the data referenced.</p>
+<p>Mathematically, we define the STF as <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> where</p>
+<ul>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is the pre-state</li>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is an optional proof needed for the transition from <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> to <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8917em;vertical-align:-0.2083em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span></span></span></span>.</li>
+</ul>
+<h3 id="preimageoracle"><a class="header" href="#preimageoracle">PreimageOracle</a></h3>
+<p>This is a pre-image data store. It is often used by VMs to read external data during its STF.
+Before successfully executing a VM STF, it may be necessary to preload the PreimageOracle with pertinent data.
+The method for key-based retrieval of these pre-images varies according to the specific VM.</p>
+<h3 id="execution-trace"><a class="header" href="#execution-trace">Execution Trace</a></h3>
+<p>An execution trace <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span></span></span></span> is a sequence <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">...</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> where each <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a VM state and
+for each <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7804em;vertical-align:-0.136em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6986em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8917em;vertical-align:-0.2083em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>.
+Every execution trace has a unique starting state, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, that's preset to a FDG implementation.
+We refer to this state as the <strong>ABSOLUTE_PRESTATE</strong>.</p>
+<h3 id="claims"><a class="header" href="#claims">Claims</a></h3>
+<p>Claims assert an <a href="../../glossary.html#L2-output-root">output root</a> or the state of the FPVM at a given instruction. This is represented as
+<code>ClaimHash</code>, a <code>bytes32</code> representing either an <a href="../../glossary.html#L2-output-root">output root</a> or a commitment to the last VM state in a
+trace. A FDG is initialized with an output root that corresponds to the state of L2 at a given L2 block number, and
+execution trace subgames at <code>SPLIT_DEPTH + 1</code> are initialized with a claim that commits to the entire execution trace
+between two consecutive output roots (a block <code>n -&gt; n+1</code> state transition). As we'll see later, there can be multiple
+claims, committing to different output roots and FPVM states in the FDG.</p>
+<h3 id="dag"><a class="header" href="#dag">DAG</a></h3>
+<p>A Directed Acyclic Graph <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="mclose">)</span></span></span></span> representing the relationship between claims, where:</p>
+<ul>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span></span></span></span> is the set of nodes, each representing a claim. Formally, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">...</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">}</span></span></span></span>,
+where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a claim.</li>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span></span></span></span> is the set of <em>directed</em> edges. An edge <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> exists if <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span> is a direct dispute
+against <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> through either an &quot;Attack&quot; or &quot;Defend&quot; <a href="#moves">move</a>.</li>
+</ul>
+<h3 id="subgame"><a class="header" href="#subgame">Subgame</a></h3>
+<p>A sub-game is a DAG of depth 1, where the root of the DAG is a <code>Claim</code> and the children are <code>Claim</code>s that counter the
+root. A good mental model around this structure is that it is a fundamental dispute between two parties over a single
+piece of information. These subgames are chained together such that a child within a subgame is the root of its own
+subgame, which is visualized in the <a href="#resolution">resolution</a> section. There are two types of sub-games in the fault
+dispute game:</p>
+<ol>
+<li>Output Roots</li>
+<li>Execution Trace Commitments</li>
+</ol>
+<p>At and above the split depth, all subgame roots correspond to <a href="../../glossary.html#L2-output-root">output roots</a>, or commitments to the full
+state of L2 at a given L2 block number. Below the split depth, subgame roots correspond to commitments to the fault
+proof VM's state at a given instruction step.</p>
+<h3 id="game-tree"><a class="header" href="#game-tree">Game Tree</a></h3>
+<p>The Game Tree is a binary tree of positions. Every claim in the DAG references a position in the Game Tree.
+The Game Tree has a split depth and maximum depth, <code>SPLIT_DEPTH</code> and <code>MAX_GAME_DEPTH</code> respectively, that are both
+preset to an FDG implementation. The split depth defines the maximum depth at which claims about
+<a href="../../glossary.html#L2-output-root">output roots</a> can occur, and below it, execution trace bisection occurs. Thus, the Game Tree contains
+<span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span> positions, where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span> is the <code>MAX_GAME_DEPTH</code> (unless <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>, in which case there's only 1 position).</p>
+<p>The full game tree, with a layer of the tree allocated to output bisection, and sub-trees after an arbitrary split
+depth, looks like:</p>
+<p><img src="../../static/assets/ob-tree.png" alt="ob-tree" /></p>
+<h3 id="position"><a class="header" href="#position">Position</a></h3>
+<p>A position represents the location of a claim in the Game Tree. This is represented by a
+&quot;generalized index&quot; (or <strong>gindex</strong>) where the high-order bit is the level in the tree and the remaining
+bits is a unique bit pattern, allowing a unique identifier for each node in the tree.</p>
+<p>The <strong>gindex</strong> of a position <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> can be calculated as <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9713em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.888em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mopen mtight">(</span><span class="mord mathnormal mtight">n</span><span class="mclose mtight">)</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">i</span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>, where:</p>
+<ul>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">d</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> is a function returning the depth of the position in the Game Tree</li>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">i</span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> is a function returning the index of the position at its depth (starting from the left).</li>
+</ul>
+<p>Positions at the deepest level of the game tree correspond to indices in the execution trace, whereas claims at the
+split depth represent single L2 blocks' <a href="../../glossary.html#L2-output-root">output roots</a>.
+Positions higher up the game tree also cover the deepest, right-most positions relative to the current position.
+We refer to this coverage as the <strong>trace index</strong> of a Position.</p>
+<blockquote>
+<p>This means claims commit to an execution trace that terminates at the same index as their Position's trace index.
+That is, for a given trace index <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span>, its ClaimHash corresponds to the <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> th state in the trace.</p>
+</blockquote>
+<p>Note that there can be multiple positions covering the same <em>trace index</em>.</p>
+<h3 id="game_duration"><a class="header" href="#game_duration">GAME_DURATION</a></h3>
+<p>This is an immutable, preset to a FDG implementation, representing the duration of the game. Each top level team will
+receive half of this duration on their initial chess clocks.</p>
+<h2 id="game-mechanics"><a class="header" href="#game-mechanics">Game Mechanics</a></h2>
+<h3 id="actors"><a class="header" href="#actors">Actors</a></h3>
+<p>The game involves two types of participants (or Players): <strong>Challengers</strong> and <strong>Defenders</strong>.
+These players are grouped into separate teams, each employing distinct strategies to interact with the game.
+Team members share a common goal regarding the game's outcome. Players interact with the game primarily through
+<em>moves</em>.</p>
+<h3 id="moves"><a class="header" href="#moves">Moves</a></h3>
+<p>A Move is a challenge against an existing claim and must include an alternate claim asserting a different trace.
+Moves can either be attacks or defenses and serve to update to DAG by adding nodes and edges targeting the disputed
+claim.</p>
+<p>Moves within the fault dispute game can claim two separate values: <a href="../../glossary.html#L2-output-root">output roots</a> and execution trace
+commitments. At and above the <code>SPLIT_DEPTH</code>, claims correspond to output roots, while below the split depth, they
+correspond to execution trace commitments.</p>
+<p>Initially, claims added to the DAG are <em>uncontested</em> (i.e. not <strong>countered</strong>). Once a move targets a claim, that claim
+is considered countered.
+The status of a claim — whether it's countered or not — helps determine its validity and, ultimately, the
+game's winner.</p>
+<h4 id="attack"><a class="header" href="#attack">Attack</a></h4>
+<p>A logical move made when a claim is disagreed with.
+A claim at the relative attack position to a node, <code>n</code>, in the Game Tree commits to half
+of the trace of the <code>n</code>’s claim.
+The attack position relative to a node can be calculated by multiplying its gindex by 2.</p>
+<p>To illustrate this, here's a Game Tree highlighting an attack on a Claim positioned at 6.</p>
+<p><img src="../../static/assets/attack.png" alt="Attacking node 6" /></p>
+<p>Attacking the node at 6 moves creates a new claim positioned at 12.</p>
+<h4 id="defend"><a class="header" href="#defend">Defend</a></h4>
+<p>The logical move against a claim when you agree with both it and its parent.
+A defense at the relative position to a node, <code>n</code>, in the Game Tree commits to the first half of n + 1’s trace range.</p>
+<p><img src="../../static/assets/defend.png" alt="Defend at 4" /></p>
+<p>Note that because of this, some nodes may never exist within the Game Tree.
+However, they're not necessary as these nodes have complimentary, valid positions
+with the same trace index within the tree. For example, a Position with gindex 5 has the same
+trace index as another Position with gindex 2. We can verify that all trace indices have valid moves within the game:</p>
+<p><img src="../../static/assets/valid-moves.png" alt="Game Tree Showing All Valid Move Positions" /></p>
+<p>There may be multiple claims at the same position, so long as their <code>ClaimHash</code> are unique.</p>
+<p>Each move adds new claims to the Game Tree at strictly increasing depth.
+Once a claim is at <code>MAX_GAME_DEPTH</code>, the only way to dispute such claims is to <strong>step</strong>.</p>
+<h3 id="step"><a class="header" href="#step">Step</a></h3>
+<p>At <code>MAX_GAME_DEPTH</code>, the position of claims correspond to indices of an execution trace.
+It's at this point that the FDG is able to query the VM to determine the validity of claims,
+by checking the states they're committing to.
+This is done by applying the VM's STF to the state a claim commits to.
+If the STF post-state does not match the claimed state, the challenge succeeds.</p>
+<pre><code class="language-solidity">/// @notice Perform an instruction step via an on-chain fault proof processor.
+/// @dev This function should point to a fault proof processor in order to execute
+///      a step in the fault proof program on-chain. The interface of the fault proof
+///      processor contract should adhere to the `IBigStepper` interface.
+/// @param _claimIndex The index of the challenged claim within `claimData`.
+/// @param _isAttack Whether or not the step is an attack or a defense.
+/// @param _stateData The stateData of the step is the preimage of the claim at the given
+///        prestate, which is at `_stateIndex` if the move is an attack and `_claimIndex` if
+///        the move is a defense. If the step is an attack on the first instruction, it is
+///        the absolute prestate of the fault proof VM.
+/// @param _proof Proof to access memory nodes in the VM's merkle state tree.
+function step(uint256 _claimIndex, bool _isAttack, bytes calldata _stateData, bytes calldata _proof) external;
+</code></pre>
+<h3 id="step-types"><a class="header" href="#step-types">Step Types</a></h3>
+<p>Similar to moves, there are two ways to step on a claim; attack or defend.
+These determine the pre-state input to the VM STF and the expected output.</p>
+<ul>
+<li><strong>Attack Step</strong> - Challenges a claim by providing a pre-state, proving an invalid state transition.
+It uses the previous state in the execution trace as input and expects the disputed claim's state as output.
+There must exist a claim in the DAG that commits to the input.</li>
+<li><strong>Defense Step</strong> - Challenges a claim by proving it was an invalid attack,
+thereby defending the disputed ancestor's claim. It uses the disputed claim's state as input and expects
+the next state in the execution trace as output. There must exist a claim in the DAG that commits to the
+expected output.</li>
+</ul>
+<p>The FDG step handles the inputs to the VM and asserts the expected output.
+A step that successfully proves an invalid post-state (when attacking) or pre-state (when defending) is a
+successful counter against the disputed claim.
+Players interface with <code>step</code> by providing an indicator of attack and state data (including any proofs)
+that corresponds to the expected pre/post state (depending on whether it's an attack or defend).
+The FDG will assert that an existing claim commits to the state data provided by players.</p>
+<h3 id="preimageoracle-interaction"><a class="header" href="#preimageoracle-interaction">PreimageOracle Interaction</a></h3>
+<p>Certain steps (VM state transitions) require external data to be available by the <code>PreimageOracle</code>.
+To ensure a successful state transition, players should provide this data in advance.
+The FDG provides the following interface to manage data loaded to the <code>PreimageOracle</code>:</p>
+<pre><code class="language-solidity">/// @notice Posts the requested local data to the VM's `PreimageOralce`.
+/// @param _ident The local identifier of the data to post.
+/// @param _execLeafIdx The index of the leaf claim in an execution subgame that requires the local data for a step.
+/// @param _partOffset The offset of the data to post.
+function addLocalData(uint256 _ident, uint256 _execLeafIdx, uint256 _partOffset) external;
+</code></pre>
+<p>The <code>addLocalData</code> function loads local data into the VM's <code>PreimageOracle</code>. This data consists of bootstrap data for
+the program. There are multiple sets of local preimage keys that belong to the <code>FaultDisputeGame</code> contract due to the
+ability for players to bisect to any block <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> state transition since the configured genesis, the
+<code>_execLeafIdx</code> parameter enables a search for the starting / disputed outputs to be performed such that the contract
+can write to and reference unique local keys in the <code>PreimageOracle</code> for each of these <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>
+transitions.</p>
+<div class="table-wrapper"><table><thead><tr><th>Identifier</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>0</code></td><td>Parent L1 head hash at the time of the proposal</td></tr>
+<tr><td><code>1</code></td><td>Starting output root hash (commits to block # <code>n</code>)</td></tr>
+<tr><td><code>2</code></td><td>Disputed output root hash (commits to block # <code>n + 1</code>)</td></tr>
+<tr><td><code>3</code></td><td>Starting L2 block number (block # <code>n</code>)</td></tr>
+<tr><td><code>4</code></td><td>Chain ID</td></tr>
+</tbody></table>
+</div>
+<p>For global <code>keccak256</code> preimages, there are two routes for players to submit:</p>
+<ol>
+<li>Small preimages atomically.</li>
+<li>Large preimages via streaming.</li>
+</ol>
+<p>Global <code>keccak256</code> preimages are non-context specific and can be submitted directly to the <code>PreimageOracle</code> via the
+<code>loadKeccak256PreimagePart</code> function, which takes the part offset as well as the full preimage. In the event that the
+preimage is too large to be submitted through calldata in a single block, challengers must resort to the streaming
+option.</p>
+<p><strong>Large Preimage Proposals</strong></p>
+<p>Large preimage proposals allow for submitters to stream in a large preimage over multiple transactions, along-side
+commitments to the intermediate state of the <code>keccak256</code> function after absorbing/permuting the <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1088</span></span></span></span> bit block.
+This data is progressively merkleized on-chain as it is streamed in, with each leaf constructed as follows:</p>
+<pre><code class="language-solidity">/// @notice Returns a leaf hash to add to a preimage proposal merkle tree.
+/// @param input A single 136 byte chunk of the input.
+/// @param blockIndex The index of the block that `input` corresponds to in the full preimage's absorbtion.
+/// @param stateCommitment The hash of the full 5x5 state matrix *after* absorbing and permuting `input`.
+function hashLeaf(
+    bytes memory input,
+    uint256 blockIndex,
+    bytes32 stateCommitment
+) internal view returns (bytes32 leaf) {
+    require(input.length == 136, &quot;input must be exactly the size of the keccak256 rate&quot;);
+
+    leaf = keccak256(abi.encodePacked(input, blockIndex, stateCommitment));
+}
+</code></pre>
+<p>Once the full preimage and all intermediate state commitments have been posted, the large preimage proposal enters a
+challenge period. During this time, a challenger can reconstruct the merkle tree that was progressively built on-chain
+locally by scanning the block bodies that contain the proposer's leaf preimages. If they detect that a commitment to
+the intermediate state of the hash function is incorrect at any step, they may perform a single-step dispute for the
+proposal in the <code>PreimageOracle</code>. This involves:</p>
+<ol>
+<li>Creating a merkle proof for the agreed upon prestate leaf (not necessary if the invalid leaf is the first one, the
+setup state of the matrix is constant.) within the proposal's merkle root.</li>
+<li>Creating a merkle proof for the disputed post state leaf within the proposal's merkle root.</li>
+<li>Computing the state matrix at the agreed upon prestate (not necessary if the invalid leaf is the first one, the
+setup state of the matrix is constant.)</li>
+</ol>
+<p>The challenger then submits this data to the <code>PreimageOracle</code>, where the post state leaf's claimed input is absored into
+the pre state leaf's state matrix and the SHA3 permutation is executed on-chain. After that, the resulting state matrix
+is hashed and and compared with the proposer's claim in the post state leaf. If the hash does not match, the proposal
+is marked as challenged, and it may not be finalized. If, after the challenge period is concluded, a proposal has no
+challenges, it may be finalized and the preimage part may be placed into the authorized mappings for the FPVM to read.</p>
+<h3 id="team-dynamics"><a class="header" href="#team-dynamics">Team Dynamics</a></h3>
+<p>Challengers seek to dispute the root claim, while Defenders aim to support it.
+Both types of actors will move accordingly to support their team. For Challengers, this means
+attacking the root claim and disputing claims positioned at even depths in the Game Tree.
+Defenders do the opposite by disputing claims positioned at odd depths.</p>
+<p>Players on either team are motivated to support the actions of their teammates.
+This involves countering disputes against claims made by their team (assuming these claims are honest).
+Uncontested claims are likely to result in a loss, as explained later under <a href="#resolution">Resolution</a>.</p>
+<h3 id="game-clock"><a class="header" href="#game-clock">Game Clock</a></h3>
+<p>Every claim in the game has a Clock. A claim inherits the clock of its grandparent claim in the
+DAG (and so on). Akin to a chess clock, it keeps track of the total time each team takes to make
+moves, preventing delays.
+Making a move resumes the clock for the disputed claim and puases it for the newly added one.</p>
+<p>A move against a particular claim is no longer possible once the parent of the disputed claim's Clock
+has exceeded half of the <code>GAME_DURATION</code>. By which point, the claim's clock has <em>expired</em>.</p>
+<h3 id="resolution"><a class="header" href="#resolution">Resolution</a></h3>
+<p>Resolving the FDG determines which team won the game. To do this, we use the internal sub game structure.
+Each claim within the game is the root of its own sub game. These subgames are modeled as nested DAGs, each with a max
+depth of 1. In order for a claim to be considered countered, only one of its children must be uncountered. Subgames
+can also not be resolved until all of their children, which are subgames themselves, have been resolved and
+the potential opponent's chess clock has run out. Because each claim is the root of its own sub-game,
+truth percolates upwards towards the root claim by resolving each individual sub-game bottom-up.</p>
+<p>In a game like the one below, we can resolve up from the deepest subgames. Here, we'd resolve <code>b0</code>
+to uncountered and <code>a0</code> to countered by walking up from their deepest children, and once all children of the
+root game are recursively resolved, we can resolve the root to countered due to <code>b0</code> remaining uncountered.</p>
+<!-- https://gist.github.com/clabby/e98bdd80ef3c038424f3372b70e34e08 -->
+<!-- markdownlint-disable no-inline-html -->
+<p><a href="https://github.com/ethereum-optimism/optimism/assets/8406232/d2b708a0-539e-439d-96bd-c2f66f3a45f8">https://github.com/ethereum-optimism/optimism/assets/8406232/d2b708a0-539e-439d-96bd-c2f66f3a45f8</a></p>
+<p>Another example is this game, which has a slightly different structure. Here, the root claim will also
+be countered due to <code>b0</code> remaining uncountered.</p>
+<!--
+digraph G {
+    rankdir=LR
+    newrank=true
+  node [shape=plaintext]
+  subgraph cluster_01 {
+    label = "Legend";
+    key [label=<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
+      <tr><td align="right" port="i1">bisection</td></tr>
+      <tr><td align="right" port="i2">resolution</td></tr>
+      </table>>]
+    key2 [label=<<table border="0" cellpadding="" cellspacing="0" cellborder="0">
+      <tr><td port="i1">&nbsp;</td></tr>
+      <tr><td port="i2">&nbsp;</td></tr>
+      </table>>]
+    key:i1:e -> key2:i1:w [color=green]
+    key:i2:e -> key2:i2:w [color=coral1, style=dotted]
+  }
+  subgraph cluster_0 {
+    color=cornflowerblue;
+    node [style=filled];
+    a0 -> a1 [color=green];
+    a1 -> a0 [color=coral1, style=dotted];
+    subgraph cluster_0_0 {
+        label = "subgame #5";
+        color=purple;
+        a1 -> a2 [color=green];
+        a2 -> a1 [color=coral1, style=dotted];
+        subgraph cluster_0_1 {
+            label = "subgame #6";
+            color=magenta;
+            a2 -> a3 [color=green];
+            a3 -> a2 [color=coral1, style=dotted];
+            a2 -> a4 [color=green];
+            a4 -> a2 [color=coral1, style=dotted];
+            subgraph cluster_0_2 {
+                label = "subgame #7";
+                color=lightpink;
+                a3
+            }
+            subgraph cluster_0_3 {
+                label = "subgame #8";
+                color=lightpink;
+                a4 -> a5 [color=green];
+                a5 -> a4 [color=coral1, style=dotted];
+                subgraph cluster_0_4 {
+                    label = "subgame #9";
+                    color=palegreen;
+                    a5
+                }
+            }
+        }
+    }
+    label = "subgame #4";
+  }
+  subgraph cluster_1 {
+    node [style=filled];
+    label = "subgame #1";
+    color=cornflowerblue
+    b0 -> b1 [color=green];
+    b1 -> b0 [color=coral1, style=dotted];
+    subgraph cluster_1_0 {
+        label = "subgame #2";
+        color=purple;
+        b1 -> b2 [color=green];
+        b2 -> b1 [color=coral1, style=dotted];
+        subgraph cluster_1_1 {
+            label = "subgame #3";
+            edge [style=invis]
+            color=magenta;
+            b2
+        }
+    }
+  }
+  Root -> a0 [color=green];
+  Root -> b0 [color=green];
+  a0 -> Root [color=coral1, style=dotted];
+  b0 -> Root [color=coral1, style=dotted];
+  Root [shape=Mdiamond];
+}
+-->
+<!-- markdownlint-disable no-inline-html -->
+<p align="center">
+<img src="https://github.com/ethereum-optimism/optimism/assets/8406232/9b20ba8d-0b64-47b3-9962-5533f7eb4ef7" width=60%>
+</p>
+<p>Given these rules, players are motivated to move quickly to challenge all dishonest claims.
+Each move bisects the historical state of L2 and eventually, <code>MAX_GAME_DEPTH</code> is reached where disputes
+can be settled conclusively. Dishonest players are disincentivized to participate, via backwards induction,
+as an invalid claim won't remain uncontested. Further incentives can be added to the game by requiring
+claims to be bonded, while rewarding game winners using the bonds of dishonest claims.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/fault-proof/dispute-game-interface.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../experimental/fault-proof/honest-challenger-fdg.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/fault-proof/dispute-game-interface.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../experimental/fault-proof/honest-challenger-fdg.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

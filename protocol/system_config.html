@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>System Config - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html" class="active"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="system-config"><a class="header" href="#system-config">System Config</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#system-config-contents-version-0">System config contents (version 0)</a>
+<ul>
+<li><a href="#batcherhash-bytes32"><code>batcherHash</code> (<code>bytes32</code>)</a></li>
+<li><a href="#scalars">Scalars</a>
+<ul>
+<li><a href="#pre-ecotone-scalar-overhead-uint256uint256">Pre-Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>)</a></li>
+<li><a href="#ecotone-scalar-overhead-uint256uint256-change">Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>) change</a></li>
+</ul>
+</li>
+<li><a href="#gaslimit-uint64"><code>gasLimit</code> (<code>uint64</code>)</a></li>
+<li><a href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></li>
+</ul>
+</li>
+<li><a href="#writing-the-system-config">Writing the system config</a></li>
+<li><a href="#reading-the-system-config">Reading the system config</a></li>
+</ul>
+<p>The <code>SystemConfig</code> is a contract on L1 that can emit rollup configuration changes as log events.
+The rollup <a href="derivation.html">block derivation process</a> picks up on these log events and applies the changes.</p>
+<h2 id="system-config-contents-version-0"><a class="header" href="#system-config-contents-version-0">System config contents (version 0)</a></h2>
+<p>Version 0 of the system configuration contract defines the following parameters:</p>
+<h3 id="batcherhash-bytes32"><a class="header" href="#batcherhash-bytes32"><code>batcherHash</code> (<code>bytes32</code>)</a></h3>
+<p>A versioned hash of the current authorized batcher sender(s), to rotate keys as batch-submitter.
+The first byte identifies the version.</p>
+<p>Version <code>0</code> embeds the current batch submitter ethereum address (<code>bytes20</code>) in the last 20 bytes of the versioned hash.</p>
+<p>In the future this versioned hash may become a commitment to a more extensive configuration,
+to enable more extensive redundancy and/or rotation configurations.</p>
+<h3 id="scalars"><a class="header" href="#scalars">Scalars</a></h3>
+<p>The L1 fee parameters, also known as Gas Price Oracle (GPO) parameters, are used to compute the L1
+data fee applied to an L2 transaction. The specific parameters used depend on the upgrades that
+are active.</p>
+<p>Fee parameter updates are signaled to L2 through the <code>GAS_CONFIG</code> log-event of the <code>SystemConfig</code>.</p>
+<h4 id="pre-ecotone-scalar-overhead-uint256uint256"><a class="header" href="#pre-ecotone-scalar-overhead-uint256uint256">Pre-Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>)</a></h4>
+<p>The <code>overhead</code> and <code>scalar</code> are consulted and passed to the L2 via L1 attribute info.</p>
+<p>The values are interpreted as big-endian <code>uint256</code>.</p>
+<h4 id="ecotone-scalar-overhead-uint256uint256-change"><a class="header" href="#ecotone-scalar-overhead-uint256uint256-change">Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>) change</a></h4>
+<p>After Ecotone activation:</p>
+<ul>
+<li>The <code>scalar</code> attribute encodes additional scalar information, in a versioned encoding scheme.</li>
+<li>The <code>overhead</code> value is ignored: it does not affect the L2 state-transition output.</li>
+</ul>
+<p>The <code>scalar</code> is encoded as big-endian <code>uint256</code>, interpreted as <code>bytes32</code>, and composed as following:</p>
+<p>*Byte ranges are indicated with <code>[</code> (inclusive) and <code>)</code> (exclusive).</p>
+<ul>
+<li><code>0</code>: scalar-version byte</li>
+<li><code>[1, 32)</code>: depending scalar-version:
+<ul>
+<li>Scalar-version <code>0</code>:
+<ul>
+<li><code>[1, 28)</code>: padding, should be zero.</li>
+<li><code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the L1-fee <code>baseFeeScalar</code></li>
+<li>This version implies the L1-fee <code>blobBaseFeeScalar</code> is set to 0.</li>
+<li>In the event there are non-zero bytes in the padding area, <code>baseFeeScalar</code> must be set to MaxUint32.</li>
+<li>This version is compatible with the pre-Ecotone <code>scalar</code> value (assuming a <code>uint32</code> range).</li>
+</ul>
+</li>
+<li>Scalar-version <code>1</code>:
+<ul>
+<li><code>[1, 24)</code>: padding, must be zero.</li>
+<li><code>[24, 28)</code>: big-endian <code>uint32</code>, encoding the <code>blobBaseFeeScalar</code></li>
+<li><code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the <code>baseFeeScalar</code></li>
+<li>This version is meant to configure the EIP-4844 blob fee component, once blobs are used for data-availability.</li>
+</ul>
+</li>
+<li>Other scalar-version values: unrecognized.
+OP-Stack forks are recommended to utilize the <code>&gt;= 128</code> scalar-version range and document their <code>scalar</code> encoding.</li>
+</ul>
+</li>
+</ul>
+<p>Invalid and unrecognized scalar event-data should be ignored,
+and the last valid configuration should continue to be utilized.</p>
+<p>The <code>baseFeeScalar</code> and <code>blobBaseFeeScalar</code> are incorporated into the L2 through the
+<a href="deposits.html#l1-attributes---ecotone">Ecotone L1 attributes deposit transaction calldata</a>.</p>
+<p>Future upgrades of the <code>SystemConfig</code> contract may provide additional typed getters/setters
+for the versioned scalar information.</p>
+<p>In Ecotone the existing <code>setGasConfig</code> function, and <code>scalar</code> and <code>overhead</code> getters, continue to function.</p>
+<p>When the batch-submitter utilizes EIP-4844 blob data for data-availability
+it can adjust the scalars to accurately price the resources:</p>
+<ul>
+<li>
+<p><code>baseFeeScalar</code> to correspond to the share of the user-transaction (per byte)
+in the total regular L1 EVM gas usage consumed by the data-transaction of the batch-submitter.
+For blob transactions this is the fixed intrinsic gas cost of the L1 transaction.</p>
+</li>
+<li>
+<p><code>blobBaseFeeScalar</code> to correspond to share of a user-transaction (per byte)
+in the total Blob data that is introduced by the data-transaction of the batch-submitter.</p>
+</li>
+</ul>
+<h3 id="gaslimit-uint64"><a class="header" href="#gaslimit-uint64"><code>gasLimit</code> (<code>uint64</code>)</a></h3>
+<p>The gas limit of the L2 blocks is configured through the system config.
+Changes to the L2 gas limit are fully applied in the first L2 block with the L1 origin that introduced the change,
+as opposed to the 1/1024 adjustments towards a target as seen in limit updates of L1 blocks.</p>
+<h3 id="unsafeblocksigner-address"><a class="header" href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></h3>
+<p>Blocks are gossiped around the p2p network before they are made available on L1.
+To prevent denial of service on the p2p layer, these unsafe blocks must be
+signed with a particular key to be accepted as &quot;canonical&quot; unsafe blocks.
+The address corresponding to this key is the <code>unsafeBlockSigner</code>. To ensure
+that its value can be fetched with a storage proof in a storage layout independent
+manner, it is stored at a special storage slot corresponding to
+<code>keccak256(&quot;systemconfig.unsafeblocksigner&quot;)</code>.</p>
+<p>Unlike the other values, the <code>unsafeBlockSigner</code> only operates on blockchain
+policy. It is not a consensus level parameter.</p>
+<h2 id="writing-the-system-config"><a class="header" href="#writing-the-system-config">Writing the system config</a></h2>
+<p>The <code>SystemConfig</code> contract applies authentication to all writing contract functions,
+the configuration management can be configured to be any type of ethereum account or contract.</p>
+<p>On a write, an event is emitted for the change to be picked up by the L2 system,
+and a copy of the new written configuration variable is retained in L1 state to read with L1 contracts.</p>
+<h2 id="reading-the-system-config"><a class="header" href="#reading-the-system-config">Reading the system config</a></h2>
+<p>A rollup node initializes its derivation process by finding a starting point based on its past L2 chain:</p>
+<ul>
+<li>When started from L2 genesis, the initial system configuration is retrieved from the rollup chain configuration.</li>
+<li>When started from an existing L2 chain, a previously included L1 block is determined as derivation starting point,
+and the system config can thus be retrieved from the last L2 block that referenced the L1 block as L1 origin:
+<ul>
+<li>If the chain state precedes the Ecotone upgrade, <code>batcherHash</code>, <code>overhead</code> and <code>scalar</code> are
+retrieved from the L1 block info transaction. Otherwise, <code>batcherHash</code>, <code>baseFeeScalar</code>, and
+<code>blobBaseFeeScalar</code> are retrieved instead.</li>
+<li><code>gasLimit</code> is retrieved from the L2 block header.</li>
+<li>other future variables may also be retrieved from other contents of the L2 block, such as the header.</li>
+</ul>
+</li>
+</ul>
+<p>After preparing the initial system configuration for the given L1 starting input,
+the system configuration is updated by processing all receipts from each new L1 block.</p>
+<p>The contained log events are filtered and processed as follows:</p>
+<ul>
+<li>the log event contract address must match the rollup <code>SystemConfig</code> deployment</li>
+<li>the first log event topic must match the ABI hash of <code>ConfigUpdate(uint256,uint8,bytes)</code></li>
+<li>the second topic determines the version. Unknown versions are critical derivation errors.</li>
+<li>the third topic determines the type of update. Unknown types are critical derivation errors.</li>
+<li>the remaining event data is opaque, encoded as ABI bytes (i.e. includes offset and length data),
+and encodes the configuration update. In version <code>0</code> the following types are supported:
+<ul>
+<li>type <code>0</code>: <code>batcherHash</code> overwrite, as <code>bytes32</code> payload.</li>
+<li>type <code>1</code>: Pre-Ecotone, <code>overhead</code> and <code>scalar</code> overwrite, as two packed <code>uint256</code>
+entries. After Ecotone upgrade, <code>overhead</code> is ignored and <code>scalar</code> interpreted as a <a href="#ecotone-scalar-overhead-uint256uint256-change">versioned
+encoding</a> that updates <code>baseFeeScalar</code> and
+<code>blobBaseFeeScalar</code>.</li>
+<li>type <code>2</code>: <code>gasLimit</code> overwrite, as <code>uint64</code> payload.</li>
+<li>type <code>3</code>: <code>unsafeBlockSigner</code> overwrite, as <code>address</code> payload.</li>
+</ul>
+</li>
+</ul>
+<p>Note that individual derivation stages may be processing different L1 blocks,
+and should thus maintain individual system configuration copies,
+and apply the event-based changes as the stage traverses to the next L1 block.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/superchain-upgrades.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../experimental/fault-proof/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/superchain-upgrades.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../experimental/fault-proof/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

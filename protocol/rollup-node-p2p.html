@@ -1,0 +1,597 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Rollup Node P2P - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html" class="active"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="rollup-node-p2p-interface"><a class="header" href="#rollup-node-p2p-interface">Rollup-node P2P interface</a></h1>
+<p>The <a href="rollup-node.html">rollup node</a> has an optional peer-to-peer (P2P) network service to improve the latency between
+the view of sequencers and the rest of the network by bypassing the L1 in the happy case,
+without relying on a single centralized endpoint.</p>
+<p>This also enables faster historical sync to be bootstrapped by providing block headers to sync towards,
+and only having to compare the L2 chain inputs to the L1 data as compared to processing everything one block at a time.</p>
+<p>The rollup node will <em>always</em> prioritize L1 and reorganize to match the canonical chain.
+The L2 data retrieved via the P2P interface is strictly a speculative extension, also known as the &quot;unsafe&quot; chain,
+to improve the happy case performance.</p>
+<p>This also means that P2P behavior is a soft-rule: nodes keep each other in check with scoring and eventual banning
+of malicious peers by identity or IP. Any behavior on the P2P layer does not affect the rollup security, at worst nodes
+rely on higher-latency data from L1 to serve.</p>
+<p>In summary, the P2P stack looks like:</p>
+<ul>
+<li>Discovery to find peers: <a href="https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md">Discv5</a></li>
+<li>Connections, peering, transport security, multiplexing, gossip: <a href="https://libp2p.io/">LibP2P</a></li>
+<li>Application-layer publishing and validation of gossiped messages like L2 blocks.</li>
+</ul>
+<p>This document only specifies the composition and configuration of these network libraries.
+These components have their own standards, implementations in Go/Rust/Java/Nim/JS/more,
+and are adopted by several other blockchains, most notably the <a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/p2p-interface.md">L1 consensus layer (Eth2)</a>.</p>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#p2p-configuration">P2P configuration</a>
+<ul>
+<li><a href="#identification">Identification</a></li>
+<li><a href="#discv5">Discv5</a>
+<ul>
+<li><a href="#structure">Structure</a></li>
+</ul>
+</li>
+<li><a href="#libp2p">LibP2P</a>
+<ul>
+<li><a href="#transport">Transport</a></li>
+<li><a href="#dialing">Dialing</a></li>
+<li><a href="#nat">NAT</a></li>
+<li><a href="#peer-management">Peer management</a></li>
+<li><a href="#transport-security">Transport security</a></li>
+<li><a href="#protocol-negotiation">Protocol negotiation</a></li>
+<li><a href="#identify">Identify</a></li>
+<li><a href="#ping">Ping</a></li>
+<li><a href="#multiplexing">Multiplexing</a></li>
+<li><a href="#gossipsub">GossipSub</a></li>
+<li><a href="#heartbeat-and-parameters">Heartbeat and parameters</a></li>
+<li><a href="#topic-configuration">Topic configuration</a></li>
+<li><a href="#topic-validation">Topic validation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#gossip-topics">Gossip Topics</a>
+<ul>
+<li><a href="#blocksv1"><code>blocksv1</code></a></li>
+<li><a href="#blocksv2"><code>blocksv2</code></a></li>
+<li><a href="#blocksv3"><code>blocksv3</code></a></li>
+<li><a href="#block-encoding">Block encoding</a></li>
+<li><a href="#block-signatures">Block signatures</a></li>
+<li><a href="#block-validation">Block validation</a>
+<ul>
+<li><a href="#block-processing">Block processing</a></li>
+<li><a href="#block-topic-scoring-parameters">Block topic scoring parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#req-resp">Req-Resp</a>
+<ul>
+<li><a href="#payload_by_number"><code>payload_by_number</code></a></li>
+</ul>
+</li>
+</ul>
+<h2 id="p2p-configuration"><a class="header" href="#p2p-configuration">P2P configuration</a></h2>
+<h3 id="identification"><a class="header" href="#identification">Identification</a></h3>
+<p>Nodes have a <strong>separate</strong> network- and consensus-identity.
+The network identity is a <code>secp256k1</code> key, used for both discovery and active LibP2P connections.</p>
+<p>Common representations of network identity:</p>
+<ul>
+<li><code>PeerID</code>: a LibP2P specific ID derived from the pubkey (through protobuf encoding, typing and hashing)</li>
+<li><code>NodeID</code>: a Discv5 specific ID derived from the pubkey (through hashing, used in the DHT)</li>
+<li><code>Multi-address</code>: an unsigned address, containing: IP, TCP port, PeerID</li>
+<li><code>ENR</code>: a signed record used for discovery, containing: IP, TCP port, UDP port, signature (pubkey can be derived)
+and L2 network identification. Generally encoded in base64.</li>
+</ul>
+<h3 id="discv5"><a class="header" href="#discv5">Discv5</a></h3>
+<h4 id="structure"><a class="header" href="#structure">Structure</a></h4>
+<p>The Ethereum Node Record (ENR) for an Optimism rollup node must contain the following values, identified by unique keys:</p>
+<ul>
+<li>An IPv4 address (<code>ip</code> field) and/or IPv6 address (<code>ip6</code> field).</li>
+<li>A TCP port (<code>tcp</code> field) representing the local libp2p listening port.</li>
+<li>A UDP port (<code>udp</code> field) representing the local discv5 listening port.</li>
+<li>An OpStack (<code>opstack</code> field) L2 network identifier</li>
+</ul>
+<p>The <code>opstack</code> value is encoded as a single RLP <code>bytes</code> value, the concatenation of:</p>
+<ul>
+<li>chain ID (<code>unsigned varint</code>)</li>
+<li>fork ID (<code>unsigned varint</code>)</li>
+</ul>
+<p>Note that DiscV5 is a shared DHT (Distributed Hash Table): the L1 consensus and execution nodes,
+as well as testnet nodes, and even external IOT nodes, all communicate records in this large common DHT.
+This makes it more difficult to censor the discovery of node records.</p>
+<p>The discovery process in Optimism is a pipeline of node records:</p>
+<ol>
+<li>Fill the table with <code>FINDNODES</code> if necessary (Performed by Discv5 library)</li>
+<li>Pull additional records with searches to random Node IDs if necessary
+(e.g. iterate <a href="https://pkg.go.dev/github.com/ethereum/go-ethereum@v1.10.12/p2p/discover#UDPv5.RandomNodes"><code>RandomNodes()</code></a> in Go implementation)</li>
+<li>Pull records from the DiscV5 module when looking for peers</li>
+<li>Check if the record contains the <code>opstack</code> entry, verify it matches the chain ID and current or future fork number</li>
+<li>If not already connected, and not recently disconnected or put on deny-list, attempt to dial.</li>
+</ol>
+<h3 id="libp2p"><a class="header" href="#libp2p">LibP2P</a></h3>
+<h4 id="transport"><a class="header" href="#transport">Transport</a></h4>
+<p>TCP transport. Additional transports are supported by LibP2P, but not required.</p>
+<h4 id="dialing"><a class="header" href="#dialing">Dialing</a></h4>
+<p>Nodes should be publicly dialable, not rely on relay extensions, and able to dial both IPv4 and IPv6.</p>
+<h4 id="nat"><a class="header" href="#nat">NAT</a></h4>
+<p>The listening endpoint must be publicly facing, but may be configured behind a NAT.
+LibP2P will use PMP / UPNP based techniques to track the external IP of the node.
+It is recommended to disable the above if the external IP is static and configured manually.</p>
+<h4 id="peer-management"><a class="header" href="#peer-management">Peer management</a></h4>
+<p>The default is to maintain a peer count with a tide-system based on active peer count:</p>
+<ul>
+<li>At &quot;low tide&quot; the node starts to actively search for additional peer connections.</li>
+<li>At &quot;high tide&quot; the node starts to prune active connections,
+except those that are marked as trusted or have a grace period.</li>
+</ul>
+<p>Peers will have a grace period for a configurable amount of time after joining.
+In an emergency, when memory runs low, the node should start pruning more aggressively.</p>
+<p>Peer records can be persisted to disk to quickly reconnect with known peers after restarting the rollup node.</p>
+<p>The discovery process feeds the peerstore with peer records to connect to, tagged with a time-to-live (TTL).
+The current P2P processes do not require selective topic-specific peer connections,
+other than filtering for the basic network participation requirement.</p>
+<p>Peers may be banned if their performance score is too low, or if an objectively malicious action was detected.</p>
+<p>Banned peers will be persisted to the same data-store as the peerstore records.</p>
+<p>TODO: the connection gater does currently not gate by IP address on the dial Accept-callback.</p>
+<h4 id="transport-security"><a class="header" href="#transport-security">Transport security</a></h4>
+<p><a href="https://github.com/libp2p/specs/tree/master/noise">Libp2p-noise</a>, <code>XX</code> handshake, with the <code>secp256k1</code> P2P identity, as popularized in Eth2.
+The TLS option is available as well, but <code>noise</code> should be prioritized in negotiation.</p>
+<h4 id="protocol-negotiation"><a class="header" href="#protocol-negotiation">Protocol negotiation</a></h4>
+<p><a href="https://github.com/multiformats/multistream-select/">Multistream-select 1.0</a> (<code>/multistream/1.0.0</code>) is an interactive protocol
+used to negotiate sub-protocols supported in LibP2P peers. Multistream-select 2.0 may be used in the future.</p>
+<h4 id="identify"><a class="header" href="#identify">Identify</a></h4>
+<p>LibP2P offers a minimal identification module to share client version and programming language.
+This is optional and can be disabled for enhanced privacy.
+It also includes the same protocol negotiation information, which can speed up initial connections.</p>
+<h4 id="ping"><a class="header" href="#ping">Ping</a></h4>
+<p>LibP2P includes a simple ping protocol to track latency between connections.
+This should be enabled to help provide insight into the network health.</p>
+<h4 id="multiplexing"><a class="header" href="#multiplexing">Multiplexing</a></h4>
+<p>For async communication over different channels over the same connection, multiplexing is used.
+<a href="https://github.com/libp2p/specs/tree/master/mplex">mplex</a> (<code>/mplex/6.7.0</code>) is required, and <a href="https://github.com/hashicorp/yamux/blob/master/spec.md">yamux</a> (<code>/yamux/1.0.0</code>) is recommended but optional</p>
+<h4 id="gossipsub"><a class="header" href="#gossipsub">GossipSub</a></h4>
+<p><a href="https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md">GossipSub 1.1</a> (<code>/meshsub/1.1.0</code>, i.e. with peer-scoring extension) is a pubsub protocol for mesh-networks,
+deployed on L1 consensus (Eth2) and other protocols such as Filecoin, offering lots of customization options.</p>
+<h5 id="content-based-message-identification"><a class="header" href="#content-based-message-identification">Content-based message identification</a></h5>
+<p>Messages are deduplicated, and filtered through application-layer signature verification.
+Thus origin-stamping is disabled and published messages must only contain application data,
+enforced through a <a href="https://github.com/libp2p/specs/blob/master/pubsub/README.md#signature-policy-options"><code>StrictNoSign</code> Signature Policy</a></p>
+<p>This provides greater privacy, and allows sequencers (consensus identity) to maintain
+multiple network identities for redundancy.</p>
+<h5 id="message-compression-and-limits"><a class="header" href="#message-compression-and-limits">Message compression and limits</a></h5>
+<p>The application contents are compressed with <a href="https://github.com/google/snappy">snappy</a> single-block-compression
+(as opposed to frame-compression), and constrained to 10 MiB.</p>
+<h5 id="message-id-computation"><a class="header" href="#message-id-computation">Message ID computation</a></h5>
+<p><a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/p2p-interface.md#topics-and-messages">Same as L1</a>, with recognition of compression:</p>
+<ul>
+<li>If <code>message.data</code> has a valid snappy decompression, set <code>message-id</code> to the first 20 bytes of the <code>SHA256</code> hash of
+the concatenation of <code>MESSAGE_DOMAIN_VALID_SNAPPY</code> with the snappy decompressed message data,
+i.e. <code>SHA256(MESSAGE_DOMAIN_VALID_SNAPPY + snappy_decompress(message.data))[:20]</code>.</li>
+<li>Otherwise, set <code>message-id</code> to the first 20 bytes of the <code>SHA256</code> hash of
+the concatenation of <code>MESSAGE_DOMAIN_INVALID_SNAPPY</code> with the raw message data,
+i.e. <code>SHA256(MESSAGE_DOMAIN_INVALID_SNAPPY + message.data)[:20]</code>.</li>
+</ul>
+<h4 id="heartbeat-and-parameters"><a class="header" href="#heartbeat-and-parameters">Heartbeat and parameters</a></h4>
+<p>GossipSub <a href="https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.0.md#parameters">parameters</a>:</p>
+<ul>
+<li><code>D</code> (topic stable mesh target count): 8</li>
+<li><code>D_low</code> (topic stable mesh low watermark): 6</li>
+<li><code>D_high</code> (topic stable mesh high watermark): 12</li>
+<li><code>D_lazy</code> (gossip target): 6</li>
+<li><code>heartbeat_interval</code> (interval of heartbeat, in seconds): 0.5</li>
+<li><code>fanout_ttl</code> (ttl for fanout maps for topics we are not subscribed to but have published to, in seconds): 24</li>
+<li><code>mcache_len</code> (number of windows to retain full messages in cache for <code>IWANT</code> responses): 12</li>
+<li><code>mcache_gossip</code> (number of windows to gossip about): 3</li>
+<li><code>seen_ttl</code> (number of heartbeat intervals to retain message IDs): 130 (= 65 seconds)</li>
+</ul>
+<p>Notable differences from L1 consensus (Eth2):</p>
+<ul>
+<li><code>seen_ttl</code> does not need to cover a full L1 epoch (6.4 minutes), but rather just a small window covering latest blocks</li>
+<li><code>fanout_ttl</code>: adjusted to lower than <code>seen_ttl</code></li>
+<li><code>mcache_len</code>: a larger number of heartbeats can be retained since the gossip is much less noisy.</li>
+<li><code>heartbeat_interval</code>: faster interval to reduce latency, bandwidth should still be reasonable since
+there are far fewer messages to gossip about each interval than on L1 which uses an interval of 0.7 seconds.</li>
+</ul>
+<h4 id="topic-configuration"><a class="header" href="#topic-configuration">Topic configuration</a></h4>
+<p>Topics have string identifiers and are communicated with messages and subscriptions.
+<code>/optimism/chain_id/hardfork_version/Name</code></p>
+<ul>
+<li><code>chain_id</code>: replace with decimal representation of chain ID</li>
+<li><code>hardfork_version</code>: replace with decimal representation of hardfork, starting at <code>0</code></li>
+<li><code>Name</code>: topic application-name</li>
+</ul>
+<p>Note that the topic encoding depends on the topic, unlike L1,
+since there are less topics, and all are snappy-compressed.</p>
+<h4 id="topic-validation"><a class="header" href="#topic-validation">Topic validation</a></h4>
+<p>To ensure only valid messages are relayed, and malicious peers get scored based on application behavior,
+an <a href="https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md#extended-validators">extended validator</a> checks the message before it is relayed or processed.
+The extended validator emits one of the following validation signals:</p>
+<ul>
+<li><code>ACCEPT</code> valid, relayed to other peers and passed to local topic subscriber</li>
+<li><code>IGNORE</code> scored like inactivity, message is dropped and not processed</li>
+<li><code>REJECT</code> score penalties, message is dropped</li>
+</ul>
+<h2 id="gossip-topics"><a class="header" href="#gossip-topics">Gossip Topics</a></h2>
+<p>There are three topics for distributing blocks to other nodes faster than proxying through L1 would. These are:</p>
+<h3 id="blocksv1"><a class="header" href="#blocksv1"><code>blocksv1</code></a></h3>
+<p>Pre-Canyon/Shanghai blocks are broadcast on <code>/optimism/&lt;chainId&gt;/0/blocks</code>.</p>
+<h3 id="blocksv2"><a class="header" href="#blocksv2"><code>blocksv2</code></a></h3>
+<p>Canyon/Delta blocks are broadcast on <code>/optimism/&lt;chainId&gt;/1/blocks</code>.</p>
+<h3 id="blocksv3"><a class="header" href="#blocksv3"><code>blocksv3</code></a></h3>
+<p>Ecotone blocks are broadcast on <code>/optimism/&lt;chainId&gt;/2/blocks</code>.</p>
+<h3 id="block-encoding"><a class="header" href="#block-encoding">Block encoding</a></h3>
+<p>A block is structured as the concatenation of:</p>
+<ul>
+<li>V1 and V2 topics
+<ul>
+<li><code>signature</code>: A <code>secp256k1</code> signature, always 65 bytes, <code>r (uint256), s (uint256), y_parity (uint8)</code></li>
+<li><code>payload</code>: A SSZ-encoded <code>ExecutionPayload</code>, always the remaining bytes.</li>
+</ul>
+</li>
+<li>V3 topic
+<ul>
+<li><code>signature</code>: A <code>secp256k1</code> signature, always 65 bytes, <code>r (uint256), s (uint256), y_parity (uint8)</code></li>
+<li><code>parentBeaconBlockRoot</code>: L1 origin parent beacon block root, always 32 bytes</li>
+<li><code>payload</code>: A SSZ-encoded <code>ExecutionPayload</code>, always the remaining bytes.</li>
+</ul>
+</li>
+</ul>
+<p>All topics use Snappy block-compression (i.e. no snappy frames):
+the above needs to be compressed after encoding, and decompressed before decoding.</p>
+<h3 id="block-signatures"><a class="header" href="#block-signatures">Block signatures</a></h3>
+<p>The <code>signature</code> is a <code>secp256k1</code> signature, and signs over a message:
+<code>keccak256(domain ++ chain_id ++ payload_hash)</code>, where:</p>
+<ul>
+<li><code>domain</code> is 32 bytes, reserved for message types and versioning info. All zero for this signature.</li>
+<li><code>chain_id</code> is a big-endian encoded <code>uint256</code>.</li>
+<li><code>payload_hash</code> is <code>keccak256(payload)</code>, where <code>payload</code> is the remaining bytes of the payload.</li>
+</ul>
+<p>The <code>secp256k1</code> signature must have <code>y_parity = 1 or 0</code>, the <code>chain_id</code> is already signed over.</p>
+<h3 id="block-validation"><a class="header" href="#block-validation">Block validation</a></h3>
+<p>An <a href="https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md#extended-validators">extended-validator</a> checks the incoming messages as follows, in order of operation:</p>
+<ul>
+<li><code>[REJECT]</code> if the compression is not valid</li>
+<li><code>[REJECT]</code> if the block encoding is not valid</li>
+<li><code>[REJECT]</code> if the <code>payload.timestamp</code> is older than 60 seconds in the past
+(graceful boundary for worst-case propagation and clock skew)</li>
+<li><code>[REJECT]</code> if the <code>payload.timestamp</code> is more than 5 seconds into the future</li>
+<li><code>[REJECT]</code> if the <code>block_hash</code> in the <code>payload</code> is not valid</li>
+<li><code>[REJECT]</code> if the block is on the V1 topic and has withdrawals</li>
+<li><code>[REJECT]</code> if the block is on the V1 topic and has a withdrawals list</li>
+<li><code>[REJECT]</code> if the block is on a topic &gt;= V2 and does not have an empty withdrawals list</li>
+<li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and has a blob gas-used value set</li>
+<li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and has an excess blob gas value set</li>
+<li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and has a blob gas-used value that is not zero</li>
+<li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and has an excess blob gas value that is not zero</li>
+<li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and the parent beacon block root is not nil</li>
+<li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and the parent beacon block root is nil</li>
+<li><code>[REJECT]</code> if more than 5 different blocks have been seen with the same block height</li>
+<li><code>[IGNORE]</code> if the block has already been seen</li>
+<li><code>[REJECT]</code> if the signature by the sequencer is not valid</li>
+<li>Mark the block as seen for the given block height</li>
+</ul>
+<p>The block is signed by the corresponding sequencer, to filter malicious messages.
+The sequencer model is singular but may change to multiple sequencers in the future.
+A default sequencer pubkey is distributed with rollup nodes and should be configurable.</p>
+<p>Note that blocks that a block may still be propagated even if the L1 already confirmed a different block.
+The local L1 view of the node may be wrong, and the time and signature validation will prevent spam.
+Hence, calling into the execution engine with a block lookup every propagation step is not worth the added delay.</p>
+<h4 id="block-processing"><a class="header" href="#block-processing">Block processing</a></h4>
+<p>A node may apply the block to their local engine ahead of L1 availability, if it ensures that:</p>
+<ul>
+<li>The application of the block is reversible, in case of a conflict with delayed L1 information</li>
+<li>The subsequent forkchoice-update ensures this block is recognized as &quot;unsafe&quot;
+(see <a href="derivation.html#engine-api-usage">fork choice updated</a>)</li>
+</ul>
+<h4 id="block-topic-scoring-parameters"><a class="header" href="#block-topic-scoring-parameters">Block topic scoring parameters</a></h4>
+<p>TODO: GossipSub per-topic scoring to fine-tune incentives for ideal propagation delay and bandwidth usage.</p>
+<h2 id="req-resp"><a class="header" href="#req-resp">Req-Resp</a></h2>
+<p>The op-node implements a similar request-response encoding for its sync protocols as the L1 ethereum Beacon-Chain.
+See <a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/p2p-interface.md#the-reqresp-domain">L1 P2P-interface req-resp specification</a> and <a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/altair/p2p-interface.md#the-reqresp-domain">Altair P2P update</a>.</p>
+<p>However, the protocol is simplified, to avoid several issues seen in L1:</p>
+<ul>
+<li>Error strings in responses, if there is any alternative response,
+should not need to be compressed or have an artificial global length limit.</li>
+<li>Payload lengths should be fixed-length: byte-by-byte uvarint reading from the underlying stream is undesired.</li>
+<li><code>&lt;context-bytes&gt;</code> are relaxed to encode a <code>uint32</code>, rather than a beacon-chain <code>ForkDigest</code>.</li>
+<li>Payload-encoding may change per hardfork, so is not part of the protocol-ID.</li>
+<li>Usage of response-chunks is specific to the req-resp method: most basic req-resp does not need chunked responses.</li>
+<li>Compression is encouraged to be part of the payload-encoding, specific to the req-resp method, where necessary:
+pings and such do not need streaming frame compression etc.</li>
+</ul>
+<p>And the protocol ID format follows the same scheme as L1,
+except the trailing encoding schema part, which is now message-specific:</p>
+<pre><code class="language-text">/ProtocolPrefix/MessageName/SchemaVersion/
+</code></pre>
+<p>The req-resp protocols served by the op-node all have <code>/ProtocolPrefix</code> set to <code>/opstack/req</code>.</p>
+<p>Individual methods may include the chain ID as part of the <code>/MessageName</code> segment,
+so it's immediately clear which chain the method applies to, if the communication is chain-specific.
+Other methods may include chain-information in the request and/or response data,
+such as the <code>ForkDigest</code> <code>&lt;context-bytes&gt;</code> in L1 beacon chain req-resp protocols.</p>
+<p>Each segment starts with a <code>/</code>, and may contain multiple <code>/</code>, and the final protocol ID is suffixed with a <code>/</code>.</p>
+<h3 id="payload_by_number"><a class="header" href="#payload_by_number"><code>payload_by_number</code></a></h3>
+<p>This is an optional chain syncing method, to request/serve execution payloads by number.
+This serves as a method to fill gaps upon missed gossip, and sync short to medium ranges of unsafe L2 blocks.</p>
+<p>Protocol ID: <code>/opstack/req/payload_by_number/&lt;chain-id&gt;/0/</code></p>
+<ul>
+<li><code>/MessageName</code> is <code>/block_by_number/&lt;chain-id&gt;</code> where <code>&lt;chain-id&gt;</code> is set to the op-node L2 chain ID.</li>
+<li><code>/SchemaVersion</code> is <code>/0</code></li>
+</ul>
+<p>Request format: <code>&lt;num&gt;</code>: a little-endian <code>uint64</code> - the block number to request.</p>
+<p>Response format: <code>&lt;response&gt; = &lt;res&gt;&lt;version&gt;&lt;payload&gt;</code></p>
+<ul>
+<li><code>&lt;res&gt;</code> is a byte code describing the result.
+<ul>
+<li><code>0</code> on success, <code>&lt;version&gt;&lt;payload&gt;</code> should follow.</li>
+<li><code>1</code> if valid request, but unavailable payload.</li>
+<li><code>2</code> if invalid request</li>
+<li><code>3+</code> if other error</li>
+<li>The <code>&gt;= 128</code> range is reserved for future use.</li>
+</ul>
+</li>
+<li><code>&lt;version&gt;</code> is a little-endian <code>uint32</code>, identifying the response type (fork-specific)</li>
+<li><code>&lt;payload&gt;</code> is an encoded block, read till stream EOF.</li>
+</ul>
+<p>The input of <code>&lt;response&gt;</code> should be limited, as well as any generated decompressed output,
+to avoid unexpected resource usage or zip-bomb type attacks.
+A 10 MB limit is recommended, to ensure all blocks may be synced.
+Implementations may opt for a different limit, since this sync method is optional.</p>
+<p><code>&lt;version&gt;</code> list:</p>
+<ul>
+<li><code>0</code>: SSZ-encoded <code>ExecutionPayload</code>, with Snappy framing compression,
+matching the <code>ExecutionPayload</code> SSZ definition of the L1 Merge, L2 Bedrock and L2 Regolith, L2 Canyon versions.</li>
+<li><code>1</code>: SSZ-encoded <code>ExecutionPayloadEnvelope</code> with Snappy framing compression,
+matching the <code>ExecutionPayloadEnvelope</code> SSZ definition of the L2 Ecotone version.</li>
+</ul>
+<p>The request is by block-number, enabling parallel fetching of a chain across many peers.</p>
+<p>A <code>res = 0</code> response should be verified to:</p>
+<ul>
+<li>Have a block-number matching the requested block number.</li>
+<li>Have a consistent <code>blockhash</code> w.r.t. the other block contents.</li>
+<li>Build towards a known canonical block.
+<ul>
+<li>This can be verified by checking if the parent-hash of a previous trusted canonical block matches
+that of the verified hash of the retrieved block.</li>
+<li>For unsafe blocks this may be relaxed to verification against the parent-hash of any previously trusted block:
+<ul>
+<li>The gossip validation process limits the amount of blocks that may be trusted to sync towards.</li>
+<li>The unsafe blocks should be queued for processing, the latest received L2 unsafe blocks should always
+override any previous chain, until the final L2 chain can be reproduced from L1 data.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>A <code>res &gt; 0</code> response code should not be accepted. The result code is helpful for debugging,
+but the client should regard any error like any other unanswered request, as the responding peer cannot be trusted.</p>
+<hr />
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/rollup-node.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/derivation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/rollup-node.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/derivation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

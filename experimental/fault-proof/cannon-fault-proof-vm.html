@@ -1,0 +1,417 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Cannon Fault Proof VM - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/cannon-fault-proof-vm.html" class="active"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="cannon-fault-proof-virtual-machine"><a class="header" href="#cannon-fault-proof-virtual-machine">Cannon Fault Proof Virtual Machine</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#state">State</a>
+<ul>
+<li><a href="#state-hash">State Hash</a></li>
+</ul>
+</li>
+<li><a href="#memory">Memory</a>
+<ul>
+<li><a href="#heap">Heap</a></li>
+</ul>
+</li>
+<li><a href="#delay-slots">Delay Slots</a></li>
+<li><a href="#syscalls">Syscalls</a></li>
+<li><a href="#io">I/O</a>
+<ul>
+<li><a href="#standard-streams">Standard Streams</a></li>
+<li><a href="#hint-communication">Hint Communication</a></li>
+<li><a href="#pre-image-communication">Pre-image Communication</a>
+<ul>
+<li><a href="#pre-image-io-alignment">Pre-image I/O Alignment</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#exceptions">Exceptions</a></li>
+</ul>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This is a description of the Cannon Fault Proof Virtual Machine (FPVM). The Cannon FPVM emulates
+a minimal Linux-based system running on big-endian 32-bit MIPS32 architecture.
+A lot of its behaviors are copied from Linux/MIPS with a few tweaks made for fault proofs.
+For the rest of this doc, we refer to the Cannon FPVM as simply the FPVM.</p>
+<p>Operationally, the FPVM is a state transition function. This state transition is referred to as a <em>Step</em>,
+that executes a single instruction. We say the VM is a function <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span></span></span></span>, given an input state <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">re</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span>, steps on a
+single instruction encoded in the state to produce a new state <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span>.
+<span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">re</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+<p>Thus, the trace of a program executed by the FPVM is an ordered set of VM states.</p>
+<h2 id="state"><a class="header" href="#state">State</a></h2>
+<p>The virtual machine state highlights the effects of running a Fault Proof Program on the VM.
+It consists of the following fields:</p>
+<ol>
+<li><code>memRoot</code> - A <code>bytes32</code> value representing the merkle root of VM memory.</li>
+<li><code>preimageKey</code> - <code>bytes32</code> value of the last requested pre-image key.</li>
+<li><code>preimageOffset</code> - The 32-bit value of the last requested pre-image offset.</li>
+<li><code>pc</code> - 32-bit program counter.</li>
+<li><code>nextPC</code> - 32-bit next program counter. Note that this value may not always be <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span>
+when executing a branch/jump delay slot.</li>
+<li><code>lo</code> - 32-bit MIPS LO special register.</li>
+<li><code>hi</code> - 32-bit MIPS HI special register.</li>
+<li><code>heap</code> - 32-bit base address of the most recent memory allocation via mmap.</li>
+<li><code>exitCode</code> - 8-bit exit code.</li>
+<li><code>exited</code> - 1-bit indicator that the VM has exited.</li>
+<li><code>registers</code> - General-purpose MIPS32 registers. Each register is a 32-bit value.</li>
+</ol>
+<p>The state is represented by packing the above fields, in order, into a 226-byte buffer.</p>
+<h3 id="state-hash"><a class="header" href="#state-hash">State Hash</a></h3>
+<p>The state hash is computed by hashing the 226-byte state buffer with the Keccak256 hash function
+and then setting the high-order byte to the respective VM status.</p>
+<p>The VM status can be derived from the state's <code>exited</code> and <code>exitCode</code> fields.</p>
+<pre><code class="language-rs">enum VmStatus {
+    Valid = 0,
+    Invalid = 1,
+    Panic = 2,
+    Unfinished = 3,
+}
+
+fn vm_status(exit_code: u8, exited: bool) -&gt; u8 {
+    if exited {
+        match exit_code {
+            0 =&gt; VmStatus::Valid,
+            1 =&gt; VmStatus::Invalid,
+            _ =&gt; VmStatus::Panic,
+        }
+    } else {
+        VmStatus::Unfinished
+    }
+}
+</code></pre>
+<h2 id="memory"><a class="header" href="#memory">Memory</a></h2>
+<p>Memory is represented as a binary merkle tree.
+The tree has a fixed-depth of 27 levels, with leaf values of 32 bytes each.
+This spans the full 32-bit address space, where each leaf contains the memory at that part of the tree.
+The state <code>memRoot</code> represents the merkle root of the tree, reflecting the effects of memory writes.
+As a result of this memory representation, all memory operations are 4-byte aligned.
+Memory access doesn't require any privileges. An instruction step can access any memory
+location as the entire address space is unprotected.</p>
+<h3 id="heap"><a class="header" href="#heap">Heap</a></h3>
+<p>FPVM state contains a <code>heap</code> that tracks the base address of the most recent memory allocation.
+Heap pages are bump allocated at the page boundary, per <code>mmap</code> syscall.
+mmap-ing is purely to satisfy program runtimes that need the memory-pointer
+result of the syscall to locate free memory. The page size is 4096.</p>
+<p>The FPVM has a fixed program break at <code>0x40000000</code>. However, the FPVM is permitted to extend the
+heap beyond this limit via mmap syscalls.
+For simplicity, there are no memory protections against &quot;heap overruns&quot; against other memory segments.
+Such VM steps are still considered valid state transitions.</p>
+<p>Specification of memory mappings is outside the scope of this document as it is irrelevant to
+the VM state. FPVM implementers may refer to the Linux/MIPS kernel for inspiration.</p>
+<h2 id="delay-slots"><a class="header" href="#delay-slots">Delay Slots</a></h2>
+<p>The post-state of a step updates the <code>nextPC</code>, indicating the instruction following the <code>pc</code>.
+However, in the case of where a branch instruction is being stepped, the <code>nextPC</code> post-state is
+set to the branch target. And the <code>pc</code> post-state set to the branch delay slot as usual.</p>
+<p>A VM state transition is invalid whenever the current instruction is a delay slot that is filled
+with jump or branch type instruction.
+That is, where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.07153em;">tPC</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mrel"><span class="mord vbox"><span class="thinbox"><span class="rlap"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="inner"><span class="mord"><span class="mrel"></span></span></span><span class="fix"></span></span></span></span></span><span class="mrel">=</span></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span> while stepping on a jump/branch instruction.
+Otherwise, there would be two consecutive delay slots. While this is considered &quot;undefined&quot;
+behavior in typical MIPS implementations, FPVM must raise an exception when stepping on such states.</p>
+<h2 id="syscalls"><a class="header" href="#syscalls">Syscalls</a></h2>
+<p>Syscalls work similar to <a href="https://www.linux-mips.org/wiki/Syscall">Linux/MIPS</a>, including the
+syscall calling conventions and general syscall handling behavior.
+However, the FPVM supports a subset of Linux/MIPS syscalls with slightly different behaviors.
+The following table list summarizes the supported syscalls and their behaviors.</p>
+<div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th><th>$a0</th><th>$a1</th><th>$a2</th><th>Effect</th></tr></thead><tbody>
+<tr><td>4090</td><td>mmap</td><td>uint32 addr</td><td>uint32 len</td><td>🚫</td><td>Allocates a page from the heap. See <a href="#heap">heap</a> for details.</td></tr>
+<tr><td>4045</td><td>brk</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns a fixed address for the program break at <code>0x40000000</code></td></tr>
+<tr><td>4120</td><td>clone</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns 1</td></tr>
+<tr><td>4246</td><td>exit_group</td><td>uint8 exit_code</td><td>🚫</td><td>🚫</td><td>Sets the Exited and ExitCode states to <code>true</code> and <code>$a0</code> respectively.</td></tr>
+<tr><td>4003</td><td>read</td><td>uint32 fd</td><td>char *buf</td><td>uint32 count</td><td>Similar behavior as Linux/MIPS with support for unaligned reads. See <a href="#io">I/O</a> for more details.</td></tr>
+<tr><td>4004</td><td>write</td><td>uint32 fd</td><td>char *buf</td><td>uint32 count</td><td>Similar behavior as Linux/MIPS with support for unaligned writes. See <a href="#io">I/O</a> for more details.</td></tr>
+<tr><td>4055</td><td>fcntl</td><td>uint32 fd</td><td>int32 cmd</td><td>🚫</td><td>Similar behavior as Linux/MIPS. Only the <code>F_GETFL</code> (3) cmd is supported. Sets errno to <code>0x16</code> for all other commands</td></tr>
+</tbody></table>
+</div>
+<p>For all of the above syscalls, an error is indicated by setting the return
+register (<code>$v0</code>) to <code>0xFFFFFFFF</code> (-1) and <code>errno</code> (<code>$a3</code>) is set accordingly.
+The VM must not modify any register other than <code>$v0</code> and <code>$a3</code> during syscall handling.
+For unsupported syscalls, the VM must do nothing except to zero out the syscall return (<code>$v0</code>)
+and errno (<code>$a3</code>) registers.</p>
+<p>Note that the above syscalls have identical syscall numbers and ABIs as Linux/MIPS.</p>
+<h2 id="io"><a class="header" href="#io">I/O</a></h2>
+<p>The VM does not support Linux open(2). However, the VM can read from and write to a predefined set of file descriptors.</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>File descriptor</th><th>Description</th></tr></thead><tbody>
+<tr><td>stdin</td><td>0</td><td>read-only standard input stream.</td></tr>
+<tr><td>stdout</td><td>1</td><td>write-only standard output stream.</td></tr>
+<tr><td>stderr</td><td>2</td><td>write-only standard error stream.</td></tr>
+<tr><td>hint response</td><td>3</td><td>read-only. Used to read the status of <a href="index.html#hinting">pre-image hinting</a>.</td></tr>
+<tr><td>hint request</td><td>4</td><td>write-only. Used to provide <a href="index.html#hinting">pre-image hints</a></td></tr>
+<tr><td>pre-image response</td><td>5</td><td>read-only. Used to <a href="index.html#pre-image-communication">read pre-images</a>.</td></tr>
+<tr><td>pre-image request</td><td>6</td><td>write-only. Used to <a href="index.html#pre-image-communication">request pre-images</a>.</td></tr>
+</tbody></table>
+</div>
+<p>Syscalls referencing unknown file descriptors fail with an <code>EBADF</code> errno as done on Linux.</p>
+<p>Writing to and reading from standard output, input and error streams have no effect on the FPVM state.
+FPVM implementations may use them for debugging purposes as long as I/O is stateless.</p>
+<p>All I/O operations are restricted to a maximum of 4 bytes per operation.
+Any read or write syscall request exceeding this limit will be truncated to 4 bytes.
+Consequently, the return value of read/write syscalls is at most 4, indicating the actual number of bytes read/written.</p>
+<h3 id="standard-streams"><a class="header" href="#standard-streams">Standard Streams</a></h3>
+<p>Writing to stderr/stdout standard stream always succeeds with the write count input returned,
+effectively continuing execution without writing work.
+Reading from stdin has no effect other than to return zero and errno set to 0, signalling that there is no input.</p>
+<h3 id="hint-communication"><a class="header" href="#hint-communication">Hint Communication</a></h3>
+<p>Hint requests and responses have no effect on the VM state other than setting the <code>$v0</code> return
+register to the requested read/write count.
+VM implementations may utilize hints to setup subsequent pre-image requests.</p>
+<h3 id="pre-image-communication"><a class="header" href="#pre-image-communication">Pre-image Communication</a></h3>
+<p>The <code>preimageKey</code> and <code>preimageOffset</code> state are updated via read/write syscalls to the pre-image
+read and write file descriptors (see <a href="#io">I/O</a>).
+The <code>preimageKey</code> buffers the stream of bytes written to the pre-image write fd.
+The <code>preimageKey</code> buffer is shifted to accommodate new bytes written to the end of it.
+A write also resets the <code>preimageOffset</code> to 0, indicating the intent to read a new pre-image.</p>
+<p>When handling pre-image reads, the <code>preimageKey</code> is used to lookup the pre-image data from an Oracle.
+A max 4-byte chunk of the pre-image at the <code>preimageOffset</code> is read to the specified address.
+Each read operation increases the <code>preimageOffset</code> by the number of bytes requested
+(truncated to 4 bytes and subject to alignment constraints).</p>
+<h4 id="pre-image-io-alignment"><a class="header" href="#pre-image-io-alignment">Pre-image I/O Alignment</a></h4>
+<p>As mentioned earlier in <a href="#memory">memory</a>, all memory operations are 4-byte aligned.
+Since pre-image I/O occurs on memory, all pre-image I/O operations must strictly adhere to alignment boundaries.
+This means the start and end of a read/write operation must fall within the same alignment boundary.
+If an operation were to violate this, the input <code>count</code> of the read/write syscall must be
+truncated such that the effective address of the last byte read/written matches the input effective address.</p>
+<p>The VM must read/write the maximum amount of bytes possible without crossing the input address alignment boundary.
+For example, the effect of a write request for a 3-byte aligned buffer must be exactly 3 bytes.
+If the buffer is misaligned, then the VM may write less than 3 bytes depending on the size of the misalignment.</p>
+<h2 id="exceptions"><a class="header" href="#exceptions">Exceptions</a></h2>
+<p>The FPVM may raise an exception rather than output a post-state to signal an invalid state
+transition. Nominally, the FPVM must raise an exception in at least the following cases:</p>
+<ul>
+<li>Invalid instruction (either via an invalid opcode or an instruction referencing registers
+outside the general purpose registers).</li>
+<li>Pre-image read at an offset larger than the size of the pre-image.</li>
+<li>Delay slot contains branch/jump instruction types.</li>
+</ul>
+<p>VM implementations may raise an exception in other cases that is specific to the implementation.
+For example, an on-chain FPVM that relies on pre-supplied merkle proofs for memory access may
+raise an exception if the supplied merkle proof does not match the pre-state <code>memRoot</code>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/fault-proof/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../experimental/fault-proof/dispute-game-interface.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/fault-proof/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../experimental/fault-proof/dispute-game-interface.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

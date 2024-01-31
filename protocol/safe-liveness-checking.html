@@ -1,0 +1,398 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Safe Liveness Checking - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html" class="active"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="safe-liveness-checking"><a class="header" href="#safe-liveness-checking">Safe Liveness Checking</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#liveness-checking-mechanism">Liveness checking Mechanism</a></li>
+<li><a href="#liveness-checking-methodology">Liveness checking methodology</a>
+<ul>
+<li><a href="#the-liveness-guard">The liveness guard</a></li>
+<li><a href="#the-liveness-module">The liveness module</a></li>
+<li><a href="#owner-removal-call-flow">Owner removal call flow</a></li>
+<li><a href="#shutdown">Shutdown</a></li>
+<li><a href="#security-properties">Security Properties</a>
+<ul>
+<li><a href="#in-the-guard">In the guard</a></li>
+<li><a href="#in-the-module">In the module</a></li>
+</ul>
+</li>
+<li><a href="#interdependency-between-the-guard-and-module">Interdependency between the guard and module</a></li>
+</ul>
+</li>
+<li><a href="#operational-considerations">Operational considerations</a>
+<ul>
+<li><a href="#manual-validation-of-new-owner-liveness">Manual validation of new owner liveness</a></li>
+<li><a href="#deploying-the-liveness-checking-system">Deploying the liveness checking system</a></li>
+<li><a href="#modify-the-liveness-checking-system">Modify the liveness checking system</a>
+<ul>
+<li><a href="#replacing-the-module">Replacing the module</a></li>
+<li><a href="#replacing-the-guard">Replacing the guard</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="liveness-checking-mechanism"><a class="header" href="#liveness-checking-mechanism">Liveness checking Mechanism</a></h2>
+<p>The Security Council uses a specially extended Safe multisig contract to ensure that
+any loss of access to a signer's keys is identified and addressed within a predictable period of
+time.</p>
+<p>This mechanism is intended only to be used to remove signers who have lost access to their keys, or
+are otherwise inactive. It is not intended to be used to remove signers who are acting in bad faith,
+or any other subjective criteria, such cases should be addressed by governance, and the removal
+handled via the standard Safe ownership management functionality.</p>
+<h2 id="liveness-checking-methodology"><a class="header" href="#liveness-checking-methodology">Liveness checking methodology</a></h2>
+<p>This is achieved using two types of contracts which the Safe contract has built-in support for:</p>
+<ol>
+<li><strong>Guard contracts:</strong> can execute pre- and post- transaction checks.</li>
+<li><strong>Module contracts:</strong> a contract which is added to the Safe by the signers, and thenceforth is
+authorized to execute transactions via the Safe. This means the module must properly implement
+auth conditions internally.</li>
+</ol>
+<h3 id="the-liveness-guard"><a class="header" href="#the-liveness-guard">The liveness guard</a></h3>
+<p>For implementing liveness checks a <code>LivenessGuard</code> is created which receives the signatures from
+each executed transaction, and tracks the latest time at which a transaction was signed by each
+signer. This time is made publicly available by calling a <code>lastLive(address)(Timestamp)</code> method.</p>
+<p>Owners are recorded in this mapping in one of 4 ways:</p>
+<ol>
+<li>Upon deployment, the guard reads the current set of owners from the Safe contract.</li>
+<li>When a new owner is added to the safe. Similarly, when an owner is removed from the Safe, its
+entry is deleted from the mapping.</li>
+<li>When a transaction is executed, the signatures on that transaction are passed to the guard and
+used to identify the signers. If more than the required number of signatures is provided, they
+are ignored.</li>
+<li>An owner may call the contract's <code>showLiveness()()</code> method directly in order to prove liveness.</li>
+</ol>
+<p>Note that the first two methods do not require the owner to actually sign anything. However these mechanisms
+are necessary to prevent new owners from being removed before they have had a chance to show liveness.</p>
+<h3 id="the-liveness-module"><a class="header" href="#the-liveness-module">The liveness module</a></h3>
+<p>A <code>LivenessModule</code> is also created which does the following:</p>
+<ol>
+<li>Has a function <code>removeOwners()</code> that anyone may call to specify one or more owners to be removed from the
+Safe.</li>
+<li>The Module would then check the <code>LivenessGuard.lastLive()</code> to determine if the signer is
+eligible for removal.</li>
+<li>If so, it will call the Safe's <code>removeSigner()</code> to remove the non-live signer, and if necessary
+reduce the threshold.</li>
+<li>When a member is removed, the signing parameters are modified such that <code>M/N</code> is the lowest ratio
+which remains greater than or equal to 75%. Using integer math, this can be expressed as <code>M = (N * 75 + 99) / 100</code>.</li>
+</ol>
+<h3 id="owner-removal-call-flow"><a class="header" href="#owner-removal-call-flow">Owner removal call flow</a></h3>
+<p>The following diagram illustrates the flow for removing a single owner. The <code>verifyFinalState</code>
+box indicates calls to the Safe which ensure the final state is valid.</p>
+<pre class="mermaid">sequenceDiagram
+    participant User
+    participant LivenessModule
+    participant LivenessGuard
+    participant Safe
+    User-&gt;&gt;LivenessModule: removeOwners([previousOwner], [owner])
+    LivenessModule-&gt;&gt;LivenessGuard: lastLive(owner)
+    LivenessModule-&gt;&gt;Safe: getOwners()
+    LivenessModule-&gt;&gt;Safe: removeOwner(previousOwner, owner)
+
+    alt verifyFinalState
+    LivenessModule-&gt;&gt;Safe: getOwners()
+    LivenessModule-&gt;&gt;Safe: getThreshold()
+    LivenessModule-&gt;&gt;Safe: getGuard()
+    end
+</pre>
+<h3 id="shutdown"><a class="header" href="#shutdown">Shutdown</a></h3>
+<p>In the unlikely event that the signer set (<code>N</code>) is reduced below the allowed minimum number of
+owners, then (and only then) is a shutdown mechanism activated which removes the existing
+signers, and hands control of the multisig over to a predetermined entity.</p>
+<h3 id="security-properties"><a class="header" href="#security-properties">Security Properties</a></h3>
+<p>The following security properties must be upheld:</p>
+<h4 id="in-the-guard"><a class="header" href="#in-the-guard">In the guard</a></h4>
+<ol>
+<li>Signatures are assigned to the correct signer.</li>
+<li>Non-signers are unable to create a record of having signed.</li>
+<li>An owner cannot be censored or griefed such that their signing is not recorded.</li>
+<li>Owners may demonstrate liveness either by signing a transaction or by calling directly to the
+guard.</li>
+<li>It must be impossible for the guard's <code>checkTransaction</code> or <code>checkAfterExecution</code> method to
+permanently revert given any calldata and the current state.</li>
+<li>The guard correctly handles updates to the owners list, such that new owners are recorded, and
+removed owners are deleted.
+<ol>
+<li>An <code>ownersBefore</code> enumerable set variable is used to accomplish this, it must be emptied at
+the end of the <code>checkAfterExecution</code> call.</li>
+</ol>
+</li>
+</ol>
+<h4 id="in-the-module"><a class="header" href="#in-the-module">In the module</a></h4>
+<ol>
+<li>During a shutdown the module correctly removes all signers, and converts the safe to a 1 of 1.</li>
+<li>The module only removes an owner if they have not demonstrated liveness during the interval, or
+if enough other owners have been removed to activate the shutdown mechanism.</li>
+<li>The module correctly sets the Safe's threshold upon removing a signer.</li>
+</ol>
+<p>Note: neither the module nor guard attempt to prevent a quorum of owners from removing either the liveness
+module or guard. There are legitimate reasons they might wish to do so. Moreover, if such a quorum
+of owners exists, there is no benefit to removing them, as they are defacto 'sufficiently live'.</p>
+<h3 id="interdependency-between-the-guard-and-module"><a class="header" href="#interdependency-between-the-guard-and-module">Interdependency between the guard and module</a></h3>
+<p>The guard has no dependency on the module, and can be used independently to track liveness of
+Safe owners.</p>
+<p>This means that the module can be removed or replaced without any affect on the guard.</p>
+<p>The module however does have a dependency on the guard; if the guard is removed from the Safe, then
+the module will no longer be functional and calls to its <code>removeOwners</code> function will revert.</p>
+<h2 id="operational-considerations"><a class="header" href="#operational-considerations">Operational considerations</a></h2>
+<h3 id="manual-validation-of-new-owner-liveness"><a class="header" href="#manual-validation-of-new-owner-liveness">Manual validation of new owner liveness</a></h3>
+<p>As <a href="#the-liveness-guard">noted above</a> newly added owners are recorded in the guard without
+necessarily having signed a transaction. Off-chain validation of the liveness of an address must
+therefore be done prior to adding a new owner.</p>
+<h3 id="deploying-the-liveness-checking-system"><a class="header" href="#deploying-the-liveness-checking-system">Deploying the liveness checking system</a></h3>
+<p>The module and guard are intended to be deployed and installed on the safe in the following
+sequence:</p>
+<ol>
+<li>Deploy the guard contract 2. The guard's constructor will read the Safe's owners and set a timestamp</li>
+<li>Deploy the module.</li>
+<li>Set the guard on the safe.</li>
+<li>Enable the module on the safe.</li>
+</ol>
+<p>This order of operations is necessary to satisfy the constructor checks in the module, and is
+intended to prevent owners from being immediately removable.</p>
+<p>Note that changes to the owners set should not be made between the time the module is deployed, and
+when it is enabled on the Safe, otherwise the checks made in the module's constructor may be
+invalidated. If such changes are made, a new module should be deployed.</p>
+<h3 id="modify-the-liveness-checking-system"><a class="header" href="#modify-the-liveness-checking-system">Modify the liveness checking system</a></h3>
+<p>Changes to the liveness checking system should be done in the following manner:</p>
+<h4 id="replacing-the-module"><a class="header" href="#replacing-the-module">Replacing the module</a></h4>
+<p>The module can safely be removed without affecting the operation of the guard. A new module can then
+be added.</p>
+<p>Note: none of the module's parameters are modifiable. In order to update the security properties
+enforced by the module, it must be replaced.</p>
+<h4 id="replacing-the-guard"><a class="header" href="#replacing-the-guard">Replacing the guard</a></h4>
+<p>The safe can only have one guard contract at a time, and if the guard is removed the module will
+cease to function. This does not affect the ability of the Safe to operate normally, however the
+module should be removed as a best practice.</p>
+<p>If a new guard is added, eg. as a means of upgrading it, then a new module will also need to be
+deployed and enabled. Once both the guard and module have been removed, they can be replaced
+according to the steps in the <a href="#deploying-the-liveness-checking-system">Deployment</a> section above.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/batcher.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/predeploys.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/batcher.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/predeploys.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Execution Engine - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html" class="active"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="l2-execution-engine"><a class="header" href="#l2-execution-engine">L2 Execution Engine</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#1559-parameters">1559 Parameters</a></li>
+<li><a href="#deposited-transaction-processing">Deposited transaction processing</a>
+<ul>
+<li><a href="#deposited-transaction-boundaries">Deposited transaction boundaries</a></li>
+</ul>
+</li>
+<li><a href="#fees">Fees</a>
+<ul>
+<li><a href="#fee-vaults">Fee Vaults</a></li>
+<li><a href="#priority-fees-sequencer-fee-vault">Priority fees (Sequencer Fee Vault)</a></li>
+<li><a href="#base-fees-base-fee-vault">Base fees (Base Fee Vault)</a></li>
+<li><a href="#l1-cost-fees-l1-fee-vault">L1-Cost fees (L1 Fee Vault)</a>
+<ul>
+<li><a href="#pre-ecotone">Pre-Ecotone</a></li>
+<li><a href="#ecotone-l1-cost-fee-changes-eip-4844-da">Ecotone L1-Cost fee changes (EIP-4844 DA)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#engine-api">Engine API</a>
+<ul>
+<li><a href="#engine_forkchoiceupdatedv2"><code>engine_forkchoiceUpdatedV2</code></a>
+<ul>
+<li><a href="#extended-payloadattributesv2">Extended PayloadAttributesV2</a></li>
+</ul>
+</li>
+<li><a href="#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a>
+<ul>
+<li><a href="#extended-payloadattributesv3">Extended PayloadAttributesV3</a></li>
+</ul>
+</li>
+<li><a href="#engine_newpayloadv2"><code>engine_newPayloadV2</code></a></li>
+<li><a href="#engine_newpayloadv3"><code>engine_newPayloadV3</code></a></li>
+<li><a href="#engine_getpayloadv2"><code>engine_getPayloadV2</code></a></li>
+<li><a href="#engine_getpayloadv3"><code>engine_getPayloadV3</code></a>
+<ul>
+<li><a href="#extended-response">Extended Response</a></li>
+</ul>
+</li>
+<li><a href="#engine_signalsuperchainv1"><code>engine_signalSuperchainV1</code></a></li>
+</ul>
+</li>
+<li><a href="#networking">Networking</a></li>
+<li><a href="#sync">Sync</a>
+<ul>
+<li><a href="#happy-path-sync">Happy-path sync</a></li>
+<li><a href="#worst-case-sync">Worst-case sync</a></li>
+</ul>
+</li>
+<li><a href="#ecotone-disable-blob-transactions">Ecotone: disable Blob-transactions</a></li>
+<li><a href="#ecotone-beacon-block-root">Ecotone: Beacon Block Root</a></li>
+</ul>
+<p>This document outlines the modifications, configuration and usage of a L1 execution engine for L2.</p>
+<h2 id="1559-parameters"><a class="header" href="#1559-parameters">1559 Parameters</a></h2>
+<p>The execution engine must be able to take a per chain configuration which specifies the EIP-1559 Denominator
+and EIP-1559 elasticity. After Canyon it should also take a new value <code>EIP1559DenominatorCanyon</code> and use that as
+the denominator in the 1559 formula rather than the prior denominator.</p>
+<p>The formula for EIP-1559 is not otherwise modified.</p>
+<h2 id="deposited-transaction-processing"><a class="header" href="#deposited-transaction-processing">Deposited transaction processing</a></h2>
+<p>The Engine interfaces abstract away transaction types with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</p>
+<p>To support rollup functionality, processing of a new Deposit <a href="https://eips.ethereum.org/EIPS/eip-2718#transactions"><code>TransactionType</code></a>
+is implemented by the engine, see the <a href="deposits.html">deposits specification</a>.</p>
+<p>This type of transaction can mint L2 ETH, run EVM,
+and introduce L1 information to enshrined contracts in the execution state.</p>
+<h3 id="deposited-transaction-boundaries"><a class="header" href="#deposited-transaction-boundaries">Deposited transaction boundaries</a></h3>
+<p>Transactions cannot be blindly trusted, trust is established through authentication.
+Unlike other transaction types deposits are not authenticated by a signature:
+the rollup node authenticates them, outside of the engine.</p>
+<p>To process deposited transactions safely, the deposits MUST be authenticated first:</p>
+<ul>
+<li>Ingest directly through trusted Engine API</li>
+<li>Part of sync towards a trusted block hash (trusted through previous Engine API instruction)</li>
+</ul>
+<p>Deposited transactions MUST never be consumed from the transaction pool.
+<em>The transaction pool can be disabled in a deposits-only rollup</em></p>
+<h2 id="fees"><a class="header" href="#fees">Fees</a></h2>
+<p>Sequenced transactions (i.e. not applicable to deposits) are charged with 3 types of fees:
+priority fees, base fees, and L1-cost fees.</p>
+<h3 id="fee-vaults"><a class="header" href="#fee-vaults">Fee Vaults</a></h3>
+<p>The three types of fees are collected in 3 distinct L2 fee-vault deployments for accounting purposes:
+fee payments are not registered as internal EVM calls, and thus distinguished better this way.</p>
+<p>These are hardcoded addresses, pointing at pre-deployed proxy contracts.
+The proxies are backed by vault contract deployments, based on <code>FeeVault</code>, to route vault funds to L1 securely.</p>
+<div class="table-wrapper"><table><thead><tr><th>Vault Name</th><th>Predeploy</th></tr></thead><tbody>
+<tr><td>Sequencer Fee Vault</td><td><a href="predeploys.html#SequencerFeeVault"><code>SequencerFeeVault</code></a></td></tr>
+<tr><td>Base Fee Vault</td><td><a href="predeploys.html#BaseFeeVault"><code>BaseFeeVault</code></a></td></tr>
+<tr><td>L1 Fee Vault</td><td><a href="predeploys.html#L1FeeVault"><code>L1FeeVault</code></a></td></tr>
+</tbody></table>
+</div>
+<h3 id="priority-fees-sequencer-fee-vault"><a class="header" href="#priority-fees-sequencer-fee-vault">Priority fees (Sequencer Fee Vault)</a></h3>
+<p>Priority fees follow the <a href="https://eips.ethereum.org/EIPS/eip-1559">eip-1559</a> specification, and are collected by the fee-recipient of the L2 block.
+The block fee-recipient (a.k.a. coinbase address) is set to the Sequencer Fee Vault address.</p>
+<h3 id="base-fees-base-fee-vault"><a class="header" href="#base-fees-base-fee-vault">Base fees (Base Fee Vault)</a></h3>
+<p>Base fees largely follow the <a href="https://eips.ethereum.org/EIPS/eip-1559">eip-1559</a> specification, with the exception that base fees are not burned,
+but add up to the Base Fee Vault ETH account balance.</p>
+<h3 id="l1-cost-fees-l1-fee-vault"><a class="header" href="#l1-cost-fees-l1-fee-vault">L1-Cost fees (L1 Fee Vault)</a></h3>
+<p>The protocol funds batch-submission of sequenced L2 transactions by charging L2 users an additional fee
+based on the estimated batch-submission costs.
+This fee is charged from the L2 transaction-sender ETH balance, and collected into the L1 Fee Vault.</p>
+<p>The exact L1 cost function to determine the L1-cost fee component of a L2 transaction depends on
+the upgrades that are active.</p>
+<h4 id="pre-ecotone"><a class="header" href="#pre-ecotone">Pre-Ecotone</a></h4>
+<p>Before Ecotone activation, L1 cost is calculated as:
+<code>(rollupDataGas + l1FeeOverhead) * l1BaseFee * l1FeeScalar / 1e6</code> (big-int computation, result
+in Wei and <code>uint256</code> range)
+Where:</p>
+<ul>
+<li><code>rollupDataGas</code> is determined from the <em>full</em> encoded transaction
+(standard EIP-2718 transaction encoding, including signature fields):
+<ul>
+<li>Before Regolith fork: <code>rollupDataGas = zeroes * 4 + (ones + 68) * 16</code>
+<ul>
+<li>The addition of <code>68</code> non-zero bytes is a remnant of a pre-Bedrock L1-cost accounting function,
+which accounted for the worst-case non-zero bytes addition to complement unsigned transactions, unlike Bedrock.</li>
+</ul>
+</li>
+<li>With Regolith fork: <code>rollupDataGas = zeroes * 4 + ones * 16</code></li>
+</ul>
+</li>
+<li><code>l1FeeOverhead</code> is the Gas Price Oracle <code>overhead</code> value.</li>
+<li><code>l1FeeScalar</code> is the Gas Price Oracle <code>scalar</code> value.</li>
+<li><code>l1BaseFee</code> is the L1 base fee of the latest L1 origin registered in the L2 chain.</li>
+</ul>
+<p>Note that the <code>rollupDataGas</code> uses the same byte cost accounting as defined in <a href="https://eips.ethereum.org/EIPS/eip-2028">eip-2028</a>,
+except the full L2 transaction now counts towards the bytes charged in the L1 calldata.
+This behavior matches pre-Bedrock L1-cost estimation of L2 transactions.</p>
+<p>Compression, batching, and intrinsic gas costs of the batch transactions are accounted for by the protocol
+with the Gas Price Oracle <code>overhead</code> and <code>scalar</code> parameters.</p>
+<p>The Gas Price Oracle <code>l1FeeOverhead</code> and <code>l1FeeScalar</code>, as well as the <code>l1BaseFee</code> of the L1 origin,
+can be accessed in two interchangeable ways:</p>
+<ul>
+<li>read from the deposited L1 attributes (<code>l1FeeOverhead</code>, <code>l1FeeScalar</code>, <code>basefee</code>) of the current L2 block</li>
+<li>read from the L1 Block Info contract (<code>0x4200000000000000000000000000000000000015</code>)
+<ul>
+<li>using the respective solidity <code>uint256</code>-getter functions (<code>l1FeeOverhead</code>, <code>l1FeeScalar</code>, <code>basefee</code>)</li>
+<li>using direct storage-reads:
+<ul>
+<li>L1 basefee as big-endian <code>uint256</code> in slot <code>1</code></li>
+<li>Overhead as big-endian <code>uint256</code> in slot <code>5</code></li>
+<li>Scalar as big-endian <code>uint256</code> in slot <code>6</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="ecotone-l1-cost-fee-changes-eip-4844-da"><a class="header" href="#ecotone-l1-cost-fee-changes-eip-4844-da">Ecotone L1-Cost fee changes (EIP-4844 DA)</a></h4>
+<p>Ecotone allows posting batches via Blobs which are subject to a new fee market. To account for this feature,
+L1 cost is computed as:</p>
+<p><code>(zeroes*4 + ones*16) * (16*l1BaseFee*l1BaseFeeScalar + l1BlobBaseFee*l1BlobBaseFeeScalar) / 16e6</code></p>
+<p>Where:</p>
+<ul>
+<li>
+<p>the computation is an unlimited precision integer computation, with the result in Wei and having
+<code>uint256</code> range.</p>
+</li>
+<li>
+<p>zeoroes and ones are the count of zero and non-zero bytes respectively in the <em>full</em> encoded
+signed transaction.</p>
+</li>
+<li>
+<p><code>l1BaseFee</code> is the L1 base fee of the latest L1 origin registered in the L2 chain.</p>
+</li>
+<li>
+<p><code>l1BlobBaseFee</code> is the blob gas price, computed as described in <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4844.md#gas-accounting">EIP-4844</a> from the
+header of the latest registered L1 origin block.</p>
+</li>
+</ul>
+<p>Conceptually what the above function captures is the formula below, where <code>compressedTxSize = (zeroes*4 + ones*16) / 16</code> can be thought of as a rough approximation of how many bytes the
+transaction occupies in a compressed batch.</p>
+<p><code>(compressedTxSize) * (16*l1BaseFee*lBaseFeeScalar + l1BlobBaseFee*l1BlobBaseFeeScalar) / 1e6</code></p>
+<p>The precise cost function used by Ecotone at the top of this section preserves precision under
+integer arithmetic by postponing the inner division by 16 until the very end.</p>
+<p>The two base fee values and their respective scalars can be accessed in two interchangeable ways:</p>
+<ul>
+<li>read from the deposited L1 attributes (<code>l1BaseFeeScalar</code>, <code>l1BlobBaseFeeScalar</code>, <code>basefee</code>,
+<code>blobBaseFee</code>) of the current L2 block</li>
+<li>read from the L1 Block Info contract (<code>0x4200000000000000000000000000000000000015</code>)
+<ul>
+<li>using the respective solidity getter functions</li>
+<li>using direct storage-reads:
+<ul>
+<li>basefee <code>uint256</code> in slot <code>1</code></li>
+<li>blobBaseFee <code>uint256</code> in slot <code>7</code></li>
+<li>l1BaseFeeScalar big-endian <code>uint32</code> slot <code>3</code> at offset <code>12</code></li>
+<li>l1BlobBaseFeeScalar big-endian <code>uint32</code> in slot <code>3</code> at offset <code>8</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="engine-api"><a class="header" href="#engine-api">Engine API</a></h2>
+<h3 id="engine_forkchoiceupdatedv2"><a class="header" href="#engine_forkchoiceupdatedv2"><code>engine_forkchoiceUpdatedV2</code></a></h3>
+<p>This updates which L2 blocks the engine considers to be canonical (<code>forkchoiceState</code> argument),
+and optionally initiates block production (<code>payloadAttributes</code> argument).</p>
+<p>Within the rollup, the types of forkchoice updates translate as:</p>
+<ul>
+<li><code>headBlockHash</code>: block hash of the head of the canonical chain. Labeled <code>&quot;unsafe&quot;</code> in user JSON-RPC.
+Nodes may apply L2 blocks out of band ahead of time, and then reorg when L1 data conflicts.</li>
+<li><code>safeBlockHash</code>: block hash of the canonical chain, derived from L1 data, unlikely to reorg.</li>
+<li><code>finalizedBlockHash</code>: irreversible block hash, matches lower boundary of the dispute period.</li>
+</ul>
+<p>To support rollup functionality, one backwards-compatible change is introduced
+to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_forkchoiceupdatedv2"><code>engine_forkchoiceUpdatedV2</code></a>: the extended <code>PayloadAttributesV2</code></p>
+<h4 id="extended-payloadattributesv2"><a class="header" href="#extended-payloadattributesv2">Extended PayloadAttributesV2</a></h4>
+<p><a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#PayloadAttributesV2"><code>PayloadAttributesV2</code></a> is extended to:</p>
+<pre><code class="language-js">PayloadAttributesV2: {
+    timestamp: QUANTITY
+    random: DATA (32 bytes)
+    suggestedFeeRecipient: DATA (20 bytes)
+    withdrawals: array of WithdrawalV1
+    transactions: array of DATA
+    noTxPool: bool
+    gasLimit: QUANTITY or null
+}
+</code></pre>
+<p>The type notation used here refers to the <a href="https://eth.wiki/json-rpc/API#hex-value-encoding">HEX value encoding</a> used by the <a href="https://github.com/ethereum/execution-apis">Ethereum JSON-RPC API
+specification</a>, as this structure will need to be sent over JSON-RPC. <code>array</code> refers
+to a JSON array.</p>
+<p>Each item of the <code>transactions</code> array is a byte list encoding a transaction: <code>TransactionType || TransactionPayload</code> or <code>LegacyTransaction</code>, as defined in <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.
+This is equivalent to the <code>transactions</code> field in <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#executionpayloadv2"><code>ExecutionPayloadV2</code></a></p>
+<p>The <code>transactions</code> field is optional:</p>
+<ul>
+<li>If empty or missing: no changes to engine behavior. The sequencers will (if enabled) build a block
+by consuming transactions from the transaction pool.</li>
+<li>If present and non-empty: the payload MUST be produced starting with this exact list of transactions.
+The <a href="rollup-node.html">rollup driver</a> determines the transaction list based on deterministic L1 inputs.</li>
+</ul>
+<p>The <code>noTxPool</code> is optional as well, and extends the <code>transactions</code> meaning:</p>
+<ul>
+<li>If <code>false</code>, the execution engine is free to pack additional transactions from external sources like the tx pool
+into the payload, after any of the <code>transactions</code>. This is the default behavior a L1 node implements.</li>
+<li>If <code>true</code>, the execution engine must not change anything about the given list of <code>transactions</code>.</li>
+</ul>
+<p>If the <code>transactions</code> field is present, the engine must execute the transactions in order and return <code>STATUS_INVALID</code>
+if there is an error processing the transactions. It must return <code>STATUS_VALID</code> if all of the transactions could
+be executed without error. <strong>Note</strong>: The state transition rules have been modified such that deposits will never fail
+so if <code>engine_forkchoiceUpdatedV2</code> returns <code>STATUS_INVALID</code> it is because a batched transaction is invalid.</p>
+<p>The <code>gasLimit</code> is optional w.r.t. compatibility with L1, but required when used as rollup.
+This field overrides the gas limit used during block-building.
+If not specified as rollup, a <code>STATUS_INVALID</code> is returned.</p>
+<h3 id="engine_forkchoiceupdatedv3"><a class="header" href="#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a></h3>
+<p>See <a href="#engine_forkchoiceUpdatedV2"><code>engine_forkchoiceUpdatedV2</code></a> for a description of the forkchoice updated method.</p>
+<p>To support rollup functionality, one backwards-compatible change is introduced
+to <a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a>: the extended <code>PayloadAttributesV3</code></p>
+<h4 id="extended-payloadattributesv3"><a class="header" href="#extended-payloadattributesv3">Extended PayloadAttributesV3</a></h4>
+<p><a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#payloadattributesv3"><code>PayloadAttributesV3</code></a> is extended to:</p>
+<pre><code class="language-js">PayloadAttributesV3: {
+    timestamp: QUANTITY
+    random: DATA (32 bytes)
+    suggestedFeeRecipient: DATA (20 bytes)
+    withdrawals: array of WithdrawalV1
+    parentBeaconBlockRoot: DATA (32 bytes)
+    transactions: array of DATA
+    noTxPool: bool
+    gasLimit: QUANTITY or null
+}
+</code></pre>
+<p>The requirements of this object are the same as extended <a href="#extended-payloadattributesv2"><code>PayloadAttributesV2</code></a> with
+the addition of <code>parentBeaconBlockRoot</code> which is the parent beacon block root from the L1 origin block of the L2 block.</p>
+<p>The <code>parentBeaconBlockRoot</code> must be nil for Bedrock/Canyon/Delta payloads.
+Starting at Ecotone, the <code>parentBeaconBlockRoot</code> must be set to the L1 origin <code>parentBeaconBlockRoot</code>,
+or a zero <code>bytes32</code> if the Dencun functionality with <code>parentBeaconBlockRoot</code> is not active on L1.</p>
+<h3 id="engine_newpayloadv2"><a class="header" href="#engine_newpayloadv2"><code>engine_newPayloadV2</code></a></h3>
+<p>No modifications to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_newpayloadv2"><code>engine_newPayloadV2</code></a>.
+Applies a L2 block to the engine state.</p>
+<h3 id="engine_newpayloadv3"><a class="header" href="#engine_newpayloadv3"><code>engine_newPayloadV3</code></a></h3>
+<p><a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_newpayloadv3"><code>engine_newPayloadV3</code></a> applies an Ecotone L2 block to the engine state. There are no
+modifications to this API. The additional parameters should be set as follows:</p>
+<ul>
+<li><code>expectedBlobVersionedHashes</code> MUST be an empty array.</li>
+<li><code>parentBeaconBlockRoot</code> MUST be the parent beacon block root from the L1 origin block of the L2 block.</li>
+</ul>
+<h3 id="engine_getpayloadv2"><a class="header" href="#engine_getpayloadv2"><code>engine_getPayloadV2</code></a></h3>
+<p>No modifications to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_getpayloadv2"><code>engine_getPayloadV2</code></a>.
+Retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV2</code> when called with <code>payloadAttributes</code>.</p>
+<h3 id="engine_getpayloadv3"><a class="header" href="#engine_getpayloadv3"><code>engine_getPayloadV3</code></a></h3>
+<p><a href="https://github.com/ethereum/execution-apis/blob/a0d03086564ab1838b462befbc083f873dcf0c0f/src/engine/cancun.md#engine_getpayloadv3"><code>engine_getPayloadV3</code></a> retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV3</code>
+when called with <code>payloadAttributes</code>.</p>
+<h4 id="extended-response"><a class="header" href="#extended-response">Extended Response</a></h4>
+<p>The <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#response-2">response</a> is extended to:</p>
+<pre><code class="language-js">{
+    executionPayload: ExecutionPayload
+    blockValue: QUANTITY
+    blobsBundle: BlobsBundle
+    shouldOverrideBuilder: BOOLEAN
+    parentBeaconBlockRoot: DATA (32 bytes)
+}
+</code></pre>
+<p>For Bedrock and Canyon <code>parentBeaconBlockRoot</code> MUST be nil and in Ecotone it MUST be set to the parentBeaconBlockRoot
+from the L1 Origin block of the L2 block.</p>
+<h3 id="engine_signalsuperchainv1"><a class="header" href="#engine_signalsuperchainv1"><code>engine_signalSuperchainV1</code></a></h3>
+<p>Optional extension to the Engine API. Signals superchain information to the Engine:
+V1 signals which protocol version is recommended and required.</p>
+<p>Types:</p>
+<pre><code class="language-javascript">SuperchainSignal: {
+  recommended: ProtocolVersion;
+  required: ProtocolVersion;
+}
+</code></pre>
+<p><code>ProtocolVersion</code>: encoded for RPC as defined in
+<a href="superchain-upgrades.html#protocol-version-format">Protocol Version format specification</a>.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>signal</code>: <code>SuperchainSignal</code>, the signaled superchain information.</li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li><code>ProtocolVersion</code>: the latest supported OP-Stack protocol version of the execution engine.</li>
+</ul>
+<p>The execution engine SHOULD warn the user when the recommended version is newer than
+the current version supported by the execution engine.</p>
+<p>The execution engine SHOULD take safety precautions if it does not meet the required protocol version.
+This may include halting the engine, with consent of the execution engine operator.</p>
+<h2 id="networking"><a class="header" href="#networking">Networking</a></h2>
+<p>The execution engine can acquire all data through the rollup node, as derived from L1:
+<em>P2P networking is strictly optional.</em></p>
+<p>However, to not bottleneck on L1 data retrieval speed, the P2P network functionality SHOULD be enabled, serving:</p>
+<ul>
+<li>Peer discovery (<a href="https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md">Disc v5</a>)</li>
+<li><a href="https://github.com/ethereum/devp2p/blob/master/caps/eth.md"><code>eth/66</code></a>:
+<ul>
+<li>Transaction pool (consumed by sequencer nodes)</li>
+<li>State sync (happy-path for fast trustless db replication)</li>
+<li>Historical block header and body retrieval</li>
+<li><em>New blocks are acquired through the consensus layer instead (rollup node)</em></li>
+</ul>
+</li>
+</ul>
+<p>No modifications to L1 network functionality are required, except configuration:</p>
+<ul>
+<li><a href="https://github.com/ethereum/devp2p/blob/master/caps/eth.md#status-0x00"><code>networkID</code></a>: Distinguishes the L2 network from L1 and testnets.
+Equal to the <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md"><code>chainID</code></a> of the rollup network.</li>
+<li>Activate Merge fork: Enables Engine API and disables propagation of blocks,
+as block headers cannot be authenticated without consensus layer.</li>
+<li>Bootnode list: DiscV5 is a shared network,
+<a href="https://github.com/ethereum/devp2p/blob/master/discv5/discv5-rationale.md">bootstrap</a> is faster through connecting with L2 nodes first.</li>
+</ul>
+<h2 id="sync"><a class="header" href="#sync">Sync</a></h2>
+<p>The execution engine can operate sync in different ways:</p>
+<ul>
+<li>Happy-path: rollup node informs engine of the desired chain head as determined by L1, completes through engine P2P.</li>
+<li>Worst-case: rollup node detects stalled engine, completes sync purely from L1 data, no peers required.</li>
+</ul>
+<p>The happy-path is more suitable to bring new nodes online quickly,
+as the engine implementation can sync state faster through methods like <a href="https://github.com/ethereum/devp2p/blob/master/caps/snap.md">snap-sync</a>.</p>
+<h3 id="happy-path-sync"><a class="header" href="#happy-path-sync">Happy-path sync</a></h3>
+<ol>
+<li>The rollup node informs the engine of the L2 chain head, unconditionally (part of regular node operation):
+<ul>
+<li>Bedrock / Canyon / Delta Payloads
+<ul>
+<li><a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_newpayloadv2"><code>engine_newPayloadV2</code></a> is called with latest L2 block received from P2P.</li>
+<li><a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_forkchoiceupdatedv2"><code>engine_forkchoiceUpdatedV2</code></a> is called with the current
+<code>unsafe</code>/<code>safe</code>/<code>finalized</code> L2 block hashes.</li>
+</ul>
+</li>
+<li>Ecotone Payloads
+<ul>
+<li><a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_newpayloadv3"><code>engine_newPayloadV3</code></a> is called with latest L2 block received from P2P.</li>
+<li><a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a> is called with the current
+<code>unsafe</code>/<code>safe</code>/<code>finalized</code> L2 block hashes.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>The engine requests headers from peers, in reverse till the parent hash matches the local chain</li>
+<li>The engine catches up:
+a) A form of state sync is activated towards the finalized or head block hash
+b) A form of block sync pulls block bodies and processes towards head block hash</li>
+</ol>
+<p>The exact P2P based sync is out of scope for the L2 specification:
+the operation within the engine is the exact same as with L1 (although with an EVM that supports deposits).</p>
+<h3 id="worst-case-sync"><a class="header" href="#worst-case-sync">Worst-case sync</a></h3>
+<ol>
+<li>Engine is out of sync, not peered and/or stalled due other reasons.</li>
+<li>The rollup node maintains latest head from engine (poll <code>eth_getBlockByNumber</code> and/or maintain a header subscription)</li>
+<li>The rollup node activates sync if the engine is out of sync but not syncing through P2P (<code>eth_syncing</code>)</li>
+<li>The rollup node inserts blocks, derived from L1, one by one, potentially adapting to L1 reorg(s),
+as outlined in the <a href="rollup-node.html">rollup node spec</a>.</li>
+</ol>
+<h2 id="ecotone-disable-blob-transactions"><a class="header" href="#ecotone-disable-blob-transactions">Ecotone: disable Blob-transactions</a></h2>
+<p><a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> introduces Blob transactions: featuring all the functionality of an <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> transaction,
+plus a list of &quot;blobs&quot;: &quot;Binary Large Object&quot;, i.e. a dedicated data type for serving Data-Availability as base-layer.</p>
+<p>With the Ecotone upgrade, all Cancun L1 execution features are enabled, with <a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> as exception:
+as a L2, the OP-Stack does not serve blobs, and thus disables this new transaction type.</p>
+<p>EIP-4844 is disabled as following:</p>
+<ul>
+<li>Transaction network-layer announcements, announcing blob-type transactions, are ignored.</li>
+<li>Transactions of the blob-type, through the RPC or otherwise, are not allowed into the transaction pool.</li>
+<li>Block-building code does not select EIP-4844 transactions.</li>
+<li>An L2 block state-transition with EIP-4844 transactions is invalid.</li>
+</ul>
+<p>The <a href="https://eips.ethereum.org/EIPS/eip-7516">BLOBBASEFEE opcode</a> is present but its semantics are
+altered because there are no blobs processed by L2. The opcode will always push a value of 1 onto
+the stack.</p>
+<h2 id="ecotone-beacon-block-root"><a class="header" href="#ecotone-beacon-block-root">Ecotone: Beacon Block Root</a></h2>
+<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a &quot;beacon block root&quot; into the execution-layer block-header and EVM.
+This block root is an <a href="https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md#merkleization">SSZ hash-tree-root</a> of the consensus-layer contents of the previous consensus block.</p>
+<p>With the adoption of <a href="https://eips.ethereum.org/EIPS/eip-4399">EIP-4399</a> in the Bedrock upgrade the OP-Stack already includes the <code>PREVRANDAO</code> of L1.
+And thus with <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> the L1 beacon block root is made available.</p>
+<p>For the Ecotone upgrade, this entails that:</p>
+<ul>
+<li>The <code>parent_beacon_block_root</code> of the L1 origin is now embedded in the L2 block header.</li>
+<li>The &quot;Beacon roots contract&quot; is deployed at Ecotone upgrade-time, or embedded at genesis if activated at genesis.</li>
+<li>The block state-transition process now includes the same special beacon-block-root EVM processing as L1 ethereum.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/proposals.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/rollup-node.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/proposals.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/rollup-node.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Guaranteed Gas Market - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html" class="active"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="guaranteed-gas-fee-market"><a class="header" href="#guaranteed-gas-fee-market">Guaranteed Gas Fee Market</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#gas-stipend">Gas Stipend</a></li>
+<li><a href="#default-values">Default Values</a></li>
+<li><a href="#limiting-guaranteed-gas">Limiting Guaranteed Gas</a></li>
+<li><a href="#rationale-for-burning-l1-gas">Rationale for burning L1 Gas</a></li>
+<li><a href="#on-preventing-griefing-attacks">On Preventing Griefing Attacks</a></li>
+</ul>
+<p><a href="../glossary.html#deposited-transaction">Deposited transactions</a> are transactions on L2 that are
+initiated on L1. The gas that they use on L2 is bought on L1 via a gas burn (or a direct payment
+in the future). We maintain a fee market and hard cap on the amount of gas provided to all deposits
+in a single L1 block.</p>
+<p>The gas provided to deposited transactions is sometimes called &quot;guaranteed gas&quot;. The gas provided to
+deposited transactions is unique in the regard that it is not refundable. It cannot be refunded as
+it is sometimes paid for with a gas burn and there may not be any ETH left to refund.</p>
+<p>The <strong>guaranteed gas</strong> is composed of a gas stipend, and of any guaranteed gas the user would like
+to purchase (on L1) on top of that.</p>
+<p>Guaranteed gas on L2 is bought in the following manner. An L2 gas price is calculated via an
+EIP-1559-style algorithm. The total amount of ETH required to buy that gas is then calculated as
+(<code>guaranteed gas * L2 deposit base fee</code>). The contract then accepts that amount of ETH (in a future
+upgrade) or (only method right now), burns an amount of L1 gas that corresponds to the L2 cost (<code>L2 cost / L1 base fee</code>). The L2 gas price for guaranteed gas is not synchronized with the base fee on
+L2 and will likely be different.</p>
+<h2 id="gas-stipend"><a class="header" href="#gas-stipend">Gas Stipend</a></h2>
+<p>To offset the gas spent on the deposit event, we credit <code>gas spent * L1 base fee</code> ETH to the cost
+of the L2 gas, where <code>gas spent</code> is the amount of L1 gas spent processing the deposit. If the ETH
+value of this credit is greater than the ETH value of the requested guaranteed gas (<code>requested guaranteed gas * L2 gas price</code>), no L1 gas is burnt.</p>
+<h2 id="default-values"><a class="header" href="#default-values">Default Values</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>MAX_RESOURCE_LIMIT</code></td><td>20,000,000</td></tr>
+<tr><td><code>ELASTICITY_MULTIPLIER</code></td><td>10</td></tr>
+<tr><td><code>BASE_FEE_MAX_CHANGE_DENOMINATOR</code></td><td>8</td></tr>
+<tr><td><code>MINIMUM_BASE_FEE</code></td><td>1 gwei</td></tr>
+<tr><td><code>MAXIMUM_BASE_FEE</code></td><td>type(uint128).max</td></tr>
+<tr><td><code>SYSTEM_TX_MAX_GAS</code></td><td>1,000,000</td></tr>
+<tr><td><code>TARGET_RESOURCE_LIMIT</code></td><td><code>MAX_RESOURCE_LIMIT</code> / <code>ELASTICITY_MULTIPLIER</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="limiting-guaranteed-gas"><a class="header" href="#limiting-guaranteed-gas">Limiting Guaranteed Gas</a></h2>
+<p>The total amount of guaranteed gas that can be bought in a single L1 block must be limited to
+prevent a denial of service attack against L2 as well as ensure the total amount of guaranteed gas
+stays below the L2 block gas limit.</p>
+<p>We set a guaranteed gas limit of <code>MAX_RESOURCE_LIMIT</code> gas per L1 block and a target of
+<code>MAX_RESOURCE_LIMIT</code> / <code>ELASTICITY_MULTIPLIER</code> gas per L1 block. These numbers enabled
+occasional large transactions while staying within our target and maximum gas usage on L2.</p>
+<p>Because the amount of guaranteed L2 gas that can be purchased in a single block is now limited,
+we implement an EIP-1559-style fee market to reduce congestion on deposits. By setting the limit
+at a multiple of the target, we enable deposits to temporarily use more L2 gas at a greater cost.</p>
+<pre><code class="language-python"># Pseudocode to update the L2 deposit base fee and cap the amount of guaranteed gas
+# bought in a block. Calling code must handle the gas burn and validity checks on
+# the ability of the account to afford this gas.
+
+# prev_base fee is a u128, prev_bought_gas and prev_num are u64s
+prev_base_fee, prev_bought_gas, prev_num = &lt;values from previous update&gt;
+now_num = block.number
+
+# Clamp the full base fee to a specific range. The minimum value in the range should be around 100-1000
+# to enable faster responses in the base fee. This replaces the `max` mechanism in the ethereum 1559
+# implementation (it also serves to enable the base fee to increase if it is very small).
+def clamp(v: i256, min: u128, max: u128) -&gt; u128:
+    if v &lt; i256(min):
+        return min
+    elif v &gt; i256(max):
+        return max
+    else:
+        return u128(v)
+
+# If this is a new block, update the base fee and reset the total gas
+# If not, just update the total gas
+if prev_num == now_num:
+    now_base_fee = prev_base_fee
+    now_bought_gas = prev_bought_gas + requested_gas
+elif prev_num != now_num:
+    # Width extension and conversion to signed integer math
+    gas_used_delta = int128(prev_bought_gas) - int128(TARGET_RESOURCE_LIMIT)
+    # Use truncating (round to 0) division - solidity's default.
+    # Sign extend gas_used_delta &amp; prev_base_fee to 256 bits to avoid overflows here.
+    base_fee_per_gas_delta = prev_base_fee * gas_used_delta / TARGET_RESOURCE_LIMIT / BASE_FEE_MAX_CHANGE_DENOMINATOR
+    now_base_fee_wide = prev_base_fee + base_fee_per_gas_delta
+
+    now_base_fee = clamp(now_base_fee_wide, min=MINIMUM_BASE_FEE, max=UINT_128_MAX_VALUE)
+    now_bought_gas =  requested_gas
+
+    # If we skipped multiple blocks between the previous block and now update the base fee again.
+    # This is not exactly the same as iterating the above function, but quite close for reasonable
+    # gas target values. It is also constant time wrt the number of missed blocks which is important
+    # for keeping gas usage stable.
+    if prev_num + 1 &lt; now_num:
+        n = now_num - prev_num - 1
+        # Apply 7/8 reduction to prev_base_fee for the n empty blocks in a row.
+        now_base_fee_wide = now_base_fee * pow(1-(1/BASE_FEE_MAX_CHANGE_DENOMINATOR), n)
+        now_base_fee = clamp(now_base_fee_wide, min=MINIMUM_BASE_FEE, max=type(uint128).max)
+
+require(now_bought_gas &lt; MAX_RESOURCE_LIMIT)
+
+store_values(now_base_fee, now_bought_gas, now_num)
+</code></pre>
+<h2 id="rationale-for-burning-l1-gas"><a class="header" href="#rationale-for-burning-l1-gas">Rationale for burning L1 Gas</a></h2>
+<p>There must be a sybil resistance mechanism for usage of the network. If it is very cheap to get
+guaranteed gas on L2, then it would be possible to spam the network. Burning a dynamic amount
+of gas on L1 acts as a sybil resistance mechanism as it becomes more expensive with more demand.</p>
+<p>If we collect ETH directly to pay for L2 gas, every (indirect) caller of the deposit function will need
+to be marked with the payable selector. This won't be possible for many existing projects. Unfortunately
+this is quite wasteful. As such, we will provide two options to buy L2 gas:</p>
+<ol>
+<li>Burn L1 Gas</li>
+<li>Send ETH to the Optimism Portal (Not yet supported)</li>
+</ol>
+<p>The payable version (Option 2) will likely have discount applied to it (or conversely, #1 has a
+premium applied to it).</p>
+<p>For the initial release of bedrock, only #1 is supported.</p>
+<h2 id="on-preventing-griefing-attacks"><a class="header" href="#on-preventing-griefing-attacks">On Preventing Griefing Attacks</a></h2>
+<p>The cost of purchasing all of the deposit gas in every block must be expensive
+enough to prevent attackers from griefing all deposits to the network.
+An attacker would observe a deposit in the mempool and frontrun it with a deposit
+that purchases enough gas such that the other deposit reverts.
+The smaller the max resource limit is, the easier this attack is to pull off.
+This attack is mitigated by having a large resource limit as well as a large
+elasticity multiplier. This means that the target resource usage is kept small,
+giving a lot of room for the deposit base fee to rise when the max resource limit
+is being purchased.</p>
+<p>This attack should be too expensive to pull off in practice, but if an extremely
+wealthy adversary does decide to grief network deposits for an extended period
+of time, efforts will be placed to ensure that deposits are able to be processed
+on the network.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/withdrawals.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/proposals.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/withdrawals.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/proposals.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

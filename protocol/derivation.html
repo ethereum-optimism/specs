@@ -1,0 +1,1385 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Derivation - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html" class="active"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="l2-chain-derivation-specification"><a class="header" href="#l2-chain-derivation-specification">L2 Chain Derivation Specification</a></h1>
+<!-- All glossary references in this file. -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a>
+<ul>
+<li><a href="#eager-block-derivation">Eager Block Derivation</a></li>
+</ul>
+</li>
+<li><a href="#batch-submission">Batch Submission</a>
+<ul>
+<li><a href="#sequencing--batch-submission-overview">Sequencing &amp; Batch Submission Overview</a></li>
+<li><a href="#batch-submission-wire-format">Batch Submission Wire Format</a>
+<ul>
+<li><a href="#batcher-transaction-format">Batcher Transaction Format</a></li>
+<li><a href="#frame-format">Frame Format</a></li>
+<li><a href="#channel-format">Channel Format</a></li>
+<li><a href="#batch-format">Batch Format</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#architecture">Architecture</a>
+<ul>
+<li><a href="#l2-chain-derivation-pipeline">L2 Chain Derivation Pipeline</a>
+<ul>
+<li><a href="#l1-traversal">L1 Traversal</a></li>
+<li><a href="#l1-retrieval">L1 Retrieval</a>
+<ul>
+<li><a href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a></li>
+</ul>
+</li>
+<li><a href="#frame-queue">Frame Queue</a></li>
+<li><a href="#channel-bank">Channel Bank</a>
+<ul>
+<li><a href="#pruning">Pruning</a></li>
+<li><a href="#timeouts">Timeouts</a></li>
+<li><a href="#reading">Reading</a></li>
+<li><a href="#loading-frames">Loading frames</a></li>
+</ul>
+</li>
+<li><a href="#channel-reader-batch-decoding">Channel Reader (Batch Decoding)</a></li>
+<li><a href="#batch-queue">Batch Queue</a></li>
+<li><a href="#payload-attributes-derivation">Payload Attributes Derivation</a></li>
+<li><a href="#engine-queue">Engine Queue</a>
+<ul>
+<li><a href="#engine-api-usage">Engine API usage</a></li>
+<li><a href="#forkchoice-synchronization">Forkchoice synchronization</a></li>
+<li><a href="#l1-consolidation-payload-attributes-matching">L1-consolidation: payload attributes matching</a></li>
+<li><a href="#l1-sync-payload-attributes-processing">L1-sync: payload attributes processing</a></li>
+<li><a href="#processing-unsafe-payload-attributes">Processing unsafe payload attributes</a></li>
+</ul>
+</li>
+<li><a href="#resetting-the-pipeline">Resetting the Pipeline</a>
+<ul>
+<li><a href="#finding-the-sync-starting-point">Finding the sync starting point</a></li>
+<li><a href="#resetting-derivation-stages">Resetting derivation stages</a></li>
+<li><a href="#about-reorgs-post-merge">About reorgs Post-Merge</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#deriving-payload-attributes">Deriving Payload Attributes</a>
+<ul>
+<li><a href="#deriving-the-transaction-list">Deriving the Transaction List</a>
+<ul>
+<li><a href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
+<ul>
+<li><a href="#ecotone">Ecotone</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#building-individual-payload-attributes">Building Individual Payload Attributes</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="overview"><a class="header" href="#overview">Overview</a></h1>
+<blockquote>
+<p><strong>Note</strong> the following assumes a single sequencer and batcher. In the future, the design will be adapted to
+accommodate multiple such entities.</p>
+</blockquote>
+<p><a href="../glossary.html#L2-chain-derivation">L2 chain derivation</a> — deriving L2 <a href="../glossary.html#block">blocks</a> from L1 data — is one of the main responsibilities
+of the <a href="../glossary.html#rollup-node">rollup node</a>, both in validator mode, and in sequencer mode (where derivation acts as a sanity
+check on sequencing, and enables detecting L1 chain <a href="../glossary.html#chain-re-organization">re-organizations</a>).</p>
+<p>The L2 chain is derived from the L1 chain. In particular, each L1 block following <a href="../glossary.html#L2-chain-inception">L2 chain
+inception</a> is mapped to a <a href="../glossary.html#sequencing-epoch">sequencing epoch</a> comprising
+at least one L2 block. Each L2 block belongs to exactly one epoch, and we call the corresponding L1
+block its <a href="../glossary.html#l1-origin">L1 origin</a>. The epoch's number equals that of its L1 origin block.</p>
+<p>To derive the L2 blocks of epoch number <code>E</code>, we need the following inputs:</p>
+<ul>
+<li>L1 blocks in the range <code>[E, E + SWS)</code>, called the <a href="../glossary.html#sequencing-window">sequencing window</a> of the epoch, and <code>SWS</code>
+the sequencing window size. (Note that sequencing windows overlap.)</li>
+<li><a href="../glossary.html#batcher-transaction">Batcher transactions</a> from blocks in the sequencing window.
+<ul>
+<li>These transactions allow us to reconstruct the epoch's <a href="../glossary.html#sequencer-batch">sequencer batches</a>, each of
+which will produce one L2 block. Note that:
+<ul>
+<li>The L1 origin will never contain any data needed to construct sequencer batches since
+each batch <a href="#batch-format">must contain</a> the L1 origin hash.</li>
+<li>An epoch may have no sequencer batches.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="../glossary.html#deposits">Deposits</a> made in the L1 origin (in the form of events emitted by the <a href="../glossary.html#deposit-contract">deposit
+contract</a>).</li>
+<li>L1 block attributes from the L1 origin (to derive the <a href="../glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a>).</li>
+<li>The state of the L2 chain after the last L2 block of the previous epoch, or the <a href="../glossary.html#l2-genesis-block">L2 genesis state</a>
+if <code>E</code> is the first epoch.</li>
+</ul>
+<p>To derive the whole L2 chain from scratch, we start with the <a href="../glossary.html#l2-genesis-block">L2 genesis state</a> and
+the <a href="../glossary.html#l2-genesis-block">L2 genesis block</a> as the first L2 block. We then derive L2 blocks from each epoch in order,
+starting at the first L1 block following <a href="../glossary.html#L2-chain-inception">L2 chain inception</a>. Refer to the
+<a href="#architecture">Architecture section</a> for more information on how we implement this in practice.
+The L2 chain may contain pre-Bedrock history, but the L2 genesis here refers to the Bedrock L2
+genesis block.</p>
+<p>Each L2 <code>block</code> with origin <code>l1_origin</code> is subject to the following constraints (whose values are
+denominated in seconds):</p>
+<ul>
+<li>
+<p><code>block.timestamp = prev_l2_timestamp + l2_block_time</code></p>
+<ul>
+<li><code>prev_l2_timestamp</code> is the timestamp of the L2 block immediately preceding this one. If there
+is no preceding block, then this is the genesis block, and its timestamp is explicitly
+specified.</li>
+<li><code>l2_block_time</code> is a configurable parameter of the time between L2 blocks (2s on Optimism).</li>
+</ul>
+</li>
+<li>
+<p><code>l1_origin.timestamp &lt;= block.timestamp &lt;= max_l2_timestamp</code>, where</p>
+<ul>
+<li><code>max_l2_timestamp = max(l1_origin.timestamp + max_sequencer_drift, prev_l2_timestamp + l2_block_time)</code>
+<ul>
+<li><code>max_sequencer_drift</code> is a configurable parameter that bounds how far the sequencer can get ahead of
+the L1.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Finally, each epoch must have at least one L2 block.</p>
+<p>The first constraint means there must be an L2 block every <code>l2_block_time</code> seconds following L2
+chain inception.</p>
+<p>The second constraint ensures that an L2 block timestamp never precedes its L1 origin timestamp,
+and is never more than <code>max_sequencer_drift</code> ahead of it, except only in the unusual case where it
+might prohibit an L2 block from being produced every l2_block_time seconds. (Such cases might arise
+for example under a proof-of-work L1 that sees a period of rapid L1 block production.) In either
+case, the sequencer enforces <code>len(batch.transactions) == 0</code> while <code>max_sequencer_drift</code> is
+exceeded. See <a href="#batch-queue">Batch Queue</a> for more details.</p>
+<p>The final requirement that each epoch must have at least one L2 block ensures that all relevant
+information from the L1 (e.g. deposits) is represented in the L2, even if it has no sequencer
+batches.</p>
+<p>Post-merge, Ethereum has a fixed 12s <a href="../glossary.html#block-time">block time</a>, though some slots can be
+skipped. Under a 2s L2 block time, we thus expect each epoch to typically contain <code>12/2 = 6</code> L2
+blocks. The sequencer will however produce bigger epochs in order to maintain liveness in case of
+either a skipped slot on the L1 or a temporary loss of connection to it. For the lost connection
+case, smaller epochs might be produced after the connection was restored to keep L2 timestamps from
+drifting further and further ahead.</p>
+<h2 id="eager-block-derivation"><a class="header" href="#eager-block-derivation">Eager Block Derivation</a></h2>
+<p>Deriving an L2 block requires that we have constructed its sequencer batch and derived all L2
+blocks and state updates prior to it. This means we can typically derive the L2 blocks of an epoch
+<em>eagerly</em> without waiting on the full sequencing window. The full sequencing window is required
+before derivation only in the very worst case where some portion of the sequencer batch for the
+first block of the epoch appears in the very last L1 block of the window. Note that this only
+applies to <em>block</em> derivation. Sequencer batches can still be derived and tentatively queued
+without deriving blocks from them.</p>
+<hr />
+<h1 id="batch-submission"><a class="header" href="#batch-submission">Batch Submission</a></h1>
+<h2 id="sequencing--batch-submission-overview"><a class="header" href="#sequencing--batch-submission-overview">Sequencing &amp; Batch Submission Overview</a></h2>
+<p>The <a href="../glossary.html#sequencer">sequencer</a> accepts L2 transactions from users. It is responsible for building blocks out of these. For
+each such block, it also creates a corresponding <a href="../glossary.html#sequencer-batch">sequencer batch</a>. It is also responsible for
+submitting each batch to a <a href="../glossary.html#data-availability-provider">data availability provider</a> (e.g. Ethereum calldata), which it does via
+its <a href="../glossary.html#batcher">batcher</a> component.</p>
+<p>The difference between an L2 block and a batch is subtle but important: the block includes an L2 state root, whereas the
+batch only commits to transactions at a given L2 timestamp (equivalently: L2 block number). A block also includes a
+reference to the previous block (*).</p>
+<p>(*) This matters in some edge case where a L1 reorg would occur and a batch would be reposted to the L1 chain but not
+the preceding batch, whereas the predecessor of an L2 block cannot possibly change.</p>
+<p>This means that even if the sequencer applies a state transition incorrectly, the transactions in the batch will still
+be considered part of the canonical L2 chain. Batches are still subject to validity checks (i.e. they have to be encoded
+correctly), and so are individual transactions within the batch (e.g. signatures have to be valid). Invalid batches and
+invalid individual transactions within an otherwise valid batch are discarded by correct nodes.</p>
+<p>If the sequencer applies a state transition incorrectly and posts an <a href="../glossary.html#l2-output-root">output root</a>, then this output root
+will be incorrect. The incorrect output root which will be challenged by a <a href="../glossary.html#fault-proof">fault proof</a>, then replaced
+by a correct output root <strong>for the existing sequencer batches.</strong></p>
+<p>Refer to the <a href="batcher.html">Batch Submission specification</a> for more information.</p>
+<h2 id="batch-submission-wire-format"><a class="header" href="#batch-submission-wire-format">Batch Submission Wire Format</a></h2>
+<p>Batch submission is closely tied to L2 chain derivation because the derivation process must decode the batches that have
+been encoded for the purpose of batch submission.</p>
+<p>The <a href="../glossary.html#batcher">batcher</a> submits <a href="../glossary.html#batcher-transaction">batcher transactions</a> to a <a href="../glossary.html#data-availability-provider">data availability
+provider</a>. These transactions contain one or multiple <a href="../glossary.html#channel-frame">channel frames</a>, which are
+chunks of data belonging to a <a href="../glossary.html#channel">channel</a>.</p>
+<p>A <a href="../glossary.html#channel">channel</a> is a sequence of <a href="../glossary.html#sequencer-batch">sequencer batches</a> (for any L2 blocks) compressed
+together. The reason to group multiple batches together is simply to obtain a better compression rate, hence reducing
+data availability costs.</p>
+<p>Channels might be too large to fit in a single <a href="../glossary.html#batcher-transaction">batcher transaction</a>, hence we need to split it
+into chunks known as <a href="../glossary.html#channel-frame">channel frames</a>. A single batcher transaction can also carry multiple frames
+(belonging to the same or to different channels).</p>
+<p>This design gives use the maximum flexibility in how we aggregate batches into channels, and split channels over batcher
+transactions. It notably allows us to maximize data utilisation in a batcher transaction: for instance it allows us to
+pack the final (small) frame of a window with large frames from the next window.</p>
+<p>In the future this channel identification feature also allows the <a href="../glossary.html#batcher">batcher</a> to employ multiple signers
+(private keys) to submit one or multiple channels in parallel (1).</p>
+<p>(1) This helps alleviate issues where, because of transaction nonce values affecting the L2 tx-pool and thus inclusion:
+multiple transactions made by the same signer are stuck waiting on the inclusion of a previous transaction.</p>
+<p>Also note that we use a streaming compression scheme, and we do not need to know how many blocks a channel will end up
+containing when we start a channel, or even as we send the first frames in the channel.</p>
+<p>And by splitting channels across multiple data transactions, the L2 can have larger block data than the
+data-availability layer may support.</p>
+<p>All of this is illustrated in the following diagram. Explanations below.</p>
+<p><img src="../static/assets/batch-deriv-chain.svg" alt="batch derivation chain diagram" /></p>
+<p>The first line represents L1 blocks with their numbers. The boxes under the L1 blocks represent <a href="../glossary.html#batcher-transaction">batcher
+transactions</a> included within the block. The squiggles under the L1 blocks represent
+<a href="../glossary.html#deposits">deposits</a> (more specifically, events emitted by the <a href="../glossary.html#deposit-contract">deposit contract</a>).</p>
+<p>Each colored chunk within the boxes represents a <a href="../glossary.html#channel-frame">channel frame</a>. So <code>A</code> and <code>B</code> are
+<a href="../glossary.html#channel">channels</a> whereas <code>A0</code>, <code>A1</code>, <code>B0</code>, <code>B1</code>, <code>B2</code> are frames. Notice that:</p>
+<ul>
+<li>multiple channels are interleaved</li>
+<li>frames do not need to be transmitted in order</li>
+<li>a single batcher transaction can carry frames from multiple channels</li>
+</ul>
+<p>In the next line, the rounded boxes represent individual <a href="../glossary.html#sequencer-batch">sequencer batches</a> that were extracted from
+the channels. The four blue/purple/pink were derived from channel <code>A</code> while the other were derived from channel <code>B</code>.
+These batches are here represented in the order they were decoded from batches (in this case <code>B</code> is decoded first).</p>
+<blockquote>
+<p><strong>Note</strong> The caption here says &quot;Channel B was seen first and will be decoded into batches first&quot;, but this is not a
+requirement. For instance, it would be equally acceptable for an implementation to peek into the channels and decode
+the one that contains the oldest batches first.</p>
+</blockquote>
+<p>The rest of the diagram is conceptually distinct from the first part and illustrates L2 chain derivation after the
+channels have been reordered.</p>
+<p>The first line shows batcher transactions. Note that in this case, there exists an ordering of the batches that makes
+all frames within the channels appear contiguously. This is not true in general. For instance, in the second
+transaction, the position of <code>A1</code> and <code>B0</code> could have been inverted for exactly the same result — no changes needed in
+the rest of the diagram.</p>
+<p>The second line shows the reconstructed channels in proper order. The third line shows the batches extracted from the
+channel. Because the channels are ordered and the batches within a channel are sequential, this means the batches are
+ordered too. The fourth line shows the <a href="../glossary.html#block">L2 block</a> derived from each batch. Note that we have a 1-1 batch to
+block mapping here but, as we'll see later, empty blocks that do not map to batches can be inserted in cases where there
+are &quot;gaps&quot; in the batches posted on L1.</p>
+<p>The fifth line shows the <a href="../glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a> which, within each L2 block, records
+information about the L1 block that matches the L2 block's epoch. The first number denotes the epoch/L1x number, while
+the second number (the &quot;sequence number&quot;) denotes the position within the epoch.</p>
+<p>Finally, the sixth line shows <a href="../glossary.html#user-deposited-transaction">user-deposited transactions</a> derived from the <a href="../glossary.html#deposit-contract">deposit
+contract</a> event mentioned earlier.</p>
+<p>Note the <code>101-0</code> L1 attributes transaction on the bottom right of the diagram. Its presence there is only possible if
+frame <code>B2</code> indicates that it is the last frame within the channel and (2) no empty blocks must be inserted.</p>
+<p>The diagram does not specify the sequencing window size in use, but from this we can infer that it must be at least 4
+blocks, because the last frame of channel <code>A</code> appears in block 102, but belong to epoch 99.</p>
+<p>As for the comment on &quot;security types&quot;, it explains the classification of blocks as used on L1 and L2.</p>
+<ul>
+<li><a href="../glossary.html#unsafe-l2-block">Unsafe L2 blocks</a>:</li>
+<li><a href="../glossary.html#safe-l2-block">Safe L2 blocks</a>:</li>
+<li>Finalized L2 blocks: refer to block that have been derived from <a href="../glossary.html#finalized-l2-head">finalized</a> L1 data.</li>
+</ul>
+<p>These security levels map to the <code>headBlockHash</code>, <code>safeBlockHash</code> and <code>finalizedBlockHash</code> values transmitted when
+interacting with the <a href="exec-engine.html">execution-engine API</a>.</p>
+<h3 id="batcher-transaction-format"><a class="header" href="#batcher-transaction-format">Batcher Transaction Format</a></h3>
+<p>Batcher transactions are encoded as <code>version_byte ++ rollup_payload</code> (where <code>++</code> denotes concatenation).</p>
+<div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>rollup_payload</code></th></tr></thead><tbody>
+<tr><td>0</td><td><code>frame ...</code> (one or more frames, concatenated)</td></tr>
+</tbody></table>
+</div>
+<p>Unknown versions make the batcher transaction invalid (it must be ignored by the rollup node).
+All frames in a batcher transaction must be parseable. If any one frame fails to parse, the all frames in the
+transaction are rejected.</p>
+<p>Batch transactions are authenticated by verifying that the <code>to</code> address of the transaction matches the batch inbox
+address, and the <code>from</code> address matches the batch-sender address in the <a href="../glossary.html#system-configuration">system configuration</a> at the
+time of the L1 block that the transaction data is read from.</p>
+<h3 id="frame-format"><a class="header" href="#frame-format">Frame Format</a></h3>
+<p>A <a href="../glossary.html#channel-frame">channel frame</a> is encoded as:</p>
+<pre><code class="language-text">frame = channel_id ++ frame_number ++ frame_data_length ++ frame_data ++ is_last
+
+channel_id        = bytes16
+frame_number      = uint16
+frame_data_length = uint32
+frame_data        = bytes
+is_last           = bool
+</code></pre>
+<p>Where <code>uint32</code> and <code>uint16</code> are all big-endian unsigned integers. Type names should be interpreted to and
+encoded according to <a href="https://docs.soliditylang.org/en/v0.8.16/abi-spec.html">the Solidity ABI</a>.</p>
+<p>All data in a frame is fixed-size, except the <code>frame_data</code>. The fixed overhead is <code>16 + 2 + 4 + 1 = 23 bytes</code>.
+Fixed-size frame metadata avoids a circular dependency with the target total data length,
+to simplify packing of frames with varying content length.</p>
+<p>where:</p>
+<ul>
+<li><code>channel_id</code> is an opaque identifier for the channel. It should not be reused and is suggested to be random; however,
+outside of timeout rules, it is not checked for validity</li>
+<li><code>frame_number</code> identifies the index of the frame within the channel</li>
+<li><code>frame_data_length</code> is the length of <code>frame_data</code> in bytes. It is capped to 1,000,000 bytes.</li>
+<li><code>frame_data</code> is a sequence of bytes belonging to the channel, logically after the bytes from the previous frames</li>
+<li><code>is_last</code> is a single byte with a value of 1 if the frame is the last in the channel, 0 if there are frames in the
+channel. Any other value makes the frame invalid (it must be ignored by the rollup node).</li>
+</ul>
+<h3 id="channel-format"><a class="header" href="#channel-format">Channel Format</a></h3>
+<p>A channel is encoded as <code>channel_encoding</code>, defined as:</p>
+<pre><code class="language-text">rlp_batches = []
+for batch in batches:
+    rlp_batches.append(batch)
+channel_encoding = compress(rlp_batches)
+</code></pre>
+<p>where:</p>
+<ul>
+<li><code>batches</code> is the input, a sequence of batches byte-encoded as per the next section (&quot;Batch Encoding&quot;)</li>
+<li><code>rlp_batches</code> is the concatenation of the RLP-encoded batches</li>
+<li><code>compress</code> is a function performing compression, using the ZLIB algorithm (as specified in <a href="https://www.rfc-editor.org/rfc/rfc1950.html">RFC-1950</a>) with
+no dictionary</li>
+<li><code>channel_encoding</code> is the compressed version of <code>rlp_batches</code></li>
+</ul>
+<p>When decompressing a channel, we limit the amount of decompressed data to <code>MAX_RLP_BYTES_PER_CHANNEL</code> (currently
+10,000,000 bytes), in order to avoid &quot;zip-bomb&quot; types of attack (where a small compressed input decompresses to a
+humongous amount of data). If the decompressed data exceeds the limit, things proceeds as though the channel contained
+only the first <code>MAX_RLP_BYTES_PER_CHANNEL</code> decompressed bytes. The limit is set on RLP decoding, so all batches that
+can be decoded in <code>MAX_RLP_BYTES_PER_CHANNEL</code> will be accepted even if the size of the channel is greater than
+<code>MAX_RLP_BYTES_PER_CHANNEL</code>. The exact requirement is that <code>length(input) &lt;= MAX_RLP_BYTES_PER_CHANNEL</code>.</p>
+<p>While the above pseudocode implies that all batches are known in advance, it is possible to perform streaming
+compression and decompression of RLP-encoded batches. This means it is possible to start including channel frames in a
+<a href="../glossary.html#batcher-transaction">batcher transaction</a> before we know how many batches (and how many frames) the channel will
+contain.</p>
+<h3 id="batch-format"><a class="header" href="#batch-format">Batch Format</a></h3>
+<p>Recall that a batch contains a list of transactions to be included in a specific L2 block.</p>
+<p>A batch is encoded as <code>batch_version ++ content</code>, where <code>content</code> depends on the <code>batch_version</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>batch_version</code></th><th><code>content</code></th></tr></thead><tbody>
+<tr><td>0</td><td><code>rlp_encode([parent_hash, epoch_number, epoch_hash, timestamp, transaction_list])</code></td></tr>
+</tbody></table>
+</div>
+<p>where:</p>
+<ul>
+<li><code>batch_version</code> is a single byte, prefixed before the RLP contents, alike to transaction typing.</li>
+<li><code>rlp_encode</code> is a function that encodes a batch according to the <a href="https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/">RLP format</a>, and <code>[x, y, z]</code> denotes a list
+containing items <code>x</code>, <code>y</code> and <code>z</code></li>
+<li><code>parent_hash</code> is the block hash of the previous L2 block</li>
+<li><code>epoch_number</code> and <code>epoch_hash</code> are the number and hash of the L1 block corresponding to the <a href="../glossary.html#sequencing-epoch">sequencing
+epoch</a> of the L2 block</li>
+<li><code>timestamp</code> is the timestamp of the L2 block</li>
+<li><code>transaction_list</code> is an RLP-encoded list of <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> encoded transactions.</li>
+</ul>
+<p>Unknown versions make the batch invalid (it must be ignored by the rollup node), as do malformed contents.</p>
+<p>The <code>epoch_number</code> and the <code>timestamp</code> must also respect the constraints listed in the <a href="#batch-queue">Batch Queue</a>
+section, otherwise the batch is considered invalid and will be ignored.</p>
+<hr />
+<h1 id="architecture"><a class="header" href="#architecture">Architecture</a></h1>
+<p>The above primarily describes the general encodings used in L2 chain derivation,
+primarily how batches are encoded within <a href="../glossary.html#batcher-transaction">batcher transactions</a>.</p>
+<p>This section describes how the L2 chain is produced from the L1 batches using a pipeline architecture.</p>
+<p>A verifier may implement this differently, but must be semantically equivalent to not diverge from the L2 chain.</p>
+<h2 id="l2-chain-derivation-pipeline"><a class="header" href="#l2-chain-derivation-pipeline">L2 Chain Derivation Pipeline</a></h2>
+<p>Our architecture decomposes the derivation process into a pipeline made up of the following stages:</p>
+<ol>
+<li>L1 Traversal</li>
+<li>L1 Retrieval</li>
+<li>Frame Queue</li>
+<li>Channel Bank</li>
+<li>Channel Reader (Batch Decoding)</li>
+<li>Batch Queue</li>
+<li>Payload Attributes Derivation</li>
+<li>Engine Queue</li>
+</ol>
+<p>The data flows from the start (outer) of the pipeline towards the end (inner).
+From the innermost stage the data is pulled from the outermost stage.</p>
+<p>However, data is <em>processed</em> in reverse order. Meaning that if there is any data to be processed in the last stage, it
+will be processed first. Processing proceeds in &quot;steps&quot; that can be taken at each stage. We try to take as many steps as
+possible in the last (most inner) stage before taking any steps in its outer stage, etc.</p>
+<p>This ensures that we use the data we already have before pulling more data and minimizes the latency of data traversing
+the derivation pipeline.</p>
+<p>Each stage can maintain its own inner state as necessary. In particular, each stage maintains a L1 block reference
+(number + hash) to the latest L1 block such that all data originating from previous blocks has been fully processed, and
+the data from that block is being or has been processed. This allows the innermost stage to account for finalization of
+the L1 data-availability used to produce the L2 chain, to reflect in the L2 chain forkchoice when the L2 chain inputs
+become irreversible.</p>
+<p>Let's briefly describe each stage of the pipeline.</p>
+<h3 id="l1-traversal"><a class="header" href="#l1-traversal">L1 Traversal</a></h3>
+<p>In the <em>L1 Traversal</em> stage, we simply read the header of the next L1 block. In normal operations, these will be new
+L1 blocks as they get created, though we can also read old blocks while syncing, or in case of an L1 <a href="../glossary.html#chain-re-organization">re-org</a>.</p>
+<p>Upon traversal of the L1 block, the <a href="../glossary.html#system-configuration">system configuration</a> copy used by the L1 retrieval stage is
+updated, such that the batch-sender authentication is always accurate to the exact L1 block that is read by the stage.</p>
+<h3 id="l1-retrieval"><a class="header" href="#l1-retrieval">L1 Retrieval</a></h3>
+<p>In the <em>L1 Retrieval</em> stage, we read the block we get from the outer stage (L1 traversal), and
+extract data from its <a href="../glossary.html#batcher-transaction">batcher transactions</a>. A batcher
+transaction is one with the following properties:</p>
+<ul>
+<li>
+<p>The <a href="https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/frontier/fork_types.py#L52C31-L52C31"><code>to</code></a> field is equal to the configured batcher inbox address.</p>
+</li>
+<li>
+<p>The sender, as recovered from the transaction signature (<code>v</code>, <code>r</code>, and <code>s</code>), is the batcher
+address loaded from the system config matching the L1 block of the data.</p>
+</li>
+</ul>
+<p>Each batcher transaction is versioned and contains a series of <a href="../glossary.html#channel-frame">channel frames</a> to
+be read by the Frame Queue, see <a href="#batch-submission-wire-format">Batch Submission Wire Format</a>. Each batcher
+transaction in the block is processed in the order they appear in the block by passing its calldata
+on to the next phase.</p>
+<h4 id="ecotone-blob-retrieval"><a class="header" href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a></h4>
+<p>With the Ecotone upgrade the retrieval stage is extended to support an additional DA source:
+<a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> blobs. After the Ecotone upgrade we modify the iteration over batcher transactions to
+treat transactions of transaction-type == <code>0x03</code> (<code>BLOB_TX_TYPE</code>) differently. If the batcher
+transaction is a blob transaction, then its calldata MUST be ignored should it be present. Instead:</p>
+<ul>
+<li>For each blob hash in <code>blob_versioned_hashes</code>, retrieve the blob that matches it. A blob may be
+retrieved from any of a number different sources. Retrieval from a local beacon-node, through
+the <code>/eth/v1/beacon/blob_sidecars/</code> endpoint, with <code>indices</code> filter to skip unrelated blobs, is
+recommended. For each retrieved blob:
+<ul>
+<li>The blob SHOULD (MUST, if the source is untrusted) be cryptographically verified against its
+versioned hash.</li>
+<li>If the blob has a <a href="#blob-encoding">valid encoding</a>, decode it into its continuous byte-string
+and pass that on to the next phase. Otherwise the blob is ignored.</li>
+</ul>
+</li>
+</ul>
+<p>Note that batcher transactions of type blob must be processed in the same loop as other batcher
+transactions to preserve the invariant that batches are always processed in the order they appear
+in the block. We ignore calldata in blob transactions so that it may be used in the future for
+batch metadata or other purposes.</p>
+<h5 id="blob-encoding"><a class="header" href="#blob-encoding">Blob Encoding</a></h5>
+<p>Each blob in a <a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> transaction really consists of <code>FIELD_ELEMENTS_PER_BLOB = 4096</code> field elements.</p>
+<p>Each field element is a number in a prime field of
+<code>BLS_MODULUS = 52435875175126190479447740508185965837690552500527637822603658699938581184513</code>.
+This number does not represent a full <code>uint256</code>: <code>math.log2(BLS_MODULUS) = 254.8570894...</code></p>
+<p>The <a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/deneb/polynomial-commitments.md">L1 consensus-specs</a>
+describe the encoding of this polynomial.
+The field elements are encoded as big-endian integers (<code>KZG_ENDIANNESS = big</code>).</p>
+<p>To save computational overhead, only <code>254</code> bits per field element are used for rollup data.</p>
+<p><code>127</code> bytes of application-layer rollup data is encoded at a time, into 4 adjacent field elements of the blob:</p>
+<pre><code class="language-python"># read(N): read the next N bytes from the application-layer rollup-data. The next read starts where the last stopped.
+# write(V): append V (one or more bytes) to the raw blob.
+bytes tailA = read(31)
+byte x = read(1)
+byte A = x &amp; 0b0011_1111
+write(A)
+write(tailA)
+
+bytes tailB = read(31)
+byte y = read(1)
+byte B = (y &amp; 0b0000_1111) | (x &amp; 0b1100_0000) &gt;&gt; 2)
+write(B)
+write(tailB)
+
+bytes tailC = read(31)
+byte z = read(1)
+byte C = z &amp; 0b0011_1111
+write(C)
+write(tailC)
+
+bytes tailD = read(31)
+byte D = ((z &amp; 0b1100_0000) &gt;&gt; 2) | ((y &amp; 0b1111_0000) &gt;&gt; 4)
+write(D)
+write(tailD)
+</code></pre>
+<p>Each written field element looks like this:</p>
+<ul>
+<li>Starts with one of the prepared 6-bit left-padded byte values, to keep the field element within valid range.</li>
+<li>Followed by 31 bytes of application-layer data, to fill the low 31 bytes of the field element.</li>
+</ul>
+<p>The written output should look like this:</p>
+<pre><code class="language-text">&lt;----- element 0 -----&gt;&lt;----- element 1 -----&gt;&lt;----- element 2 -----&gt;&lt;----- element 3 -----&gt;
+| byte A |  tailA...  || byte B |  tailB...  || byte C |  tailC...  || byte D |  tailD...  |
+</code></pre>
+<p>The above is repeated 1024 times, to fill all <code>4096</code> elements,
+with a total of <code>(4 * 31 + 3) * 1024 = 130048</code> bytes of data.</p>
+<p>When decoding a blob, the top-most two bits of each field-element must be 0,
+to make the encoding/decoding bijective.</p>
+<p>The first byte of rollup-data (second byte in first field element) is used as a version-byte.</p>
+<p>In version <code>0</code>, the next 3 bytes of data are used to encode the length of the rollup-data, as big-endian <code>uint24</code>.
+Any trailing data, past the length delimiter, must be 0, to keep the encoding/decoding bijective.
+If the length is larger than <code>130048 - 4</code>, the blob is invalid.</p>
+<p>If any of the encoding is invalid, the blob as whole must be ignored.</p>
+<h3 id="frame-queue"><a class="header" href="#frame-queue">Frame Queue</a></h3>
+<p>The Frame Queue buffers one data-transaction at a time,
+decoded into <a href="../glossary.html#channel-frame">channel frames</a>, to be consumed by the next stage.
+See <a href="#batcher-transaction-format">Batcher transaction format</a> and <a href="#frame-format">Frame format</a> specifications.</p>
+<h3 id="channel-bank"><a class="header" href="#channel-bank">Channel Bank</a></h3>
+<p>The <em>Channel Bank</em> stage is responsible for managing buffering from the channel bank that was written to by the L1
+retrieval stage. A step in the channel bank stage tries to read data from channels that are &quot;ready&quot;.</p>
+<p>Channels are currently fully buffered until read or dropped,
+streaming channels may be supported in a future version of the ChannelBank.</p>
+<p>To bound resource usage, the Channel Bank prunes based on channel size, and times out old channels.</p>
+<p>Channels are recorded in FIFO order in a structure called the <em>channel queue</em>. A channel is added to the channel
+queue the first time a frame belonging to the channel is seen.</p>
+<h4 id="pruning"><a class="header" href="#pruning">Pruning</a></h4>
+<p>After successfully inserting a new frame, the ChannelBank is pruned:
+channels are dropped in FIFO order, until <code>total_size &lt;= MAX_CHANNEL_BANK_SIZE</code>, where:</p>
+<ul>
+<li><code>total_size</code> is the sum of the sizes of each channel, which is the sum of all buffered frame data of the channel,
+with an additional frame-overhead of <code>200</code> bytes per frame.</li>
+<li><code>MAX_CHANNEL_BANK_SIZE</code> is a protocol constant of 100,000,000 bytes.</li>
+</ul>
+<h4 id="timeouts"><a class="header" href="#timeouts">Timeouts</a></h4>
+<p>The L1 origin that the channel was opened in is tracked with the channel as <code>channel.open_l1_block</code>,
+and determines the maximum span of L1 blocks that the channel data is retained for, before being pruned.</p>
+<p>A channel is timed out if: <code>current_l1_block.number &gt; channel.open_l1_block.number + CHANNEL_TIMEOUT</code>, where:</p>
+<ul>
+<li><code>current_l1_block</code> is the L1 origin that the stage is currently traversing.</li>
+<li><code>CHANNEL_TIMEOUT</code> is a rollup-configurable, expressed in number of L1 blocks.</li>
+</ul>
+<p>New frames for timed-out channels are dropped instead of buffered.</p>
+<h4 id="reading"><a class="header" href="#reading">Reading</a></h4>
+<p>Upon reading, while the first opened channel is timed-out, remove it from the channel-bank.</p>
+<p>Prior to the Canyon network upgrade, once the first opened channel, if any, is not timed-out and is ready,
+then it is read and removed from the channel-bank. After the Canyon network upgrade, the entire channel bank
+is scanned in FIFO order (by open time) &amp; the first ready (i.e. not timed-out) channel will be returned.</p>
+<p>The canyon behavior will activate when frames from a L1 block whose timestamp is greater than or equal to the
+canyon time first enter the channel queue.</p>
+<p>A channel is ready if:</p>
+<ul>
+<li>The channel is closed</li>
+<li>The channel has a contiguous sequence of frames until the closing frame</li>
+</ul>
+<p>If no channel is ready, the next frame is read and ingested into the channel bank.</p>
+<h4 id="loading-frames"><a class="header" href="#loading-frames">Loading frames</a></h4>
+<p>When a channel ID referenced by a frame is not already present in the Channel Bank,
+a new channel is opened, tagged with the current L1 block, and appended to the channel-queue.</p>
+<p>Frame insertion conditions:</p>
+<ul>
+<li>New frames matching timed-out channels that have not yet been pruned from the channel-bank are dropped.</li>
+<li>Duplicate frames (by frame number) for frames that have not been pruned from the channel-bank are dropped.</li>
+<li>Duplicate closes (new frame <code>is_last == 1</code>, but the channel has already seen a closing frame and has not yet been
+pruned from the channel-bank) are dropped.</li>
+</ul>
+<p>If a frame is closing (<code>is_last == 1</code>) any existing higher-numbered frames are removed from the channel.</p>
+<p>Note that while this allows channel IDs to be reused once they have been pruned from the channel-bank, it is recommended
+that batcher implementations use unique channel IDs.</p>
+<h3 id="channel-reader-batch-decoding"><a class="header" href="#channel-reader-batch-decoding">Channel Reader (Batch Decoding)</a></h3>
+<p>In this stage, we decompress the channel we pull from the last stage, and then parse
+<a href="../glossary.html#sequencer-batch">batches</a> from the decompressed byte stream.</p>
+<p>See <a href="#batch-format">Batch Format</a> for decompression and decoding specification.</p>
+<h3 id="batch-queue"><a class="header" href="#batch-queue">Batch Queue</a></h3>
+<p>During the <em>Batch Buffering</em> stage, we reorder batches by their timestamps. If batches are missing for some <a href="../glossary.html#time-slot">time
+slots</a> and a valid batch with a higher timestamp exists, this stage also generates empty batches to fill
+the gaps.</p>
+<p>Batches are pushed to the next stage whenever there is one sequential batch directly following the timestamp
+of the current <a href="../glossary.html#safe-l2-head">safe L2 head</a> (the last block that can be derived from the canonical L1 chain).
+The parent hash of the batch must also match the hash of the current safe L2 head.</p>
+<p>Note that the presence of any gaps in the batches derived from L1 means that this stage will need to buffer for a whole
+<a href="../glossary.html#sequencing-window">sequencing window</a> before it can generate empty batches (because the missing batch(es) could have
+data in the last L1 block of the window in the worst case).</p>
+<p>A batch can have 4 different forms of validity:</p>
+<ul>
+<li><code>drop</code>: the batch is invalid, and will always be in the future, unless we reorg. It can be removed from the buffer.</li>
+<li><code>accept</code>: the batch is valid and should be processed.</li>
+<li><code>undecided</code>: we are lacking L1 information until we can proceed batch filtering.</li>
+<li><code>future</code>: the batch may be valid, but cannot be processed yet and should be checked again later.</li>
+</ul>
+<p>The batches are processed in order of the inclusion on L1: if multiple batches can be <code>accept</code>-ed the first is applied.
+An implementation can defer <code>future</code> batches a later derivation step to reduce validation work.</p>
+<p>The batches validity is derived as follows:</p>
+<p>Definitions:</p>
+<ul>
+<li><code>batch</code> as defined in the <a href="#batch-format">Batch format section</a>.</li>
+<li><code>epoch = safe_l2_head.l1_origin</code> a <a href="../glossary.html#l1-origin">L1 origin</a> coupled to the batch, with properties:
+<code>number</code> (L1 block number), <code>hash</code> (L1 block hash), and <code>timestamp</code> (L1 block timestamp).</li>
+<li><code>inclusion_block_number</code> is the L1 block number when <code>batch</code> was first <em>fully</em> derived,
+i.e. decoded and output by the previous stage.</li>
+<li><code>next_timestamp = safe_l2_head.timestamp + block_time</code> is the expected L2 timestamp the next batch should have,
+see <a href="../glossary.html#block-time">block time information</a>.</li>
+<li><code>next_epoch</code> may not be known yet, but would be the L1 block after <code>epoch</code> if available.</li>
+<li><code>batch_origin</code> is either <code>epoch</code> or <code>next_epoch</code>, depending on validation.</li>
+</ul>
+<p>Note that processing of a batch can be deferred until <code>batch.timestamp &lt;= next_timestamp</code>,
+since <code>future</code> batches will have to be retained anyway.</p>
+<p>Rules, in validation order:</p>
+<ul>
+<li><code>batch.timestamp &gt; next_timestamp</code> -&gt; <code>future</code>: i.e. the batch must be ready to process.</li>
+<li><code>batch.timestamp &lt; next_timestamp</code> -&gt; <code>drop</code>: i.e. the batch must not be too old.</li>
+<li><code>batch.parent_hash != safe_l2_head.hash</code> -&gt; <code>drop</code>: i.e. the parent hash must be equal to the L2 safe head block hash.</li>
+<li><code>batch.epoch_num + sequence_window_size &lt; inclusion_block_number</code> -&gt; <code>drop</code>: i.e. the batch must be included timely.</li>
+<li><code>batch.epoch_num &lt; epoch.number</code> -&gt; <code>drop</code>: i.e. the batch origin is not older than that of the L2 safe head.</li>
+<li><code>batch.epoch_num == epoch.number</code>: define <code>batch_origin</code> as <code>epoch</code>.</li>
+<li><code>batch.epoch_num == epoch.number+1</code>:
+<ul>
+<li>If <code>next_epoch</code> is not known -&gt; <code>undecided</code>:
+i.e. a batch that changes the L1 origin cannot be processed until we have the L1 origin data.</li>
+<li>If known, then define <code>batch_origin</code> as <code>next_epoch</code></li>
+</ul>
+</li>
+<li><code>batch.epoch_num &gt; epoch.number+1</code> -&gt; <code>drop</code>: i.e. the L1 origin cannot change by more than one L1 block per L2 block.</li>
+<li><code>batch.epoch_hash != batch_origin.hash</code> -&gt; <code>drop</code>: i.e. a batch must reference a canonical L1 origin,
+to prevent batches from being replayed onto unexpected L1 chains.</li>
+<li><code>batch.timestamp &lt; batch_origin.time</code> -&gt; <code>drop</code>: enforce the min L2 timestamp rule.</li>
+<li><code>batch.timestamp &gt; batch_origin.time + max_sequencer_drift</code>: enforce the L2 timestamp drift rule,
+but with exceptions to preserve above min L2 timestamp invariant:
+<ul>
+<li><code>len(batch.transactions) == 0</code>:
+<ul>
+<li><code>epoch.number == batch.epoch_num</code>:
+this implies the batch does not already advance the L1 origin, and must thus be checked against <code>next_epoch</code>.
+<ul>
+<li>If <code>next_epoch</code> is not known -&gt; <code>undecided</code>:
+without the next L1 origin we cannot yet determine if time invariant could have been kept.</li>
+<li>If <code>batch.timestamp &gt;= next_epoch.time</code> -&gt; <code>drop</code>:
+the batch could have adopted the next L1 origin without breaking the <code>L2 time &gt;= L1 time</code> invariant.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>len(batch.transactions) &gt; 0</code>: -&gt; <code>drop</code>:
+when exceeding the sequencer time drift, never allow the sequencer to include transactions.</li>
+</ul>
+</li>
+<li><code>batch.transactions</code>: <code>drop</code> if the <code>batch.transactions</code> list contains a transaction
+that is invalid or derived by other means exclusively:
+<ul>
+<li>any transaction that is empty (zero length byte string)</li>
+<li>any <a href="../glossary.html#deposited-transaction-type">deposited transactions</a> (identified by the transaction type prefix byte)</li>
+</ul>
+</li>
+</ul>
+<p>If no batch can be <code>accept</code>-ed, and the stage has completed buffering of all batches that can fully be read from the L1
+block at height <code>epoch.number + sequence_window_size</code>, and the <code>next_epoch</code> is available,
+then an empty batch can be derived with the following properties:</p>
+<ul>
+<li><code>parent_hash = safe_l2_head.hash</code></li>
+<li><code>timestamp = next_timestamp</code></li>
+<li><code>transactions</code> is empty, i.e. no sequencer transactions. Deposited transactions may be added in the next stage.</li>
+<li>If <code>next_timestamp &lt; next_epoch.time</code>: the current L1 origin is repeated, to preserve the L2 time invariant.
+<ul>
+<li><code>epoch_num = epoch.number</code></li>
+<li><code>epoch_hash = epoch.hash</code></li>
+</ul>
+</li>
+<li>If the batch is the first batch of the epoch, that epoch is used instead of advancing the epoch to ensure that
+there is at least one L2 block per epoch.
+<ul>
+<li><code>epoch_num = epoch.number</code></li>
+<li><code>epoch_hash = epoch.hash</code></li>
+</ul>
+</li>
+<li>Otherwise,
+<ul>
+<li><code>epoch_num = next_epoch.number</code></li>
+<li><code>epoch_hash = next_epoch.hash</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="payload-attributes-derivation"><a class="header" href="#payload-attributes-derivation">Payload Attributes Derivation</a></h3>
+<p>In the <em>Payload Attributes Derivation</em> stage, we convert the batches we get from the previous stage into instances of
+the <a href="../glossary.html#payload-attributes"><code>PayloadAttributes</code></a> structure. Such a structure encodes the transactions that need to figure into
+a block, as well as other block inputs (timestamp, fee recipient, etc). Payload attributes derivation is detailed in the
+section <a href="#deriving-payload-attributes">Deriving Payload Attributes section</a> below.</p>
+<p>This stage maintains its own copy of the <a href="../glossary.html#system-configuration">system configuration</a>, independent of the L1 retrieval stage.
+The system configuration is updated with L1 log events whenever the L1 epoch referenced by the batch input changes.</p>
+<h3 id="engine-queue"><a class="header" href="#engine-queue">Engine Queue</a></h3>
+<p>In the <em>Engine Queue</em> stage, the previously derived <code>PayloadAttributes</code> structures are buffered and sent to the
+<a href="../glossary.html#execution-engine">execution engine</a> to be executed and converted into a proper L2 block.</p>
+<p>The stage maintains references to three L2 blocks:</p>
+<ul>
+<li>The <a href="../glossary.html#finalized-l2-head">finalized L2 head</a>: everything up to and including this block can be fully derived from the
+<a href="https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality">finalized</a> (i.e. canonical and forever irreversible) part of the L1 chain.</li>
+<li>The <a href="../glossary.html#safe-l2-head">safe L2 head</a>: everything up to and including this block can be fully derived from the
+currently canonical L1 chain.</li>
+<li>The <a href="../glossary.html#unsafe-l2-head">unsafe L2 head</a>: blocks between the safe and unsafe heads are <a href="../glossary.html#unsafe-l2-block">unsafe
+blocks</a> that have not been derived from L1. These blocks either come from sequencing (in sequencer
+mode) or from <a href="../glossary.html#unsafe-sync">unsafe sync</a> to the sequencer (in validator mode).
+This is also known as the &quot;latest&quot; head.</li>
+</ul>
+<p>Additionally, it buffers a short history of references to recently processed safe L2 blocks, along with references
+from which L1 blocks each was derived.
+This history does not have to be complete, but enables later L1 finality signals to be translated into L2 finality.</p>
+<h4 id="engine-api-usage"><a class="header" href="#engine-api-usage">Engine API usage</a></h4>
+<p>To interact with the engine, the <a href="exec-engine.html">execution engine API</a> is used, with the following JSON-RPC methods:</p>
+<h5 id="bedrock-canyon-delta-api-usage"><a class="header" href="#bedrock-canyon-delta-api-usage">Bedrock, Canyon, Delta: API Usage</a></h5>
+<ul>
+<li><a href="exec-engine.html#engine_forkchoiceupdatedv2"><code>engine_forkchoiceUpdatedV2</code></a> — updates the forkchoice (i.e. the chain head) to <code>headBlockHash</code> if different, and
+instructs the engine to start building an execution payload if the payload attributes parameter is not <code>null</code>.</li>
+<li><a href="exec-engine.html#engine_getpayloadv2"><code>engine_getPayloadV2</code></a> — retrieves a previously requested execution payload build.</li>
+<li><a href="exec-engine.html#engine_newpayloadv2"><code>engine_newPayloadV2</code></a> — executes an execution payload to create a block.</li>
+</ul>
+<h5 id="ecotone-api-usage"><a class="header" href="#ecotone-api-usage">Ecotone: API Usage</a></h5>
+<ul>
+<li><a href="exec-engine.html#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a> — updates the forkchoice (i.e. the chain head) to <code>headBlockHash</code> if different, and
+instructs the engine to start building an execution payload if the payload attributes parameter is not <code>null</code>.</li>
+<li><a href="exec-engine.html#engine_getpayloadv3"><code>engine_getPayloadV3</code></a> — retrieves a previously requested execution payload build.</li>
+<li><code>engine_newPayload</code>
+<ul>
+<li><a href="exec-engine.html#engine_newpayloadv2"><code>engine_newPayloadV2</code></a> — executes a Bedrock/Canyon/Delta execution payload to create a block.</li>
+<li><a href="exec-engine.html#engine_newpayloadv3"><code>engine_newPayloadV3</code></a> — executes an Ecotone execution payload to create a block.</li>
+</ul>
+</li>
+</ul>
+<p>The current version of <code>op-node</code> uses the <code>v3</code> Engine API RPC methods as well as <code>engine_newPayloadV2</code>, due to
+<code>engine_newPayloadV3</code> only supporting Ecotone execution payloads. Both <code>engine_forkchoiceUpdatedV3</code> and
+<code>engine_getPayloadV3</code> are backwards compatible with Bedrock, Canyon &amp; Delta payloads.</p>
+<p>Prior versions of <code>op-node</code> used <code>v2</code> and <code>v1</code> methods.</p>
+<p>The execution payload is an object of type <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md"><code>ExecutionPayloadV3</code></a>.</p>
+<p>The <code>ExecutionPayload</code> has the following requirements:</p>
+<ul>
+<li>Bedrock
+<ul>
+<li>The withdrawals field MUST be nil</li>
+<li>The blob gas used field MUST be nil</li>
+<li>The blob gas limit field MUST be nil</li>
+</ul>
+</li>
+<li>Canyon, Delta
+<ul>
+<li>The withdrawals field MUST be non-nil</li>
+<li>The withdrawals field MUST be an empty list</li>
+<li>The blob gas used field MUST be nil</li>
+<li>The blob gas limit field MUST be nil</li>
+</ul>
+</li>
+<li>Ecotone
+<ul>
+<li>The withdrawals field MUST be non-nil</li>
+<li>The withdrawals field MUST be an empty list</li>
+<li>The blob gas used field MUST be 0</li>
+<li>The blob gas limit field MUST be 0</li>
+</ul>
+</li>
+</ul>
+<h4 id="forkchoice-synchronization"><a class="header" href="#forkchoice-synchronization">Forkchoice synchronization</a></h4>
+<p>If there are any forkchoice updates to be applied, before additional inputs are derived or processed, then these are
+applied to the engine first.</p>
+<p>This synchronization may happen when:</p>
+<ul>
+<li>A L1 finality signal finalizes one or more L2 blocks: updating the &quot;finalized&quot; L2 block.</li>
+<li>A successful consolidation of unsafe L2 blocks: updating the &quot;safe&quot; L2 block.</li>
+<li>The first thing after a derivation pipeline reset, to ensure a consistent execution engine forkchoice state.</li>
+</ul>
+<p>The new forkchoice state is applied by calling <a href="#engine-api-usage">fork choice updated</a> on the engine API.
+On forkchoice-state validity errors the derivation pipeline must be reset to recover to consistent state.</p>
+<h4 id="l1-consolidation-payload-attributes-matching"><a class="header" href="#l1-consolidation-payload-attributes-matching">L1-consolidation: payload attributes matching</a></h4>
+<p>If the unsafe head is ahead of the safe head, then <a href="../glossary.html#unsafe-block-consolidation">consolidation</a> is attempted, verifying that
+existing unsafe L2 chain matches the derived L2 inputs as derived from the canonical L1 data.</p>
+<p>During consolidation, we consider the oldest unsafe L2 block, i.e. the unsafe L2 block directly after the safe head. If
+the payload attributes match this oldest unsafe L2 block, then that block can be considered &quot;safe&quot; and becomes the new
+safe head.</p>
+<p>The following fields of the derived L2 payload attributes are checked for equality with the L2 block:</p>
+<ul>
+<li>Bedrock, Canyon, Delta, Ecotone Blocks
+<ul>
+<li><code>parent_hash</code></li>
+<li><code>timestamp</code></li>
+<li><code>randao</code></li>
+<li><code>fee_recipient</code></li>
+<li><code>transactions_list</code> (first length, then equality of each of the encoded transactions, including deposits)</li>
+<li><code>gas_limit</code></li>
+</ul>
+</li>
+<li>Canyon, Delta, Ecotone Blocks
+<ul>
+<li><code>withdrawals</code> (first presence, then length, then equality of each of the encoded withdrawals)</li>
+</ul>
+</li>
+<li>Ecotone Blocks
+<ul>
+<li><code>parent_beacon_block_root</code></li>
+</ul>
+</li>
+</ul>
+<p>If consolidation succeeds, the forkchoice change will synchronize as described in the section above.</p>
+<p>If consolidation fails, the L2 payload attributes will be processed immediately as described in the section below.
+The payload attributes are chosen in favor of the previous unsafe L2 block, creating an L2 chain reorg on top of the
+current safe block. Immediately processing the new alternative attributes enables execution engines like go-ethereum to
+enact the change, as linear rewinds of the tip of the chain may not be supported.</p>
+<h4 id="l1-sync-payload-attributes-processing"><a class="header" href="#l1-sync-payload-attributes-processing">L1-sync: payload attributes processing</a></h4>
+<p>If the safe and unsafe L2 heads are identical (whether because of failed consolidation or not), we send the L2 payload
+attributes to the execution engine to be constructed into a proper L2 block.
+This L2 block will then become both the new L2 safe and unsafe head.</p>
+<p>If a payload attributes created from a batch cannot be inserted into the chain because of a validation error (i.e. there
+was an invalid transaction or state transition in the block) the batch should be dropped &amp; the safe head should not be
+advanced. The engine queue will attempt to use the next batch for that timestamp from the batch queue. If no valid batch
+is found, the rollup node will create a deposit only batch which should always pass validation because deposits are
+always valid.</p>
+<p>Interaction with the execution engine via the execution engine API is detailed in the <a href="exec-engine.html#engine-api">Communication with the Execution
+Engine</a> section.</p>
+<p>The payload attributes are then processed with a sequence of:</p>
+<ul>
+<li><a href="#engine-api-usage">Engine: Fork choice updated</a> with current forkchoice state of the stage, and the attributes to
+start block building.
+<ul>
+<li>Non-deterministic sources, like the tx-pool, must be disabled to reconstruct the expected block.</li>
+</ul>
+</li>
+<li><a href="#engine-api-usage">Engine: Get Payload</a> to retrieve the payload, by the payload-ID in the result of the previous
+step.</li>
+<li><a href="#engine-api-usage">Engine: New Payload</a> to import the new payload into the execution engine.</li>
+<li><a href="#engine-api-usage">Engine: Fork Choice Updated</a> to make the new payload canonical,
+now with a change of both <code>safe</code> and <code>unsafe</code> fields to refer to the payload, and no payload attributes.</li>
+</ul>
+<p>Engine API Error handling:</p>
+<ul>
+<li>On RPC-type errors the payload attributes processing should be re-attempted in a future step.</li>
+<li>On payload processing errors the attributes must be dropped, and the forkchoice state must be left unchanged.
+<ul>
+<li>Eventually the derivation pipeline will produce alternative payload attributes, with or without batches.</li>
+<li>If the payload attributes only contained deposits, then it is a critical derivation error if these are invalid.</li>
+</ul>
+</li>
+<li>On forkchoice-state validity errors the derivation pipeline must be reset to recover to consistent state.</li>
+</ul>
+<h4 id="processing-unsafe-payload-attributes"><a class="header" href="#processing-unsafe-payload-attributes">Processing unsafe payload attributes</a></h4>
+<p>If no forkchoice updates or L1 data remain to be processed, and if the next possible L2 block is already available
+through an unsafe source such as the sequencer publishing it via the p2p network, then it is optimistically processed as
+an &quot;unsafe&quot; block. This reduces later derivation work to just consolidation with L1 in the happy case, and enables the
+user to see the head of the L2 chain faster than the L1 may confirm the L2 batches.</p>
+<p>To process unsafe payloads, the payload must:</p>
+<ul>
+<li>Have a block number higher than the current safe L2 head.
+<ul>
+<li>The safe L2 head may only be reorged out due to L1 reorgs.</li>
+</ul>
+</li>
+<li>Have a parent blockhash that matches the current unsafe L2 head.
+<ul>
+<li>This prevents the execution engine individually syncing a larger gap in the unsafe L2 chain.</li>
+<li>This prevents unsafe L2 blocks from reorging other previously validated L2 blocks.</li>
+<li>This check may change in the future versions to adopt e.g. the L1 snap-sync protocol.</li>
+</ul>
+</li>
+</ul>
+<p>The payload is then processed with a sequence of:</p>
+<ul>
+<li>Bedrock/Canyon/Delta Payloads
+<ul>
+<li><code>engine_newPayloadV2</code>: process the payload. It does not become canonical yet.</li>
+<li><code>engine_forkchoiceUpdatedV2</code>: make the payload the canonical unsafe L2 head, and keep the safe/finalized L2 heads.</li>
+</ul>
+</li>
+<li>Ecotone Payloads
+<ul>
+<li><code>engine_newPayloadV3</code>: process the payload. It does not become canonical yet.</li>
+<li><code>engine_forkchoiceUpdatedV3</code>: make the payload the canonical unsafe L2 head, and keep the safe/finalized L2 heads.</li>
+</ul>
+</li>
+</ul>
+<p>Engine API Error handling:</p>
+<ul>
+<li>On RPC-type errors the payload processing should be re-attempted in a future step.</li>
+<li>On payload processing errors the payload must be dropped, and not be marked as canonical.</li>
+<li>On forkchoice-state validity errors the derivation pipeline must be reset to recover to consistent state.</li>
+</ul>
+<h3 id="resetting-the-pipeline"><a class="header" href="#resetting-the-pipeline">Resetting the Pipeline</a></h3>
+<p>It is possible to reset the pipeline, for instance if we detect an L1 <a href="../glossary.html#chain-re-organization">reorg (reorganization)</a>.
+<strong>This enables the rollup node to handle L1 chain reorg events.</strong></p>
+<p>Resetting will recover the pipeline into a state that produces the same outputs as a full L2 derivation process,
+but starting from an existing L2 chain that is traversed back just enough to reconcile with the current L1 chain.</p>
+<p>Note that this algorithm covers several important use-cases:</p>
+<ul>
+<li>Initialize the pipeline without starting from 0, e.g. when the rollup node restarts with an existing engine instance.</li>
+<li>Recover the pipeline if it becomes inconsistent with the execution engine chain, e.g. when the engine syncs/changes.</li>
+<li>Recover the pipeline when the L1 chain reorganizes, e.g. a late L1 block is orphaned, or a larger attestation failure.</li>
+<li>Initialize the pipeline to derive a disputed L2 block with prior L1 and L2 history inside a fault-proof program.</li>
+</ul>
+<p>Handling these cases also means a node can be configured to eagerly sync L1 data with 0 confirmations,
+as it can undo the changes if the L1 later does recognize the data as canonical, enabling safe low-latency usage.</p>
+<p>The Engine Queue is first reset, to determine the L1 and L2 starting points to continue derivation from.
+After this, the other stages are reset independent of each other.</p>
+<h4 id="finding-the-sync-starting-point"><a class="header" href="#finding-the-sync-starting-point">Finding the sync starting point</a></h4>
+<p>To find the starting point, there are several steps, relative to the head of the chain traversing back:</p>
+<ol>
+<li>Find the current L2 forkchoice state
+<ul>
+<li>If no <code>finalized</code> block can be found, start at the Bedrock genesis block.</li>
+<li>If no <code>safe</code> block can be found, fallback to the <code>finalized</code> block.</li>
+<li>The <code>unsafe</code> block should always be available and consistent with the above
+(it may not be in rare engine-corruption recovery cases, this is being reviewed).</li>
+</ul>
+</li>
+<li>Find the first L2 block with plausible L1 reference to be the new <code>unsafe</code> starting point,
+starting from previous <code>unsafe</code>, back to <code>finalized</code> and no further.
+<ul>
+<li>Plausible iff: the L1 origin of the L2 block is known and canonical, or unknown and has a block-number ahead of L1.</li>
+</ul>
+</li>
+<li>Find the first L2 block with an L1 reference older than the sequencing window, to be the new <code>safe</code> starting point,
+starting at the above plausible <code>unsafe</code> head, back to <code>finalized</code> and no further.
+<ul>
+<li>If at any point the L1 origin is known but not canonical, the <code>unsafe</code> head is revised to parent of the current.</li>
+<li>The highest L2 block with known canonical L1 origin is remembered as <code>highest</code>.</li>
+<li>If at any point the L1 origin in the block is corrupt w.r.t. derivation rules, then error. Corruption includes:
+<ul>
+<li>Inconsistent L1 origin block number or parent-hash with parent L1 origin</li>
+<li>Inconsistent L1 sequence number (always changes to <code>0</code> for a L1 origin change, or increments by <code>1</code> if not)</li>
+</ul>
+</li>
+<li>If the L1 origin of the L2 block <code>n</code> is older than the L1 origin of <code>highest</code> by more than a sequence window,
+and <code>n.sequence_number == 0</code>, then the parent L2 block of <code>n</code> will be the <code>safe</code> starting point.</li>
+</ul>
+</li>
+<li>The <code>finalized</code> L2 block persists as the <code>finalized</code> starting point.</li>
+<li>Find the first L2 block with an L1 reference older than the channel-timeout
+<ul>
+<li>The L1 origin referenced by this block which we call <code>l2base</code> will be the <code>base</code> for the L2 pipeline derivation:
+By starting here, the stages can buffer any necessary data, while dropping incomplete derivation outputs until
+L1 traversal has caught up with the actual L2 safe head.</li>
+</ul>
+</li>
+</ol>
+<p>While traversing back the L2 chain, an implementation may sanity-check that the starting point is never set too far
+back compared to the existing forkchoice state, to avoid an intensive reorg because of misconfiguration.</p>
+<p>Implementers note: step 1-4 are known as <code>FindL2Heads</code>. Step 5 is currently part of the Engine Queue reset.
+This may change to isolate the starting-point search from the bare reset logic.</p>
+<h4 id="resetting-derivation-stages"><a class="header" href="#resetting-derivation-stages">Resetting derivation stages</a></h4>
+<ol>
+<li>L1 Traversal: start at L1 <code>base</code> as first block to be pulled by next stage.</li>
+<li>L1 Retrieval: empty previous data, and fetch the <code>base</code> L1 data, or defer the fetching work to a later pipeline step.</li>
+<li>Frame Queue: empty the queue.</li>
+<li>Channel Bank: empty the channel bank.</li>
+<li>Channel Reader: reset any batch decoding state.</li>
+<li>Batch Queue: empty the batch queue, use <code>base</code> as initial L1 point of reference.</li>
+<li>Payload Attributes Derivation: empty any batch/attributes state.</li>
+<li>Engine Queue:
+<ul>
+<li>Initialize L2 forkchoice state with syncing start point state. (<code>finalized</code>/<code>safe</code>/<code>unsafe</code>)</li>
+<li>Initialize the L1 point of reference of the stage to <code>base</code>.</li>
+<li>Require a forkchoice update as first task</li>
+<li>Reset any finality data</li>
+</ul>
+</li>
+</ol>
+<p>Where necessary, stages starting at <code>base</code> can initialize their system-config from data encoded in the <code>l2base</code> block.</p>
+<h4 id="about-reorgs-post-merge"><a class="header" href="#about-reorgs-post-merge">About reorgs Post-Merge</a></h4>
+<p>Note that post-<a href="https://ethereum.org/en/upgrades/merge/">merge</a>, the depth of reorgs will be bounded by the <a href="https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/#finality">L1 finality delay</a>
+(2 L1 beacon epochs, or approximately 13 minutes, unless more than 1/3 of the network consistently disagrees).
+New L1 blocks may be finalized every L1 beacon epoch (approximately 6.4 minutes), and depending on these
+finality-signals and batch-inclusion, the derived L2 chain will become irreversible as well.</p>
+<p>Note that this form of finalization only affects inputs, and nodes can then subjectively say the chain is irreversible,
+by reproducing the chain from these irreversible inputs and the set protocol rules and parameters.</p>
+<p>This is however completely unrelated to the outputs posted on L1, which require a form of proof like a fault-proof or
+zk-proof to finalize. Optimistic-rollup outputs like withdrawals on L1 are only labeled &quot;finalized&quot; after passing a week
+without dispute (fault proof challenge window), a name-collision with the proof-of-stake finalization.</p>
+<hr />
+<h1 id="deriving-payload-attributes"><a class="header" href="#deriving-payload-attributes">Deriving Payload Attributes</a></h1>
+<p>For every L2 block derived from L1 data, we need to build <a href="../glossary.html#payload-attributes">payload attributes</a>,
+represented by an <a href="exec-engine.html#extended-payloadattributesv1">expanded version</a> of the <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md"><code>PayloadAttributesV2</code></a> object,
+which includes additional <code>transactions</code> and <code>noTxPool</code> fields.</p>
+<p>This process happens during the payloads-attributes queue ran by a verifier node, as well as during block-production
+ran by a sequencer node (the sequencer may enable the tx-pool usage if the transactions are batch-submitted).</p>
+<h2 id="deriving-the-transaction-list"><a class="header" href="#deriving-the-transaction-list">Deriving the Transaction List</a></h2>
+<p>For each L2 block to be created by the sequencer, we start from a <a href="../glossary.html#sequencer-batch">sequencer batch</a> matching the
+target L2 block number. This could potentially be an empty auto-generated batch, if the L1 chain did not include a batch
+for the target L2 block number. <a href="#batch-format">Remember</a> that the batch includes a <a href="../glossary.html#sequencing-epoch">sequencing
+epoch</a> number, an L2 timestamp, and a transaction list.</p>
+<p>This block is part of a <a href="../glossary.html#sequencing-epoch">sequencing epoch</a>,
+whose number matches that of an L1 block (its <em><a href="../glossary.html#l1-origin">L1 origin</a></em>).
+This L1 block is used to derive L1 attributes and (for the first L2 block in the epoch) user deposits.</p>
+<p>Therefore, a <a href="exec-engine.html#extended-payloadattributesv1"><code>PayloadAttributesV2</code></a> object must include the following transactions:</p>
+<ul>
+<li>one or more <a href="../glossary.html#deposited-transaction">deposited transactions</a>, of two kinds:
+<ul>
+<li>a single <em><a href="../glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a></em>, derived from the L1 origin.</li>
+<li>for the first L2 block in the epoch, zero or more <em><a href="../glossary.html#user-deposited-transaction">user-deposited transactions</a></em>, derived from
+the <a href="../glossary.html#receipt">receipts</a> of the L1 origin.</li>
+</ul>
+</li>
+<li>zero or more <a href="#network-upgrade-automation-transactions">network upgrade automation transactions</a>: special transactions to perform network upgrades.</li>
+<li>zero or more <em><a href="../glossary.html#sequencing">sequenced transactions</a></em>: regular transactions signed by L2 users, included in the
+sequencer batch.</li>
+</ul>
+<p>Transactions <strong>must</strong> appear in this order in the payload attributes.</p>
+<p>The L1 attributes are read from the L1 block header, while deposits are read from the L1 block's <a href="../glossary.html#receipt">receipts</a>.
+Refer to the <a href="deposits.html#deposit-contract"><strong>deposit contract specification</strong></a> for details on how deposits are encoded as log
+entries.</p>
+<h3 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h3>
+<p>Some network upgrades require automated contract changes or deployments at specific blocks.
+To automate these, without adding persistent changes to the execution-layer,
+special transactions may be inserted as part of the derivation process.</p>
+<h4 id="ecotone"><a class="header" href="#ecotone">Ecotone</a></h4>
+<p>The Ecotone hardfork activation block, contains the following transactions in this order:</p>
+<ul>
+<li>L1 Attributes Transaction, using the pre-Ecotone <code>setL1BlockValues</code></li>
+<li>User deposits from L1</li>
+<li>Network Upgrade Transactions
+<ul>
+<li>L1Block deployment</li>
+<li>GasPriceOracle deployment</li>
+<li>Update L1Block Proxy ERC-1967 Implementation Slot</li>
+<li>Update GasPriceOracle Proxy ERC-1967 Implementation Slot</li>
+<li>GasPriceOracle Enable Ecotone</li>
+<li>Beacon block roots contract deployment (EIP-4788)</li>
+</ul>
+</li>
+</ul>
+<p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
+transactions by setting <code>noTxPool: true</code>.</p>
+<h5 id="l1block-deployment"><a class="header" href="#l1block-deployment">L1Block Deployment</a></h5>
+<p>The <code>L1Block</code> contract is upgraded to process the new Ecotone L1-data-fee parameters and L1 blob base-fee.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>375,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="../static/bytecode/ecotone-l1-block-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8</code>,
+computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: L1 Block Deployment&quot;</li>
+</ul>
+<p>This results in the Ecotone L1Block contract being deployed to <code>0x07dbe8500fc591d1852B76feE44d5a05e13097Ff</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000000
+Computed Address: 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: L1 Block Deployment&quot;))
+# 0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
+pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
+jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0xc88a313aa75dc4fbf0b6850d9f9ae41e04243b7008cf3eadb29256d4a71c1dfd</code>.</p>
+<h5 id="gaspriceoracle-deployment"><a class="header" href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></h5>
+<p>The <code>GasPriceOracle</code> contract is upgraded to support the new Ecotone L1-data-fee parameters. Post fork this contract
+will use the blob base fee to compute the gas price for L1-data-fee transactions.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000001</code></li>
+<li><code>to</code>: <code>null</code>,</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1,000,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100...</code> (<a href="../static/bytecode/ecotone-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42</code>
+computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: Gas Price Oracle Deployment&quot;</li>
+</ul>
+<p>This results in the Ecotone GasPriceOracle contract being deployed to <code>0xb528D11cC114E026F138fE568744c6D45ce6Da7A</code>,
+to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000001
+Computed Address: 0xb528D11cC114E026F138fE568744c6D45ce6Da7A
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">❯ cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Deployment&quot;))
+# 0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
+pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
+jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0x8b71360ea773b4cfaf1ae6d2bd15464a4e1e2e360f786e475f63aeaed8da0ae5</code>.</p>
+<h5 id="l1block-proxy-update"><a class="header" href="#l1block-proxy-update">L1Block Proxy Update</a></h5>
+<p>This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x4200000000000000000000000000000000000015</code> (L1Block Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff</code></li>
+<li><code>sourceHash</code>: <code>0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc</code>
+computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: L1 Block Proxy Update&quot;</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig &quot;upgradeTo(address)&quot;) $(cast abi-encode &quot;upgradeTo(address)&quot; 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff)
+0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: L1 Block Proxy Update&quot;))
+# 0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc
+</code></pre>
+<h5 id="gaspriceoracle-proxy-update"><a class="header" href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></h5>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a</code></li>
+<li><code>sourceHash</code>: <code>0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a</code>
+computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;Ecotone: Gas Price Oracle Proxy Update&quot;</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig &quot;upgradeTo(address)&quot;) $(cast abi-encode &quot;upgradeTo(address)&quot; 0xb528D11cC114E026F138fE568744c6D45ce6Da7A)
+0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Proxy Update&quot;))
+# 0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a
+</code></pre>
+<h5 id="gaspriceoracle-enable-ecotone"><a class="header" href="#gaspriceoracle-enable-ecotone">GasPriceOracle Enable Ecotone</a></h5>
+<p>This transaction informs the GasPriceOracle to start using the Ecotone gas calculation formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>80,000</code></li>
+<li><code>data</code>: <code>0x22b90ab3</code></li>
+<li><code>sourceHash</code>: <code>0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93</code>,
+computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: Gas Price Oracle Set Ecotone&quot;</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig &quot;setEcotone()&quot;
+0x22b90ab3
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Set Ecotone&quot;))
+# 0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93
+</code></pre>
+<h5 id="beacon-block-roots-contract-deployment-eip-4788"><a class="header" href="#beacon-block-roots-contract-deployment-eip-4788">Beacon block roots contract deployment (EIP-4788)</a></h5>
+<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a &quot;Beacon block roots&quot; contract, that processes and exposes the beacon-block-root values.
+at address <code>BEACON_ROOTS_ADDRESS = 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</code>.</p>
+<p>For deployment, <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> defines a pre-<a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> legacy transaction, sent from a key that is derived such that the
+transaction signature validity is bound to message-hash, which is bound to the input-data, containing the init-code.</p>
+<p>However, this type of transaction requires manual deployment and gas-payments.
+And since the processing is an integral part of the chain processing, and has to be repeated for every OP-Stack chain,
+the deployment is approached differently here.</p>
+<p>Some chains may already have a user-submitted instance of the <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> transaction.
+This is cryptographically guaranteed to be correct, but may result in the upgrade transaction
+deploying a second contract, with the next nonce. The result of this deployment can be ignored.</p>
+<p>A Deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0B799C86a49DEeb90402691F1041aa3AF2d3C875</code>, as specified in the EIP.</li>
+<li><code>to</code>: null</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>0x3d090</code>, as specified in the EIP.</li>
+<li><code>isCreation</code>: <code>true</code></li>
+<li><code>data</code>:
+<code>0x60618060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500</code></li>
+<li><code>isSystemTx</code>: <code>false</code>, as per the Regolith upgrade, even the system-generated transactions spend gas.</li>
+<li><code>sourceHash</code>: <code>0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c</code>,
+computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;Ecotone: beacon block roots contract deployment&quot;</code></li>
+</ul>
+<p>The contract address upon deployment is computed as <code>rlp([sender, nonce])</code>, which will equal:</p>
+<ul>
+<li><code>BEACON_ROOTS_ADDRESS</code> if deployed</li>
+<li>a different address (<code>0xE3aE1Ae551eeEda337c0BfF6C4c7cbA98dce353B</code>) if <code>nonce = 1</code>:
+when a user already submitted the EIP transaction before the upgrade.</li>
+</ul>
+<p>Verify <code>BEACON_ROOTS_ADDRESS</code>:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x0B799C86a49DEeb90402691F1041aa3AF2d3C875
+# Computed Address: 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: beacon block roots contract deployment&quot;))
+# 0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c
+</code></pre>
+<h2 id="building-individual-payload-attributes"><a class="header" href="#building-individual-payload-attributes">Building Individual Payload Attributes</a></h2>
+<p>After deriving the transactions list, the rollup node constructs a <a href="exec-engine.html#extended-payloadattributesv1"><code>PayloadAttributesV2</code></a> as
+follows:</p>
+<ul>
+<li><code>timestamp</code> is set to the batch's timestamp.</li>
+<li><code>random</code> is set to the <code>prev_randao</code> L1 block attribute.</li>
+<li><code>suggestedFeeRecipient</code> is set to the Sequencer Fee Vault address. See <a href="exec-engine.html#fee-vaults">Fee Vaults</a> specification.</li>
+<li><code>transactions</code> is the array of the derived transactions: deposited transactions and sequenced transactions, all
+encoded with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</li>
+<li><code>noTxPool</code> is set to <code>true</code>, to use the exact above <code>transactions</code> list when constructing the block.</li>
+<li><code>gasLimit</code> is set to the current <code>gasLimit</code> value in the <a href="../glossary.html#system-configuration">system configuration</a> of this payload.</li>
+<li><code>withdrawals</code> is set to nil prior to Canyon and an empty array after Canyon</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/rollup-node-p2p.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/span-batches.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/rollup-node-p2p.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/span-batches.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

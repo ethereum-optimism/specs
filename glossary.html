@@ -1,0 +1,729 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Glossary - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="glossary.html" class="active"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#general-terms">General Terms</a>
+<ul>
+<li><a href="#layer-1-l1">Layer 1 (L1)</a></li>
+<li><a href="#layer-2-l2">Layer 2 (L2)</a></li>
+<li><a href="#block">Block</a></li>
+<li><a href="#eoa">EOA</a></li>
+<li><a href="#merkle-patricia-trie">Merkle Patricia Trie</a></li>
+<li><a href="#chain-re-organization">Chain Re-Organization</a></li>
+<li><a href="#predeployed-contract-predeploy">Predeployed Contract (&quot;Predeploy&quot;)</a></li>
+<li><a href="#preinstalled-contract-preinstall">Preinstalled Contract (&quot;Preinstall&quot;)</a></li>
+<li><a href="#receipt">Receipt</a></li>
+<li><a href="#transaction-type">Transaction Type</a></li>
+<li><a href="#fork-choice-rule">Fork Choice Rule</a></li>
+<li><a href="#priority-gas-auction">Priority Gas Auction</a></li>
+</ul>
+</li>
+<li><a href="#sequencing">Sequencing</a>
+<ul>
+<li><a href="#sequencer">Sequencer</a></li>
+<li><a href="#sequencing-window">Sequencing Window</a></li>
+<li><a href="#sequencing-epoch">Sequencing Epoch</a></li>
+<li><a href="#l1-origin">L1 Origin</a></li>
+</ul>
+</li>
+<li><a href="#deposits">Deposits</a>
+<ul>
+<li><a href="#deposited-transaction">Deposited Transaction</a></li>
+<li><a href="#l1-attributes-deposited-transaction">L1 Attributes Deposited Transaction</a></li>
+<li><a href="#user-deposited-transaction">User-Deposited Transaction</a></li>
+<li><a href="#depositing-call">Depositing Call</a></li>
+<li><a href="#depositing-transaction">Depositing Transaction</a></li>
+<li><a href="#depositor">Depositor</a></li>
+<li><a href="#deposited-transaction-type">Deposited Transaction Type</a></li>
+<li><a href="#deposit-contract">Deposit Contract</a></li>
+</ul>
+</li>
+<li><a href="#withdrawals">Withdrawals</a>
+<ul>
+<li><a href="#relayer">Relayer</a></li>
+<li><a href="#finalization-period">Finalization Period</a></li>
+</ul>
+</li>
+<li><a href="#batch-submission">Batch Submission</a>
+<ul>
+<li><a href="#data-availability">Data Availability</a></li>
+<li><a href="#data-availability-provider">Data Availability Provider</a></li>
+<li><a href="#sequencer-batch">Sequencer Batch</a></li>
+<li><a href="#channel">Channel</a></li>
+<li><a href="#channel-frame">Channel Frame</a></li>
+<li><a href="#batcher">Batcher</a></li>
+<li><a href="#batcher-transaction">Batcher Transaction</a></li>
+<li><a href="#channel-timeout">Channel Timeout</a></li>
+</ul>
+</li>
+<li><a href="#l2-output-root-proposals">L2 Output Root Proposals</a>
+<ul>
+<li><a href="#proposer">Proposer</a></li>
+</ul>
+</li>
+<li><a href="#l2-chain-derivation">L2 Chain Derivation</a>
+<ul>
+<li><a href="#l2-derivation-inputs">L2 Derivation Inputs</a></li>
+<li><a href="#system-configuration">System Configuration</a></li>
+<li><a href="#payload-attributes">Payload Attributes</a></li>
+<li><a href="#l2-genesis-block">L2 Genesis Block</a></li>
+<li><a href="#l2-chain-inception">L2 Chain Inception</a></li>
+<li><a href="#safe-l2-block">Safe L2 Block</a></li>
+<li><a href="#safe-l2-head">Safe L2 Head</a></li>
+<li><a href="#unsafe-l2-block">Unsafe L2 Block</a></li>
+<li><a href="#unsafe-l2-head">Unsafe L2 Head</a></li>
+<li><a href="#unsafe-block-consolidation">Unsafe Block Consolidation</a></li>
+<li><a href="#finalized-l2-head">Finalized L2 Head</a></li>
+</ul>
+</li>
+<li><a href="#other-l2-chain-concepts">Other L2 Chain Concepts</a>
+<ul>
+<li><a href="#address-aliasing">Address Aliasing</a></li>
+<li><a href="#rollup-node">Rollup Node</a></li>
+<li><a href="#rollup-driver">Rollup Driver</a></li>
+<li><a href="#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a></li>
+<li><a href="#l2-output-root">L2 Output Root</a></li>
+<li><a href="#l2-output-oracle-contract">L2 Output Oracle Contract</a></li>
+<li><a href="#validator">Validator</a></li>
+<li><a href="#fault-proof">Fault Proof</a></li>
+<li><a href="#time-slot">Time Slot</a></li>
+<li><a href="#block-time">Block Time</a></li>
+<li><a href="#unsafe-sync">Unsafe Sync</a></li>
+</ul>
+</li>
+<li><a href="#execution-engine-concepts">Execution Engine Concepts</a>
+<ul>
+<li><a href="#execution-engine">Execution Engine</a></li>
+</ul>
+</li>
+</ul>
+<hr />
+<h1 id="general-terms"><a class="header" href="#general-terms">General Terms</a></h1>
+<h2 id="layer-1-l1"><a class="header" href="#layer-1-l1">Layer 1 (L1)</a></h2>
+<p>Refers the Ethereum blockchain, used in contrast to <a href="glossary.html#layer-2-L2">layer 2</a>, which refers to Optimism.</p>
+<h2 id="layer-2-l2"><a class="header" href="#layer-2-l2">Layer 2 (L2)</a></h2>
+<p>Refers to the Optimism blockchain (specified in this repository), used in contrast to <a href="glossary.html#layer-1-L1">layer 1</a>, which
+refers to the Ethereum blockchain.</p>
+<h2 id="block"><a class="header" href="#block">Block</a></h2>
+<p>Can refer to an <a href="glossary.html#layer-1-L1">L1</a> block, or to an <a href="glossary.html#layer-2-L2">L2</a> block, which are structured similarly.</p>
+<p>A block is a sequential list of transactions, along with a couple of properties stored in the <em>header</em> of the block. A
+description of these properties can be found in code comments <a href="https://github.com/norswap/nanoeth/blob/cc5d94a349c90627024f3cd629a2d830008fec72/src/com/norswap/nanoeth/blocks/BlockHeader.java#L22-L156">here</a>, or in the <a href="https://ethereum.github.io/yellowpaper/paper.pdf">Ethereum yellow paper
+(pdf)</a>, section 4.3.</p>
+<p>It is useful to distinguish between input block properties, which are known before executing the transactions in the
+block, and output block properties, which are derived after executing the block's transactions. These include various
+<a href="glossary.html#merkle-patricia-trie">Merkle Patricia Trie roots</a> that notably commit to the L2 state and to the log events emitted during execution.</p>
+<h2 id="eoa"><a class="header" href="#eoa">EOA</a></h2>
+<p>&quot;Externally Owned Account&quot;, an Ethereum term to designate addresses operated by users, as opposed to contract addresses.</p>
+<h2 id="merkle-patricia-trie"><a class="header" href="#merkle-patricia-trie">Merkle Patricia Trie</a></h2>
+<p>A <a href="https://github.com/norswap/nanoeth/blob/d4c0c89cc774d4225d16970aa44c74114c1cfa63/src/com/norswap/nanoeth/trees/patricia/README.md">Merkle Patricia Trie (MPT)</a> is a sparse trie, which is a tree-like structure that maps keys to values.
+The root hash of a MPT is a commitment to the contents of the tree, which allows a
+proof to be constructed for any key-value mapping encoded in the tree. Such a proof is called a Merkle proof, and can be
+verified against the Merkle root.</p>
+<h2 id="chain-re-organization"><a class="header" href="#chain-re-organization">Chain Re-Organization</a></h2>
+<p>A re-organization, or re-org for short, is whenever the head of a blockchain (its last block) changes (as dictated by
+the <a href="glossary.html#fork-choice-rule">fork choice rule</a>) to a block that is not a child of the previous head.</p>
+<p>L1 re-orgs can happen because of network conditions or attacks. L2 re-orgs are a consequence of L1 re-orgs, mediated via
+<a href="glossary.html#L2-chain-derivation">L2 chain derivation</a>.</p>
+<h2 id="predeployed-contract-predeploy"><a class="header" href="#predeployed-contract-predeploy">Predeployed Contract (&quot;Predeploy&quot;)</a></h2>
+<p>A contract placed in the L2 genesis state (i.e. at the start of the chain).</p>
+<p>All predeploy contracts are specified in the <a href="./protocol/predeploys.html">predeploys specification</a>.</p>
+<h2 id="preinstalled-contract-preinstall"><a class="header" href="#preinstalled-contract-preinstall">Preinstalled Contract (&quot;Preinstall&quot;)</a></h2>
+<p>A contract placed in the L2 genesis state (i.e. at the start of the chain). These contracts do not share the same
+security guarantees as <a href="#predeployed-contract-predeploy">predeploys</a>, but are general use contracts made
+available to improve the L2's UX.</p>
+<p>All preinstall contracts are specified in the <a href="./protocol/preinstalls.html">preinstalls specification</a>.</p>
+<h2 id="receipt"><a class="header" href="#receipt">Receipt</a></h2>
+<p>A receipt is an output generated by a transaction, comprising a status code, the amount of gas used, a list of log
+entries, and a <a href="https://en.wikipedia.org/wiki/Bloom_filter">bloom filter</a> indexing these entries. Log entries are most notably used to encode <a href="https://docs.soliditylang.org/en/latest/contracts.html?highlight=events#events">Solidity events</a>.</p>
+<p>Receipts are not stored in blocks, but blocks store a <a href="glossary.html#merkle-patricia-trie">Merkle Patricia Trie root</a> for a tree containing the receipt
+for every transaction in the block.</p>
+<p>Receipts are specified in the <a href="https://ethereum.github.io/yellowpaper/paper.pdf">yellow paper (pdf)</a> section 4.3.1.</p>
+<h2 id="transaction-type"><a class="header" href="#transaction-type">Transaction Type</a></h2>
+<p>Ethereum provides a mechanism (as described in <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>) for defining different transaction types.
+Different transaction types can contain different payloads, and be handled differently by the protocol.</p>
+<h2 id="fork-choice-rule"><a class="header" href="#fork-choice-rule">Fork Choice Rule</a></h2>
+<p>The fork choice rule is the rule used to determine which block is to be considered as the head of a blockchain. On L1,
+this is determined by the proof of stake rules.</p>
+<p>L2 also has a fork choice rule, although the rules vary depending on whether we want the <a href="glossary.html#safe-l2-head">safe L2 head</a>,
+the <a href="glossary.html#unsafe-l2-head">unsafe L2 head</a> or the <a href="glossary.html#finalized-l2-head">finalized L2 head</a>.</p>
+<h2 id="priority-gas-auction"><a class="header" href="#priority-gas-auction">Priority Gas Auction</a></h2>
+<p>Transactions in ethereum are ordered by the price that the transaction pays to the miner. Priority Gas Auctions
+(PGAs) occur when multiple parties are competing to be the first transaction in a block. Each party continuously
+updates the gas price of their transaction. PGAs occur when there is value in submitting a transaction before other
+parties (like being the first deposit or submitting a deposit before there is not more guaranteed gas remaining).
+PGAs tend to have negative externalities on the network due to a large amount of transactions being submitted in a
+very short amount of time.</p>
+<hr />
+<h1 id="sequencing"><a class="header" href="#sequencing">Sequencing</a></h1>
+<p>Transactions in the rollup can be included in two ways:</p>
+<ul>
+<li>Through a <a href="#deposited-transaction">deposited transaction</a>, enforced by the system</li>
+<li>Through a regular transaction, embedded in a <a href="#sequencer-batch">sequencer batch</a></li>
+</ul>
+<p>Submitting transactions for inclusion in a batch saves costs by reducing overhead, and enables the sequencer to
+pre-confirm the transactions before the L1 confirms the data.</p>
+<h2 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h2>
+<p>A sequencer is either a <a href="glossary.html#rollup-node">rollup node</a> ran in sequencer mode, or the operator of this rollup node.</p>
+<p>The sequencer is a privileged actor, which receives L2 transactions from L2 users, creates L2 blocks using them, which
+it then submits to <a href="glossary.html#data-availability-provider">data availability provider</a> (via a <a href="glossary.html#batcher">batcher</a>). It also submits <a href="glossary.html#l2-output-root">output
+roots</a> to L1.</p>
+<h2 id="sequencing-window"><a class="header" href="#sequencing-window">Sequencing Window</a></h2>
+<p>A sequencing window is a range of L1 blocks from which a <a href="glossary.html#sequencing-epoch">sequencing epoch</a> can be derived.</p>
+<p>A sequencing window whose first L1 block has number <code>N</code> contains <a href="glossary.html#batcher-transaction">batcher transactions</a> for epoch
+<code>N</code>. The window contains blocks <code>[N, N + SWS)</code> where <code>SWS</code> is the sequencer window size.</p>
+<p>The current default <code>sws</code> is 3600 epochs.</p>
+<p>Additionally, the first block in the window defines the <a href="glossary.html#depositing-transaction">depositing transactions</a> which determine the
+<a href="glossary.html#deposits">deposits</a> to be included in the first L2 block of the epoch.</p>
+<h2 id="sequencing-epoch"><a class="header" href="#sequencing-epoch">Sequencing Epoch</a></h2>
+<p>A sequencing epoch is sequential range of L2 blocks derived from a <a href="#sequencing-window">sequencing window</a> of L1 blocks.</p>
+<p>Each epoch is identified by an epoch number, which is equal to the block number of the first L1 block in the
+sequencing window.</p>
+<p>Epochs can have variable size, subject to some constraints. See the <a href="./protocol/derivation.html">L2 chain derivation specification</a>
+for more details.</p>
+<h2 id="l1-origin"><a class="header" href="#l1-origin">L1 Origin</a></h2>
+<p>The L1 origin of an L2 block is the L1 block corresponding to its <a href="glossary.html#sequencing-epoch">sequencing epoch</a>.</p>
+<hr />
+<h1 id="deposits"><a class="header" href="#deposits">Deposits</a></h1>
+<p>In general, a deposit is an L2 transaction derived from an L1 block (by the <a href="glossary.html#rollup-driver">rollup driver</a>).</p>
+<p>While transaction deposits are notably (but not only) used to &quot;deposit&quot; (bridge) ETH and tokens to L2, the word
+<em>deposit</em> should be understood as &quot;a transaction <em>deposited</em> to L2 from L1&quot;.</p>
+<p>This term <em>deposit</em> is somewhat ambiguous as these &quot;transactions&quot; exist at multiple levels. This section disambiguates
+all deposit-related terms.</p>
+<p>Notably, a <em>deposit</em> can refer to:</p>
+<ul>
+<li>A <a href="glossary.html#deposited-transaction">deposited transaction</a> (on L2) that is part of a deposit block.</li>
+<li>A <a href="glossary.html#depositing-call">depositing call</a> that causes a <a href="glossary.html#deposited-transaction">deposited transaction</a> to be derived.</li>
+<li>The event/log data generated by the <a href="glossary.html#depositing-call">depositing call</a>, which is what the <a href="glossary.html#rollup-driver">rollup driver</a> reads to
+derive the <a href="glossary.html#deposited-transaction">deposited transaction</a>.</li>
+</ul>
+<p>We sometimes also talk about <em>user deposit</em> which is a similar term that explicitly excludes <a href="glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited
+transactions</a>.</p>
+<p>Deposits are specified in the <a href="./protocol/deposits.html">deposits specification</a>.</p>
+<h2 id="deposited-transaction"><a class="header" href="#deposited-transaction">Deposited Transaction</a></h2>
+<p>A <em>deposited transaction</em> is a L2 transaction that was derived from L1 and included in a L2 block.</p>
+<p>There are two kinds of deposited transactions:</p>
+<ul>
+<li><a href="glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a>, which submits the L1 block's attributes to the <a href="glossary.html#l1-attributes-predeployed-contract">L1 Attributes
+Predeployed Contract</a>.</li>
+<li><a href="glossary.html#user-deposited-transaction">User-deposited transactions</a>, which are transactions derived from an L1 call to the <a href="glossary.html#deposit-contract">deposit
+contract</a>.</li>
+</ul>
+<h2 id="l1-attributes-deposited-transaction"><a class="header" href="#l1-attributes-deposited-transaction">L1 Attributes Deposited Transaction</a></h2>
+<p>An <em>L1 attributes deposited transaction</em> is <a href="glossary.html#deposited-transaction">deposited transaction</a> that is used to register the L1 block
+attributes (number, timestamp, ...) on L2 via a call to the <a href="glossary.html#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a>.
+That contract can then be used to read the attributes of the L1 block corresponding to the current L2 block.</p>
+<p>L1 attributes deposited transactions are specified in the <a href="./protocol/deposits.html#l1-attributes-deposited-transaction">L1 Attributes Deposit</a> section of the
+deposits specification.</p>
+<h2 id="user-deposited-transaction"><a class="header" href="#user-deposited-transaction">User-Deposited Transaction</a></h2>
+<p>A <em>user-deposited transaction</em> is a <a href="glossary.html#deposited-transaction">deposited transaction</a> which is derived from an L1 call to the <a href="glossary.html#deposit-contract">deposit
+contract</a> (a <a href="glossary.html#depositing-call">depositing call</a>).</p>
+<p>User-deposited transactions are specified in the <a href="./protocol/deposits.html#user-deposited-transactions">Transaction Deposits</a> section of the deposits
+specification.</p>
+<h2 id="depositing-call"><a class="header" href="#depositing-call">Depositing Call</a></h2>
+<p>A <em>depositing call</em> is an L1 call to the <a href="glossary.html#deposit-contract">deposit contract</a>, which will be derived to a
+<a href="glossary.html#user-deposited-transaction">user-deposited transaction</a> by the <a href="glossary.html#rollup-driver">rollup driver</a>.</p>
+<p>This call specifies all the data (destination, value, calldata, ...) for the deposited transaction.</p>
+<h2 id="depositing-transaction"><a class="header" href="#depositing-transaction">Depositing Transaction</a></h2>
+<p>A <em>depositing transaction</em> is an L1 transaction that makes one or more <a href="glossary.html#depositing-call">depositing calls</a>.</p>
+<h2 id="depositor"><a class="header" href="#depositor">Depositor</a></h2>
+<p>The <em>depositor</em> is the L1 account (contract or <a href="glossary.html#EOA">EOA</a>) that makes (is the <code>msg.sender</code> of) the <a href="glossary.html#depositing-call">depositing
+call</a>. The <em>depositor</em> is <strong>NOT</strong> the originator of the depositing transaction (i.e. <code>tx.origin</code>).</p>
+<h2 id="deposited-transaction-type"><a class="header" href="#deposited-transaction-type">Deposited Transaction Type</a></h2>
+<p>The <em>deposited transaction type</em> is an <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> <a href="glossary.html#transaction-type">transaction type</a>, which specifies the input fields
+and correct handling of a <a href="glossary.html#deposited-transaction">deposited transaction</a>.</p>
+<p>See the <a href="./protocol/deposits.html#the-deposited-transaction-type">corresponding section</a> of the deposits spec for more information.</p>
+<h2 id="deposit-contract"><a class="header" href="#deposit-contract">Deposit Contract</a></h2>
+<p>The <em>deposit contract</em> is an <a href="glossary.html#layer-1-L1">L1</a> contract to which <a href="glossary.html#EOA">EOAs</a> and contracts may send <a href="glossary.html#deposits">deposits</a>. The deposits are
+emitted as log records (in Solidity, these are called <em>events</em>) for consumption by <a href="glossary.html#rollup-node">rollup nodes</a>.</p>
+<p>Advanced note: the deposits are not stored in calldata because they can be sent by contracts, in which case the calldata
+is part of the <em>internal</em> execution between contracts, and this intermediate calldata is not captured in one of the
+<a href="glossary.html#merkle-patricia-trie">Merkle Patricia Trie roots</a> included in the L1 block.</p>
+<p>cf. <a href="./protocol/deposits.html">Deposits Specification</a></p>
+<hr />
+<h1 id="withdrawals"><a class="header" href="#withdrawals">Withdrawals</a></h1>
+<blockquote>
+<p><strong>TODO</strong> expand this whole section to be clearer</p>
+</blockquote>
+<p>In general, a withdrawal is a transaction sent from L2 to L1 that may transfer data and/or value.</p>
+<p>The term <em>withdrawal</em> is somewhat ambiguous as these &quot;transactions&quot; exist at multiple levels. In order to differentiate
+between the L1 and L2 components of a withdrawal we introduce the following terms:</p>
+<ul>
+<li>A <em>withdrawal initiating transaction</em> refers specifically to a transaction on L2 sent to the Withdrawals predeploy.</li>
+<li>A <em>withdrawal finalizing transaction</em> refers specifically to an L1 transaction which finalizes and relays the
+withdrawal.</li>
+</ul>
+<h2 id="relayer"><a class="header" href="#relayer">Relayer</a></h2>
+<p>An EOA on L1 which finalizes a withdrawal by submitting the data necessary to verify its inclusion on L2.</p>
+<h2 id="finalization-period"><a class="header" href="#finalization-period">Finalization Period</a></h2>
+<p>The finalization period — sometimes also called <em>withdrawal delay</em> — is the minimum amount of time (in seconds) that
+must elapse before a <a href="glossary.html#withdrawals">withdrawal</a> can be finalized.</p>
+<p>The finalization period is necessary to afford sufficient time for <a href="glossary.html#validator">validators</a> to make a <a href="glossary.html#fault-proof">fault
+proof</a>.</p>
+<blockquote>
+<p><strong>TODO</strong> specify current value for finalization period</p>
+</blockquote>
+<hr />
+<h1 id="batch-submission"><a class="header" href="#batch-submission">Batch Submission</a></h1>
+<h2 id="data-availability"><a class="header" href="#data-availability">Data Availability</a></h2>
+<p>Data availability is the guarantee that some data will be &quot;available&quot; (i.e. <em>retrievable</em>) during a reasonably long time
+window. In Optimism's case, the data in question are <a href="glossary.html#sequencer-batch">sequencer batches</a> that <a href="glossary.html#validator">validators</a>
+need in order to verify the sequencer's work and validate the L2 chain.</p>
+<p>The <a href="glossary.html#finalization-period">finalization period</a> should be taken as the lower bound on the availability window, since
+that is when data availability is the most crucial, as it is needed to perform a <a href="glossary.html#fault-proof">fault proof</a>.</p>
+<p>&quot;Availability&quot; <strong>does not</strong> mean guaranteed long-term storage of the data.</p>
+<h2 id="data-availability-provider"><a class="header" href="#data-availability-provider">Data Availability Provider</a></h2>
+<p>A data availability provider is a service that can be used to make data available. See the <a href="glossary.html#data-availability">Data
+Availability</a> for more information on what this means.</p>
+<p>Ideally, a good data availability provider provides strong <em>verifiable</em> guarantees of data availability</p>
+<p>Currently, the only supported data availability provider is Ethereum call data. <a href="https://www.eip4844.com/">Ethereum data blobs</a> will be
+supported when they get deployed on Ethereum.</p>
+<h2 id="sequencer-batch"><a class="header" href="#sequencer-batch">Sequencer Batch</a></h2>
+<p>A sequencer batch is list of L2 transactions (that were submitted to a sequencer) tagged with an <a href="#sequencing-epoch">epoch
+number</a> and an L2 block timestamp (which can trivially be converted to a block number, given our
+block time is constant).</p>
+<p>Sequencer batches are part of the <a href="glossary.html#l2-derivation-inputs">L2 derivation inputs</a>. Each batch represents the inputs needed to build
+<strong>one</strong> L2 block (given the existing L2 chain state) — except for the first block of each epoch, which also needs
+information about deposits (cf. the section on <a href="glossary.html#l2-derivation-inputs">L2 derivation inputs</a>).</p>
+<h2 id="channel"><a class="header" href="#channel">Channel</a></h2>
+<p>A channel is a sequence of <a href="glossary.html#sequencer-batch">sequencer batches</a> (for sequential blocks) compressed together. The reason
+to group multiple batches together is simply to obtain a better compression rate, hence reducing data availability
+costs.</p>
+<p>A channel can be split in <a href="glossary.html#channel-frame">frames</a> in order to be transmitted via <a href="glossary.html#batcher-transaction">batcher
+transactions</a>. The reason to split a channel into frames is that a channel might be too large to
+include in a single batcher transaction.</p>
+<p>A channel is uniquely identified by its timestamp (UNIX time at which the channel was created) and a random value. See
+the <a href="./protocol/derivation.html#frame-format">Frame Format</a> section of the L2 Chain Derivation specification for more information.</p>
+<p>On the side of the <a href="glossary.html#rollup-node">rollup node</a> (which is the consumer of channels), a channel is considered to be
+<em>opened</em> if its final frame (explicitly marked as such) has not been read, or closed otherwise.</p>
+<h2 id="channel-frame"><a class="header" href="#channel-frame">Channel Frame</a></h2>
+<p>A channel frame is a chunk of data belonging to a <a href="glossary.html#channel">channel</a>. <a href="glossary.html#batcher-transaction">Batcher transactions</a> carry one or
+multiple frames. The reason to split a channel into frames is that a channel might too large to include in a single
+batcher transaction.</p>
+<h2 id="batcher"><a class="header" href="#batcher">Batcher</a></h2>
+<p>A batcher is a software component (independent program) that is responsible to make channels available on a data
+availability provider. The batcher communicates with the rollup node in order to retrieve the channels. The channels are
+then made available using <a href="glossary.html#batcher-transaction">batcher transactions</a>.</p>
+<blockquote>
+<p><strong>TODO</strong> In the future, we might want to make the batcher responsible for constructing the channels, letting it only
+query the rollup node for L2 block inputs.</p>
+</blockquote>
+<h2 id="batcher-transaction"><a class="header" href="#batcher-transaction">Batcher Transaction</a></h2>
+<p>A batcher transaction is a transaction submitted by a <a href="glossary.html#batcher">batcher</a> to a data availability provider, in order to make
+channels available. These transactions carry one or more full frames, which may belong to different channels. A
+channel's frame may be split between multiple batcher transactions.</p>
+<p>When submitted to Ethereum calldata, the batcher transaction's receiver must be the sequencer inbox address. The
+transaction must also be signed by a recognized batch submitter account. The recognized batch submitter account
+is stored in the <a href="glossary.html#system-configuration">System Configuration</a>.</p>
+<h2 id="channel-timeout"><a class="header" href="#channel-timeout">Channel Timeout</a></h2>
+<p>The channel timeout is a duration (in L1 blocks) during which <a href="glossary.html#channel-frame">channel frames</a> may land on L1 within
+<a href="glossary.html#batcher-transaction">batcher transactions</a>.</p>
+<p>The acceptable time range for the frames of a <a href="glossary.html#channel">channel</a> is <code>[channel_id.timestamp, channel_id.timestamp + CHANNEL_TIMEOUT]</code>. The acceptable L1 block range for these frames are any L1 block whose timestamp falls inside this
+time range. (Note that <code>channel_id.timestamp</code> must be lower than the L1 block timestamp of any L1 block in which frames
+of the channel are seen, or else these frames are ignored.)</p>
+<p>The purpose of channel timeouts is dual:</p>
+<ul>
+<li>Avoid keeping old unclosed channel data around forever (an unclosed channel is a channel whose final frame was not
+sent).</li>
+<li>Bound the number of L1 blocks we have to look back in order to decode <a href="glossary.html#sequencer-batch">sequencer batches</a> from
+channels. This is particularly relevant during L1 re-orgs, see the <a href="./protocol/derivation.html#resetting-channel-buffering">Resetting Channel Buffering</a>
+section of the L2 Chain Derivation specification for more information.</li>
+</ul>
+<blockquote>
+<p><strong>TODO</strong> specify <code>CHANNEL_TIMEOUT</code></p>
+</blockquote>
+<hr />
+<h1 id="l2-output-root-proposals"><a class="header" href="#l2-output-root-proposals">L2 Output Root Proposals</a></h1>
+<h2 id="proposer"><a class="header" href="#proposer">Proposer</a></h2>
+<p>The proposer's role is to construct and submit output roots, which are commitments to the L2's state, to the
+L2OutputOracle contract on L1 (the settlement layer). To do this, the proposer periodically queries the rollup node for
+the latest output root derived from the latest finalized L1 block. It then takes the output root and submits it to the
+L2OutputOracle contract on the settlement layer (L1).</p>
+<hr />
+<h1 id="l2-chain-derivation"><a class="header" href="#l2-chain-derivation">L2 Chain Derivation</a></h1>
+<p>L2 chain derivation is a process that reads <a href="glossary.html#l2-derivation-inputs">L2 derivation inputs</a> from L1 in order to derive the L2
+chain.</p>
+<p>See the <a href="./protocol/derivation.html">L2 chain derivation specification</a> for more details.</p>
+<h2 id="l2-derivation-inputs"><a class="header" href="#l2-derivation-inputs">L2 Derivation Inputs</a></h2>
+<p>This term refers to data that is found in L1 blocks and is read by the <a href="glossary.html#rollup-node">rollup node</a> to construct <a href="glossary.html#payload-attributes">payload
+attributes</a>.</p>
+<p>L2 derivation inputs include:</p>
+<ul>
+<li>L1 block attributes
+<ul>
+<li>block number</li>
+<li>timestamp</li>
+<li>basefee</li>
+<li>blob base fee</li>
+</ul>
+</li>
+<li><a href="glossary.html#deposits">deposits</a> (as log data)</li>
+<li><a href="glossary.html#sequencer-batch">sequencer batches</a> (as transaction data)</li>
+<li><a href="glossary.html#system-configuration">System configuration</a> updates (as log data)</li>
+</ul>
+<h2 id="system-configuration"><a class="header" href="#system-configuration">System Configuration</a></h2>
+<p>This term refers to the collection of dynamically configurable rollup parameters maintained
+by the <a href="glossary.html#system-configuration"><code>SystemConfig</code></a> contract on L1 and read by the L2 <a href="glossary.html#L2-chain-derivation">derivation</a> process.
+These parameters enable keys to be rotated regularly and external cost parameters to be adjusted
+without the network upgrade overhead of a hardfork.</p>
+<h2 id="payload-attributes"><a class="header" href="#payload-attributes">Payload Attributes</a></h2>
+<p>This term refers to an object that can be derived from <a href="glossary.html#l2-derivation-inputs">L2 chain derivation inputs</a> found on L1, which are
+then passed to the <a href="glossary.html#execution-engine">execution engine</a> to construct L2 blocks.</p>
+<p>The payload attributes object essentially encodes <a href="glossary.html#block">a block without output properties</a>.</p>
+<p>Payload attributes are originally specified in the <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#PayloadAttributesV2">Ethereum Engine API specification</a>, which we expand in
+the <a href="./protocol/exec-engine.html">Execution Engine Specification</a>.</p>
+<p>See also the <a href="./protocol/rollup-node.html#building-the-payload-attributes">Building The Payload Attributes</a> section of the rollup node specification.</p>
+<h2 id="l2-genesis-block"><a class="header" href="#l2-genesis-block">L2 Genesis Block</a></h2>
+<p>The L2 genesis block is the first block of the L2 chain in its current version.</p>
+<p>The state of the L2 genesis block comprises:</p>
+<ul>
+<li>State inherited from the previous version of the L2 chain.
+<ul>
+<li>This state was possibly modified by &quot;state surgeries&quot;. For instance, the migration to Bedrock entailed changes on
+how native ETH balances were stored in the storage trie.</li>
+</ul>
+</li>
+<li><a href="glossary.html#predeployed-contract-predeploy">Predeployed contracts</a></li>
+</ul>
+<p>The timestamp of the L2 genesis block must be a multiple of the <a href="glossary.html#block-time">block time</a> (i.e. a even number, since the
+block time is 2 seconds).</p>
+<p>When updating the rollup protocol to a new version, we may perform a <em>squash fork</em>, a process that entails the creation
+of a new L2 genesis block. This new L2 genesis block will have block number <code>X + 1</code>, where <code>X</code> is the block number of
+the final L2 block before the update.</p>
+<p>A squash fork is not to be confused with a <em>re-genesis</em>, a similar process that we employed in the past, which also
+resets L2 block numbers, such that the new L2 genesis block has number 0. We will not employ re-genesis in the future.</p>
+<p>Squash forks are superior to re-geneses because they avoid duplicating L2 block numbers, which breaks a lot of external
+tools.</p>
+<h2 id="l2-chain-inception"><a class="header" href="#l2-chain-inception">L2 Chain Inception</a></h2>
+<p>The L1 block number at which the output roots for the <a href="glossary.html#l2-genesis-block">genesis block</a> were proposed on the <a href="glossary.html#l2-output-oracle-contract">output
+oracle</a> contract.</p>
+<p>In the current implementation, this is the L1 block number at which the output oracle contract was deployed or upgraded.</p>
+<h2 id="safe-l2-block"><a class="header" href="#safe-l2-block">Safe L2 Block</a></h2>
+<p>A safe L2 block is an L2 block that can be derived entirely from L1 by a <a href="glossary.html#rollup-node">rollup node</a>. This can vary
+between different nodes, based on their view of the L1 chain.</p>
+<h2 id="safe-l2-head"><a class="header" href="#safe-l2-head">Safe L2 Head</a></h2>
+<p>The safe L2 head is the highest <a href="glossary.html#safe-l2-block">safe L2 block</a> that a <a href="glossary.html#rollup-node">rollup node</a> knows about.</p>
+<h2 id="unsafe-l2-block"><a class="header" href="#unsafe-l2-block">Unsafe L2 Block</a></h2>
+<p>An unsafe L2 block is an L2 block that a <a href="glossary.html#rollup-node">rollup node</a> knows about, but which was not derived from the L1
+chain. In sequencer mode, this will be a block sequenced by the sequencer itself. In validator mode, this will be a
+block acquired from the sequencer via <a href="glossary.html#unsafe-sync">unsafe sync</a>.</p>
+<h2 id="unsafe-l2-head"><a class="header" href="#unsafe-l2-head">Unsafe L2 Head</a></h2>
+<p>The unsafe L2 head is the highest <a href="glossary.html#unsafe-l2-block">unsafe L2 block</a> that a <a href="glossary.html#rollup-node">rollup node</a> knows about.</p>
+<h2 id="unsafe-block-consolidation"><a class="header" href="#unsafe-block-consolidation">Unsafe Block Consolidation</a></h2>
+<p>Unsafe block consolidation is the process through which the <a href="glossary.html#rollup-node">rollup node</a> attempts to move the <a href="glossary.html#safe-l2-head">safe L2
+head</a> a block forward, so that the oldest <a href="glossary.html#unsafe-l2-block">unsafe L2 block</a> becomes the new safe L2 head.</p>
+<p>In order to perform consolidation, the node verifies that the <a href="glossary.html#payload-attributes">payload attributes</a> derived from the L1
+chain match the oldest unsafe L2 block exactly.</p>
+<p>See the <a href="./protocol/derivation.html#engine-queue">Engine Queue section</a> of the L2 chain derivatiaon spec for more information.</p>
+<h2 id="finalized-l2-head"><a class="header" href="#finalized-l2-head">Finalized L2 Head</a></h2>
+<p>The finalized L2 head is the highest L2 block that can be derived from <em><a href="https://hackmd.io/@prysmaticlabs/finality">finalized</a></em> L1 blocks — i.e. L1
+blocks older than two L1 epochs (64 L1 <a href="glossary.html#time-slot">time slots</a>).</p>
+<hr />
+<h1 id="other-l2-chain-concepts"><a class="header" href="#other-l2-chain-concepts">Other L2 Chain Concepts</a></h1>
+<h2 id="address-aliasing"><a class="header" href="#address-aliasing">Address Aliasing</a></h2>
+<p>When a contract submits a <a href="glossary.html#deposits">deposit</a> from L1 to L2, its address (as returned by <code>ORIGIN</code> and <code>CALLER</code>) will be
+aliased with a modified representation of the address of a contract.</p>
+<ul>
+<li>cf. <a href="./protocol/deposits.html#address-aliasing">Deposit Specification</a></li>
+</ul>
+<h2 id="rollup-node"><a class="header" href="#rollup-node">Rollup Node</a></h2>
+<p>The rollup node is responsible for <a href="glossary.html#L2-chain-derivation">deriving the L2 chain</a> from the L1 chain (L1 <a href="glossary.html#block">blocks</a> and their
+associated <a href="glossary.html#receipt">receipts</a>).</p>
+<p>The rollup node can run either in <em>validator</em> or <em>sequencer</em> mode.</p>
+<p>In sequencer mode, the rollup node receives L2 transactions from users, which it uses to create L2 blocks. These are
+then submitted to a <a href="glossary.html#data-availability-provider">data availability provider</a> via <a href="glossary.html#batch-submission">batch submission</a>. The L2 chain
+derivation then acts as a sanity check and a way to detect L1 chain <a href="glossary.html#chain-re-organization">re-orgs</a>.</p>
+<p>In validator mode, the rollup node performs derivation as indicated above, but is also able to &quot;run ahead&quot; of the L1
+chain by getting blocks directly from the sequencer, in which case derivation serves to validate the sequencer's
+behaviour.</p>
+<p>A rollup node running in validator mode is sometimes called <em>a replica</em>.</p>
+<blockquote>
+<p><strong>TODO</strong> expand this to include output root submission</p>
+</blockquote>
+<p>See the <a href="./protocol/rollup-node.html">rollup node specification</a> for more information.</p>
+<h2 id="rollup-driver"><a class="header" href="#rollup-driver">Rollup Driver</a></h2>
+<p>The rollup driver is the <a href="glossary.html#rollup-node">rollup node</a> component responsible for <a href="glossary.html#L2-chain-derivation">deriving the L2 chain</a>
+from the L1 chain (L1 <a href="glossary.html#block">blocks</a> and their associated <a href="glossary.html#receipt">receipts</a>).</p>
+<blockquote>
+<p><strong>TODO</strong> delete this entry, alongside its reference — can be replaced by &quot;derivation process&quot; or &quot;derivation logic&quot;
+where needed</p>
+</blockquote>
+<h2 id="l1-attributes-predeployed-contract"><a class="header" href="#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a></h2>
+<p>A <a href="glossary.html#predeployed-contract-predeploy">predeployed contract</a> on L2 that can be used to retrieve the L1 block attributes of L1 blocks with a given
+block number or a given block hash.</p>
+<p>cf. <a href="./protocol/deposits.html#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract Specification</a></p>
+<h2 id="l2-output-root"><a class="header" href="#l2-output-root">L2 Output Root</a></h2>
+<p>A 32 byte value which serves as a commitment to the current state of the L2 chain.</p>
+<p>cf. <a href="./protocol/proposals.html#l2-output-root-proposals-specification">Proposing L2 output commitments</a></p>
+<h2 id="l2-output-oracle-contract"><a class="header" href="#l2-output-oracle-contract">L2 Output Oracle Contract</a></h2>
+<p>An L1 contract to which <a href="glossary.html#l2-output-root">L2 output roots</a> are posted by the <a href="glossary.html#sequencer">sequencer</a>.</p>
+<h2 id="validator"><a class="header" href="#validator">Validator</a></h2>
+<p>A validator is an entity (individual or organization) that runs a <a href="glossary.html#rollup-node">rollup node</a> in validator mode.</p>
+<p>Doing so grants a lot of benefits similar to running an Ethereum node, such as the ability to simulate L2 transactions
+locally, without rate limiting.</p>
+<p>It also lets the validator verify the work of the <a href="glossary.html#sequencer">sequencer</a>, by re-deriving <a href="glossary.html#l2-output-root">output roots</a> and comparing
+them against those submitted by the sequencer. In case of a mismatch, the validator can perform a <a href="glossary.html#fault-proof">fault
+proof</a>.</p>
+<h2 id="fault-proof"><a class="header" href="#fault-proof">Fault Proof</a></h2>
+<p>An on-chain <em>interactive</em> proof, performed by <a href="glossary.html#validator">validators</a>, that demonstrates that a <a href="glossary.html#sequencer">sequencer</a> provided
+erroneous <a href="glossary.html#l2-output-root">output roots</a>.</p>
+<p>cf. <a href="./experimental/fault-proof/index.html">Fault Proofs</a></p>
+<h2 id="time-slot"><a class="header" href="#time-slot">Time Slot</a></h2>
+<p>On L2, there is a block every 2 second (this duration is known as the <a href="glossary.html#block-time">block time</a>).</p>
+<p>We say that there is a &quot;time slot&quot; every multiple of 2s after the timestamp of the <a href="glossary.html#l2-genesis-block">L2 genesis block</a>.</p>
+<p>On L1, post-<a href="https://ethereum.org/en/eth2/merge/">merge</a>, the time slots are every 12s. However, an L1 block may not be produced for every time slot, in case
+of even benign consensus issues.</p>
+<h2 id="block-time"><a class="header" href="#block-time">Block Time</a></h2>
+<p>The L2 block time is 2 second, meaning there is an L2 block at every 2s <a href="glossary.html#time-slot">time slot</a>.</p>
+<p>Post-<a href="https://ethereum.org/en/eth2/merge/">merge</a>, it could be said that the L1 block time is 12s as that is the L1 <a href="glossary.html#time-slot">time slot</a>. However, in
+reality the block time is variable as some time slots might be skipped.</p>
+<p>Pre-merge, the L1 block time is variable, though it is on average 13s.</p>
+<h2 id="unsafe-sync"><a class="header" href="#unsafe-sync">Unsafe Sync</a></h2>
+<p>Unsafe sync is the process through which a <a href="glossary.html#validator">validator</a> learns about <a href="glossary.html#unsafe-l2-block">unsafe L2 blocks</a> from
+the <a href="glossary.html#sequencer">sequencer</a>.</p>
+<p>These unsafe blocks will later need to be confirmed by the L1 chain (via <a href="glossary.html#unsafe-block-consolidation">unsafe block consolidation</a>).</p>
+<hr />
+<h1 id="execution-engine-concepts"><a class="header" href="#execution-engine-concepts">Execution Engine Concepts</a></h1>
+<h2 id="execution-engine"><a class="header" href="#execution-engine">Execution Engine</a></h2>
+<p>The execution engine is responsible for executing transactions in blocks and computing the resulting state roots,
+receipts roots and block hash.</p>
+<p>Both L1 (post-<a href="https://ethereum.org/en/eth2/merge/">merge</a>) and L2 have an execution engine.</p>
+<p>On L1, the executed blocks can come from L1 block synchronization; or from a block freshly minted by the execution
+engine (using transactions from the L1 <a href="https://www.quicknode.com/guides/defi/how-to-access-ethereum-mempool">mempool</a>), at the request of the L1 consensus layer.</p>
+<p>On L2, the executed blocks are freshly minted by the execution engine at the request of the <a href="glossary.html#rollup-node">rollup node</a>,
+using transactions <a href="glossary.html#L2-chain-derivation">derived from L1 blocks</a>.</p>
+<p>In these specifications, &quot;execution engine&quot; always refer to the L2 execution engine, unless otherwise specified.</p>
+<ul>
+<li>cf. <a href="./protocol/exec-engine.html">Execution Engine Specification</a></li>
+</ul>
+<!-- Internal Links -->
+<!-- External Links -->
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="experimental/fault-proof/honest-challenger-fdg.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="meta/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="experimental/fault-proof/honest-challenger-fdg.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="meta/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="specs/static/solidity.min.js"></script>
+        <script src="specs/static/mermaid.min.js"></script>
+        <script src="specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

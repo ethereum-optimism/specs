@@ -1,0 +1,678 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Span Batches - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html" class="active"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="span-batches"><a class="header" href="#span-batches">Span-batches</a></h1>
+<!-- All glossary references in this file. -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#span-batch-format">Span batch format</a>
+<ul>
+<li><a href="#max-span-batch-size">Max span-batch size</a></li>
+<li><a href="#future-batch-format-extension">Future batch-format extension</a></li>
+</ul>
+</li>
+<li><a href="#span-batch-activation-rule">Span batch Activation Rule</a></li>
+<li><a href="#optimization-strategies">Optimization Strategies</a>
+<ul>
+<li><a href="#truncating-information-and-storing-only-necessary-data">Truncating information and storing only necessary data</a></li>
+<li><a href="#tx_data_headers-removal-from-initial-specs"><code>tx_data_headers</code> removal from initial specs</a></li>
+<li><a href="#chain-id-removal-from-initial-specs"><code>Chain ID</code> removal from initial specs</a></li>
+<li><a href="#reorganization-of-constant-length-transaction-fields">Reorganization of constant length transaction fields</a></li>
+<li><a href="#rlp-encoding-for-only-variable-length-fields">RLP encoding for only variable length fields</a></li>
+<li><a href="#store-y_parity-and-protected_bit-instead-of-v">Store <code>y_parity</code> and <code>protected_bit</code> instead of <code>v</code></a></li>
+<li><a href="#adjust-txs-data-layout-for-better-compression">Adjust <code>txs</code> Data Layout for Better Compression</a></li>
+<li><a href="#fee_recipients-encoding-scheme"><code>fee_recipients</code> Encoding Scheme</a></li>
+</ul>
+</li>
+<li><a href="#how-derivation-works-with-span-batch">How derivation works with Span Batch?</a></li>
+<li><a href="#integration">Integration</a>
+<ul>
+<li><a href="#channel-reader-batch-decoding">Channel Reader (Batch Decoding)</a></li>
+<li><a href="#batch-queue">Batch Queue</a></li>
+<li><a href="#batcher">Batcher</a></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>The span-batches spec is experimental :shipit:</p>
+<p>*this feature is in active R&amp;D and not yet part of any hard fork</p>
+</blockquote>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>Span-batches reduce overhead of OP-stack chains.
+This enables sparse and low-throughput OP-stack chains.</p>
+<p>The overhead is reduced by representing a span of
+consecutive L2 blocks in a more efficient manner,
+while preserving the same consistency checks as regular batch data.</p>
+<p>Note that the <a href="derivation.html#channel-format">channel</a> and
+<a href="derivation.html#frame-format">frame</a> formats stay the same:
+data slicing, packing and multi-transaction transport is already optimized.</p>
+<p>The overhead in the <a href="derivation.html">V0 batch format</a> comes from:</p>
+<ul>
+<li>The meta-data attributes are repeated for every L2 block, while these are mostly implied already:
+<ul>
+<li>parent hash (32 bytes)</li>
+<li>L1 epoch: blockhash (32 bytes) and block number (~4 bytes)</li>
+<li>timestamp (~4 bytes)</li>
+</ul>
+</li>
+<li>The organization of block data is inefficient:
+<ul>
+<li>Similar attributes are far apart, diminishing any chances of effective compression.</li>
+<li>Random data like hashes are positioned in-between the more compressible application data.</li>
+</ul>
+</li>
+<li>The RLP encoding of the data adds unnecessary overhead
+<ul>
+<li>The outer list does not have to be length encoded, the attributes are known</li>
+<li>Fixed-length attributes do not need any encoding</li>
+<li>The batch-format is static and can be optimized further</li>
+</ul>
+</li>
+<li>Remaining meta-data for consistency checks can be optimized further:
+<ul>
+<li>The metadata only needs to be secure for consistency checks. E.g. 20 bytes of a hash may be enough.</li>
+</ul>
+</li>
+</ul>
+<p>Span-batches address these inefficiencies, with a new batch format version.</p>
+<h2 id="span-batch-format"><a class="header" href="#span-batch-format">Span batch format</a></h2>
+<p>Note that span-batches, unlike previous singular batches,
+encode <em>a range of consecutive</em> L2 blocks at the same time.</p>
+<p>Introduce version <code>1</code> to the <a href="derivation.html#batch-format">batch-format</a> table:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>batch_version</code></th><th><code>content</code></th></tr></thead><tbody>
+<tr><td>1</td><td><code>prefix ++ payload</code></td></tr>
+</tbody></table>
+</div>
+<p>Notation:</p>
+<ul>
+<li><code>++</code>: concatenation of byte-strings</li>
+<li><code>span_start</code>: first L2 block in the span</li>
+<li><code>span_end</code>: last L2 block in the span</li>
+<li><code>uvarint</code>: unsigned Base128 varint, as defined in <a href="https://protobuf.dev/programming-guides/encoding/#varints">protobuf spec</a></li>
+<li><code>rlp_encode</code>: a function that encodes a batch according to the RLP format,
+and <code>[x, y, z]</code> denotes a list containing items <code>x</code>, <code>y</code> and <code>z</code></li>
+</ul>
+<p>Standard bitlists, in the context of span-batches, are encoded as big-endian integers,
+left-padded with zeroes to the next multiple of 8 bits.</p>
+<p>Where:</p>
+<ul>
+<li><code>prefix = rel_timestamp ++ l1_origin_num ++ parent_check ++ l1_origin_check</code>
+<ul>
+<li><code>rel_timestamp</code>: <code>uvarint</code> relative timestamp since L2 genesis,
+i.e. <code>span_start.timestamp - config.genesis.timestamp</code>.</li>
+<li><code>l1_origin_num</code>: <code>uvarint</code> number of last l1 origin number. i.e. <code>span_end.l1_origin.number</code></li>
+<li><code>parent_check</code>: first 20 bytes of parent hash, the hash is truncated to 20 bytes for efficiency,
+i.e. <code>span_start.parent_hash[:20]</code>.</li>
+<li><code>l1_origin_check</code>: the block hash of the last L1 origin is referenced.
+The hash is truncated to 20 bytes for efficiency, i.e. <code>span_end.l1_origin.hash[:20]</code>.</li>
+</ul>
+</li>
+<li><code>payload = block_count ++ origin_bits ++ block_tx_counts ++ txs</code>:
+<ul>
+<li><code>block_count</code>: <code>uvarint</code> number of L2 blocks. This is at least 1, empty span batches are invalid.</li>
+<li><code>origin_bits</code>: standard bitlist of <code>block_count</code> bits:
+1 bit per L2 block, indicating if the L1 origin changed this L2 block.</li>
+<li><code>block_tx_counts</code>: for each block, a <code>uvarint</code> of <code>len(block.transactions)</code>.</li>
+<li><code>txs</code>: L2 transactions which is reorganized and encoded as below.</li>
+</ul>
+</li>
+<li><code>txs = contract_creation_bits ++ y_parity_bits ++ tx_sigs ++ tx_tos ++ tx_datas ++ tx_nonces ++ tx_gases ++ protected_bits</code>
+<ul>
+<li><code>contract_creation_bits</code>: standard bitlist of <code>sum(block_tx_counts)</code> bits:
+1 bit per L2 transactions, indicating if transaction is a contract creation transaction.</li>
+<li><code>y_parity_bits</code>: standard bitlist of <code>sum(block_tx_counts)</code> bits:
+1 bit per L2 transactions, indicating the y parity value when recovering transaction sender address.</li>
+<li><code>tx_sigs</code>: concatenated list of transaction signatures
+<ul>
+<li><code>r</code> is encoded as big-endian <code>uint256</code></li>
+<li><code>s</code> is encoded as big-endian <code>uint256</code></li>
+</ul>
+</li>
+<li><code>tx_tos</code>: concatenated list of <code>to</code> field. <code>to</code> field in contract creation transaction will be <code>nil</code> and ignored.</li>
+<li><code>tx_datas</code>: concatenated list of variable length rlp encoded data,
+matching the encoding of the fields as in the <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> format of the <code>TransactionType</code>.
+<ul>
+<li><code>legacy</code>: <code>rlp_encode(value, gasPrice, data)</code></li>
+<li><code>1</code>: (<a href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a>): <code>0x01 ++ rlp_encode(value, gasPrice, data, accessList)</code></li>
+<li><code>2</code>: (<a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>): <code>0x02 ++ rlp_encode(value, max_priority_fee_per_gas, max_fee_per_gas, data, access_list)</code></li>
+</ul>
+</li>
+<li><code>tx_nonces</code>: concatenated list of <code>uvarint</code> of <code>nonce</code> field.</li>
+<li><code>tx_gases</code>: concatenated list of <code>uvarint</code> of gas limits.
+<ul>
+<li><code>legacy</code>: <code>gasLimit</code></li>
+<li><code>1</code>: (<a href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a>): <code>gasLimit</code></li>
+<li><code>2</code>: (<a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>): <code>gas_limit</code></li>
+</ul>
+</li>
+<li><code>protected_bits</code>: standard bitlist of length of number of legacy transactions:
+1 bit per L2 legacy transactions, indicating if transaction is protected(<a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a>) or not.</li>
+</ul>
+</li>
+</ul>
+<h3 id="max-span-batch-size"><a class="header" href="#max-span-batch-size">Max span-batch size</a></h3>
+<p>Total size of encoded span batch is limited to <code>MAX_SPAN_BATCH_SIZE</code> (currently 10,000,000 bytes,
+equal to <code>MAX_RLP_BYTES_PER_CHANNEL</code>). Therefore every field size of span batch will be implicitly limited to
+<code>MAX_SPAN_BATCH_SIZE</code> . There can be at least single span batch per channel, and channel size is limited
+to <code>MAX_RLP_BYTES_PER_CHANNEL</code> and you may think that there is already an implicit limit. However, having an explicit
+limit for span batch is helpful for several reasons. We may save computation costs by avoiding malicious input while
+decoding. For example, let's say bad batcher wrote span batch which <code>block_count = max.Uint64</code>. We may early return
+using the explicit limit, not trying to consume data until EOF is reached. We can also safely preallocate memory for
+decoding because we know the upper limit of memory usage.</p>
+<h3 id="future-batch-format-extension"><a class="header" href="#future-batch-format-extension">Future batch-format extension</a></h3>
+<p>This is an experimental extension of the span-batch format, and not activated with the Delta upgrade yet.</p>
+<p>Introduce version <code>2</code> to the <a href="derivation.html#batch-format">batch-format</a> table:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>batch_version</code></th><th><code>content</code></th></tr></thead><tbody>
+<tr><td>2</td><td><code>prefix ++ payload</code></td></tr>
+</tbody></table>
+</div>
+<p>Where:</p>
+<ul>
+<li><code>prefix = rel_timestamp ++ l1_origin_num ++ parent_check ++ l1_origin_check</code>:
+<ul>
+<li>Identical to <code>batch_version</code> 1</li>
+</ul>
+</li>
+<li><code>payload = block_count ++ origin_bits ++ block_tx_counts ++ txs ++ fee_recipients</code>:
+<ul>
+<li>An empty span-batch, i.e. with <code>block_count == 0</code>, is invalid and must not be processed.</li>
+<li>Every field definition identical to <code>batch_version</code> 1 except that <code>fee_recipients</code> is
+added to support more decentralized sequencing.</li>
+<li><code>fee_recipients = fee_recipients_idxs + fee_recipients_set</code>
+<ul>
+<li><code>fee_recipients_set</code>: concatenated list of unique L2 fee recipient address.</li>
+<li><code>fee_recipients_idxs</code>: for each block,
+<code>uvarint</code> number of index to decode fee recipients from <code>fee_recipients_set</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="span-batch-activation-rule"><a class="header" href="#span-batch-activation-rule">Span batch Activation Rule</a></h2>
+<p>The span batch upgrade is activated based on timestamp.</p>
+<p>Activation Rule: <code>upgradeTime != null &amp;&amp; span_start.l1_origin.timestamp &gt;= upgradeTime</code></p>
+<p><code>span_start.l1_origin.timestamp</code> is the L1 origin block timestamp of the first block in the span batch.
+This rule ensures that every chain activity regarding this span batch is done after the hard fork.
+i.e. Every block in the span is created, submitted to the L1, and derived from the L1 after the hard fork.</p>
+<h2 id="optimization-strategies"><a class="header" href="#optimization-strategies">Optimization Strategies</a></h2>
+<h3 id="truncating-information-and-storing-only-necessary-data"><a class="header" href="#truncating-information-and-storing-only-necessary-data">Truncating information and storing only necessary data</a></h3>
+<p>The following fields stores truncated data:</p>
+<ul>
+<li><code>rel_timestamp</code>: We can save two bytes by storing <code>rel_timestamp</code> instead of the full <code>span_start.timestamp</code>.</li>
+<li><code>parent_check</code> and <code>l1_origin_check</code>: We can save twelve bytes by truncating twelve bytes from the full hash,
+while having enough safety.</li>
+</ul>
+<h3 id="tx_data_headers-removal-from-initial-specs"><a class="header" href="#tx_data_headers-removal-from-initial-specs"><code>tx_data_headers</code> removal from initial specs</a></h3>
+<p>We do not need to store length per each <code>tx_datas</code> elements even if those are variable length,
+because the elements itself is RLP encoded, containing their length in RLP prefix.</p>
+<h3 id="chain-id-removal-from-initial-specs"><a class="header" href="#chain-id-removal-from-initial-specs"><code>Chain ID</code> removal from initial specs</a></h3>
+<p>Every transaction has chain id. We do not need to include chain id in span batch because L2 already knows its chain id,
+and use its own value for processing span batches while derivation.</p>
+<h3 id="reorganization-of-constant-length-transaction-fields"><a class="header" href="#reorganization-of-constant-length-transaction-fields">Reorganization of constant length transaction fields</a></h3>
+<p><code>signature</code>, <code>nonce</code>, <code>gaslimit</code>, <code>to</code> field are constant size, so these were split up completely and
+are grouped into individual arrays.
+This adds more complexity, but organizes data for improved compression by grouping data with similar data pattern.</p>
+<h3 id="rlp-encoding-for-only-variable-length-fields"><a class="header" href="#rlp-encoding-for-only-variable-length-fields">RLP encoding for only variable length fields</a></h3>
+<p>Further size optimization can be done by packing variable length fields, such as <code>access_list</code>.
+However, doing this will introduce much more code complexity, compared to benefiting from size reduction.</p>
+<p>Our goal is to find the sweet spot on code complexity - span batch size tradeoff.
+I decided that using RLP for all variable length fields will be the best option,
+not risking codebase with gnarly custom encoding/decoding implementations.</p>
+<h3 id="store-y_parity-and-protected_bit-instead-of-v"><a class="header" href="#store-y_parity-and-protected_bit-instead-of-v">Store <code>y_parity</code> and <code>protected_bit</code> instead of <code>v</code></a></h3>
+<p>Only legacy type transactions can be optionally protected. If protected(<a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a>), <code>v = 2 * ChainID + 35 + y_parity</code>.
+Else, <code>v = 27 + y_parity</code>. For other types of transactions, <code>v = y_parity</code>.
+We store <code>y_parity</code>, which is single bit per L2 transaction.
+We store <code>protected_bit</code>, which is single bit per L2 legacy type transactions to indicate that tx is protected.</p>
+<p>This optimization will benefit more when ratio between number of legacy type transactions over number of transactions
+excluding deposit tx is higher.
+Deposit transactions are excluded in batches and are never written at L1 so excluded while analyzing.</p>
+<h3 id="adjust-txs-data-layout-for-better-compression"><a class="header" href="#adjust-txs-data-layout-for-better-compression">Adjust <code>txs</code> Data Layout for Better Compression</a></h3>
+<p>There are (8 choose 2) * 6! = 20160 permutations of ordering fields of <code>txs</code>.
+It is not 8! because <code>contract_creation_bits</code> must be first decoded in order to decode <code>tx_tos</code>.
+We experimented to find out the best layout for compression.
+It turned out placing random data together(<code>TxSigs</code>, <code>TxTos</code>, <code>TxDatas</code>),
+then placing leftovers helped gzip to gain more size reduction.</p>
+<h3 id="fee_recipients-encoding-scheme"><a class="header" href="#fee_recipients-encoding-scheme"><code>fee_recipients</code> Encoding Scheme</a></h3>
+<p>Let <code>K</code> := number of unique fee recipients(cardinality) per span batch. Let <code>N</code> := number of L2 blocks.
+If we naively encode each fee recipients by concatenating every fee recipients, it will need <code>20 * N</code> bytes.
+If we manage <code>fee_recipients_idxs</code> and <code>fee_recipients_set</code>, It will need at most <code>max uvarint size * N = 8 * N</code>,
+<code>20 * K</code> bytes each. If <code>20 * N &gt; 8 * N + 20 * K</code> then maintaining an index of fee recipients is reduces the size.</p>
+<p>we thought sequencer rotation happens not much often, so assumed that <code>K</code> will be much lesser than <code>N</code>.
+The assumption makes upper inequality to hold. Therefore, we decided to manage <code>fee_recipients_idxs</code> and
+<code>fee_recipients_set</code> separately. This adds complexity but reduces data.</p>
+<h2 id="how-derivation-works-with-span-batch"><a class="header" href="#how-derivation-works-with-span-batch">How derivation works with Span Batch?</a></h2>
+<ul>
+<li>Block Timestamp
+<ul>
+<li>The first L2 block's block timestamp is <code>rel_timestamp + L2Genesis.Timestamp</code>.</li>
+<li>Then we can derive other blocks timestamp by adding L2 block time for each.</li>
+</ul>
+</li>
+<li>L1 Origin Number
+<ul>
+<li>The parent of the first L2 block's L1 origin number is <code>l1_origin_num - sum(origin_bits)</code></li>
+<li>Then we can derive other blocks' L1 origin number with <code>origin_bits</code></li>
+<li><code>ith block's L1 origin number = (i-1)th block's L1 origin number + (origin_bits[i] ? 1 : 0)</code></li>
+</ul>
+</li>
+<li>L1 Origin Hash
+<ul>
+<li>We only need the <code>l1_origin_check</code>, the truncated L1 origin hash of the last L2 block of Span Batch.</li>
+<li>If the last block references canonical L1 chain as its origin,
+we can ensure the all other blocks' origins are consistent with the canonical L1 chain.</li>
+</ul>
+</li>
+<li>Parent hash
+<ul>
+<li>In V0 Batch spec, we need batch's parent hash to validate if batch's parent is consistent with current L2 safe head.</li>
+<li>But in the case of Span Batch, because it contains consecutive L2 blocks in the span,
+we do not need to validate all blocks' parent hash except the first block.</li>
+</ul>
+</li>
+<li>Transactions
+<ul>
+<li>Deposit transactions can be derived from its L1 origin, identical with V0 batch.</li>
+<li>User transactions can be derived by following way:
+<ul>
+<li>Recover <code>V</code> value of TX signature from <code>y_parity_bits</code> and L2 chainId, as described in optimization strategies.</li>
+<li>When parsing <code>tx_tos</code>, <code>contract_creation_bits</code> is used to determine if the TX has <code>to</code> value or not.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="integration"><a class="header" href="#integration">Integration</a></h2>
+<h3 id="channel-reader-batch-decoding"><a class="header" href="#channel-reader-batch-decoding">Channel Reader (Batch Decoding)</a></h3>
+<p>The Channel Reader decodes the span-batch, as described in the <a href="#span-batch-format">span-batch format</a>.</p>
+<p>A set of derived attributes is computed as described above. Then cached with the decoded result:</p>
+<h3 id="batch-queue"><a class="header" href="#batch-queue">Batch Queue</a></h3>
+<p>A span-batch is buffered as a singular large batch,
+by its starting timestamp (transformed <code>rel_timestamp</code>).</p>
+<p>Span-batches share the same queue with v0 batches: batches are processed in L1 inclusion order.</p>
+<p>A set of modified validation rules apply to the span-batches.</p>
+<p>Rules are enforced with the <a href="derivation.html#batch-queue">contextual definitions</a> as v0-batch validation:
+<code>epoch</code>, <code>inclusion_block_number</code>, <code>next_timestamp</code></p>
+<p>Definitions:</p>
+<ul>
+<li><code>batch</code> as defined in the <a href="#span-batch-format">Span batch format section</a>.</li>
+<li><code>prev_l2_block</code> is the L2 block from the current safe chain,
+whose timestamp is at <code>span_start.timestamp - l2_block_time</code></li>
+</ul>
+<p>Span-batch rules, in validation order:</p>
+<ul>
+<li><code>batch_origin</code> is determined like with singular batches:
+<ul>
+<li><code>batch.epoch_num == epoch.number+1</code>:
+<ul>
+<li>If <code>next_epoch</code> is not known -&gt; <code>undecided</code>:
+i.e. a batch that changes the L1 origin cannot be processed until we have the L1 origin data.</li>
+<li>If known, then define <code>batch_origin</code> as <code>next_epoch</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>batch_origin.timestamp &lt; span_batch_upgrade_timestamp</code> -&gt; <code>drop</code>:
+i.e. enforce the <a href="#span-batch-activation-rule">span batch upgrade activation rule</a>.</li>
+<li><code>span_start.timestamp &gt; next_timestamp</code> -&gt; <code>future</code>: i.e. the batch must be ready to process,
+but does not have to start exactly at the <code>next_timestamp</code>, since it can overlap with previously processed blocks,</li>
+<li><code>span_end.timestamp &lt; next_timestamp</code> -&gt; <code>drop</code>: i.e. the batch must have at least one new block to process.</li>
+<li>If there's no <code>prev_l2_block</code> in the current safe chain -&gt; <code>drop</code>: i.e. the timestamp must be aligned.</li>
+<li><code>batch.parent_check != prev_l2_block.hash[:20]</code> -&gt; <code>drop</code>:
+i.e. the checked part of the parent hash must be equal to the same part of the corresponding L2 block hash.</li>
+<li>Sequencing-window checks:
+<ul>
+<li>Note: The sequencing window is enforced for the <em>batch as a whole</em>:
+if the batch was partially invalid instead, it would drop the oldest L2 blocks,
+which makes the later L2 blocks invalid.</li>
+<li>Variables:
+<ul>
+<li><code>origin_changed_bit = origin_bits[0]</code>: <code>true</code> if the first L2 block changed its L1 origin, <code>false</code> otherwise.</li>
+<li><code>start_epoch_num = batch.l1_origin_num - sum(origin_bits) + (origin_changed_bit ? 1 : 0)</code></li>
+<li><code>end_epoch_num = batch.l1_origin_num</code></li>
+</ul>
+</li>
+<li>Rules:
+<ul>
+<li><code>start_epoch_num + sequence_window_size &lt; inclusion_block_number</code> -&gt; <code>drop</code>:
+i.e. the batch must be included timely.</li>
+<li><code>start_epoch_num &gt; prev_l2_block.l1_origin.number + 1</code> -&gt; <code>drop</code>:
+i.e. the L1 origin cannot change by more than one L1 block per L2 block.</li>
+<li>If <code>batch.l1_origin_check</code> does not match the canonical L1 chain at <code>end_epoch_num</code> -&gt; <code>drop</code>:
+verify the batch is intended for this L1 chain.
+<ul>
+<li>After upper <code>l1_origin_check</code> check is passed, we don't need to check if the origin
+is past <code>inclusion_block_number</code> because of the following invariant.</li>
+<li>Invariant: the epoch-num in the batch is always less than the inclusion block number,
+if and only if the L1 epoch hash is correct.</li>
+</ul>
+</li>
+<li><code>start_epoch_num &lt; prev_l2_block.l1_origin.number</code> -&gt; <code>drop</code>:
+epoch number cannot be older than the origin of parent block</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Max Sequencer time-drift checks:
+<ul>
+<li>Note: The max time-drift is enforced for the <em>batch as a whole</em>, to keep the possible output variants small.</li>
+<li>Variables:
+<ul>
+<li><code>block_input</code>: an L2 block from the span-batch,
+with L1 origin as derived from the <code>origin_bits</code> and now established canonical L1 chain.</li>
+<li><code>next_epoch</code>: <code>block_input.origin</code>'s next L1 block.
+It may reach to the next origin outside the L1 origins of the span.</li>
+</ul>
+</li>
+<li>Rules:
+<ul>
+<li>For each <code>block_input</code> whose timestamp is greater than <code>safe_head.timestamp</code>:
+<ul>
+<li><code>block_input.timestamp &lt; block_input.origin.time</code> -&gt; <code>drop</code>: enforce the min L2 timestamp rule.</li>
+<li><code>block_input.timestamp &gt; block_input.origin.time + max_sequencer_drift</code>: enforce the L2 timestamp drift rule,
+but with exceptions to preserve above min L2 timestamp invariant:
+<ul>
+<li><code>len(block_input.transactions) == 0</code>:
+<ul>
+<li><code>origin_bits[i] == 0</code>: <code>i</code> is the index of <code>block_input</code> in the span batch.
+So this implies the block_input did not advance the L1 origin,
+and must thus be checked against <code>next_epoch</code>.
+<ul>
+<li>If <code>next_epoch</code> is not known -&gt; <code>undecided</code>:
+without the next L1 origin we cannot yet determine if time invariant could have been kept.</li>
+<li>If <code>block_input.timestamp &gt;= next_epoch.time</code> -&gt; <code>drop</code>:
+the batch could have adopted the next L1 origin without breaking the <code>L2 time &gt;= L1 time</code> invariant.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>len(block_input.transactions) &gt; 0</code>: -&gt; <code>drop</code>:
+when exceeding the sequencer time drift, never allow the sequencer to include transactions.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>And for all transactions:
+<ul>
+<li><code>drop</code> if the <code>batch.tx_datas</code> list contains a transaction
+that is invalid or derived by other means exclusively:
+<ul>
+<li>any transaction that is empty (zero length <code>tx_data</code>)</li>
+<li>any <a href="../glossary.html#deposited-transaction-type">deposited transactions</a> (identified by the transaction type prefix byte in <code>tx_data</code>)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Overlapped blocks checks:
+<ul>
+<li>Note: If the span batch overlaps the current L2 safe chain, we must validate all overlapped blocks.</li>
+<li>Variables:
+<ul>
+<li><code>block_input</code>: an L2 block derived from the span-batch.</li>
+<li><code>safe_block</code>: an L2 block from the current L2 safe chain, at same timestamp as <code>block_input</code></li>
+</ul>
+</li>
+<li>Rules:
+<ul>
+<li>For each <code>block_input</code>, whose timestamp is less than <code>next_timestamp</code>:
+<ul>
+<li><code>block_input.l1_origin.number != safe_block.l1_origin.number</code> -&gt; <code>drop</code></li>
+<li><code>block_input.transactions != safe_block.transactions</code> -&gt; <code>drop</code>
+<ul>
+<li>compare excluding deposit transactions</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Once validated, the batch-queue then emits a block-input for each of the blocks included in the span-batch.
+The next derivation stage is thus only aware of individual block inputs, similar to the previous V0 batch,
+although not strictly a &quot;v0 batch&quot; anymore.</p>
+<h3 id="batcher"><a class="header" href="#batcher">Batcher</a></h3>
+<p>Instead of transforming L2 blocks into batches,
+the blocks should be buffered to form a span-batch.</p>
+<p>Ideally the L2 blocks are buffered as block-inputs, to maximize the span of blocks covered by the span-batch:
+span-batches of single L2 blocks do not increase efficiency as much as with larger spans.</p>
+<p>This means that the <code>(c *channelBuilder) AddBlock</code> function is changed to
+not directly call <code>(co *ChannelOut) AddBatch</code> but defer that until a minimum number of blocks have been buffered.</p>
+<p>Output-size estimation of the queued up blocks is not possible until the span-batch is written to the channel.
+Past a given number of blocks, the channel may be written for estimation, and then re-written if more blocks arrive.</p>
+<p>The <a href="batcher.html">batcher functionality</a> stays the same otherwise: unsafe blocks are transformed into batches,
+encoded in compressed channels, and then split into frames for submission to L1.
+Batcher implementations can implement different heuristics and re-attempts to build the most gas-efficient data-txs.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/batcher.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/batcher.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

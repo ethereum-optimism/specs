@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Honest Challenger - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/honest-challenger-fdg.html" class="active"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../../meta/index.html"><strong aria-hidden="true">6.</strong> Meta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../meta/linting.html"><strong aria-hidden="true">6.1.</strong> Linting</a></li><li class="chapter-item expanded "><a href="../../meta/versioning.html"><strong aria-hidden="true">6.2.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../../meta/markdown-style.html"><strong aria-hidden="true">6.3.</strong> Markdown Style</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="honest-challenger-fault-dispute-game"><a class="header" href="#honest-challenger-fault-dispute-game">Honest Challenger (Fault Dispute Game)</a></h1>
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#fdg-responses">FDG Responses</a>
+<ul>
+<li><a href="#root-claims">Root Claims</a></li>
+<li><a href="#counter-claims">Counter Claims</a></li>
+<li><a href="#steps">Steps</a></li>
+</ul>
+</li>
+<li><a href="#resolution">Resolution</a></li>
+</ul>
+<p>The honest challenger is an agent interacting in the <a href="fault-dispute-game.html">Fault Dispute Game</a>
+(FDG) that supports honest claims and disputes false claims.
+An honest challenger strives to ensure a correct, truthful, game resolution.
+The honest challenger is also <em>rational</em> as any deviation from its behavior will result in
+negative outcomes.
+This document specifies the expected behavior of an honest challenger.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The Honest Challenger has two primary duties:</p>
+<ol>
+<li>Support valid root claims in Fault Dispute Games.</li>
+<li>Dispute invalid root claims in Fault Dispute Games.</li>
+</ol>
+<p>The honest challenger polls the <code>DisputeGameFactory</code> contract for new and on-going Fault
+Dispute Games.
+For verifying the legitimacy of claims, it relies on a synced, trusted rollup node
+as well as a trace provider (ex: <a href="cannon-fault-proof-vm.html">Cannon</a>).
+The trace provider must be configured with the <a href="fault-dispute-game.html#execution-trace">ABSOLUTE_PRESTATE</a>
+of the FDG being interacted with to generate the traces needed to make truthful claims.</p>
+<h2 id="fdg-responses"><a class="header" href="#fdg-responses">FDG Responses</a></h2>
+<h3 id="root-claims"><a class="header" href="#root-claims">Root Claims</a></h3>
+<p>When a <code>FaultDisputeGame</code> is created, the honest challenger has two possible correct responses
+to its root claim:</p>
+<ol>
+<li><a href="fault-dispute-game.html#attack"><strong>Attack</strong></a> if they disagree with the root claim.
+The root claim commits to the entire execution trace, so the first move here is to
+attack with the <a href="fault-dispute-game.html#claims">ClaimHash</a> at the midpoint
+instruction within their execution trace.</li>
+<li><strong>Do Nothing</strong> if they agree with the root claim. They do nothing because if the root
+claim is left un-countered, the game resolves to their agreement.
+NOTE: The honest challenger will still track this game in order to defend any subsequent
+claims made against the root claim - in effect, &quot;playing the game&quot;.</li>
+</ol>
+<h3 id="counter-claims"><a class="header" href="#counter-claims">Counter Claims</a></h3>
+<p>For every claim made in a dispute game with a <a href="fault-dispute-game.html#game-tree">game tree</a>
+depth in the range of <code>[1, MAX_DEPTH]</code>, the honest challenger processes them and performs
+a response.</p>
+<p>To determine the appropriate response, the challenger first needs to know which
+<a href="fault-dispute-game.html#team-dynamics"><em>team</em></a> it belongs to.
+This determines the set of claims it should respond to in the FDG.
+If the agent determines itself to be a Defender, which aims to support the root claim,
+then it must dispute claims positioned at odd depths in the game tree.
+Otherwise, it disputes claims positioned at even depths in the game tree.
+This means an honest challenger only responds to claims made by the opposing team.</p>
+<p>The next step is to determine if the claim, now known to be for the opposing team,
+disputes another claim the honest challenger <em>agrees</em> with.
+An honest challenger agrees with a claim iff every other claim along its path to the
+root claim commits to a valid <code>ClaimHash</code>. Put differently, an honest challenger will
+avoid countering a claim if it disagrees with the path of claims leading to that
+specific claim. But if the honest challenger agrees with the path leading to the claim,
+then the claim is countered.</p>
+<p>The last step is to determine whether the claim has a valid commitment (i.e. <code>ClaimHash</code>).
+If the <code>ClaimHash</code> matches the honest challenger's at the same trace index, then we
+disagree with the claim's stance by moving to <a href="fault-dispute-game.html#defend">defend</a>.
+Otherwise, the claim is <a href="fault-dispute-game.html#attack">attacked</a>.</p>
+<p>The following pseudocode illustrates the response logic.</p>
+<pre><code class="language-python">class Team(Enum):
+    DEFENDER = 0
+    CHALLENGER = 1
+
+class Claim:
+    parent: Claim
+    position: uint64
+    claim_hash: ClaimHash
+
+MAX_TRACE = 2**MAX_GAME_DEPTH
+
+def agree_with(claim: Claim, chal_trace: List[ClaimHash, MAX_TRACE]):
+    if chal_trace[claim.trace_index] != claim.claim_hash:
+        return False
+    grand_parent = claim.parent.parent if claim.parent is not None else None
+    if grand_parent is not None:
+        return agree_with(grand_parent)
+    return True
+
+def respond(claim: Claim, chal: Team, chal_trace: List[ClaimHash, MAX_TRACE]):
+    if depth(claim.position) % 2 != chal.value:
+        if claim.parent is None or agree_with(claim.parent, chal_trace):
+            if chal_trace[trace_index(claim.position)] == claim.claim_hash:
+                defend()
+            else:
+                attack()
+        else: pass # avoid supporting invalid claims on the same team
+</code></pre>
+<p>In attack or defense, the honest challenger submit a <code>ClaimHash</code> corresponding to the
+state identified by the trace index of their response position.</p>
+<p>The honest challenger responds to claims as soon as possible to avoid the clock of its
+counter-claim from expiring.</p>
+<h3 id="steps"><a class="header" href="#steps">Steps</a></h3>
+<p>At the max depth of the game, claims represent commitments to the state of the fault proof VM
+at a single instruction step interval.
+Because the game can no longer bisect further, when the honest challenger has a valid move
+against these claims (valid defined by the response in <a href="#counter-claims">Counter Claims</a>),
+the only option for an honest challenger is to execute a VM step on-chain to disprove the claim at <code>MAX_GAME_DEPTH</code>.</p>
+<p>Similar to the above section, the honest challenger will issue an
+<a href="fault-dispute-game.html#step-types">attack step</a> when in response to such claims with
+invalid <code>ClaimHash</code> commitments. Otherwise, it issues a <em>defense step</em>.</p>
+<h2 id="resolution"><a class="header" href="#resolution">Resolution</a></h2>
+<p>When the <a href="fault-dispute-game.html#game-clock">chess clock</a> of a
+<a href="fault-dispute-game.html#resolution">subgame root</a> has run out, the subgame can be resolved.
+The honest challenger should resolve all subgames in bottom-up order, until the subgame
+rooted at the FDG root is resolved.</p>
+<p>The honest challenger accomplishes this by calling the <code>resolveClaim</code> function on the
+<code>FaultDisputeGame</code> contract. Once the root claim's subgame is resolved,
+the challenger then finally calls the <code>resolve</code> function to resolve the entire game.</p>
+<p>The <code>FaultDisputeGame</code> does not put a time cap on resolution - because of the liveness
+assumption on honest challengers and the bonds attached to the claims they’ve countered,
+challengers are economically incentivized to resolve the game promptly to capture the bonds.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/fault-proof/fault-dispute-game.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../glossary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/fault-proof/fault-dispute-game.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../glossary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
