@@ -2,7 +2,7 @@
 authors = ["optimism-collective"]
 language = "en"
 multilingual = false
-src = "src"
+src = "specs"
 title = "OP Stack Specification"
 
 [preprocessor.katex]
@@ -14,6 +14,6 @@ renderer = ["html"]
 
 [output.html]
 default-theme = "ayu"
-additional-js = ["src/static/solidity.min.js"]
+additional-js = ["specs/static/solidity.min.js"]
 
 [output.linkcheck]

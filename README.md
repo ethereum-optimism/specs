@@ -1,8 +1,19 @@
-# OP Stack Specification
+<div align="center">
+  <br />
+  <br />
+  <a href="https://optimism.io"><img alt="Optimism" src="https://raw.githubusercontent.com/ethereum-optimism/brand-kit/main/assets/svg/OPTIMISM-R.svg" width=600></a>
+  <br />
+  <h3><a href="https://optimism.io">Optimism</a> is Ethereum, scaled.</h3>
+  <br />
+</div>
 
-## Dependencies
+## OP Stack Specification
 
-To run the `mdbook` locally, you'll need a couple dependencies:
+This repository contains the [Specs Book](https://static.optimism.io/specs).
+
+## Contributing
+
+### Dependencies
 
 **Rust Toolchain**
 
@@ -14,4 +25,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ```sh
 cargo install mdbook mdbook-katex mdbook-toc mdbook-linkcheck
+```
+
+### Serving the book locally
+
+```sh
+mdbook serve
 ```
