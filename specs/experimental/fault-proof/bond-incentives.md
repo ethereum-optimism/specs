@@ -25,6 +25,7 @@ counter to the move being added. Thus, the minimum bond depends only on the posi
 
 If a subgame root resolves incorrectly, then its bond is distributed to the **leftmost claimant** that countered
 it. This creates an incentive to identify the earliest point of disagreement in an execution trace.
+The subgame root claimant gets back its bond iff it resolves correctly.
 
 At maximum game depths, where a claimant counters a bonded claim via `step`, the bond is instead distributed
 to the account that successfully called `step`.
