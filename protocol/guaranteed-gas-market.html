@@ -175,14 +175,19 @@
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="guaranteed-gas-fee-market"><a class="header" href="#guaranteed-gas-fee-market">Guaranteed Gas Fee Market</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
+<li><a href="#overview">Overview</a></li>
 <li><a href="#gas-stipend">Gas Stipend</a></li>
 <li><a href="#default-values">Default Values</a></li>
 <li><a href="#limiting-guaranteed-gas">Limiting Guaranteed Gas</a></li>
 <li><a href="#rationale-for-burning-l1-gas">Rationale for burning L1 Gas</a></li>
 <li><a href="#on-preventing-griefing-attacks">On Preventing Griefing Attacks</a></li>
 </ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p><a href="../glossary.html#deposited-transaction">Deposited transactions</a> are transactions on L2 that are
 initiated on L1. The gas that they use on L2 is bought on L1 via a gas burn (or a direct payment
 in the future). We maintain a fee market and hard cap on the amount of gas provided to all deposits

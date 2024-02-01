@@ -175,13 +175,11 @@
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="rollup-node-specification"><a class="header" href="#rollup-node-specification">Rollup Node Specification</a></h1>
-<!-- All glossary references in this file. -->
-<p>The <a href="../glossary.html#rollup-node">rollup node</a> is the component responsible for <a href="../glossary.html#L2-chain-derivation">deriving the L2 chain</a> from L1 blocks
-(and their associated <a href="../glossary.html#receipt">receipts</a>).</p>
-<p>The part of the rollup node that derives the L2 chain is called the <a href="../glossary.html#rollup-driver">rollup driver</a>. This document is
-currently only concerned with the specification of the rollup driver.</p>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
+<li><a href="#overview">Overview</a></li>
 <li><a href="#driver">Driver</a>
 <ul>
 <li><a href="#derivation">Derivation</a></li>
@@ -202,6 +200,13 @@ currently only concerned with the specification of the rollup driver.</p>
 </li>
 <li><a href="#protocol-version-tracking">Protocol Version tracking</a></li>
 </ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <a href="../glossary.html#rollup-node">rollup node</a> is the component responsible for <a href="../glossary.html#L2-chain-derivation">deriving the L2 chain</a> from L1 blocks
+(and their associated <a href="../glossary.html#receipt">receipts</a>).</p>
+<p>The part of the rollup node that derives the L2 chain is called the <a href="../glossary.html#rollup-driver">rollup driver</a>. This document is
+currently only concerned with the specification of the rollup driver.</p>
 <h2 id="driver"><a class="header" href="#driver">Driver</a></h2>
 <p>The task of the <a href="../glossary.html#rollup-driver">driver</a> in the <a href="../glossary.html#rollup-node">rollup node</a>
 is to manage the <a href="../glossary.html#L2-chain-derivation">derivation</a> process:</p>

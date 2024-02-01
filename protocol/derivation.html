@@ -175,7 +175,8 @@
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="l2-chain-derivation-specification"><a class="header" href="#l2-chain-derivation-specification">L2 Chain Derivation Specification</a></h1>
-<!-- All glossary references in this file. -->
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a>
@@ -203,7 +204,11 @@
 <li><a href="#l1-traversal">L1 Traversal</a></li>
 <li><a href="#l1-retrieval">L1 Retrieval</a>
 <ul>
-<li><a href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a></li>
+<li><a href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a>
+<ul>
+<li><a href="#blob-encoding">Blob Encoding</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#frame-queue">Frame Queue</a></li>
@@ -220,7 +225,12 @@
 <li><a href="#payload-attributes-derivation">Payload Attributes Derivation</a></li>
 <li><a href="#engine-queue">Engine Queue</a>
 <ul>
-<li><a href="#engine-api-usage">Engine API usage</a></li>
+<li><a href="#engine-api-usage">Engine API usage</a>
+<ul>
+<li><a href="#bedrock-canyon-delta-api-usage">Bedrock, Canyon, Delta: API Usage</a></li>
+<li><a href="#ecotone-api-usage">Ecotone: API Usage</a></li>
+</ul>
+</li>
 <li><a href="#forkchoice-synchronization">Forkchoice synchronization</a></li>
 <li><a href="#l1-consolidation-payload-attributes-matching">L1-consolidation: payload attributes matching</a></li>
 <li><a href="#l1-sync-payload-attributes-processing">L1-sync: payload attributes processing</a></li>
@@ -244,7 +254,16 @@
 <ul>
 <li><a href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
 <ul>
-<li><a href="#ecotone">Ecotone</a></li>
+<li><a href="#ecotone">Ecotone</a>
+<ul>
+<li><a href="#l1block-deployment">L1Block Deployment</a></li>
+<li><a href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></li>
+<li><a href="#l1block-proxy-update">L1Block Proxy Update</a></li>
+<li><a href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="#gaspriceoracle-enable-ecotone">GasPriceOracle Enable Ecotone</a></li>
+<li><a href="#beacon-block-roots-contract-deployment-eip-4788">Beacon block roots contract deployment (EIP-4788)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -253,6 +272,8 @@
 </ul>
 </li>
 </ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
 <h1 id="overview"><a class="header" href="#overview">Overview</a></h1>
 <blockquote>
 <p><strong>Note</strong> the following assumes a single sequencer and batcher. In the future, the design will be adapted to

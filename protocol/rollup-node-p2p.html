@@ -175,28 +175,11 @@
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="rollup-node-p2p-interface"><a class="header" href="#rollup-node-p2p-interface">Rollup-node P2P interface</a></h1>
-<p>The <a href="rollup-node.html">rollup node</a> has an optional peer-to-peer (P2P) network service to improve the latency between
-the view of sequencers and the rest of the network by bypassing the L1 in the happy case,
-without relying on a single centralized endpoint.</p>
-<p>This also enables faster historical sync to be bootstrapped by providing block headers to sync towards,
-and only having to compare the L2 chain inputs to the L1 data as compared to processing everything one block at a time.</p>
-<p>The rollup node will <em>always</em> prioritize L1 and reorganize to match the canonical chain.
-The L2 data retrieved via the P2P interface is strictly a speculative extension, also known as the &quot;unsafe&quot; chain,
-to improve the happy case performance.</p>
-<p>This also means that P2P behavior is a soft-rule: nodes keep each other in check with scoring and eventual banning
-of malicious peers by identity or IP. Any behavior on the P2P layer does not affect the rollup security, at worst nodes
-rely on higher-latency data from L1 to serve.</p>
-<p>In summary, the P2P stack looks like:</p>
-<ul>
-<li>Discovery to find peers: <a href="https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md">Discv5</a></li>
-<li>Connections, peering, transport security, multiplexing, gossip: <a href="https://libp2p.io/">LibP2P</a></li>
-<li>Application-layer publishing and validation of gossiped messages like L2 blocks.</li>
-</ul>
-<p>This document only specifies the composition and configuration of these network libraries.
-These components have their own standards, implementations in Go/Rust/Java/Nim/JS/more,
-and are adopted by several other blockchains, most notably the <a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/p2p-interface.md">L1 consensus layer (Eth2)</a>.</p>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
+<li><a href="#overview">Overview</a></li>
 <li><a href="#p2p-configuration">P2P configuration</a>
 <ul>
 <li><a href="#identification">Identification</a></li>
@@ -216,7 +199,13 @@ and are adopted by several other blockchains, most notably the <a href="https://
 <li><a href="#identify">Identify</a></li>
 <li><a href="#ping">Ping</a></li>
 <li><a href="#multiplexing">Multiplexing</a></li>
-<li><a href="#gossipsub">GossipSub</a></li>
+<li><a href="#gossipsub">GossipSub</a>
+<ul>
+<li><a href="#content-based-message-identification">Content-based message identification</a></li>
+<li><a href="#message-compression-and-limits">Message compression and limits</a></li>
+<li><a href="#message-id-computation">Message ID computation</a></li>
+</ul>
+</li>
 <li><a href="#heartbeat-and-parameters">Heartbeat and parameters</a></li>
 <li><a href="#topic-configuration">Topic configuration</a></li>
 <li><a href="#topic-validation">Topic validation</a></li>
@@ -245,6 +234,28 @@ and are adopted by several other blockchains, most notably the <a href="https://
 </ul>
 </li>
 </ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <a href="rollup-node.html">rollup node</a> has an optional peer-to-peer (P2P) network service to improve the latency between
+the view of sequencers and the rest of the network by bypassing the L1 in the happy case,
+without relying on a single centralized endpoint.</p>
+<p>This also enables faster historical sync to be bootstrapped by providing block headers to sync towards,
+and only having to compare the L2 chain inputs to the L1 data as compared to processing everything one block at a time.</p>
+<p>The rollup node will <em>always</em> prioritize L1 and reorganize to match the canonical chain.
+The L2 data retrieved via the P2P interface is strictly a speculative extension, also known as the &quot;unsafe&quot; chain,
+to improve the happy case performance.</p>
+<p>This also means that P2P behavior is a soft-rule: nodes keep each other in check with scoring and eventual banning
+of malicious peers by identity or IP. Any behavior on the P2P layer does not affect the rollup security, at worst nodes
+rely on higher-latency data from L1 to serve.</p>
+<p>In summary, the P2P stack looks like:</p>
+<ul>
+<li>Discovery to find peers: <a href="https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md">Discv5</a></li>
+<li>Connections, peering, transport security, multiplexing, gossip: <a href="https://libp2p.io/">LibP2P</a></li>
+<li>Application-layer publishing and validation of gossiped messages like L2 blocks.</li>
+</ul>
+<p>This document only specifies the composition and configuration of these network libraries.
+These components have their own standards, implementations in Go/Rust/Java/Nim/JS/more,
+and are adopted by several other blockchains, most notably the <a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/p2p-interface.md">L1 consensus layer (Eth2)</a>.</p>
 <h2 id="p2p-configuration"><a class="header" href="#p2p-configuration">P2P configuration</a></h2>
 <h3 id="identification"><a class="header" href="#identification">Identification</a></h3>
 <p>Nodes have a <strong>separate</strong> network- and consensus-identity.

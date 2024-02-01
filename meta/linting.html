@@ -175,53 +175,6 @@
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="linting"><a class="header" href="#linting">Linting</a></h1>
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="#markdown">Markdown</a></li>
-<li><a href="#go">Go</a></li>
-</ul>
-<h2 id="markdown"><a class="header" href="#markdown">Markdown</a></h2>
-<p>See</p>
-<ul>
-<li><a href="https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md">markdownlint rule reference</a></li>
-<li><a href="https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc">example .markdownlint.json file</a></li>
-</ul>
-<p>Justification for linting rules in
-<a href="https://github.com/ethereum-optimism/specs/blob/main/.markdownlint.json">.markdownlint.json</a>:</p>
-<ul>
-<li><em>line_length</em> (<code>!strict &amp;&amp; stern</code>): don't trip up on url lines</li>
-<li><em>no-blanks-blockquote</em>: enable multiple consecutive blockquotes separated by white lines</li>
-<li><em>single-title</em>: enable reusing <code>&lt;h1&gt;</code> for content</li>
-<li><em>no-emphasis-as-heading</em>: enable emphasized paragraphs</li>
-</ul>
-<pre><code class="language-shell">pnpm i                 # Install dependencies
-pnpm lint:specs:check  # Run linter
-pnpm lint:specs:fix    # Fix lint issues
-
-# Check links
-docker run --init -it -v `pwd`:/input lycheeverse/lychee --verbose --no-progress --exclude-loopback --exclude twitter.com --exclude-mail /input/README.md &quot;/input/specs/**/*.md&quot;
-</code></pre>
-<p>To check links, you'll need to install <a href="https://github.com/lycheeverse/lychee">lychee</a>. The <a href="https://github.com/lycheeverse/lychee-action/blob/f76b8412c668f78311212d16d33c4784a7d8762c/Dockerfile">version ran in CI</a> is 0.8.1, but
-you should install lychee 0.8.2 locally with <code>cargo install --version 0.8.2 lychee</code> (there are some
-reported build problems with 0.8.1).</p>
-<p>You can install cargo (the Rust package manager) via <a href="https://www.rust-lang.org/tools/install">rustup</a>.</p>
-<h1 id="go"><a class="header" href="#go">Go</a></h1>
-<p>See</p>
-<ul>
-<li><a href="https://golangci-lint.run/usage/install/#local-installation">golangci-lint docs</a></li>
-<li><a href="https://github.com/golangci/golangci-lint">golangci-lint github</a></li>
-<li><a href="https://github.com/golangci/golangci-lint-action">github action github</a></li>
-</ul>
-<p>Justification for linting rules:</p>
-<ul>
-<li><em>asciicheck</em>: no symbol names with invisible unicode and such</li>
-<li><em>goimports</em>: group local and external import</li>
-</ul>
-<pre><code class="language-shell"># Install linter globally (should not affect go.mod)
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.48.0
-# run linter, add --fix option to fix problems (where supported)
-golangci-lint run -E goimports,sqlclosecheck,bodyclose,asciicheck,misspell,errorlint --timeout 2m -e &quot;errors.As&quot; -e &quot;errors.Is&quot; ./...
-</code></pre>
 
                     </main>
 

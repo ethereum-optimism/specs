@@ -175,30 +175,11 @@
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="withdrawals"><a class="header" href="#withdrawals">Withdrawals</a></h1>
-<!-- All glossary references in this file. -->
-<p><a href="../glossary.html#withdrawal">Withdrawals</a> are cross domain transactions which are initiated on L2, and finalized by a transaction
-executed on L1. Notably, withdrawals may be used by an L2 account to call an L1 contract, or to transfer ETH from
-an L2 account to an L1 account.</p>
-<p><strong>Vocabulary note</strong>: <em>withdrawal</em> can refer to the transaction at various stages of the process, but we introduce
-more specific terms to differentiate:</p>
-<ul>
-<li>A <em>withdrawal initiating transaction</em> refers specifically to a transaction on L2 sent to the Withdrawals predeploy.</li>
-<li>A <em>withdrawal proving transaction</em> refers specifically to an L1 transaction
-which proves the withdrawal is correct (that it has been included in a merkle
-tree whose root is available on L1).</li>
-<li>A <em>withdrawal finalizing transaction</em> refers specifically to an L1 transaction which finalizes and relays the
-withdrawal.</li>
-</ul>
-<p>Withdrawals are initiated on L2 via a call to the Message Passer predeploy contract, which records the important
-properties of the message in its storage.
-Withdrawals are proven on L1 via a call to the <code>OptimismPortal</code>, which proves the inclusion of this withdrawal message.
-Withdrawals are finalized on L1 via a call to the <code>OptimismPortal</code> contract,
-which verifies that the fault challenge period has passed since the withdrawal message has been proved.</p>
-<p>In this way, withdrawals are different from <a href="../glossary.html#deposits">deposits</a> which make use of a special transaction type in the
-<a href="../glossary.html#execution-engine">execution engine</a> client. Rather, withdrawals transaction must use smart contracts on L1 for
-finalization.</p>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
+<li><a href="#overview">Overview</a></li>
 <li><a href="#withdrawal-flow">Withdrawal Flow</a>
 <ul>
 <li><a href="#on-l2">On L2</a></li>
@@ -220,6 +201,30 @@ finalization.</p>
 </ul>
 </li>
 </ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p><a href="../glossary.html#withdrawal">Withdrawals</a> are cross domain transactions which are initiated on L2, and finalized by a transaction
+executed on L1. Notably, withdrawals may be used by an L2 account to call an L1 contract, or to transfer ETH from
+an L2 account to an L1 account.</p>
+<p><strong>Vocabulary note</strong>: <em>withdrawal</em> can refer to the transaction at various stages of the process, but we introduce
+more specific terms to differentiate:</p>
+<ul>
+<li>A <em>withdrawal initiating transaction</em> refers specifically to a transaction on L2 sent to the Withdrawals predeploy.</li>
+<li>A <em>withdrawal proving transaction</em> refers specifically to an L1 transaction
+which proves the withdrawal is correct (that it has been included in a merkle
+tree whose root is available on L1).</li>
+<li>A <em>withdrawal finalizing transaction</em> refers specifically to an L1 transaction which finalizes and relays the
+withdrawal.</li>
+</ul>
+<p>Withdrawals are initiated on L2 via a call to the Message Passer predeploy contract, which records the important
+properties of the message in its storage.
+Withdrawals are proven on L1 via a call to the <code>OptimismPortal</code>, which proves the inclusion of this withdrawal message.
+Withdrawals are finalized on L1 via a call to the <code>OptimismPortal</code> contract,
+which verifies that the fault challenge period has passed since the withdrawal message has been proved.</p>
+<p>In this way, withdrawals are different from <a href="../glossary.html#deposits">deposits</a> which make use of a special transaction type in the
+<a href="../glossary.html#execution-engine">execution engine</a> client. Rather, withdrawals transaction must use smart contracts on L1 for
+finalization.</p>
 <h2 id="withdrawal-flow"><a class="header" href="#withdrawal-flow">Withdrawal Flow</a></h2>
 <p>We first describe the end to end flow of initiating and finalizing a withdrawal:</p>
 <h3 id="on-l2"><a class="header" href="#on-l2">On L2</a></h3>
