@@ -70,8 +70,8 @@ to the source chain emits an event that can be consumed on a destination chain. 
 destination chain, where the block builder SHOULD only include it if they are certain that the first transaction was
 included in the source chain.
 
-The term "block builder" is used interchangeably with the term "sequencer" for the purposes of this document but they need not be the same
-entity in practice.
+The term "block builder" is used interchangeably with the term "sequencer" for the purposes of this document but
+they need not be the same entity in practice.
 
 ## The Dependency Set
 
@@ -148,15 +148,16 @@ initiating message and trick the derivation pipeline into reorganizing the seque
 
 TODO: introduce new level of safety
 
-The initiating messages for all executing messages MUST be resolved as safe before an L2 block can transition from being unsafe to safe.
-Users MAY optimistically accept unsafe blocks without any verification of the executing messages. They SHOULD optimistically verify
-the initiating messages exist in destination unsafe blocks to more quickly reorganize out invalid blocks.
+The initiating messages for all executing messages MUST be resolved as safe before an L2 block can transition
+from being unsafe to safe. Users MAY optimistically accept unsafe blocks without any verification of the
+executing messages. They SHOULD optimistically verify the initiating messages exist in destination unsafe blocks
+to more quickly reorganize out invalid blocks.
 
 ## State Transition Function
 
-After the full execution of a block, the set of [logs][log] that are emitted MUST be merklized and included in the block header.
-This commitment MUST be included as the block header's [extra data field][block-extra-data]. The events are serialized with using
-[Simple Serialize][ssz] aka SSZ.
+After the full execution of a block, the set of [logs][log] that are emitted MUST be merklized and
+included in the block header. This commitment MUST be included as the block header's
+[extra data field][block-extra-data]. The events are serialized with using [Simple Serialize][ssz] aka SSZ.
 
 [block-extra-data]: https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L115
 [ssz]: https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md
@@ -200,18 +201,20 @@ enforced invariants must be preserved to ensure safety of the protocol.
 
 - The timestamp of executing message MUST be greater than or equal to the timestamp of the initiating message
 - The chain id of the initiating message MUST be in the dependency set
-- The executing message MUST be initiated by an externally owned account such that the top level EVM call frame enters the `CrossL2Inbox`
+- The executing message MUST be initiated by an externally owned account such that the top level EVM
+  call frame enters the `CrossL2Inbox`
 
 ##### Timestamp Invariant
 
-The timestamp invariant ensures that initiating messages cannot come from a future block. Note that since all transactions in a block
-have the same timestamp, it is possible for an executing transaction to be ordered before the initiating message in the same block.
+The timestamp invariant ensures that initiating messages cannot come from a future block. Note that since
+all transactions in a block have the same timestamp, it is possible for an executing transaction to be
+ordered before the initiating message in the same block.
 
 ##### ChainID Invariant
 
-Without a guarantee on the set of dependencies of a chain, it may be impossible for the derivation pipeline to know which
-chain to source the initiating message from. This also allows for chain operators to explicitly define the set of chains
-that they depend on.
+Without a guarantee on the set of dependencies of a chain, it may be impossible for the derivation
+pipeline to know which chain to source the initiating message from. This also allows for chain operators
+to explicitly define the set of chains that they depend on.
 
 ##### Only EOA Invariant
 
@@ -272,7 +275,7 @@ the data generally ABI encoded.
 
 ##### `_id`
 
-The `Identifier` that uniquely represents a log that is emitted from a chain. It can be considered to be a 
+The `Identifier` that uniquely represents a log that is emitted from a chain. It can be considered to be a
 unique pointer to a particular log. The derivation pipeline and fault proof program MUST ensure that the
 `_msg` corresponds exactly to the log that the `Identifier` points to.
 
@@ -343,9 +346,9 @@ provides features necessary for secure transfers of `ether` and ERC20 tokens bet
 Messages sent through the `L2ToL2CrossDomainMessenger` on the source chain receive both replay protection
 as well as domain binding, ie the executing transaction can only be valid on a single chain.
 
-### Invariants
+#### Invariants
 
-#### `relayMessage`
+##### `relayMessage`
 
 - Only callable by the `CrossL2Inbox`
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
@@ -387,8 +390,8 @@ The initiating message is represented by the following event:
 event SentMessage(bytes message) anonymous;
 ```
 
-The `bytes` are an ABI encoded call to `relayMessage`. The event is defined as `anonymous` so that no topics are prefixed
-to the abi encoded call.
+The `bytes` are an ABI encoded call to `relayMessage`. The event is defined as `anonymous` so that no topics
+are prefixed to the abi encoded call.
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
 chain a single time. The `_destination` is enforced to not be the local chain to avoid edge cases.
@@ -405,8 +408,9 @@ function sendMessage(uint256 _destination, address _target, bytes calldata _mess
 
 ##### Relaying Messages
 
-When relaying a message through the `L2ToL2CrossDomainMessenger`, it is important to require that the `_destination` equal to `block.chainid`
-to ensure that the message is only valid on a single chain. The hash of the message is used for replay protection.
+When relaying a message through the `L2ToL2CrossDomainMessenger`, it is important to require that
+the `_destination` equal to `block.chainid` to ensure that the message is only valid on a single
+chain. The hash of the message is used for replay protection.
 
 It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
 it is possible to send a message that is not playable.
@@ -453,15 +457,16 @@ The interop upgrade block itself MUST include a call to `setL1BlockValuesEcotone
 
 ## SystemConfig
 
-The `SystemConfig` is updated to manage the dependency set. The chain operator can add or remove chains from the dependency set
-through the `SystemConfig`. A new `ConfigUpdate` event `UpdateType` enum is added that corresponds to a change in the dependency set.
+The `SystemConfig` is updated to manage the dependency set. The chain operator can add or remove
+chains from the dependency set through the `SystemConfig`. A new `ConfigUpdate` event `UpdateType`
+enum is added that corresponds to a change in the dependency set.
 
 The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
 
 ### `DEPENDENCY_SET` UpdateType
 
-When a `ConfigUpdate` event is emitted where the `UpdateType` is `DEPENDENCY_SET`, the L2 network will update its dependency set.
-The chain operator SHOULD be able to add or remove chains from the dependency set.
+When a `ConfigUpdate` event is emitted where the `UpdateType` is `DEPENDENCY_SET`, the L2 network will
+update its dependency set. The chain operator SHOULD be able to add or remove chains from the dependency set.
 
 ## L1Attributes
 
@@ -506,9 +511,10 @@ executing messages that have a corresponding initiating message.
 The block builder SHOULD use static analysis on executing messages to verify that the initiating
 message exists. When a transaction has a top level [to][tx-to] field that is equal to the `CrossL2Inbox`
 and the 4byte selector in the calldata matches the entrypoint interface,
-the block builder should use the chain id that is encoded in the `Identifier` to know which chain includes the initiating
-transaction. The block builder MAY require cryptographic proof of the existence of the log that the identifier points to.
-The block build MAY also trust a remote RPC and use the following algorithm to verify the existence of the log.
+the block builder should use the chain id that is encoded in the `Identifier` to know which chain includes
+the initiating transaction. The block builder MAY require cryptographic proof of the existence of the log
+that the identifier points to. The block build MAY also trust a remote RPC and use the following algorithm
+to verify the existence of the log.
 
 The following pseudocode represents how to check existence of a log based on an `Identifier`.
 
@@ -537,9 +543,9 @@ return True
 
 ## Sponsorship
 
-If a user does not have ether to pay for the gas of an executing message, application layer sponsorship solutions can be created.
-It is possible to create an MEV incentive by paying `tx.origin` in the executing message. This can be done by wrapping the
-`L2ToL2CrossDomainMessenger` with a pair of relaying contracts.
+If a user does not have ether to pay for the gas of an executing message, application layer sponsorship
+solutions can be created. It is possible to create an MEV incentive by paying `tx.origin` in the executing
+message. This can be done by wrapping the `L2ToL2CrossDomainMessenger` with a pair of relaying contracts.
 
 ## Security Considerations
 
@@ -551,9 +557,10 @@ all chains in the network decide to send cross chain messages to the same chain 
 
 "Forced inclusion" transactions are good for censorship resistance. In the worst case of censoring sequencers, it will
 take at most 2 sequencing windows for the cross chain message to be processed. The initiating transaction can be sent
-via a deposit which MUST be included in the source chain or the sequencer will be reorganized at the end of the sequencing
-window that includes the deposit transaction. If the executing transaction is censored, it will take another sequencing window
-of time to force the inclusion of the executing message per the [spec][depositing-an-executing-message].
+via a deposit which MUST be included in the source chain or the sequencer will be reorganized at the end of the
+sequencing window that includes the deposit transaction. If the executing transaction is censored, it will take
+another sequencing window of time to force the inclusion of the executing message per the
+[spec][depositing-an-executing-message].
 
 TODO: verify exact timing of when reorg happens with deposits that are skipped
 
@@ -563,8 +570,8 @@ TODO: verify exact timing of when reorg happens with deposits that are skipped
 
 The latency at which a cross chain message is relayed from the moment at which it was initiated is bottlenecked by
 the security of the preconfirmations. An initiating transaction and a executing transaction MAY have the same timestamp,
-meaning that a secure preconfirmation scheme enables atomic cross chain composability. Any sort of equivocation on behalf
-of the sequencer will result in the production of invalid blocks.
+meaning that a secure preconfirmation scheme enables atomic cross chain composability. Any sort of equivocation on
+behalf of the sequencer will result in the production of invalid blocks.
 
 ### Dynamic Size of L1 Attributes Transaction
 
