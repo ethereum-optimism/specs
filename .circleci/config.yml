@@ -33,6 +33,9 @@ jobs:
       - run:
           name: markdown lint
           command: just lint-specs-md-check
+      - run:
+          name: markdown toc
+          command: just lint-specs-toc-check
   lint-links:
     machine:
       image: <<pipeline.parameters.base_image>>
@@ -49,7 +52,7 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - lint-specs
+      - lint-links
   scheduled-links-check:
     when:
       equal: [build_daily, <<pipeline.schedule.name>>]
