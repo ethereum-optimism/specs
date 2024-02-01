@@ -52,7 +52,7 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - lint-links
+      - lint-specs
   scheduled-links-check:
     when:
       equal: [build_daily, <<pipeline.schedule.name>>]
