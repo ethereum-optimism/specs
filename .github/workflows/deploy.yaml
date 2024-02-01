@@ -24,7 +24,7 @@ jobs:
           mdbook-version: "latest"
       - name: Install mdbook plugins
         run: |
-          cargo install mdbook-katex mdbook-toc mdbook-linkcheck mdbook-mermaid
+          cargo install mdbook-katex mdbook-linkcheck mdbook-mermaid
       - name: Build book
         run: mdbook build
       - name: Deploy
