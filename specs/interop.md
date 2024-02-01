@@ -60,13 +60,13 @@ network upgrade will be included in this document in the future.
 |---------------|----------------------------------------------------------|
 | Source Chain   | A blockchain that includes an initiating message |
 | Destination Chain  | A blockchain that includes an executing message |
-| Initiating Message | A transaction submitted to a source chain that emits an event |
+| Initiating Message | An event emitted from a source chain |
 | Executing Message | A transaction submitted to a destination chain that corresponds to an initiating message |
 | Cross Chain Message | The cumulative execution and side effects of the initiating message and executing message |
 | Dependency Set | The set of chains that originate initiating transactions where the executing transactions are valid |
 
 A total of two transactions are required to complete a cross chain message. The first transaction is submitted
-to the source chain which authorizes execution on a destination chain. The second transaction is submitted to a
+to the source chain emits an event that can be consumed on a destination chain. The second transaction is submitted to a
 destination chain, where the block builder SHOULD only include it if they are certain that the first transaction was
 included in the source chain.
 
@@ -86,6 +86,7 @@ particularly impacts the block builder as they SHOULD use the chain id to assist
 of executing messages.
 
 The chainid of the local chain MUST be considered as part of its own dependency set.
+The layer one MAY be part of the dependency set.
 
 ### Chain ID
 
@@ -209,7 +210,8 @@ have the same timestamp, it is possible for an executing transaction to be order
 ##### ChainID Invariant
 
 Without a guarantee on the set of dependencies of a chain, it may be impossible for the derivation pipeline to know which
-chain to source the initiating message from.
+chain to source the initiating message from. This also allows for chain operators to explicitly define the set of chains
+that they depend on.
 
 ##### Only EOA Invariant
 
@@ -224,7 +226,7 @@ in an event that can be used after the fact to verify the existence of the initi
 This adds complexity around mempool inclusion as it would require EVM execution and remote RPC
 access to learn if a transaction can enter the mempool.
 
-This feature could be added by adding a new function to the `CrossL2Inbox`.
+This feature could be added in a backwards compatible way by adding a new function to the `CrossL2Inbox`.
 
 One possible way to handle explicit denial of service attacks is to utilize identity
 in iterated games such that the block builder can ban identities that submit malicious transactions.
@@ -249,7 +251,7 @@ The following fields are required for executing a cross chain message:
 
 An `address` that is specified by the caller. There is no protocol enforcement on what this value is. The
 `_target` is called with the `_msg`. In practice, the `_target` will be a contract that needs to know the
-schema of the `_msg` so that it can be decoded. It SHOULD call back to the `CrossL2Inbox` to authenticate
+schema of the `_msg` so that it can be decoded. It MAY call back to the `CrossL2Inbox` to authenticate
 properties about the `_msg` using the information in the `Identifier`.
 
 ##### `_msg`
@@ -323,6 +325,11 @@ It is impossible to check that the `Identifier` matches the cross chain message 
 builder includes a message that does not correspond to the `Identifier`, their block will be reorganized
 by the derivation pipeline.
 
+#### `Identifier` Getters
+
+The `Indentifier` MUST be exposed via `public` getters so that contracts can call back to authenticate
+properties about the `_msg`.
+
 ### L2ToL2CrossDomainMessenger
 
 | Constant         | Value                   |
@@ -341,11 +348,11 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 #### `relayMessage`
 
 - Only callable by the `CrossL2Inbox`
-- The `Identifier.origin` MUST be `address(CrossL2Inbox)`
+- The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chainid MUST be equal to the local chainid
 - The `CrossL2Inbox` cannot call itself
 
-#### Versioning
+#### Message Versioning
 
 Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
 the `CrossDomainMessenger`.
@@ -361,19 +368,16 @@ function messageNonce() public view returns (uint256) {
 The `L2ToL2CrossDomainMessenger` MUST be initially set in state with an ether balance of `INITIAL_BALANCE`.
 This initial balance exists to provide liquidity for cross chain transfers. It is large enough to always have
 ether present to dispurse while still being able to accept inbound transfers of ether without overflowing.
-The `L2ToL2CrossDomainMessenger` MUST only transfer out ether if the caller is the `L2ToL2CrossDomainMessenger`
-from a source chain.
+The `L2ToL2CrossDomainMessenger` MUST only ensure all invariants are held before transferring out any ether.
 
 The `L2CrossDomainMessenger` is not updated to include the `L2ToL2CrossDomainMessenger` functionality because
-there is no need to introduce complexity with L1 to L2 messages and the L2 to L2 liquidity.
+there is no need to introduce complexity between the L1 to L2 messages and the L2 to L2 liquidity.
 
 #### Interfaces
 
 The `L2ToL2CrossDomainMessenger` uses a similar interface to the `L2CrossDomainMessenger` but
 the `_minGasLimit` is removed to prevent complexity around EVM gas introspection and the `_destination`
 chain is included instead.
-
-Naive implementations of sending messages and executing messages are included.
 
 ##### Sending Messages
 
@@ -387,10 +391,12 @@ The `bytes` are an ABI encoded call to `relayMessage`. The event is defined as `
 to the abi encoded call.
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
-chain a single time.
+chain a single time. The `_destination` is enforced to not be the local chain to avoid edge cases.
 
 ```solidity
 function sendMessage(uint256 _destination, address _target, bytes calldata _message) external payable {
+    require(_destination != block.chainid);
+
     bytes memory data = abi.encodeCall(L2ToL2CrossDomainMessenger.relayMessage, (_destination, messageNonce(), msg.sender, _target, msg.value, _message));
     emit SentMessage(data);
     nonce++;
@@ -415,7 +421,9 @@ function relayMessage(uint256 _destination, uint256 _nonce, address _sender, add
     bytes32 messageHash = keccak256(abi.encode(_destination, _nonce, _sender, _target, _value, _message));
     require(sentMessages[messageHash] == false);
 
-    xDomainMsgSender = _sender;
+    assembly {
+      tstore(CROSS_DOMAIN_MESSAGE_SENDER_SLOT, _sender)
+    }
 
     bool success = SafeCall.call({
        _target: _target,
@@ -425,7 +433,6 @@ function relayMessage(uint256 _destination, uint256 _nonce, address _sender, add
 
     require(success);
 
-    xDomainMsgSender = Constants.DEFAULT_L2_SENDER;
     sentMessages[messageHash] = true;
 }
 ```
@@ -605,4 +612,4 @@ recursively for interconnected chains.
 
 ### Light Client Proofs
 
-TODO: light client that follows remote blockhashes from L1 batches
+TODO: light client that follows remote blockhashes from L1 batches?
