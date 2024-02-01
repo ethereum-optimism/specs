@@ -1,8 +1,16 @@
 # Markdown Style Guide
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-<!-- toc -->
+- [Markdown Style Guide](#markdown-style-guide)
+  - [Linting](#linting)
+  - [Links](#links)
+    - [Glossary](#glossary)
+  - [Internal (In-File) Links](#internal-in-file-links)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Linting
 

@@ -30,5 +30,5 @@ cargo install mdbook mdbook-katex mdbook-toc mdbook-linkcheck mdbook-mermaid
 ### Serving the book locally
 
 ```sh
-mdbook serve
+just serve
 ```
