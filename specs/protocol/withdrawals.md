@@ -55,10 +55,6 @@ In this way, withdrawals are different from [deposits][g-deposits] which make us
 [execution engine][g-execution-engine] client. Rather, withdrawals transaction must use smart contracts on L1 for
 finalization.
 
-**Table of Contents**
-
-<!-- toc -->
-
 ## Withdrawal Flow
 
 We first describe the end to end flow of initiating and finalizing a withdrawal:

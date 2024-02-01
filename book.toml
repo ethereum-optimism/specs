@@ -8,10 +8,6 @@ title = "OP Stack Specification"
 [preprocessor.katex]
 after = ["links"]
 
-[preprocessor.toc]
-command = "mdbook-toc"
-renderer = ["html"]
-
 [preprocessor.mermaid]
 command = "mdbook-mermaid"
 
