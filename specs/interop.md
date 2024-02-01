@@ -190,8 +190,6 @@ of the cross chain message.
 The event SHOULD make it as cheap as possible for the destination chain to look up the existence
 of the initiating transaction when verifying the executing message.
 
-TODO: `curl`
-
 #### Initiating Messages
 
 The following interface is used to initiate a message:
@@ -298,7 +296,7 @@ of the function that is used to execute messages. Both the block builder and the
 this information to ensure that all system invariants are held.
 
 ```solidity
-function relayMessage(bytes32 _hash, CrossChainMessage memory _msg) public {
+function executeMessage(bytes32 _hash, CrossChainMessage memory _msg) public {
     require(msg.sender == tx.origin);
     require(_hash == hashCrossChainMessage(_msg));
     require(_msg.timestamp <= block.timestamp);
@@ -447,9 +445,11 @@ set to untrusted actors.
 
 ## Block Building
 
+TODO: clarify goal of cheap verify of initiating transaction
+
 The block builder SHOULD use static analysis on executing messages to verify that the initiating
 message exists. When a transaction has a top level [to][tx-to] field that is equal to the `CrossL2Inbox`
-and the 4byte selector in the calldata matches the `relayMessage(bytes32,CrossChainMessage)` interface
+and the 4byte selector in the calldata matches the `executeMessage(bytes32,CrossChainMessage)` interface
 the block builder should use the chain id that is encoded in the `CrossChainMessage` to know which chain includes the initiating
 transaction and then use the `_hash` to populate an `eth_getLogs` query to check for the existence of the initiating message.
 
@@ -457,6 +457,80 @@ transaction and then use the `_hash` to populate an `eth_getLogs` query to check
 
 The following JSON body can be used with a query to `eth_getLogs` to check the existence of an initiating message.
 The `$HASH` should be filled in with the cross domain message hash.
+
+TODO: block number or block hash?
+
+Map(executing tx) -> getLogs query
+- edge cast: multiple logs
+
+TODO: NOTES
+---
+Static analysis
+
+Positional information:
+- block number
+- log index
+
+Two sources:
+- log event
+- explicit send
+
+A user must know the emitted event on the source chain to be able to build
+the executing transaction.
+The incrementing nonce adds a dependency on execution of the source chain.
+An ideal would be to decouple this such that the user can submit the
+executing transaction
+
+User wants to push event from local chain to remote chain
+f(event) -> CrossChainMessage
+
+Hint - 
+
+```
+// 2 parts: user + block builder
+struct CrossChainMessage {
+    // protocol enforcement
+    uint256 timestamp;
+    uint256 chainid;  // also for block builder
+
+    // user
+    address sender;
+    bytes data;
+}
+
+// If hint is wrong, the derivation pipeline/fault proof must enforce
+// TODO: optimize into single typed bytes32
+struct Identifier {
+    uint256 blocknumber;
+    uint256 logIndex;
+}
+
+function executeMessage(bytes32 _hash, CrossChainMessage memory _msg, Identifier calldata _id) public {
+    require(msg.sender == tx.origin);
+    require(_hash == hashCrossChainMessage(_msg));
+    require(_msg.timestamp <= block.timestamp);
+    require(_msg.chainid != block.chainid);
+    require(L1Block.isInInteropSet(_msg.chainid));
+
+    bool success = SafeCall.call({
+      _target: _msg.target,
+      _calldata: _msg.data
+    });
+}
+```
+
+What are offchain checks?
+
+- Use identifier to get event
+- f(CrossChainMessage, Event) -> bool
+  - if true, include tx
+  - if false, drop tx
+- This function must be able to run in the fault proof
+
+This requires ALL logs from the remote chains. Can easily add
+an expiry (max depth)
+
+---
 
 ```json
 [
