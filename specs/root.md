@@ -7,10 +7,9 @@ that maintains 1:1 compatibility with Ethereum.
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [OP Stack Specs](#op-stack-specs)
-  - [Specification Contents](#specification-contents)
-    - [Experimental](#experimental)
-  - [Design Goals](#design-goals)
+- [Specification Contents](#specification-contents)
+  - [Experimental](#experimental)
+- [Design Goals](#design-goals)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

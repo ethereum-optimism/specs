@@ -4,20 +4,19 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Rollup Node Specification](#rollup-node-specification)
-  - [Driver](#driver)
-    - [Derivation](#derivation)
-  - [L2 Output RPC method](#l2-output-rpc-method)
-    - [Structures](#structures)
-      - [BlockID](#blockid)
-      - [L1BlockRef](#l1blockref)
-      - [L2BlockRef](#l2blockref)
-      - [SyncStatus](#syncstatus)
-    - [Output Method API](#output-method-api)
-  - [Protocol Version tracking](#protocol-version-tracking)
+- [Overview](#overview)
+- [Driver](#driver)
+  - [Derivation](#derivation)
+- [L2 Output RPC method](#l2-output-rpc-method)
+  - [Structures](#structures)
+    - [BlockID](#blockid)
+    - [L1BlockRef](#l1blockref)
+    - [L2BlockRef](#l2blockref)
+    - [SyncStatus](#syncstatus)
+  - [Output Method API](#output-method-api)
+- [Protocol Version tracking](#protocol-version-tracking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 
 <!-- All glossary references in this file. -->
 

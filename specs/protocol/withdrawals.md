@@ -4,18 +4,18 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Withdrawals](#withdrawals)
-  - [Withdrawal Flow](#withdrawal-flow)
-    - [On L2](#on-l2)
-    - [On L1](#on-l1)
-  - [The L2ToL1MessagePasser Contract](#the-l2tol1messagepasser-contract)
-    - [Addresses are not Aliased on Withdrawals](#addresses-are-not-aliased-on-withdrawals)
-  - [The Optimism Portal Contract](#the-optimism-portal-contract)
-  - [Withdrawal Verification and Finalization](#withdrawal-verification-and-finalization)
-  - [Security Considerations](#security-considerations)
-    - [Key Properties of Withdrawal Verification](#key-properties-of-withdrawal-verification)
-    - [Handling Successfully Verified Messages That Fail When Relayed](#handling-successfully-verified-messages-that-fail-when-relayed)
-    - [OptimismPortal can send arbitrary messages on L1](#optimismportal-can-send-arbitrary-messages-on-l1)
+- [Overview](#overview)
+- [Withdrawal Flow](#withdrawal-flow)
+  - [On L2](#on-l2)
+  - [On L1](#on-l1)
+- [The L2ToL1MessagePasser Contract](#the-l2tol1messagepasser-contract)
+  - [Addresses are not Aliased on Withdrawals](#addresses-are-not-aliased-on-withdrawals)
+- [The Optimism Portal Contract](#the-optimism-portal-contract)
+- [Withdrawal Verification and Finalization](#withdrawal-verification-and-finalization)
+- [Security Considerations](#security-considerations)
+  - [Key Properties of Withdrawal Verification](#key-properties-of-withdrawal-verification)
+  - [Handling Successfully Verified Messages That Fail When Relayed](#handling-successfully-verified-messages-that-fail-when-relayed)
+  - [OptimismPortal can send arbitrary messages on L1](#optimismportal-can-send-arbitrary-messages-on-l1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

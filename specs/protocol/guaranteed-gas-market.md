@@ -4,12 +4,12 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Guaranteed Gas Fee Market](#guaranteed-gas-fee-market)
-  - [Gas Stipend](#gas-stipend)
-  - [Default Values](#default-values)
-  - [Limiting Guaranteed Gas](#limiting-guaranteed-gas)
-  - [Rationale for burning L1 Gas](#rationale-for-burning-l1-gas)
-  - [On Preventing Griefing Attacks](#on-preventing-griefing-attacks)
+- [Overview](#overview)
+- [Gas Stipend](#gas-stipend)
+- [Default Values](#default-values)
+- [Limiting Guaranteed Gas](#limiting-guaranteed-gas)
+- [Rationale for burning L1 Gas](#rationale-for-burning-l1-gas)
+- [On Preventing Griefing Attacks](#on-preventing-griefing-attacks)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

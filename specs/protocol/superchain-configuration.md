@@ -4,12 +4,12 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Superchain Configuration](#superchain-configuration)
-  - [Configurable values](#configurable-values)
-  - [Configuration data flow](#configuration-data-flow)
-    - [Pausability](#pausability)
-      - [Paused identifiers](#paused-identifiers)
-      - [Scope of pausability](#scope-of-pausability)
+- [Overview](#overview)
+- [Configurable values](#configurable-values)
+- [Configuration data flow](#configuration-data-flow)
+  - [Pausability](#pausability)
+    - [Paused identifiers](#paused-identifiers)
+    - [Scope of pausability](#scope-of-pausability)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

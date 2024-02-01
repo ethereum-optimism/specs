@@ -4,16 +4,16 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [System Config](#system-config)
-  - [System config contents (version 0)](#system-config-contents-version-0)
-    - [`batcherHash` (`bytes32`)](#batcherhash-bytes32)
-    - [Scalars](#scalars)
-      - [Pre-Ecotone `scalar`, `overhead` (`uint256,uint256`)](#pre-ecotone-scalar-overhead-uint256uint256)
-      - [Ecotone `scalar`, `overhead` (`uint256,uint256`) change](#ecotone-scalar-overhead-uint256uint256-change)
-    - [`gasLimit` (`uint64`)](#gaslimit-uint64)
-    - [`unsafeBlockSigner` (`address`)](#unsafeblocksigner-address)
-  - [Writing the system config](#writing-the-system-config)
-  - [Reading the system config](#reading-the-system-config)
+- [Overview](#overview)
+- [System config contents (version 0)](#system-config-contents-version-0)
+  - [`batcherHash` (`bytes32`)](#batcherhash-bytes32)
+  - [Scalars](#scalars)
+    - [Pre-Ecotone `scalar`, `overhead` (`uint256,uint256`)](#pre-ecotone-scalar-overhead-uint256uint256)
+    - [Ecotone `scalar`, `overhead` (`uint256,uint256`) change](#ecotone-scalar-overhead-uint256uint256-change)
+  - [`gasLimit` (`uint64`)](#gaslimit-uint64)
+  - [`unsafeBlockSigner` (`address`)](#unsafeblocksigner-address)
+- [Writing the system config](#writing-the-system-config)
+- [Reading the system config](#reading-the-system-config)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

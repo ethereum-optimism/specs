@@ -4,7 +4,6 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [L2 Chain Derivation Specification](#l2-chain-derivation-specification)
 - [Overview](#overview)
   - [Eager Block Derivation](#eager-block-derivation)
 - [Batch Submission](#batch-submission)
