@@ -11,7 +11,7 @@ Bonds makes it worthwhile for honest challengers to participate.
 
 Moves must be adequately bonded to be added to the FDG. This document does not specify a
 scheme for determining the minimum bond requirement. FDG implementations should define a function
-computing the minimum bond requirement with the following:
+computing the minimum bond requirement with the following signature:
 
 ```solidity
 function getRequiredBond(Position _movePosition) public pure returns (uint256 requiredBond_)
@@ -29,3 +29,12 @@ The subgame root claimant gets back its bond iff it resolves correctly.
 
 At maximum game depths, where a claimant counters a bonded claim via `step`, the bond is instead distributed
 to the account that successfully called `step`.
+
+### Leftmost Claim Incentives
+
+There exists defensive positions that cannot be countered, even if they hold invalid claims. These positions
+are located on the same level as honest claims, but situated to its right (i.e. its gindex > honest claim's).
+
+An honest challenger can always successfully dispute any sibling claims not positioned to the right of an honest claim.
+The leftmost payoff rule encourages such disputes, ensuring only one claim is leftmost at correct depths.
+This claim will be the honest one, and thus bond rewards will be directed exclusively to honest claims.
