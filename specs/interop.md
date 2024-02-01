@@ -133,8 +133,6 @@ applications to build application specific replay protection.
 
 ### Depositing an Executing Message
 
-TODO: reword this
-
 Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
 The derivation pipeline must gracefully handle the case in which a user uses a deposit transaction to
 relay a cross chain message. To not couple preconfirmation security to consensus, deposit transactions
@@ -189,7 +187,9 @@ an update to the `L1Block` contract with additional functionality.
 
 ### CrossL2Inbox
 
-Address: `0x4200000000000000000000000000000000000022`
+| Constant         | Value                   |
+|----------------- | ----------------------- |
+| Address | `0x4200000000000000000000000000000000000022` |
 
 The `CrossL2Inbox` is responsible for executing a cross chain message on the destination chain.
 It is permissionless to execute a cross chain message on behalf of any user. Certain protocol
@@ -325,21 +325,40 @@ by the derivation pipeline.
 
 ### L2ToL2CrossDomainMessenger
 
-Address: `0x4200000000000000000000000000000000000024`
+| Constant         | Value                   |
+|----------------- | ----------------------- |
+| Address | `0x4200000000000000000000000000000000000024` |
+| `MESSAGE_VERSION` | `uint256(0)` |
+| `INITIAL_BALANCE` | `type(uint248).max` |
 
 The `L2ToL2CrossDomainMessenger` is a higher level abstraction on top of the `CrossL2Inbox` that
 provides features necessary for secure transfers of `ether` and ERC20 tokens between L2 chains.
 Messages sent through the `L2ToL2CrossDomainMessenger` on the source chain receive both replay protection
 as well as domain binding, ie the executing transaction can only be valid on a single chain.
 
+### Invariants
+
+#### `relayMessage`
+
+- Only callable by the `CrossL2Inbox`
+- The `Identifier.origin` MUST be `address(CrossL2Inbox)`
+- The `_destination` chainid MUST be equal to the local chainid
+- The `CrossL2Inbox` cannot call itself
+
 #### Versioning
 
-TODO: explicit description
-Versioning is handled in the most significant bits of the nonce.
+Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
+the `CrossDomainMessenger`.
+
+```solidity
+function messageNonce() public view returns (uint256) {
+    return Encoding.encodeVersionedNonce(nonce, MESSAGE_VERSION);
+}
+```
 
 #### Transferring Ether in a Cross Chain Message
 
-The `L2ToL2CrossDomainMessenger` MUST be initially set in state with an ether balance of `type(uint248).max`.
+The `L2ToL2CrossDomainMessenger` MUST be initially set in state with an ether balance of `INITIAL_BALANCE`.
 This initial balance exists to provide liquidity for cross chain transfers. It is large enough to always have
 ether present to dispurse while still being able to accept inbound transfers of ether without overflowing.
 The `L2ToL2CrossDomainMessenger` MUST only transfer out ether if the caller is the `L2ToL2CrossDomainMessenger`
@@ -372,7 +391,7 @@ chain a single time.
 
 ```solidity
 function sendMessage(uint256 _destination, address _target, bytes calldata _message) external payable {
-    bytes memory data = abi.encodeCall(L2ToL2CrossDomainMessenger.relayMessage, (_destination, nonce, msg.sender, _target, msg.value, _message));
+    bytes memory data = abi.encodeCall(L2ToL2CrossDomainMessenger.relayMessage, (_destination, messageNonce(), msg.sender, _target, msg.value, _message));
     emit SentMessage(data);
     nonce++;
 }
@@ -390,6 +409,8 @@ it is possible to send a message that is not playable.
 function relayMessage(uint256 _destination, uint256 _nonce, address _sender, address _target, uint256 _value, bytes memory _message) external {
     require(msg.sender == address(CROSS_L2_INBOX));
     require(_destination == block.chainid);
+    require(CROSS_L2_INBOX.origin() == address(this));
+    require(_target != address(this));
 
     bytes32 messageHash = keccak256(abi.encode(_destination, _nonce, _sender, _target, _value, _message));
     require(sentMessages[messageHash] == false);
@@ -411,9 +432,14 @@ function relayMessage(uint256 _destination, uint256 _nonce, address _sender, add
 
 ### L1Block
 
+| Constant         | Value                   |
+|----------------- | ----------------------- |
+| Address | `0x4200000000000000000000000000000000000015` |
+
 The `L1Block` contract is updated to include the set of allowed chains. The L1 Atrributes transaction
 sets the set of allowed chains. The `L1Block` contract MUST provide a public getter to check is a particular
-chain is in the dependency set.
+chain is in the dependency set called `isInDependencySet(uint256)`. This function MUST return true when
+the chain's chain id is passed in as an argument.
 
 The `setL1BlockValuesInterop()` function MUST be called on every block after the interop upgrade block.
 The interop upgrade block itself MUST include a call to `setL1BlockValuesEcotone`.
