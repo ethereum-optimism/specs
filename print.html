@@ -1893,7 +1893,8 @@ so if <code>engine_forkchoiceUpdatedV2</code> returns <code>STATUS_INVALID</code
 This field overrides the gas limit used during block-building.
 If not specified as rollup, a <code>STATUS_INVALID</code> is returned.</p>
 <h3 id="engine_forkchoiceupdatedv3"><a class="header" href="#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a></h3>
-<p>See <a href="protocol/exec-engine.html#engine_forkchoiceUpdatedV2"><code>engine_forkchoiceUpdatedV2</code></a> for a description of the forkchoice updated method.</p>
+<p>See <a href="protocol/exec-engine.html#engine_forkchoiceUpdatedV2"><code>engine_forkchoiceUpdatedV2</code></a> for a description of the forkchoice updated method.
+<code>engine_forkchoiceUpdatedV3</code> <strong>must only be called with Ecotone payload.</strong></p>
 <p>To support rollup functionality, one backwards-compatible change is introduced
 to <a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a>: the extended <code>PayloadAttributesV3</code></p>
 <h4 id="extended-payloadattributesv3"><a class="header" href="#extended-payloadattributesv3">Extended PayloadAttributesV3</a></h4>
@@ -1911,15 +1912,16 @@ to <a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03
 </code></pre>
 <p>The requirements of this object are the same as extended <a href="protocol/exec-engine.html#extended-payloadattributesv2"><code>PayloadAttributesV2</code></a> with
 the addition of <code>parentBeaconBlockRoot</code> which is the parent beacon block root from the L1 origin block of the L2 block.</p>
-<p>The <code>parentBeaconBlockRoot</code> must be nil for Bedrock/Canyon/Delta payloads.
-Starting at Ecotone, the <code>parentBeaconBlockRoot</code> must be set to the L1 origin <code>parentBeaconBlockRoot</code>,
+<p>Starting at Ecotone, the <code>parentBeaconBlockRoot</code> must be set to the L1 origin <code>parentBeaconBlockRoot</code>,
 or a zero <code>bytes32</code> if the Dencun functionality with <code>parentBeaconBlockRoot</code> is not active on L1.</p>
 <h3 id="engine_newpayloadv2"><a class="header" href="#engine_newpayloadv2"><code>engine_newPayloadV2</code></a></h3>
 <p>No modifications to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_newpayloadv2"><code>engine_newPayloadV2</code></a>.
 Applies a L2 block to the engine state.</p>
 <h3 id="engine_newpayloadv3"><a class="header" href="#engine_newpayloadv3"><code>engine_newPayloadV3</code></a></h3>
 <p><a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_newpayloadv3"><code>engine_newPayloadV3</code></a> applies an Ecotone L2 block to the engine state. There are no
-modifications to this API. The additional parameters should be set as follows:</p>
+modifications to this API.
+<code>engine_newPayloadV3</code> <strong>must only be called with Ecotone payload.</strong></p>
+<p>The additional parameters should be set as follows:</p>
 <ul>
 <li><code>expectedBlobVersionedHashes</code> MUST be an empty array.</li>
 <li><code>parentBeaconBlockRoot</code> MUST be the parent beacon block root from the L1 origin block of the L2 block.</li>
@@ -1929,7 +1931,8 @@ modifications to this API. The additional parameters should be set as follows:</
 Retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV2</code> when called with <code>payloadAttributes</code>.</p>
 <h3 id="engine_getpayloadv3"><a class="header" href="#engine_getpayloadv3"><code>engine_getPayloadV3</code></a></h3>
 <p><a href="https://github.com/ethereum/execution-apis/blob/a0d03086564ab1838b462befbc083f873dcf0c0f/src/engine/cancun.md#engine_getpayloadv3"><code>engine_getPayloadV3</code></a> retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV3</code>
-when called with <code>payloadAttributes</code>.</p>
+when called with <code>payloadAttributes</code>.
+<code>engine_getPayloadV3</code> <strong>must only be called with Ecotone payload.</strong></p>
 <h4 id="extended-response"><a class="header" href="#extended-response">Extended Response</a></h4>
 <p>The <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#response-2">response</a> is extended to:</p>
 <pre><code class="language-js">{
@@ -1940,8 +1943,7 @@ when called with <code>payloadAttributes</code>.</p>
     parentBeaconBlockRoot: DATA (32 bytes)
 }
 </code></pre>
-<p>For Bedrock and Canyon <code>parentBeaconBlockRoot</code> MUST be nil and in Ecotone it MUST be set to the parentBeaconBlockRoot
-from the L1 Origin block of the L2 block.</p>
+<p>In Ecotone it MUST be set to the parentBeaconBlockRoot from the L1 Origin block of the L2 block.</p>
 <h3 id="engine_signalsuperchainv1"><a class="header" href="#engine_signalsuperchainv1"><code>engine_signalSuperchainV1</code></a></h3>
 <p>Optional extension to the Engine API. Signals superchain information to the Engine:
 V1 signals which protocol version is recommended and required.</p>
