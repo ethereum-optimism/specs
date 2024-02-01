@@ -22,8 +22,10 @@
       - [`_target`](#_target)
       - [`_msg`](#_msg)
       - [`_id`](#_id)
+    - [`Identifier` Getters](#identifier-getters)
   - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
-    - [Versioning](#versioning)
+    - [`relayMessage` Invariants](#relaymessage-invariants)
+    - [Message Versioning](#message-versioning)
     - [Transferring Ether in a Cross Chain Message](#transferring-ether-in-a-cross-chain-message)
     - [Interfaces](#interfaces)
       - [Sending Messages](#sending-messages)
@@ -346,9 +348,7 @@ provides features necessary for secure transfers of `ether` and ERC20 tokens bet
 Messages sent through the `L2ToL2CrossDomainMessenger` on the source chain receive both replay protection
 as well as domain binding, ie the executing transaction can only be valid on a single chain.
 
-#### Invariants
-
-##### `relayMessage`
+#### `relayMessage` Invariants
 
 - Only callable by the `CrossL2Inbox`
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
