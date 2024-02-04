@@ -229,7 +229,7 @@ that maintains 1:1 compatibility with Ethereum.</p>
 <p>Our aim is to design a protocol specification that is:</p>
 <ul>
 <li><strong>Fast:</strong> When users send transactions, they get reliable confirmations with low-latency.
-For example when swapping on Uniswap you should see that your transaction succeed in less than 2
+For example when swapping on Uniswap you should see that your transaction succeeds in less than 2
 seconds.</li>
 <li><strong>Scalable:</strong> It should be possible to handle an enormous number of transactions
 per second which will enable the system to charge low fees.
@@ -6404,7 +6404,7 @@ setup state of the matrix is constant.)</li>
 </ol>
 <p>The challenger then submits this data to the <code>PreimageOracle</code>, where the post state leaf's claimed input is absored into
 the pre state leaf's state matrix and the SHA3 permutation is executed on-chain. After that, the resulting state matrix
-is hashed and and compared with the proposer's claim in the post state leaf. If the hash does not match, the proposal
+is hashed and compared with the proposer's claim in the post state leaf. If the hash does not match, the proposal
 is marked as challenged, and it may not be finalized. If, after the challenge period is concluded, a proposal has no
 challenges, it may be finalized and the preimage part may be placed into the authorized mappings for the FPVM to read.</p>
 <h3 id="team-dynamics"><a class="header" href="#team-dynamics">Team Dynamics</a></h3>
@@ -6419,7 +6419,7 @@ Uncontested claims are likely to result in a loss, as explained later under <a h
 <p>Every claim in the game has a Clock. A claim inherits the clock of its grandparent claim in the
 DAG (and so on). Akin to a chess clock, it keeps track of the total time each team takes to make
 moves, preventing delays.
-Making a move resumes the clock for the disputed claim and puases it for the newly added one.</p>
+Making a move resumes the clock for the disputed claim and pauses it for the newly added one.</p>
 <p>A move against a particular claim is no longer possible once the parent of the disputed claim's Clock
 has exceeded half of the <code>GAME_DURATION</code>. By which point, the claim's clock has <em>expired</em>.</p>
 <h3 id="resolution"><a class="header" href="#resolution">Resolution</a></h3>
@@ -7069,7 +7069,7 @@ block acquired from the sequencer via <a href="glossary.html#unsafe-sync">unsafe
 head</a> a block forward, so that the oldest <a href="glossary.html#unsafe-l2-block">unsafe L2 block</a> becomes the new safe L2 head.</p>
 <p>In order to perform consolidation, the node verifies that the <a href="glossary.html#payload-attributes">payload attributes</a> derived from the L1
 chain match the oldest unsafe L2 block exactly.</p>
-<p>See the <a href="./protocol/derivation.html#engine-queue">Engine Queue section</a> of the L2 chain derivatiaon spec for more information.</p>
+<p>See the <a href="./protocol/derivation.html#engine-queue">Engine Queue section</a> of the L2 chain derivation spec for more information.</p>
 <h2 id="finalized-l2-head"><a class="header" href="#finalized-l2-head">Finalized L2 Head</a></h2>
 <p>The finalized L2 head is the highest L2 block that can be derived from <em><a href="https://hackmd.io/@prysmaticlabs/finality">finalized</a></em> L1 blocks — i.e. L1
 blocks older than two L1 epochs (64 L1 <a href="glossary.html#time-slot">time slots</a>).</p>
