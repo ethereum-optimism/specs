@@ -300,8 +300,6 @@ struct Identifier {
 }
 ```
 
-TODO: replace `logIndex` with `transactionIndex` and `relativeLogIndex`
-
 | Name          | Type | Description |
 |---------------|----------------------------------|--|
 | `origin` | `address` | Account that emits the log |
@@ -340,6 +338,9 @@ By including the `Identifier` in the calldata, it makes static analysis much eas
 It is impossible to check that the `Identifier` matches the cross chain message on chain. If the block
 builder includes a message that does not correspond to the `Identifier`, their block will be reorganized
 by the derivation pipeline.
+
+TODO upgrade path: think of `Identifier` as an enum that determines the mapping function for a log to a message
+a change in the id will result in a change in the 4byte selector
 
 #### `Identifier` Getters
 
