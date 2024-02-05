@@ -3,6 +3,13 @@
 Bonds is an add-on to the core [Fault Dispute Game](./fault-dispute-game.md). The core game mechanics are
 designed to ensure honesty as the best response to winning subgames. By introducing financial incentives,
 Bonds makes it worthwhile for honest challengers to participate.
+Without the bond reward incentive, the FDG will be too costly for honest players to participate in given the
+cost of verifying and making claims.
+
+Implementations may allow the FDG to directly receive bonds, or delegate this responsibility to another entity.
+Regardless, there must be a way for the FDG to query and distribute bonds linked to a claim.
+
+Bonds are integrated into the FDG in two areas:
 
 - Moves
 - Subgame Resolution
