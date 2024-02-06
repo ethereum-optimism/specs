@@ -14,3 +14,6 @@ lint-links:
     docker run --init -it -v `pwd`:/input lycheeverse/lychee --verbose --no-progress --exclude-loopback \
     		--exclude twitter.com --exclude explorer.optimism.io --exclude linux-mips.org --exclude vitalik.ca \
     		--exclude-mail /input/README.md "/input/specs/**/*.md"
+
+serve:
+    mdbook serve

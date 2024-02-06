@@ -1,0 +1,18 @@
+[book]
+authors = ["optimism-collective"]
+language = "en"
+multilingual = false
+src = "specs"
+title = "OP Stack Specification"
+
+[preprocessor.katex]
+after = ["links"]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output.html]
+default-theme = "ayu"
+additional-js = ["specs/static/solidity.min.js", "specs/static/mermaid.min.js", "specs/static/mermaid-init.js"]
+
+[output.linkcheck]
