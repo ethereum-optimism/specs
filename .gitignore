@@ -2,3 +2,4 @@
 book/
 
 node_modules/**
+/.idea
