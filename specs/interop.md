@@ -90,7 +90,9 @@ of executing messages.
 The dependency set is configured on a per chain basis.
 
 The chainid of the local chain MUST be considered as part of its own dependency set.
-The layer one MAY be part of the dependency set.
+
+While the dependency set explicitly defines the set of chains that are depended on for incoming messages,
+the full set of transitive dependencies must be known to allow for the progression of [safety](#safety).
 
 ### Chain ID
 
@@ -98,6 +100,12 @@ The concept of a chain id was introduced in [EIP-155](https://eips.ethereum.org/
 replay attacks between chains. This EIP does not specify the max size of a chain id, although
 [EIP-2294](https://eips.ethereum.org/EIPS/eip-2294) attempts to add a maximum size. Since this EIP is
 stagnant, all representations of chain ids MUST be the `uint256` type.
+
+In the future, OP Stack chains reserve the right to use up to 32 bytes to represent a chain id. The
+configuration of the chain should deterministically map to a chain id and with careful architecture
+changes, all possible OP Stack chains in the superchain will be able to exist counterfactually.
+
+It is a known issue that not all software in the Ethereum space can handle 32 byte chain ids.
 
 ## Interop Network Upgrade
 
@@ -138,12 +146,10 @@ protection mechanisms if they are interacting with the lowest level abstractions
 
 ### Depositing an Executing Message
 
-TODO: define safe by linking to safety section
-
 Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
 The derivation pipeline must gracefully handle the case in which a user uses a deposit transaction to
 relay a cross chain message. To not couple preconfirmation security to consensus, deposit transactions
-that execute cross chain messages MUST have an initiating message that is considered safe by the remote
+that execute cross chain messages MUST have an initiating message that is considered [safe](#safety) by the remote
 chain's derivation pipeline. This means that the remote chain's data including the initiating message
 MUST be posted to the data availability layer. This relaxes a strict synchrony assumption on the sequencer
 that it MUST have all unsafe blocks of destination chains as fast as possible to ensure that it is building
@@ -157,12 +163,76 @@ into reorganizing the sequencer.
 
 ### Safety
 
-TODO: introduce new level of safety
+Safety is an abstraction that is useful for reasoning about security. It should be thought about
+as a spectrum from `unsafe` to `final`. Users can choose to operate on information based on its
+level of safety depending on their risk profile and personal preferences.
 
-The initiating messages for all executing messages MUST be resolved as safe before an L2 block can transition
+The following labels are used to describe both inputs and outputs:
+
+- `unsafe`
+- `cross-unsafe`
+- `safe`
+- `finalized`
+
+Inputs correspond to the inputs to the state transition function while outputs correspond to the side
+effects of the state transition function.
+
+Anything before `safe` technically uses a "preconfirmation" based security model which is not part
+of consensus. While useful to have definitions of the default meanings of these terms, they are
+technically policy and may be changed in the future.
+
+The `unsafe` label has the lowest latency while the `finalized` label has the highest latency.
+A set of properties must be matched before an input or an output can be promoted to the next
+label.
+
+The initiating messages for all dependent executing messages MUST be resolved as safe before an L2 block can transition
 from being unsafe to safe. Users MAY optimistically accept unsafe blocks without any verification of the
 executing messages. They SHOULD optimistically verify the initiating messages exist in destination unsafe blocks
 to more quickly reorganize out invalid blocks.
+
+#### `unsafe` Inputs
+
+- MUST be signed by the p2p sequencer key
+- MAY be reorganized
+- MUST be promoted to a higher level of safety or reorganized out to ensure liveness
+
+`unsafe` inputs are currently gossiped around the p2p network. To prevent denial of service, they MUST
+be signed by the sequencer. This signature represents the sequencer's claim that it
+built a block that conforms to the protocol. `unsafe` blocks exist to give low latency access to the
+latest information. To keep the latency as low as possible, cross chain messages are assumed valid
+at this stage. This means that the remote unsafe inputs are trusted.
+
+An alternative approach to `unsafe` inputs would be to include an SGX proof that the sequencer ran
+particular software when building the block.
+
+#### `cross-unsafe` Inputs
+
+- MUST have valid cross chain messages
+
+`cross-unsafe` represents the `unsafe` blocks that had their cross chain messages fully verified.
+The network can be represented as a graph where each block across all chains are represented as
+a node and then a directed edge between two blocks represents the source block of the initiating
+message and the block that included the executing message.
+
+An input can be promoted from `safe` to `cross-unsafe` when the full dependency graph is resolved
+such that all cross chain messages are verified to be valid and at least one message in the dependency
+graph is still `unsafe`.
+
+#### `safe` Inputs
+
+- MUST be available
+- MAY be reorganized
+- Safe block MUST be invalidated if a reorg occurs
+
+`safe` represents the state in which the `cross-unsafe` dependency graph has been fully resolved
+in a way where all of the data has been published to the data availability layer.
+
+#### `finalized` Inputs
+
+- MUST NOT be reorganized based on Ethereum economic security
+
+`finalized` represents full Proof of Stake economic security on top of the data. This means that
+if the data is reorganized, then validators will be slashed.
 
 ## State Transition Function
 
@@ -623,15 +693,16 @@ is recent enough in the `CrossL2Inbox`.
 
 ### Cyclic Dependencies in the Dependency Set
 
-TODO: verify that existing rules don't cause a halt
-
 If there is a cycle in the dependency set, chains MUST still be able to promote unsafe blocks
 to safe blocks. A cycle in the dependency set happens anytime that two chains are in each other's
 dependency set. This means that they are able to send cross chain messages to each other.
-To promote unsafe blocks, the L2 data must be published to the data availability layer and
-any executing messages MUST have their initiating messages verified. This process must happen
-recursively for interconnected chains.
 
-### Light Client Proofs
+### Layer 1 as Part of the Dependency Set
 
-TODO: light client that follows remote blockhashes from L1 batches?
+The layer one MAY be part of the dependency set if the fault proof implementation is set up
+to support it. It is known that it is possible but it is not known if this is going to be
+a feature of the first release. This section should be clarified when the decision is made.
+
+If layer one is part of the dependency set, then it means that any event on L1 can be pulled
+into any L2. This is a very powerful abstraction as a minimal amount of execution can happen
+on L1 which triggers additional exeuction across all L2s in the OP Stack.
