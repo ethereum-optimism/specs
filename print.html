@@ -4632,8 +4632,9 @@ has been hardcoded to 6.</p>
 <li>l1BlobBaseFeeScalar</li>
 <li>decimals</li>
 </ul>
-<p>These values are managed by the <code>SystemConfig</code> contract on the L1. The<code>decimals</code> remains hardcoded
-to 6, and the old <code>scalar</code> and <code>overhead</code> values are ignored.</p>
+<p>These new scalar values are managed by the <code>SystemConfig</code> contract on the L1 by introducing a
+backwards compatible <a href="protocol/system_config.html#ecotone-scalar-overhead-uint256uint256-change">versioned encoding scheme</a> of its <code>scalars</code> storage
+slot. The <code>decimals</code> remains hardcoded to 6, and the <code>overhead</code> value is ignored.</p>
 <h2 id="l1block"><a class="header" href="#l1block">L1Block</a></h2>
 <p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L1Block.sol">Implementation</a></p>
 <p>Address: <code>0x4200000000000000000000000000000000000015</code></p>
