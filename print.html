@@ -5370,7 +5370,9 @@ and apply the event-based changes as the stage traverses to the next L1 block.</
 <li><a href="experimental/fault-proof/index.html#type-1-local-key">Type <code>1</code>: Local key</a></li>
 <li><a href="experimental/fault-proof/index.html#type-2-global-keccak256-key">Type <code>2</code>: Global keccak256 key</a></li>
 <li><a href="experimental/fault-proof/index.html#type-3-global-generic-key">Type <code>3</code>: Global generic key</a></li>
-<li><a href="experimental/fault-proof/index.html#type-4-128-reserved-range">Type <code>4-128</code>: reserved range</a></li>
+<li><a href="experimental/fault-proof/index.html#type-4-global-sha2-256-key">Type <code>4</code>: Global SHA2-256 key</a></li>
+<li><a href="experimental/fault-proof/index.html#type-5-global-eip-4844-point-evaluation-key">Type <code>5</code>: Global EIP-4844 Point-evaluation key</a></li>
+<li><a href="experimental/fault-proof/index.html#type-6-128-reserved-range">Type <code>6-128</code>: reserved range</a></li>
 <li><a href="experimental/fault-proof/index.html#type-129-255-application-usage">Type <code>129-255</code>: application usage</a></li>
 </ul>
 </li>
@@ -5470,7 +5472,25 @@ in case the implementation of the verification of the pre-image is expected to c
 <p>This enables fault proof programs to adopt any new pre-image schemes without VM update or contract redeployment.</p>
 <p>It is up to the user to index the special pre-image values by this key scheme,
 as there is no way to revert it to the original commitment without knowing said commitment or value.</p>
-<h4 id="type-4-128-reserved-range"><a class="header" href="#type-4-128-reserved-range">Type <code>4-128</code>: reserved range</a></h4>
+<h4 id="type-4-global-sha2-256-key"><a class="header" href="#type-4-global-sha2-256-key">Type <code>4</code>: Global SHA2-256 key</a></h4>
+<p>A SHA-256 pre-image.</p>
+<p>Key: the SHA-256 hash, with the first byte overwritten with the type byte: <code>4 ++ sha256(data)[1:]</code>.</p>
+<h4 id="type-5-global-eip-4844-point-evaluation-key"><a class="header" href="#type-5-global-eip-4844-point-evaluation-key">Type <code>5</code>: Global EIP-4844 Point-evaluation key</a></h4>
+<p>An EIP-4844 point-evaluation.
+In an EIP-4844 blob, 4096 field elements represent the blob data.</p>
+<p>It verifies <code>p(z) = y</code> given <code>commitment</code> that corresponds to the polynomial <code>p(x)</code> and a KZG proof.
+The value <code>y</code> is the pre-image.
+The value <code>z</code> is part of the key; the index of the point within the blob.
+The <code>commitment</code> is part of the key.</p>
+<p>Each element is proven with a point-evaluation.</p>
+<p>Key: <code>5 ++ keccak256(commitment ++ z)[1:]</code>, where:</p>
+<ul>
+<li><code>5</code> is the type byte</li>
+<li><code>++</code> is concatenation</li>
+<li><code>commitment</code> is a bytes48, representing the KZG commitment.</li>
+<li><code>z</code> is a big-endian <code>uint256</code></li>
+</ul>
+<h4 id="type-6-128-reserved-range"><a class="header" href="#type-6-128-reserved-range">Type <code>6-128</code>: reserved range</a></h4>
 <p>Range start and end both inclusive.</p>
 <p>This range of key types is reserved for future usage by the core protocol.
 E.g. version changes, contract migrations, chain-data, additional core features, etc.</p>
