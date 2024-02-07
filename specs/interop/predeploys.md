@@ -16,114 +16,55 @@ an update to the `L1Block` contract with additional functionality.
 | Address  | `0x4200000000000000000000000000000000000022` |
 
 The `CrossL2Inbox` is responsible for executing a cross chain message on the destination chain.
-It is permissionless to execute a cross chain message on behalf of any user. Certain protocol
-enforced invariants must be preserved to ensure safety of the protocol.
+It is permissionless to execute a cross chain message on behalf of any user.
 
-### Invariants
+To ensure safety of the protocol, the [Message Invariants](./messaging.md#messaging-invariants) must be enforced.
 
-- The timestamp of executing message MUST be greater than or equal to the timestamp of the initiating message
-- The chain id of the initiating message MUST be in the dependency set
-- The executing message MUST be initiated by an externally owned account such that the top level EVM
-  call frame enters the `CrossL2Inbox`
-
-#### Timestamp Invariant
-
-The timestamp invariant ensures that initiating messages cannot come from a future block. Note that since
-all transactions in a block have the same timestamp, it is possible for an executing transaction to be
-ordered before the initiating message in the same block.
-
-#### ChainID Invariant
-
-Without a guarantee on the set of dependencies of a chain, it may be impossible for the derivation
-pipeline to know which chain to source the initiating message from. This also allows for chain operators
-to explicitly define the set of chains that they depend on.
-
-#### Only EOA Invariant
-
-The `onlyEOA` invariant on executing a cross chain message enables static analysis on executing messages.
-This allows for the derivation pipeline and block builders to reject executing messages that do not
-have a corresponding initiating message without needing to do any EVM execution.
-
-It may be possible to relax this invariant in the future if the block building process is efficient
-enough to do full simulations to gain the information required to verify the existence of the
-initiating transaction. Instead of the `Identifier` being included in calldata, it would be emitted
-in an event that can be used after the fact to verify the existence of the initiating message.
-This adds complexity around mempool inclusion as it would require EVM execution and remote RPC
-access to learn if a transaction can enter the mempool.
-
-This feature could be added in a backwards compatible way by adding a new function to the `CrossL2Inbox`.
-
-One possible way to handle explicit denial of service attacks is to utilize identity
-in iterated games such that the block builder can ban identities that submit malicious transactions.
-
-### Executing Messages
-
-All of the information required to satisfy the invariants MUST be included in the calldata
-of the function that is used to execute messages. Both the block builder and the smart contract use
-this information to ensure that all system invariants are held.
+### Message execution arguments
 
 The following fields are required for executing a cross chain message:
 
-| Name      | Type         | Description                               |
-|-----------|--------------|-------------------------------------------|
-| `_target` | `address`    | Account that is called with `_msg`        |
-| `_msg`    | `bytes`      | An opaque [Log][log]                      |
-| `_id`     | `Identifier` | A pointer to the `_msg` in a remote chain |
+[message payload]: ./messaging.md#message-payload
+[`Identifier`]: ./messaging.md#message-identifier
 
-[log]: https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29
-
-#### `_target`
-
-An `address` that is specified by the caller. There is no protocol enforcement on what this value is. The
-`_target` is called with the `_msg`. In practice, the `_target` will be a contract that needs to know the
-schema of the `_msg` so that it can be decoded. It MAY call back to the `CrossL2Inbox` to authenticate
-properties about the `_msg` using the information in the `Identifier`.
+| Name      | Type         | Description                                             |
+|-----------|--------------|---------------------------------------------------------|
+| `_msg`    | `bytes`      | The [message payload], matching the initiating message. |
+| `_id`     | `Identifier` | A [`Identifier`] pointing to the initiating message.    |
+| `_target` | `address`    | Account that is called with `_msg`.                     |
 
 #### `_msg`
 
-Opaque `bytes` that represent a [Log][log]. The data is verified against the `Identifier`. It is serialized
-by first concatenating the topics and then with the data.
+The [message payload] of the executing message.
 
-```go
-msg := make([]byte, 0)
-for _, topic := range log.Topics {
-    msg = append(msg, topic.Bytes()...)
-}
-msg = append(msg, log.Data...)
-```
-
-The `_msg` can easily be decoded into a Solidity `struct` with `abi.decode` since each topic is always 32 bytes and
-the data generally ABI encoded.
+This must match the emitted payload of the initiating message identified by `_id`.
 
 #### `_id`
 
-The `Identifier` that uniquely represents a log that is emitted from a chain. It can be considered to be a
-unique pointer to a particular log. The derivation pipeline and fault proof program MUST ensure that the
-`_msg` corresponds exactly to the log that the `Identifier` points to.
+A pointer to the `_msg` in a remote (or local) chain.
 
-```solidity
-struct Identifier {
-    address origin;
-    uint256 blocknumber;
-    uint256 logIndex;
-    uint256 timestamp;
-    uint256 chainid;
-}
-```
+The message [`Identifier`] of the executing message.
+This is required to enforce the message executes an existing and valid initiating message.
 
-| Name          | Type      | Description                                                                     |
-|---------------|-----------|---------------------------------------------------------------------------------|
-| `origin`      | `address` | Account that emits the log                                                      |
-| `blocknumber` | `uint256` | Block number in which the log was emitted                                       |
-| `logIndex`    | `uint256` | The index of the log in the array of all logs emitted in the block              |
-| `timestamp`   | `uint256` | The timestamp that the log was emitted. Used to enforce the timestamp invariant |
-| `chainid`     | `uint256` | The chainid of the chain that emitted the log                                   |
+By including the [`Identifier`] in the calldata, it makes static analysis much easier for block builders.
+It is impossible to check that the [`Identifier`] matches the cross chain message on chain. If the block
+builder includes a message that does not correspond to the [`Identifier`]`, their block will be reorganized
+by the derivation pipeline.
 
-The `Identifier` includes the set of information to uniquely identify a log. When using an absolute
-log index within a particular block, it makes ahead of time coordination more complex. Ideally there
-is a better way to uniquely identify a log that does not add ordering constraints when building
-a block. This would make building atomic cross chain messages more simple by not coupling the
-exact state of the block templates between multiple chains together.
+A possible upgrade path to this contract would involve adding a new function. If any fields in the [`Identifier`]
+change, then a new 4byte selector will be generated by solc.
+
+#### `_target`
+
+Messages are broadcast, not directed. Upon execution the caller can specify which `address` to target:
+there is no protocol enforcement on what this value is.
+
+The `_target` is called with the `_msg` as input.
+In practice, the `_target` will be a contract that needs to know the schema of the `_msg` so that it can be decoded.
+It MAY call back to the `CrossL2Inbox` to authenticate 
+properties about the `_msg` using the information in the `Identifier`.
+
+### Reference implementation
 
 A simple implementation of the `executeMessage` function is included below.
 
@@ -134,7 +75,7 @@ function executeMessage(address _target, bytes calldata _msg, Identifier calldat
     require(L1Block.isInDependencySet(_id.chainid));
 
     assembly {
-      tstore(ORIGIN_SLOT, _id.origin);
+      tstore(ORIGIN_SLOT, _id.origin)
       tstore(BLOCKNUMBER_SLOT, _id.blocknumber)
       tstore(LOG_INDEX_SLOT, _id.logIndex)
       tstore(TIMESTAMP_SLOT, _id.timestamp)
@@ -150,14 +91,6 @@ function executeMessage(address _target, bytes calldata _msg, Identifier calldat
     require(success);
 }
 ```
-
-By including the `Identifier` in the calldata, it makes static analysis much easier for block builders.
-It is impossible to check that the `Identifier` matches the cross chain message on chain. If the block
-builder includes a message that does not correspond to the `Identifier`, their block will be reorganized
-by the derivation pipeline.
-
-A possible upgrade path to this contract would involve adding a new function. If any fields in the `Identifier`
-change, then a new 4byte selector will be generated by solc.
 
 ### `Identifier` Getters
 
