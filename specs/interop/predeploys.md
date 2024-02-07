@@ -79,7 +79,7 @@ there is no protocol enforcement on what this value is.
 
 The `_target` is called with the `_msg` as input.
 In practice, the `_target` will be a contract that needs to know the schema of the `_msg` so that it can be decoded.
-It MAY call back to the `CrossL2Inbox` to authenticate 
+It MAY call back to the `CrossL2Inbox` to authenticate
 properties about the `_msg` using the information in the `Identifier`.
 
 ### Reference implementation
@@ -234,7 +234,6 @@ the chain's chain id is passed in as an argument.
 
 The `setL1BlockValuesInterop()` function MUST be called on every block after the interop upgrade block.
 The interop upgrade block itself MUST include a call to `setL1BlockValuesEcotone`.
-
 
 ### L1Attributes
 

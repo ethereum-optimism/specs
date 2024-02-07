@@ -38,4 +38,3 @@ block.extra_data = logs.hash_tree_root()
 ## Security Considerations
 
 TODO
-

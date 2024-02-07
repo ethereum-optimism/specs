@@ -24,7 +24,7 @@
 
 ## Message
 
-A message is a [broadcast payload](#message-payload) emitted from an [identified source](#message-identifier). 
+A message is a [broadcast payload](#message-payload) emitted from an [identified source](#message-identifier).
 
 ### Message payload
 

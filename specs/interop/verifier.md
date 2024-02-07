@@ -123,7 +123,6 @@ in a way where all of the data has been published to the data availability layer
 `finalized` represents full Proof of Stake economic security on top of the data. This means that
 if the data is reorganized, then validators will be slashed.
 
-
 ## Security Considerations
 
 ### Forced Inclusion of Cross Chain Messages
@@ -153,4 +152,3 @@ It is also possible to introduce a form of expiry on historical receipts by enfo
 is recent enough in the `CrossL2Inbox`.
 
 [eip-4444]: https://eips.ethereum.org/EIPS/eip-4444
-

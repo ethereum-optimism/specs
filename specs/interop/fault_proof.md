@@ -22,5 +22,3 @@ TODO
 
 Deposits are a special case, synchronous with derivation, at enforced cross-L2 delay.
 Thus deposits cannot reference each others events intra-block.
-
-
