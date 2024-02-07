@@ -68,7 +68,7 @@ network upgrade will be included in this document in the future.
 | Dependency Set | The set of chains that originate initiating transactions where the executing transactions are valid |
 
 A total of two transactions are required to complete a cross chain message. The first transaction is submitted
-to the source chain emits an event that can be consumed on a destination chain. The second transaction is submitted to a
+to the source chain and emits an event that can be consumed on a destination chain. The second transaction is submitted to a
 destination chain, where the block builder SHOULD only include it if they are certain that the first transaction was
 included in the source chain. There is no strict requirement that the execution message is ever submitted.
 
