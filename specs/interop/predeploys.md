@@ -11,9 +11,9 @@ an update to the `L1Block` contract with additional functionality.
 
 ## CrossL2Inbox
 
-| Constant         | Value                   |
-|----------------- | ----------------------- |
-| Address | `0x4200000000000000000000000000000000000022` |
+| Constant | Value                                        |
+|----------|----------------------------------------------|
+| Address  | `0x4200000000000000000000000000000000000022` |
 
 The `CrossL2Inbox` is responsible for executing a cross chain message on the destination chain.
 It is permissionless to execute a cross chain message on behalf of any user. Certain protocol
@@ -64,11 +64,11 @@ this information to ensure that all system invariants are held.
 
 The following fields are required for executing a cross chain message:
 
-| Name          | Type | Description |
-|---------------|----------------------------------|--|
-| `_target` | `address` | Account that is called with `_msg`|
-| `_msg` | `bytes` | An opaque [Log][log] |
-| `_id` | `Identifier` | A pointer to the `_msg` in a remote chain |
+| Name      | Type         | Description                               |
+|-----------|--------------|-------------------------------------------|
+| `_target` | `address`    | Account that is called with `_msg`        |
+| `_msg`    | `bytes`      | An opaque [Log][log]                      |
+| `_id`     | `Identifier` | A pointer to the `_msg` in a remote chain |
 
 [log]: https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29
 
@@ -111,13 +111,13 @@ struct Identifier {
 }
 ```
 
-| Name          | Type | Description |
-|---------------|----------------------------------|--|
-| `origin` | `address` | Account that emits the log |
-| `blocknumber` | `uint256` | Block number in which the log was emitted |
-| `logIndex` | `uint256` | The index of the log in the array of all logs emitted in the block |
-| `timestamp` | `uint256` | The timestamp that the log was emitted. Used to enforce the timestamp invariant |
-| `chainid` | `uint256` | The chainid of the chain that emitted the log |
+| Name          | Type      | Description                                                                     |
+|---------------|-----------|---------------------------------------------------------------------------------|
+| `origin`      | `address` | Account that emits the log                                                      |
+| `blocknumber` | `uint256` | Block number in which the log was emitted                                       |
+| `logIndex`    | `uint256` | The index of the log in the array of all logs emitted in the block              |
+| `timestamp`   | `uint256` | The timestamp that the log was emitted. Used to enforce the timestamp invariant |
+| `chainid`     | `uint256` | The chainid of the chain that emitted the log                                   |
 
 The `Identifier` includes the set of information to uniquely identify a log. When using an absolute
 log index within a particular block, it makes ahead of time coordination more complex. Ideally there
@@ -166,11 +166,11 @@ properties about the `_msg`.
 
 ## L2ToL2CrossDomainMessenger
 
-| Constant         | Value                   |
-|----------------- | ----------------------- |
-| Address | `0x4200000000000000000000000000000000000024` |
-| `MESSAGE_VERSION` | `uint256(0)` |
-| `INITIAL_BALANCE` | `type(uint248).max` |
+| Constant          | Value                                        |
+|-------------------|----------------------------------------------|
+| Address           | `0x4200000000000000000000000000000000000024` |
+| `MESSAGE_VERSION` | `uint256(0)`                                 |
+| `INITIAL_BALANCE` | `type(uint248).max`                          |
 
 The `L2ToL2CrossDomainMessenger` is a higher level abstraction on top of the `CrossL2Inbox` that
 provides features necessary for secure transfers of `ether` and ERC20 tokens between L2 chains.
@@ -272,9 +272,9 @@ function relayMessage(uint256 _destination, uint256 _nonce, address _sender, add
 
 ## L1Block
 
-| Constant         | Value                   |
-|----------------- | ----------------------- |
-| Address | `0x4200000000000000000000000000000000000015` |
+| Constant | Value                                        |
+|----------|----------------------------------------------|
+| Address  | `0x4200000000000000000000000000000000000015` |
 
 The `L1Block` contract is updated to include the set of allowed chains. The L1 Attributes transaction
 sets the set of allowed chains. The `L1Block` contract MUST provide a public getter to check if a particular
@@ -291,7 +291,7 @@ The L1 Atrributes transaction is updated to include the dependency set. Since th
 a `uint8` "interopSetSize" parameter prefixes tightly packed `uint256` values that represent each chain id.
 
 | Input arg         | Type                    | Calldata bytes          | Segment |
-| ----------------- | ----------------------- | ----------------------- | --------|
+|-------------------|-------------------------|-------------------------|---------|
 | {0x760ee04d}      | bytes4                  | 0-3                     | n/a     |
 | baseFeeScalar     | uint32                  | 4-7                     | 1       |
 | blobBaseFeeScalar | uint32                  | 8-11                    |         |

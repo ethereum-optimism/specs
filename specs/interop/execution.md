@@ -13,10 +13,10 @@ included in the block header. This commitment MUST be included as the block head
 [block-extra-data]: https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L115
 [ssz]: https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md
 
-| Name          | Value |
-|---------------|-------------------------------------|
-| `MAX_LOG_DATA_SIZE` | `uint64(2**24)` or 16,777,216 |
-| `MAX_MESSAGES_PER_BLOCK` | `uint64(2**20)` or 1,048,576 |
+| Name                     | Value                         |
+|--------------------------|-------------------------------|
+| `MAX_LOG_DATA_SIZE`      | `uint64(2**24)` or 16,777,216 |
+| `MAX_MESSAGES_PER_BLOCK` | `uint64(2**20)` or 1,048,576  |
 
 ```python
 class Log(Container):
