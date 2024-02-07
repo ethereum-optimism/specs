@@ -1,10 +1,12 @@
+# Interop Network Upgrade
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [Security Considerations](#security-considerations)
 
-# Interop Network Upgrade
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 The interop network upgrade timestamp defines the timestamp at which all functionality in this document is considered
 the consensus rules for an OP Stack based network. On the interop network upgrade block, a set of deposit transaction

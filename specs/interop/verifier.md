@@ -1,10 +1,21 @@
+# Verifier
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [Derivation Pipeline](#derivation-pipeline)
+  - [Depositing an Executing Message](#depositing-an-executing-message)
+  - [Safety](#safety)
+    - [`unsafe` Inputs](#unsafe-inputs)
+    - [`cross-unsafe` Inputs](#cross-unsafe-inputs)
+    - [`safe` Inputs](#safe-inputs)
+    - [`finalized` Inputs](#finalized-inputs)
+- [Security Considerations](#security-considerations)
+  - [Forced Inclusion of Cross Chain Messages](#forced-inclusion-of-cross-chain-messages)
+  - [Reliance on History](#reliance-on-history)
 
-# Verifier
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Derivation Pipeline
 

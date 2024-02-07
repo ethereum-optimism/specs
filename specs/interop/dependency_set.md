@@ -1,10 +1,18 @@
+# The Dependency Set
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [Chain ID](#chain-id)
+- [Updating the Dependency Set](#updating-the-dependency-set)
+  - [`DEPENDENCY_SET` UpdateType](#dependency_set-updatetype)
+- [Security Considerations](#security-considerations)
+  - [Dynamic Size of L1 Attributes Transaction](#dynamic-size-of-l1-attributes-transaction)
+  - [Maximum Size of the Dependency Set](#maximum-size-of-the-dependency-set)
+  - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 
-# The Dependency Set
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 The dependency set defines the set of chains that a destination chains allows as source chains. Another way of
 saying it is that the dependency set defines the set of initiating messages that are valid for an executing

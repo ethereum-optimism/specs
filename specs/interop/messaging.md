@@ -1,10 +1,26 @@
+# Messaging
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [Message](#message)
+  - [Message payload](#message-payload)
+  - [Message Identifier](#message-identifier)
+- [Messaging ends](#messaging-ends)
+  - [Initiating Messages](#initiating-messages)
+  - [Executing Messages](#executing-messages)
+- [Messaging Invariants](#messaging-invariants)
+  - [Timestamp Invariant](#timestamp-invariant)
+  - [ChainID Invariant](#chainid-invariant)
+  - [Only EOA Invariant](#only-eoa-invariant)
+  - [Message Expiry](#message-expiry)
+- [Message dependency resolution](#message-dependency-resolution)
+- [Security Considerations](#security-considerations)
+  - [Cyclic dependencies](#cyclic-dependencies)
+  - [Transitive dependencies](#transitive-dependencies)
 
-# Messaging
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Message
 

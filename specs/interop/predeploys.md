@@ -1,10 +1,28 @@
+# Predeploys
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [CrossL2Inbox](#crossl2inbox)
+  - [Message execution arguments](#message-execution-arguments)
+    - [`_msg`](#_msg)
+    - [`_id`](#_id)
+    - [`_target`](#_target)
+  - [Reference implementation](#reference-implementation)
+  - [`Identifier` Getters](#identifier-getters)
+- [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
+  - [`relayMessage` Invariants](#relaymessage-invariants)
+  - [Message Versioning](#message-versioning)
+  - [Transferring Ether in a Cross Chain Message](#transferring-ether-in-a-cross-chain-message)
+  - [Interfaces](#interfaces)
+    - [Sending Messages](#sending-messages)
+    - [Relaying Messages](#relaying-messages)
+- [L1Block](#l1block)
+  - [L1Attributes](#l1attributes)
+- [Security Considerations](#security-considerations)
 
-# Predeploys
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 Two new system level predeploys are introduced for managing cross chain messaging along with
 an update to the `L1Block` contract with additional functionality.
