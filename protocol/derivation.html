@@ -423,7 +423,7 @@ transactions</a> included within the block. The squiggles under the L1 blocks re
 the channels. The four blue/purple/pink were derived from channel <code>A</code> while the other were derived from channel <code>B</code>.
 These batches are here represented in the order they were decoded from batches (in this case <code>B</code> is decoded first).</p>
 <blockquote>
-<p><strong>Note</strong> The caption here says &quot;Channel B was seen first and will be decoded into batches first&quot;, but this is not a
+<p><strong>Note</strong> The caption here says "Channel B was seen first and will be decoded into batches first", but this is not a
 requirement. For instance, it would be equally acceptable for an implementation to peek into the channels and decode
 the one that contains the oldest batches first.</p>
 </blockquote>
@@ -437,17 +437,17 @@ the rest of the diagram.</p>
 channel. Because the channels are ordered and the batches within a channel are sequential, this means the batches are
 ordered too. The fourth line shows the <a href="../glossary.html#block">L2 block</a> derived from each batch. Note that we have a 1-1 batch to
 block mapping here but, as we'll see later, empty blocks that do not map to batches can be inserted in cases where there
-are &quot;gaps&quot; in the batches posted on L1.</p>
+are "gaps" in the batches posted on L1.</p>
 <p>The fifth line shows the <a href="../glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a> which, within each L2 block, records
 information about the L1 block that matches the L2 block's epoch. The first number denotes the epoch/L1x number, while
-the second number (the &quot;sequence number&quot;) denotes the position within the epoch.</p>
+the second number (the "sequence number") denotes the position within the epoch.</p>
 <p>Finally, the sixth line shows <a href="../glossary.html#user-deposited-transaction">user-deposited transactions</a> derived from the <a href="../glossary.html#deposit-contract">deposit
 contract</a> event mentioned earlier.</p>
 <p>Note the <code>101-0</code> L1 attributes transaction on the bottom right of the diagram. Its presence there is only possible if
 frame <code>B2</code> indicates that it is the last frame within the channel and (2) no empty blocks must be inserted.</p>
 <p>The diagram does not specify the sequencing window size in use, but from this we can infer that it must be at least 4
 blocks, because the last frame of channel <code>A</code> appears in block 102, but belong to epoch 99.</p>
-<p>As for the comment on &quot;security types&quot;, it explains the classification of blocks as used on L1 and L2.</p>
+<p>As for the comment on "security types", it explains the classification of blocks as used on L1 and L2.</p>
 <ul>
 <li><a href="../glossary.html#unsafe-l2-block">Unsafe L2 blocks</a>:</li>
 <li><a href="../glossary.html#safe-l2-block">Safe L2 blocks</a>:</li>
@@ -501,14 +501,14 @@ channel_encoding = compress(rlp_batches)
 </code></pre>
 <p>where:</p>
 <ul>
-<li><code>batches</code> is the input, a sequence of batches byte-encoded as per the next section (&quot;Batch Encoding&quot;)</li>
+<li><code>batches</code> is the input, a sequence of batches byte-encoded as per the next section ("Batch Encoding")</li>
 <li><code>rlp_batches</code> is the concatenation of the RLP-encoded batches</li>
 <li><code>compress</code> is a function performing compression, using the ZLIB algorithm (as specified in <a href="https://www.rfc-editor.org/rfc/rfc1950.html">RFC-1950</a>) with
 no dictionary</li>
 <li><code>channel_encoding</code> is the compressed version of <code>rlp_batches</code></li>
 </ul>
 <p>When decompressing a channel, we limit the amount of decompressed data to <code>MAX_RLP_BYTES_PER_CHANNEL</code> (currently
-10,000,000 bytes), in order to avoid &quot;zip-bomb&quot; types of attack (where a small compressed input decompresses to a
+10,000,000 bytes), in order to avoid "zip-bomb" types of attack (where a small compressed input decompresses to a
 humongous amount of data). If the decompressed data exceeds the limit, things proceeds as though the channel contained
 only the first <code>MAX_RLP_BYTES_PER_CHANNEL</code> decompressed bytes. The limit is set on RLP decoding, so all batches that
 can be decoded in <code>MAX_RLP_BYTES_PER_CHANNEL</code> will be accepted even if the size of the channel is greater than
@@ -559,7 +559,7 @@ primarily how batches are encoded within <a href="../glossary.html#batcher-trans
 <p>The data flows from the start (outer) of the pipeline towards the end (inner).
 From the innermost stage the data is pulled from the outermost stage.</p>
 <p>However, data is <em>processed</em> in reverse order. Meaning that if there is any data to be processed in the last stage, it
-will be processed first. Processing proceeds in &quot;steps&quot; that can be taken at each stage. We try to take as many steps as
+will be processed first. Processing proceeds in "steps" that can be taken at each stage. We try to take as many steps as
 possible in the last (most inner) stage before taking any steps in its outer stage, etc.</p>
 <p>This ensures that we use the data we already have before pulling more data and minimizes the latency of data traversing
 the derivation pipeline.</p>
@@ -672,7 +672,7 @@ decoded into <a href="../glossary.html#channel-frame">channel frames</a>, to be 
 See <a href="#batcher-transaction-format">Batcher transaction format</a> and <a href="#frame-format">Frame format</a> specifications.</p>
 <h3 id="channel-bank"><a class="header" href="#channel-bank">Channel Bank</a></h3>
 <p>The <em>Channel Bank</em> stage is responsible for managing buffering from the channel bank that was written to by the L1
-retrieval stage. A step in the channel bank stage tries to read data from channels that are &quot;ready&quot;.</p>
+retrieval stage. A step in the channel bank stage tries to read data from channels that are "ready".</p>
 <p>Channels are currently fully buffered until read or dropped,
 streaming channels may be supported in a future version of the ChannelBank.</p>
 <p>To bound resource usage, the Channel Bank prunes based on channel size, and times out old channels.</p>
@@ -852,7 +852,7 @@ currently canonical L1 chain.</li>
 <li>The <a href="../glossary.html#unsafe-l2-head">unsafe L2 head</a>: blocks between the safe and unsafe heads are <a href="../glossary.html#unsafe-l2-block">unsafe
 blocks</a> that have not been derived from L1. These blocks either come from sequencing (in sequencer
 mode) or from <a href="../glossary.html#unsafe-sync">unsafe sync</a> to the sequencer (in validator mode).
-This is also known as the &quot;latest&quot; head.</li>
+This is also known as the "latest" head.</li>
 </ul>
 <p>Additionally, it buffers a short history of references to recently processed safe L2 blocks, along with references
 from which L1 blocks each was derived.
@@ -914,8 +914,8 @@ instructs the engine to start building an execution payload if the payload attri
 applied to the engine first.</p>
 <p>This synchronization may happen when:</p>
 <ul>
-<li>A L1 finality signal finalizes one or more L2 blocks: updating the &quot;finalized&quot; L2 block.</li>
-<li>A successful consolidation of unsafe L2 blocks: updating the &quot;safe&quot; L2 block.</li>
+<li>A L1 finality signal finalizes one or more L2 blocks: updating the "finalized" L2 block.</li>
+<li>A successful consolidation of unsafe L2 blocks: updating the "safe" L2 block.</li>
 <li>The first thing after a derivation pipeline reset, to ensure a consistent execution engine forkchoice state.</li>
 </ul>
 <p>The new forkchoice state is applied by calling <a href="#engine-api-usage">fork choice updated</a> on the engine API.
@@ -924,7 +924,7 @@ On forkchoice-state validity errors the derivation pipeline must be reset to rec
 <p>If the unsafe head is ahead of the safe head, then <a href="../glossary.html#unsafe-block-consolidation">consolidation</a> is attempted, verifying that
 existing unsafe L2 chain matches the derived L2 inputs as derived from the canonical L1 data.</p>
 <p>During consolidation, we consider the oldest unsafe L2 block, i.e. the unsafe L2 block directly after the safe head. If
-the payload attributes match this oldest unsafe L2 block, then that block can be considered &quot;safe&quot; and becomes the new
+the payload attributes match this oldest unsafe L2 block, then that block can be considered "safe" and becomes the new
 safe head.</p>
 <p>The following fields of the derived L2 payload attributes are checked for equality with the L2 block:</p>
 <ul>
@@ -993,7 +993,7 @@ now with a change of both <code>safe</code> and <code>unsafe</code> fields to re
 <h4 id="processing-unsafe-payload-attributes"><a class="header" href="#processing-unsafe-payload-attributes">Processing unsafe payload attributes</a></h4>
 <p>If no forkchoice updates or L1 data remain to be processed, and if the next possible L2 block is already available
 through an unsafe source such as the sequencer publishing it via the p2p network, then it is optimistically processed as
-an &quot;unsafe&quot; block. This reduces later derivation work to just consolidation with L1 in the happy case, and enables the
+an "unsafe" block. This reduces later derivation work to just consolidation with L1 in the happy case, and enables the
 user to see the head of the L2 chain faster than the L1 may confirm the L2 batches.</p>
 <p>To process unsafe payloads, the payload must:</p>
 <ul>
@@ -1119,7 +1119,7 @@ finality-signals and batch-inclusion, the derived L2 chain will become irreversi
 <p>Note that this form of finalization only affects inputs, and nodes can then subjectively say the chain is irreversible,
 by reproducing the chain from these irreversible inputs and the set protocol rules and parameters.</p>
 <p>This is however completely unrelated to the outputs posted on L1, which require a form of proof like a fault-proof or
-zk-proof to finalize. Optimistic-rollup outputs like withdrawals on L1 are only labeled &quot;finalized&quot; after passing a week
+zk-proof to finalize. Optimistic-rollup outputs like withdrawals on L1 are only labeled "finalized" after passing a week
 without dispute (fault proof challenge window), a name-collision with the proof-of-stake finalization.</p>
 <hr />
 <h1 id="deriving-payload-attributes"><a class="header" href="#deriving-payload-attributes">Deriving Payload Attributes</a></h1>
@@ -1186,20 +1186,20 @@ transactions by setting <code>noTxPool: true</code>.</p>
 <li><code>gasLimit</code>: <code>375,000</code></li>
 <li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="../static/bytecode/ecotone-l1-block-deployment.txt">full bytecode</a>)</li>
 <li><code>sourceHash</code>: <code>0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8</code>,
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: L1 Block Deployment&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Deployment"</li>
 </ul>
 <p>This results in the Ecotone L1Block contract being deployed to <code>0x07dbe8500fc591d1852B76feE44d5a05e13097Ff</code>, to verify:</p>
 <pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000000
 Computed Address: 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: L1 Block Deployment&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Deployment"))
 # 0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8
 </code></pre>
 <p>Verify <code>data</code>:</p>
 <pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
 pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
-jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
 <code>0xc88a313aa75dc4fbf0b6850d9f9ae41e04243b7008cf3eadb29256d4a71c1dfd</code>.</p>
@@ -1215,7 +1215,7 @@ will use the blob base fee to compute the gas price for L1-data-fee transactions
 <li><code>gasLimit</code>: <code>1,000,000</code></li>
 <li><code>data</code>: <code>0x60806040523480156100...</code> (<a href="../static/bytecode/ecotone-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
 <li><code>sourceHash</code>: <code>0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42</code>
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: Gas Price Oracle Deployment&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Deployment"</li>
 </ul>
 <p>This results in the Ecotone GasPriceOracle contract being deployed to <code>0xb528D11cC114E026F138fE568744c6D45ce6Da7A</code>,
 to verify:</p>
@@ -1223,13 +1223,13 @@ to verify:</p>
 Computed Address: 0xb528D11cC114E026F138fE568744c6D45ce6Da7A
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">❯ cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Deployment&quot;))
+<pre><code class="language-bash">❯ cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Deployment"))
 # 0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42
 </code></pre>
 <p>Verify <code>data</code>:</p>
 <pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
 pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
-jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
 <code>0x8b71360ea773b4cfaf1ae6d2bd15464a4e1e2e360f786e475f63aeaed8da0ae5</code>.</p>
@@ -1244,14 +1244,14 @@ jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/Ga
 <li><code>gasLimit</code>: <code>50,000</code></li>
 <li><code>data</code>: <code>0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff</code></li>
 <li><code>sourceHash</code>: <code>0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc</code>
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: L1 Block Proxy Update&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Proxy Update"</li>
 </ul>
 <p>Verify data:</p>
-<pre><code class="language-bash">cast concat-hex $(cast sig &quot;upgradeTo(address)&quot;) $(cast abi-encode &quot;upgradeTo(address)&quot; 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff)
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff)
 0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: L1 Block Proxy Update&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Proxy Update"))
 # 0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc
 </code></pre>
 <h5 id="gaspriceoracle-proxy-update"><a class="header" href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></h5>
@@ -1266,14 +1266,14 @@ deployment.</p>
 <li><code>gasLimit</code>: <code>50,000</code></li>
 <li><code>data</code>: <code>0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a</code></li>
 <li><code>sourceHash</code>: <code>0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a</code>
-computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;Ecotone: Gas Price Oracle Proxy Update&quot;</code></li>
+computed with the "Upgrade-deposited" type, with <code>intent = "Ecotone: Gas Price Oracle Proxy Update"</code></li>
 </ul>
 <p>Verify data:</p>
-<pre><code class="language-bash">cast concat-hex $(cast sig &quot;upgradeTo(address)&quot;) $(cast abi-encode &quot;upgradeTo(address)&quot; 0xb528D11cC114E026F138fE568744c6D45ce6Da7A)
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xb528D11cC114E026F138fE568744c6D45ce6Da7A)
 0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Proxy Update&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Proxy Update"))
 # 0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a
 </code></pre>
 <h5 id="gaspriceoracle-enable-ecotone"><a class="header" href="#gaspriceoracle-enable-ecotone">GasPriceOracle Enable Ecotone</a></h5>
@@ -1287,18 +1287,18 @@ computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;
 <li><code>gasLimit</code>: <code>80,000</code></li>
 <li><code>data</code>: <code>0x22b90ab3</code></li>
 <li><code>sourceHash</code>: <code>0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93</code>,
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: Gas Price Oracle Set Ecotone&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Set Ecotone"</li>
 </ul>
 <p>Verify data:</p>
-<pre><code class="language-bash">cast sig &quot;setEcotone()&quot;
+<pre><code class="language-bash">cast sig "setEcotone()"
 0x22b90ab3
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Set Ecotone&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Set Ecotone"))
 # 0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93
 </code></pre>
 <h5 id="beacon-block-roots-contract-deployment-eip-4788"><a class="header" href="#beacon-block-roots-contract-deployment-eip-4788">Beacon block roots contract deployment (EIP-4788)</a></h5>
-<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a &quot;Beacon block roots&quot; contract, that processes and exposes the beacon-block-root values.
+<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a "Beacon block roots" contract, that processes and exposes the beacon-block-root values.
 at address <code>BEACON_ROOTS_ADDRESS = 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</code>.</p>
 <p>For deployment, <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> defines a pre-<a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> legacy transaction, sent from a key that is derived such that the
 transaction signature validity is bound to message-hash, which is bound to the input-data, containing the init-code.</p>
@@ -1320,7 +1320,7 @@ deploying a second contract, with the next nonce. The result of this deployment 
 <code>0x60618060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500</code></li>
 <li><code>isSystemTx</code>: <code>false</code>, as per the Regolith upgrade, even the system-generated transactions spend gas.</li>
 <li><code>sourceHash</code>: <code>0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c</code>,
-computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;Ecotone: beacon block roots contract deployment&quot;</code></li>
+computed with the "Upgrade-deposited" type, with <code>intent = "Ecotone: beacon block roots contract deployment"</code></li>
 </ul>
 <p>The contract address upon deployment is computed as <code>rlp([sender, nonce])</code>, which will equal:</p>
 <ul>
@@ -1333,7 +1333,7 @@ when a user already submitted the EIP transaction before the upgrade.</li>
 # Computed Address: 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: beacon block roots contract deployment&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: beacon block roots contract deployment"))
 # 0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c
 </code></pre>
 <h2 id="building-individual-payload-attributes"><a class="header" href="#building-individual-payload-attributes">Building Individual Payload Attributes</a></h2>

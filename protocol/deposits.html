@@ -592,7 +592,7 @@ In the event that the <code>to</code> address is non-zero, the contract will rev
 <code>0x1111000000000000000000000000000000001111</code> to it. The math is <code>unchecked</code> and done on a
 Solidity <code>uint160</code> so the value will overflow. This prevents attacks in which a
 contract on L1 has the same address as a contract on L2 but doesn't have the same code. We can safely ignore this
-for EOAs because they're guaranteed to have the same &quot;code&quot; (i.e. no code at all). This also makes
+for EOAs because they're guaranteed to have the same "code" (i.e. no code at all). This also makes
 it possible for users to interact with contracts on L2 even when the Sequencer is down.</p>
 <h4 id="deposit-contract-implementation-optimism-portal"><a class="header" href="#deposit-contract-implementation-optimism-portal">Deposit Contract Implementation: Optimism Portal</a></h4>
 <p>A reference implementation of the deposit contract can be found in <a href="https://github.com/ethereum-optimism/optimism/blob/d48b45954c381f75a13e61312da68d84e9b41418/packages/contracts-bedrock/src/L1/OptimismPortal.sol">OptimismPortal.sol</a>.</p>

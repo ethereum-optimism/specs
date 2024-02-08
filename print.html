@@ -353,7 +353,7 @@ proofs can also be plugged in once they have been made feasible.</p>
 <p>The sequencer is the primary block producer.
 There may be one sequencer <strong>or</strong> many using a consensus protocol.
 For 1.0.0, there is just one sequencer (currently operated under the oversight of the Optimism Foundation).
-In general, specifications may use &quot;the sequencer&quot; to be a stand-in term
+In general, specifications may use "the sequencer" to be a stand-in term
 for the consensus protocol operated by multiple sequencers.</p>
 <p>The sequencer:</p>
 <ol>
@@ -742,7 +742,7 @@ a <code>uint256</code> nonce is so large that we can very easily pack additional
 into that field.</p>
 <h3 id="message-version-0"><a class="header" href="#message-version-0">Message Version 0</a></h3>
 <pre><code class="language-solidity">abi.encodeWithSignature(
-    &quot;relayMessage(address,address,bytes,uint256)&quot;,
+    "relayMessage(address,address,bytes,uint256)",
     _target,
     _sender,
     _message,
@@ -751,7 +751,7 @@ into that field.</p>
 </code></pre>
 <h3 id="message-version-1"><a class="header" href="#message-version-1">Message Version 1</a></h3>
 <pre><code class="language-solidity">abi.encodeWithSignature(
-    &quot;relayMessage(uint256,address,address,uint256,uint256,bytes)&quot;,
+    "relayMessage(uint256,address,address,uint256,uint256,bytes)",
     _nonce,
     _sender,
     _target,
@@ -765,7 +765,7 @@ into that field.</p>
 in a <code>blockedMessages</code> mapping. This functionality was removed from the
 messengers because a smart attacker could get around any message blocking
 attempts. It also saves gas on finalizing withdrawals.</p>
-<p>The concept of a &quot;relay id&quot; and the <code>relayedMessages</code> mapping was removed.
+<p>The concept of a "relay id" and the <code>relayedMessages</code> mapping was removed.
 It was built as a way to be able to fund third parties who relayed messages
 on the behalf of users, but it was improperly implemented as it was impossible
 to know if the relayed message actually succeeded.</p>
@@ -1188,7 +1188,7 @@ In the event that the <code>to</code> address is non-zero, the contract will rev
 <code>0x1111000000000000000000000000000000001111</code> to it. The math is <code>unchecked</code> and done on a
 Solidity <code>uint160</code> so the value will overflow. This prevents attacks in which a
 contract on L1 has the same address as a contract on L2 but doesn't have the same code. We can safely ignore this
-for EOAs because they're guaranteed to have the same &quot;code&quot; (i.e. no code at all). This also makes
+for EOAs because they're guaranteed to have the same "code" (i.e. no code at all). This also makes
 it possible for users to interact with contracts on L2 even when the Sequencer is down.</p>
 <h4 id="deposit-contract-implementation-optimism-portal"><a class="header" href="#deposit-contract-implementation-optimism-portal">Deposit Contract Implementation: Optimism Portal</a></h4>
 <p>A reference implementation of the deposit contract can be found in <a href="https://github.com/ethereum-optimism/optimism/blob/d48b45954c381f75a13e61312da68d84e9b41418/packages/contracts-bedrock/src/L1/OptimismPortal.sol">OptimismPortal.sol</a>.</p>
@@ -1425,7 +1425,7 @@ approval and the L1 to prove and finalize the approval (after the challenge peri
 initiated on L1. The gas that they use on L2 is bought on L1 via a gas burn (or a direct payment
 in the future). We maintain a fee market and hard cap on the amount of gas provided to all deposits
 in a single L1 block.</p>
-<p>The gas provided to deposited transactions is sometimes called &quot;guaranteed gas&quot;. The gas provided to
+<p>The gas provided to deposited transactions is sometimes called "guaranteed gas". The gas provided to
 deposited transactions is unique in the regard that it is not refundable. It cannot be refunded as
 it is sometimes paid for with a gas burn and there may not be any ETH left to refund.</p>
 <p>The <strong>guaranteed gas</strong> is composed of a gas stipend, and of any guaranteed gas the user would like
@@ -1567,7 +1567,7 @@ on the network.</p>
 <p>After processing one or more blocks the outputs will need to be synchronized with the settlement layer (L1)
 for trustless execution of L2-to-L1 messaging, such as withdrawals.
 These output proposals act as the bridge's view into the L2 state.
-Actors called &quot;Proposers&quot; submit the output roots to the settlement layer (L1) and can be contested with a fault proof,
+Actors called "Proposers" submit the output roots to the settlement layer (L1) and can be contested with a fault proof,
 with a bond at stake if the proof is wrong. The <a href="https://github.com/ethereum-optimism/optimism/tree/d48b45954c381f75a13e61312da68d84e9b41418/op-proposer">op-proposer</a> in one such implementation of a proposer.</p>
 <p><em>Note</em>: Fault proofs on Optimism are not fully specified at this time. Although fault proof
 construction and verification <a href="https://github.com/ethereum-optimism/cannon">is implemented in Cannon</a>,
@@ -1899,7 +1899,7 @@ integer arithmetic by postponing the inner division by 16 until the very end.</p
 and optionally initiates block production (<code>payloadAttributes</code> argument).</p>
 <p>Within the rollup, the types of forkchoice updates translate as:</p>
 <ul>
-<li><code>headBlockHash</code>: block hash of the head of the canonical chain. Labeled <code>&quot;unsafe&quot;</code> in user JSON-RPC.
+<li><code>headBlockHash</code>: block hash of the head of the canonical chain. Labeled <code>"unsafe"</code> in user JSON-RPC.
 Nodes may apply L2 blocks out of band ahead of time, and then reorg when L1 data conflicts.</li>
 <li><code>safeBlockHash</code>: block hash of the canonical chain, derived from L1 data, unlikely to reorg.</li>
 <li><code>finalizedBlockHash</code>: irreversible block hash, matches lower boundary of the dispute period.</li>
@@ -2087,7 +2087,7 @@ as outlined in the <a href="protocol/rollup-node.html">rollup node spec</a>.</li
 </ol>
 <h2 id="ecotone-disable-blob-transactions"><a class="header" href="#ecotone-disable-blob-transactions">Ecotone: disable Blob-transactions</a></h2>
 <p><a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> introduces Blob transactions: featuring all the functionality of an <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> transaction,
-plus a list of &quot;blobs&quot;: &quot;Binary Large Object&quot;, i.e. a dedicated data type for serving Data-Availability as base-layer.</p>
+plus a list of "blobs": "Binary Large Object", i.e. a dedicated data type for serving Data-Availability as base-layer.</p>
 <p>With the Ecotone upgrade, all Cancun L1 execution features are enabled, with <a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> as exception:
 as a L2, the OP-Stack does not serve blobs, and thus disables this new transaction type.</p>
 <p>EIP-4844 is disabled as following:</p>
@@ -2101,14 +2101,14 @@ as a L2, the OP-Stack does not serve blobs, and thus disables this new transacti
 altered because there are no blobs processed by L2. The opcode will always push a value of 1 onto
 the stack.</p>
 <h2 id="ecotone-beacon-block-root"><a class="header" href="#ecotone-beacon-block-root">Ecotone: Beacon Block Root</a></h2>
-<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a &quot;beacon block root&quot; into the execution-layer block-header and EVM.
+<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a "beacon block root" into the execution-layer block-header and EVM.
 This block root is an <a href="https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md#merkleization">SSZ hash-tree-root</a> of the consensus-layer contents of the previous consensus block.</p>
 <p>With the adoption of <a href="https://eips.ethereum.org/EIPS/eip-4399">EIP-4399</a> in the Bedrock upgrade the OP-Stack already includes the <code>PREVRANDAO</code> of L1.
 And thus with <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> the L1 beacon block root is made available.</p>
 <p>For the Ecotone upgrade, this entails that:</p>
 <ul>
 <li>The <code>parent_beacon_block_root</code> of the L1 origin is now embedded in the L2 block header.</li>
-<li>The &quot;Beacon roots contract&quot; is deployed at Ecotone upgrade-time, or embedded at genesis if activated at genesis.</li>
+<li>The "Beacon roots contract" is deployed at Ecotone upgrade-time, or embedded at genesis if activated at genesis.</li>
 <li>The block state-transition process now includes the same special beacon-block-root EVM processing as L1 ethereum.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
@@ -2307,7 +2307,7 @@ without relying on a single centralized endpoint.</p>
 <p>This also enables faster historical sync to be bootstrapped by providing block headers to sync towards,
 and only having to compare the L2 chain inputs to the L1 data as compared to processing everything one block at a time.</p>
 <p>The rollup node will <em>always</em> prioritize L1 and reorganize to match the canonical chain.
-The L2 data retrieved via the P2P interface is strictly a speculative extension, also known as the &quot;unsafe&quot; chain,
+The L2 data retrieved via the P2P interface is strictly a speculative extension, also known as the "unsafe" chain,
 to improve the happy case performance.</p>
 <p>This also means that P2P behavior is a soft-rule: nodes keep each other in check with scoring and eventual banning
 of malicious peers by identity or IP. Any behavior on the P2P layer does not affect the rollup security, at worst nodes
@@ -2371,8 +2371,8 @@ It is recommended to disable the above if the external IP is static and configur
 <h4 id="peer-management"><a class="header" href="#peer-management">Peer management</a></h4>
 <p>The default is to maintain a peer count with a tide-system based on active peer count:</p>
 <ul>
-<li>At &quot;low tide&quot; the node starts to actively search for additional peer connections.</li>
-<li>At &quot;high tide&quot; the node starts to prune active connections,
+<li>At "low tide" the node starts to actively search for additional peer connections.</li>
+<li>At "high tide" the node starts to prune active connections,
 except those that are marked as trusted or have a grace period.</li>
 </ul>
 <p>Peers will have a grace period for a configurable amount of time after joining.
@@ -2531,7 +2531,7 @@ Hence, calling into the execution engine with a block lookup every propagation s
 <p>A node may apply the block to their local engine ahead of L1 availability, if it ensures that:</p>
 <ul>
 <li>The application of the block is reversible, in case of a conflict with delayed L1 information</li>
-<li>The subsequent forkchoice-update ensures this block is recognized as &quot;unsafe&quot;
+<li>The subsequent forkchoice-update ensures this block is recognized as "unsafe"
 (see <a href="protocol/derivation.html#engine-api-usage">fork choice updated</a>)</li>
 </ul>
 <h4 id="block-topic-scoring-parameters"><a class="header" href="#block-topic-scoring-parameters">Block topic scoring parameters</a></h4>
@@ -2866,7 +2866,7 @@ transactions</a> included within the block. The squiggles under the L1 blocks re
 the channels. The four blue/purple/pink were derived from channel <code>A</code> while the other were derived from channel <code>B</code>.
 These batches are here represented in the order they were decoded from batches (in this case <code>B</code> is decoded first).</p>
 <blockquote>
-<p><strong>Note</strong> The caption here says &quot;Channel B was seen first and will be decoded into batches first&quot;, but this is not a
+<p><strong>Note</strong> The caption here says "Channel B was seen first and will be decoded into batches first", but this is not a
 requirement. For instance, it would be equally acceptable for an implementation to peek into the channels and decode
 the one that contains the oldest batches first.</p>
 </blockquote>
@@ -2880,17 +2880,17 @@ the rest of the diagram.</p>
 channel. Because the channels are ordered and the batches within a channel are sequential, this means the batches are
 ordered too. The fourth line shows the <a href="protocol/../glossary.html#block">L2 block</a> derived from each batch. Note that we have a 1-1 batch to
 block mapping here but, as we'll see later, empty blocks that do not map to batches can be inserted in cases where there
-are &quot;gaps&quot; in the batches posted on L1.</p>
+are "gaps" in the batches posted on L1.</p>
 <p>The fifth line shows the <a href="protocol/../glossary.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a> which, within each L2 block, records
 information about the L1 block that matches the L2 block's epoch. The first number denotes the epoch/L1x number, while
-the second number (the &quot;sequence number&quot;) denotes the position within the epoch.</p>
+the second number (the "sequence number") denotes the position within the epoch.</p>
 <p>Finally, the sixth line shows <a href="protocol/../glossary.html#user-deposited-transaction">user-deposited transactions</a> derived from the <a href="protocol/../glossary.html#deposit-contract">deposit
 contract</a> event mentioned earlier.</p>
 <p>Note the <code>101-0</code> L1 attributes transaction on the bottom right of the diagram. Its presence there is only possible if
 frame <code>B2</code> indicates that it is the last frame within the channel and (2) no empty blocks must be inserted.</p>
 <p>The diagram does not specify the sequencing window size in use, but from this we can infer that it must be at least 4
 blocks, because the last frame of channel <code>A</code> appears in block 102, but belong to epoch 99.</p>
-<p>As for the comment on &quot;security types&quot;, it explains the classification of blocks as used on L1 and L2.</p>
+<p>As for the comment on "security types", it explains the classification of blocks as used on L1 and L2.</p>
 <ul>
 <li><a href="protocol/../glossary.html#unsafe-l2-block">Unsafe L2 blocks</a>:</li>
 <li><a href="protocol/../glossary.html#safe-l2-block">Safe L2 blocks</a>:</li>
@@ -2944,14 +2944,14 @@ channel_encoding = compress(rlp_batches)
 </code></pre>
 <p>where:</p>
 <ul>
-<li><code>batches</code> is the input, a sequence of batches byte-encoded as per the next section (&quot;Batch Encoding&quot;)</li>
+<li><code>batches</code> is the input, a sequence of batches byte-encoded as per the next section ("Batch Encoding")</li>
 <li><code>rlp_batches</code> is the concatenation of the RLP-encoded batches</li>
 <li><code>compress</code> is a function performing compression, using the ZLIB algorithm (as specified in <a href="https://www.rfc-editor.org/rfc/rfc1950.html">RFC-1950</a>) with
 no dictionary</li>
 <li><code>channel_encoding</code> is the compressed version of <code>rlp_batches</code></li>
 </ul>
 <p>When decompressing a channel, we limit the amount of decompressed data to <code>MAX_RLP_BYTES_PER_CHANNEL</code> (currently
-10,000,000 bytes), in order to avoid &quot;zip-bomb&quot; types of attack (where a small compressed input decompresses to a
+10,000,000 bytes), in order to avoid "zip-bomb" types of attack (where a small compressed input decompresses to a
 humongous amount of data). If the decompressed data exceeds the limit, things proceeds as though the channel contained
 only the first <code>MAX_RLP_BYTES_PER_CHANNEL</code> decompressed bytes. The limit is set on RLP decoding, so all batches that
 can be decoded in <code>MAX_RLP_BYTES_PER_CHANNEL</code> will be accepted even if the size of the channel is greater than
@@ -3002,7 +3002,7 @@ primarily how batches are encoded within <a href="protocol/../glossary.html#batc
 <p>The data flows from the start (outer) of the pipeline towards the end (inner).
 From the innermost stage the data is pulled from the outermost stage.</p>
 <p>However, data is <em>processed</em> in reverse order. Meaning that if there is any data to be processed in the last stage, it
-will be processed first. Processing proceeds in &quot;steps&quot; that can be taken at each stage. We try to take as many steps as
+will be processed first. Processing proceeds in "steps" that can be taken at each stage. We try to take as many steps as
 possible in the last (most inner) stage before taking any steps in its outer stage, etc.</p>
 <p>This ensures that we use the data we already have before pulling more data and minimizes the latency of data traversing
 the derivation pipeline.</p>
@@ -3115,7 +3115,7 @@ decoded into <a href="protocol/../glossary.html#channel-frame">channel frames</a
 See <a href="protocol/derivation.html#batcher-transaction-format">Batcher transaction format</a> and <a href="protocol/derivation.html#frame-format">Frame format</a> specifications.</p>
 <h3 id="channel-bank"><a class="header" href="#channel-bank">Channel Bank</a></h3>
 <p>The <em>Channel Bank</em> stage is responsible for managing buffering from the channel bank that was written to by the L1
-retrieval stage. A step in the channel bank stage tries to read data from channels that are &quot;ready&quot;.</p>
+retrieval stage. A step in the channel bank stage tries to read data from channels that are "ready".</p>
 <p>Channels are currently fully buffered until read or dropped,
 streaming channels may be supported in a future version of the ChannelBank.</p>
 <p>To bound resource usage, the Channel Bank prunes based on channel size, and times out old channels.</p>
@@ -3295,7 +3295,7 @@ currently canonical L1 chain.</li>
 <li>The <a href="protocol/../glossary.html#unsafe-l2-head">unsafe L2 head</a>: blocks between the safe and unsafe heads are <a href="protocol/../glossary.html#unsafe-l2-block">unsafe
 blocks</a> that have not been derived from L1. These blocks either come from sequencing (in sequencer
 mode) or from <a href="protocol/../glossary.html#unsafe-sync">unsafe sync</a> to the sequencer (in validator mode).
-This is also known as the &quot;latest&quot; head.</li>
+This is also known as the "latest" head.</li>
 </ul>
 <p>Additionally, it buffers a short history of references to recently processed safe L2 blocks, along with references
 from which L1 blocks each was derived.
@@ -3357,8 +3357,8 @@ instructs the engine to start building an execution payload if the payload attri
 applied to the engine first.</p>
 <p>This synchronization may happen when:</p>
 <ul>
-<li>A L1 finality signal finalizes one or more L2 blocks: updating the &quot;finalized&quot; L2 block.</li>
-<li>A successful consolidation of unsafe L2 blocks: updating the &quot;safe&quot; L2 block.</li>
+<li>A L1 finality signal finalizes one or more L2 blocks: updating the "finalized" L2 block.</li>
+<li>A successful consolidation of unsafe L2 blocks: updating the "safe" L2 block.</li>
 <li>The first thing after a derivation pipeline reset, to ensure a consistent execution engine forkchoice state.</li>
 </ul>
 <p>The new forkchoice state is applied by calling <a href="protocol/derivation.html#engine-api-usage">fork choice updated</a> on the engine API.
@@ -3367,7 +3367,7 @@ On forkchoice-state validity errors the derivation pipeline must be reset to rec
 <p>If the unsafe head is ahead of the safe head, then <a href="protocol/../glossary.html#unsafe-block-consolidation">consolidation</a> is attempted, verifying that
 existing unsafe L2 chain matches the derived L2 inputs as derived from the canonical L1 data.</p>
 <p>During consolidation, we consider the oldest unsafe L2 block, i.e. the unsafe L2 block directly after the safe head. If
-the payload attributes match this oldest unsafe L2 block, then that block can be considered &quot;safe&quot; and becomes the new
+the payload attributes match this oldest unsafe L2 block, then that block can be considered "safe" and becomes the new
 safe head.</p>
 <p>The following fields of the derived L2 payload attributes are checked for equality with the L2 block:</p>
 <ul>
@@ -3436,7 +3436,7 @@ now with a change of both <code>safe</code> and <code>unsafe</code> fields to re
 <h4 id="processing-unsafe-payload-attributes"><a class="header" href="#processing-unsafe-payload-attributes">Processing unsafe payload attributes</a></h4>
 <p>If no forkchoice updates or L1 data remain to be processed, and if the next possible L2 block is already available
 through an unsafe source such as the sequencer publishing it via the p2p network, then it is optimistically processed as
-an &quot;unsafe&quot; block. This reduces later derivation work to just consolidation with L1 in the happy case, and enables the
+an "unsafe" block. This reduces later derivation work to just consolidation with L1 in the happy case, and enables the
 user to see the head of the L2 chain faster than the L1 may confirm the L2 batches.</p>
 <p>To process unsafe payloads, the payload must:</p>
 <ul>
@@ -3562,7 +3562,7 @@ finality-signals and batch-inclusion, the derived L2 chain will become irreversi
 <p>Note that this form of finalization only affects inputs, and nodes can then subjectively say the chain is irreversible,
 by reproducing the chain from these irreversible inputs and the set protocol rules and parameters.</p>
 <p>This is however completely unrelated to the outputs posted on L1, which require a form of proof like a fault-proof or
-zk-proof to finalize. Optimistic-rollup outputs like withdrawals on L1 are only labeled &quot;finalized&quot; after passing a week
+zk-proof to finalize. Optimistic-rollup outputs like withdrawals on L1 are only labeled "finalized" after passing a week
 without dispute (fault proof challenge window), a name-collision with the proof-of-stake finalization.</p>
 <hr />
 <h1 id="deriving-payload-attributes"><a class="header" href="#deriving-payload-attributes">Deriving Payload Attributes</a></h1>
@@ -3629,20 +3629,20 @@ transactions by setting <code>noTxPool: true</code>.</p>
 <li><code>gasLimit</code>: <code>375,000</code></li>
 <li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="protocol/../static/bytecode/ecotone-l1-block-deployment.txt">full bytecode</a>)</li>
 <li><code>sourceHash</code>: <code>0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8</code>,
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: L1 Block Deployment&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Deployment"</li>
 </ul>
 <p>This results in the Ecotone L1Block contract being deployed to <code>0x07dbe8500fc591d1852B76feE44d5a05e13097Ff</code>, to verify:</p>
 <pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000000
 Computed Address: 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: L1 Block Deployment&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Deployment"))
 # 0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8
 </code></pre>
 <p>Verify <code>data</code>:</p>
 <pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
 pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
-jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
 <code>0xc88a313aa75dc4fbf0b6850d9f9ae41e04243b7008cf3eadb29256d4a71c1dfd</code>.</p>
@@ -3658,7 +3658,7 @@ will use the blob base fee to compute the gas price for L1-data-fee transactions
 <li><code>gasLimit</code>: <code>1,000,000</code></li>
 <li><code>data</code>: <code>0x60806040523480156100...</code> (<a href="protocol/../static/bytecode/ecotone-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
 <li><code>sourceHash</code>: <code>0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42</code>
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: Gas Price Oracle Deployment&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Deployment"</li>
 </ul>
 <p>This results in the Ecotone GasPriceOracle contract being deployed to <code>0xb528D11cC114E026F138fE568744c6D45ce6Da7A</code>,
 to verify:</p>
@@ -3666,13 +3666,13 @@ to verify:</p>
 Computed Address: 0xb528D11cC114E026F138fE568744c6D45ce6Da7A
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">❯ cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Deployment&quot;))
+<pre><code class="language-bash">❯ cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Deployment"))
 # 0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42
 </code></pre>
 <p>Verify <code>data</code>:</p>
 <pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
 pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
-jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
 <code>0x8b71360ea773b4cfaf1ae6d2bd15464a4e1e2e360f786e475f63aeaed8da0ae5</code>.</p>
@@ -3687,14 +3687,14 @@ jq -r &quot;.bytecode.object&quot; packages/contracts-bedrock/forge-artifacts/Ga
 <li><code>gasLimit</code>: <code>50,000</code></li>
 <li><code>data</code>: <code>0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff</code></li>
 <li><code>sourceHash</code>: <code>0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc</code>
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: L1 Block Proxy Update&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Proxy Update"</li>
 </ul>
 <p>Verify data:</p>
-<pre><code class="language-bash">cast concat-hex $(cast sig &quot;upgradeTo(address)&quot;) $(cast abi-encode &quot;upgradeTo(address)&quot; 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff)
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff)
 0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: L1 Block Proxy Update&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Proxy Update"))
 # 0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc
 </code></pre>
 <h5 id="gaspriceoracle-proxy-update"><a class="header" href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></h5>
@@ -3709,14 +3709,14 @@ deployment.</p>
 <li><code>gasLimit</code>: <code>50,000</code></li>
 <li><code>data</code>: <code>0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a</code></li>
 <li><code>sourceHash</code>: <code>0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a</code>
-computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;Ecotone: Gas Price Oracle Proxy Update&quot;</code></li>
+computed with the "Upgrade-deposited" type, with <code>intent = "Ecotone: Gas Price Oracle Proxy Update"</code></li>
 </ul>
 <p>Verify data:</p>
-<pre><code class="language-bash">cast concat-hex $(cast sig &quot;upgradeTo(address)&quot;) $(cast abi-encode &quot;upgradeTo(address)&quot; 0xb528D11cC114E026F138fE568744c6D45ce6Da7A)
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xb528D11cC114E026F138fE568744c6D45ce6Da7A)
 0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Proxy Update&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Proxy Update"))
 # 0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a
 </code></pre>
 <h5 id="gaspriceoracle-enable-ecotone"><a class="header" href="#gaspriceoracle-enable-ecotone">GasPriceOracle Enable Ecotone</a></h5>
@@ -3730,18 +3730,18 @@ computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;
 <li><code>gasLimit</code>: <code>80,000</code></li>
 <li><code>data</code>: <code>0x22b90ab3</code></li>
 <li><code>sourceHash</code>: <code>0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93</code>,
-computed with the &quot;Upgrade-deposited&quot; type, with `intent = &quot;Ecotone: Gas Price Oracle Set Ecotone&quot;</li>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Set Ecotone"</li>
 </ul>
 <p>Verify data:</p>
-<pre><code class="language-bash">cast sig &quot;setEcotone()&quot;
+<pre><code class="language-bash">cast sig "setEcotone()"
 0x22b90ab3
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: Gas Price Oracle Set Ecotone&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Set Ecotone"))
 # 0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93
 </code></pre>
 <h5 id="beacon-block-roots-contract-deployment-eip-4788"><a class="header" href="#beacon-block-roots-contract-deployment-eip-4788">Beacon block roots contract deployment (EIP-4788)</a></h5>
-<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a &quot;Beacon block roots&quot; contract, that processes and exposes the beacon-block-root values.
+<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a "Beacon block roots" contract, that processes and exposes the beacon-block-root values.
 at address <code>BEACON_ROOTS_ADDRESS = 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</code>.</p>
 <p>For deployment, <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> defines a pre-<a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> legacy transaction, sent from a key that is derived such that the
 transaction signature validity is bound to message-hash, which is bound to the input-data, containing the init-code.</p>
@@ -3763,7 +3763,7 @@ deploying a second contract, with the next nonce. The result of this deployment 
 <code>0x60618060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500</code></li>
 <li><code>isSystemTx</code>: <code>false</code>, as per the Regolith upgrade, even the system-generated transactions spend gas.</li>
 <li><code>sourceHash</code>: <code>0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c</code>,
-computed with the &quot;Upgrade-deposited&quot; type, with <code>intent = &quot;Ecotone: beacon block roots contract deployment&quot;</code></li>
+computed with the "Upgrade-deposited" type, with <code>intent = "Ecotone: beacon block roots contract deployment"</code></li>
 </ul>
 <p>The contract address upon deployment is computed as <code>rlp([sender, nonce])</code>, which will equal:</p>
 <ul>
@@ -3776,7 +3776,7 @@ when a user already submitted the EIP transaction before the upgrade.</li>
 # Computed Address: 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
-<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak &quot;Ecotone: beacon block roots contract deployment&quot;))
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: beacon block roots contract deployment"))
 # 0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c
 </code></pre>
 <h2 id="building-individual-payload-attributes"><a class="header" href="#building-individual-payload-attributes">Building Individual Payload Attributes</a></h2>
@@ -4230,7 +4230,7 @@ that is invalid or derived by other means exclusively:
 </ul>
 <p>Once validated, the batch-queue then emits a block-input for each of the blocks included in the span-batch.
 The next derivation stage is thus only aware of individual block inputs, similar to the previous V0 batch,
-although not strictly a &quot;v0 batch&quot; anymore.</p>
+although not strictly a "v0 batch" anymore.</p>
 <h3 id="batcher"><a class="header" href="#batcher">Batcher</a></h3>
 <p>Instead of transforming L2 blocks into batches,
 the blocks should be buffered to form a span-batch.</p>
@@ -4832,7 +4832,7 @@ more secure, and more consistent across applications.</p>
 <h2 id="erc-4337-sendercreator"><a class="header" href="#erc-4337-sendercreator">ERC-4337 SenderCreator</a></h2>
 <p><a href="https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/core/SenderCreator.sol">Implementation</a></p>
 <p>Address: <code>0x7fc98430eaedbb6070b35b39d798725049088348</code></p>
-<p>Helper contract for <a href="protocol/preinstalls.html#erc-4337-entrypoint">EntryPoint</a>, to call <code>userOp.initCode</code> from a &quot;neutral&quot; address,
+<p>Helper contract for <a href="protocol/preinstalls.html#erc-4337-entrypoint">EntryPoint</a>, to call <code>userOp.initCode</code> from a "neutral" address,
 which is explicitly not <code>EntryPoint</code> itself.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="superchain-configuration"><a class="header" href="#superchain-configuration">Superchain Configuration</a></h1>
@@ -5046,8 +5046,8 @@ See <a href="protocol/exec-engine.html#enginesignalopstackversionv1"><code>engin
 <p>The <code>ProtocolVersions</code> contract on L1 enables L2 nodes to pick up on superchain protocol version signals.</p>
 <p>The interface is:</p>
 <ul>
-<li>Required storage slot: <code>bytes32(uint256(keccak256(&quot;protocolversion.required&quot;)) - 1)</code></li>
-<li>Recommended storage slot: <code>bytes32(uint256(keccak256(&quot;protocolversion.recommended&quot;)) - 1)</code></li>
+<li>Required storage slot: <code>bytes32(uint256(keccak256("protocolversion.required")) - 1)</code></li>
+<li>Recommended storage slot: <code>bytes32(uint256(keccak256("protocolversion.recommended")) - 1)</code></li>
 <li>Required getter: <code>required()</code> returns <code>ProtocolVersion</code></li>
 <li>Recommended getter <code>recommended()</code> returns <code>ProtocolVersion</code></li>
 <li>Version updates also emit a typed event:
@@ -5106,7 +5106,7 @@ but the matching L1-origin information may not be present at the time of activat
 </ul>
 <h2 id="post-bedrock-network-upgrades"><a class="header" href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a></h2>
 <h3 id="regolith"><a class="header" href="#regolith">Regolith</a></h3>
-<p>The Regolith upgrade, named after a material best described as &quot;deposited dust on top of a layer of bedrock&quot;,
+<p>The Regolith upgrade, named after a material best described as "deposited dust on top of a layer of bedrock",
 implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
 the Bedrock Optimism Goerli testnet.</p>
 <p>Summary of changes:</p>
@@ -5304,11 +5304,11 @@ as opposed to the 1/1024 adjustments towards a target as seen in limit updates o
 <h3 id="unsafeblocksigner-address"><a class="header" href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></h3>
 <p>Blocks are gossiped around the p2p network before they are made available on L1.
 To prevent denial of service on the p2p layer, these unsafe blocks must be
-signed with a particular key to be accepted as &quot;canonical&quot; unsafe blocks.
+signed with a particular key to be accepted as "canonical" unsafe blocks.
 The address corresponding to this key is the <code>unsafeBlockSigner</code>. To ensure
 that its value can be fetched with a storage proof in a storage layout independent
 manner, it is stored at a special storage slot corresponding to
-<code>keccak256(&quot;systemconfig.unsafeblocksigner&quot;)</code>.</p>
+<code>keccak256("systemconfig.unsafeblocksigner")</code>.</p>
 <p>Unlike the other values, the <code>unsafeBlockSigner</code> only operates on blockchain
 policy. It is not a consensus level parameter.</p>
 <h2 id="writing-the-system-config"><a class="header" href="#writing-the-system-config">Writing the system config</a></h2>
@@ -5413,7 +5413,7 @@ and apply the event-based changes as the stage traverses to the next L1 block.</
 </ul>
 <p>Each of these 3 components may have different implementations, which can be combined into different proof stacks,
 and contribute to proof diversity when resolving a dispute.</p>
-<p>&quot;Stateless execution&quot; of the program, and its individual instructions, refers to reproducing
+<p>"Stateless execution" of the program, and its individual instructions, refers to reproducing
 the exact same computation by authenticating the inputs with a <a href="experimental/fault-proof/index.html#Pre-image-Oracle">Pre-image Oracle</a>.</p>
 <p><img src="experimental/fault-proof/../../static/assets/fault-proof.svg" alt="Diagram of Program and VM architecture" /></p>
 <h2 id="pre-image-oracle"><a class="header" href="#pre-image-oracle">Pre-image Oracle</a></h2>
@@ -5447,7 +5447,7 @@ I.e. every key must have a single unique value, regardless of chain history or t
 and avoids unnecessary contract redeployments per dispute.</p>
 <p>This global store contract should be non-upgradeable.</p>
 <p>Since <code>keccak256</code> is a safe 32-byte hash input, the first byte is overwritten with a <code>2</code> to derive the key,
-while keeping the rest of the key &quot;readable&quot; (matching the original hash).</p>
+while keeping the rest of the key "readable" (matching the original hash).</p>
 <h4 id="type-3-global-generic-key"><a class="header" href="#type-3-global-generic-key">Type <code>3</code>: Global generic key</a></h4>
 <p>Reserved. This scheme allows for unlimited application-layer pre-image types without fault-proof VM redeployments.</p>
 <p>This is a generic version of a global key store: <code>key = 0x03 ++ keccak256(x, sender)[1:]</code>, where:</p>
@@ -5590,7 +5590,7 @@ or determined from attributes of the identified <code>dispute</code> on L1.
 <a href="experimental/fault-proof/dispute-game-interface.html">dispute game interface</a>, in the L1 history up and till the specified <code>l1_head</code>.
 The <code>dispute</code> may be the claim itself, or a pointer to specific prior claimed data in L1,
 depending on the dispute game interface.</p>
-<p>Implied inputs are loaded in a &quot;prologue&quot; before the actual core state-transition function executes.
+<p>Implied inputs are loaded in a "prologue" before the actual core state-transition function executes.
 During testing a simplified prologue that loads the overrides may be used.</p>
 <blockquote>
 <p>Note: only the test-prologues are currently supported, since the dispute game interface is actively changing.</p>
@@ -5827,7 +5827,7 @@ mmap-ing is purely to satisfy program runtimes that need the memory-pointer
 result of the syscall to locate free memory. The page size is 4096.</p>
 <p>The FPVM has a fixed program break at <code>0x40000000</code>. However, the FPVM is permitted to extend the
 heap beyond this limit via mmap syscalls.
-For simplicity, there are no memory protections against &quot;heap overruns&quot; against other memory segments.
+For simplicity, there are no memory protections against "heap overruns" against other memory segments.
 Such VM steps are still considered valid state transitions.</p>
 <p>Specification of memory mappings is outside the scope of this document as it is irrelevant to
 the VM state. FPVM implementers may refer to the Linux/MIPS kernel for inspiration.</p>
@@ -5838,7 +5838,7 @@ set to the branch target. And the <code>pc</code> post-state set to the branch d
 <p>A VM state transition is invalid whenever the current instruction is a delay slot that is filled
 with jump or branch type instruction.
 That is, where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.07153em;">tPC</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mrel"><span class="mord vbox"><span class="thinbox"><span class="rlap"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="inner"><span class="mord"><span class="mrel"></span></span></span><span class="fix"></span></span></span></span></span><span class="mrel">=</span></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span> while stepping on a jump/branch instruction.
-Otherwise, there would be two consecutive delay slots. While this is considered &quot;undefined&quot;
+Otherwise, there would be two consecutive delay slots. While this is considered "undefined"
 behavior in typical MIPS implementations, FPVM must raise an exception when stepping on such states.</p>
 <h2 id="syscalls"><a class="header" href="#syscalls">Syscalls</a></h2>
 <p>Syscalls work similar to <a href="https://www.linux-mips.org/wiki/Syscall">Linux/MIPS</a>, including the
@@ -6180,7 +6180,7 @@ interface IDisputeGame is IInitializable {
 <li><a href="experimental/fault-proof/fault-dispute-game.html#game_duration">GAME_DURATION</a></li>
 </ul>
 </li>
-<li><a href="experimental/fault-proof/fault-dispute-game.html#game-mechanics">Game Mechanics</a>
+<li><a href="experimental/fault-proof/fault-dispute-game.html#core-game-mechanics">Core Game Mechanics</a>
 <ul>
 <li><a href="experimental/fault-proof/fault-dispute-game.html#actors">Actors</a></li>
 <li><a href="experimental/fault-proof/fault-dispute-game.html#moves">Moves</a>
@@ -6241,7 +6241,7 @@ claims, committing to different output roots and FPVM states in the FDG.</p>
 <li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span></span></span></span> is the set of nodes, each representing a claim. Formally, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">...</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">}</span></span></span></span>,
 where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a claim.</li>
 <li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span></span></span></span> is the set of <em>directed</em> edges. An edge <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> exists if <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span> is a direct dispute
-against <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> through either an &quot;Attack&quot; or &quot;Defend&quot; <a href="experimental/fault-proof/fault-dispute-game.html#moves">move</a>.</li>
+against <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> through either an "Attack" or "Defend" <a href="experimental/fault-proof/fault-dispute-game.html#moves">move</a>.</li>
 </ul>
 <h3 id="subgame"><a class="header" href="#subgame">Subgame</a></h3>
 <p>A sub-game is a DAG of depth 1, where the root of the DAG is a <code>Claim</code> and the children are <code>Claim</code>s that counter the
@@ -6267,7 +6267,7 @@ depth, looks like:</p>
 <p><img src="experimental/fault-proof/../../static/assets/ob-tree.png" alt="ob-tree" /></p>
 <h3 id="position"><a class="header" href="#position">Position</a></h3>
 <p>A position represents the location of a claim in the Game Tree. This is represented by a
-&quot;generalized index&quot; (or <strong>gindex</strong>) where the high-order bit is the level in the tree and the remaining
+"generalized index" (or <strong>gindex</strong>) where the high-order bit is the level in the tree and the remaining
 bits is a unique bit pattern, allowing a unique identifier for each node in the tree.</p>
 <p>The <strong>gindex</strong> of a position <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> can be calculated as <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9713em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.888em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mopen mtight">(</span><span class="mord mathnormal mtight">n</span><span class="mclose mtight">)</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">i</span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>, where:</p>
 <ul>
@@ -6409,7 +6409,7 @@ function hashLeaf(
     uint256 blockIndex,
     bytes32 stateCommitment
 ) internal view returns (bytes32 leaf) {
-    require(input.length == 136, &quot;input must be exactly the size of the keccak256 rate&quot;);
+    require(input.length == 136, "input must be exactly the size of the keccak256 rate");
 
     leaf = keccak256(abi.encodePacked(input, blockIndex, stateCommitment));
 }
@@ -6561,7 +6561,8 @@ claims to be bonded, while rewarding game winners using the bonds of dishonest c
 <li><a href="experimental/fault-proof/honest-challenger-fdg.html#fdg-responses">FDG Responses</a>
 <ul>
 <li><a href="experimental/fault-proof/honest-challenger-fdg.html#root-claims">Root Claims</a></li>
-<li><a href="experimental/fault-proof/honest-challenger-fdg.html#counter-claims">Counter Claims</a></li>
+<li><a href="experimental/fault-proof/honest-challenger-fdg.html#countering-invalid-claims">Countering Invalid Claims</a></li>
+<li><a href="experimental/fault-proof/honest-challenger-fdg.html#countering-freeloaders">Countering Freeloaders</a></li>
 <li><a href="experimental/fault-proof/honest-challenger-fdg.html#steps">Steps</a></li>
 </ul>
 </li>
@@ -6598,7 +6599,7 @@ instruction within their execution trace.</li>
 <li><strong>Do Nothing</strong> if they agree with the root claim. They do nothing because if the root
 claim is left un-countered, the game resolves to their agreement.
 NOTE: The honest challenger will still track this game in order to defend any subsequent
-claims made against the root claim - in effect, &quot;playing the game&quot;.</li>
+claims made against the root claim - in effect, "playing the game".</li>
 </ol>
 <h3 id="countering-invalid-claims"><a class="header" href="#countering-invalid-claims">Countering Invalid Claims</a></h3>
 <p>For every claim made in a dispute game with a <a href="experimental/fault-proof/fault-dispute-game.html#game-tree">game tree</a>
@@ -6712,6 +6713,20 @@ assumption on honest challengers and the bonds attached to the claims they’ve 
 challengers are economically incentivized to resolve the game promptly to capture the bonds.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="bond-incentives"><a class="header" href="#bond-incentives">Bond Incentives</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="experimental/fault-proof/bond-incentives.html#overview">Overview</a></li>
+<li><a href="experimental/fault-proof/bond-incentives.html#moves">Moves</a></li>
+<li><a href="experimental/fault-proof/bond-incentives.html#subgame-resolution">Subgame Resolution</a>
+<ul>
+<li><a href="experimental/fault-proof/bond-incentives.html#leftmost-claim-incentives">Leftmost Claim Incentives</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
 <p>Bonds is an add-on to the core <a href="experimental/fault-proof/./fault-dispute-game.html">Fault Dispute Game</a>. The core game mechanics are
 designed to ensure honesty as the best response to winning subgames. By introducing financial incentives,
 Bonds makes it worthwhile for honest challengers to participate.
@@ -6759,8 +6774,8 @@ This claim will be the honest one, and thus bond rewards will be directed exclus
 <li><a href="glossary.html#eoa">EOA</a></li>
 <li><a href="glossary.html#merkle-patricia-trie">Merkle Patricia Trie</a></li>
 <li><a href="glossary.html#chain-re-organization">Chain Re-Organization</a></li>
-<li><a href="glossary.html#predeployed-contract-predeploy">Predeployed Contract (&quot;Predeploy&quot;)</a></li>
-<li><a href="glossary.html#preinstalled-contract-preinstall">Preinstalled Contract (&quot;Preinstall&quot;)</a></li>
+<li><a href="glossary.html#predeployed-contract-predeploy">Predeployed Contract ("Predeploy")</a></li>
+<li><a href="glossary.html#preinstalled-contract-preinstall">Preinstalled Contract ("Preinstall")</a></li>
 <li><a href="glossary.html#receipt">Receipt</a></li>
 <li><a href="glossary.html#transaction-type">Transaction Type</a></li>
 <li><a href="glossary.html#fork-choice-rule">Fork Choice Rule</a></li>
@@ -6863,7 +6878,7 @@ description of these properties can be found in code comments <a href="https://g
 block, and output block properties, which are derived after executing the block's transactions. These include various
 <a href="glossary.html#merkle-patricia-trie">Merkle Patricia Trie roots</a> that notably commit to the L2 state and to the log events emitted during execution.</p>
 <h2 id="eoa"><a class="header" href="#eoa">EOA</a></h2>
-<p>&quot;Externally Owned Account&quot;, an Ethereum term to designate addresses operated by users, as opposed to contract addresses.</p>
+<p>"Externally Owned Account", an Ethereum term to designate addresses operated by users, as opposed to contract addresses.</p>
 <h2 id="merkle-patricia-trie"><a class="header" href="#merkle-patricia-trie">Merkle Patricia Trie</a></h2>
 <p>A <a href="https://github.com/norswap/nanoeth/blob/d4c0c89cc774d4225d16970aa44c74114c1cfa63/src/com/norswap/nanoeth/trees/patricia/README.md">Merkle Patricia Trie (MPT)</a> is a sparse trie, which is a tree-like structure that maps keys to values.
 The root hash of a MPT is a commitment to the contents of the tree, which allows a
@@ -6874,10 +6889,10 @@ verified against the Merkle root.</p>
 the <a href="glossary.html#fork-choice-rule">fork choice rule</a>) to a block that is not a child of the previous head.</p>
 <p>L1 re-orgs can happen because of network conditions or attacks. L2 re-orgs are a consequence of L1 re-orgs, mediated via
 <a href="glossary.html#L2-chain-derivation">L2 chain derivation</a>.</p>
-<h2 id="predeployed-contract-predeploy"><a class="header" href="#predeployed-contract-predeploy">Predeployed Contract (&quot;Predeploy&quot;)</a></h2>
+<h2 id="predeployed-contract-predeploy"><a class="header" href="#predeployed-contract-predeploy">Predeployed Contract ("Predeploy")</a></h2>
 <p>A contract placed in the L2 genesis state (i.e. at the start of the chain).</p>
 <p>All predeploy contracts are specified in the <a href="./protocol/predeploys.html">predeploys specification</a>.</p>
-<h2 id="preinstalled-contract-preinstall"><a class="header" href="#preinstalled-contract-preinstall">Preinstalled Contract (&quot;Preinstall&quot;)</a></h2>
+<h2 id="preinstalled-contract-preinstall"><a class="header" href="#preinstalled-contract-preinstall">Preinstalled Contract ("Preinstall")</a></h2>
 <p>A contract placed in the L2 genesis state (i.e. at the start of the chain). These contracts do not share the same
 security guarantees as <a href="glossary.html#predeployed-contract-predeploy">predeploys</a>, but are general use contracts made
 available to improve the L2's UX.</p>
@@ -6935,9 +6950,9 @@ for more details.</p>
 <hr />
 <h1 id="deposits-2"><a class="header" href="#deposits-2">Deposits</a></h1>
 <p>In general, a deposit is an L2 transaction derived from an L1 block (by the <a href="glossary.html#rollup-driver">rollup driver</a>).</p>
-<p>While transaction deposits are notably (but not only) used to &quot;deposit&quot; (bridge) ETH and tokens to L2, the word
-<em>deposit</em> should be understood as &quot;a transaction <em>deposited</em> to L2 from L1&quot;.</p>
-<p>This term <em>deposit</em> is somewhat ambiguous as these &quot;transactions&quot; exist at multiple levels. This section disambiguates
+<p>While transaction deposits are notably (but not only) used to "deposit" (bridge) ETH and tokens to L2, the word
+<em>deposit</em> should be understood as "a transaction <em>deposited</em> to L2 from L1".</p>
+<p>This term <em>deposit</em> is somewhat ambiguous as these "transactions" exist at multiple levels. This section disambiguates
 all deposit-related terms.</p>
 <p>Notably, a <em>deposit</em> can refer to:</p>
 <ul>
@@ -6995,7 +7010,7 @@ is part of the <em>internal</em> execution between contracts, and this intermedi
 <p><strong>TODO</strong> expand this whole section to be clearer</p>
 </blockquote>
 <p>In general, a withdrawal is a transaction sent from L2 to L1 that may transfer data and/or value.</p>
-<p>The term <em>withdrawal</em> is somewhat ambiguous as these &quot;transactions&quot; exist at multiple levels. In order to differentiate
+<p>The term <em>withdrawal</em> is somewhat ambiguous as these "transactions" exist at multiple levels. In order to differentiate
 between the L1 and L2 components of a withdrawal we introduce the following terms:</p>
 <ul>
 <li>A <em>withdrawal initiating transaction</em> refers specifically to a transaction on L2 sent to the Withdrawals predeploy.</li>
@@ -7015,12 +7030,12 @@ proof</a>.</p>
 <hr />
 <h1 id="batch-submission-1"><a class="header" href="#batch-submission-1">Batch Submission</a></h1>
 <h2 id="data-availability"><a class="header" href="#data-availability">Data Availability</a></h2>
-<p>Data availability is the guarantee that some data will be &quot;available&quot; (i.e. <em>retrievable</em>) during a reasonably long time
+<p>Data availability is the guarantee that some data will be "available" (i.e. <em>retrievable</em>) during a reasonably long time
 window. In Optimism's case, the data in question are <a href="glossary.html#sequencer-batch">sequencer batches</a> that <a href="glossary.html#validator">validators</a>
 need in order to verify the sequencer's work and validate the L2 chain.</p>
 <p>The <a href="glossary.html#finalization-period">finalization period</a> should be taken as the lower bound on the availability window, since
 that is when data availability is the most crucial, as it is needed to perform a <a href="glossary.html#fault-proof">fault proof</a>.</p>
-<p>&quot;Availability&quot; <strong>does not</strong> mean guaranteed long-term storage of the data.</p>
+<p>"Availability" <strong>does not</strong> mean guaranteed long-term storage of the data.</p>
 <h2 id="data-availability-provider"><a class="header" href="#data-availability-provider">Data Availability Provider</a></h2>
 <p>A data availability provider is a service that can be used to make data available. See the <a href="glossary.html#data-availability">Data
 Availability</a> for more information on what this means.</p>
@@ -7128,7 +7143,7 @@ the <a href="./protocol/exec-engine.html">Execution Engine Specification</a>.</p
 <ul>
 <li>State inherited from the previous version of the L2 chain.
 <ul>
-<li>This state was possibly modified by &quot;state surgeries&quot;. For instance, the migration to Bedrock entailed changes on
+<li>This state was possibly modified by "state surgeries". For instance, the migration to Bedrock entailed changes on
 how native ETH balances were stored in the storage trie.</li>
 </ul>
 </li>
@@ -7182,7 +7197,7 @@ associated <a href="glossary.html#receipt">receipts</a>).</p>
 <p>In sequencer mode, the rollup node receives L2 transactions from users, which it uses to create L2 blocks. These are
 then submitted to a <a href="glossary.html#data-availability-provider">data availability provider</a> via <a href="glossary.html#batch-submission">batch submission</a>. The L2 chain
 derivation then acts as a sanity check and a way to detect L1 chain <a href="glossary.html#chain-re-organization">re-orgs</a>.</p>
-<p>In validator mode, the rollup node performs derivation as indicated above, but is also able to &quot;run ahead&quot; of the L1
+<p>In validator mode, the rollup node performs derivation as indicated above, but is also able to "run ahead" of the L1
 chain by getting blocks directly from the sequencer, in which case derivation serves to validate the sequencer's
 behaviour.</p>
 <p>A rollup node running in validator mode is sometimes called <em>a replica</em>.</p>
@@ -7194,7 +7209,7 @@ behaviour.</p>
 <p>The rollup driver is the <a href="glossary.html#rollup-node">rollup node</a> component responsible for <a href="glossary.html#L2-chain-derivation">deriving the L2 chain</a>
 from the L1 chain (L1 <a href="glossary.html#block">blocks</a> and their associated <a href="glossary.html#receipt">receipts</a>).</p>
 <blockquote>
-<p><strong>TODO</strong> delete this entry, alongside its reference — can be replaced by &quot;derivation process&quot; or &quot;derivation logic&quot;
+<p><strong>TODO</strong> delete this entry, alongside its reference — can be replaced by "derivation process" or "derivation logic"
 where needed</p>
 </blockquote>
 <h2 id="l1-attributes-predeployed-contract-1"><a class="header" href="#l1-attributes-predeployed-contract-1">L1 Attributes Predeployed Contract</a></h2>
@@ -7219,7 +7234,7 @@ erroneous <a href="glossary.html#l2-output-root">output roots</a>.</p>
 <p>cf. <a href="./experimental/fault-proof/index.html">Fault Proofs</a></p>
 <h2 id="time-slot"><a class="header" href="#time-slot">Time Slot</a></h2>
 <p>On L2, there is a block every 2 second (this duration is known as the <a href="glossary.html#block-time">block time</a>).</p>
-<p>We say that there is a &quot;time slot&quot; every multiple of 2s after the timestamp of the <a href="glossary.html#l2-genesis-block">L2 genesis block</a>.</p>
+<p>We say that there is a "time slot" every multiple of 2s after the timestamp of the <a href="glossary.html#l2-genesis-block">L2 genesis block</a>.</p>
 <p>On L1, post-<a href="https://ethereum.org/en/eth2/merge/">merge</a>, the time slots are every 12s. However, an L1 block may not be produced for every time slot, in case
 of even benign consensus issues.</p>
 <h2 id="block-time"><a class="header" href="#block-time">Block Time</a></h2>
@@ -7241,7 +7256,7 @@ receipts roots and block hash.</p>
 engine (using transactions from the L1 <a href="https://www.quicknode.com/guides/defi/how-to-access-ethereum-mempool">mempool</a>), at the request of the L1 consensus layer.</p>
 <p>On L2, the executed blocks are freshly minted by the execution engine at the request of the <a href="glossary.html#rollup-node">rollup node</a>,
 using transactions <a href="glossary.html#L2-chain-derivation">derived from L1 blocks</a>.</p>
-<p>In these specifications, &quot;execution engine&quot; always refer to the L2 execution engine, unless otherwise specified.</p>
+<p>In these specifications, "execution engine" always refer to the L2 execution engine, unless otherwise specified.</p>
 <ul>
 <li>cf. <a href="./protocol/exec-engine.html">Execution Engine Specification</a></li>
 </ul>

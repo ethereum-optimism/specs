@@ -242,7 +242,7 @@ without relying on a single centralized endpoint.</p>
 <p>This also enables faster historical sync to be bootstrapped by providing block headers to sync towards,
 and only having to compare the L2 chain inputs to the L1 data as compared to processing everything one block at a time.</p>
 <p>The rollup node will <em>always</em> prioritize L1 and reorganize to match the canonical chain.
-The L2 data retrieved via the P2P interface is strictly a speculative extension, also known as the &quot;unsafe&quot; chain,
+The L2 data retrieved via the P2P interface is strictly a speculative extension, also known as the "unsafe" chain,
 to improve the happy case performance.</p>
 <p>This also means that P2P behavior is a soft-rule: nodes keep each other in check with scoring and eventual banning
 of malicious peers by identity or IP. Any behavior on the P2P layer does not affect the rollup security, at worst nodes
@@ -306,8 +306,8 @@ It is recommended to disable the above if the external IP is static and configur
 <h4 id="peer-management"><a class="header" href="#peer-management">Peer management</a></h4>
 <p>The default is to maintain a peer count with a tide-system based on active peer count:</p>
 <ul>
-<li>At &quot;low tide&quot; the node starts to actively search for additional peer connections.</li>
-<li>At &quot;high tide&quot; the node starts to prune active connections,
+<li>At "low tide" the node starts to actively search for additional peer connections.</li>
+<li>At "high tide" the node starts to prune active connections,
 except those that are marked as trusted or have a grace period.</li>
 </ul>
 <p>Peers will have a grace period for a configurable amount of time after joining.
@@ -466,7 +466,7 @@ Hence, calling into the execution engine with a block lookup every propagation s
 <p>A node may apply the block to their local engine ahead of L1 availability, if it ensures that:</p>
 <ul>
 <li>The application of the block is reversible, in case of a conflict with delayed L1 information</li>
-<li>The subsequent forkchoice-update ensures this block is recognized as &quot;unsafe&quot;
+<li>The subsequent forkchoice-update ensures this block is recognized as "unsafe"
 (see <a href="derivation.html#engine-api-usage">fork choice updated</a>)</li>
 </ul>
 <h4 id="block-topic-scoring-parameters"><a class="header" href="#block-topic-scoring-parameters">Block topic scoring parameters</a></h4>

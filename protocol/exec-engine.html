@@ -376,7 +376,7 @@ integer arithmetic by postponing the inner division by 16 until the very end.</p
 and optionally initiates block production (<code>payloadAttributes</code> argument).</p>
 <p>Within the rollup, the types of forkchoice updates translate as:</p>
 <ul>
-<li><code>headBlockHash</code>: block hash of the head of the canonical chain. Labeled <code>&quot;unsafe&quot;</code> in user JSON-RPC.
+<li><code>headBlockHash</code>: block hash of the head of the canonical chain. Labeled <code>"unsafe"</code> in user JSON-RPC.
 Nodes may apply L2 blocks out of band ahead of time, and then reorg when L1 data conflicts.</li>
 <li><code>safeBlockHash</code>: block hash of the canonical chain, derived from L1 data, unlikely to reorg.</li>
 <li><code>finalizedBlockHash</code>: irreversible block hash, matches lower boundary of the dispute period.</li>
@@ -564,7 +564,7 @@ as outlined in the <a href="rollup-node.html">rollup node spec</a>.</li>
 </ol>
 <h2 id="ecotone-disable-blob-transactions"><a class="header" href="#ecotone-disable-blob-transactions">Ecotone: disable Blob-transactions</a></h2>
 <p><a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> introduces Blob transactions: featuring all the functionality of an <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> transaction,
-plus a list of &quot;blobs&quot;: &quot;Binary Large Object&quot;, i.e. a dedicated data type for serving Data-Availability as base-layer.</p>
+plus a list of "blobs": "Binary Large Object", i.e. a dedicated data type for serving Data-Availability as base-layer.</p>
 <p>With the Ecotone upgrade, all Cancun L1 execution features are enabled, with <a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> as exception:
 as a L2, the OP-Stack does not serve blobs, and thus disables this new transaction type.</p>
 <p>EIP-4844 is disabled as following:</p>
@@ -578,14 +578,14 @@ as a L2, the OP-Stack does not serve blobs, and thus disables this new transacti
 altered because there are no blobs processed by L2. The opcode will always push a value of 1 onto
 the stack.</p>
 <h2 id="ecotone-beacon-block-root"><a class="header" href="#ecotone-beacon-block-root">Ecotone: Beacon Block Root</a></h2>
-<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a &quot;beacon block root&quot; into the execution-layer block-header and EVM.
+<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a "beacon block root" into the execution-layer block-header and EVM.
 This block root is an <a href="https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md#merkleization">SSZ hash-tree-root</a> of the consensus-layer contents of the previous consensus block.</p>
 <p>With the adoption of <a href="https://eips.ethereum.org/EIPS/eip-4399">EIP-4399</a> in the Bedrock upgrade the OP-Stack already includes the <code>PREVRANDAO</code> of L1.
 And thus with <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> the L1 beacon block root is made available.</p>
 <p>For the Ecotone upgrade, this entails that:</p>
 <ul>
 <li>The <code>parent_beacon_block_root</code> of the L1 origin is now embedded in the L2 block header.</li>
-<li>The &quot;Beacon roots contract&quot; is deployed at Ecotone upgrade-time, or embedded at genesis if activated at genesis.</li>
+<li>The "Beacon roots contract" is deployed at Ecotone upgrade-time, or embedded at genesis if activated at genesis.</li>
 <li>The block state-transition process now includes the same special beacon-block-root EVM processing as L1 ethereum.</li>
 </ul>
 

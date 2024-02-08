@@ -231,7 +231,7 @@
 </ul>
 <p>Each of these 3 components may have different implementations, which can be combined into different proof stacks,
 and contribute to proof diversity when resolving a dispute.</p>
-<p>&quot;Stateless execution&quot; of the program, and its individual instructions, refers to reproducing
+<p>"Stateless execution" of the program, and its individual instructions, refers to reproducing
 the exact same computation by authenticating the inputs with a <a href="#Pre-image-Oracle">Pre-image Oracle</a>.</p>
 <p><img src="../../static/assets/fault-proof.svg" alt="Diagram of Program and VM architecture" /></p>
 <h2 id="pre-image-oracle"><a class="header" href="#pre-image-oracle">Pre-image Oracle</a></h2>
@@ -265,7 +265,7 @@ I.e. every key must have a single unique value, regardless of chain history or t
 and avoids unnecessary contract redeployments per dispute.</p>
 <p>This global store contract should be non-upgradeable.</p>
 <p>Since <code>keccak256</code> is a safe 32-byte hash input, the first byte is overwritten with a <code>2</code> to derive the key,
-while keeping the rest of the key &quot;readable&quot; (matching the original hash).</p>
+while keeping the rest of the key "readable" (matching the original hash).</p>
 <h4 id="type-3-global-generic-key"><a class="header" href="#type-3-global-generic-key">Type <code>3</code>: Global generic key</a></h4>
 <p>Reserved. This scheme allows for unlimited application-layer pre-image types without fault-proof VM redeployments.</p>
 <p>This is a generic version of a global key store: <code>key = 0x03 ++ keccak256(x, sender)[1:]</code>, where:</p>
@@ -408,7 +408,7 @@ or determined from attributes of the identified <code>dispute</code> on L1.
 <a href="dispute-game-interface.html">dispute game interface</a>, in the L1 history up and till the specified <code>l1_head</code>.
 The <code>dispute</code> may be the claim itself, or a pointer to specific prior claimed data in L1,
 depending on the dispute game interface.</p>
-<p>Implied inputs are loaded in a &quot;prologue&quot; before the actual core state-transition function executes.
+<p>Implied inputs are loaded in a "prologue" before the actual core state-transition function executes.
 During testing a simplified prologue that loads the overrides may be used.</p>
 <blockquote>
 <p>Note: only the test-prologues are currently supported, since the dispute game interface is actively changing.</p>

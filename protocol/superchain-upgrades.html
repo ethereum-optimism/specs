@@ -327,8 +327,8 @@ See <a href="exec-engine.html#enginesignalopstackversionv1"><code>engine_signalO
 <p>The <code>ProtocolVersions</code> contract on L1 enables L2 nodes to pick up on superchain protocol version signals.</p>
 <p>The interface is:</p>
 <ul>
-<li>Required storage slot: <code>bytes32(uint256(keccak256(&quot;protocolversion.required&quot;)) - 1)</code></li>
-<li>Recommended storage slot: <code>bytes32(uint256(keccak256(&quot;protocolversion.recommended&quot;)) - 1)</code></li>
+<li>Required storage slot: <code>bytes32(uint256(keccak256("protocolversion.required")) - 1)</code></li>
+<li>Recommended storage slot: <code>bytes32(uint256(keccak256("protocolversion.recommended")) - 1)</code></li>
 <li>Required getter: <code>required()</code> returns <code>ProtocolVersion</code></li>
 <li>Recommended getter <code>recommended()</code> returns <code>ProtocolVersion</code></li>
 <li>Version updates also emit a typed event:
@@ -387,7 +387,7 @@ but the matching L1-origin information may not be present at the time of activat
 </ul>
 <h2 id="post-bedrock-network-upgrades"><a class="header" href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a></h2>
 <h3 id="regolith"><a class="header" href="#regolith">Regolith</a></h3>
-<p>The Regolith upgrade, named after a material best described as &quot;deposited dust on top of a layer of bedrock&quot;,
+<p>The Regolith upgrade, named after a material best described as "deposited dust on top of a layer of bedrock",
 implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
 the Bedrock Optimism Goerli testnet.</p>
 <p>Summary of changes:</p>

@@ -258,7 +258,7 @@ a <code>uint256</code> nonce is so large that we can very easily pack additional
 into that field.</p>
 <h3 id="message-version-0"><a class="header" href="#message-version-0">Message Version 0</a></h3>
 <pre><code class="language-solidity">abi.encodeWithSignature(
-    &quot;relayMessage(address,address,bytes,uint256)&quot;,
+    "relayMessage(address,address,bytes,uint256)",
     _target,
     _sender,
     _message,
@@ -267,7 +267,7 @@ into that field.</p>
 </code></pre>
 <h3 id="message-version-1"><a class="header" href="#message-version-1">Message Version 1</a></h3>
 <pre><code class="language-solidity">abi.encodeWithSignature(
-    &quot;relayMessage(uint256,address,address,uint256,uint256,bytes)&quot;,
+    "relayMessage(uint256,address,address,uint256,uint256,bytes)",
     _nonce,
     _sender,
     _target,
@@ -281,7 +281,7 @@ into that field.</p>
 in a <code>blockedMessages</code> mapping. This functionality was removed from the
 messengers because a smart attacker could get around any message blocking
 attempts. It also saves gas on finalizing withdrawals.</p>
-<p>The concept of a &quot;relay id&quot; and the <code>relayedMessages</code> mapping was removed.
+<p>The concept of a "relay id" and the <code>relayedMessages</code> mapping was removed.
 It was built as a way to be able to fund third parties who relayed messages
 on the behalf of users, but it was improperly implemented as it was impossible
 to know if the relayed message actually succeeded.</p>

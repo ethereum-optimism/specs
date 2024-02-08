@@ -272,7 +272,7 @@ mmap-ing is purely to satisfy program runtimes that need the memory-pointer
 result of the syscall to locate free memory. The page size is 4096.</p>
 <p>The FPVM has a fixed program break at <code>0x40000000</code>. However, the FPVM is permitted to extend the
 heap beyond this limit via mmap syscalls.
-For simplicity, there are no memory protections against &quot;heap overruns&quot; against other memory segments.
+For simplicity, there are no memory protections against "heap overruns" against other memory segments.
 Such VM steps are still considered valid state transitions.</p>
 <p>Specification of memory mappings is outside the scope of this document as it is irrelevant to
 the VM state. FPVM implementers may refer to the Linux/MIPS kernel for inspiration.</p>
@@ -283,7 +283,7 @@ set to the branch target. And the <code>pc</code> post-state set to the branch d
 <p>A VM state transition is invalid whenever the current instruction is a delay slot that is filled
 with jump or branch type instruction.
 That is, where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.07153em;">tPC</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mrel"><span class="mord vbox"><span class="thinbox"><span class="rlap"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="inner"><span class="mord"><span class="mrel"></span></span></span><span class="fix"></span></span></span></span></span><span class="mrel">=</span></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span> while stepping on a jump/branch instruction.
-Otherwise, there would be two consecutive delay slots. While this is considered &quot;undefined&quot;
+Otherwise, there would be two consecutive delay slots. While this is considered "undefined"
 behavior in typical MIPS implementations, FPVM must raise an exception when stepping on such states.</p>
 <h2 id="syscalls"><a class="header" href="#syscalls">Syscalls</a></h2>
 <p>Syscalls work similar to <a href="https://www.linux-mips.org/wiki/Syscall">Linux/MIPS</a>, including the

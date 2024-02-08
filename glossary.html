@@ -187,8 +187,8 @@
 <li><a href="#eoa">EOA</a></li>
 <li><a href="#merkle-patricia-trie">Merkle Patricia Trie</a></li>
 <li><a href="#chain-re-organization">Chain Re-Organization</a></li>
-<li><a href="#predeployed-contract-predeploy">Predeployed Contract (&quot;Predeploy&quot;)</a></li>
-<li><a href="#preinstalled-contract-preinstall">Preinstalled Contract (&quot;Preinstall&quot;)</a></li>
+<li><a href="#predeployed-contract-predeploy">Predeployed Contract ("Predeploy")</a></li>
+<li><a href="#preinstalled-contract-preinstall">Preinstalled Contract ("Preinstall")</a></li>
 <li><a href="#receipt">Receipt</a></li>
 <li><a href="#transaction-type">Transaction Type</a></li>
 <li><a href="#fork-choice-rule">Fork Choice Rule</a></li>
@@ -291,7 +291,7 @@ description of these properties can be found in code comments <a href="https://g
 block, and output block properties, which are derived after executing the block's transactions. These include various
 <a href="glossary.html#merkle-patricia-trie">Merkle Patricia Trie roots</a> that notably commit to the L2 state and to the log events emitted during execution.</p>
 <h2 id="eoa"><a class="header" href="#eoa">EOA</a></h2>
-<p>&quot;Externally Owned Account&quot;, an Ethereum term to designate addresses operated by users, as opposed to contract addresses.</p>
+<p>"Externally Owned Account", an Ethereum term to designate addresses operated by users, as opposed to contract addresses.</p>
 <h2 id="merkle-patricia-trie"><a class="header" href="#merkle-patricia-trie">Merkle Patricia Trie</a></h2>
 <p>A <a href="https://github.com/norswap/nanoeth/blob/d4c0c89cc774d4225d16970aa44c74114c1cfa63/src/com/norswap/nanoeth/trees/patricia/README.md">Merkle Patricia Trie (MPT)</a> is a sparse trie, which is a tree-like structure that maps keys to values.
 The root hash of a MPT is a commitment to the contents of the tree, which allows a
@@ -302,10 +302,10 @@ verified against the Merkle root.</p>
 the <a href="glossary.html#fork-choice-rule">fork choice rule</a>) to a block that is not a child of the previous head.</p>
 <p>L1 re-orgs can happen because of network conditions or attacks. L2 re-orgs are a consequence of L1 re-orgs, mediated via
 <a href="glossary.html#L2-chain-derivation">L2 chain derivation</a>.</p>
-<h2 id="predeployed-contract-predeploy"><a class="header" href="#predeployed-contract-predeploy">Predeployed Contract (&quot;Predeploy&quot;)</a></h2>
+<h2 id="predeployed-contract-predeploy"><a class="header" href="#predeployed-contract-predeploy">Predeployed Contract ("Predeploy")</a></h2>
 <p>A contract placed in the L2 genesis state (i.e. at the start of the chain).</p>
 <p>All predeploy contracts are specified in the <a href="./protocol/predeploys.html">predeploys specification</a>.</p>
-<h2 id="preinstalled-contract-preinstall"><a class="header" href="#preinstalled-contract-preinstall">Preinstalled Contract (&quot;Preinstall&quot;)</a></h2>
+<h2 id="preinstalled-contract-preinstall"><a class="header" href="#preinstalled-contract-preinstall">Preinstalled Contract ("Preinstall")</a></h2>
 <p>A contract placed in the L2 genesis state (i.e. at the start of the chain). These contracts do not share the same
 security guarantees as <a href="#predeployed-contract-predeploy">predeploys</a>, but are general use contracts made
 available to improve the L2's UX.</p>
@@ -363,9 +363,9 @@ for more details.</p>
 <hr />
 <h1 id="deposits"><a class="header" href="#deposits">Deposits</a></h1>
 <p>In general, a deposit is an L2 transaction derived from an L1 block (by the <a href="glossary.html#rollup-driver">rollup driver</a>).</p>
-<p>While transaction deposits are notably (but not only) used to &quot;deposit&quot; (bridge) ETH and tokens to L2, the word
-<em>deposit</em> should be understood as &quot;a transaction <em>deposited</em> to L2 from L1&quot;.</p>
-<p>This term <em>deposit</em> is somewhat ambiguous as these &quot;transactions&quot; exist at multiple levels. This section disambiguates
+<p>While transaction deposits are notably (but not only) used to "deposit" (bridge) ETH and tokens to L2, the word
+<em>deposit</em> should be understood as "a transaction <em>deposited</em> to L2 from L1".</p>
+<p>This term <em>deposit</em> is somewhat ambiguous as these "transactions" exist at multiple levels. This section disambiguates
 all deposit-related terms.</p>
 <p>Notably, a <em>deposit</em> can refer to:</p>
 <ul>
@@ -423,7 +423,7 @@ is part of the <em>internal</em> execution between contracts, and this intermedi
 <p><strong>TODO</strong> expand this whole section to be clearer</p>
 </blockquote>
 <p>In general, a withdrawal is a transaction sent from L2 to L1 that may transfer data and/or value.</p>
-<p>The term <em>withdrawal</em> is somewhat ambiguous as these &quot;transactions&quot; exist at multiple levels. In order to differentiate
+<p>The term <em>withdrawal</em> is somewhat ambiguous as these "transactions" exist at multiple levels. In order to differentiate
 between the L1 and L2 components of a withdrawal we introduce the following terms:</p>
 <ul>
 <li>A <em>withdrawal initiating transaction</em> refers specifically to a transaction on L2 sent to the Withdrawals predeploy.</li>
@@ -443,12 +443,12 @@ proof</a>.</p>
 <hr />
 <h1 id="batch-submission"><a class="header" href="#batch-submission">Batch Submission</a></h1>
 <h2 id="data-availability"><a class="header" href="#data-availability">Data Availability</a></h2>
-<p>Data availability is the guarantee that some data will be &quot;available&quot; (i.e. <em>retrievable</em>) during a reasonably long time
+<p>Data availability is the guarantee that some data will be "available" (i.e. <em>retrievable</em>) during a reasonably long time
 window. In Optimism's case, the data in question are <a href="glossary.html#sequencer-batch">sequencer batches</a> that <a href="glossary.html#validator">validators</a>
 need in order to verify the sequencer's work and validate the L2 chain.</p>
 <p>The <a href="glossary.html#finalization-period">finalization period</a> should be taken as the lower bound on the availability window, since
 that is when data availability is the most crucial, as it is needed to perform a <a href="glossary.html#fault-proof">fault proof</a>.</p>
-<p>&quot;Availability&quot; <strong>does not</strong> mean guaranteed long-term storage of the data.</p>
+<p>"Availability" <strong>does not</strong> mean guaranteed long-term storage of the data.</p>
 <h2 id="data-availability-provider"><a class="header" href="#data-availability-provider">Data Availability Provider</a></h2>
 <p>A data availability provider is a service that can be used to make data available. See the <a href="glossary.html#data-availability">Data
 Availability</a> for more information on what this means.</p>
@@ -556,7 +556,7 @@ the <a href="./protocol/exec-engine.html">Execution Engine Specification</a>.</p
 <ul>
 <li>State inherited from the previous version of the L2 chain.
 <ul>
-<li>This state was possibly modified by &quot;state surgeries&quot;. For instance, the migration to Bedrock entailed changes on
+<li>This state was possibly modified by "state surgeries". For instance, the migration to Bedrock entailed changes on
 how native ETH balances were stored in the storage trie.</li>
 </ul>
 </li>
@@ -610,7 +610,7 @@ associated <a href="glossary.html#receipt">receipts</a>).</p>
 <p>In sequencer mode, the rollup node receives L2 transactions from users, which it uses to create L2 blocks. These are
 then submitted to a <a href="glossary.html#data-availability-provider">data availability provider</a> via <a href="glossary.html#batch-submission">batch submission</a>. The L2 chain
 derivation then acts as a sanity check and a way to detect L1 chain <a href="glossary.html#chain-re-organization">re-orgs</a>.</p>
-<p>In validator mode, the rollup node performs derivation as indicated above, but is also able to &quot;run ahead&quot; of the L1
+<p>In validator mode, the rollup node performs derivation as indicated above, but is also able to "run ahead" of the L1
 chain by getting blocks directly from the sequencer, in which case derivation serves to validate the sequencer's
 behaviour.</p>
 <p>A rollup node running in validator mode is sometimes called <em>a replica</em>.</p>
@@ -622,7 +622,7 @@ behaviour.</p>
 <p>The rollup driver is the <a href="glossary.html#rollup-node">rollup node</a> component responsible for <a href="glossary.html#L2-chain-derivation">deriving the L2 chain</a>
 from the L1 chain (L1 <a href="glossary.html#block">blocks</a> and their associated <a href="glossary.html#receipt">receipts</a>).</p>
 <blockquote>
-<p><strong>TODO</strong> delete this entry, alongside its reference — can be replaced by &quot;derivation process&quot; or &quot;derivation logic&quot;
+<p><strong>TODO</strong> delete this entry, alongside its reference — can be replaced by "derivation process" or "derivation logic"
 where needed</p>
 </blockquote>
 <h2 id="l1-attributes-predeployed-contract"><a class="header" href="#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a></h2>
@@ -647,7 +647,7 @@ erroneous <a href="glossary.html#l2-output-root">output roots</a>.</p>
 <p>cf. <a href="./experimental/fault-proof/index.html">Fault Proofs</a></p>
 <h2 id="time-slot"><a class="header" href="#time-slot">Time Slot</a></h2>
 <p>On L2, there is a block every 2 second (this duration is known as the <a href="glossary.html#block-time">block time</a>).</p>
-<p>We say that there is a &quot;time slot&quot; every multiple of 2s after the timestamp of the <a href="glossary.html#l2-genesis-block">L2 genesis block</a>.</p>
+<p>We say that there is a "time slot" every multiple of 2s after the timestamp of the <a href="glossary.html#l2-genesis-block">L2 genesis block</a>.</p>
 <p>On L1, post-<a href="https://ethereum.org/en/eth2/merge/">merge</a>, the time slots are every 12s. However, an L1 block may not be produced for every time slot, in case
 of even benign consensus issues.</p>
 <h2 id="block-time"><a class="header" href="#block-time">Block Time</a></h2>
@@ -669,7 +669,7 @@ receipts roots and block hash.</p>
 engine (using transactions from the L1 <a href="https://www.quicknode.com/guides/defi/how-to-access-ethereum-mempool">mempool</a>), at the request of the L1 consensus layer.</p>
 <p>On L2, the executed blocks are freshly minted by the execution engine at the request of the <a href="glossary.html#rollup-node">rollup node</a>,
 using transactions <a href="glossary.html#L2-chain-derivation">derived from L1 blocks</a>.</p>
-<p>In these specifications, &quot;execution engine&quot; always refer to the L2 execution engine, unless otherwise specified.</p>
+<p>In these specifications, "execution engine" always refer to the L2 execution engine, unless otherwise specified.</p>
 <ul>
 <li>cf. <a href="./protocol/exec-engine.html">Execution Engine Specification</a></li>
 </ul>

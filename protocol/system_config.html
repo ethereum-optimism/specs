@@ -277,11 +277,11 @@ as opposed to the 1/1024 adjustments towards a target as seen in limit updates o
 <h3 id="unsafeblocksigner-address"><a class="header" href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></h3>
 <p>Blocks are gossiped around the p2p network before they are made available on L1.
 To prevent denial of service on the p2p layer, these unsafe blocks must be
-signed with a particular key to be accepted as &quot;canonical&quot; unsafe blocks.
+signed with a particular key to be accepted as "canonical" unsafe blocks.
 The address corresponding to this key is the <code>unsafeBlockSigner</code>. To ensure
 that its value can be fetched with a storage proof in a storage layout independent
 manner, it is stored at a special storage slot corresponding to
-<code>keccak256(&quot;systemconfig.unsafeblocksigner&quot;)</code>.</p>
+<code>keccak256("systemconfig.unsafeblocksigner")</code>.</p>
 <p>Unlike the other values, the <code>unsafeBlockSigner</code> only operates on blockchain
 policy. It is not a consensus level parameter.</p>
 <h2 id="writing-the-system-config"><a class="header" href="#writing-the-system-config">Writing the system config</a></h2>
