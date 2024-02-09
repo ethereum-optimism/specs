@@ -14,8 +14,16 @@
   - [Timestamp Invariant](#timestamp-invariant)
   - [ChainID Invariant](#chainid-invariant)
   - [Only EOA Invariant](#only-eoa-invariant)
-  - [Message Expiry](#message-expiry)
-- [Message dependency resolution](#message-dependency-resolution)
+  - [Message Expiry Invariant](#message-expiry-invariant)
+- [Message Graph](#message-graph)
+  - [Invalid messages](#invalid-messages)
+    - [Block reorgs](#block-reorgs)
+    - [Block Recommits](#block-recommits)
+  - [Intra-block messaging: cycles](#intra-block-messaging-cycles)
+  - [Resolving cross-chain safety](#resolving-cross-chain-safety)
+  - [Horizon timestamp](#horizon-timestamp)
+  - [Pruning the graph](#pruning-the-graph)
+  - [Bounding the graph](#bounding-the-graph)
 - [Security Considerations](#security-considerations)
   - [Cyclic dependencies](#cyclic-dependencies)
   - [Transitive dependencies](#transitive-dependencies)
@@ -149,6 +157,7 @@ This trade-off is in review. This invariant may be ignored in initial interop te
 
 The expiry invariant invalidates inclusion of any executing message with
 `id.timestamp + EXPIRY_TIME < executing_block.timestamp` where:
+
 - `id` is the [`Identifier`] encoded in the executing message, matching the block attributes of the initiating message.
 - `executing_block` is the block where the executing message was included in.
 - `EXPIRY_TIME = 180 * 24 * 60 * 60 = 15552000` seconds, i.e. 180 days.
@@ -169,6 +178,7 @@ If the source of an edge is invalidated, the target is invalidated.
 A message is said to be "invalid" when the executing message does not have a valid dependency.
 
 Dependencies are invalid when:
+
 - The dependency is unknown.
 - The dependency is known but not part of the canonical chain.
 - The dependency is known but does not match all message attributes ([`Identifier`] and payload).
@@ -183,7 +193,7 @@ Messages may be executed before the block that initiates them is sealed.
 When tracking message dependencies, edges are maintained for *all* identified source blocks.
 
 Reorgs are resolved by filtering the view of the solver to only canonical blocks.
-If the source block is not canonical, the 
+If the source block is not canonical, the dependency is invalid.
 
 The canonical L2 block at the identified block-height is the source of truth.
 
@@ -196,11 +206,11 @@ and the original partial block can be removed from the dependency graph.
 
 ### Intra-block messaging: cycles
 
-While messages cannot be initiated by future blocks, 
+While messages cannot be initiated by future blocks,
 they can be initiated by any transactions within the same timestamp,
 as per the [Timestamp Invariant](#timestamp-invariant).
 
-This property allows messages to form cycles in the graph: 
+This property allows messages to form cycles in the graph:
 blocks with equal timestamp, of chains in the same dependency set,
 may have dependencies on one another.
 
@@ -236,7 +246,7 @@ outward edges for initiating messages may be attached
 when relevant to resolution of newer lower-safety blocks.
 No inward edges are required anymore however, as the maximum safety has been ensured.
 
-Blocks older than `horizon_timestamp - (2 * EXPIRY_TIME)` cannot be depended 
+Blocks older than `horizon_timestamp - (2 * EXPIRY_TIME)` cannot be depended
 on from any valid block within the graph, and can thus be safely pruned entirely.
 
 ### Bounding the graph
@@ -245,6 +255,7 @@ With many events, and transitive dependencies, resolving the cross-chain safety 
 It is thus important for the graph to be reasonably bounded, such that it can be resolved.
 
 The graph is bounded in 4 ways:
+
 - Every block can only depend on blocks of chains in the dependency set,
   as per the [ChainID invariant](#chainid-invariant).
 - Every block cannot depend on future blocks, as per the [Timestamp invariant](#timestamp-invariant).
