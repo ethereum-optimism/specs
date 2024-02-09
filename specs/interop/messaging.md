@@ -45,9 +45,11 @@ the data generally ABI encoded.
 
 ### Message Identifier
 
-The `Identifier` that uniquely represents a log that is emitted from a chain. It can be considered to be a
+[`Identifier`]: #message-identifier
+
+The [`Identifier`] that uniquely represents a log that is emitted from a chain. It can be considered to be a
 unique pointer to a particular log. The derivation pipeline and fault proof program MUST ensure that the
-`_msg` corresponds exactly to the log that the `Identifier` points to.
+`_msg` corresponds exactly to the log that the [`Identifier`] points to.
 
 ```solidity
 struct Identifier {
@@ -67,7 +69,7 @@ struct Identifier {
 | `timestamp`   | `uint256` | The timestamp that the log was emitted. Used to enforce the timestamp invariant |
 | `chainid`     | `uint256` | The chainid of the chain that emitted the log                                   |
 
-The `Identifier` includes the set of information to uniquely identify a log. When using an absolute
+The [`Identifier`] includes the set of information to uniquely identify a log. When using an absolute
 log index within a particular block, it makes ahead of time coordination more complex. Ideally there
 is a better way to uniquely identify a log that does not add ordering constraints when building
 a block. This would make building atomic cross chain messages more simple by not coupling the
@@ -97,14 +99,17 @@ of the function that is used to execute messages.
 Both the block builder and the verifier use this information to ensure that all system invariants are held.
 
 The executing message is verified by checking if there is an existing initiating-message
-that originates at [`Identifier`](#message-identifier) with matching [Message Payload](#message-payload).
+that originates at [`Identifier`] with matching [Message Payload](#message-payload).
 
 ## Messaging Invariants
 
-- The timestamp of executing message MUST be greater than or equal to the timestamp of the initiating message
-- The chain id of the initiating message MUST be in the dependency set
-- The executing message MUST be initiated by an externally owned account such that the top level EVM
-  call frame enters the `CrossL2Inbox`
+- [Timestamp Invariant](#timestamp-invariant): The timestamp at the time of inclusion of the executing message MUST
+  be greater than or equal to the timestamp of the initiating message.
+- [ChainID Invariant](#chainid-invariant): The chain id of the initiating message MUST be in the dependency set
+- [Only EOA Invariant](#only-eoa-invariant): The executing message MUST be initiated by an externally owned
+  account such that the top level EVM call frame enters the `CrossL2Inbox`
+- [Message Expiry Invariant](#message-expiry-invariant): The timestamp at the time of inclusion of the executing
+  message MUST be lower than the initiating message timestamp (as defined in the [`Identifier`]) + `EXPIRY_TIME`.
 
 ### Timestamp Invariant
 
@@ -126,7 +131,7 @@ have a corresponding initiating message without needing to do any EVM execution.
 
 It may be possible to relax this invariant in the future if the block building process is efficient
 enough to do full simulations to gain the information required to verify the existence of the
-initiating transaction. Instead of the `Identifier` being included in calldata, it would be emitted
+initiating transaction. Instead of the [`Identifier`] being included in calldata, it would be emitted
 in an event that can be used after the fact to verify the existence of the initiating message.
 This adds complexity around mempool inclusion as it would require EVM execution and remote RPC
 access to learn if a transaction can enter the mempool.
@@ -136,13 +141,118 @@ This feature could be added in a backwards compatible way by adding a new functi
 One possible way to handle explicit denial of service attacks is to utilize identity
 in iterated games such that the block builder can ban identities that submit malicious transactions.
 
-### Message Expiry
+### Message Expiry Invariant
 
-TODO: define message expiry.
+Note: Message Expiry as property of the protocol is in active discussion.
+It helps set a strict bound on total messaging activity to support, but also limits use-cases.
+This trade-off is in review. This invariant may be ignored in initial interop testnets.
 
-## Message dependency resolution
+The expiry invariant invalidates inclusion of any executing message with
+`id.timestamp + EXPIRY_TIME < executing_block.timestamp` where:
+- `id` is the [`Identifier`] encoded in the executing message, matching the block attributes of the initiating message.
+- `executing_block` is the block where the executing message was included in.
+- `EXPIRY_TIME = 180 * 24 * 60 * 60 = 15552000` seconds, i.e. 180 days.
 
-TODO: expand on initiating/executing messages and corresponding graph problem.
+## Message Graph
+
+The dependencies of messages can be modeled as a directed graph:
+
+- **vertex**: a block
+- **edge**: a dependency:
+  - parent-block (source) to block (target)
+  - message relay, from initiation (source) to execution (target)
+
+If the source of an edge is invalidated, the target is invalidated.
+
+### Invalid messages
+
+A message is said to be "invalid" when the executing message does not have a valid dependency.
+
+Dependencies are invalid when:
+- The dependency is unknown.
+- The dependency is known but not part of the canonical chain.
+- The dependency is known but does not match all message attributes ([`Identifier`] and payload).
+
+#### Block reorgs
+
+The [`Identifier`] used by an executing message does not cryptographically
+commit to the block it may reference.
+
+Messages may be executed before the block that initiates them is sealed.
+
+When tracking message dependencies, edges are maintained for *all* identified source blocks.
+
+Reorgs are resolved by filtering the view of the solver to only canonical blocks.
+If the source block is not canonical, the 
+
+The canonical L2 block at the identified block-height is the source of truth.
+
+#### Block Recommits
+
+Blocks may be partially built, or sealed but not published, and then rebuilt.
+
+Any optimistically assumed messages have to be revalidated,
+and the original partial block can be removed from the dependency graph.
+
+### Intra-block messaging: cycles
+
+While messages cannot be initiated by future blocks, 
+they can be initiated by any transactions within the same timestamp,
+as per the [Timestamp Invariant](#timestamp-invariant).
+
+This property allows messages to form cycles in the graph: 
+blocks with equal timestamp, of chains in the same dependency set,
+may have dependencies on one another.
+
+### Resolving cross-chain safety
+
+To determine cross-chain safety, the graph is inspected for valid graph components that have no invalid dependencies,
+while applying the respective safety-view on the blocks in the graph.
+
+I.e. the graph must not have any inward edges towards invalid blocks within the safety-view.
+
+A safety-view is the subset of canonical blocks of all chains with the specified safety label or a higher safety label.
+Dependencies on blocks outside of the safety-view are invalid,
+but may turn valid once the safety-view changes (e.g. a reorg of unsafe blocks).
+
+By resolving in terms of graph-components, cyclic dependencies and transitive dependencies are addressed.
+
+### Horizon timestamp
+
+The maximum seen timestamp in the graph is the `horizon_timestamp`.
+
+The verifier can defer growth of the graph past this `horizon_timestamp`,
+until the graph has been resolved and pruned.
+
+### Pruning the graph
+
+Edges between blocks can be de-duplicated, when the blocks are complete and sealed.
+
+The same initiating or executing messages, but attached to different blocks,
+may have to be added back to the graph if the set of blocks changes.
+
+Blocks with cross-chain safety in the finalized-blocks safety-view can be optimized:
+outward edges for initiating messages may be attached
+when relevant to resolution of newer lower-safety blocks.
+No inward edges are required anymore however, as the maximum safety has been ensured.
+
+Blocks older than `horizon_timestamp - (2 * EXPIRY_TIME)` cannot be depended 
+on from any valid block within the graph, and can thus be safely pruned entirely.
+
+### Bounding the graph
+
+With many events, and transitive dependencies, resolving the cross-chain safety may be an intensive task for a verifier.
+It is thus important for the graph to be reasonably bounded, such that it can be resolved.
+
+The graph is bounded in 4 ways:
+- Every block can only depend on blocks of chains in the dependency set,
+  as per the [ChainID invariant](#chainid-invariant).
+- Every block cannot depend on future blocks, as per the [Timestamp invariant](#timestamp-invariant).
+- Every block has a maximum gas limit, an intrinsic cost per transaction,
+  and thus a maximum inward degree of dependencies, as per the [Only-EOA invariant](#only-eoa-invariant)
+- Every block cannot depend on expired messages, as per the [Message expiry invariant](#message-expiry-invariant).
+
+The verifier is responsible for filtering out non-canonical parts of the graph.
 
 ## Security Considerations
 
@@ -154,4 +264,7 @@ dependency set. This means that they are able to send cross chain messages to ea
 
 ### Transitive dependencies
 
-TODO
+The safety of a chain is only ensured when the inputs are safe:
+dependencies are thus said to be transitive.
+Without validating the transitive dependencies,
+the verifier relies on the verification work of the nodes that it sources its direct dependencies from.
