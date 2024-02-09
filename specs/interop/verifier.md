@@ -23,6 +23,7 @@ The derivation pipeline enforces invariants on safe blocks that include executin
 
 - The executing message MUST have a corresponding initiating message
 - The initiating message that corresponds to an executing message MUST come from a chain in its dependency set
+- A block MUST be considered invalid if it is built with any invalid executing messages
 
 Blocks that contain transactions that relay cross domain messages to the destination chain where the
 initiating transaction does not exist MUST be considered invalid and MUST not be allowed by the
@@ -32,6 +33,10 @@ There is no concept of replay protection at the lowest level of abstractions wit
 there is no replay protection mechanism that fits well for all applications. Users MAY submit an
 arbitrary number of executing messages per initiating message. Applications MUST build their own replay
 protection mechanisms if they are interacting with the lowest level abstractions.
+
+Blocks that contain invalid executing messages are considered invalid by the protocol. The derivation
+pipeline will never promote them from being `unsafe`. A block that contains invalid executing messages
+MUST be replaced by a deposits only block at the same block number.
 
 ### Depositing an Executing Message
 
