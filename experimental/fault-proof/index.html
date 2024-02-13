@@ -190,7 +190,8 @@
 <li><a href="#type-3-global-generic-key">Type <code>3</code>: Global generic key</a></li>
 <li><a href="#type-4-global-sha2-256-key">Type <code>4</code>: Global SHA2-256 key</a></li>
 <li><a href="#type-5-global-eip-4844-point-evaluation-key">Type <code>5</code>: Global EIP-4844 Point-evaluation key</a></li>
-<li><a href="#type-6-128-reserved-range">Type <code>6-128</code>: reserved range</a></li>
+<li><a href="#type-6-global-eip-4844-point-evaluation-precompile-key">Type <code>6</code>: Global EIP-4844 Point-evaluation precompile key</a></li>
+<li><a href="#type-7-128-reserved-range">Type <code>7-128</code>: reserved range</a></li>
 <li><a href="#type-129-255-application-usage">Type <code>129-255</code>: application usage</a></li>
 </ul>
 </li>
@@ -209,6 +210,7 @@
 <li><a href="#l1-block-header-blockhash"><code>l1-block-header &lt;blockhash&gt;</code></a></li>
 <li><a href="#l1-transactions-blockhash"><code>l1-transactions &lt;blockhash&gt;</code></a></li>
 <li><a href="#l1-receipts-blockhash"><code>l1-receipts &lt;blockhash&gt;</code></a></li>
+<li><a href="#l1-kzg-point-evaluation-bytes"><code>l1-kzg-point-evaluation &lt;bytes&gt;</code></a></li>
 <li><a href="#l2-block-header-blockhash"><code>l2-block-header &lt;blockhash&gt;</code></a></li>
 <li><a href="#l2-transactions-blockhash"><code>l2-transactions &lt;blockhash&gt;</code></a></li>
 <li><a href="#l2-code-codehash"><code>l2-code &lt;codehash&gt;</code></a></li>
@@ -308,7 +310,23 @@ The <code>commitment</code> is part of the key.</p>
 <li><code>commitment</code> is a bytes48, representing the KZG commitment.</li>
 <li><code>z</code> is a big-endian <code>uint256</code></li>
 </ul>
-<h4 id="type-6-128-reserved-range"><a class="header" href="#type-6-128-reserved-range">Type <code>6-128</code>: reserved range</a></h4>
+<h4 id="type-6-global-eip-4844-point-evaluation-precompile-key"><a class="header" href="#type-6-global-eip-4844-point-evaluation-precompile-key">Type <code>6</code>: Global EIP-4844 Point-evaluation precompile key</a></h4>
+<p>An EIP-4844 point-evaluation precompile result. It maps directly to the EIP-4844
+point-evaluation precompile introduced in Cancun.</p>
+<p>This preimage key can be used to avoid running expensive point-evaluation routine in
+a program.</p>
+<p>Key: <code>6 ++ keccak256(input)[1:]</code>, where:</p>
+<ul>
+<li><code>6</code> is the type byte</li>
+<li><code>++</code> is concatenation</li>
+<li><code>input</code> is the 192 byte input to the KZG point evaluation precompile</li>
+</ul>
+<p>The result has two possible 1-byte values:</p>
+<ul>
+<li><code>0</code> if the point evaluation precompile fails</li>
+<li><code>1</code> - otherwise</li>
+</ul>
+<h4 id="type-7-128-reserved-range"><a class="header" href="#type-7-128-reserved-range">Type <code>7-128</code>: reserved range</a></h4>
 <p>Range start and end both inclusive.</p>
 <p>This range of key types is reserved for future usage by the core protocol.
 E.g. version changes, contract migrations, chain-data, additional core features, etc.</p>
@@ -502,6 +520,10 @@ prepare the RLP pre-images of each of them, including transactions-list MPT node
 <h4 id="l1-receipts-blockhash"><a class="header" href="#l1-receipts-blockhash"><code>l1-receipts &lt;blockhash&gt;</code></a></h4>
 <p>Requests the host to prepare the list of receipts of the L1 block with <code>&lt;blockhash&gt;</code>:
 prepare the RLP pre-images of each of them, including receipts-list MPT nodes.</p>
+<h4 id="l1-kzg-point-evaluation-inputbytes"><a class="header" href="#l1-kzg-point-evaluation-inputbytes"><code>l1-kzg-point-evaluation &lt;inputbytes&gt;</code></a></h4>
+<p>Requests the host to prepare the result of the L1 KZG point evaluation precompile given
+<code>&lt;inputbytes&gt;</code> as the input. The host also prepares a <a href="#type-2-global-keccak256-key">global keccak256 preimage</a>
+of the input.</p>
 <h4 id="l2-block-header-blockhash"><a class="header" href="#l2-block-header-blockhash"><code>l2-block-header &lt;blockhash&gt;</code></a></h4>
 <p>Requests the host to prepare the L2 block header RLP pre-image of the block <code>&lt;blockhash&gt;</code>.</p>
 <h4 id="l2-transactions-blockhash"><a class="header" href="#l2-transactions-blockhash"><code>l2-transactions &lt;blockhash&gt;</code></a></h4>
@@ -515,6 +537,16 @@ prepare the RLP pre-images of each of them, including transactions-list MPT node
 <p>Requests the host to prepare the L2 Output at the l2 output root <code>&lt;outputroot&gt;</code>.
 The L2 Output is the preimage of a
 <a href="../../protocol/proposals.html#l2-output-commitment-construction">computed output root</a>.</p>
+<h3 id="precompile-accelerators"><a class="header" href="#precompile-accelerators">Precompile Accelerators</a></h3>
+<p>Precompiles that are too expensive to be executed in a fault-proof VM can be executed
+more efficiently using the pre-image oracle.
+This approach ensures that the fault proof program can complete a state transition in a reasonable
+amount of time.</p>
+<p>During program execution, the precompiles are substituted with interactions with pre-image oracle.
+An example of this is the KZG point evaluation precompile, where the program provides
+the host with a hint for the point evaluation input. This allows it to subsequently retrieve the result
+using a <a href="#type-6-global-eip-4844-point-evaluation-precompile-key">type <code>6</code> pre-image key</a> from the oracle.
+All accelerated precompiles must be functionally equivalent to their EVM equivalent.</p>
 <h2 id="fault-proof-vm"><a class="header" href="#fault-proof-vm">Fault Proof VM</a></h2>
 <p>A fault proof VM implements:</p>
 <ul>
