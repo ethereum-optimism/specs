@@ -4,17 +4,19 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Overview](#overview)
-- [Safe](#safe)
-- [SafeL2](#safel2)
-- [MultiSend](#multisend)
-- [MultiSendCallOnly](#multisendcallonly)
-- [SafeSingletonFactory](#safesingletonfactory)
-- [Multicall3](#multicall3)
-- [Arachnid's Deterministic Deployment Proxy](#arachnids-deterministic-deployment-proxy)
-- [Permit2](#permit2)
-- [ERC-4337 EntryPoint](#erc-4337-entrypoint)
-- [ERC-4337 SenderCreator](#erc-4337-sendercreator)
+- [Preinstalls](#preinstalls)
+  - [Overview](#overview)
+  - [Safe](#safe)
+  - [SafeL2](#safel2)
+  - [MultiSend](#multisend)
+  - [MultiSendCallOnly](#multisendcallonly)
+  - [SafeSingletonFactory](#safesingletonfactory)
+  - [Multicall3](#multicall3)
+  - [Arachnid's Deterministic Deployment Proxy](#arachnids-deterministic-deployment-proxy)
+  - [Create2Deployer](#create2deployer)
+  - [Permit2](#permit2)
+  - [ERC-4337 EntryPoint](#erc-4337-entrypoint)
+  - [ERC-4337 SenderCreator](#erc-4337-sendercreator)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -120,6 +122,17 @@ means the only variables in determining the address of your contract are its byt
 Between the use of `CREATE2` opcode and the one-time-use-account for the deployer, this contracts ensures
 that a given contract will exist at the exact same address on every chain, but without having to use the
 same gas pricing or limits every time.
+
+## Create2Deployer
+
+[Implementation](https://etherscan.io/address/0xF49600926c7109BD66Ab97a2c036bf696e58Dbc2#code)
+
+Address: `0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2`
+
+> [!NOTE]
+> There was previously [a mishap](https://github.com/pcaversaccio/create2deployer/issues/128) deploying this contract to Base mainnet. To account for this, [a modified version](https://github.com/ethereum-optimism/op-geth/pull/126#issuecomment-1762364107) of the contract was hardforked in during [Canyon](../protocol/superchain-upgrades.md#canyon). As a result, the deployed bytecode at `0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2` will **not** match what's deployed on Ethereum mainnet, but **SHOULD** match what's deployed across OP chains.
+
+Helper smart contract to make easier and safer usage of the [CREATE2](https://eips.ethereum.org/EIPS/eip-1014) Ethereum Virtual Machine (EVM) opcode. `CREATE2` can be used to compute in advance the address where a smart contract will be deployed, which allows for interesting new mechanisms known as counterfactual interactions.
 
 ## Permit2
 
