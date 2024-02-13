@@ -105,7 +105,7 @@ function challenge(uint256 challengedBlockNumber, bytes commitment) external pay
 ```
 
 - The L1 block number in which it was included.
-- Versionned commitment bytes (i.e. `0 ++ keccak256(frame.. )`)
+- Versioned commitment bytes (i.e. `0 ++ keccak256(frame.. )`)
 
 Users with access to the input data then have another window of L1 blocks (`resolveWindow`)
 during which they can submit it as calldata to the chain by calling the `resolve` method of the contract.
