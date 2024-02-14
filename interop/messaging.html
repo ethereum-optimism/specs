@@ -1,0 +1,457 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Messaging - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/fault-dispute-game.html"><strong aria-hidden="true">4.1.3.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.3.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/bond-incentives.html"><strong aria-hidden="true">4.1.3.2.</strong> Bond Incentives</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../experimental/plasma.html"><strong aria-hidden="true">4.2.</strong> Plasma</a></li><li class="chapter-item expanded "><a href="../interop/index.html"><strong aria-hidden="true">4.3.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../interop/dependency_set.html"><strong aria-hidden="true">4.3.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../interop/messaging.html" class="active"><strong aria-hidden="true">4.3.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../interop/predeploys.html"><strong aria-hidden="true">4.3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../interop/execution.html"><strong aria-hidden="true">4.3.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../interop/sequencer.html"><strong aria-hidden="true">4.3.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../interop/verifier.html"><strong aria-hidden="true">4.3.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../interop/rollup_node_p2p.html"><strong aria-hidden="true">4.3.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../interop/fault_proof.html"><strong aria-hidden="true">4.3.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../interop/upgrade.html"><strong aria-hidden="true">4.3.9.</strong> Upgrade</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="messaging"><a class="header" href="#messaging">Messaging</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#message">Message</a>
+<ul>
+<li><a href="#message-payload">Message payload</a></li>
+<li><a href="#message-identifier">Message Identifier</a></li>
+</ul>
+</li>
+<li><a href="#messaging-ends">Messaging ends</a>
+<ul>
+<li><a href="#initiating-messages">Initiating Messages</a></li>
+<li><a href="#executing-messages">Executing Messages</a></li>
+</ul>
+</li>
+<li><a href="#messaging-invariants">Messaging Invariants</a>
+<ul>
+<li><a href="#timestamp-invariant">Timestamp Invariant</a></li>
+<li><a href="#chainid-invariant">ChainID Invariant</a></li>
+<li><a href="#only-eoa-invariant">Only EOA Invariant</a></li>
+<li><a href="#message-expiry-invariant">Message Expiry Invariant</a></li>
+</ul>
+</li>
+<li><a href="#message-graph">Message Graph</a>
+<ul>
+<li><a href="#invalid-messages">Invalid messages</a>
+<ul>
+<li><a href="#block-reorgs">Block reorgs</a></li>
+<li><a href="#block-recommits">Block Recommits</a></li>
+</ul>
+</li>
+<li><a href="#intra-block-messaging-cycles">Intra-block messaging: cycles</a></li>
+<li><a href="#resolving-cross-chain-safety">Resolving cross-chain safety</a></li>
+<li><a href="#horizon-timestamp">Horizon timestamp</a></li>
+<li><a href="#pruning-the-graph">Pruning the graph</a></li>
+<li><a href="#bounding-the-graph">Bounding the graph</a></li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#cyclic-dependencies">Cyclic dependencies</a></li>
+<li><a href="#transitive-dependencies">Transitive dependencies</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="message"><a class="header" href="#message">Message</a></h2>
+<p>A message is a <a href="#message-payload">broadcast payload</a> emitted from an <a href="#message-identifier">identified source</a>.</p>
+<h3 id="message-payload"><a class="header" href="#message-payload">Message payload</a></h3>
+<p>Opaque <code>bytes</code> that represent a <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">Log</a>.</p>
+<p>It is serialized by first concatenating the topics and then with the data.</p>
+<pre><code class="language-go">msg := make([]byte, 0)
+for _, topic := range log.Topics {
+    msg = append(msg, topic.Bytes()...)
+}
+msg = append(msg, log.Data...)
+</code></pre>
+<p>The <code>_msg</code> can easily be decoded into a Solidity <code>struct</code> with <code>abi.decode</code> since each topic is always 32 bytes and
+the data generally ABI encoded.</p>
+<h3 id="message-identifier"><a class="header" href="#message-identifier">Message Identifier</a></h3>
+<p>The <a href="#message-identifier"><code>Identifier</code></a> that uniquely represents a log that is emitted from a chain. It can be considered to be a
+unique pointer to a particular log. The derivation pipeline and fault proof program MUST ensure that the
+<code>_msg</code> corresponds exactly to the log that the <a href="#message-identifier"><code>Identifier</code></a> points to.</p>
+<pre><code class="language-solidity">struct Identifier {
+    address origin;
+    uint256 blocknumber;
+    uint256 logIndex;
+    uint256 timestamp;
+    uint256 chainid;
+}
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>origin</code></td><td><code>address</code></td><td>Account that emits the log</td></tr>
+<tr><td><code>blocknumber</code></td><td><code>uint256</code></td><td>Block number in which the log was emitted</td></tr>
+<tr><td><code>logIndex</code></td><td><code>uint256</code></td><td>The index of the log in the array of all logs emitted in the block</td></tr>
+<tr><td><code>timestamp</code></td><td><code>uint256</code></td><td>The timestamp that the log was emitted. Used to enforce the timestamp invariant</td></tr>
+<tr><td><code>chainid</code></td><td><code>uint256</code></td><td>The chainid of the chain that emitted the log</td></tr>
+</tbody></table>
+</div>
+<p>The <a href="#message-identifier"><code>Identifier</code></a> includes the set of information to uniquely identify a log. When using an absolute
+log index within a particular block, it makes ahead of time coordination more complex. Ideally there
+is a better way to uniquely identify a log that does not add ordering constraints when building
+a block. This would make building atomic cross chain messages more simple by not coupling the
+exact state of the block templates between multiple chains together.</p>
+<h2 id="messaging-ends"><a class="header" href="#messaging-ends">Messaging ends</a></h2>
+<h3 id="initiating-messages"><a class="header" href="#initiating-messages">Initiating Messages</a></h3>
+<p>Each Log (also known as <code>event</code> in solidity) forms an initiating message.
+The raw log data froms the <a href="#message-payload">Message Payload</a>.</p>
+<p>Messages are <em>broadcast</em>: the protocol does not enshrine address-targeting within messages.</p>
+<p>The initiating message is uniquely identifiable with an <a href="#message-identifier"><code>Identifier</code></a>,
+such that it can be distinguished from other duplicate messages within the same transaction or block.</p>
+<p>An initiating message may be executed many times: no replay-protection is enshrined in the protocol.</p>
+<h3 id="executing-messages"><a class="header" href="#executing-messages">Executing Messages</a></h3>
+<p>All the information required to satisfy the invariants MUST be included in the calldata
+of the function that is used to execute messages.</p>
+<p>Both the block builder and the verifier use this information to ensure that all system invariants are held.</p>
+<p>The executing message is verified by checking if there is an existing initiating-message
+that originates at <a href="#message-identifier"><code>Identifier</code></a> with matching <a href="#message-payload">Message Payload</a>.</p>
+<h2 id="messaging-invariants"><a class="header" href="#messaging-invariants">Messaging Invariants</a></h2>
+<ul>
+<li><a href="#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the executing message MUST
+be greater than or equal to the timestamp of the initiating message.</li>
+<li><a href="#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
+<li><a href="#only-eoa-invariant">Only EOA Invariant</a>: The executing message MUST be initiated by an externally owned
+account such that the top level EVM call frame enters the <code>CrossL2Inbox</code></li>
+<li><a href="#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
+message MUST be lower than the initiating message timestamp (as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
+</ul>
+<h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
+<p>The timestamp invariant ensures that initiating messages cannot come from a future block. Note that since
+all transactions in a block have the same timestamp, it is possible for an executing transaction to be
+ordered before the initiating message in the same block.</p>
+<h3 id="chainid-invariant"><a class="header" href="#chainid-invariant">ChainID Invariant</a></h3>
+<p>Without a guarantee on the set of dependencies of a chain, it may be impossible for the derivation
+pipeline to know which chain to source the initiating message from. This also allows for chain operators
+to explicitly define the set of chains that they depend on.</p>
+<h3 id="only-eoa-invariant"><a class="header" href="#only-eoa-invariant">Only EOA Invariant</a></h3>
+<p>The <code>onlyEOA</code> invariant on executing a cross chain message enables static analysis on executing messages.
+This allows for the derivation pipeline and block builders to reject executing messages that do not
+have a corresponding initiating message without needing to do any EVM execution.</p>
+<p>It may be possible to relax this invariant in the future if the block building process is efficient
+enough to do full simulations to gain the information required to verify the existence of the
+initiating transaction. Instead of the <a href="#message-identifier"><code>Identifier</code></a> being included in calldata, it would be emitted
+in an event that can be used after the fact to verify the existence of the initiating message.
+This adds complexity around mempool inclusion as it would require EVM execution and remote RPC
+access to learn if a transaction can enter the mempool.</p>
+<p>This feature could be added in a backwards compatible way by adding a new function to the <code>CrossL2Inbox</code>.</p>
+<p>One possible way to handle explicit denial of service attacks is to utilize identity
+in iterated games such that the block builder can ban identities that submit malicious transactions.</p>
+<h3 id="message-expiry-invariant"><a class="header" href="#message-expiry-invariant">Message Expiry Invariant</a></h3>
+<p>Note: Message Expiry as property of the protocol is in active discussion.
+It helps set a strict bound on total messaging activity to support, but also limits use-cases.
+This trade-off is in review. This invariant may be ignored in initial interop testnets.</p>
+<p>The expiry invariant invalidates inclusion of any executing message with
+<code>id.timestamp + EXPIRY_TIME &lt; executing_block.timestamp</code> where:</p>
+<ul>
+<li><code>id</code> is the <a href="#message-identifier"><code>Identifier</code></a> encoded in the executing message, matching the block attributes of the initiating message.</li>
+<li><code>executing_block</code> is the block where the executing message was included in.</li>
+<li><code>EXPIRY_TIME = 180 * 24 * 60 * 60 = 15552000</code> seconds, i.e. 180 days.</li>
+</ul>
+<h2 id="message-graph"><a class="header" href="#message-graph">Message Graph</a></h2>
+<p>The dependencies of messages can be modeled as a directed graph:</p>
+<ul>
+<li><strong>vertex</strong>: a block</li>
+<li><strong>edge</strong>: a dependency:
+<ul>
+<li>parent-block (source) to block (target)</li>
+<li>message relay, from initiation (source) to execution (target)</li>
+</ul>
+</li>
+</ul>
+<p>If the source of an edge is invalidated, the target is invalidated.</p>
+<h3 id="invalid-messages"><a class="header" href="#invalid-messages">Invalid messages</a></h3>
+<p>A message is said to be "invalid" when the executing message does not have a valid dependency.</p>
+<p>Dependencies are invalid when:</p>
+<ul>
+<li>The dependency is unknown.</li>
+<li>The dependency is known but not part of the canonical chain.</li>
+<li>The dependency is known but does not match all message attributes (<a href="#message-identifier"><code>Identifier</code></a> and payload).</li>
+</ul>
+<h4 id="block-reorgs"><a class="header" href="#block-reorgs">Block reorgs</a></h4>
+<p>The <a href="#message-identifier"><code>Identifier</code></a> used by an executing message does not cryptographically
+commit to the block it may reference.</p>
+<p>Messages may be executed before the block that initiates them is sealed.</p>
+<p>When tracking message dependencies, edges are maintained for <em>all</em> identified source blocks.</p>
+<p>Reorgs are resolved by filtering the view of the solver to only canonical blocks.
+If the source block is not canonical, the dependency is invalid.</p>
+<p>The canonical L2 block at the identified block-height is the source of truth.</p>
+<h4 id="block-recommits"><a class="header" href="#block-recommits">Block Recommits</a></h4>
+<p>Blocks may be partially built, or sealed but not published, and then rebuilt.</p>
+<p>Any optimistically assumed messages have to be revalidated,
+and the original partial block can be removed from the dependency graph.</p>
+<h3 id="intra-block-messaging-cycles"><a class="header" href="#intra-block-messaging-cycles">Intra-block messaging: cycles</a></h3>
+<p>While messages cannot be initiated by future blocks,
+they can be initiated by any transactions within the same timestamp,
+as per the <a href="#timestamp-invariant">Timestamp Invariant</a>.</p>
+<p>This property allows messages to form cycles in the graph:
+blocks with equal timestamp, of chains in the same dependency set,
+may have dependencies on one another.</p>
+<h3 id="resolving-cross-chain-safety"><a class="header" href="#resolving-cross-chain-safety">Resolving cross-chain safety</a></h3>
+<p>To determine cross-chain safety, the graph is inspected for valid graph components that have no invalid dependencies,
+while applying the respective safety-view on the blocks in the graph.</p>
+<p>I.e. the graph must not have any inward edges towards invalid blocks within the safety-view.</p>
+<p>A safety-view is the subset of canonical blocks of all chains with the specified safety label or a higher safety label.
+Dependencies on blocks outside of the safety-view are invalid,
+but may turn valid once the safety-view changes (e.g. a reorg of unsafe blocks).</p>
+<p>By resolving in terms of graph-components, cyclic dependencies and transitive dependencies are addressed.</p>
+<h3 id="horizon-timestamp"><a class="header" href="#horizon-timestamp">Horizon timestamp</a></h3>
+<p>The maximum seen timestamp in the graph is the <code>horizon_timestamp</code>.</p>
+<p>The verifier can defer growth of the graph past this <code>horizon_timestamp</code>,
+until the graph has been resolved and pruned.</p>
+<h3 id="pruning-the-graph"><a class="header" href="#pruning-the-graph">Pruning the graph</a></h3>
+<p>Edges between blocks can be de-duplicated, when the blocks are complete and sealed.</p>
+<p>The same initiating or executing messages, but attached to different blocks,
+may have to be added back to the graph if the set of blocks changes.</p>
+<p>Blocks with cross-chain safety in the finalized-blocks safety-view can be optimized:
+outward edges for initiating messages may be attached
+when relevant to resolution of newer lower-safety blocks.
+No inward edges are required anymore however, as the maximum safety has been ensured.</p>
+<p>Blocks older than <code>horizon_timestamp - (2 * EXPIRY_TIME)</code> cannot be depended
+on from any valid block within the graph, and can thus be safely pruned entirely.</p>
+<h3 id="bounding-the-graph"><a class="header" href="#bounding-the-graph">Bounding the graph</a></h3>
+<p>With many events, and transitive dependencies, resolving the cross-chain safety may be an intensive task for a verifier.
+It is thus important for the graph to be reasonably bounded, such that it can be resolved.</p>
+<p>The graph is bounded in 4 ways:</p>
+<ul>
+<li>Every block can only depend on blocks of chains in the dependency set,
+as per the <a href="#chainid-invariant">ChainID invariant</a>.</li>
+<li>Every block cannot depend on future blocks, as per the <a href="#timestamp-invariant">Timestamp invariant</a>.</li>
+<li>Every block has a maximum gas limit, an intrinsic cost per transaction,
+and thus a maximum inward degree of dependencies, as per the <a href="#only-eoa-invariant">Only-EOA invariant</a></li>
+<li>Every block cannot depend on expired messages, as per the <a href="#message-expiry-invariant">Message expiry invariant</a>.</li>
+</ul>
+<p>The verifier is responsible for filtering out non-canonical parts of the graph.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="cyclic-dependencies"><a class="header" href="#cyclic-dependencies">Cyclic dependencies</a></h3>
+<p>If there is a cycle in the dependency set, chains MUST still be able to promote unsafe blocks
+to safe blocks. A cycle in the dependency set happens anytime that two chains are in each other's
+dependency set. This means that they are able to send cross chain messages to each other.</p>
+<h3 id="transitive-dependencies"><a class="header" href="#transitive-dependencies">Transitive dependencies</a></h3>
+<p>The safety of a chain is only ensured when the inputs are safe:
+dependencies are thus said to be transitive.
+Without validating the transitive dependencies,
+the verifier relies on the verification work of the nodes that it sources its direct dependencies from.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/dependency_set.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/predeploys.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/dependency_set.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/predeploys.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
