@@ -68,13 +68,13 @@ to be submitted to the inbox address, the data is uploaded to the DA storage lay
 commitment (keccak256 hash) is submitted as the bacher inbox transaction call data.
 
 Commitments are encoded as `commitment_type_byte ++ commitment_bytes`, where `commitment_bytes` depends
-on the `commitment_type_byte` where [0, 128] are reserved for official implementations:
+on the `commitment_type_byte` where [0, 128) are reserved for official implementations:
 
 | `commitment_type` | `commitment`                    |
 | ----------------- | ------------------------------- |
 | 0                 | `keccak256(tx_payload)`         |
 
-The batcher SHOULD cap input payloads to the maximum L1 calldata size or risk the input to be skipped
+The batcher SHOULD cap input payloads to the maximum L1 tx size or risk the input to be skipped
 during derivation.
 
 The batcher SHOULD NOT submit a commitment onchain unless input data was successfully stored on the service.
@@ -190,7 +190,7 @@ In addition, an expired challenge will reorg out `[r_start, r_end]` L2 blocks so
 block derived from the expired challenge's input and `r_end` the last L2 block derived before the pipeline
 was reset.
 
-Derivation MUST skip input data such as `input_data_size > max_l1_calldata_size` to ensure data can be submitted
+Derivation MUST skip input data such as `input_data_size > max_l1_tx_size` to ensure data can be submitted
 onchain if challenged.
 
 [pipeline]: ../protocol/derivation.md#resetting-the-pipeline
