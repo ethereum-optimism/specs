@@ -164,7 +164,7 @@ Where:
   header of the latest registered L1 origin block.
 
 Conceptually what the above function captures is the formula below, where `compressedTxSize =
-(zeroes*4 + ones*16) / 16` can be thought of as a rough approximation of how many bytes the
+(zeroes*4 + ones*16 + 68*16) / 16` can be thought of as a rough approximation of how many bytes the
 transaction occupies in a compressed batch.
 
 `(compressedTxSize) * (16*l1BaseFee*lBaseFeeScalar + l1BlobBaseFee*l1BlobBaseFeeScalar) / 1e6`
