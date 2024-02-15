@@ -230,7 +230,8 @@ when executing a branch/jump delay slot.</li>
 <li><code>hi</code> - 32-bit MIPS HI special register.</li>
 <li><code>heap</code> - 32-bit base address of the most recent memory allocation via mmap.</li>
 <li><code>exitCode</code> - 8-bit exit code.</li>
-<li><code>exited</code> - 1-bit indicator that the VM has exited.</li>
+<li><code>exited</code> - 8-bit indicator that the VM has exited.</li>
+<li><code>step</code> - 8-byte step counter.</li>
 <li><code>registers</code> - General-purpose MIPS32 registers. Each register is a 32-bit value.</li>
 </ol>
 <p>The state is represented by packing the above fields, in order, into a 226-byte buffer.</p>
