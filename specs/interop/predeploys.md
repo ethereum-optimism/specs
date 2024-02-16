@@ -230,7 +230,8 @@ function relayMessage(uint256 _destination, uint256 _nonce, address _sender, add
 The `L1Block` contract is updated to include the set of allowed chains. The L1 Attributes transaction
 sets the set of allowed chains. The `L1Block` contract MUST provide a public getter to check if a particular
 chain is in the dependency set called `isInDependencySet(uint256)`. This function MUST return true when
-the chain's chain id is passed in as an argument.
+the chain's chain id, passed as an argument, is in the dependency and FALSE when it isn't in there. 
+Additionally, this ensures that the function returns FALSE when no chain id is passed in.
 
 The `setL1BlockValuesInterop()` function MUST be called on every block after the interop upgrade block.
 The interop upgrade block itself MUST include a call to `setL1BlockValuesEcotone`.
