@@ -74,8 +74,8 @@ on the `commitment_type_byte` where [0, 128) are reserved for official implement
 | ----------------- | ------------------------------- |
 | 0                 | `keccak256(tx_payload)`         |
 
-The batcher SHOULD cap input payloads to the maximum L1 tx size or risk the input to be skipped
-during derivation.
+The batcher SHOULD cap input payloads to the maximum L1 tx size or the input will be skipped
+during derivation. See [derivation section](#derivation) for more details.
 
 The batcher SHOULD NOT submit a commitment onchain unless input data was successfully stored on the service.
 In addition, a DA provider storage service SHOULD return an error response if it is unable to properly
@@ -190,8 +190,10 @@ In addition, an expired challenge will reorg out `[r_start, r_end]` L2 blocks so
 block derived from the expired challenge's input and `r_end` the last L2 block derived before the pipeline
 was reset.
 
-Derivation MUST skip input data such as `input_data_size > max_l1_tx_size` to ensure data can be submitted
-onchain if challenged.
+Derivation MUST skip input data such as `input_data_size > MAX_L1_TX_SIZE` where `MAX_L1_TX_SIZE` is a consensus
+constant of 131072 bytes. In theory `MAX_L1_TX_SIZE` could be increased up to
+`(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost` based on the cost of resolving challenges in
+the contract implementation however to make challenging accessible it is capped based on geth's maxTxSize.
 
 [pipeline]: ../protocol/derivation.md#resetting-the-pipeline
 [eip4844]: https://eips.ethereum.org/EIPS/eip-4844
