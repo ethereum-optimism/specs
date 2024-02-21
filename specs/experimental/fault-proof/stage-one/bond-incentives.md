@@ -131,5 +131,3 @@ function claimCredit(address _recipient) external {
     if (!success) revert BondTransferFailed();
 }
 ```
-
-This fallback mechanism will be removed in the stage two project.
