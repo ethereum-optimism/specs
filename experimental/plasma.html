@@ -246,6 +246,14 @@ Response:
 <p>The <a href="../protocol/derivation.html#batch-submission">batching</a> and compression of input data remain unchanged. When a batch is ready
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
 commitment (keccak256 hash) is submitted as the bacher inbox transaction call data.</p>
+<p>Commitments are encoded as <code>commitment_type_byte ++ commitment_bytes</code>, where <code>commitment_bytes</code> depends
+on the <code>commitment_type_byte</code> where [0, 128) are reserved for official implementations:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>commitment_type</code></th><th><code>commitment</code></th></tr></thead><tbody>
+<tr><td>0</td><td><code>keccak256(tx_payload)</code></td></tr>
+</tbody></table>
+</div>
+<p>The batcher SHOULD cap input payloads to the maximum L1 tx size or the input will be skipped
+during derivation. See <a href="#derivation">derivation section</a> for more details.</p>
 <p>The batcher SHOULD NOT submit a commitment onchain unless input data was successfully stored on the service.
 In addition, a DA provider storage service SHOULD return an error response if it is unable to properly
 store the request payload so as to signal to the batcher to retry.
@@ -263,18 +271,18 @@ challenges if the input cannot be retrieved during the challenge window, as deta
 <p>Data availability is guaranteed via a permissionless challenge contract on the L1 chain.
 Users have a set number of L1 blocks (<code>challengeWindow</code>) during which they are able to call
 the <code>challenge</code> method of the contract with the following inputs:</p>
-<pre><code class="language-solidity">function challenge(uint256 challengedBlockNumber, bytes32 commitment) external payable
+<pre><code class="language-solidity">function challenge(uint256 challengedBlockNumber, bytes commitment) external payable
 </code></pre>
 <ul>
 <li>The L1 block number in which it was included.</li>
-<li>Commitment bytes (keccak256)</li>
+<li>Versioned commitment bytes (i.e. <code>0 ++ keccak256(frame.. )</code>)</li>
 </ul>
 <p>Users with access to the input data then have another window of L1 blocks (<code>resolveWindow</code>)
 during which they can submit it as calldata to the chain by calling the <code>resolve</code> method of the contract.
 If the data is not included onchain by the time the resolve window is elapsed, derivation of the L2 canonical chain
 will reorg starting from this first block derived from the challenged input data to the last block derived from the
 L1 block at which it expired. See more details about <a href="#derivation">Derivation</a> in the following section.</p>
-<pre><code class="language-solidity">function resolve(uint256 challengedBlockNumber, bytes32 commitment, bytes calldata preImage) external
+<pre><code class="language-solidity">function resolve(uint256 challengedBlockNumber, bytes commitment, bytes calldata preImage) external
 </code></pre>
 <p>In order to challenge a commitment, users deposit a bond amount where <code>bond &gt;= resolve_tx_gas_cost</code>.
 If the gas cost of resolving the challenge was lower than the bond, the difference is reimbursed to the challenger
@@ -310,7 +318,7 @@ enum ChallengeStatus {
 
 // DA Challenge event filtered
 event ChallengeStatusChanged(
-  bytes32 indexed challengedHash, uint256 indexed challengedBlockNumber, ChallengeStatus status
+  bytes indexed challengedCommitment, uint256 indexed challengedBlockNumber, ChallengeStatus status
 );
 
 </code></pre>
@@ -341,6 +349,10 @@ or load input data from the resolving transaction calldata.
 In addition, an expired challenge will reorg out <code>[r_start, r_end]</code> L2 blocks so that <code>r_start</code> is the first
 block derived from the expired challenge's input and <code>r_end</code> the last L2 block derived before the pipeline
 was reset.</p>
+<p>Derivation MUST skip input data such as <code>input_data_size &gt; MAX_L1_TX_SIZE</code> where <code>MAX_L1_TX_SIZE</code> is a consensus
+constant of 131072 bytes. In theory <code>MAX_L1_TX_SIZE</code> could be increased up to
+<code>(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost</code> based on the cost of resolving challenges in
+the contract implementation however to make challenging accessible it is capped based on geth's txMaxSize.</p>
 <h2 id="fault-proof"><a class="header" href="#fault-proof">Fault Proof</a></h2>
 <p>The derivation pipeline is integrated with <a href="./fault-proof/index.html">fault proofs</a> by adding additional hint types to the
 preimage oracle in order to query the input data from the DA provider as well as onchain challenge status.</p>
