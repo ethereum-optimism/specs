@@ -1,0 +1,478 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Bridge Integration - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../../../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../../../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/stage-one/index.html"><strong aria-hidden="true">4.1.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">4.1.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/stage-one/bond-incentives.html"><strong aria-hidden="true">4.1.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../../../experimental/fault-proof/stage-one/bridge-integration.html" class="active"><strong aria-hidden="true">4.1.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../../experimental/plasma.html"><strong aria-hidden="true">4.2.</strong> Plasma</a></li><li class="chapter-item expanded "><a href="../../../interop/index.html"><strong aria-hidden="true">4.3.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../interop/dependency_set.html"><strong aria-hidden="true">4.3.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../../../interop/messaging.html"><strong aria-hidden="true">4.3.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../../../interop/predeploys.html"><strong aria-hidden="true">4.3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../../interop/execution.html"><strong aria-hidden="true">4.3.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../../../interop/sequencer.html"><strong aria-hidden="true">4.3.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../../../interop/verifier.html"><strong aria-hidden="true">4.3.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../../../interop/rollup_node_p2p.html"><strong aria-hidden="true">4.3.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../../interop/fault_proof.html"><strong aria-hidden="true">4.3.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../../../interop/upgrade.html"><strong aria-hidden="true">4.3.9.</strong> Upgrade</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/fault-proof/stage-one/bridge-integration.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="bridge-integration"><a class="header" href="#bridge-integration">Bridge Integration</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#legacy-semantics">Legacy Semantics</a></li>
+<li><a href="#fpac-optimismportal-mods-specification">FPAC <code>OptimismPortal</code> Mods Specification</a>
+<ul>
+<li><a href="#roles---optimismportal">Roles - <code>OptimismPortal</code></a></li>
+<li><a href="#new-deployconfig-variables">New <code>DeployConfig</code> Variables</a></li>
+<li><a href="#data-structures">Data Structures</a></li>
+<li><a href="#state-layout">State Layout</a>
+<ul>
+<li><a href="#legacy-spacers">Legacy Spacers</a></li>
+<li><a href="#new-state-variables">New State Variables</a></li>
+</ul>
+</li>
+<li><a href="#provewithdrawaltransaction-modifications"><code>proveWithdrawalTransaction</code> modifications</a>
+<ul>
+<li><a href="#interface">Interface</a></li>
+<li><a href="#new-invariants---provewithdrawaltransaction">New Invariants - <code>proveWithdrawalTransaction</code></a></li>
+<li><a href="#changed-invariants---provewithdrawaltransaction">Changed Invariants - <code>proveWithdrawalTransaction</code></a></li>
+</ul>
+</li>
+<li><a href="#finalizewithdrawaltransaction-modifications"><code>finalizeWithdrawalTransaction</code> modifications</a>
+<ul>
+<li><a href="#new-invariants---finalizewithdrawaltransaction">New Invariants - <code>finalizeWithdrawalTransaction</code></a></li>
+<li><a href="#changed-invariants---finalizewithdrawaltransaction">Changed Invariants - <code>finalizeWithdrawalTransaction</code></a></li>
+</ul>
+</li>
+<li><a href="#air-gap">Air-gap</a>
+<ul>
+<li><a href="#blacklisting-disputegames">Blacklisting <code>DisputeGame</code>s</a></li>
+<li><a href="#blacklisting-a-full-gametype">Blacklisting a full <code>GameType</code></a></li>
+</ul>
+</li>
+<li><a href="#proxy-upgrade">Proxy Upgrade</a></li>
+</ul>
+</li>
+<li><a href="#permissioned-faultdisputegame">Permissioned <code>FaultDisputeGame</code></a>
+<ul>
+<li><a href="#roles---permissioneddisputegame">Roles - <code>PermissionedDisputeGame</code></a></li>
+<li><a href="#modifications">Modifications</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- all glossary references -->
+<!-- all links -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>With fault proofs, the withdrawal path changes such that withdrawals submitted to the <code>OptimismPortal</code> are proven
+against <a href="../../../glossary.html#l2-output-root-proposals">output proposals</a> submitted as a <a href="./fault-dispute-game.html"><code>FaultDisputeGame</code></a> prior to being finalized. Output
+proposals are now finalized whenever a dispute game resolves in their favor.</p>
+<h2 id="legacy-semantics"><a class="header" href="#legacy-semantics">Legacy Semantics</a></h2>
+<p>The <code>OptimismPortal</code> uses the <code>L2OutputOracle</code> in the withdrawal path of the rollup to allow users to prove the
+presence of their withdrawal inside of the <code>L2ToL1MessagePasser</code> account storage root, which can be retrieved by
+providing a preimage to an output root in the oracle. The oracle currently holds a list of all L2 outputs proposed to
+L1 by a permissioned PROPOSER key. The list in the contract has the following properties:</p>
+<ul>
+<li>It must always be sorted by the L2 Block Number that the output proposal is claiming it corresponds to.</li>
+<li>All outputs in the list that are &gt; <code>FINALIZATION_PERIOD_SECONDS</code> old are considered "finalized." The separator
+between unfinalized/finalized outputs moves forwards implicitly as time passes.</li>
+</ul>
+<p><img src="../../../static/assets/legacy-l2oo-list.png" alt="legacy-l2oo-list" /></p>
+<p>Currently, if there is a faulty output proposed by the permissioned <code>PROPOSER</code> key, a separate permissioned
+<code>CHALLENGER</code> key may intervene. Note that the <code>CHALLENGER</code> role effectively has god-mode privileges, and can currently
+act without proving that the outputs they're deleting are indeed incorrect. By deleting an output proposal, the
+challenger also deletes all output proposals in front of it.</p>
+<p>With the upgrade to the Fault Proof Alpha Chad system, output proposals are no longer sent to the <code>L2OutputOracle</code>, but
+to the <code>DisputeGameFactory</code> in order to be fault proven. In contrast to the L2OO, an incorrect output proposal is not
+deleted, but proven to be incorrect. The semantics of finalization timelines and the definition of a "finalized" output
+proposal also change. Since the DisputeGameFactory fulfills the same role as the L2OutputOracle in a post fault proofs
+world by tracking proposed outputs, and the L2OO's semantics are incompatible with the new system, the L2OO is no
+longer required.</p>
+<h2 id="fpac-optimismportal-mods-specification"><a class="header" href="#fpac-optimismportal-mods-specification">FPAC <code>OptimismPortal</code> Mods Specification</a></h2>
+<h3 id="roles---optimismportal"><a class="header" href="#roles---optimismportal">Roles - <code>OptimismPortal</code></a></h3>
+<ul>
+<li><code>Guardian</code>: Permissioned actor able to pause the portal, blacklist dispute games, and change the
+<code>RESPECTED_GAME_TYPE</code>.</li>
+</ul>
+<h3 id="new-deployconfig-variables"><a class="header" href="#new-deployconfig-variables">New <code>DeployConfig</code> Variables</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>DISPUTE_GAME_FINALITY_DELAY_SECONDS</code></td><td>The amount of time given to the <code>Guardian</code> role to blacklist a resolved dispute game before any withdrawals proven against it can be finalized, in case of system failure.</td></tr>
+<tr><td><code>PROOF_MATURITY_DELAY_SECONDS</code></td><td>Formerly <code>FINALIZATION_PERIOD_SECONDS</code> in the <code>L2OutputOracle</code>, defines the duration that must pass between proving and finalizing a withdrawal.</td></tr>
+<tr><td><code>RESPECTED_GAME_TYPE</code></td><td>The dispute game type that the portal uses for the withdrawal path.</td></tr>
+</tbody></table>
+</div>
+<h3 id="data-structures"><a class="header" href="#data-structures">Data Structures</a></h3>
+<p>Withdrawals are now proven against dispute games, which have immutable "root claims" representing the output root
+being proposed. The <code>ProvenWithdrawal</code> struct is now defined as:</p>
+<pre><code class="language-solidity">/// @notice Represents a proven withdrawal.
+/// @custom:field disputeGameProxy The address of the dispute game proxy that the withdrawal was proven against.
+/// @custom:field timestamp        Timestamp at which the withdrawal was proven.
+struct ProvenWithdrawal {
+    IDisputeGame disputeGameProxy;
+    uint64 timestamp;
+}
+</code></pre>
+<h3 id="state-layout"><a class="header" href="#state-layout">State Layout</a></h3>
+<h4 id="legacy-spacers"><a class="header" href="#legacy-spacers">Legacy Spacers</a></h4>
+<p>Spacers should be added at the following storage slots in the <code>OptimismPortal</code> so that they may not be reused:</p>
+<div class="table-wrapper"><table><thead><tr><th>Slot</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>52</code></td><td>Legacy <code>provenWithdrawals</code> mapping. Withdrawals proven against the <code>L2OutputOracle</code>'s output proposals will be deleted upon the upgrade.</td></tr>
+<tr><td><code>54</code></td><td>Legacy <code>L2OutputOracle</code> address.</td></tr>
+</tbody></table>
+</div>
+<h4 id="new-state-variables"><a class="header" href="#new-state-variables">New State Variables</a></h4>
+<p><strong><code>DisputeGameFactory</code> address</strong></p>
+<pre><code class="language-solidity">/// @notice Address of the DisputeGameFactory.
+/// @custom:network-specific
+DisputeGameFactory public disputeGameFactory;
+</code></pre>
+<p><strong>Respected Game Type</strong></p>
+<pre><code class="language-solidity">/// @notice The respected game type of the `OptimismPortal`.
+///         Can be changed by Guardian.
+GameType public respectedGameType;
+</code></pre>
+<p><strong>Respected Game Type Updated Timestamp</strong></p>
+<pre><code class="language-solidity">/// @notice The timestamp at which the respected game type was last updated.
+uint64 public respectedGameTypeUpdatedAt;
+</code></pre>
+<p><strong>New <code>ProvenWithdrawals</code> mapping</strong></p>
+<pre><code class="language-solidity">/// @notice A mapping of withdrawal hashes to `ProvenWithdrawal` data.
+mapping(bytes32 =&gt; ProvenWithdrawal) public provenWithdrawals;
+</code></pre>
+<p><strong>Blacklisted <code>DisputeGame</code> mapping</strong></p>
+<pre><code class="language-solidity">/// @notice A mapping of dispute game addresses to whether or not they are blacklisted.
+mapping(IDisputeGame =&gt; bool) public disputeGameBlacklist;
+</code></pre>
+<h3 id="provewithdrawaltransaction-modifications"><a class="header" href="#provewithdrawaltransaction-modifications"><code>proveWithdrawalTransaction</code> modifications</a></h3>
+<p>Proving a withdrawal transaction now proves against an output root in a dispute game, rather than one in the
+<code>L2OutputOracle</code>.</p>
+<h4 id="interface"><a class="header" href="#interface">Interface</a></h4>
+<p>The type signature of the function does not change, but the purpose of the second argument transitions from providing
+an index within the <code>L2OutputOracle</code>'s <code>l2Outputs</code> array to an index within the <code>DisputeGameFactory</code>'s list of created
+games.</p>
+<pre><code class="language-solidity">/// @notice Proves a withdrawal transaction.
+/// @param _tx               Withdrawal transaction to finalize.
+/// @param _disputeGameIndex Index of the dispute game to prove the withdrawal against.
+/// @param _outputRootProof  Inclusion proof of the L2ToL1MessagePasser contract's storage root.
+/// @param _withdrawalProof  Inclusion proof of the withdrawal in L2ToL1MessagePasser contract.
+function proveWithdrawalTransaction(
+    Types.WithdrawalTransaction memory _tx,
+    uint256 _disputeGameIndex,
+    Types.OutputRootProof calldata _outputRootProof,
+    bytes[] calldata _withdrawalProof
+) external whenNotPaused;
+</code></pre>
+<h4 id="new-invariants---provewithdrawaltransaction"><a class="header" href="#new-invariants---provewithdrawaltransaction">New Invariants - <code>proveWithdrawalTransaction</code></a></h4>
+<p><strong>Trusted <code>GameType</code></strong>
+The <code>DisputeGameFactory</code> can create many different types of dispute games, delineated by their <code>GameType</code>. The game
+type of the dispute game fetched from the factory's list at <code>_disputeGameIndex</code> must be of type <code>RESPECTED_GAME_TYPE</code>.
+The call should revert on all other game types it encounters.</p>
+<h4 id="changed-invariants---provewithdrawaltransaction"><a class="header" href="#changed-invariants---provewithdrawaltransaction">Changed Invariants - <code>proveWithdrawalTransaction</code></a></h4>
+<p><strong>Re-proving withdrawals</strong>
+Users being able to re-prove withdrawals, in special cases, is still necessary to prevent user withdrawals from being
+bricked. It is kept to protect honest users when they prove their withdrawal inside of a malicious proposal. The
+timestamp of re-proven withdrawals is still reset.</p>
+<ol>
+<li><strong>Old:</strong> Re-proving is allowed if the output root at the proven withdrawal's <code>l2OutputIndex</code> changed in the
+<code>L2OutputOracle</code>.</li>
+<li><strong>New:</strong> Re-proving is allowed if the output proposal's dispute game has resolved against the output root's favor,
+the respected game type changed since the withdrawal was proven, or the game that was proven against was blacklisted.</li>
+</ol>
+<h3 id="finalizewithdrawaltransaction-modifications"><a class="header" href="#finalizewithdrawaltransaction-modifications"><code>finalizeWithdrawalTransaction</code> modifications</a></h3>
+<p>Finalizing a withdrawal transaction now references a <code>DisputeGame</code> to determine the status of the output proposal that
+the withdrawal was proven against.</p>
+<h4 id="new-invariants---finalizewithdrawaltransaction"><a class="header" href="#new-invariants---finalizewithdrawaltransaction">New Invariants - <code>finalizeWithdrawalTransaction</code></a></h4>
+<p><strong>Trusted <code>GameType</code></strong>
+The <code>DisputeGameFactory</code> can create many different types of dispute games, delineated by their <code>GameType</code>. The game
+type of the dispute game fetched from the factory's list at <code>_disputeGameIndex</code> must be of type <code>RESPECTED_GAME_TYPE</code>.
+The call should revert on all other game types it encounters.</p>
+<p><strong>Respected Game Type Updated</strong>
+A withdrawal may never be finalized if the dispute game was created before the respected game type was last updated.</p>
+<p><strong>Dispute Game Blacklist</strong>
+The <code>Guardian</code> role can blacklist certain <code>DisputeGame</code> addresses in the event of a system failure. If the address of
+the dispute game that the withdrawal was proven against is present in the <code>disputeGameBlacklist</code> mapping, the call
+should always revert.</p>
+<p><strong>Dispute Game Maturity</strong>
+See <a href="#Air-gap">"Air-gap"</a></p>
+<h4 id="changed-invariants---finalizewithdrawaltransaction"><a class="header" href="#changed-invariants---finalizewithdrawaltransaction">Changed Invariants - <code>finalizeWithdrawalTransaction</code></a></h4>
+<p><strong>Output Proposal Validity</strong>
+Instead of checking if the proven withdrawal's output proposal has existed for longer the legacy finalization period,
+we check if the dispute game has resolved in the root claim's favor. A <code>FaultDisputeGame</code> must never be considered to
+have resolved in the <code>rootClaim</code>'s favor unless its <code>status()</code> is equal to <code>DEFENDER_WINS</code>.</p>
+<h3 id="air-gap"><a class="header" href="#air-gap">Air-gap</a></h3>
+<p>Given it's own section due to it's importance, the air gap is an enforced period of time between a dispute game's
+resolution and users being able to finalize withdrawals that were proven against its root claim. When the <code>DisputeGame</code>
+resolves globally, it stores the timestamp. The portal's <code>finalizeWithdrawalTransaction</code> function asserts that
+<code>DISPUTE_GAME_FINALITY_DELAY_SECONDS</code> have passed since the resolution timestamp before allowing any withdrawals proven
+against the dispute game to be finalized. Because the <code>FaultDisputeGame</code> is a trusted implementation set by the owner
+of the <code>DisputeGameFactory</code>, it is safe to trust that this value is honestly set.</p>
+<h4 id="blacklisting-disputegames"><a class="header" href="#blacklisting-disputegames">Blacklisting <code>DisputeGame</code>s</a></h4>
+<p>A new method is added to assign <code>DisputeGame</code>s in the <code>disputeGameBlacklist</code> mapping mentioned in
+<a href="#State-Layout">"State Layout"</a>, in the event that a dispute game is detected to have resolved incorrectly. The only
+actor who may call this function is the <code>Guardian</code> role.</p>
+<p>Blacklisting a dispute game means that no withdrawals proven against it will be allowed to finalize
+(per the "Dispute Game Blacklist" invariant), and they must re-prove against a new dispute game that resolves correctly.
+The Portal's guardian role is obligated to blacklist any dispute games that it deems to have resolved incorrectly.
+Withdrawals proven against a blacklisted dispute game are not prevented from re-proving or being finalized in the
+future.</p>
+<h4 id="blacklisting-a-full-gametype"><a class="header" href="#blacklisting-a-full-gametype">Blacklisting a full <code>GameType</code></a></h4>
+<p>In the event of a catastrophic failure, we can upgrade the <code>OptimismPortal</code> proxy to an implementation with a
+different <code>RESPECTED_GAME_TYPE</code>. All pending withdrawals that reference a different game type will not be allowed to
+finalize and must re-prove, due to the "Trusted <code>GameType</code>" invariant. This should generally be avoided, but allows
+for a blanket blacklist of pending withdrawals corresponding to the current <code>RESPECTED_GAME_TYPE</code>. Depending on if
+we're okay with the tradeoffs, this also may be the most efficient way to upgrade the dispute game in the future.</p>
+<h3 id="proxy-upgrade"><a class="header" href="#proxy-upgrade">Proxy Upgrade</a></h3>
+<p>Upgrading the <code>OptimismPortal</code> proxy to an implementation that follows this specification will invalidate all pending
+withdrawals. This means that all users with pending withdrawals will need to re-prove their withdrawals against an
+output proposal submitted in the form of a <code>DisputeGame</code>.</p>
+<h2 id="permissioned-faultdisputegame"><a class="header" href="#permissioned-faultdisputegame">Permissioned <code>FaultDisputeGame</code></a></h2>
+<p>As a fallback to permissioned proposals, a child contract of the <code>FaultDisputeGame</code> will be created that has 2 new
+roles: the <code>PROPOSER</code> and a <code>CHALLENGER</code> (or set of challengers). Each interaction
+(<code>move</code> [<code>attack</code> / <code>defend</code>], <code>step</code>, <code>resolve</code> / <code>resolveClaim</code>, <code>addLocalData</code>, etc.) will be permissioned to the
+<code>CHALLENGER</code> key, and the <code>initialize</code> function will be permissioned to the <code>PROPOSER</code> key.</p>
+<p>In the event that we'd like to switch back to permissioned proposals, we can change the <code>RESPECTED_GAME_TYPE</code> in the
+<code>OptimismPortal</code> to a deployment of the <code>PermissionedFaultDisputeGame</code>.</p>
+<h3 id="roles---permissioneddisputegame"><a class="header" href="#roles---permissioneddisputegame">Roles - <code>PermissionedDisputeGame</code></a></h3>
+<ul>
+<li><code>PROPOSER</code> - Actor that can create a <code>PermissionedFaultDisputeGame</code> and participate in the games they've created.</li>
+<li><code>CHALLENGER</code> - Actor(s) that can participate in a <code>PermissionedFaultDisputeGame</code>.</li>
+</ul>
+<h3 id="modifications"><a class="header" href="#modifications">Modifications</a></h3>
+<p><strong>State Layout</strong></p>
+<p>2 new immutables:</p>
+<pre><code class="language-solidity">/// @notice The `PROPOSER` role.
+address public immutable PROPOSER;
+
+/// @notice The `CHALLENGER` role.
+address public immutable CHALLENGER;
+</code></pre>
+<p><strong>Functions</strong></p>
+<p>Every function that can mutate state should be overridden to add a check that either:</p>
+<ol>
+<li>The <code>msg.sender</code> has the <code>CHALLENGER</code> role.</li>
+<li>The <code>msg.sender</code> has the <code>PROPOSER</code> role.</li>
+</ol>
+<p>If the <code>msg.sender</code> does not have either role, the function must revert.</p>
+<p>The exception is the <code>initialize</code> function, which may only be called if the <code>tx.origin</code> is the <code>PROPOSER</code> role.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/fault-proof/stage-one/bond-incentives.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/plasma.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/fault-proof/stage-one/bond-incentives.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/plasma.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
