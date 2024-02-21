@@ -32,7 +32,8 @@
 
 ## Introduction
 
-Span-batch is a new batching spec that reduces overhead of OP-stack chains, introduced in Delta hardfork.
+Span-batch is a new batching spec that reduces overhead of OP-stack chains,
+introduced in [Delta](superchain-upgrades.md#delta) network upgrade.
 This enables sparse and low-throughput OP-stack chains.
 
 The overhead is reduced by representing a span of
