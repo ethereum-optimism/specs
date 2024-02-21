@@ -7133,7 +7133,12 @@ Input commitments submitted onchain without proper storage on the DA provider se
 challenges if the input cannot be retrieved during the challenge window, as detailed in the following section.</p>
 <h2 id="data-availability-challenge-contract"><a class="header" href="#data-availability-challenge-contract">Data Availability Challenge Contract</a></h2>
 <h3 id="parameters"><a class="header" href="#parameters">Parameters</a></h3>
-<div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>fixedResolutionCost</td><td><code>uint256</code></td><td>Fixed gas cost of resolving a challenge, set to 72925</td></tr>
+<tr><td>variableResolutionCost</td><td><code>uint256</code></td><td>Upper limit gas cost per byte scaled by precision constant, set to 16640</td></tr>
+<tr><td>variableResolutionCostPrecision</td><td><code>uint256</code></td><td>Precision of the variable resolution cost, set to 1000</td></tr>
+</tbody></table>
+</div><div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>challengeWindow</td><td><code>uint256</code></td><td>Number of L1 blocks whereby a commitment MAY be challenged after it's included onchain</td></tr>
 <tr><td>resolveWindow</td><td><code>uint256</code></td><td>Number of L1 blocks whereby input data SHOULD be submitted onchain after a challenge</td></tr>
 <tr><td>bondSize</td><td><code>uint256</code></td><td>Bond amount in Wei posted by the challenger so that bondSize &gt;= resolveCost</td></tr>
@@ -7143,7 +7148,7 @@ challenges if the input cannot be retrieved during the challenge window, as deta
 <p>Data availability is guaranteed via a permissionless challenge contract on the L1 chain.
 Users have a set number of L1 blocks (<code>challengeWindow</code>) during which they are able to call
 the <code>challenge</code> method of the contract with the following inputs:</p>
-<pre><code class="language-solidity">function challenge(uint256 challengedBlockNumber, bytes commitment) external payable
+<pre><code class="language-solidity">function challenge(uint256 challengedBlockNumber, bytes calldata challengedCommitment) external payable
 </code></pre>
 <ul>
 <li>The L1 block number in which it was included.</li>
@@ -7154,10 +7159,11 @@ during which they can submit it as calldata to the chain by calling the <code>re
 If the data is not included onchain by the time the resolve window is elapsed, derivation of the L2 canonical chain
 will reorg starting from this first block derived from the challenged input data to the last block derived from the
 L1 block at which it expired. See more details about <a href="experimental/plasma.html#derivation">Derivation</a> in the following section.</p>
-<pre><code class="language-solidity">function resolve(uint256 challengedBlockNumber, bytes commitment, bytes calldata preImage) external
+<pre><code class="language-solidity">function resolve(uint256 challengedBlockNumber, bytes calldata challengedCommitment, bytes calldata resolveData) external
 </code></pre>
 <p>In order to challenge a commitment, users deposit a bond amount where <code>bond &gt;= resolve_tx_gas_cost</code>.
-If the gas cost of resolving the challenge was lower than the bond, the difference is reimbursed to the challenger
+If the gas cost of resolving the challenge was lower than the bond, the difference is reimbursed to the challenger where
+<code>cost = (fixedResolutionCost + preImageLength * variableResolutionCost / variableResolutionCostPrecision) * gasPrice</code>
 and the rest of the bond is burnt. If the challenge is not resolved in time and expired,
 the bond is returned and can be withdrawn by the challenger or used to challenge another commitment.
 <code>bondSize</code> can be updated by the contract owner similar to <a href="experimental/../protocol/system_config.html">SystemConfig</a> variables.
