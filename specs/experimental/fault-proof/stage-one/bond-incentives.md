@@ -2,13 +2,17 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [Overview](#overview)
+- [Bond Formula](#bond-formula)
+  - [Cost in output root bisection game](#cost-in-output-root-bisection-game)
+  - [Cost in execution game](#cost-in-execution-game)
+  - [Cost at instruction step](#cost-at-instruction-step)
 - [Moves](#moves)
 - [Subgame Resolution](#subgame-resolution)
   - [Leftmost Claim Incentives](#leftmost-claim-incentives)
+- [Fallback on System Failure](#fallback-on-system-failure)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
