@@ -115,6 +115,8 @@ class Response(Enum):
 
 MAX_TRACE = 2**MAX_GAME_DEPTH
 
+ALL_CLAIMS: List[Claim] = []
+
 def agree_with(claim: Claim, chal_trace: List[ClaimHash, MAX_TRACE]) -> bool:
     if chal_trace[trace_index(claim.position)] != claim.claim_hash:
         return False
@@ -132,6 +134,24 @@ def respond_claim(claim: Claim, correct_trace: List[ClaimHash, MAX_TRACE]) -> Re
     else:
         return Response.ATTACK
 
+def claim_response(claim: Claim, response: Response, trace: List[ClaimHash, MAX_TRACE]) -> Claim:
+    new_position = claim.position << 1 if Response.ATTACK else (claim.position+1) << 1
+    claim_hash = chal_trace{trace_index(new_position)]
+    return Claim(parent=claim, position=new_position, claim_hash=claim_hash)
+
+def is_freeloader(claim: Claim, team: Team, trace: List[ClaimHash, MAX_TRACE]) -> Claim:
+    if claim.parent is None:
+        return None
+    correct_claims = {claim_response(c, respond(c, team, trace), trace) for c in ALL_CLAIMS}
+    for correct_claim in correct_claims:
+        if correct_claim == claim:
+            return False
+        if depth(c.position) != depth(claim):
+            continue
+        if correect_claim.position >= claim.position:
+            return True
+    return False
+
 def respond(claim: Claim, chal: Team, chal_trace: List[ClaimHash, MAX_TRACE]) -> Response:
     if depth(claim.position) % 2 != chal.value:
         if claim.parent is None or agree_with(claim.parent, chal_trace):
@@ -139,10 +159,7 @@ def respond(claim: Claim, chal: Team, chal_trace: List[ClaimHash, MAX_TRACE]) ->
         else:
             return Response.NOP # avoid supporting invalid claims on the same team
     else:
-        correct_response = respond(claim.parent, chal, chal_trace)
-        claim_response = Response.ATTACK if is_attack(claim) else Response.DEFEND
-        invalid_defense = claim_response == Response.DEFEND and correct_response == Respond.ATTACK
-        if not invalid_defense:
+        if is_freeloader(claim, chal, chal_trace):
             return respond_claim(claim, chal_trace)
         else:
             return Response.NOP
