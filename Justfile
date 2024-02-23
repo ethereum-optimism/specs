@@ -5,7 +5,7 @@ lint-specs-md-check:
     npx markdownlint-cli2 "./specs/**/*.md"
 
 lint-specs-md-fix:
-    npx markdownlint-cli2-fix "./specs/**/*.md"
+    npx markdownlint-cli2 --fix "./specs/**/*.md"
 
 lint-specs-toc-check:
     npx doctoc '--title=**Table of Contents**' ./specs && git diff --exit-code .
