@@ -5,6 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Invariants](#invariants)
 - [Fault Dispute Game Responses](#fault-dispute-game-responses)
   - [Moves](#moves)
   - [Steps](#steps)
@@ -33,6 +34,15 @@ For verifying the legitimacy of claims, it relies on a synced, trusted rollup no
 as well as a trace provider (ex: [Cannon](../cannon-fault-proof-vm.md)).
 The trace provider must be configured with the [ABSOLUTE_PRESTATE](fault-dispute-game.md#execution-trace)
 of the game being interacted with to generate the traces needed to make truthful claims.
+
+## Invariants
+
+To ensure an accurate and incentive compatible fault dispute system, the honest challenger behaviour must preserve
+three invariants for any game:
+
+1. The game resolves as `DefenderWins` if the root claim is correct and `ChallengerWins` if the root claim is incorrect
+2. The honest challenger is refunded the bond for every claim it posts and paid the bond of the parent of that claim
+3. The honest challenger never counters its own claim
 
 ## Fault Dispute Game Responses
 
