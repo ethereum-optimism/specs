@@ -48,16 +48,17 @@ three invariants for any game:
 
 The honest challenger determines which claims to counter by iterating through the claims in the order they are stored
 in the contract. This ordering ensures that a claim's ancestors are processed prior to the claim itself. For each claim,
-the honest challenger determines and tracks what the honest response would be, regardless of whether that response
-already exists in the full game state.
+the honest challenger determines and tracks the set of honest responses to all claims, regardless of whether that
+response already exists in the full game state.
 
 The root claim is considered to be an honest claim if and only if it has a [ClaimHash](fault-dispute-game.md#claims)
 that agrees with the honest challenger's ClaimHash for the root claim.
 
 The honest challenger should counter a claim if and only if:
 
-1. The claim is a child of an honest claim
-2. The claim has an honest sibling with a trace index greater than or equal to the claim's trace index
+1. The claim is a child of a claim in the set of honest responses
+2. The set of honest responses, contains a sibling to the claim with a trace index greater than or equal to the
+   claim's trace index
 
 Note that this implies the honest challenger never counters its own claim, since there is at most one honest counter to
 each claim, so an honest claim never has an honest sibling.
