@@ -5,11 +5,10 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [FDG Responses](#fdg-responses)
-  - [Root Claims](#root-claims)
-  - [Countering Invalid Claims](#countering-invalid-claims)
-  - [Countering Freeloaders](#countering-freeloaders)
+- [Fault Dispute Game Responses](#fault-dispute-game-responses)
+  - [Moves](#moves)
   - [Steps](#steps)
+  - [Timeliness](#timeliness)
 - [Resolution](#resolution)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -17,7 +16,7 @@
 ## Overview
 
 The honest challenger is an agent interacting in the [Fault Dispute Game](fault-dispute-game.md)
-(FDG) that supports honest claims and disputes false claims.
+that supports honest claims and disputes false claims.
 An honest challenger strives to ensure a correct, truthful, game resolution.
 The honest challenger is also _rational_ as any deviation from its behavior will result in
 negative outcomes.
@@ -33,145 +32,63 @@ Dispute Games.
 For verifying the legitimacy of claims, it relies on a synced, trusted rollup node
 as well as a trace provider (ex: [Cannon](../cannon-fault-proof-vm.md)).
 The trace provider must be configured with the [ABSOLUTE_PRESTATE](fault-dispute-game.md#execution-trace)
-of the FDG being interacted with to generate the traces needed to make truthful claims.
+of the game being interacted with to generate the traces needed to make truthful claims.
 
-## FDG Responses
+## Fault Dispute Game Responses
 
-### Root Claims
+The honest challenger determines which claims to counter by iterating through the claims in the order they are stored
+in the contract. This ordering ensures that a claim's ancestors are processed prior to the claim itself. For each claim,
+the honest challenger determines and tracks what the honest response would be, regardless of whether that response
+already exists in the full game state.
 
-When a `FaultDisputeGame` is created, the honest challenger has two possible correct responses
-to its root claim:
+The root claim is considered to be an honest claim if and only if it has a [ClaimHash](fault-dispute-game.md#claims)
+that agrees with the honest challenger's ClaimHash for the root claim.
 
-1. [**Attack**](fault-dispute-game.md#attack) if they disagree with the root claim.
-   The root claim commits to the entire execution trace, so the first move here is to
-   attack with the [ClaimHash](fault-dispute-game.md#claims) at the midpoint
-   instruction within their execution trace.
-2. **Do Nothing** if they agree with the root claim. They do nothing because if the root
-   claim is left un-countered, the game resolves to their agreement.
-   NOTE: The honest challenger will still track this game in order to defend any subsequent
-   claims made against the root claim - in effect, "playing the game".
+The honest challenger should counter a claim if and only if:
 
-### Countering Invalid Claims
+1. The claim is a child of an honest claim
+2. The claim has an honest sibling with a trace index greater than or equal to the claim's trace index
 
-For every claim made in a dispute game with a [game tree](fault-dispute-game.md#game-tree)
-depth in the range of `[1, MAX_DEPTH]`, the honest challenger processes them and performs
-a response.
+Note that this implies the honest challenger never counters its own claim, since there is at most one honest counter to
+each claim, so an honest claim never has an honest sibling.
 
-To determine the appropriate response, the challenger first needs to know which
-[_team_](fault-dispute-game.md#team-dynamics) it belongs to.
-This determines the set of claims it should respond to in the FDG.
-If the agent determines itself to be a Defender, which aims to support the root claim,
-then it must dispute claims positioned at odd depths in the game tree.
-Otherwise, it disputes claims positioned at even depths in the game tree.
-This means an honest challenger will typically only respond to claims made by the opposing team.
-(See [Countering Freeloaders](#countering-freeloaders) for exceptions to this).
+### Moves
 
-The next step is to determine if the claim, now known to be for the opposing team,
-disputes another claim the honest challenger _agrees_ with.
-An honest challenger agrees with a claim iff every other claim along its path to the
-root claim commits to a valid `ClaimHash`. Put differently, an honest challenger will
-avoid countering a claim if it disagrees with the path of claims leading to that
-specific claim. But if the honest challenger agrees with the path leading to the claim,
-then the claim is countered.
-
-The last step is to determine whether the claim has a valid commitment (i.e. `ClaimHash`).
-If the `ClaimHash` matches the honest challenger's at the same trace index, then we
-disagree with the claim's stance by moving to [defend](fault-dispute-game.md#defend).
+To respond to a claim with a depth in the range of `[1, MAX_DEPTH]`, the honest challenger determines if the claim
+has a valid commitment (i.e. `ClaimHash`). If the `ClaimHash` matches the honest challenger's at teh same trace index,
+then we disagree with the claim's stance by move to [defend](fault-dispute-game.md#defend).
 Otherwise, the claim is [attacked](fault-dispute-game.md#attack).
 
-### Countering Freeloaders
+The claim that would be added as a result of the move is added to the set of honest moves being tracked.
 
-Freeloaders are claims that exist at the correct depth and on the same team as honest challengers
-but are positioned incorrectly or commit to an invalid `ClaimHash`.
-The honest challenger must dispute freeloaders to claim the bond of the subgame root.
-If not disputed, the bond may be awarded to the freeloader, depending on their position.
-See [Bond incentives for subgame Resolution](./bond-incentives.md) for details.
-
-The honest challenger achieves this by disputing any freeloader claim that is not invalidly positioned
-in a defensive position. This includes disputing the following types of claims:
-
-- Claims at an invalid attack position
-- Claims with an invalid `ClaimHash` at a valid attack position
-- Claims with a valid `ClaimHash` at a valid defense position
-
-Doing so ensures that the leftmost claim is the hoenst challenger's.
-
-The following pseudocode illustrates the response logic.
-
-```python
-class Team(Enum):
-    DEFENDER = 0
-    CHALLENGER = 1
-
-class Claim:
-    parent: Claim
-    position: uint64
-    claim_hash: ClaimHash
-
-class Response(Enum):
-    ATTACK = 0
-    DEFEND = 1
-    NOP = 2
-
-MAX_TRACE = 2**MAX_GAME_DEPTH
-
-def agree_with(claim: Claim, chal_trace: List[ClaimHash, MAX_TRACE]) -> bool:
-    if chal_trace[trace_index(claim.position)] != claim.claim_hash:
-        return False
-    grand_parent = claim.parent.parent if claim.parent is not None else None
-    if grand_parent is not None:
-        return agree_with(grand_parent)
-    return True
-
-def is_attack(claim: Claim) -> bool:
-    return claim.position == claim.parent.position << 1
-
-def respond_claim(claim: Claim, correct_trace: List[ClaimHash, MAX_TRACE]) -> Response:
-    if chal_trace[trace_index(claim.position)] == claim.claim_hash:
-        return Response.DEFEND
-    else:
-        return Response.ATTACK
-
-def respond(claim: Claim, chal: Team, chal_trace: List[ClaimHash, MAX_TRACE]) -> Response:
-    if depth(claim.position) % 2 != chal.value:
-        if claim.parent is None or agree_with(claim.parent, chal_trace):
-            return respond_claim(claim, chal_trace)
-        else:
-            return Response.NOP # avoid supporting invalid claims on the same team
-    else:
-        correct_response = respond(claim.parent, chal, chal_trace)
-        claim_response = Response.ATTACK if is_attack(claim) else Response.DEFEND
-        invalid_defense = claim_response == Response.DEFEND and correct_response == Respond.ATTACK
-        if not invalid_defense:
-            return respond_claim(claim, chal_trace)
-        else:
-            return Response.NOP
-```
-
-In attack or defense, the honest challenger submit a `ClaimHash` corresponding to the
-state identified by the trace index of their response position.
-
-The honest challenger responds to claims as soon as possible to avoid the clock of its
-counter-claim from expiring.
+If the resulting claim does not already exist in the full game state, the challenger issue the move by calling
+the `FaultDisputeGame` contract.
 
 ### Steps
 
 At the max depth of the game, claims represent commitments to the state of the fault proof VM
 at a single instruction step interval.
-Because the game can no longer bisect further, when the honest challenger has a valid move
-against these claims (valid defined by the response in [Counter Claims](#counter-claims)),
+Because the game can no longer bisect further, when the honest challenger counters these claims,
 the only option for an honest challenger is to execute a VM step on-chain to disprove the claim at `MAX_GAME_DEPTH`.
 
-Similar to the above section, the honest challenger will issue an
+If the `counteredBy` of the claim being countered is non-zero, the claim has already been countered and the honest
+challenger does not perform any action.
+
+Otherwise, similar to the above section, the honest challenger will issue an
 [attack step](fault-dispute-game.md#step-types) when in response to such claims with
 invalid `ClaimHash` commitments. Otherwise, it issues a _defense step_.
+
+### Timeliness
+
+The honest challenger responds to claims as soon as possible to avoid the clock of its
+counter-claim from expiring.
 
 ## Resolution
 
 When the [chess clock](fault-dispute-game.md#game-clock) of a
 [subgame root](fault-dispute-game.md#resolution) has run out, the subgame can be resolved.
 The honest challenger should resolve all subgames in bottom-up order, until the subgame
-rooted at the FDG root is resolved.
+rooted at the gam root is resolved.
 
 The honest challenger accomplishes this by calling the `resolveClaim` function on the
 `FaultDisputeGame` contract. Once the root claim's subgame is resolved,
