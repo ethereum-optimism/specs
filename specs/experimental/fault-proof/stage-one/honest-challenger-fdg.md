@@ -98,7 +98,7 @@ counter-claim from expiring.
 When the [chess clock](fault-dispute-game.md#game-clock) of a
 [subgame root](fault-dispute-game.md#resolution) has run out, the subgame can be resolved.
 The honest challenger should resolve all subgames in bottom-up order, until the subgame
-rooted at the gam root is resolved.
+rooted at the game root is resolved.
 
 The honest challenger accomplishes this by calling the `resolveClaim` function on the
 `FaultDisputeGame` contract. Once the root claim's subgame is resolved,
