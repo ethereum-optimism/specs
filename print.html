@@ -2834,7 +2834,7 @@ be considered part of the canonical L2 chain. Batches are still subject to valid
 correctly), and so are individual transactions within the batch (e.g. signatures have to be valid). Invalid batches and
 invalid individual transactions within an otherwise valid batch are discarded by correct nodes.</p>
 <p>If the sequencer applies a state transition incorrectly and posts an <a href="protocol/../glossary.html#l2-output-root">output root</a>, then this output root
-will be incorrect. The incorrect output root which will be challenged by a <a href="protocol/../glossary.html#fault-proof">fault proof</a>, then replaced
+will be incorrect. The incorrect output root will be challenged by a <a href="protocol/../glossary.html#fault-proof">fault proof</a>, then replaced
 by a correct output root <strong>for the existing sequencer batches.</strong></p>
 <p>Refer to the <a href="protocol/batcher.html">Batch Submission specification</a> for more information.</p>
 <h2 id="batch-submission-wire-format"><a class="header" href="#batch-submission-wire-format">Batch Submission Wire Format</a></h2>
