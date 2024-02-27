@@ -1,18 +1,12 @@
 @protolambda @tynes @ajsutton @sebastianst @mslipper
 
 batcher.md @sebastianst @trianglesphere
-bond-manager.md @ajsutton @clabby
 bridges.md @tynes @maurelian
-cannon-fault-proof-vm.md @ajsutton @clabby
 deposits.md @protolambda @tynes
 derivation.md @protolambda @trianglesphere
-dispute-game-interface.md @ajsutton @clabby
 exec-engine.md @sebastianst @trianglesphere
-fault-dispute-game.md @ajsutton @clabby
-fault-proof.md @ajsutton @clabby
 # glossary.md
 guaranteed-gas-market.md @tynes @maurelian
-honest-challenger-fdg.md @ajsutton @clabby
 # introduction.md
 messengers.md @tynes @maurelian
 # overview.md
@@ -26,3 +20,6 @@ superchain-configuration.md @protolambda @tynes
 superchain-upgrades.md @protolambda @tynes
 system_config.md @sebastianst @trianglesphere
 withdrawals.md @tynes @maurelian @clabby
+
+# Fault Proofs
+/specs/experimental/fault-proof @ajsutton @clabby @inphi @refcell
