@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -269,11 +270,11 @@ transitions.
 
 | Identifier | Description                                            |
 | ---------- | ------------------------------------------------------ |
-| `0`        | Parent L1 head hash at the time of the proposal        |
-| `1`        | Starting output root hash (commits to block # `n`)     |
-| `2`        | Disputed output root hash (commits to block # `n + 1`) |
-| `3`        | Starting L2 block number (block # `n`)                 |
-| `4`        | Chain ID                                               |
+| `1`        | Parent L1 head hash at the time of the proposal        |
+| `2`        | Starting output root hash (commits to block # `n`)     |
+| `3`        | Disputed output root hash (commits to block # `n + 1`) |
+| `4`        | Disputed L2 block number (block # `n + 1`)             |
+| `5`        | Chain ID                                               |
 
 For global `keccak256` preimages, there are two routes for players to submit:
 
