@@ -7159,9 +7159,11 @@ In addition, an expired challenge will reorg out <code>[r_start, r_end]</code> L
 block derived from the expired challenge's input and <code>r_end</code> the last L2 block derived before the pipeline
 was reset.</p>
 <p>Derivation MUST skip input data such as <code>input_data_size &gt; MAX_L1_TX_SIZE</code> where <code>MAX_L1_TX_SIZE</code> is a consensus
-constant of 131072 bytes. In theory <code>MAX_L1_TX_SIZE</code> could be increased up to
+constant of 130672 bytes. In theory <code>MAX_L1_TX_SIZE</code> could be increased up to
 <code>(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost</code> based on the cost of resolving challenges in
-the contract implementation however to make challenging accessible it is capped based on geth's txMaxSize.</p>
+the contract implementation however to make challenging accessible it is capped based on geth's txMaxSize.
+130672 is chosen as 131072 - 400. Geth rejects transactions from the mempool with a total serialized size over
+131072. 400 bytes are allocated as overhead (signature, to address, metadata).</p>
 <h2 id="fault-proof-1"><a class="header" href="#fault-proof-1">Fault Proof</a></h2>
 <p>The derivation pipeline is integrated with <a href="experimental/./fault-proof/index.html">fault proofs</a> by adding additional hint types to the
 preimage oracle in order to query the input data from the DA provider as well as onchain challenge status.</p>
