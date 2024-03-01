@@ -20,7 +20,7 @@ lint-specs-md-check:
 
 # Updates markdown files formatting to satisfy lints
 lint-specs-md-fix:
-    npx markdownlint-cli2-fix "./specs/**/*.md"
+    npx markdownlint-cli2 --fix "./specs/**/*.md"
 
 # Validates Table of Content Sections with doctoc
 lint-specs-toc-check:
