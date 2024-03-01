@@ -6704,6 +6704,21 @@ challengers are economically incentivized to resolve the game promptly to captur
 <li><a href="experimental/fault-proof/stage-one/bond-incentives.html#leftmost-claim-incentives">Leftmost Claim Incentives</a></li>
 </ul>
 </li>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#fault-proof-mainnet-incentives">Fault Proof Mainnet Incentives</a>
+<ul>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#authenticated-roles">Authenticated Roles</a></li>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#base-fee-assumption">Base Fee Assumption</a></li>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#bond-scaling">Bond Scaling</a></li>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#required-bond-formula">Required Bond Formula</a></li>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#delayedweth">DelayedWETH</a>
+<ul>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#sub-account-model">Sub-Account Model</a></li>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#delay-period">Delay Period</a></li>
+<li><a href="experimental/fault-proof/stage-one/bond-incentives.html#integration">Integration</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
@@ -6740,6 +6755,116 @@ are located on the same level as honest claims, but situated to its right (i.e. 
 <p>An honest challenger can always successfully dispute any sibling claims not positioned to the right of an honest claim.
 The leftmost payoff rule encourages such disputes, ensuring only one claim is leftmost at correct depths.
 This claim will be the honest one, and thus bond rewards will be directed exclusively to honest claims.</p>
+<h2 id="fault-proof-mainnet-incentives"><a class="header" href="#fault-proof-mainnet-incentives">Fault Proof Mainnet Incentives</a></h2>
+<p>This section describes the specific bond incentives to be used for the Fault Proof Mainnet launch of the OP Stack fault
+proof system.</p>
+<h3 id="authenticated-roles"><a class="header" href="#authenticated-roles">Authenticated Roles</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Description</th></tr></thead><tbody>
+<tr><td>Guardian</td><td>Role responsible for blacklisting dispute game contracts and changing the respected dispute game type</td></tr>
+<tr><td>System Owner</td><td>Role that owns the <code>ProxyAdmin</code> contract that in turn owns most <code>Proxy</code> contracts within the OP Stack</td></tr>
+</tbody></table>
+</div>
+<h3 id="base-fee-assumption"><a class="header" href="#base-fee-assumption">Base Fee Assumption</a></h3>
+<p>FPM bonds are to assume a fixed 200 Gwei base fee.
+Future iterations of the fault proof may include a dynamic base fee calculation.
+For the moment, we suppose that the <code>Guardian</code> address may account for increased average base fees by updating the
+<code>OptimismPortal</code> contract to a new respected game type with a higher assumed base fee.</p>
+<h3 id="bond-scaling"><a class="header" href="#bond-scaling">Bond Scaling</a></h3>
+<p>FPM bonds are priced in the amount of gas that they are intended to cover.
+Bonds start at the very first depth of the game at a baseline of <code>400_000</code> gas.
+The <code>400_000</code> value is chosen as a deterrence amount that is approximately double the cost to respond at the top level.
+Bonds scale up to a value of <code>200_000_000</code> gas, a value chosen to cover approximately double the cost of a max-size
+Large Preimage Proposal.</p>
+<p>We use a multiplicative scaling mechanism to guarantee that the ratio between bonds remains constant.
+We determine the multiplier based on the proposed <code>MAX_DEPTH</code> of 73.
+We can use the formula <code>x = (200_000_000 / 400_000) ** (1 / 73)</code> to determine that <code>x = 1.089</code>.
+At each depth <code>N</code>, the amount of gas charged is therefore <code>400_000 * (1.089 ** N)</code></p>
+<p>Below is a diagram demonstrating this curve for a max depth of 73.</p>
+<p><img src="https://github.com/ethereum-optimism/specs/assets/14298799/acc02dd8-1b7a-4c1d-9c44-4abdc0965d52" alt="bond scaling curve" /></p>
+<h3 id="required-bond-formula"><a class="header" href="#required-bond-formula">Required Bond Formula</a></h3>
+<p>Applying the <a href="experimental/fault-proof/stage-one/bond-incentives.html#base-fee-assumption">Base Fee Assumption</a> and <a href="experimental/fault-proof/stage-one/bond-incentives.html#bond-scaling">Bond Scaling</a> specifications, we have a
+<code>getRequiredBond</code> function:</p>
+<pre><code class="language-python">def get_required_bond(position):
+    assumed_gas_price = 200 gwei
+    base_gas_charged = 400_000
+    gas_charged = 400_000 * (1.089 ** position.depth)
+    return gas_charged * assumed_gas_price
+</code></pre>
+<h3 id="delayedweth"><a class="header" href="#delayedweth">DelayedWETH</a></h3>
+<p>FPM introduces a contract <code>DelayedWETH</code> designed to hold the bonded ETH for each
+<a href="experimental/fault-proof/stage-one/./fault-dispute-game.html">Fault Dispute Game</a>.
+<code>DelayedWETH</code> is an extended version of the standard <code>WETH</code> contract that introduces a delayed unwrap mechanism that
+allows an owner address to function as a backstop in the case that a Fault Dispute Game would
+incorrectly distribute bonds.</p>
+<p><code>DelayedWETH</code> is modified from <code>WETH</code> as follows:</p>
+<ul>
+<li><code>DelayedWETH</code> is an upgradeable proxy contract.</li>
+<li><code>DelayedWETH</code> has an <code>owner()</code> address. We typically expect this to be set to the <code>System Owner</code> address.</li>
+<li><code>DelayedWETH</code> has a <code>delay()</code> function that returns a period of time that withdrawals will be delayed.</li>
+<li><code>DelayedWETH</code> has an <code>unlock(guy,wad)</code> function that modifies a mapping called <code>withdrawals</code> keyed as
+<code>withdrawals[msg.sender][guy] =&gt; WithdrawalRequest</code> where <code>WithdrawalRequest</code> is
+<code>struct Withdrawal Request { uint256 amount, uint256 timestamp }</code>. When <code>unlock</code> is called, the timestamp for
+<code>withdrawals[msg.sender][guy]</code> is set to the current timestamp and the amount is increased by the given amount.
+<code>unlock(guy,wad)</code> is not callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
+<li><code>DelayedWETH</code> modifies the <code>WETH.withdraw</code> function such that an address <em>must</em> provide a "sub-account" to withdraw
+from. The function signature becomes <code>withdraw(guy,wad)</code>. The function retrieves <code>withdrawals[msg.sender][guy]</code> and
+checks that the current <code>block.timestamp</code> is greater than the timestamp on the withdrawal request plus the <code>delay()</code>
+seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
+request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
+<code>withdraw(wad)</code> function becomes an alias for <code>withdraw(msg.sender, wad)</code>.
+<code>withdraw(guy,wad)</code> will not be callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
+<li><code>DelayedWETH</code> has a <code>hold()</code> function that allows the <code>owner()</code> address to give itself an allowance from any address.</li>
+<li><code>DelayedWETH</code> has a <code>recover()</code> function that allows the <code>owner()</code> address to recover any amount of ETH from the
+contract.</li>
+</ul>
+<h4 id="sub-account-model"><a class="header" href="#sub-account-model">Sub-Account Model</a></h4>
+<p>This specification requires that withdrawal requests specify "sub-accounts" that these requests correspond to. This
+takes the form of requiring that <code>unlock</code> and <code>withdraw</code> both take an <code>address guy</code> parameter as input. By requiring
+this extra input, withdrawals are separated between accounts and it is always possible to see how much WETH a specific
+end-user of the <code>FaultDisputeGame</code> can withdraw at any given time. It is therefore possible for the <code>DelayedWETH</code>
+contract to account for all bug cases within the <code>FaultDisputeGame</code> as long as the <code>FaultDisputeGame</code> always passes the
+correct address into <code>withdraw</code>.</p>
+<h4 id="delay-period"><a class="header" href="#delay-period">Delay Period</a></h4>
+<p>We propose a delay period of 7 days for most OP Stack chains. 7 days provides sufficient time for the <code>owner()</code> of the
+<code>DelayedWETH</code> contract to act even if that owner is a large multisig that requires action from many different members
+over multiple timezones.</p>
+<h4 id="integration-1"><a class="header" href="#integration-1">Integration</a></h4>
+<p><code>DelayedWETH</code> is expected to be integrated into the Fault Dispute Game as follows:</p>
+<ul>
+<li>When <code>FaultDisputeGame.initialize</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
+<li>When <code>FaultDisputeGame.move</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
+<li>When <code>FaultDisputeGame.resolveClaim</code> is triggered, <code>DelayedWETH.unlock(recipient, bond)</code> is called.</li>
+<li>When <code>FaultDisputeGame.claimCredit</code> is triggered, <code>DelayedWETH.withdraw(recipient, claim)</code> is called.</li>
+</ul>
+<pre class="mermaid">sequenceDiagram
+    participant U as User
+    participant FDG as FaultDisputeGame
+    participant DW as DelayedWETH
+
+    U-&gt;&gt;FDG: initialize()
+    FDG-&gt;&gt;DW: deposit{value: msg.value}()
+    Note over DW: FDG gains balance in DW
+
+    loop move by Users
+        U-&gt;&gt;FDG: move()
+        FDG-&gt;&gt;DW: deposit{value: msg.value}()
+        Note over DW: Increases FDG balance in DW
+    end
+
+    loop resolveClaim by Users
+        U-&gt;&gt;FDG: resolveClaim()
+        FDG-&gt;&gt;DW: unlock(recipient, bond)
+        Note over DW: Starts timer for recipient
+    end
+
+    loop claimCredit by Users
+        U-&gt;&gt;FDG: claimCredit()
+        FDG-&gt;&gt;DW: withdraw(recipient, claim)
+        Note over DW: Checks timer/amount for recipient
+        DW-&gt;&gt;FDG: Transfer claim to FDG
+        FDG-&gt;&gt;U: Transfer claim to User
+    end
+</pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <h1 id="bridge-integration"><a class="header" href="#bridge-integration">Bridge Integration</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
