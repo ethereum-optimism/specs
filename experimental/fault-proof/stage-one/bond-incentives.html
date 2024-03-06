@@ -198,6 +198,7 @@
 <li><a href="#base-fee-assumption">Base Fee Assumption</a></li>
 <li><a href="#bond-scaling">Bond Scaling</a></li>
 <li><a href="#required-bond-formula">Required Bond Formula</a></li>
+<li><a href="#other-incentives">Other Incentives</a></li>
 <li><a href="#delayedweth">DelayedWETH</a>
 <ul>
 <li><a href="#sub-account-model">Sub-Account Model</a></li>
@@ -278,6 +279,11 @@ At each depth <code>N</code>, the amount of gas charged is therefore <code>400_0
     gas_charged = 400_000 * (1.089 ** position.depth)
     return gas_charged * assumed_gas_price
 </code></pre>
+<h3 id="other-incentives"><a class="header" href="#other-incentives">Other Incentives</a></h3>
+<p>There are other costs associated with participating in the game, including operating a challenger agent and the
+opportunity cost of locking up capital in the dispute game. While we do not explicitly create incentives to cover
+these costs, we assume that the current bond rewards, based on this specification, are enough as a whole to cover
+all other costs of participation.</p>
 <h3 id="delayedweth"><a class="header" href="#delayedweth">DelayedWETH</a></h3>
 <p>FPM introduces a contract <code>DelayedWETH</code> designed to hold the bonded ETH for each
 <a href="./fault-dispute-game.html">Fault Dispute Game</a>.
