@@ -6810,8 +6810,7 @@ incorrectly distribute bonds.</p>
 <li><code>DelayedWETH</code> has an <code>unlock(guy,wad)</code> function that modifies a mapping called <code>withdrawals</code> keyed as
 <code>withdrawals[msg.sender][guy] =&gt; WithdrawalRequest</code> where <code>WithdrawalRequest</code> is
 <code>struct Withdrawal Request { uint256 amount, uint256 timestamp }</code>. When <code>unlock</code> is called, the timestamp for
-<code>withdrawals[msg.sender][guy]</code> is set to the current timestamp and the amount is increased by the given amount.
-<code>unlock(guy,wad)</code> is not callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
+<code>withdrawals[msg.sender][guy]</code> is set to the current timestamp and the amount is increased by the given amount.</li>
 <li><code>DelayedWETH</code> modifies the <code>WETH.withdraw</code> function such that an address <em>must</em> provide a "sub-account" to withdraw
 from. The function signature becomes <code>withdraw(guy,wad)</code>. The function retrieves <code>withdrawals[msg.sender][guy]</code> and
 checks that the current <code>block.timestamp</code> is greater than the timestamp on the withdrawal request plus the <code>delay()</code>
