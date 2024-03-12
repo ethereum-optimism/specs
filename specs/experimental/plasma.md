@@ -67,6 +67,16 @@ The [batching][batcher] and compression of input data remain unchanged. When a b
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
 commitment (keccak256 hash) is submitted as the bacher inbox transaction call data.
 
+Commitment txdata introduces version `1` to the [transaction format](derivation.md#batcher-transaction-format),
+in order to interpret the txdata as a commitment during the l1 retrieval step of the derivation pipeline:
+
+| `version_byte` | `tx_data`   |
+| -------------- | -------------------- |
+| 1              | `encoded_commitment` |
+
+The derivationVersion0 byte is still prefixed to the input data stored in the DA provider so the frames
+can be decoded downstream.
+
 Commitments are encoded as `commitment_type_byte ++ commitment_bytes`, where `commitment_bytes` depends
 on the `commitment_type_byte` where [0, 128) are reserved for official implementations:
 
