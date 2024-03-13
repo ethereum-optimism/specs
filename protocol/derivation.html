@@ -465,6 +465,7 @@ interacting with the <a href="exec-engine.html">execution-engine API</a>.</p>
 <p>Batcher transactions are encoded as <code>version_byte ++ rollup_payload</code> (where <code>++</code> denotes concatenation).</p>
 <div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>rollup_payload</code></th></tr></thead><tbody>
 <tr><td>0</td><td><code>frame ...</code> (one or more frames, concatenated)</td></tr>
+<tr><td>1</td><td><code>plasma_commitment</code> (experimental, see <a href="../experimental/plasma.html#input-commitment-submission">op-plasma</a></td></tr>
 </tbody></table>
 </div>
 <p>Unknown versions make the batcher transaction invalid (it must be ignored by the rollup node).

@@ -2912,6 +2912,7 @@ interacting with the <a href="protocol/exec-engine.html">execution-engine API</a
 <p>Batcher transactions are encoded as <code>version_byte ++ rollup_payload</code> (where <code>++</code> denotes concatenation).</p>
 <div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>rollup_payload</code></th></tr></thead><tbody>
 <tr><td>0</td><td><code>frame ...</code> (one or more frames, concatenated)</td></tr>
+<tr><td>1</td><td><code>plasma_commitment</code> (experimental, see <a href="protocol/../experimental/plasma.html#input-commitment-submission">op-plasma</a></td></tr>
 </tbody></table>
 </div>
 <p>Unknown versions make the batcher transaction invalid (it must be ignored by the rollup node).
@@ -7179,6 +7180,14 @@ Response:
 <p>The <a href="experimental/../protocol/derivation.html#batch-submission">batching</a> and compression of input data remain unchanged. When a batch is ready
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
 commitment (keccak256 hash) is submitted as the bacher inbox transaction call data.</p>
+<p>Commitment txdata introduces version <code>1</code> to the <a href="experimental/../protocol/derivation.html#batcher-transaction-format">transaction format</a>, in order to interpret
+the txdata as a commitment during the l1 retrieval step of the derivation pipeline:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>tx_data</code></th></tr></thead><tbody>
+<tr><td>1</td><td><code>encoded_commitment</code></td></tr>
+</tbody></table>
+</div>
+<p>The <code>derivationVersion0</code> byte is still prefixed to the input data stored in the DA provider so the frames
+can be decoded downstream.</p>
 <p>Commitments are encoded as <code>commitment_type_byte ++ commitment_bytes</code>, where <code>commitment_bytes</code> depends
 on the <code>commitment_type_byte</code> where [0, 128) are reserved for official implementations:</p>
 <div class="table-wrapper"><table><thead><tr><th><code>commitment_type</code></th><th><code>commitment</code></th></tr></thead><tbody>
@@ -7242,7 +7251,9 @@ in the pipeline with a module that enables pulling the data from the offchain DA
 we've extracted the commitment from L1 DA.</p>
 <p>Similarly to L1 based DA, for each L1 block we open a calldata source to retrieve the input commitments
 from the transactions and use each commitment with its l1 origin block number to resolve
-the input data from the storage service.</p>
+the input data from the storage service. To enable smooth transition between plasma and rollup mode, any L1 data
+retrieved from the batcher inbox that is not prefixed with <code>txDataVersion1</code> is forwarded downstream
+to be parsed as input frames or skipped as invalid data.</p>
 <p>In addition, we filter events from the DA Challenge contract included in the block
 and sync a local state of challenged input commitments. As the derivation pipeline steps through
 <code>challenge_window + resolve_window</code> amount of L1 blocks, any challenge marked as active
