@@ -67,8 +67,8 @@ The [batching][batcher] and compression of input data remain unchanged. When a b
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
 commitment (keccak256 hash) is submitted as the bacher inbox transaction call data.
 
-Commitment txdata introduces version `1` to the [transaction format](derivation.md#batcher-transaction-format),
-in order to interpret the txdata as a commitment during the l1 retrieval step of the derivation pipeline:
+Commitment txdata introduces version `1` to the [transaction format][batchertx], in order to interpret
+the txdata as a commitment during the l1 retrieval step of the derivation pipeline:
 
 | `version_byte` | `tx_data`   |
 | -------------- | -------------------- |
@@ -94,6 +94,7 @@ Input commitments submitted onchain without proper storage on the DA provider se
 challenges if the input cannot be retrieved during the challenge window, as detailed in the following section.
 
 [batcher]: ../protocol/derivation.md#batch-submission
+[batchertx]: ../protocol/derivation.md#batcher-transaction-format
 
 ## Data Availability Challenge Contract
 
