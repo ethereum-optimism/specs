@@ -32,7 +32,7 @@ We can significantly reduce this complexity by generally revisiting this looping
 
 The looping behavior between the engine and attributes queue can be eliminated by always ensuring
 the progression of the safe head when processing payloads. We propose that the engine queue replace
-invalidated payloads with a deposits-only empty one. In other words, when provided `PayloadAttributes`,
+any invalidated payloads with a deposits-only empty one. In other words, when provided `PayloadAttributes`,
 there will always be two possible block candidates:
 
 1. Always Valid (empty deposits-only block)
