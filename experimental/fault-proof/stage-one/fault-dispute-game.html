@@ -179,7 +179,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-dispute-game"><a class="header" href="#fault-dispute-game">Fault Dispute Game</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -192,6 +192,8 @@
 <li><a href="#preimageoracle">PreimageOracle</a></li>
 <li><a href="#execution-trace">Execution Trace</a></li>
 <li><a href="#claims">Claims</a></li>
+<li><a href="#anchor-state">Anchor State</a></li>
+<li><a href="#anchor-state-registry">Anchor State Registry</a></li>
 <li><a href="#dag">DAG</a></li>
 <li><a href="#subgame">Subgame</a></li>
 <li><a href="#game-tree">Game Tree</a></li>
@@ -214,6 +216,7 @@
 <li><a href="#team-dynamics">Team Dynamics</a></li>
 <li><a href="#game-clock">Game Clock</a></li>
 <li><a href="#resolution">Resolution</a></li>
+<li><a href="#finalization">Finalization</a></li>
 </ul>
 </li>
 </ul>
@@ -254,6 +257,21 @@ trace. A FDG is initialized with an output root that corresponds to the state of
 execution trace subgames at <code>SPLIT_DEPTH + 1</code> are initialized with a claim that commits to the entire execution trace
 between two consecutive output roots (a block <code>n -&gt; n+1</code> state transition). As we'll see later, there can be multiple
 claims, committing to different output roots and FPVM states in the FDG.</p>
+<h3 id="anchor-state"><a class="header" href="#anchor-state">Anchor State</a></h3>
+<p>An anchor state, or anchor output root, is a previous output root that is assumed to be valid. An
+FDG is always initialized with an anchor state and execution is carried out between this anchor
+state and the <a href="#claims">claimed output root</a>. FDG contracts pull their anchor state from the
+<a href="#anchor-state-registry">Anchor State Registry</a> contract. The initial anchor state for a FDG is the
+genesis state of the L2.</p>
+<p>Clients must currently gather L1 data for the window between the anchor state and the claimed
+state. In order to reduce this L1 data requirement, <a href="#claims">claims</a> about the state of the L2
+become new anchor states when dispute games resolve in their favor. FDG contracts set their anchor
+states at initialization time so that these updates do not impact active games.</p>
+<h3 id="anchor-state-registry"><a class="header" href="#anchor-state-registry">Anchor State Registry</a></h3>
+<p>The Anchor State Registry is a registry that maps FDG types to their current <a href="#anchor-state">anchor states</a>.
+The Anchor State Registry is specific to Fault Dispute Game contracts and may not be applicable to
+other types of dispute game contracts that do not have the same concept of state that progresses
+over time.</p>
 <h3 id="dag"><a class="header" href="#dag">DAG</a></h3>
 <p>A Directed Acyclic Graph <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="mclose">)</span></span></span></span> representing the relationship between claims, where:</p>
 <ul>
@@ -394,7 +412,7 @@ function addLocalData(uint256 _ident, uint256 _execLeafIdx, uint256 _partOffset)
 </code></pre>
 <p>The <code>addLocalData</code> function loads local data into the VM's <code>PreimageOracle</code>. This data consists of bootstrap data for
 the program. There are multiple sets of local preimage keys that belong to the <code>FaultDisputeGame</code> contract due to the
-ability for players to bisect to any block <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> state transition since the configured genesis, the
+ability for players to bisect to any block <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> state transition since the configured anchor state, the
 <code>_execLeafIdx</code> parameter enables a search for the starting / disputed outputs to be performed such that the contract
 can write to and reference unique local keys in the <code>PreimageOracle</code> for each of these <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>
 transitions.</p>
@@ -570,6 +588,17 @@ Each move bisects the historical state of L2 and eventually, <code>MAX_GAME_DEPT
 can be settled conclusively. Dishonest players are disincentivized to participate, via backwards induction,
 as an invalid claim won't remain uncontested. Further incentives can be added to the game by requiring
 claims to be bonded, while rewarding game winners using the bonds of dishonest claims.</p>
+<h3 id="finalization"><a class="header" href="#finalization">Finalization</a></h3>
+<p>Once the game is resolved, if the claim is shown to be valid, the FDG reports its state to the
+Anchor State Registry. The Anchor State Registry verifies that the request to update an anchor
+state comes from a FDG contract created by the Dispute Game Factory contract, confirms that the
+game resolved in favor of the defender, and confirms that the updated state would be newer than
+the current anchor state (based on the result of <code>FaultDisputeGame.l2BlockNumber()</code>). If these
+conditions are true, the Anchor State Registry updates the anchor state for the given game type.</p>
+<p>Note that the dependency of the Anchor State Registry on the <code>l2BlockNumber()</code> function means that
+the registry may not be applicable to dispute game types that do not have a similar sense of
+progressing state over time. Currently, the Anchor State Registry is therefore assumed to be
+specific to the Fault Dispute Game contract and not to other dispute game types.</p>
 
                     </main>
 

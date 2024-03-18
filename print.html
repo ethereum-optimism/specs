@@ -177,7 +177,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="op-stack-specs"><a class="header" href="#op-stack-specs">OP Stack Specs</a></h1>
 <p>This directory contains the plain english specs for Optimism, a minimal optimistic rollup protocol
 that maintains 1:1 compatibility with Ethereum.</p>
@@ -263,7 +263,7 @@ censorship-resistant guarantees achieved by a decentralized system.
 Currently centralized components of the system should have a clear path towards decentralization.
 Already decentralized components of the system should be protected and preserved.</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
 <p>Optimism is an <em>EVM equivalent</em>, <em>optimistic rollup</em> protocol designed to <em>scale Ethereum</em> while remaining maximally
 compatible with existing Ethereum infrastructure. This document provides an overview of the protocol to provide context
@@ -418,7 +418,7 @@ normal transactions on L2, but then completed using a transaction on L1 after th
 <p>This is a choose your own adventure. Are you interested in how a verifier works under the hood? Maybe you want to dive
 deep into the bit flippin' Fault Proof VM? All key components have been linked at least once in this doc, so you should
 now have the context you need to dive in deeper. <a href="https://www.youtube.com/watch?v=e5PnuIRnJW8">The world is yours</a>!</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="optimism-overview"><a class="header" href="#optimism-overview">Optimism Overview</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -623,7 +623,7 @@ returned in step 2. The tip of the L2 chain is now the block created in step 1.<
 </ol>
 <p>The swimlane diagram below visualizes the process:</p>
 <p><img src="protocol/../static/assets/engine.svg" alt="Engine API" /></p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="standard-bridges"><a class="header" href="#standard-bridges">Standard Bridges</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -667,7 +667,7 @@ domain to be able to deposit tokens to that domain. One of these tokens can be
 deployed using the <code>OptimismMintableERC20Factory</code> contract.</p>
 <h2 id="upgradability"><a class="header" href="#upgradability">Upgradability</a></h2>
 <p>Both the L1 and L2 standard bridges should be behind upgradable proxies.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="cross-domain-messengers"><a class="header" href="#cross-domain-messengers">Cross Domain Messengers</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -779,7 +779,7 @@ attempts. It also saves gas on finalizing withdrawals.</p>
 It was built as a way to be able to fund third parties who relayed messages
 on the behalf of users, but it was improperly implemented as it was impossible
 to know if the relayed message actually succeeded.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="deposits-1"><a class="header" href="#deposits-1">Deposits</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -1202,7 +1202,7 @@ for EOAs because they're guaranteed to have the same "code" (i.e. no code at all
 it possible for users to interact with contracts on L2 even when the Sequencer is down.</p>
 <h4 id="deposit-contract-implementation-optimism-portal"><a class="header" href="#deposit-contract-implementation-optimism-portal">Deposit Contract Implementation: Optimism Portal</a></h4>
 <p>A reference implementation of the deposit contract can be found in <a href="https://github.com/ethereum-optimism/optimism/blob/d48b45954c381f75a13e61312da68d84e9b41418/packages/contracts-bedrock/src/L1/OptimismPortal.sol">OptimismPortal.sol</a>.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="withdrawals"><a class="header" href="#withdrawals">Withdrawals</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -1416,7 +1416,7 @@ the L1, with the <code>OptimismPortal</code> as the <code>msg.sender</code>.</p>
 For example, any ERC20 tokens mistakenly sent to the <code>OptimismPortal</code> contract are essentially lost, as they can
 be claimed by anybody that pre-approves transfers of this token out of the portal, using the L2 to initiate the
 approval and the L1 to prove and finalize the approval (after the challenge period).</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="guaranteed-gas-fee-market"><a class="header" href="#guaranteed-gas-fee-market">Guaranteed Gas Fee Market</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -1547,7 +1547,7 @@ is being purchased.</p>
 wealthy adversary does decide to grief network deposits for an extended period
 of time, efforts will be placed to ensure that deposits are able to be processed
 on the network.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l2-output-root-proposals-specification"><a class="header" href="#l2-output-root-proposals-specification">L2 Output Root Proposals Specification</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -1706,7 +1706,7 @@ The <code>startingTimestamp</code> MUST be the same as the timestamp of the star
 leading to a faulty proposal. This is mitigated against by allowing the proposer to submit an
 L1 block number and hash to the Output Oracle when appending a new output; in the event of a reorg, the block hash
 will not match that of the block with that number and the call will revert.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l2-execution-engine"><a class="header" href="#l2-execution-engine">L2 Execution Engine</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -2121,7 +2121,7 @@ And thus with <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> the
 <li>The "Beacon roots contract" is deployed at Ecotone upgrade-time, or embedded at genesis if activated at genesis.</li>
 <li>The block state-transition process now includes the same special beacon-block-root EVM processing as L1 ethereum.</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="rollup-node-specification"><a class="header" href="#rollup-node-specification">Rollup Node Specification</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -2248,7 +2248,7 @@ After polling the Protocol Version, the rollup node SHOULD communicate it with t
 the current version supported by the rollup node.</p>
 <p>The rollup node SHOULD take safety precautions if it does not meet the required protocol version.
 This may include halting the engine, with consent of the rollup node operator.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="rollup-node-p2p-interface"><a class="header" href="#rollup-node-p2p-interface">Rollup-node P2P interface</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -2626,7 +2626,7 @@ override any previous chain, until the final L2 chain can be reproduced from L1 
 <p>A <code>res &gt; 0</code> response code should not be accepted. The result code is helpful for debugging,
 but the client should regard any error like any other unanswered request, as the responding peer cannot be trusted.</p>
 <hr />
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l2-chain-derivation-specification"><a class="header" href="#l2-chain-derivation-specification">L2 Chain Derivation Specification</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -3803,7 +3803,7 @@ encoded with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</li
 <li><code>gasLimit</code> is set to the current <code>gasLimit</code> value in the <a href="protocol/../glossary.html#system-configuration">system configuration</a> of this payload.</li>
 <li><code>withdrawals</code> is set to nil prior to Canyon and an empty array after Canyon</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="span-batches"><a class="header" href="#span-batches">Span-batches</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -4251,7 +4251,7 @@ Past a given number of blocks, the channel may be written for estimation, and th
 <p>The <a href="protocol/batcher.html">batcher functionality</a> stays the same otherwise: unsafe blocks are transformed into batches,
 encoded in compressed channels, and then split into frames for submission to L1.
 Batcher implementations can implement different heuristics and re-attempts to build the most gas-efficient data-txs.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="batch-submitter"><a class="header" href="#batch-submitter">Batch Submitter</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -4278,7 +4278,7 @@ while applying the encoding and compression as defined in the <a href="protocol/
 </ol>
 <p>The L2 view of safe/unsafe does not instantly update after data is submitted, nor when it gets confirmed on L1,
 so special care may have to be taken to not duplicate data submissions.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="safe-liveness-checking"><a class="header" href="#safe-liveness-checking">Safe Liveness Checking</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -4449,7 +4449,7 @@ module should be removed as a best practice.</p>
 <p>If a new guard is added, eg. as a means of upgrading it, then a new module will also need to be
 deployed and enabled. Once both the guard and module have been removed, they can be replaced
 according to the steps in the <a href="protocol/safe-liveness-checking.html#deploying-the-liveness-checking-system">Deployment</a> section above.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -4738,7 +4738,7 @@ protocol.</p>
 <p>Address: <code>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</code></p>
 <p>When Canyon activates, the contract code at <code>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</code> is set to
 <code>0x6080604052600436106100435760003560e01c8063076c37b21461004f578063481286e61461007157806356299481146100ba57806366cfa057146100da57600080fd5b3661004a57005b600080fd5b34801561005b57600080fd5b5061006f61006a366004610327565b6100fa565b005b34801561007d57600080fd5b5061009161008c366004610327565b61014a565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b3480156100c657600080fd5b506100916100d5366004610349565b61015d565b3480156100e657600080fd5b5061006f6100f53660046103ca565b610172565b61014582826040518060200161010f9061031a565b7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe082820381018352601f90910116604052610183565b505050565b600061015683836102e7565b9392505050565b600061016a8484846102f0565b949350505050565b61017d838383610183565b50505050565b6000834710156101f4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f437265617465323a20696e73756666696369656e742062616c616e636500000060448201526064015b60405180910390fd5b815160000361025f576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f437265617465323a2062797465636f6465206c656e677468206973207a65726f60448201526064016101eb565b8282516020840186f5905073ffffffffffffffffffffffffffffffffffffffff8116610156576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601960248201527f437265617465323a204661696c6564206f6e206465706c6f790000000000000060448201526064016101eb565b60006101568383305b6000604051836040820152846020820152828152600b8101905060ff815360559020949350505050565b61014e806104ad83390190565b6000806040838503121561033a57600080fd5b50508035926020909101359150565b60008060006060848603121561035e57600080fd5b8335925060208401359150604084013573ffffffffffffffffffffffffffffffffffffffff8116811461039057600080fd5b809150509250925092565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6000806000606084860312156103df57600080fd5b8335925060208401359150604084013567ffffffffffffffff8082111561040557600080fd5b818601915086601f83011261041957600080fd5b81358181111561042b5761042b61039b565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156104715761047161039b565b8160405282815289602084870101111561048a57600080fd5b826020860160208301376000602084830101528095505050505050925092509256fe608060405234801561001057600080fd5b5061012e806100206000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063249cb3fa14602d575b600080fd5b603c603836600460b1565b604e565b60405190815260200160405180910390f35b60008281526020818152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915281205460ff16608857600060aa565b7fa2ef4600d742022d532d4747cb3547474667d6f13804902513b2ec01c848f4b45b9392505050565b6000806040838503121560c357600080fd5b82359150602083013573ffffffffffffffffffffffffffffffffffffffff8116811460ed57600080fd5b80915050925092905056fea26469706673582212205ffd4e6cede7d06a5daf93d48d0541fc68189eeb16608c1999a82063b666eb1164736f6c63430008130033a2646970667358221220fdc4a0fe96e3b21c108ca155438d37c9143fb01278a3c1d274948bad89c564ba64736f6c63430008130033</code>.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="preinstalls"><a class="header" href="#preinstalls">Preinstalls</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -4842,7 +4842,7 @@ more secure, and more consistent across applications.</p>
 <p>Address: <code>0x7fc98430eaedbb6070b35b39d798725049088348</code></p>
 <p>Helper contract for <a href="protocol/preinstalls.html#erc-4337-entrypoint">EntryPoint</a>, to call <code>userOp.initCode</code> from a "neutral" address,
 which is explicitly not <code>EntryPoint</code> itself.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="superchain-configuration"><a class="header" href="#superchain-configuration">Superchain Configuration</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -4900,7 +4900,7 @@ layer.</p>
 <li><code>StandardBridge.finalizeBridgeETH()</code></li>
 <li><code>L1ERC721Bridge.finalizeBridgeERC721()</code></li>
 </ol>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="superchain-upgrades"><a class="header" href="#superchain-upgrades">Superchain Upgrades</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -5210,7 +5210,7 @@ execution engine should be set to the same time as the Canyon time.</p>
 </ul>
 <h2 id="fjord"><a class="header" href="#fjord">Fjord</a></h2>
 <p>Name of the next upgrade after Ecotone. Placeholder for development coordination.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="system-config"><a class="header" href="#system-config">System Config</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -5365,7 +5365,7 @@ encoding</a> that updates <code>baseFeeScalar</code> and
 <p>Note that individual derivation stages may be processing different L1 blocks,
 and should thus maintain individual system configuration copies,
 and apply the event-based changes as the stage traverses to the next L1 block.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof"><a class="header" href="#fault-proof">Fault Proof</a></h1>
 <!-- markdownlint-disable -->
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -5771,7 +5771,7 @@ and any additional time necessary based on L1 fee changes when bonds are insuffi
 Also see <a href="experimental/fault-proof/./stage-one/fault-dispute-game.html">fault dispute-game specs</a> for fault dispute game system specifications,
 And <a href="experimental/fault-proof/./stage-one/dispute-game-interface.html">dispute-game-interface specs</a></p>
 </blockquote>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="cannon-fault-proof-virtual-machine"><a class="header" href="#cannon-fault-proof-virtual-machine">Cannon Fault Proof Virtual Machine</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -5962,13 +5962,13 @@ outside the general purpose registers).</li>
 <p>VM implementations may raise an exception in other cases that is specific to the implementation.
 For example, an on-chain FPVM that relies on pre-supplied merkle proofs for memory access may
 raise an exception if the supplied merkle proof does not match the pre-state <code>memRoot</code>.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <!-- DOCTOC SKIP -->
 <h1 id="stage-one-decentralization"><a class="header" href="#stage-one-decentralization">Stage One Decentralization</a></h1>
 <p>This section of the specification contains the system design for stage one decentralization, with a fault-proof system
 for <a href="experimental/fault-proof/stage-one/../../../glossary.html#l2-output-root-proposals">output proposals</a> and the integration with the <code>OptimismPortal</code> contract, which is the arbiter of
 withdrawals on L1.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="dispute-game-interface"><a class="header" href="#dispute-game-interface">Dispute Game Interface</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -6210,7 +6210,7 @@ interface IDisputeGame is IInitializable {
     function gameData() external view returns (GameType gameType_, Claim rootClaim_, bytes memory extraData_);
 }
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-dispute-game"><a class="header" href="#fault-dispute-game">Fault Dispute Game</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -6223,6 +6223,8 @@ interface IDisputeGame is IInitializable {
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#preimageoracle">PreimageOracle</a></li>
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#execution-trace">Execution Trace</a></li>
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#claims">Claims</a></li>
+<li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#anchor-state">Anchor State</a></li>
+<li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#anchor-state-registry">Anchor State Registry</a></li>
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#dag">DAG</a></li>
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#subgame">Subgame</a></li>
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#game-tree">Game Tree</a></li>
@@ -6245,6 +6247,7 @@ interface IDisputeGame is IInitializable {
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#team-dynamics">Team Dynamics</a></li>
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#game-clock">Game Clock</a></li>
 <li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#resolution">Resolution</a></li>
+<li><a href="experimental/fault-proof/stage-one/fault-dispute-game.html#finalization">Finalization</a></li>
 </ul>
 </li>
 </ul>
@@ -6285,6 +6288,21 @@ trace. A FDG is initialized with an output root that corresponds to the state of
 execution trace subgames at <code>SPLIT_DEPTH + 1</code> are initialized with a claim that commits to the entire execution trace
 between two consecutive output roots (a block <code>n -&gt; n+1</code> state transition). As we'll see later, there can be multiple
 claims, committing to different output roots and FPVM states in the FDG.</p>
+<h3 id="anchor-state"><a class="header" href="#anchor-state">Anchor State</a></h3>
+<p>An anchor state, or anchor output root, is a previous output root that is assumed to be valid. An
+FDG is always initialized with an anchor state and execution is carried out between this anchor
+state and the <a href="experimental/fault-proof/stage-one/fault-dispute-game.html#claims">claimed output root</a>. FDG contracts pull their anchor state from the
+<a href="experimental/fault-proof/stage-one/fault-dispute-game.html#anchor-state-registry">Anchor State Registry</a> contract. The initial anchor state for a FDG is the
+genesis state of the L2.</p>
+<p>Clients must currently gather L1 data for the window between the anchor state and the claimed
+state. In order to reduce this L1 data requirement, <a href="experimental/fault-proof/stage-one/fault-dispute-game.html#claims">claims</a> about the state of the L2
+become new anchor states when dispute games resolve in their favor. FDG contracts set their anchor
+states at initialization time so that these updates do not impact active games.</p>
+<h3 id="anchor-state-registry"><a class="header" href="#anchor-state-registry">Anchor State Registry</a></h3>
+<p>The Anchor State Registry is a registry that maps FDG types to their current <a href="experimental/fault-proof/stage-one/fault-dispute-game.html#anchor-state">anchor states</a>.
+The Anchor State Registry is specific to Fault Dispute Game contracts and may not be applicable to
+other types of dispute game contracts that do not have the same concept of state that progresses
+over time.</p>
 <h3 id="dag"><a class="header" href="#dag">DAG</a></h3>
 <p>A Directed Acyclic Graph <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="mclose">)</span></span></span></span> representing the relationship between claims, where:</p>
 <ul>
@@ -6425,7 +6443,7 @@ function addLocalData(uint256 _ident, uint256 _execLeafIdx, uint256 _partOffset)
 </code></pre>
 <p>The <code>addLocalData</code> function loads local data into the VM's <code>PreimageOracle</code>. This data consists of bootstrap data for
 the program. There are multiple sets of local preimage keys that belong to the <code>FaultDisputeGame</code> contract due to the
-ability for players to bisect to any block <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> state transition since the configured genesis, the
+ability for players to bisect to any block <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> state transition since the configured anchor state, the
 <code>_execLeafIdx</code> parameter enables a search for the starting / disputed outputs to be performed such that the contract
 can write to and reference unique local keys in the <code>PreimageOracle</code> for each of these <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>
 transitions.</p>
@@ -6601,7 +6619,18 @@ Each move bisects the historical state of L2 and eventually, <code>MAX_GAME_DEPT
 can be settled conclusively. Dishonest players are disincentivized to participate, via backwards induction,
 as an invalid claim won't remain uncontested. Further incentives can be added to the game by requiring
 claims to be bonded, while rewarding game winners using the bonds of dishonest claims.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h3 id="finalization"><a class="header" href="#finalization">Finalization</a></h3>
+<p>Once the game is resolved, if the claim is shown to be valid, the FDG reports its state to the
+Anchor State Registry. The Anchor State Registry verifies that the request to update an anchor
+state comes from a FDG contract created by the Dispute Game Factory contract, confirms that the
+game resolved in favor of the defender, and confirms that the updated state would be newer than
+the current anchor state (based on the result of <code>FaultDisputeGame.l2BlockNumber()</code>). If these
+conditions are true, the Anchor State Registry updates the anchor state for the given game type.</p>
+<p>Note that the dependency of the Anchor State Registry on the <code>l2BlockNumber()</code> function means that
+the registry may not be applicable to dispute game types that do not have a similar sense of
+progressing state over time. Currently, the Anchor State Registry is therefore assumed to be
+specific to the Fault Dispute Game contract and not to other dispute game types.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="honest-challenger-fault-dispute-game"><a class="header" href="#honest-challenger-fault-dispute-game">Honest Challenger (Fault Dispute Game)</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -6692,7 +6721,7 @@ the challenger then finally calls the <code>resolve</code> function to resolve t
 <p>The <code>FaultDisputeGame</code> does not put a time cap on resolution - because of the liveness
 assumption on honest challengers and the bonds attached to the claims they’ve countered,
 challengers are economically incentivized to resolve the game promptly to capture the bonds.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="bond-incentives"><a class="header" href="#bond-incentives">Bond Incentives</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -6871,7 +6900,7 @@ over multiple timezones.</p>
         FDG-&gt;&gt;U: Transfer claim to User
     end
 </pre>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="bridge-integration"><a class="header" href="#bridge-integration">Bridge Integration</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -7113,7 +7142,7 @@ address public immutable CHALLENGER;
 </ol>
 <p>If the <code>msg.sender</code> does not have either role, the function must revert.</p>
 <p>The exception is the <code>initialize</code> function, which may only be called if the <code>tx.origin</code> is the <code>PROPOSER</code> role.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="plasma-mode"><a class="header" href="#plasma-mode">Plasma Mode</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -7346,7 +7375,7 @@ while still making challenging affordable to altruistic fishermen and users who 
 to guarantee data availability on L1.
 Lastly, if needed a <code>resolver_refund_factor</code> can be dialed up such as <code>resolver_refund_factor * resolving_cost</code>
 is refunded to the resolver (where <code>0 &lt;= refund_factor &lt;= 1</code>) while the rest of the bond is burnt.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <!-- DOCTOC SKIP -->
 <h1 id="interop"><a class="header" href="#interop">Interop</a></h1>
 <p>The ability for a blockchain to easily read the state of another blockchain is called interoperability.
@@ -7381,7 +7410,7 @@ they need not be the same entity in practice.</p>
 <li><a href="interop/./fault_proof.html">Fault Proof</a>: modifications to prove interop functionality in the fault-proof.</li>
 <li><a href="interop/./upgrade.html">Upgrade</a>: Superchain upgrade process to activate Interop.</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="the-dependency-set"><a class="header" href="#the-dependency-set">The Dependency Set</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -7450,7 +7479,7 @@ a feature of the first release. This section should be clarified when the decisi
 <p>If layer one is part of the dependency set, then it means that any event on L1 can be pulled
 into any L2. This is a very powerful abstraction as a minimal amount of execution can happen
 on L1 which triggers additional exeuction across all L2s in the OP Stack.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="messaging"><a class="header" href="#messaging">Messaging</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -7677,7 +7706,7 @@ dependency set. This means that they are able to send cross chain messages to ea
 dependencies are thus said to be transitive.
 Without validating the transitive dependencies,
 the verifier relies on the verification work of the nodes that it sources its direct dependencies from.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="predeploys-1"><a class="header" href="#predeploys-1">Predeploys</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -7893,7 +7922,7 @@ a <code>uint8</code> "interopSetSize" parameter prefixes tightly packed <code>ui
 </div>
 <h2 id="security-considerations-5"><a class="header" href="#security-considerations-5">Security Considerations</a></h2>
 <p>TODO</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="execution-1"><a class="header" href="#execution-1">Execution</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -7933,7 +7962,7 @@ block.extra_data = logs.hash_tree_root()
 </code></pre>
 <h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
 <p>TODO</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -8052,7 +8081,7 @@ message. This can be done by wrapping the <code>L2ToL2CrossDomainMessenger</code
 the security of the preconfirmations. An initiating transaction and a executing transaction MAY have the same timestamp,
 meaning that a secure preconfirmation scheme enables atomic cross chain composability. Any sort of equivocation on
 behalf of the sequencer will result in the production of invalid blocks.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="verifier"><a class="header" href="#verifier">Verifier</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -8208,7 +8237,7 @@ in an executing message.</p>
 needing to require increasingly large execution client databases.</p>
 <p>It is also possible to introduce a form of expiry on historical receipts by enforcing that the timestamp
 is recent enough in the <code>CrossL2Inbox</code>.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="p2p-networking"><a class="header" href="#p2p-networking">P2P Networking</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -8226,7 +8255,7 @@ messages to look for. An optimization on this would involve working with commitm
 so that less data is sent around via p2p.</p>
 <h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
 <p>TODO</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -8247,7 +8276,7 @@ The insight is that the fault proof program can be a superset of the state trans
 <h3 id="cascading-dependencies"><a class="header" href="#cascading-dependencies">Cascading dependencies</a></h3>
 <p>Deposits are a special case, synchronous with derivation, at enforced cross-L2 delay.
 Thus deposits cannot reference each others events intra-block.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="interop-network-upgrade"><a class="header" href="#interop-network-upgrade">Interop Network Upgrade</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -8277,7 +8306,7 @@ based upgrade transactions are deterministically generated by the derivation pip
 <p>The exact definitions for these upgrade transactions are still to be defined.</p>
 <h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <p>TODO</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
