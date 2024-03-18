@@ -14,10 +14,10 @@ Servicer roles are related to actions taken by Chain Servicers in the
 They are typically hot wallets, as they take active roles in chain progression and are used to
 participate in day-to-day, ongoing operations.
 
-| Configuration Option                       | Requirement                                                      | Justification/Notes |
-| ------------------------------------------ | ---------------------------------------------------------------- | ------------------- |
-| Guardian Account                           | Optimism Foundation Safe                                         | Security            |
-| Batch Submitter Account                    | TODO can we standardize as a deterministic function of chain ID? |                     |
-| Sequencer P2P / Unsafe Head Signer Account | No requirement                                                   |                     |
-| Challenger Account                         | TODO                                                             |                     |
-| Proposer Account                           | No requirement                                                   |                     |
+| Configuration Option                       | Requirement              | Justification/Notes |
+| ------------------------------------------ | -------------------------| ------------------- |
+| Guardian Account                           | Optimism Foundation Safe | Security            |
+| Batch Submitter Account                    | No requirement           |                     |
+| Sequencer P2P / Unsafe Head Signer Account | No requirement           |                     |
+| Challenger Account                         | TODO                     |                     |
+| Proposer Account                           | No requirement           |                     |
