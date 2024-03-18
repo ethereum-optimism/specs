@@ -483,6 +483,8 @@ When submitted to Ethereum calldata, the batcher transaction's receiver must be 
 transaction must also be signed by a recognized batch submitter account. The recognized batch submitter account
 is stored in the [System Configuration][system-config].
 
+TODO: clarify batch submission frequency.
+
 ## Channel Timeout
 
 [channel-timeout]: glossary.md#channel-timeout
