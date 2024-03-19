@@ -16,13 +16,13 @@ resulting properties of the blockspace in question.
 
 There are three categories of OP Stack configuration options:
 
-- Protocol Parameters: Parameters and properties of the chain that may
+- **Protocol Parameters**: Parameters and properties of the chain that may
   be set at genesis and fixed for the lifetime of the chain, or may be
   changeable through a privileged account.
-- Admin Roles: These roles can upgrade contracts, change role owners,
-  or update protocol parameters. These are typically cold wallets not
+- **Admin Roles**: These roles can upgrade contracts, change role owners,
+  or update protocol parameters. These are typically cold/multisig wallets not
   used directly in day to day operations.
-- Service Roles: These roles are used to manage the day-to-day
+- **Service Roles**: These roles are used to manage the day-to-day
   operations of the chain, and therefore are often hot wallets.
 
 ## Protocol Parameters
