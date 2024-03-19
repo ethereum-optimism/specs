@@ -33,6 +33,7 @@ they need not be the same entity in practice.
 - [Predeploys](./predeploys.md): system contracts to interface with other chains.
 - [Execution](./execution.md): enhancements to the execution-layer.
 - [Sequencer](./sequencer.md): Sequencer Policy and block-building information.
+- [Superchain Backend](./superchain_backend.md): Shared service implementing message safety resolution.
 - [Verifier](./verifier.md): Verification of cross-L2 messaging.
 - [Rollup Node P2P](./rollup_node_p2p.md): modifications to the rollup-node P2P layer to support fast interop.
 - [Fault Proof](./fault_proof.md): modifications to prove interop functionality in the fault-proof.

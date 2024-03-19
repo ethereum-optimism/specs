@@ -41,6 +41,7 @@
     - [Predeploys](./interop/predeploys.md)
     - [Execution](./interop/execution.md)
     - [Sequencer](./interop/sequencer.md)
+    - [Superchain Backend](./interop/superchain_backend.md)
     - [Verifier](./interop/verifier.md)
     - [Rollup Node P2P](./interop/rollup_node_p2p.md)
     - [Fault Proof](./interop/fault_proof.md)
