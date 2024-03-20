@@ -63,85 +63,136 @@ receipt of unsafe payloads, the graph is extended with edges added on detection 
 ```python
 ## Graph Nodes
 blocks = dict() # (hash) -> block
-number_to_block_hash = dict() # (chain_id, int) -> hash
-latest_blocks = dict() # (chain_id) -> hash
+
+block_unverified_executing_messages = dict() # (hash) -> List[(MsgId, MsgPaylaod)]
+
+chain_block_number_to_hash = dict() # (chain_id, int) -> hash
+chain_block_head = dict() # (chain_id) -> hash
 
 ## Graph Edge
-##   - The initiating side is represented with the block number since the corresponding payload may
+##   The initiating side is represented with the block number since the corresponding payload may
 ##   not have been seen at the time the executing message has been processed.
 dependents = dict() # (initiating_chain_id, block_number) -> List[(executing_chain_id, block_hash)]
 dependencies = dict() # (executing_chain_id, block_hash) -> List[(initiating_chain_id, block_number)]
 
 class Block:
-    chain_id: int
-    number: int
-    parent: Block
+    header: Header
+    transactions: List[Transaction]
 
-    executing_messages: List[(MsgId, MsgPayload)]
-    unverified_msg_ref_count: int
+def parse_executing_messages(block: Block):
+    """
+    Extract all executing messages in this block
+    """
+    messages = []
+    for tx in block.transactions:
+        if is_executing_tx(tx):
+            msg_id, payload = parse_executing_tx_data(tx.data)
+            messages.append(msg_id, payload)
+    return messages
 
-def block_safety(chain_id, block_hash):
-    block = blocks[block_hash]
-    if block.unverified_msg_ref_count > 0:
+def block_safety(chain_id: int, block_hash: Bytes32):
+    """
+    Return the safety level for a given block.
+    - Used by the local chain to distinguish between unsafe and cross-unsafe HEADs.
+    - Can be used by the block builder to reject executing messages based on the safety
+      level of the remote block containing the initiating message.
+    """
+    if len(block_unverified_executing_messages[block_hash]) > 0:
         return UNSAFE
 
-    ## All messages were validated but we also need to ensure all
-    ## transitive block dependencies have had their messages also
-    ## validated
+    block = blocks[block_hash]
+
+    ## All messages were validated but we also need to ensure all transitive
+    ## block dependencies have had their messages also validated
     for initiating_chain_id, block_number in dependencies[(chain_id, block_hash)]:
-        if block_bumber > latest_heights[tx.msg_origin]:
+
+        # dependency block has not been seen. We should never reach here as
+        # there should be no remaining unverified executing messages if tue. 
+        if block.header.number > chain_block_head[initiating_chain_id].header.number:
             return UNSAFE
 
-        dependency_block = blocks[number_to_block_hash[(initiating_chain_id, block_number)]]
-        if block_safety(initiating_chain_id, dependency_block.hash) == UNSAFE:
+        # check that transitive blocks are not unsafe
+        dependency_block = blocks[chain_block_number_to_hash[(initiating_chain_id, block_number)]]
+        if block_safety(initiating_chain_id, dependency_block.header.hash) == UNSAFE:
             return UNSAFE
 
     return CROSS_UNSAFE
 
-def add_unsafe_payload(chain_id, payload):
-    # **Out of Scope** unsafe reorg handling
-    require(payload.number == blocks[latest_blocks[chain_id]].number + 1)
+def add_unsafe_block(chain_id: int, block: Bytes32):
+    """
+    Extend the graph with a new block for the specified chain.
+    - Called when receiving an unsafe block over p2p from the sequencer
+    - Called when the safe head progress and the prior unsafe blocks was
+      not propogated.
 
-    blocks[payload.hash] = Block(payload)
-    latest_blocks[chain_id] = payload.hash
+    For simplicity of this pseudocode, we exepct the caller to supply
+    the expected height and leave out reorg handling when either a new
+    unsafe block is supplied at the same height or the safe head mismatches
+    with a previously added unsafe block.
+    """
+    require(block.header.number == blocks[chain_block_head[chain_id]].header.number + 1)
+    require(block.header.parent_hash == chain_block_head[chain_id])
 
-    # add edges
-    for tx in blocks[payload.hash].executing_txs:
-        dependents[(tx.msg_origin, tx.block_number)].add((chain_id, payload.hash))
-        dependencies[(chain_id, payload.hash)].add((tx.msg_origin, tx.block_number))
+    blocks[block.header.hash] = block
+    chain_block_head[chain_id] = block.header.hash
 
-    # try resolve any messages for this block
-    resolve_unverified_messages(chain_id, payload.hash);
+    executing_messages = parse_executing_messages(block)
+    block_unverified_executing_messages[block.header.hash] = executing_messages
 
-    # for existing dependents, trigger resolution
+    # add edges based on the executing messages present
+    for msg_id, _ in executing_messages:
+        # initiating block linked with the executing block
+        dependents[(msg_id.origin, msg_id.block_number)].add((chain_id, block.header.hash))
+        # executing block has a dependency on the initiating block
+        dependencies[(chain_id, block.header.hash)].add((msg_id.origin, msg_id.block_number))
+
+    # try resolve any messages for this block as some initiating blocks may be present
+    resolve_unverified_messages(chain_id, block.header.hash)
+
+    # for any existing dependents set, trigger resolution now that initiating data is available
     for executing_chain_id, block_hash in dependents[(chain_id, payload.number)]:
-        resolve_unverified_messages(executing_chain_id, payload.hash);
+        resolve_unverified_messages(executing_chain_id, block_hash)
 
 def resolve_unverified_messages(chain_id, block_hash):
-    block = blocks[block_hash]
-    for tx in block.executing_txs:
-        if tx.msg_block_number > latest_heights[tx.msg_origin]:
+    """
+    Check the validity of executing messages present in this block. If an invalid
+    executing message is found, the block along with any dependent blocks are
+    invalidated out of the graph.
+    """
+    unverified_executing_messages = block_unverified_executing_messages[block_hash]
+    for msg_id, msg_payload in unverified_executing_messages:
+        # this message is waiting on data
+        if msg_id.block_number > chain_block_head[block_hash].header.number:
             continue
 
-        if is_valid_executing_message(tx):
-            block.unverified_msg_ref_counts -= 1
+        if is_valid_executing_message(msg_id, msg_payload):
+            # satisfies all executing message invariants.
+            unverified_executing_messages.pop((msg_id, msg_payload))
         else:
-            handle_invalidation(chain_id, block_hash);
+            handle_invalidation(chain_id, block_hash)
 
 def handle_invalidation(chain_id, block_hash):
-    block = blocks[block_hash]
-    if block.hash == latest_blocks[chain_id]:
-        latest_blocks[chain_id] = block.parent
+    """
+    Invalidate a block from the graph. An invalidated block invalidates dependent
+    blocks as well as all child blocks (local reorg).
 
-    ## Note: There's a chance that a replacement block includes the same
-    ## initiated message at the same tx index but we'll eagerly process
-    ## the invalidation for simplicity.
+    Note: There's a chance that replacement blocks includes the same initiated message
+    at the same tx index but we'll eagerly process the invalidation.
+    """
+
+    # set the parent as the new chain head to trigger a local reorg.
+    #  (child blocks should be pruned from the graph. left out for simplicity)
+    block = blocks[block_hash]
+    chain_block_head[chain_id] = block.header.parent_hash
 
     # invalidate the dependent blocks
-    for executing_chain_id, block_hash in dependents[(chain_id, block.number)]:
-        handle_invalidation(executing_chain_id, block_hash)
-        dependencies[(executing_chain_id, block_hash)].pop((chain_id, block.number))
+    for executing_chain_id, dependent_block_hash in dependents[(chain_id, block.header.number)]:
+        handle_invalidation(executing_chain_id, dependent_block_hash)
 
+        # remove dependencies as the dependency block shouldn't exist
+        delelete(dependencies[(executing_chain_id, dependent_block_hash)])
+
+    # remove block & dependents/dependencies from the graph
     delete(blocks[block_hash)
     delete(dependents[(chain_id, block.number)])
 ```
