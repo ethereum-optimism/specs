@@ -42,6 +42,7 @@
   - [Channel Frame](#channel-frame)
   - [Batcher](#batcher)
   - [Batcher Transaction](#batcher-transaction)
+  - [Batch submission frequency](#batch-submission-frequency)
   - [Channel Timeout](#channel-timeout)
 - [L2 Output Root Proposals](#l2-output-root-proposals)
   - [Proposer](#proposer)
@@ -490,6 +491,7 @@ Within the [sequencing-window] constraints the batcher is free to submit L2 bloc
 By submitting new L2 data in smaller more frequent steps, there is less delay in confirmation of the L2 block inputs. This allows verifiers to ensure safety of L2 blocks sooner. This also reduces the time to finality of the data on L1, and thus the time to L2 input-finality.
  
 By submitting new L2 data in larger less frequent steps, there is more time to aggregate more L2 data, and thus reduce fixed overhead of the batch-submission work. This can reduce batch-submission costs, especially for lower throughput chains that do not fill data-transactions (typically 128 KB of calldata, or 800 KB of blobdata) as quickly.
+
 ## Channel Timeout
 
 [channel-timeout]: glossary.md#channel-timeout
