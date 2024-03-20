@@ -13,14 +13,14 @@
 When deploying the OP Stack software to a production environment,
 certain parameters about the protocol can be configured. These
 configurations can include a variety of parameters which affect the
-resulting properties of the blockspace in question. 
+resulting properties of the blockspace in question.
 
 There are four categories of OP Stack configuration options:
 
 - **Consensus Parameters**: Parameters and properties of the chain that may
   be set at genesis and fixed for the lifetime of the chain, or may be
   changeable through a privileged account.
-- **Policy Parameters**: Parameters of the chain that can be changed without breaking consensus. Consensus is enforced while policy includes the set of possible behaviors within consensus. Can be thought of as a superset of consensus. 
+- **Policy Parameters**: Parameters of the chain that can be changed without breaking consensus. Consensus is enforced while policy includes the set of possible behaviors within consensus. Can be thought of as a superset of consensus.
 - **Admin Roles**: These roles can upgrade contracts, change role owners,
   or update protocol parameters. These are typically cold/multisig wallets not
   used directly in day to day operations.
@@ -67,6 +67,7 @@ There are four categories of OP Stack configuration options:
 | Guardian address                      | Account authorized to pause L1 withdrawals from contracts.                                                                   |
 | Proposer address                      | Account which can propose output roots to L1.                                                                                |
 | Sequencer P2P / Unsafe head signer    | Account which authenticates the unsafe/pre-submitted blocks for a chain at the P2P layer.                                    |
+
 ## Policy Parameters
 
 | Config Property                       | Description                                                                                                                  |
