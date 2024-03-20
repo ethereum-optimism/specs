@@ -7786,7 +7786,7 @@ It MAY call back to the <code>CrossL2Inbox</code> to authenticate
 properties about the <code>_msg</code> using the information in the <code>Identifier</code>.</p>
 <h3 id="reference-implementation"><a class="header" href="#reference-implementation">Reference implementation</a></h3>
 <p>A simple implementation of the <code>executeMessage</code> function is included below.</p>
-<pre><code class="language-solidity">function executeMessage(address _target, bytes calldata _msg, Identifier calldata _id) public payable {
+<pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes calldata _msg) public payable {
     require(msg.sender == tx.origin);
     require(_id.timestamp &lt;= block.timestamp);
     require(L1Block.isInDependencySet(_id.chainid));
