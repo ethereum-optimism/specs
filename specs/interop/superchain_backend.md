@@ -54,11 +54,11 @@ block builders and verifiers must locally do so based on their configured level 
 ### Unsafe to Cross-Unsafe
 
 In order to discern between unsafe and cross-unsafe blocks, the backend maintains a graph of
-dependencies between blocks can include interop messages between them.
+dependencies between blocks that can include interop messages between them.
 
 We describe a psuedo-implementation of cross-unsafe message resolution using this graph. Every node in
 this graph represents a block with edges representing the dependent relationship between them. Upon
-receipt of unsafe payloads, the graph is extended with edges added on detection of interop transactions.
+receipt of unsafe blocks, the graph is extended with edges added on detection of interop transactions.
 
 ```python
 ## Graph Nodes
@@ -92,10 +92,8 @@ def parse_executing_messages(block: Block):
 
 def block_safety(chain_id: int, block_hash: Bytes32):
     """
-    Return the safety level for a given block.
-    - Used by the local chain to distinguish between unsafe and cross-unsafe HEADs.
-    - Can be used by the block builder to reject executing messages based on the safety
-      level of the remote block containing the initiating message.
+    Return the safety level for a given block, Used by the message safety backend API
+    to determine the safety of the remote block specified in the message identifier.
     """
     if len(block_unverified_executing_messages[block_hash]) > 0:
         return UNSAFE
@@ -199,7 +197,7 @@ def handle_invalidation(chain_id, block_hash):
 
 ### Cross-Unsafe to (Safe|Finalized)
 
-Along with the unsafe payloads, the backend should also maintain the safe heads of the
+Along with the unsafe blocks, the backend should also maintain the safe heads of the
 chains in the graph to ensure progression of the dependency graph. Per the [spec](./verifier.md#safety),
 `block_safety()` can be extended to appropriately return the `safe` safety label when all relevant cross-unsafe
 data has been posted to L1.
