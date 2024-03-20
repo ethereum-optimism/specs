@@ -46,7 +46,7 @@ There are three categories of OP Stack configuration options:
 | L2 block time                         | Frequency with which blocks are produced as a result of derivation.                                                          |
 | Output frequency                      | Frequency with which output roots are submitted to L1.                                                                       |
 | Resource config                       | Config for the EIP-1559 based curve used for the deposit gas market.                                                         |
-| Sequencing window                     | Maximum allowed batch submission frequency, after which L1 fallback is triggered in derivation.                                                                                                                                                            |
+| Sequencing window                     | Maximum allowed batch submission gap, after which L1 fallback is triggered in derivation.                                                                                                                                                            |
 | Start block                           | Block at which op-node starts searching for logs from.                                                                       |
 
 ## Admin Roles
