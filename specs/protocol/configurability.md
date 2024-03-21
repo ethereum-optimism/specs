@@ -21,7 +21,7 @@ There are four categories of OP Stack configuration options:
 - **Consensus Parameters**: Parameters and properties of the chain that may
   be set at genesis and fixed for the lifetime of the chain, or may be
   changeable through a privileged account.
-- **Policy Parameters**: Parameters of the chain that can be changed without breaking consensus. Consensus is enforced while policy includes the set of possible behaviors within consensus. Can be thought of as a superset of consensus.
+- **Policy Parameters**: Parameters of the chain that can be changed without breaking consensus. Consensus is enforced while policy includes the set of possible behaviors within consensus. Policy is ultimately constrained by consensus. Changing policy paramters won't impact how an OP chain is classified; a chain can still be considered standard if it has it's own custom policy parameters.
 - **Admin Roles**: These roles can upgrade contracts, change role owners,
   or update protocol parameters. These are typically cold/multisig wallets not
   used directly in day to day operations.
@@ -44,7 +44,6 @@ There are four categories of OP Stack configuration options:
 | Genesis state                         | Initial state at chain genesis, including code and storage of predeploys (all L2 smart contracts). See [Predeploy](../glossary.md#l2-genesis-block).                                            |
 | L1 smart contracts                    | The chain’s L1 smart contracts.                                                                                              |
 | L2 block time                         | Frequency with which blocks are produced as a result of derivation.                                                          |
-| Output frequency                      | Frequency with which output roots are submitted to L1.                                                                       |
 | Resource config                       | Config for the EIP-1559 based curve used for the deposit gas market.                                                         |
 | Sequencing window                     | Maximum allowed batch submission gap, after which L1 fallback is triggered in derivation.                                                                                                                                                            |
 | Start block                           | Block at which the system config was initialized the first time.                                                                       |
@@ -76,3 +75,4 @@ There are four categories of OP Stack configuration options:
 | Batch submission frequency            | Frequency with which batches are submitted to L1 (see [Batcher Transaction](../glossary.md#batcher-transaction)).            |
 | Compression ratio                     | How much compression the batch submitter applies to batches before submission (see [Channel](../glossary.md#channel)).       |
 | Implementation Fee vault contracts                   | Implementation contracts that sit behind proxies and dictate how user fees are distributed.                                                                       |
+| Output frequency                      | Frequency with which output roots are submitted to L1.                                                                       |
