@@ -49,6 +49,15 @@ There are four categories of OP Stack configuration options:
 | Start block                           | Block at which the system config was initialized the first time.                                                                       |
 | Superchain target                     | Choice of cross-L2 configuration. May be omitted in isolated OP Stack deployments. Includes SuperchainConfig and ProtocolVersions contract addresses.                                       |
 
+## Policy Parameters
+
+| Config Property                       | Description                                                                                                                  |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| Batch submission frequency            | Frequency with which batches are submitted to L1 (see [Batcher Transaction](../glossary.md#batcher-transaction)).            |
+| Compression ratio                     | How much compression the batch submitter applies to batches before submission (see [Channel](../glossary.md#channel)).       |
+| Implementation Fee vault contracts                   | Implementation contracts that sit behind proxies and dictate how user fees are distributed.                                                                       |
+| Output frequency                      | Frequency with which output roots are submitted to L1.                                                                       |
+
 ## Admin Roles
 
 | Config Property                       | Description                                                                                                                  |
@@ -69,11 +78,3 @@ There are four categories of OP Stack configuration options:
 | Proposer address                      | Account which can propose output roots to L1.                                                                                |
 | Sequencer P2P / Unsafe head signer    | Account which authenticates the unsafe/pre-submitted blocks for a chain at the P2P layer.                                    |
 
-## Policy Parameters
-
-| Config Property                       | Description                                                                                                                  |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| Batch submission frequency            | Frequency with which batches are submitted to L1 (see [Batcher Transaction](../glossary.md#batcher-transaction)).            |
-| Compression ratio                     | How much compression the batch submitter applies to batches before submission (see [Channel](../glossary.md#channel)).       |
-| Implementation Fee vault contracts                   | Implementation contracts that sit behind proxies and dictate how user fees are distributed.                                                                       |
-| Output frequency                      | Frequency with which output roots are submitted to L1.                                                                       |
