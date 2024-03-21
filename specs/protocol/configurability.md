@@ -21,7 +21,7 @@ There are four categories of OP Stack configuration options:
 - **Consensus Parameters**: Parameters and properties of the chain that may
   be set at genesis and fixed for the lifetime of the chain, or may be
   changeable through a privileged account.
-- **Policy Parameters**: Parameters of the chain that can be changed without breaking consensus. Consensus is enforced while policy includes the set of possible behaviors within consensus. Policy is ultimately constrained by consensus. Changing policy paramters won't impact how an OP chain is classified; a chain can still be considered standard if it has it's own custom policy parameters.
+- **Policy Parameters**: Parameters of the chain that might be changed without breaking consensus. Consensus is enforced by the protocol, while policy parameters may be changeable within constraints imposed by consensus.
 - **Admin Roles**: These roles can upgrade contracts, change role owners,
   or update protocol parameters. These are typically cold/multisig wallets not
   used directly in day to day operations.
