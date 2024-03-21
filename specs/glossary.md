@@ -486,7 +486,7 @@ is stored in the [System Configuration][system-config].
 
 ## Batch submission frequency
 
-Within the [sequencing-window] constraints the batcher is free to submit L2 blocks to for data-availability at any time. The batcher may be reconfigured with a new policy at any time by its operator. The rollup enforces safety guarantees and liveness through the sequencing window, if the batcher does not submit data within this allotted time.
+Within the [sequencing-window] constraints the batcher is permitted by the protocol to submit L2 blocks to for data-availability at any time. The batcher software allows for dynamic policy configuration by its operator. The rollup enforces safety guarantees and liveness through the sequencing window, if the batcher does not submit data within this allotted time.
 
 By submitting new L2 data in smaller more frequent steps, there is less delay in confirmation of the L2 block inputs. This allows verifiers to ensure safety of L2 blocks sooner. This also reduces the time to finality of the data on L1, and thus the time to L2 input-finality.
  
