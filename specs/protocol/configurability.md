@@ -47,6 +47,7 @@ There are four categories of OP Stack configuration options:
 | Resource config                       | Config for the EIP-1559 based curve used for the deposit gas market.                                                         |
 | Sequencing window                     | Maximum allowed batch submission gap, after which L1 fallback is triggered in derivation.                                                                                                                                                            |
 | Start block                           | Block at which the system config was initialized the first time.                                                                       |
+| Superchain target                     | Choice of cross-L2 configuration. May be omitted in isolated OP Stack deployments. Includes SuperchainConfig and ProtocolVersions contract addresses.                                       |
 
 ## Admin Roles
 
