@@ -111,6 +111,9 @@ def block_safety(chain_id: int, block_hash: Bytes32):
         if block_safety(initiating_chain_id, dependency_block.header.hash) == UNSAFE:
             return UNSAFE
 
+    ## In a very similar manner can be extended to check for the `SAFE`
+    ## label based on the safe heads tracked for each chain.
+
     return CROSS_UNSAFE
 
 def add_unsafe_block(chain_id: int, block: Bytes32):
