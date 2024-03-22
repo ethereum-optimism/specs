@@ -70,7 +70,7 @@ chain_block_number_to_hash = dict() # (chain_id, int) -> hash
 chain_block_head = dict() # (chain_id) -> hash
 
 ## Graph Edge
-##   The initiating side is represented with the block number since the corresponding payload may
+##   The initiating side is represented with the block number since the corresponding block may
 ##   not have been seen at the time the executing message has been processed.
 dependents = dict() # (initiating_chain_id, block_number) -> List[(executing_chain_id, block_hash)]
 dependencies = dict() # (executing_chain_id, block_hash) -> List[(initiating_chain_id, block_number)]
@@ -98,14 +98,11 @@ def block_safety(chain_id: int, block_hash: Bytes32):
     if len(block_unverified_executing_messages[block_hash]) > 0:
         return UNSAFE
 
-    block = blocks[block_hash]
-
     ## All messages were validated but we also need to ensure all transitive
     ## block dependencies have had their messages also validated
     for initiating_chain_id, block_number in dependencies[(chain_id, block_hash)]:
 
-        # dependency block has not been seen. We should never reach here as
-        # there should be no remaining unverified executing messages if tue. 
+        # we should never reach here as `len(block_unverified_executing_messages[block_hash]) == 0`.
         if block.header.number > chain_block_head[initiating_chain_id].header.number:
             return UNSAFE
 
@@ -137,10 +134,16 @@ def add_unsafe_block(chain_id: int, block: Bytes32):
     executing_messages = parse_executing_messages(block)
     block_unverified_executing_messages[block.header.hash] = executing_messages
 
+    # add a default edge for the parent block. Invalidation of the parent should
+    # cascade to this block and the safety of this block also depends on the parent
+    parent_block = blocks[block.header.parent_hash]
+    dependents[(chain_id, block.header.number - 1)].add((chain_id, block.header.hash))
+    dependencies[(chain_id, block.header.hash)].add((chain_id, block.header.number - 1))
+
     # add edges based on the executing messages present
     for msg_id, _ in executing_messages:
         # initiating block linked with the executing block
-        dependents[(msg_id.origin, msg_id.block_number)].add((chain_id, block.header.hash))
+        dependents[(msg_id.chain_id, msg_id.block_number)].add((chain_id, block.header.hash))
         # executing block has a dependency on the initiating block
         dependencies[(chain_id, block.header.hash)].add((msg_id.origin, msg_id.block_number))
 
@@ -148,7 +151,7 @@ def add_unsafe_block(chain_id: int, block: Bytes32):
     resolve_unverified_messages(chain_id, block.header.hash)
 
     # for any existing dependents set, trigger resolution now that initiating data is available
-    for executing_chain_id, block_hash in dependents[(chain_id, payload.number)]:
+    for executing_chain_id, block_hash in dependents[(chain_id, block.header.number)]:
         resolve_unverified_messages(executing_chain_id, block_hash)
 
 def resolve_unverified_messages(chain_id, block_hash):
@@ -164,22 +167,19 @@ def resolve_unverified_messages(chain_id, block_hash):
             continue
 
         if is_valid_executing_message(msg_id, msg_payload):
-            # satisfies all executing message invariants.
             unverified_executing_messages.pop((msg_id, msg_payload))
         else:
             handle_invalidation(chain_id, block_hash)
 
 def handle_invalidation(chain_id, block_hash):
     """
-    Invalidate a block from the graph. An invalidated block invalidates dependent
-    blocks as well as all child blocks (local reorg).
+    Invalidate a block from the graph. Invalidates dependent blocks as well
 
     Note: There's a chance that replacement blocks includes the same initiated message
     at the same tx index but we'll eagerly process the invalidation.
     """
-
-    # set the parent as the new chain head to trigger a local reorg.
-    #  (child blocks should be pruned from the graph. left out for simplicity)
+    # set the parent as the new chain head. Any derived blocks from this will
+    # also be invalidated in the next step via the dependents
     block = blocks[block_hash]
     chain_block_head[chain_id] = block.header.parent_hash
 
@@ -187,10 +187,10 @@ def handle_invalidation(chain_id, block_hash):
     for executing_chain_id, dependent_block_hash in dependents[(chain_id, block.header.number)]:
         handle_invalidation(executing_chain_id, dependent_block_hash)
 
-        # remove dependencies as the dependency block shouldn't exist
-        delelete(dependencies[(executing_chain_id, dependent_block_hash)])
+        # remove dependencies as the dependency block deleted after invalidation
+        delete(dependencies[(executing_chain_id, dependent_block_hash)])
 
-    # remove block & dependents/dependencies from the graph
+    # remove block & dependents from the graph
     delete(blocks[block_hash)
     delete(dependents[(chain_id, block.number)])
 ```
