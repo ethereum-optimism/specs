@@ -21,7 +21,9 @@ There are four categories of OP Stack configuration options:
 - **Consensus Parameters**: Parameters and properties of the chain that may
   be set at genesis and fixed for the lifetime of the chain, or may be
   changeable through a privileged account.
-- **Policy Parameters**: Parameters of the chain that might be changed without breaking consensus. Consensus is enforced by the protocol, while policy parameters may be changeable within constraints imposed by consensus.
+- **Policy Parameters**: Parameters of the chain that might be changed without
+  breaking consensus. Consensus is enforced by the protocol, while policy parameters
+  may be changeable within constraints imposed by consensus.
 - **Admin Roles**: These roles can upgrade contracts, change role owners,
   or update protocol parameters. These are typically cold/multisig wallets not
   used directly in day to day operations.
@@ -77,4 +79,3 @@ There are four categories of OP Stack configuration options:
 | [Guardian address](https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SuperchainConfig.sol#L50)                      | Account authorized to pause L1 withdrawals from contracts.                                                                   | L1 Proxy Admin                      |
 | [Proposer address](https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/L2OutputOracle.sol#L108)                      | Account which can propose output roots to L1.                                                                                | L1 Proxy Admin                      |
 | [Sequencer P2P / Unsafe head signer](https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L250)    | Account which authenticates the unsafe/pre-submitted blocks for a chain at the P2P layer.                                    | System Config Owner                 |
-
