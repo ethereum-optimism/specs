@@ -5,9 +5,9 @@
 **Table of Contents**
 
 - [Consensus Parameters](#consensus-parameters)
+- [Policy Parameters](#policy-parameters)
 - [Admin Roles](#admin-roles)
 - [Service Roles](#service-roles)
-- [Policy Parameters](#policy-parameters)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
