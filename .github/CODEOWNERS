@@ -1,25 +1,25 @@
 @protolambda @tynes @ajsutton @sebastianst @mslipper
 
-batcher.md @sebastianst @trianglesphere
-bridges.md @tynes @maurelian
-deposits.md @protolambda @tynes
-derivation.md @protolambda @trianglesphere
-exec-engine.md @sebastianst @trianglesphere
+batcher.md @sebastianst @trianglesphere @ethereum-optimism/security-reviewers
+bridges.md @tynes @ethereum-optimism/security-reviewers
+deposits.md @protolambda @tynes @ethereum-optimism/security-reviewers
+derivation.md @protolambda @trianglesphere @ethereum-optimism/security-reviewers
+exec-engine.md @sebastianst @trianglesphere @ethereum-optimism/security-reviewers
 # glossary.md
-guaranteed-gas-market.md @tynes @maurelian
+guaranteed-gas-market.md @tynes @ethereum-optimism/security-reviewers
 # introduction.md
-messengers.md @tynes @maurelian
+messengers.md @tynes @ethereum-optimism/security-reviewers
 # overview.md
-predeploys.md @tynes
-proposals.md @ajsutton @clabby @tynes @maurelian
-rollup-node-p2p.md @sebastianst @trianglesphere
-rollup-node.md @sebastianst @trianglesphere
-safe-liveness-checking.md @maurelian @mds1
-span-batches.md @sebastianst @trianglesphere
-superchain-configuration.md @protolambda @tynes
-superchain-upgrades.md @protolambda @tynes
-system_config.md @sebastianst @trianglesphere
-withdrawals.md @tynes @maurelian @clabby
+predeploys.md @tynes @ethereum-optimism/security-reviewers
+proposals.md @ajsutton @clabby @tynes @ethereum-optimism/security-reviewers
+rollup-node-p2p.md @sebastianst @trianglesphere @ethereum-optimism/security-reviewers
+rollup-node.md @sebastianst @trianglesphere @ethereum-optimism/security-reviewers
+safe-liveness-checking.md @ethereum-optimism/security-reviewers
+span-batches.md @sebastianst @trianglesphere @ethereum-optimism/security-reviewers
+superchain-configuration.md @protolambda @tynes @ethereum-optimism/security-reviewers
+superchain-upgrades.md @protolambda @tynes @ethereum-optimism/security-reviewers
+system_config.md @sebastianst @trianglesphere @ethereum-optimism/security-reviewers
+withdrawals.md @tynes @clabby @ethereum-optimism/security-reviewers
 
 # Fault Proofs
-/specs/experimental/fault-proof @ajsutton @clabby @inphi @refcell
+/specs/experimental/fault-proof @ajsutton @clabby @inphi @refcell @ethereum-optimism/security-reviewers
