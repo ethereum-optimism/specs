@@ -6,6 +6,7 @@
     "code_blocks": false,
     "tables": false
   },
+  "no-duplicate-heading": false,
   "no-blanks-blockquote": false,
   "no-empty-links": false,
   "single-title": false,
