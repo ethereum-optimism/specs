@@ -1,0 +1,305 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Configurability - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/safe-liveness-checking.html"><strong aria-hidden="true">3.3.</strong> Safe Liveness Checking</a></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li><li class="chapter-item expanded "><a href="../protocol/configurability.html" class="active"><strong aria-hidden="true">3.8.</strong> Configurability</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/index.html"><strong aria-hidden="true">4.1.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">4.1.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/bond-incentives.html"><strong aria-hidden="true">4.1.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/bridge-integration.html"><strong aria-hidden="true">4.1.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../experimental/plasma.html"><strong aria-hidden="true">4.2.</strong> Plasma</a></li><li class="chapter-item expanded "><a href="../interop/overview.html"><strong aria-hidden="true">4.3.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../interop/dependency_set.html"><strong aria-hidden="true">4.3.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../interop/messaging.html"><strong aria-hidden="true">4.3.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../interop/predeploys.html"><strong aria-hidden="true">4.3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../interop/execution.html"><strong aria-hidden="true">4.3.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../interop/sequencer.html"><strong aria-hidden="true">4.3.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../interop/verifier.html"><strong aria-hidden="true">4.3.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../interop/rollup_node_p2p.html"><strong aria-hidden="true">4.3.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../interop/fault_proof.html"><strong aria-hidden="true">4.3.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../interop/upgrade.html"><strong aria-hidden="true">4.3.9.</strong> Upgrade</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/configurability.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="op-stack-configurability"><a class="header" href="#op-stack-configurability">OP Stack Configurability</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#consensus-parameters">Consensus Parameters</a></li>
+<li><a href="#policy-parameters">Policy Parameters</a></li>
+<li><a href="#admin-roles">Admin Roles</a></li>
+<li><a href="#service-roles">Service Roles</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>When deploying the OP Stack software to a production environment,
+certain parameters about the protocol can be configured. These
+configurations can include a variety of parameters which affect the
+resulting properties of the blockspace in question.</p>
+<p>There are four categories of OP Stack configuration options:</p>
+<ul>
+<li><strong>Consensus Parameters</strong>: Parameters and properties of the chain that may
+be set at genesis and fixed for the lifetime of the chain, or may be
+changeable through a privileged account or protocol upgrade.</li>
+<li><strong>Policy Parameters</strong>: Parameters of the chain that might be changed without
+breaking consensus. Consensus is enforced by the protocol, while policy parameters
+may be changeable within constraints imposed by consensus.</li>
+<li><strong>Admin Roles</strong>: These roles can upgrade contracts, change role owners,
+or update protocol parameters. These are typically cold/multisig wallets not
+used directly in day to day operations.</li>
+<li><strong>Service Roles</strong>: These roles are used to manage the day-to-day
+operations of the chain, and therefore are often hot wallets.</li>
+</ul>
+<h2 id="consensus-parameters"><a class="header" href="#consensus-parameters">Consensus Parameters</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Config Property</th><th>Description</th><th>Administrator</th></tr></thead><tbody>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L176">Batch Inbox address</a></td><td>L1 address where calldata/blobs are posted (see <a href="../glossary.html#batcher-transaction">Batcher Transaction</a>).</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/superchain-registry/blob/main/superchain/configs/chainids.json">Chain ID</a></td><td>Unique ID of Chain used for TX signature validation.</td><td></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/superchain-registry/pull/44">Challenge Period</a></td><td>Length of time for which an output root can be removed, and for which it is not considered finalized.</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L281-L283">Fee margin</a></td><td>Markup on transactions compared to the raw L1 data cost.</td><td><a href="#admin-roles">System Config Owner</a></td></tr>
+<tr><td>Genesis state</td><td>Initial state at chain genesis, including code and storage of predeploys (all L2 smart contracts). See <a href="../glossary.html#l2-genesis-block">Predeploy</a>.</td><td></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/L2OutputOracle.sol#L105">L2 block time</a></td><td>Frequency with which blocks are produced as a result of derivation.</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L338-L340">Resource config</a></td><td>Config for the EIP-1559 based curve used for the deposit gas market.</td><td><a href="#admin-roles">System Config Owner</a></td></tr>
+<tr><td>Sequencing window</td><td>Maximum allowed batch submission gap, after which L1 fallback is triggered in derivation.</td><td></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L184">Start block</a></td><td>Block at which the system config was initialized the first time.</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td>Superchain target</td><td>Choice of cross-L2 configuration. May be omitted in isolated OP Stack deployments. Includes SuperchainConfig and ProtocolVersions contract addresses.</td><td></td></tr>
+</tbody></table>
+</div>
+<h2 id="policy-parameters"><a class="header" href="#policy-parameters">Policy Parameters</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Config Property</th><th>Description</th><th>Administrator</th></tr></thead><tbody>
+<tr><td>Data Availability Type</td><td>Batcher can currently be configured to use blobs or calldata (See <a href="../glossary.html#data-availability-provider">Data Availability Provider</a>).</td><td><a href="#service-roles">Batch submitter address</a></td></tr>
+<tr><td>Batch submission frequency</td><td>Frequency with which batches are submitted to L1 (see <a href="../glossary.html#batcher-transaction">Batcher Transaction</a>).</td><td><a href="#service-roles">Batch submitter address</a></td></tr>
+<tr><td>Compression ratio</td><td>How much compression the batch submitter applies to batches before submission (see <a href="../glossary.html#channel">Channel</a>).</td><td><a href="#service-roles">Batch submitter address</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/L2OutputOracle.sol#L104">Output frequency</a></td><td>Frequency with which output roots are submitted to L1.</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+</tbody></table>
+</div>
+<h2 id="admin-roles"><a class="header" href="#admin-roles">Admin Roles</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Config Property</th><th>Description</th><th>Administrator</th><th>Administers</th></tr></thead><tbody>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/universal/ProxyAdmin.sol#L30">L1 Proxy Admin</a></td><td>Account authorized to upgrade L1 contracts.</td><td><a href="#admin-roles">L1 Proxy Admin Owner</a></td><td><a href="#consensus-parameters">Batch Inbox Address</a>, <a href="#consensus-parameters">Start block</a>, <a href="#service-roles">Proposer address</a>, <a href="#service-roles">Challenger address</a>, <a href="#service-roles">Guardian address</a>, <a href="#consensus-parameters">Challenge Period</a>, <a href="#policy-parameters">Output frequency</a>, <a href="#consensus-parameters">L2 block time</a>, <a href="#consensus-parameters">L1 smart contracts</a></td></tr>
+<tr><td>L1 ProxyAdmin owner</td><td>Account authorized to update the L1 Proxy Admin.</td><td></td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/universal/ProxyAdmin.sol#L30">L2 Proxy Admin</a></td><td>Account authorized to upgrade L2 contracts.</td><td><a href="#admin-roles">L2 Proxy Admin Owner</a></td><td><a href="./predeploys.html#overview">Predeploys</a></td></tr>
+<tr><td>L2 ProxyAdmin owner</td><td>Account authorized to update the L2 Proxy Admin.</td><td></td><td><a href="#admin-roles">L2 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L14C26-L14C44">System Config Owner</a></td><td>Account authorized to change values in the SystemConfig contract. All configuration is stored on L1 and picked up by L2 as part of the <a href="./derivation.html">derviation</a> of the L2 chain.</td><td></td><td><a href="#service-roles">Batch submitter address</a>, <a href="#service-roles">Sequencer P2P / Unsafe head signer</a>, <a href="#consensus-parameters">Fee Margin</a>, <a href="#consensus-parameters">Gas limit</a>, <a href="#consensus-parameters">Resource config</a>, <a href="#admin-roles">System Config Owner</a></td></tr>
+</tbody></table>
+</div>
+<h2 id="service-roles"><a class="header" href="#service-roles">Service Roles</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Config Property</th><th>Description</th><th>Administrator</th></tr></thead><tbody>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L265">Batch submitter address</a></td><td>Account which authenticates new batches submitted to L1 Ethereum.</td><td><a href="#admin-roles">System Config Owner</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/L2OutputOracle.sol#L109">Challenger address</a></td><td>Account which can delete output roots before challenge period has elapsed.</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SuperchainConfig.sol#L50">Guardian address</a></td><td>Account authorized to pause L1 withdrawals from contracts.</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/L2OutputOracle.sol#L108">Proposer address</a></td><td>Account which can propose output roots to L1.</td><td><a href="#admin-roles">L1 Proxy Admin</a></td></tr>
+<tr><td><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L250">Sequencer P2P / Unsafe head signer</a></td><td>Account which authenticates the unsafe/pre-submitted blocks for a chain at the P2P layer.</td><td><a href="#admin-roles">System Config Owner</a></td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/system_config.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../experimental/fault-proof/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/system_config.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../experimental/fault-proof/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
