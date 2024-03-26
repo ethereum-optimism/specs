@@ -49,8 +49,8 @@ There are four categories of OP Stack configuration options:
 
 | Config Property                       | Description                                                                                                                  | Administrator                       |
 |---------------------------------------|------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
-| Batch submission frequency            | Frequency with which batches are submitted to L1 (see [Batcher Transaction](../glossary.md#batcher-transaction)).            |[Batch submitter address](#service-roles)                 |
-| Compression ratio                     | How much compression the batch submitter applies to batches before submission (see [Channel](../glossary.md#channel)).       |                                     |
+| Batch submission frequency            | Frequency with which batches are submitted to L1 (see [Batcher Transaction](../glossary.md#batcher-transaction)).            | [Batch submitter address](#service-roles)                 |
+| Compression ratio                     | How much compression the batch submitter applies to batches before submission (see [Channel](../glossary.md#channel)).       |  [Batch submitter address](#service-roles)                        |
 | [Output frequency](https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/L2OutputOracle.sol#L104)                      | Frequency with which output roots are submitted to L1.                                                                       | [L1 Proxy Admin](#admin-roles)                      |
 
 ## Admin Roles
