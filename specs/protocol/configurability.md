@@ -20,7 +20,7 @@ There are four categories of OP Stack configuration options:
 
 - **Consensus Parameters**: Parameters and properties of the chain that may
   be set at genesis and fixed for the lifetime of the chain, or may be
-  changeable through a privileged account.
+  changeable through a privileged account or protocol upgrade.
 - **Policy Parameters**: Parameters of the chain that might be changed without
   breaking consensus. Consensus is enforced by the protocol, while policy parameters
   may be changeable within constraints imposed by consensus.
