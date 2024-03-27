@@ -46,11 +46,10 @@ constructing the [MessagePayload](./messaging.md#message-payload) against the lo
 
 This method MUST return the applicable [safety label](./verifier.md#safety) for the message, or `Invalid` upon failures.
 
-This method SHOULD NOT enforce the [timestamp invariant](./messaging.md#timestamp-invariant) on the provided messages. The
-backend only must enforce validity of the message as the CrossL2Inbox enforces the timestamp invariant on execution.
+This method SHOULD NOT enforce the [timestamp invariant](./messaging.md#timestamp-invariant) on the provided messages.
+The backend only must enforce validity of the message as the CrossL2Inbox enforces the timestamp invariant on execution.
 This simplifies the backend implementation as the executing timestamp value carries a different context depending on
 the caller -- verifier, block builder, sequencer.
-
 
 ## Message Safety Resolution
 
