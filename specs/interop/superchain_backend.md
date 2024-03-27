@@ -42,12 +42,15 @@ This method MUST enforce the attributes listed in the [Identifier](./messaging.m
 and block attributes returned by peer's `eth_getLogs` request with the `blockNumber` and `logIndex` parameters.
 
 This method MUST enforce the provided payload matches the bytes computed when
-constructing the [MessagePayload](./messaging.md#message-payload) against the fetched log.
+constructing the [MessagePayload](./messaging.md#message-payload) against the log pointed to by the identifier.
 
 This method MUST return the applicable [safety label](./verifier.md#safety) for the message, or `Invalid` upon failures.
 
-This method MUST NOT enforce the [timestamp invariant](./messaging.md#timestamp-invariant) on the provided messages. The
-block builders and verifiers must locally do so based on their configured level of safety.
+This method SHOULD NOT enforce the [timestamp invariant](./messaging.md#timestamp-invariant) on the provided messages. The
+backend only must enforce validity of the message as the CrossL2Inbox enforces the timestamp invariant on execution.
+This simplifies the backend implementation as the executing timestamp value carries a different context depending on
+the caller -- verifier, block builder, sequencer.
+
 
 ## Message Safety Resolution
 
