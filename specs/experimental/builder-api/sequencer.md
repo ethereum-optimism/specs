@@ -1,0 +1,205 @@
+# Honest Sequencer
+
+**Notice**: This document is a work-in-progress for researchers and implementers.
+
+## Table of contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Introduction](#introduction)
+- [Prerequisites](#prerequisites)
+- [Constants](#constants)
+- [Sequencer registration](#sequencer-registration)
+  - [Preparing a registration](#preparing-a-registration)
+  - [Signing and submitting a registration](#signing-and-submitting-a-registration)
+  - [Registration dissemination](#registration-dissemination)
+- [OP chain responsibilities](#op-chain-responsibilities)
+  - [Block proposal](#block-proposal)
+    - [Constructing the `BeaconBlockBody`](#constructing-the-opblockbody)
+      - [ExecutionPayload](#executionpayload)
+      - [Bid processing](#bid-processing)
+    - [Relation to local block building](#relation-to-local-block-building)
+- [Liveness failsafe](#liveness-failsafe)
+- [How to avoid slashing](#how-to-avoid-slashing)
+  - [Proposer slashing](#proposer-slashing)
+- [Responsibilities during the Merge transition](#responsibilities-during-the-merge-transition)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Introduction
+
+This document explains the way in which an OP Stack sequencer is expected to use the [Builder spec][builder-spec] to participate in an external builder network.
+
+At a high-level, there is a registration step the sequencer must perform ahead of any proposal duties so builders know how to craft blocks for their specific proposal. Having performed the registration, a sequencer waits until it is their turn to propose the next block in the chain. The sequencer then requests an `ExecutionPayload` from the external builder network to put into their `UnsafeBlock` in lieu of one they could build locally.
+
+## Prerequisites
+
+This document assumes knowledge of the terminology, definitions, and other material in the [Builder spec][builder-spec]
+and by extension the [Bellatrix consensus specs][bellatrix-specs].
+
+## Constants
+
+| Name | Value | Units |
+| - | - | - |
+| `EPOCHS_PER_SEQUENCER_REGISTRATION_SUBMISSION` | 1 | epoch(s)|
+| `BUILDER_PROPOSAL_DELAY_TOLERANCE` | 1 | second(s) |
+
+## Sequencer registration
+
+A sequencer begins interacting with the external builder network by submitting a signed registration to each of the builders it wants to utilize during block production.
+
+### Preparing a registration
+
+To do this, the sequencer client assembles a [`SequencerRegistrationV1`][sequencer-registration-v1] with the following
+information:
+
+* `fee_recipient`: an execution layer address where fees for the sequencer should go.
+* `gas_limit`: the value a sequencer prefers for the execution block gas limit.
+* `timestamp`: a recent timestamp later than any previously constructed `SequencerRegistrationV1`.
+  Builders use this timestamp as a form of anti-DoS and to sequence registrations.
+* `pubkey`: the sequencer's public key. Used to identify the op chain validator and verify the wrapping signature.
+
+### Signing and submitting a registration
+
+The sequencer takes the constructed `SequencerRegistrationV1` `message` and signs according to the method given in the [Builder spec][builder-spec] to make a `signature`.
+
+This `signature` is placed along with the `message` into a `SignedSequencerRegistrationV1` and submitted to a connected
+op-node using the [`registerSequencer`][register-sequencer-api] endpoint of the standard sequencer
+[node APIs][op-node-apis].
+
+Sequencers **should** submit valid registrations well ahead of any potential chain proposal duties to ensure
+their building preferences are widely available in the external builder network.
+
+### Registration dissemination
+
+Sequencers are expected to periodically send their own `SignedSequencerRegistrationV1` messages upstream to the external
+builder network using the [`registerSequencer`][register-sequencer-with-builder] endpoint of the standard [APIs defined in the builder spec][builder-spec-apis].
+
+Registrations should be re-submitted frequently enough that any changes to their building preferences can be widely
+spread across the builder network in a timely manner.
+
+This specification suggests sequencers re-submit to builder software every
+`EPOCHS_PER_SEQUENCER_REGISTRATION_SUBMISSION` epochs.
+
+## OP chain responsibilities
+
+Refer to the [Bellatrix sequencer specs][bellatrix-sequencer-specs] for the expected set of duties a sequencer is
+expected to perform, including a pathway for local block building. The external builder network offers a separate block
+building pathway that can be used concurrently with this local process.
+
+### Block proposal
+
+#### Constructing the `BeaconBlockBody`
+
+##### ExecutionPayload
+
+To obtain an execution payload, a block proposer building a block on top of a `state` in a given `slot` must take
+the following actions:
+
+1. Call upstream builder software to get an `ExecutionPayloadHeader` with the
+   required data `slot`, `parent_hash` and `pubkey`, where:
+   * `slot` is the proposal's slot
+   * `parent_hash` is the value `state.latest_execution_payload_header.block_hash`
+   * `pubkey` is the proposer's public key
+2. Assemble a `BlindedBeaconBlock` according to the process outlined in the [Bellatrix specs][bellatrix-specs] but with
+   the `ExecutionPayloadHeader` from the prior step in lieu of the full `ExecutionPayload`.
+3. The proposer signs the `BlindedBeaconBlock` and assembles a `SignedBlindedBeaconBlock` which is returned to the
+   upstream builder software.
+4. The upstream builder software responds with the full `ExecutionPayload`. The proposer can use this payload
+   to assemble a `SignedBeaconBlock` following the rest of the proposal process outlined in the
+   [Bellatrix specs][bellatrix-specs].
+
+##### Bid processing
+
+Bids received from step (1) above can be validated with `process_bid` below, where `state` corresponds to the state for the proposal without applying the block (currently under construction) and `fee_recipient` corresponds to the sequencer's most recently registered fee recipient address:
+
+```python
+def verify_bid_signature(state: BeaconState, signed_bid: SignedBuilderBid) -> bool:
+    pubkey = signed_bid.message.pubkey
+    domain = compute_domain(DOMAIN_APPLICATION_BUILDER)
+    signing_root = compute_signing_root(signed_registration.message, domain)
+    return bls.Verify(pubkey, signing_root, signed_bid.signature)
+```
+
+A `bid` is considered valid if the following function completes without raising any assertions:
+
+```python
+def process_bid(state: BeaconState, bid: SignedBuilderBid, fee_recipient: ExecutionAddress):
+    # Verify execution payload header
+    header = bid.message.header
+    assert header.parent_hash == state.latest_execution_payload_header.block_hash
+    assert header.fee_recipient == fee_recipient
+
+    # Verify bid signature
+    verify_bid_signature(state, bid)
+```
+
+#### Relation to local block building
+
+The external builder network offers a service for proposers that may from time to time fail to produce a timely block.
+Honest proposers who elect to use the external builder network **MUST** also build a block locally in the event that the
+external builder network fails to provide a `SignedBuilderBid` in time in order to propagate the full
+`SignedBeaconBlock` during the proposer's slot. The local build task should begin in parallel to any use of the external
+builder network.
+
+Honest proposers using the external builder network will give the builders a duration of
+`BUILDER_PROPOSAL_DELAY_TOLERANCE` to provide a `SignedBuilderBid` before the external builder is considered to have hit
+the deadline and the external builder flow must be aborted in favor of a local build process.
+
+**WARNING**: Sequencers must be careful to not get slashed when orchestrating the duplicate building pathways.
+  See the [section on slashing](#proposer-slashing) for more information.
+
+## Liveness failsafe
+
+Honest proposers implement a "circuit breaker" condition operationalized by the node that is triggered when the
+node determines the chain is unhealthy. When the circuit breaker is fired, proposers **MUST** not utilize the external
+builder network and exclusively build locally.
+
+The exact conditions to determine chain health are implementation-dependent. Various categories of signals to consider
+include:
+
+- number of missed slots over an epoch
+- number of reorgs in an epoch
+- number of missed slots in a row
+- reorg depth over a given period of time
+- attestation target vote falls below certain % (or head if want to be strict)
+- lack of finality over a given period of time
+- hard fork boundaries
+
+## How to avoid slashing
+
+### Proposer slashing
+
+Sequencers must take care to not publish signatures for two distinct blocks even if there is a failure with the external
+builder network. A `ProposerSlashing` can be formed in this event from the competing block headers which results
+in getting slashed.
+
+To avoid slashing when using the external builder network, a sequencer should begin the external build process for an
+`ExecutionPayloadHeader` along with the local build process for an `ExecutionPayload` as soon as they know the required
+parameters to do so. Regardless of which process completes in time, the sequencer should cancel the other
+process as soon as they have produced a signature for a block, either a `BeaconBlock` **or** a
+`BlindedBeaconBlock`. Producing distinct signatures for the sequencer's proposal slot, for example because the
+transactions list of the `BeaconBlockBody` are different, is the slashable offense. This means if a sequencer publishes
+a signature for a `BlindedBeaconBlock` (via a dissemination of a `SignedBlindedBeaconBlock`) then the sequencer
+**MUST** not use the local build process as a fallback, even in the event of some failure with the external builder
+network.
+
+## Responsibilities during the Merge transition
+
+Honest sequencers will not utilize the external builder network during the transition from proof-of-work to
+proof-of-stake. This requirement is in place to reduce the overall technical complexity of the Merge.
+
+Concretely, honest sequencers **MUST** wait until the transition has been finalized before
+they can start querying the external builder network. See [EIP-3675][eip-3675] for further details about the transition
+process itself.
+
+[builder-spec]: ./builder.md
+[builder-spec-apis]: ./builder.md#endpoints
+[register-sequencer-with-builder]: https://ethereum.github.io/builder-specs/#/Builder/registerSequencer
+[sequencer-registration-v1]: ./builder.md#sequencerregistrationv1
+[register-sequencer-api]: https://ethereum.github.io/op-APIs/#/Sequencer/registerSequencer
+[op-node-apis]: https://ethereum.github.io/op-APIs
+[bellatrix-specs]: https://github.com/ethereum/consensus-specs/blob/dev/specs/bellatrix
+[bellatrix-sequencer-specs]: https://github.com/ethereum/consensus-specs/blob/dev/specs/bellatrix/sequencer.md
+[eip-3675]: https://eips.ethereum.org/EIPS/eip-3675
