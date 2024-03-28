@@ -281,7 +281,7 @@ but are instead packed into 5 32-byte aligned segments (starting after the funct
 Each unsigned integer argument is encoded as big-endian using a number of bytes corresponding to the underlying type.
 The overall calldata layout is as follows:
 
-[ecotone-upgrade-txs]: derivation.md#network-upgrade-automation-transactions
+[ecotone-upgrade-txs]: derivation.md#ecotone
 
 | Input arg         | Type    | Calldata bytes | Segment |
 | ----------------- | ------- | -------------- | ------- |
@@ -296,9 +296,8 @@ The overall calldata layout is as follows:
 | l1BlockHash       | bytes32 | 100-131        | 4       |
 | batcherHash       | bytes32 | 132-163        | 5       |
 
-Total calldata length MUST be exactly 164 bytes, implying the sixth and final segment is only
-partially filled. This helps to slow database growth as every L2 block includes a L1 Attributes
-deposit transaction.
+Total calldata length MUST be exactly 164 bytes. This helps to slow database growth as every
+L2 block includes a L1 Attributes deposit transaction.
 
 In the first L2 block after the Ecotone activation block, the Ecotone L1 attributes are first used.
 
@@ -402,7 +401,7 @@ The function called by the L1 attributes transaction depends on the network upgr
   - `setL1BlockValuesEcotone` MUST be called with the new Ecotone attributes.
 
 `setL1BlockValuesEcotone` uses a tightly packed encoding for its parameters, which is described in
-[L1 Attributes Deposited Transaction Calldata](#l1-attributes-deposited-transaction-calldata).
+[L1 Attributes - Ecotone](#l1-attributes---ecotone).
 
 ## User-Deposited Transactions
 
