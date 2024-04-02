@@ -35,6 +35,7 @@
         - [Honest Challenger](./experimental/fault-proof/stage-one/honest-challenger-fdg.md)
         - [Bond Incentives](./experimental/fault-proof/stage-one/bond-incentives.md)
       - [Bridge Integration](./experimental/fault-proof/stage-one/bridge-integration.md)
+  - [Custom Gas Token](./experimental/custom-gas-token.md)
   - [Plasma](./experimental/plasma.md)
   - [Interoperability](./interop/overview.md)
     - [Dependency Set](./interop/dependency_set.md)
@@ -46,4 +47,5 @@
     - [Rollup Node P2P](./interop/rollup_node_p2p.md)
     - [Fault Proof](./interop/fault_proof.md)
     - [Upgrade](./interop/upgrade.md)
+  - [Security Council Safe](./experimental/security-council-safe.md)
 - [Glossary](./glossary.md)
