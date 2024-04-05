@@ -72,4 +72,4 @@ To lint links:
 just lint-links
 ```
 
-[lychee][lychee] is used for linting links.
+[lychee](https://github.com/lycheeverse/lychee) is used for linting links.
