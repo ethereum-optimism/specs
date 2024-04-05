@@ -31,6 +31,8 @@ that maintains 1:1 compatibility with Ethereum.
 - [Messengers](protocol/messengers.md)
 - [Bridges](protocol/bridges.md)
 - [Predeploys](protocol/predeploys.md)
+- [Preinstalls](protocol/preinstalls.md)
+- [Revenue Sharing](protocol/revenue-sharing.md)
 - [Glossary](glossary.md)
 
 ### Experimental

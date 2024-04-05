@@ -20,6 +20,7 @@
     - [Batch Submitter](./protocol/batcher.md)
   - [Predeploys](./protocol/predeploys.md)
   - [Preinstalls](./protocol/preinstalls.md)
+  - [Revenue Sharing](./protocol/revenue-sharing.md)
   - [Superchain]()
     - [Superchain Configuration](./protocol/superchain-configuration.md)
     - [Superchain Upgrades](./protocol/superchain-upgrades.md)

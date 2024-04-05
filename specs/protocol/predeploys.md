@@ -347,6 +347,17 @@ Address: `0x4200000000000000000000000000000000000021`
 
 The `EAS` predeploy implements the `Ethereum Attestation Service` protocol.
 
+## RevenueSharer
+[Implementation](https://github.com/ethereum-optimism/optimism/blob/6e12d4b630cc1d3dbhttps://github.com/ethereum-optimism/optimism/blob/gk/revenue-sharing/packages/contracts-bedrock/src/L2/RevenueSharer.sol) 
+ <!---
+TODO: update above link when implementation is merged
+-->
+
+Address: `0x4200000000000000000000000000000000000022`
+
+The `RevenueSharer` predepoly implements Revenue Sharing, disbursing funds from FeeVault contracts to the Optimism Collective.
+
+ 
 ## create2Deployer
 
 [Implementation](https://github.com/mdehoog/create2deployer/blob/69b9a8e112b15f9257ce8c62b70a09914e7be29c/contracts/Create2Deployer.sol)
