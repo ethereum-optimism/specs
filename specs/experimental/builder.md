@@ -11,7 +11,7 @@ Separating the building from FCU offers chain operators a way to modify block bu
 
 The Builder API facilitates a standardized interface for block construction and transaction management between the Sequencer and an external Builder Network. The interactions are the minimum viable design needed to enable an external Builder Network enabling future protocol experimentation which can unlock sequencer decentralization. Additionally this minimum viable design includes a fallback as a training wheel to ensure liveness and network performance.
 
-![image](https://hackmd.io/_uploads/S1nE75egA.png)
+![image](/specs/static/assets/builder_sequence_diagram.svg)
 
 
 - **Fork Choice Update**: The Sequencer propagates a Fork Choice Update to the Builder, indicating an update to the chain's latest head.
