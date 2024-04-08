@@ -31,7 +31,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
-This document provides a in-depth specification for integrating a Builder API within the Optimism Protocol and Stack. The Builder API provides a standardized interface for block construction and transaction management between the Sequencer and an external network of Block Builders. The interactions are the minimum viable design needed to enable an external Builder Network enabling future protocol experimentation which can unlock sequencer decentralization. Additionally this minimum viable design includes a fallback as a training wheel to ensure liveness and network performance. This document ***does not*** outline how to safely enable a permissionless Builder Network to serve payloads or how to manage these configs on L1.
+This document provides a in-depth specification for integrating a Builder API within the Optimism Protocol and Stack. The Builder API provides a standardized interface for block construction and transaction management between the Sequencer and an external network of Block Builders. The specified interactions are the minimum viable design needed to allow an external Builder Network enabling future protocol experimentation and a path towards Sequencer decentralization. Additionally this minimum viable design includes a fallback as a training wheel to ensure liveness and network performance. This document ***does not*** outline how to safely enable a permissionless Builder Network to serve payloads or how to manage these configs on L1.
 
 Separating Block Building from the Sequencer's Execution Engine offers chain operators a way to modify block building rules without creating a large divergence from the upstream Optimism Protocol Client, allowing different chains in the superchain to supply their own block building systems as a way to differentiate.
 
@@ -62,7 +62,6 @@ A builder is defined as the tuple (`builderPubkey`, `builderUrl`). The Sequencer
 ## Structures
 
 ### `PayloadRequestV1`
-[TOOD] : We could potentially extend to `PayloadAttributesV3` to `PayloadAttributesV4` which includes our necessary Builder API fields. This seems ideal that we could simply extend `PayloadAttributesV3`, but seems like it would create more conflicts. 
 
 This structure contains information necessary to request a block from an external network of builders.
 - `blockNumber`: `uint256`
@@ -138,6 +137,8 @@ This structure represents the Block Builder's response to the request for payloa
 Out of scope of this document but:
 - The base version of this idea is to use EVM bytecode to order transactions. 
 - The next level version of this is to run a [paravirtualized](https://en.wikipedia.org/wiki/Paravirtualization) EVM from inside of a Modified EVM (interpreter mods only) that injects an API into the paravirtualized EVM located at specific precompiles which gives access to the hosts resources (state trie, simulation capabilities, etc). 
+
+It is also not ideal to name this `V4` as the L1 spec will most likely use this version in the next upgrade, therefore another route could be to overload `V3` like the Protocol does right now.
   
 
 ### `engine_forkchoiceUpdatedV4`
