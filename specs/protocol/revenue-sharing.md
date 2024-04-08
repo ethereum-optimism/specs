@@ -41,9 +41,8 @@ The `RevenueSharer` is respomsible for computing $s$ and sending it to a predete
    L1FeeVault-->|d|RevenueSharer
    BaseFeeVault-->|b|RevenueSharer
    RevenueSharer-->|s|OptimismCollectiveWallet
-   RevenueSharer-->|p+d+b-s|RemainderWallet
+   RevenueSharer-->|r-s|RemainderWallet
 ```
-
-# Simplified L1 Data Fee Expenditure
+## Simplified L1 Data Fee Expenditure
 As a part of a gradual rollout of protocol enshrined revenue sharing, the `RevenueSharer` uses a fixed value of $e=0$. If $e>d$, the sequence is making a loss on providing data availability. If $d>e$, they are making a profit. By assuming $e=0$, the simplification implies that data availability revenue is all profit. This will be addressed in a future protocol upgrade. 
 
