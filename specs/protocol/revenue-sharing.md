@@ -40,15 +40,21 @@ Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract 
 ### Deploying `RevenueSharer`
 
 
-
 #### Existing Chains
-
+The `RevenueSharer` can be deployed manually to an arbitrary address, and the existing `Proxy` at `0x4200000000000000000000000000000000000024` can have its implementation set by calling `upgrade` on the `ProxyAdmin`.
 
 #### Chains after version X.Y.Z of OP Stack 
-Part of the genesis creation for new chains. 
+The `RevenueSharer` can be made a part of the genesis creation for new chains. 
 
 ### Reconfiguring existing predeploys
 The three `FeeVault` contracts need to be upgraded so that their immutable `RECIPIENT` variable points at the `RevenueSharer`.
+
+#### Existing Chains
+Appropriate transactions can be bundled with the deployment itself.
+
+#### Chains after version X.Y.Z of OP Stack 
+Appropriate changes to the genesis will be made.
+
 
 
 ### Execution
