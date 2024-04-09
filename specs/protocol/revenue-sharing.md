@@ -1,3 +1,18 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Revenue Sharing](#revenue-sharing)
+  - [Definitions](#definitions)
+  - [`RevenueSharer` predeploy](#revenuesharer-predeploy)
+    - [Deploying `RevenueSharer`](#deploying-revenuesharer)
+      - [Existing Chains](#existing-chains)
+      - [Chains after version X.Y.Z of OP Stack](#chains-after-version-xyz-of-op-stack)
+    - [Execution](#execution)
+  - [Simplified L1 Data Fee Expenditure](#simplified-l1-data-fee-expenditure)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Revenue Sharing
 
 Revenue sharing is the process by which chains in the superchain contribute a portion of their revenue or profit to the Optimism collective. They do this in return for support with the OP Stack and other benefits. 
@@ -16,7 +31,7 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 | $s$ | Revenue share due to Optimism Collective | $\max(0.15r,0.025p)$
 
 ## `RevenueSharer` predeploy
-Revenue sharing is achieved through an L2 contract `RevenueSharer`. This is the implementation of a proxy contract `RevenueSharerProxy` with address
+Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract `RevenueSharer` with address
 
 ```
 0x4200000000000000000000000000000000000024
@@ -32,7 +47,7 @@ Part of the genesis creation for new chains.
 
 ### Execution
 Revenue sharing is executed periodically. 
-The `RevenueSharer` is respomsible for computing $s$ and sending it to a predetermined address controlled by the Optimism Collective. At the end of execution, `SequencerFeeVault`, `L1FeeVault` and `BaseFeeVault` and `RevenueSharer(Proxy)` should be completely depleted of ETH. This allows the contract to be stateless.
+The `RevenueSharer` is respomsible for computing $s$ and sending it to a predetermined address controlled by the Optimism Collective. At the end of execution, `SequencerFeeVault`, `L1FeeVault` and `BaseFeeVault` and `RevenueSharer` should be completely depleted of ETH. This allows the contract to be stateless.
 
 ```mermaid
    flowchart TD
