@@ -19,7 +19,7 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 Revenue sharing is achieved through an L2 contract `RevenueSharer`. This is the implementation of a proxy contract `RevenueSharerProxy` with address
 
 ```
-0x4200000000000000000000000000000000000022
+0x4200000000000000000000000000000000000024
 ```
 
 ### Deploying `RevenueSharer`
