@@ -83,11 +83,11 @@ on the `commitment_type_byte` where [0, 128) are reserved for official implement
 | `commitment_type` | `commitment`                    |
 | ----------------- | ------------------------------- |
 | 0                 | `keccak256(tx_payload)`         |
-| 1                 | `da-server`                     |
+| 1                 | `da-service`                     |
 
-The `da-server` commitment is as follows: `version_byte ++ len(payload) as uvarint ++ payload`. The version byte
-must be initially restricted to the range `[0, 127)`. This specification will not apportion version bytes, but
-different DA layers should coordinate to ensure that the version bytes do not conflict. The payload length is a
+The `da-service` commitment is as follows: `da_layer_byte ++ len(payload) as uvarint ++ payload`. The DA layer byte
+must be initially restricted to the range `[0, 127)`. This specification will not apportion DA layer bytes, but
+different DA layers should coordinate to ensure that the DA layer bytes do not conflict. The payload length is a
 unsigned 64 bit number, as defined in [protobuf spec]. The payload is a bytestring which is up to the DA layer to
 specify. The DA server should be able to parse the payload, find the data on the DA server, & verify that the data
 returned from the DA server matches what was committed to in the payload.
