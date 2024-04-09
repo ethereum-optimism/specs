@@ -40,7 +40,7 @@ Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract 
 ### Deploying `RevenueSharer`
 
 #### Existing Chains
-Deployed manually using create2 so there is a consistent address across chains. It won't be in the `0x42...` namespace. That is not possible without a hardfork. 
+
 
 #### Chains after version X.Y.Z of OP Stack 
 Part of the genesis creation for new chains. 
