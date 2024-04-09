@@ -23,6 +23,7 @@
 - [L1FeeVault](#l1feevault)
 - [SchemaRegistry](#schemaregistry)
 - [EAS](#eas)
+- [RevenueSharer](#revenuesharer)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
