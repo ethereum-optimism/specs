@@ -63,12 +63,12 @@ interface VetoModule {
 
 The `OwnerGuard` contract adds two additional requirements (invariants) to the Safe Account, which must hold true in any circumstance:
 1. The Safe Account cannot have more owners than the configured `maxOwnerCount`.
-2. The Safe Account `threshold` (minimum number of signatures necessary to perform an arbitrary action on behalf of the Safe Account) must always be exactly equal to 66% of the current number of owners.
+2. The Safe Account `threshold` (minimum number of signatures necessary to perform an arbitrary action on behalf of the Safe Account) must always be exactly equal to 66% (rounded up using the following formula: `threshold = (ownerCount * 66 + 99) / 100;`) of the current number of owners.
 
 This guard has the following minimal interface:
 
 ```solidity
-interface VetoModule {
+interface OwnerGuard {
     /// @notice Inherited hook from `BaseGuard` that is run right before the transaction is executed
     ///         by the Safe Account when `execTransaction` is called.
     function checkTransaction(
