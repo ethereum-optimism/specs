@@ -24,7 +24,7 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 | $d$ | L1 Data Fee Revenue    | ETH transferred to the sequencer with L2 transactions to cover estimated L1 Data Fees(see below). Accumulates to `L1FeeVault`.
 | $e$ | L1 Data Fee Expenditure| ETH spent by the batcher on L1 to make transaction data available
 | $b$ | L2 Base Gas Revenue         | Base fee portion of L2 Gas Fee (ETH transferred to the sequencer to cover execution of L2 transactions). Accumulates to `BaseFeeVault`.
-| $p$ | L2 Priority Gas Revenue         | Priority fee portion of L2 Gas Fee (ETh transferred to the sequencer to cover execution of L2 transactions). Accumulates to `SequencerFeeVault`.
+| $p$ | L2 Priority Gas Revenue         | Priority fee portion of L2 Gas Fee (ETH transferred to the sequencer to cover execution of L2 transactions). Accumulates to `SequencerFeeVault`.
 | $g$ | L2 Gas Revenue         | $b+p$
 | $r$ | Sequencer Revenue      | $e + g$
 | $p$ | Sequencer Profit       | $e + g - d$
@@ -47,7 +47,7 @@ Part of the genesis creation for new chains.
 
 ### Execution
 Revenue sharing is executed periodically. 
-The `RevenueSharer` is respomsible for computing $s$ and sending it to a predetermined address controlled by the Optimism Collective. At the end of execution, `SequencerFeeVault`, `L1FeeVault` and `BaseFeeVault` and `RevenueSharer` should be completely depleted of ETH. This allows the contract to be stateless.
+The `RevenueSharer` is responsible for computing $s$ and sending it to a predetermined address controlled by the Optimism Collective. At the end of execution, `SequencerFeeVault`, `L1FeeVault` and `BaseFeeVault` and `RevenueSharer` should be completely depleted of ETH. This allows the contract to be stateless.
 
 ```mermaid
    flowchart TD
