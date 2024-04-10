@@ -1,19 +1,23 @@
+# Revenue Sharing
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Revenue Sharing](#revenue-sharing)
+- [Overview](#overview)
   - [Definitions](#definitions)
   - [`RevenueSharer` predeploy](#revenuesharer-predeploy)
     - [Deploying `RevenueSharer`](#deploying-revenuesharer)
       - [Existing Chains](#existing-chains)
       - [Chains after version X.Y.Z of OP Stack](#chains-after-version-xyz-of-op-stack)
+    - [Reconfiguring existing predeploys](#reconfiguring-existing-predeploys)
+      - [Existing Chains](#existing-chains-1)
+      - [Chains after version X.Y.Z of OP Stack](#chains-after-version-xyz-of-op-stack-1)
     - [Execution](#execution)
   - [Simplified L1 Data Fee Expenditure](#simplified-l1-data-fee-expenditure)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Revenue Sharing
+# Overview
 
 Revenue sharing is the process by which chains in the superchain contribute a portion of their revenue or profit to the Optimism collective. They do this in return for support with the OP Stack and other benefits. 
 
