@@ -19,7 +19,7 @@
 
 # Overview
 
-Revenue sharing is the process by which chains in the superchain contribute a portion of their revenue or profit to the Optimism collective. They do this in return for support with the OP Stack and other benefits. 
+Revenue sharing is the process by which chains in the superchain contribute a portion of their revenue or profit to a beneficiary such as the Optimism collective. They may do this in return for support with the OP Stack and/or other benefits. 
 
 
 ## Definitions
@@ -70,13 +70,13 @@ The `RevenueSharer` is responsible for computing $s$ and sending it to a predete
    SequencerFeeVault
    BaseFeeVault
    L1FeeVault
-   OptimismCollectiveWallet
+   BeneficiaryWallet
    RemainderWallet
    RevenueSharer
    SequencerFeeVault-->|p|RevenueSharer
    L1FeeVault-->|d|RevenueSharer
    BaseFeeVault-->|b|RevenueSharer
-   RevenueSharer-->|s|OptimismCollectiveWallet
+   RevenueSharer-->|s|BeneficiaryWallet
    RevenueSharer-->|r-s|RemainderWallet
 ```
 ## Simplified L1 Data Fee Expenditure
