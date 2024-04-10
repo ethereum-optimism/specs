@@ -26,8 +26,8 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 | $b$ | L2 Base Gas Revenue         | Base fee portion of L2 Gas Fee (ETH transferred to the sequencer to cover execution of L2 transactions). Accumulates to `BaseFeeVault`.
 | $p$ | L2 Priority Gas Revenue         | Priority fee portion of L2 Gas Fee (ETH transferred to the sequencer to cover execution of L2 transactions). Accumulates to `SequencerFeeVault`.
 | $g$ | L2 Gas Revenue         | $b+p$
-| $r$ | Sequencer Revenue      | $e + g$
-| $p$ | Sequencer Profit       | $e + g - d$
+| $r$ | Sequencer Revenue      | $d + g$
+| $p$ | Sequencer Profit       | $d + g - e$
 | $s$ | Revenue share due to Optimism Collective | $\max(0.15r,0.025p)$
 
 ## `RevenueSharer` predeploy
