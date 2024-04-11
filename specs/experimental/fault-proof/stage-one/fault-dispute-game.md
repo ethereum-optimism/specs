@@ -314,38 +314,49 @@ Large preimage proposals allow for submitters to stream in a large preimage over
 commitments to the intermediate state of the `keccak256` function after absorbing/permuting the $1088$ bit block.
 This data is progressively merkleized on-chain as it is streamed in, with each leaf constructed as follows:
 
-```solidity
-/// @notice Returns a leaf hash to add to a preimage proposal merkle tree.
-/// @param input A single 136 byte chunk of the input.
-/// @param blockIndex The index of the block that `input` corresponds to in the full preimage's absorbtion.
-/// @param stateCommitment The hash of the full 5x5 state matrix *after* absorbing and permuting `input`.
-function hashLeaf(
-    bytes memory input,
-    uint256 blockIndex,
-    bytes32 stateCommitment
-) internal view returns (bytes32 leaf) {
-    require(input.length == 136, "input must be exactly the size of the keccak256 rate");
+**Large Preimage Proposals**
 
-    leaf = keccak256(abi.encodePacked(input, blockIndex, stateCommitment));
-}
-```
+Large preimage proposals allow for submitters to stream in a large preimage over multiple transactions, along-side
+commitments to the intermediate state of the `keccak256` function after absorbing/permuting the $1088$ bit block.
+This data is available to off-chain challenge agents in blobs, and each blob contains up to $738$ intermediate SHA3
+commitments. The data is laid out as follows:
+
+![keccak_dispute_blob_data](../../../static/assets/keccak_dispute_blob_data.png)
+
+> [!NOTE]
+> Until the final blob of intermediate state commitments, all blobs are expected to be filled as much as possible.
 
 Once the full preimage and all intermediate state commitments have been posted, the large preimage proposal enters a
-challenge period. During this time, a challenger can reconstruct the merkle tree that was progressively built on-chain
-locally by scanning the block bodies that contain the proposer's leaf preimages. If they detect that a commitment to
-the intermediate state of the hash function is incorrect at any step, they may perform a single-step dispute for the
-proposal in the `PreimageOracle`. This involves:
+challenge period. During this time, a challenger can view the contents of the blob hashes that were posted by the
+proposer off-chain, and check the correctness of the preimage data in relation to the supplied commitments to the
+intermediate state of the `keccak256` function after each block is processed.
 
-1. Creating a merkle proof for the agreed upon prestate leaf (not necessary if the invalid leaf is the first one, the
-   setup state of the matrix is constant.) within the proposal's merkle root.
-2. Creating a merkle proof for the disputed post state leaf within the proposal's merkle root.
-3. Computing the state matrix at the agreed upon prestate (not necessary if the invalid leaf is the first one, the
-   setup state of the matrix is constant.)
+When the proposal is finalized, the proposer also supplies data to persist the 4 byte preimage part. This requires:
 
-The challenger then submits this data to the `PreimageOracle`, where the post state leaf's claimed input is absored into
-the pre state leaf's state matrix and the SHA3 permutation is executed on-chain. After that, the resulting state matrix
-is hashed and compared with the proposer's claim in the post state leaf. If the hash does not match, the proposal
-is marked as challenged, and it may not be finalized. If, after the challenge period is concluded, a proposal has no
+1. The global offset of the 4 byte part within the full preimage.
+1. The index of the versioned blob hash within a tracking array.
+1. The field element(s) that contain the 4 byte part.
+1. The point(s) for the field elements containing the 4 byte part within the blob.
+
+An opening on the blob passed by the proposer is then made to verify that the 4 byte preimage part exists within the
+blob, and then the contract will determine if it exists at the correct offset by considering the expected
+layout of the data within the blobs above in relation to the index within the tracking array.
+
+If the challenge agent detects that a commitment to the intermediate state of the hash function is incorrect at any
+step, they may perform a single-step dispute for the proposal in the `PreimageOracle`. This involves:
+
+1. Gathering the index(es) within the array of versioned blob hashes stored in the `PreimageOracle` that contain the
+   field elements required to produce the contiguous intermediate states.
+1. Gathering the field elements required to produce the contiguous intermediate states within one or two blobs.
+1. Gathering the points for each field element within the blob(s) in the above step.
+1. Revealing the preimage to the prestate's SHA3 state matrix commitment.
+1. Submitting this data to `challengeLPP` or `challengeFirstLPP`
+
+The contract will then create an opening on the blob(s) required to produce the pre and post states for the SHA3
+permutation to verify the integrity of the input data. Once verified, the post state's input bytes will then be
+absorbed into the revealed prestate and the SHA3 permutation is executed on-chain. The resulting state matrix is then
+hashed and compared with the proposer's claim in the post state leaf. If the hash does not match, the proposal is
+marked as challenged, and it may not be finalized. If, after the challenge period is concluded, a proposal has no
 challenges, it may be finalized and the preimage part may be placed into the authorized mappings for the FPVM to read.
 
 ### Team Dynamics
