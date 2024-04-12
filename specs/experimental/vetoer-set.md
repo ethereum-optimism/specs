@@ -1,8 +1,8 @@
-# Security Council VetoerSet
+# Vetoer Set
 
-The Security Council employs a specially extended Safe multisig contract to provide additional features and security guarantees.
+The VetoerSet is an extended Safe Account contract to serve as the `VETOER` in the `DelayedVetoable` contract for all chains in the Superchain, allowing it to prevent upgrades proposed by the Security Council. 
 
-This document describes the "VetoerSet" feature, which allows any member of this set to perform a veto across the entire Superchain. This feature is implemented via two new Safe [modules](https://docs.safe.global/advanced/smart-account-modules), namely `AddOwnerModule` and `VetoModule`, and one new Safe [guard](https://docs.safe.global/advanced/smart-account-guards), `OwnerGuard`.
+It is implemented by extending the Safe Account with two Safe [modules](https://docs.safe.global/advanced/smart-account-modules), namely `AddOwnerModule` and `VetoModule`, and one Safe [guard](https://docs.safe.global/advanced/smart-account-guards), the `OwnerGuard`.
 
 **Table of Contents**
 
@@ -28,7 +28,7 @@ The veto mechanism relies on two Safe modules (`AddOwnerModule` and `VetoModule`
 
 ### Veto module
 
-The term "VetoerSet" is an abstract concept not explicitly present in the code. Any owner of the Safe Account is a potential "vetoer", so the "VetoerSet" is essentially just the list of owners of the Safe Account.
+The term "VetoerSet" is an abstract concept not explicitly present in the code. Any owner of the Safe Account is a potential "vetoer", so the "VetoerSet" is essentially the list of owners of the Safe Account.
 
 This module implements the core (and simple) logic of allowing any member of the VetoerSet (i.e., any owner of the Safe Account) to call the `veto()` method on the registered `DelayedVetoable` contract on behalf of the Safe Account and without requiring a signature quorum.
 
