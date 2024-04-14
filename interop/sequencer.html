@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Sequencer - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">2.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../protocol/span-batches.html"><strong aria-hidden="true">3.2.2.3.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.4.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.5.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.5.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.5.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.6.</strong> System Config</a></li><li class="chapter-item expanded "><a href="../protocol/configurability.html"><strong aria-hidden="true">3.7.</strong> Configurability</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/index.html"><strong aria-hidden="true">4.1.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">4.1.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/bond-incentives.html"><strong aria-hidden="true">4.1.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/bridge-integration.html"><strong aria-hidden="true">4.1.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../experimental/plasma.html"><strong aria-hidden="true">4.2.</strong> Plasma</a></li><li class="chapter-item expanded "><a href="../interop/overview.html"><strong aria-hidden="true">4.3.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../interop/dependency_set.html"><strong aria-hidden="true">4.3.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../interop/messaging.html"><strong aria-hidden="true">4.3.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../interop/predeploys.html"><strong aria-hidden="true">4.3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../interop/execution.html"><strong aria-hidden="true">4.3.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../interop/sequencer.html" class="active"><strong aria-hidden="true">4.3.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../interop/verifier.html"><strong aria-hidden="true">4.3.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../interop/rollup_node_p2p.html"><strong aria-hidden="true">4.3.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../interop/fault_proof.html"><strong aria-hidden="true">4.3.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../interop/upgrade.html"><strong aria-hidden="true">4.3.9.</strong> Upgrade</a></li></ol></li><li class="chapter-item expanded "><a href="../experimental/security-council-safe.html"><strong aria-hidden="true">4.4.</strong> Security Council Safe</a></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/sequencer.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#sequencer-policy">Sequencer Policy</a></li>
+<li><a href="#block-building">Block Building</a>
+<ul>
+<li><a href="#static-analysis">Static analysis</a></li>
+<li><a href="#dependency-confirmations">Dependency confirmations</a>
+<ul>
+<li><a href="#pre-confirmations">Pre-confirmations</a>
+<ul>
+<li><a href="#streaming-pre-confirmations-shreds">Streaming pre-confirmations: "shreds"</a></li>
+</ul>
+</li>
+<li><a href="#direct-dependency-confirmation">Direct-dependency confirmation</a></li>
+<li><a href="#transitive-dependency-confirmation">Transitive-dependency confirmation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sponsorship">Sponsorship</a></li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#cross-chain-message-latency">Cross Chain Message Latency</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="sequencer-policy"><a class="header" href="#sequencer-policy">Sequencer Policy</a></h2>
+<p>Sequencer Policy is the process of optimistically enacting rules outside of consensus
+(the state-transition function in this context), and the choices can then be asynchronously validated
+by <a href="./verifier.html">verifiers</a> and <a href="./fault_proof.html">the fault-proof</a>.</p>
+<p>In the context of superchain interopability, sequencer policy is utilized to enable cross-chain message relay
+without adding additional state-transition complexity or cross-chain synchronicity to the protocol.</p>
+<h2 id="block-building"><a class="header" href="#block-building">Block Building</a></h2>
+<p>The goal is to present information in a way where it is as efficient as possible for the block builder to only include
+executing messages that have a corresponding initiating message.</p>
+<h3 id="static-analysis"><a class="header" href="#static-analysis">Static analysis</a></h3>
+<p>The block builder SHOULD use static analysis on executing messages to determine the dependency of the message.</p>
+<p>When a transaction has a top level <a href="https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L52">to</a> field that is equal to the <code>CrossL2Inbox</code>
+and the 4-byte selector in the calldata matches the entrypoint interface,
+the block builder should use the chain-ID that is encoded in the <code>Identifier</code> to determine which chain includes
+the initiating transaction.</p>
+<h3 id="dependency-confirmations"><a class="header" href="#dependency-confirmations">Dependency confirmations</a></h3>
+<p>The sequencer MAY include an executing message in a block with any desired level
+of confirmation safety around the dependency of the message.</p>
+<p>Confirmation levels:</p>
+<ul>
+<li>pre-confirmation: through direct signaling by the block builder of the initiating message.</li>
+<li>direct-dependency confirmation: verify the inclusion of the initiating message, but not the transitive dependencies.</li>
+<li>transitive-dependency confirmation: verify the message and all transitive dependencies
+are included in canonical blocks within the specified safety-view (unsafe/safe/finalized).</li>
+</ul>
+<p>When operating at lower-safety confirmation levels, the block builder SHOULD re-validate included
+executing messages at an increased safety level, before the block is published.</p>
+<h4 id="pre-confirmations"><a class="header" href="#pre-confirmations">Pre-confirmations</a></h4>
+<p>The block builder can include executing messages that have corresponding initiating messages
+that only have pre-confirmation levels of security if they trust the block builder that initiates.</p>
+<p>Using an allowlist and identity turns sequencing into an integrated game which increases the ability for
+block builders to trust each other. Better pre-confirmation technology will help to scale the block builder
+set to untrusted actors.</p>
+<p>Without pre-confirmations, the block builder cannot include messages of other concurrent block building work.</p>
+<p>Pre-confirmations MAY be invalidated, and assumptions around message-validity SHOULD be treated with care.</p>
+<h5 id="streaming-pre-confirmations-shreds"><a class="header" href="#streaming-pre-confirmations-shreds">Streaming pre-confirmations: "shreds"</a></h5>
+<p>In the context of low-latency block building, each pre-confirmation may be communicated in the form of a "shred":
+the most minimal atomic state-change that can be communicated between actors in the system.</p>
+<p>In the context of cross-chain block-building, shreds may be used to communicate initiated cross-chain messages,
+to validate executing messages against.</p>
+<p>Shreds may be streamed, and potentially signal rewinds in case of invalidated dependencies.</p>
+<p>This block builder feature is in ongoing research,
+and may be developed and experimented with between block builders without further protocol rules changes.</p>
+<h4 id="direct-dependency-confirmation"><a class="header" href="#direct-dependency-confirmation">Direct-dependency confirmation</a></h4>
+<p>By verifying the direct dependency the block-builder does not have to implement pre-confirmations,
+and can rely on its direct view of the remote chain.</p>
+<p>The block builder MAY require cryptographic proof of the existence of the log
+that the identifier points to, if it trusts the remote canonical chain but not its RPC server.</p>
+<p>The block builder MAY also trust a remote RPC and use the following algorithm
+to verify the existence of the log.</p>
+<p>The following pseudocode represents how to check existence of a log based on an <code>Identifier</code>.</p>
+<pre><code class="language-python">target, message, id = abi.decode(calldata)
+
+eth = clients[id.chainid]
+
+if eth is None:
+  return False
+
+logs = eth.getLogs(id.origin, from=id.blocknumber, to=id.blocknumber)
+log = filter(lambda x: x.index == id.logIndex &amp;&amp; x.address == id.origin)
+if len(log) == 0:
+  return False
+
+if message != encode(log[0]):
+  return False
+
+block = eth.getBlockByNumber(id.blocknumber)
+
+if id.timestamp != block.timestamp:
+  return False
+
+return True
+</code></pre>
+<h4 id="transitive-dependency-confirmation"><a class="header" href="#transitive-dependency-confirmation">Transitive-dependency confirmation</a></h4>
+<p>When operating pessimistically, the direct-dependency validation may be applied recursively,
+to harden against unstable message guarantees at the cost of increased cross-chain latency.</p>
+<p>The transitive dependencies may also be enforced with <code>safe</code> or even <code>finalized</code> safety-views
+over the blocks of the chains in the dependency set, to further ensure increased cross-chain safety.</p>
+<h2 id="sponsorship"><a class="header" href="#sponsorship">Sponsorship</a></h2>
+<p>If a user does not have ether to pay for the gas of an executing message, application layer sponsorship
+solutions can be created. It is possible to create an MEV incentive by paying <code>tx.origin</code> in the executing
+message. This can be done by wrapping the <code>L2ToL2CrossDomainMessenger</code> with a pair of relaying contracts.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="cross-chain-message-latency"><a class="header" href="#cross-chain-message-latency">Cross Chain Message Latency</a></h3>
+<p>The latency at which a cross chain message is relayed from the moment at which it was initiated is bottlenecked by
+the security of the preconfirmations. An initiating transaction and a executing transaction MAY have the same timestamp,
+meaning that a secure preconfirmation scheme enables atomic cross chain composability. Any sort of equivocation on
+behalf of the sequencer will result in the production of invalid blocks.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/execution.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/verifier.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/execution.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/verifier.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
