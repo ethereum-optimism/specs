@@ -28,10 +28,10 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 | $d$ | L1 Data Fee Revenue    | ETH transferred to the sequencer with L2 transactions to cover estimated L1 Data Fees(see below). Accumulates to `L1FeeVault`.
 | $e$ | L1 Data Fee Expenditure| ETH spent by the batcher on L1 to make transaction data available
 | $b$ | L2 Base Gas Revenue         | Base fee portion of L2 Gas Fee (ETH transferred to the sequencer to cover execution of L2 transactions). Accumulates to `BaseFeeVault`.
-| $p$ | L2 Priority Gas Revenue         | Priority fee portion of L2 Gas Fee (ETH transferred to the sequencer to cover execution of L2 transactions). Accumulates to `SequencerFeeVault`.
-| $g$ | L2 Gas Revenue         | $b+p$
-| $r$ | Sequencer Revenue      | $d + g$
-| $p$ | Sequencer Profit       | $d + g - e$
+| $q$ | L2 Priority Gas Revenue         | Priority fee portion of L2 Gas Fee (ETH transferred to the sequencer to cover execution of L2 transactions). Accumulates to `SequencerFeeVault`.
+| $g$ | L2 Gas Revenue         | $b + q$
+| $r$ | Sequencer Revenue      | $d + b + q$
+| $p$ | Sequencer Profit       | $r - e$
 | $s$ | Revenue share due to Optimism Collective | $\max(0.15r,0.025p)$
 
 ## `RevenueSharer` predeploy
@@ -81,7 +81,7 @@ The `RevenueSharer` is responsible for computing $s$ and sending it to a predete
    BeneficiaryWallet
    RemainderWallet
    RevenueSharer
-   SequencerFeeVault-->|p|RevenueSharer
+   SequencerFeeVault-->|q|RevenueSharer
    L1FeeVault-->|d|RevenueSharer
    BaseFeeVault-->|b|RevenueSharer
    RevenueSharer-->|s|BeneficiaryWallet
