@@ -88,9 +88,10 @@ on the `commitment_type_byte` where [0, 128) are reserved for official implement
 The `da-service` commitment is as follows: `da_layer_byte ++ len(payload) as uvarint ++ payload`. The DA layer byte
 must be initially restricted to the range `[0, 127)`. This specification will not apportion DA layer bytes, but
 different DA layers should coordinate to ensure that the DA layer bytes do not conflict. The payload length is a
-unsigned 64 bit number, as defined in [protobuf spec]. The payload is a bytestring which is up to the DA layer to
-specify. The DA server should be able to parse the payload, find the data on the DA server, & verify that the data
-returned from the DA server matches what was committed to in the payload.
+unsigned 64 bit number, as defined in [protobuf spec]. We include the payload length so the op-node is able to pull
+out single commitment from a list of commitments that are concatenated together. The payload is a bytestring which
+is up to the DA layer to specify. The DA server should be able to parse the payload, find the data on the DA server,
+& verify that the data returned from the DA server matches what was committed to in the payload.
 
 [protobuf spec]: https://protobuf.dev/programming-guides/encoding/#varints
 
