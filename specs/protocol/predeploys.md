@@ -350,7 +350,7 @@ Address: `0x4200000000000000000000000000000000000021`
 The `EAS` predeploy implements the `Ethereum Attestation Service` protocol.
 
 ## RevenueSharer
-[Implementation](https://github.com/ethereum-optimism/optimism/blob/gk/revenue-sharing/packages/contracts-bedrock/src/L2/RevenueSharer.sol) 
+[Implementation](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/RevenueSharer.sol) 
  <!---
 TODO: update above link when implementation is merged
 -->
