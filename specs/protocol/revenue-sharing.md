@@ -35,39 +35,20 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 | $s$ | Revenue share due to Optimism Collective | $\max(0.15r,0.025p)$
 
 ## `RevenueSharer` predeploy
-Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract `RevenueSharer` with address
-
-```
-0x4200000000000000000000000000000000000024
-```
+Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract `RevenueSharer` with address `0x4200000000000000000000000000000000000024`.
 
 ### Deploying `RevenueSharer`
 
+The `RevenueSharer` contract is now included in the L2 genesis and is not scheduled to be part of a hardfork.
 
 #### Existing Chains
-The following transactions need to be executed: 
+For chains without the `RevenueSharer` in their genesis, the following transactions may be executed to deploy it
+: 
 1. The `RevenueSharer` should be deployed manually to an arbitrary address `REVENUE_SHARER_IMPLEMENTATION_ADDRESS`
 2. For EACH of the three FeeVault contracts ({name} = BASE, L1, SEQUENCER):
 
     a. A new version should be deployed with the `RECIPIENT` variable set to `0x4200000000000000000000000000000000000024` in the constructor, and other constructor parameters set to existing values. This contract has an arbitrary address `NEW_{name}_FEE_VAULT_ADDRESS`.
     b. The ProxyAdminOwner should call `ProxyAdmin.upgrade({name}_FEE_VAULT, NEW_{name}_FEE_VAULT_ADDRESS)`
-
-
-
-
-#### Chains after version X.Y.Z of OP Stack 
-The `RevenueSharer` can be made a part of the genesis creation for new chains. 
-
-### Reconfiguring existing predeploys
-The three `FeeVault` contracts need to be upgraded so that their immutable `RECIPIENT` variable points at the `RevenueSharer`.
-
-#### Existing Chains
-Appropriate transactions can be bundled with the deployment itself.
-
-#### Chains after version X.Y.Z of OP Stack 
-Appropriate changes to the genesis will be made.
-
-
 
 ### Execution
 Revenue sharing is executed periodically. 
