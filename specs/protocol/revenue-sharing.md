@@ -51,7 +51,7 @@ For chains without the `RevenueSharer` in their genesis, the following transacti
     b. The ProxyAdminOwner should call `ProxyAdmin.upgrade({name}_FEE_VAULT, NEW_{name}_FEE_VAULT_ADDRESS)`
 
 ### Execution
-Revenue sharing is executed periodically. 
+Revenue sharing is executed periodically, and can be configured to send funds to L1 or to L2.
 The `RevenueSharer` is responsible for computing $s$ and sending it to a predetermined address controlled by the Optimism Collective. At the end of execution, `SequencerFeeVault`, `L1FeeVault` and `BaseFeeVault` and `RevenueSharer` should be completely depleted of ETH. This allows the contract to be stateless.
 
 ```mermaid
