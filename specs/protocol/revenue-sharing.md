@@ -47,9 +47,9 @@ Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract 
 #### Existing Chains
 The following transactions need to be executed: 
 1. The `RevenueSharer` should be deployed manually to an arbitrary address `REVENUE_SHARER_IMPLEMENTATION_ADDRESS`
-2. For EACH of the three FeeVault contracts ({name} = BASE,L1, SEQUENCER):
+2. For EACH of the three FeeVault contracts ({name} = BASE, L1, SEQUENCER):
 
-    a. A new version should be deployed  with the immutable value `RECIPIENT` set to `0x4200000000000000000000000000000000000024`  in the constructor, and other constructor parameters set to existing values. This contract has an arbitrary address NEW_{name}_FEE_VAULT_ADDRESS.
+    a. A new version should be deployed with the `RECIPIENT` variable set to `0x4200000000000000000000000000000000000024` in the constructor, and other constructor parameters set to existing values. This contract has an arbitrary address `NEW_{name}_FEE_VAULT_ADDRESS`.
     b. The ProxyAdminOwner should call `ProxyAdmin.upgrade({name}_FEE_VAULT, NEW_{name}_FEE_VAULT_ADDRESS)`
 
 
