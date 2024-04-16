@@ -68,6 +68,8 @@ The `RevenueSharer` is responsible for computing $s$ and sending it to a predete
    RevenueSharer-->|s|BeneficiaryWallet
    RevenueSharer-->|r-s|RemainderWallet
 ```
+
+The execution of Revenue Sharing is achieved by calling `RevenueSharer.execute()`.
 ## Simplified L1 Data Fee Expenditure
 As a part of a gradual rollout of protocol enshrined revenue sharing, the `RevenueSharer` uses a fixed value of $e=0$. The sequencer makes a profit on data availability of $d-e$. Note that a negative profit, i.e. a loss, is possible.  By assuming $e=0$, the simplification implies that data availability revenue is all profit. This will be addressed in a future protocol upgrade. 
 
