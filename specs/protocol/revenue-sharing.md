@@ -37,6 +37,11 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 ## `RevenueSharer` predeploy
 Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract `RevenueSharer` with address `0x4200000000000000000000000000000000000024`.
 
+### Invariants
+* The `RevenueSharer` contract should not accumulate any ETH or Tokens itself. 
+* It should share revenue in the propotions `s, r-s` when the `execute()` function is called
+* It should emit an event when `execute()` is called.
+
 ### Deploying `RevenueSharer`
 
 The `RevenueSharer` contract is now included in the L2 genesis and is not scheduled to be part of a hardfork.
