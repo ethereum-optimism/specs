@@ -6,12 +6,9 @@
 - [Overview](#overview)
   - [Definitions](#definitions)
   - [`RevenueSharer` predeploy](#revenuesharer-predeploy)
+    - [Invariants](#invariants)
     - [Deploying `RevenueSharer`](#deploying-revenuesharer)
       - [Existing Chains](#existing-chains)
-      - [Chains after version X.Y.Z of OP Stack](#chains-after-version-xyz-of-op-stack)
-    - [Reconfiguring existing predeploys](#reconfiguring-existing-predeploys)
-      - [Existing Chains](#existing-chains-1)
-      - [Chains after version X.Y.Z of OP Stack](#chains-after-version-xyz-of-op-stack-1)
     - [Execution](#execution)
   - [Simplified L1 Data Fee Expenditure](#simplified-l1-data-fee-expenditure)
 
