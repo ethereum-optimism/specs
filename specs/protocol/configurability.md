@@ -5,6 +5,7 @@
 **Table of Contents**
 
 - [Consensus Parameters](#consensus-parameters)
+  - [Resource Config](#resource-config)
 - [Policy Parameters](#policy-parameters)
 - [Admin Roles](#admin-roles)
 - [Service Roles](#service-roles)
