@@ -5,8 +5,8 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [DA Server](#da-server)
 - [Input Commitment Submission](#input-commitment-submission)
+- [DA Server](#da-server)
 - [Data Availability Challenge Contract](#data-availability-challenge-contract)
   - [Parameters](#parameters)
 - [Derivation](#derivation)
@@ -31,48 +31,6 @@ If a challenge is not resolved by the time `resolve_window` of L1 blocks have pa
 chain derivation must be reset, omitting the input data when rederiving therefore causing a reorg.
 
 [vitalikblog]: https://vitalik.eth.limo/general/2023/11/14/neoplasma.html
-
-## DA Server
-
-Input data is uploaded to the storage layer via plain HTTP calls to the DA server.
-
-This service is responsible to interacting with the Data Availability Layer (DA layer).
-The layer could be a content addressable storage layer like IPFS or any S3 compatible storage.
-These layers use `commitment_type 0` and can pre-compute the commitment prior to posting the data.
-
-Any DA provider can implement the following endpoints to receive and serve input data:
-
-- ```text
-  Request:
-    POST /put/<hex_encoded_commitment>
-    Content-Type: application/octet-stream
-    Body: <preimage_bytes>
-  
-  Response:
-    200 OK
-  ```
-
-- ```text
-  Request:
-    POST /put
-    Content-Type: application/octet-stream
-    Body: <encoded_commitment>
-
-  Response:
-    200 OK
-    Content-Type: application/octet-stream
-    Body: <preimage_bytes>
-  ```
-
-- ```text
-  Request:
-    GET /get/<hex_encoded_commitment>
-  
-  Response:
-    200 OK
-    Content-Type: application/octet-stream
-    Body: <preimage_bytes>
-  ```
 
 ## Input Commitment Submission
 
@@ -118,6 +76,53 @@ challenges if the input cannot be retrieved during the challenge window, as deta
 
 [batcher]: ../protocol/derivation.md#batch-submission
 [batchertx]: ../protocol/derivation.md#batcher-transaction-format
+
+## DA Server
+
+Input data is uploaded to the storage layer via plain HTTP calls to the DA server.
+
+This service is responsible to interacting with the Data Availability Layer (DA layer).
+The layer could be a content addressable storage layer like IPFS or any S3 compatible storage
+or it could a specific DA focused blockchain.
+Content addressed systems like S3 should use the first `put/<hex_encoded_commitment>`
+because they can pre-commpute the commitment.
+Blockchain based DA layers should use `put` and then submit the returned commitment to L1.
+Because commitments can includ the block height or hash, the commitment cannot be computed prior to submitting
+it to the DA Layer.
+
+Any DA provider can implement the following endpoints to receive and serve input data:
+
+- ```text
+  Request:
+    POST /put/<hex_encoded_commitment>
+    Content-Type: application/octet-stream
+    Body: <preimage_bytes>
+
+  Response:
+    200 OK
+  ```
+
+- ```text
+  Request:
+    POST /put
+    Content-Type: application/octet-stream
+    Body: <encoded_commitment>
+
+  Response:
+    200 OK
+    Content-Type: application/octet-stream
+    Body: <preimage_bytes>
+  ```
+
+- ```text
+  Request:
+    GET /get/<hex_encoded_commitment>
+
+  Response:
+    200 OK
+    Content-Type: application/octet-stream
+    Body: <preimage_bytes>
+  ```
 
 ## Data Availability Challenge Contract
 
