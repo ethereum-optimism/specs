@@ -215,13 +215,14 @@
 <li><a href="#op-stack-protocol-versions">OP-Stack Protocol versions</a></li>
 <li><a href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a>
 <ul>
+<li><a href="#activation-timestamps">Activation Timestamps</a></li>
 <li><a href="#regolith">Regolith</a></li>
-</ul>
-</li>
 <li><a href="#canyon">Canyon</a></li>
 <li><a href="#delta">Delta</a></li>
 <li><a href="#ecotone">Ecotone</a></li>
 <li><a href="#fjord">Fjord</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
@@ -394,6 +395,16 @@ Still under review by governance.
 <a href="https://gov.optimism.io/t/upgrade-proposal-5-ecotone-network-upgrade/7669">Governance Proposal</a>.</li>
 </ul>
 <h2 id="post-bedrock-network-upgrades"><a class="header" href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a></h2>
+<h3 id="activation-timestamps"><a class="header" href="#activation-timestamps">Activation Timestamps</a></h3>
+<p>Governance approves all network upgrades &amp; the time at which the upgrade activates. The approved governance
+proposal is the canonoical document for the timestamp; however, the timestamps are replicated here for ease of use.</p>
+<div class="table-wrapper"><table><thead><tr><th>Network Upgrade</th><th>Mainnet Upgrade Timestamp</th><th>Sepolia Upgrade Timestamp</th><th>Goerli Upgrade Timestamp</th></tr></thead><tbody>
+<tr><td>Canyon</td><td>1704992401</td><td>1699981200</td><td>1699981200</td></tr>
+<tr><td>Delta</td><td>1708560000</td><td>1703203200</td><td>1703116800</td></tr>
+<tr><td>Ecotone</td><td>1710374401</td><td>1708534800</td><td>1707238800</td></tr>
+<tr><td>Fjord</td><td>n/a</td><td>n/a</td><td>n/a</td></tr>
+</tbody></table>
+</div>
 <h3 id="regolith"><a class="header" href="#regolith">Regolith</a></h3>
 <p>The Regolith upgrade, named after a material best described as "deposited dust on top of a layer of bedrock",
 implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
@@ -416,7 +427,7 @@ enabling the data to be safely synced between independent L2 nodes.</li>
 The <a href="exec-engine.html">execution engine specification</a> specifies the L1 cost function difference.</p>
 <p>The Regolith upgrade uses a <em>L2 block-timestamp</em> activation-rule, and is specified in both the
 rollup-node (<code>regolith_time</code>) and execution engine (<code>config.regolithTime</code>).</p>
-<h2 id="canyon"><a class="header" href="#canyon">Canyon</a></h2>
+<h3 id="canyon"><a class="header" href="#canyon">Canyon</a></h3>
 <p>The Canyon upgrade contains the Shapella upgrade from L1 and some minor protocol fixes.</p>
 <ul>
 <li>Shapella Upgrade
@@ -441,10 +452,10 @@ rollup-node (<code>regolith_time</code>) and execution engine (<code>config.rego
 <p>The Canyon upgrade uses a <em>L2 block-timestamp</em> activation-rule, and is specified in both the
 rollup-node (<code>canyon_time</code>) and execution engine (<code>config.canyonTime</code>). Shanghai time in the
 execution engine should be set to the same time as the Canyon time.</p>
-<h2 id="delta"><a class="header" href="#delta">Delta</a></h2>
+<h3 id="delta"><a class="header" href="#delta">Delta</a></h3>
 <p>The Delta upgrade consists of a single consensus-layer feature: <a href="span-batches.html">Span Batches</a>.</p>
 <p>The Delta upgrade uses a <em>L2 block-timestamp</em> activation-rule, and is specified only in the rollup-node (<code>delta_time</code>).</p>
-<h2 id="ecotone"><a class="header" href="#ecotone">Ecotone</a></h2>
+<h3 id="ecotone"><a class="header" href="#ecotone">Ecotone</a></h3>
 <p>The Ecotone upgrade contains the Dencun upgrade from L1, and adopts EIP-4844 blobs for data-availability.</p>
 <p>Dencun Upgrade:</p>
 <ul>
@@ -487,7 +498,7 @@ execution engine should be set to the same time as the Canyon time.</p>
 <li>Auto-upgrading and extension of the <a href="deposits.html#ecotone-l1block-upgrade">L1 Attributes Predeployed Contract</a>
 (also known as <code>L1Block</code> predeploy)</li>
 </ul>
-<h2 id="fjord"><a class="header" href="#fjord">Fjord</a></h2>
+<h3 id="fjord"><a class="header" href="#fjord">Fjord</a></h3>
 <p>Name of the next upgrade after Ecotone. Placeholder for development coordination.</p>
 
                     </main>
