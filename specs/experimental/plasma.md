@@ -5,7 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [DA Storage](#da-storage)
+- [DA Server](#da-server)
 - [Input Commitment Submission](#input-commitment-submission)
 - [Data Availability Challenge Contract](#data-availability-challenge-contract)
   - [Parameters](#parameters)
@@ -32,12 +32,13 @@ chain derivation must be reset, omitting the input data when rederiving therefor
 
 [vitalikblog]: https://vitalik.eth.limo/general/2023/11/14/neoplasma.html
 
-## DA Storage
+## DA Server
 
-Input data is uploaded to the storage layer via plain HTTP calls to the DA storage service.
-This service is horizontally scalable and concerned with replicating the data across preferred storage layers
-such as IPFS or any S3 compatible storage. Input data is content addressed by its hash in the request url
-so responses are easily cachable.
+Input data is uploaded to the storage layer via plain HTTP calls to the DA server.
+
+This service is responsible to interacting with the Data Availability Layer (DA layer).
+The layer could be a content addressable storage layer like IPFS or any S3 compatible storage.
+These layers use `commitment_type 0` and can pre-compute the commitment prior to posting the data.
 
 Any DA provider can implement the following endpoints to receive and serve input data:
 
@@ -49,6 +50,18 @@ Any DA provider can implement the following endpoints to receive and serve input
   
   Response:
     200 OK
+  ```
+
+- ```text
+  Request:
+    POST /put
+    Content-Type: application/octet-stream
+    Body: <encoded_commitment>
+
+  Response:
+    200 OK
+    Content-Type: application/octet-stream
+    Body: <preimage_bytes>
   ```
 
 - ```text
@@ -65,7 +78,7 @@ Any DA provider can implement the following endpoints to receive and serve input
 
 The [batching][batcher] and compression of input data remain unchanged. When a batch is ready
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
-commitment (keccak256 hash) is submitted as the bacher inbox transaction call data.
+commitment (specified below) is submitted as the bacher inbox transaction call data.
 
 Commitment txdata introduces version `1` to the [transaction format][batchertx], in order to interpret
 the txdata as a commitment during the l1 retrieval step of the derivation pipeline:
@@ -227,11 +240,13 @@ block derived from the expired challenge's input and `r_end` the last L2 block d
 was reset.
 
 Derivation MUST skip input data such as `input_data_size > MAX_L1_TX_SIZE` where `MAX_L1_TX_SIZE` is a consensus
-constant of 130672 bytes. In theory `MAX_L1_TX_SIZE` could be increased up to
-`(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost` based on the cost of resolving challenges in
-the contract implementation however to make challenging accessible it is capped based on geth's txMaxSize.
-130672 is chosen as 131072 - 400. Geth rejects transactions from the mempool with a total serialized size over
-131072. 400 bytes are allocated as overhead (signature, to address, metadata).
+constant of 130672 bytes when `commitment_type == 0`. Different DA layers can potentially resolve the challenge
+without immediately loading all of the data onto L1 in a single transaction & therefore are exempt from this limit.
+In theory `MAX_L1_TX_SIZE` could be increased up to `(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost`
+based on the cost of resolving challenges in the contract implementation however to make challenging accessible
+it is capped based on geth's txMaxSize.
+130672 is chosen as 131072 - 400. Geth rejects transactions from the mempool with a total serialized size over 131072.
+400 bytes are allocated as overhead (signature, to address, metadata).
 
 [pipeline]: ../protocol/derivation.md#resetting-the-pipeline
 [eip4844]: https://eips.ethereum.org/EIPS/eip-4844
