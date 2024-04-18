@@ -186,8 +186,8 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#da-storage">DA Storage</a></li>
 <li><a href="#input-commitment-submission">Input Commitment Submission</a></li>
+<li><a href="#da-server">DA Server</a></li>
 <li><a href="#data-availability-challenge-contract">Data Availability Challenge Contract</a>
 <ul>
 <li><a href="#parameters">Parameters</a></li>
@@ -214,38 +214,10 @@ can challenge a commitment <code>challenge_window</code> and the period during w
 can submit the input data to resolve the challenge <code>resolve_window</code>.
 If a challenge is not resolved by the time <code>resolve_window</code> of L1 blocks have passed,
 chain derivation must be reset, omitting the input data when rederiving therefore causing a reorg.</p>
-<h2 id="da-storage"><a class="header" href="#da-storage">DA Storage</a></h2>
-<p>Input data is uploaded to the storage layer via plain HTTP calls to the DA storage service.
-This service is horizontally scalable and concerned with replicating the data across preferred storage layers
-such as IPFS or any S3 compatible storage. Input data is content addressed by its hash in the request url
-so responses are easily cachable.</p>
-<p>Any DA provider can implement the following endpoints to receive and serve input data:</p>
-<ul>
-<li>
-<pre><code class="language-text">Request:
-  POST /put/&lt;hex_encoded_commitment&gt;
-  Content-Type: application/octet-stream
-  Body: &lt;preimage_bytes&gt;
-
-Response:
-  200 OK
-</code></pre>
-</li>
-<li>
-<pre><code class="language-text">Request:
-  GET /get/&lt;hex_encoded_commitment&gt;
-
-Response:
-  200 OK
-  Content-Type: application/octet-stream
-  Body: &lt;preimage_bytes&gt;
-</code></pre>
-</li>
-</ul>
 <h2 id="input-commitment-submission"><a class="header" href="#input-commitment-submission">Input Commitment Submission</a></h2>
 <p>The <a href="../protocol/derivation.html#batch-submission">batching</a> and compression of input data remain unchanged. When a batch is ready
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
-commitment (keccak256 hash) is submitted as the bacher inbox transaction call data.</p>
+commitment (specified below) is submitted as the bacher inbox transaction call data.</p>
 <p>Commitment txdata introduces version <code>1</code> to the <a href="../protocol/derivation.html#batcher-transaction-format">transaction format</a>, in order to interpret
 the txdata as a commitment during the l1 retrieval step of the derivation pipeline:</p>
 <div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>tx_data</code></th></tr></thead><tbody>
@@ -276,6 +248,51 @@ In addition, a DA provider storage service SHOULD return an error response if it
 store the request payload so as to signal to the batcher to retry.
 Input commitments submitted onchain without proper storage on the DA provider service are subject to
 challenges if the input cannot be retrieved during the challenge window, as detailed in the following section.</p>
+<h2 id="da-server"><a class="header" href="#da-server">DA Server</a></h2>
+<p>Input data is uploaded to the storage layer via plain HTTP calls to the DA server.</p>
+<p>This service is responsible to interacting with the Data Availability Layer (DA layer).
+The layer could be a content addressable storage layer like IPFS or any S3 compatible storage
+or it could a specific DA focused blockchain.
+Content addressed systems like S3 should use the first <code>put/&lt;hex_encoded_commitment&gt;</code>
+because they can pre-commpute the commitment.
+Blockchain based DA layers should use <code>put</code> and then submit the returned commitment to L1.
+Because commitments can includ the block height or hash, the commitment cannot be computed prior to submitting
+it to the DA Layer.</p>
+<p>Any DA provider can implement the following endpoints to receive and serve input data:</p>
+<ul>
+<li>
+<pre><code class="language-text">Request:
+  POST /put/&lt;hex_encoded_commitment&gt;
+  Content-Type: application/octet-stream
+  Body: &lt;preimage_bytes&gt;
+
+Response:
+  200 OK
+</code></pre>
+</li>
+<li>
+<pre><code class="language-text">Request:
+  POST /put
+  Content-Type: application/octet-stream
+  Body: &lt;encoded_commitment&gt;
+
+Response:
+  200 OK
+  Content-Type: application/octet-stream
+  Body: &lt;preimage_bytes&gt;
+</code></pre>
+</li>
+<li>
+<pre><code class="language-text">Request:
+  GET /get/&lt;hex_encoded_commitment&gt;
+
+Response:
+  200 OK
+  Content-Type: application/octet-stream
+  Body: &lt;preimage_bytes&gt;
+</code></pre>
+</li>
+</ul>
 <h2 id="data-availability-challenge-contract"><a class="header" href="#data-availability-challenge-contract">Data Availability Challenge Contract</a></h2>
 <h3 id="parameters"><a class="header" href="#parameters">Parameters</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Type</th><th>Description</th></tr></thead><tbody>
@@ -380,11 +397,13 @@ In addition, an expired challenge will reorg out <code>[r_start, r_end]</code> L
 block derived from the expired challenge's input and <code>r_end</code> the last L2 block derived before the pipeline
 was reset.</p>
 <p>Derivation MUST skip input data such as <code>input_data_size &gt; MAX_L1_TX_SIZE</code> where <code>MAX_L1_TX_SIZE</code> is a consensus
-constant of 130672 bytes. In theory <code>MAX_L1_TX_SIZE</code> could be increased up to
-<code>(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost</code> based on the cost of resolving challenges in
-the contract implementation however to make challenging accessible it is capped based on geth's txMaxSize.
-130672 is chosen as 131072 - 400. Geth rejects transactions from the mempool with a total serialized size over
-131072. 400 bytes are allocated as overhead (signature, to address, metadata).</p>
+constant of 130672 bytes when <code>commitment_type == 0</code>. Different DA layers can potentially resolve the challenge
+without immediately loading all of the data onto L1 in a single transaction &amp; therefore are exempt from this limit.
+In theory <code>MAX_L1_TX_SIZE</code> could be increased up to <code>(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost</code>
+based on the cost of resolving challenges in the contract implementation however to make challenging accessible
+it is capped based on geth's txMaxSize.
+130672 is chosen as 131072 - 400. Geth rejects transactions from the mempool with a total serialized size over 131072.
+400 bytes are allocated as overhead (signature, to address, metadata).</p>
 <h2 id="fault-proof"><a class="header" href="#fault-proof">Fault Proof</a></h2>
 <p>The derivation pipeline is integrated with <a href="./fault-proof/index.html">fault proofs</a> by adding additional hint types to the
 preimage oracle in order to query the input data from the DA provider as well as onchain challenge status.</p>
