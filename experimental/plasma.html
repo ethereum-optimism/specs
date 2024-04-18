@@ -258,8 +258,17 @@ can be decoded downstream.</p>
 on the <code>commitment_type_byte</code> where [0, 128) are reserved for official implementations:</p>
 <div class="table-wrapper"><table><thead><tr><th><code>commitment_type</code></th><th><code>commitment</code></th></tr></thead><tbody>
 <tr><td>0</td><td><code>keccak256(tx_payload)</code></td></tr>
+<tr><td>1</td><td><code>da-service</code></td></tr>
 </tbody></table>
 </div>
+<p>The <code>da-service</code> commitment is as follows: <code>da_layer_byte ++ payload</code>.
+The DA layer byte must be initially restricted to the range <code>[0, 127)</code>.
+This specification will not apportion DA layer bytes, but different DA layers should coordinate to ensure that the
+DA layer bytes do not conflict. DA Layers can do so in
+<a href="https://github.com/ethereum-optimism/specs/discussions/135">this discussion</a>.
+The payload is a bytestring which is up to the DA layer to specify.
+The DA server should be able to parse the payload, find the data on the DA layer, and verify that the data returned
+from the DA layer matches what was committed to in the payload.</p>
 <p>The batcher SHOULD cap input payloads to the maximum L1 tx size or the input will be skipped
 during derivation. See <a href="#derivation">derivation section</a> for more details.</p>
 <p>The batcher SHOULD NOT submit a commitment onchain unless input data was successfully stored on the service.
