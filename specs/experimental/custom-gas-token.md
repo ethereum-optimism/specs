@@ -35,6 +35,7 @@
   - [L2StandardBridge Proxy Update](#l2standardbridge-proxy-update)
 - [Selection of `ETHER_TOKEN_ADDRESS`](#selection-of-ether_token_address)
 - [Standard Config](#standard-config)
+- [Fees](#fees)
 - [Security Considerations](#security-considerations)
   - [OptimismPortal Token Allowance](#optimismportal-token-allowance)
   - [Interoperability Support](#interoperability-support)
@@ -91,7 +92,7 @@ It MAY be possible to support ERC20 tokens with varying amounts of decimals in t
 
 Ideally it is possible to have automated validation of custom gas paying tokens to know that the token satisfies the
 above properties. Due to the nature of the EVM, it may not always be possible to do so. [ERC-165][erc165]
-isn't always used by ERC20 tokens and isn't guaranteed to tell the truth. [USDT](usdt)
+isn't always used by ERC20 tokens and isn't guaranteed to tell the truth. [USDT][usdt]
 does not correctly implement the ERC20 spec. It may be possible to use execution traces to observe the
 properties of the ERC20 tokens but some degree of social consensus will be required for determining
 the validity of an ERC20 token.
@@ -111,9 +112,10 @@ do so and appropriately handle the consequences of the action.
 The gas paying token address is network specific configuration, therefore it MUST be set in storage and not
 as an immutable. This ensures that the same contract bytecode can be used by multiple OP Stack chains.
 
-If the gas paying token address is set to the `ETHER_TOKEN_ADDRESS` then the system is configured to use `ether` as the
-native asset on L2. Note that if nothing is stored in state at the `GAS_PAYING_TOKEN_SLOT` then it is considered that
-`ether` is used to pay for gas and getters on smart contracts SHOULD return the `ETHER_TOKEN_ADDRESS`.
+If the address in the `GAS_PAYING_TOKEN_SLOT` slot is `address(0)`, the system is configured to use `ether` as the gas
+paying token, and the getter for the token returns `ETHER_TOKEN_ADDRESS`. If the address in the `GAS_PAYING_TOKEN_SLOT`
+slot is not `address(0)`, the system is configured to use a custom gas paying token, and the getter returns the address
+in the slot.
 
 ```mermaid
 ---
@@ -209,12 +211,14 @@ The following methods MUST revert when custom gas token is being used:
 
 The following legacy methods MUST also revert when custom gas token is being used:
 
-- `depositETH(uint32,bytes)`
-- `depositETHTo(address,uint32,bytes)`
-- `finalizeETHWithdrawal(address,address,uint256,bytes)`
-- `withdraw(address,uint256,uint32,bytes)`
-- `withdrawTo(address,address,uint256,uint32,bytes)`
-- `finalizeDeposit(address,address,address,address,uint256,bytes)`
+1. In `L1StandardBridge`:
+    - `depositETH(uint32,bytes)`
+    - `depositETHTo(address,uint32,bytes)`
+    - `finalizeETHWithdrawal(address,address,uint256,bytes)`
+2. In `L2StandardBridge`:
+    - `withdraw(address,uint256,uint32,bytes)`
+    - `withdrawTo(address,address,uint256,uint32,bytes)`
+    - `finalizeDeposit(address,address,address,address,uint256,bytes)`
 
 ### CrossDomainMessenger
 
@@ -230,6 +234,12 @@ The following methods MUST revert when `CALLVALUE` is non zero:
 - `relayMessage(uint256,address,address,uint256,uint256,bytes)`
 
 It MAY be safe to not always directly revert in these implementations if the revert happens elsewhere in the callstack.
+
+The `CrossDomainMessenger` also has the API for _getting_ the custom gas token, namely `gasPayingToken()`, which outputs
+a tuple of the address and decimals of the custom gas token.
+
+- The `L1CrossDomainMessenger` fetches this tuple from the `SystemConfig` contract.
+- The `L2CrossDomainMessenger` fetches this tuple from the `L1Block` contract.
 
 ### SystemConfig
 
@@ -258,7 +268,7 @@ function gasPayingTokenSymbol() public view returns (string);
 ```
 
 If custom gas token is not used, then `gasPayingToken()` should return `(ETHER_TOKEN_ADDRESS,18)`,
-`gasPayingTokenName` should return `ether` and `gasPayingTokenSymbol` should return `ETH`.
+`gasPayingTokenName` should return `Ether` and `gasPayingTokenSymbol` should return `ETH`.
 
 ### L1Block
 
@@ -278,7 +288,7 @@ function gasPayingTokenSymbol() public view returns (string);
 ```
 
 If custom gas token is not used, then `gasPayingToken()` should return `(ETHER_TOKEN_ADDRESS,18)`,
-`gasPayingTokenName` should return `ether` and `gasPayingTokenSymbol` should return `ETH`.
+`gasPayingTokenName` should return `Ether` and `gasPayingTokenSymbol` should return `ETH`.
 
 ### WETH9
 
@@ -449,6 +459,13 @@ or [APIs][execution-api-pr].
 
 There is currently no strong definition of what it means to be part of the standard config when using
 the OP Stack with custom gas token enabled. This will be defined in the future.
+
+## Fees
+
+The OP Stack natively charges fees in terms of ether due to the fee formula taking into account the basefee and
+blobbasefee. When a custom gas token is used, fees are paid in the custom gas token but the conversion rate to ether
+is not taken into account as part of the protocol. It is assumed that the fees will be configured by the chain
+operator such that the revenue earned in custom gas token can be swapped into ether to pay for posting the data to L1.
 
 ## Security Considerations
 
