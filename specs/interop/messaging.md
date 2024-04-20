@@ -15,6 +15,9 @@
   - [ChainID Invariant](#chainid-invariant)
   - [Only EOA Invariant](#only-eoa-invariant)
   - [Message Expiry Invariant](#message-expiry-invariant)
+- [Special Messages](#special-messages)
+  - [`logIndex` wildcard](#logindex-wildcard)
+    - [Intents](#intents)
 - [Message Graph](#message-graph)
   - [Invalid messages](#invalid-messages)
     - [Block reorgs](#block-reorgs)
@@ -69,13 +72,13 @@ struct Identifier {
 }
 ```
 
-| Name          | Type      | Description                                                                     |
-|---------------|-----------|---------------------------------------------------------------------------------|
-| `origin`      | `address` | Account that emits the log                                                      |
-| `blocknumber` | `uint256` | Block number in which the log was emitted                                       |
-| `logIndex`    | `uint256` | The index of the log in the array of all logs emitted in the block              |
-| `timestamp`   | `uint256` | The timestamp that the log was emitted. Used to enforce the timestamp invariant |
-| `chainid`     | `uint256` | The chainid of the chain that emitted the log                                   |
+| Name          | Type      | Description                                                                         |
+|---------------|-----------|-------------------------------------------------------------------------------------|
+| `origin`      | `address` | Account that emits the log                                                          |
+| `blocknumber` | `uint256` | Block number in which the log was emitted                                           |
+| `logIndex`    | `uint256` | The index of the log in the array of all logs emitted in the block, or a [wildcard] |
+| `timestamp`   | `uint256` | The timestamp that the log was emitted. Used to enforce the timestamp invariant     |
+| `chainid`     | `uint256` | The chainid of the chain that emitted the log                                       |
 
 The [`Identifier`] includes the set of information to uniquely identify a log. When using an absolute
 log index within a particular block, it makes ahead of time coordination more complex. Ideally there
@@ -161,6 +164,34 @@ The expiry invariant invalidates inclusion of any executing message with
 - `id` is the [`Identifier`] encoded in the executing message, matching the block attributes of the initiating message.
 - `executing_block` is the block where the executing message was included in.
 - `EXPIRY_TIME = 180 * 24 * 60 * 60 = 15552000` seconds, i.e. 180 days.
+
+## Special Messages
+
+### `logIndex` wildcard
+
+[wildcard]: #logindex-wildcard
+
+The author of an executing-transaction may defer the specification of an exact `logIndex` to the block-builder.
+Deferring the `logIndex` enables the executing side to request a message to be initiated.
+The `logIndex` value of `0x01000000000000000000000000000000000000000000000000000000000000` functions as wildcard.
+
+The block-builder is responsible for mapping the wildcard `logIndex` to a valid `logIndex` by appending
+it to a list of indices, declared statically in the input data of the last transaction of the block.
+
+This declaring transaction must have a `to` address of `0x42ff000000000000000000000000000000000000`.
+The transaction input must be a concatenated list of big-endian `uint32` `logIndex` values.
+For each executing transaction with a wildcard `logIndex`, in the order these transactions were included in,
+there is one value in the list. This value helps verifiers statically resolve the wildcard `logIndex`.
+
+#### Intents
+
+This functions as a building-block for intents: users can express dependencies on contract events
+that are yet to be created by a block-builder of the identified chain.
+
+Users may build application-layer protocols to include random or incremental values in their executing message,
+such that they can guarantee that the intent has not already been fulfilled on the initiating side.
+This allows users to effectively pull the latest state of a chain,
+without having direct access or gas funds on the chain.
 
 ## Message Graph
 
