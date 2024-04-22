@@ -33,7 +33,26 @@ Separating Block Building from the Sequencer's Execution Engine offers chain ope
 
 ## Sequencer Interaction
 
-![image](/specs/static/assets/builder_sequence_diagram.svg)
+```mermaid
+sequenceDiagram
+    participant Events as Internal Events
+    participant OpNode1 as Op-Node (Sequencer)
+    participant OpNode2 as Op-Node
+    participant Builder as Builder
+    rect rgb(50, 50, 50)
+    Events->>OpNode1: StartPayload
+    OpNode1-->>OpNode2: Fork choice update over p2p
+    OpNode1-->>Builder: Forward transaction
+    Note right of Builder: Timespan for building block
+    OpNode2->>Builder: Fork Choice Update
+    end
+    Events->>OpNode1: ConfirmPayload
+    OpNode1-->>Builder: GetPayload
+    Builder-->>OpNode1: Payload
+    OpNode1-->>OpNode1: SimulatePayload
+    Note over Events: Dashed arrows == variable latency.
+    Note over Events: Solid arrows == fixed latency.
+```
 
 - **Fork Choice Update**: The Sequencer propagates a Fork Choice Update to the Builder, indicating an update to the chain's latest head.
 - **Forward Transaction**: The Sequencer forwards a transaction it received to the Builder to be included in a block. This step is not necessary if the builder can get transactions elsewise.
