@@ -29,14 +29,16 @@ Revenue sharing is the process by which chains in the superchain contribute a po
 | $g$ | L2 Gas Revenue         | $b + q$
 | $r$ | Sequencer Revenue      | $d + b + q$
 | $p$ | Sequencer Profit       | $r - e$
-| $s$ | Revenue share due to Optimism Collective | $\max(0.15r,0.025p)$
+| $s$ | Revenue share due to `BENEFICIARY`| $\max(0.15r,0.025p)$
+| `BENEFICIARY` | e.g. Optimism Collective | 
+| `REMAINDER_BENEFICIARY` | e.g. Chain Operator | 
 
 ## `RevenueSharer` predeploy
 Revenue sharing is achieved through an L2 [predeploy](./predeploys.md) contract `RevenueSharer` with address `0x4200000000000000000000000000000000000024`.
 
 ### Invariants
 * The `RevenueSharer` contract should not accumulate any ETH or Tokens itself. 
-* It should share revenue in the propotions `s, r-s` when the `execute()` function is called
+* It should share revenue in the propotions `s, r-s` when the `execute()` function is called, to `BENEFICIARY` and `REMAINDER_BENEFICIARY` respectively.
 * It should emit an event when `execute()` is called.
 
 ### Deploying `RevenueSharer`
@@ -72,6 +74,7 @@ The `RevenueSharer` is responsible for computing $s$ and sending it to a predete
 ```
 
 The execution of Revenue Sharing is achieved by calling `RevenueSharer.execute()`.
+
 ## Simplified L1 Data Fee Expenditure
 As a part of a gradual rollout of protocol enshrined revenue sharing, the `RevenueSharer` uses a fixed value of $e=0$. The sequencer makes a profit on data availability of $d-e$. Note that a negative profit, i.e. a loss, is possible.  By assuming $e=0$, the simplification implies that data availability revenue is all profit. This will be addressed in a future protocol upgrade. 
 
