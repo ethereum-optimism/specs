@@ -122,7 +122,7 @@ This structure represents the Block Builder's response to the request for payloa
 1. Client software ***MAY*** call this method if `builderPubkey` and `builderUrl` are set.
 2. Client software ***MUST*** validate that the response object `BuilderPayloadV1` contains `executionPayload` and that `pubKey` matches the registered `builderPubkey`.
 3. Client software ***MUST*** follow the same specification as [`engine_newPayloadV3`](https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#executionpayloadv3) with the response body `executionPayload`.
-4. Client software ***MUST*** simulate transactions in `executionPayload` on `parentHash` in`payload` all fields in `executionPayload` are correct as compared to local view of chain.
+4. Client software ***MUST*** simulate transactions in `executionPayload` on `parentHash` in `payload` all fields in `executionPayload` are correct as compared to local view of chain.
 5. Client ***SHOULD*** use local block in the event of a timeout from calling `builder_getPayloadV1`.
 
 ### `builder_forwardTransactionV1`
