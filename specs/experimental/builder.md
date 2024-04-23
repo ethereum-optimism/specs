@@ -3,19 +3,18 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Builder API](#builder-api)
-  - [Overview](#overview)
-  - [Sequencer Builder Interaction](#sequencer-builder-interaction)
-    - [Requesting a Block](#requesting-a-block)
-      - [Liveness Failsafe](#liveness-failsafe)
-    - [Mempool Forwarding](#mempool-forwarding)
-    - [Builder Configuration](#builder-configuration)
-  - [Structures](#structures)
-    - [`PayloadRequestV1`](#payloadrequestv1)
-    - [`BuilderPayloadV1`](#builderpayloadv1)
-  - [Methods](#methods)
-    - [`builder_getPayloadV1`](#builder_getpayloadv1)
-    - [`builder_forwardTransactionV1`](#builder_forwardtransactionv1)
+- [Overview](#overview)
+- [Sequencer Builder Interaction](#sequencer-builder-interaction)
+  - [Requesting a Block](#requesting-a-block)
+    - [Liveness Failsafe](#liveness-failsafe)
+  - [Mempool Forwarding](#mempool-forwarding)
+  - [Builder Configuration](#builder-configuration)
+- [Structures](#structures)
+  - [`PayloadRequestV1`](#payloadrequestv1)
+  - [`BuilderPayloadV1`](#builderpayloadv1)
+- [Methods](#methods)
+  - [`builder_getPayloadV1`](#builder_getpayloadv1)
+  - [`builder_forwardTransactionV1`](#builder_forwardtransactionv1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
