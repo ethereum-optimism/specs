@@ -27,31 +27,31 @@
 
 ## Overview
 
-This document provides a in-depth specification for integrating a Builder API within the Optimism Protocol and Stack. The Builder API provides a standardized interface for block construction and transaction management between the Sequencer and an external network of Block Builders. The specified interactions are the minimum viable design needed to allow an external Builder Network enabling future protocol experimentation and a path towards Sequencer decentralization. Additionally this minimum viable design includes a fallback as a training wheel to ensure liveness and network performance. This document ***does not*** outline how to safely enable a permissionless Builder Network to serve payloads or how to manage these configs on L1.
+This document provides an in-depth specification for integrating a Builder API within the Optimism Protocol and Stack. The Builder API provides a standardized interface for block construction and transaction management between the Sequencer and a local block builder. The specified interactions are the minimum viable design needed to allow a local block builder. 
 
-Separating Block Building from the Sequencer's Execution Engine offers chain operators a way to modify block building rules without creating a large divergence from the upstream Optimism Protocol Client, allowing different chains in the superchain to supply their own block building systems as a way to differentiate.
+By decoupling the block construction process from the Sequencer's Execution Engine, operators can tailor transaction sequencing rules without significantly diverging from the standard Optimism Protocol Client. This flexibility allows individual chains to experiment on seqeuncing features, providing a means for differentiation.  This minimum viable design also includes a local block production fallback as a training wheel to ensure liveness and network performance.
+
+It is important to note that this document ***does not*** outline how to safely enable a permissionless builder network to serve payloads or how to manage builder configs on L1.
 
 ## Sequencer Interaction
 
 ```mermaid
 sequenceDiagram
-    participant Events as Internal Events
-    participant OpNode1 as Op-Node (Sequencer)
-    participant OpNode2 as Op-Node
-    participant Builder as Builder
-    rect rgb(50, 50, 50)
-    Events->>OpNode1: StartPayload
-    OpNode1-->>OpNode2: Fork choice update over p2p
-    OpNode1-->>Builder: Forward transaction
-    Note right of Builder: Timespan for building block
-    OpNode2->>Builder: Fork Choice Update
-    end
-    Events->>OpNode1: ConfirmPayload
-    OpNode1-->>Builder: GetPayload
-    Builder-->>OpNode1: Payload
-    OpNode1-->>OpNode1: SimulatePayload
-    Note over Events: Dashed arrows == variable latency.
-    Note over Events: Solid arrows == fixed latency.
+    participant EES as Exec Engine (Sequencer)
+    participant OPS as Op-Node (Sequencer)
+    participant OPB as Op-Node (Builder)
+    participant Builder
+    OPS-->> OPB: Fork Choice Update (p2p)
+    OPB-->>Builder: Fork Choice Update
+    
+    EES-->>Builder:   builder_forwardTransactionV1
+    Note right of Builder: timespan for building blocks
+    OPS->> Builder: builder_getPayloadV1
+    Builder-->>OPS: BuilderPayloadV1
+    OPS-->>OPS: SimulatePayload
+    OPS-->>OPS: ConfirmPaylaod
+    OPS ->> EES: engine_forkchoiceUpdatedV3
+
 ```
 
 - **Fork Choice Update**: The Sequencer propagates a Fork Choice Update to the Builder, indicating an update to the chain's latest head.
