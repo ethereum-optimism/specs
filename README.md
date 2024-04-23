@@ -11,6 +11,8 @@
 
 This repository contains the [Specs Book](https://static.optimism.io/specs).
 
+Please chat with us on the [discussion board](https://github.com/ethereum-optimism/specs/discussions).
+
 ## Contributing
 
 We welcome your contributions. 
