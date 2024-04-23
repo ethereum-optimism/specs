@@ -342,7 +342,7 @@ SuperchainSignal: {
 ```
 
 `ProtocolVersion`: encoded for RPC as defined in
-[Protocol Version format specification](superchain-upgrades.md#protocol-version-format).
+[Protocol Version format specification](../upgrades/overview.md#protocol-version-format).
 
 Parameters:
 

@@ -133,7 +133,7 @@ The input and return types here are as defined by the [engine API specs][engine-
 The rollup-node should monitor the recommended and required protocol version by monitoring
 the Protocol Version contract on L1, as specified in the [Superchain Version Signaling specifications].
 
-[Superchain Version Signaling specifications]: superchain-upgrades.md#superchain-version-signaling
+[Superchain Version Signaling specifications]: ../upgrades/overview.md#superchain-version-signaling
 
 This can be implemented through polling in the [Driver](#driver) loop.
 After polling the Protocol Version, the rollup node SHOULD communicate it with the execution-engine through an

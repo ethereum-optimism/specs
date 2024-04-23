@@ -1,3 +1,13 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+  - [L1 Attributes - Ecotone](#l1-attributes---ecotone)
+- [L1 Attributes Predeployed Contract](#l1-attributes-predeployed-contract)
+  - [Ecotone L1Block upgrade](#ecotone-l1block-upgrade)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 #### L1 Attributes - Ecotone
 
 On the Ecotone activation block, and if Ecotone is not activated at Genesis,
@@ -46,6 +56,7 @@ and also set the following new attributes:
 ### L1 Attributes Predeployed Contract
 
 [predeploy]: #l1-attributes-predeployed-contract
+[sys-config]: ../../protocol/system_config.md
 
 The predeploy stores the following values:
 
@@ -57,7 +68,7 @@ The predeploy stores the following values:
 - `sequenceNumber` (`uint64`): This equals the L2 block number relative to the start of the epoch,
   i.e. the L2 block distance to the L2 block height that the L1 attributes last changed,
   and reset to 0 at the start of a new epoch.
-- System configurables tied to the L1 block, see [System configuration specification](system_config.md):
+- System configurables tied to the L1 block, see [System configuration specification][sys-config]:
   - `batcherHash` (`bytes32`): A versioned commitment to the batch-submitter(s) currently operating.
   - `blobBaseFee` (`uint256`)
   - `baseFeeScalar` (`uint32`): system configurable to scale the `basefee` in the Ecotone l1 cost computation

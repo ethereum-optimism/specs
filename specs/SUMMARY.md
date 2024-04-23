@@ -2,7 +2,7 @@
 
 # Summary
 
-- [Root](./root.md)
+- [Contents](./contents.md)
 - [Introduction](./introduction.md)
 - [OP Stack Protocol](./protocol/overview.md)
   - [Bridges](./protocol/bridges.md)
@@ -20,9 +20,15 @@
     - [Batch Submitter](./protocol/batcher.md)
   - [Predeploys](./protocol/predeploys.md)
   - [Preinstalls](./protocol/preinstalls.md)
-  - [Superchain]()
-    - [Superchain Configuration](./protocol/superchain-configuration.md)
-    - [Superchain Upgrades](./protocol/superchain-upgrades.md)
+  - [Superchain Configuration](./protocol/superchain-configuration.md)
+  - [Superchain Upgrades](./upgrades/overview.md)
+    - [Regolith](./upgrades/regolith/overview.md)
+    - [Canyon](./upgrades/canyon/overview.md)
+    - [Delta](./upgrades/delta/overview.md)
+    - [Ecotone](./upgrades/ecotone/overview.md)
+      - [Derivation Changes](./upgrades/ecotone/derivation.md)
+      - [L1 Attributes Changes](./upgrades/ecotone/l1_attributes.md)
+    - [Fjord](./upgrades/fjord/overview.md)
   - [System Config](./protocol/system_config.md)
   - [Configurability](./protocol/configurability.md)
 - [Experimental]()

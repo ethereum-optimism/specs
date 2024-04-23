@@ -1,19 +1,11 @@
+<!-- DOCTOC SKIP -->
+
 # OP Stack Specs
 
 This directory contains the plain english specs for Optimism, a minimal optimistic rollup protocol
 that maintains 1:1 compatibility with Ethereum.
 
 Chat with us on the [discussion board!](https://github.com/ethereum-optimism/specs/discussions)
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
-
-- [Specification Contents](#specification-contents)
-  - [Experimental](#experimental)
-- [Design Goals](#design-goals)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Specification Contents
 
@@ -26,7 +18,7 @@ Chat with us on the [discussion board!](https://github.com/ethereum-optimism/spe
 - [Rollup Node](protocol/rollup-node.md)
 - [Rollup Node P2p](protocol/rollup-node-p2p.md)
 - [L2 Chain Derivation](protocol/derivation.md)
-- [Superchain Upgrades](protocol/superchain-upgrades.md)
+- [Superchain Upgrades](upgrades/overview.md)
 - [System Config](protocol/system_config.md)
 - [Batch Submitter](protocol/batcher.md)
 - [Guaranteed Gas Market](protocol/guaranteed-gas-market.md)

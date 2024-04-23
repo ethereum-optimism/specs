@@ -1,3 +1,12 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Ecotone: Blob Retrieval](#ecotone-blob-retrieval)
+  - [Blob Encoding](#blob-encoding)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 #### Ecotone: Blob Retrieval
 
 With the Ecotone upgrade the retrieval stage is extended to support an additional DA source:
