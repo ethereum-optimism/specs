@@ -4081,7 +4081,7 @@ we do not need to validate all blocks' parent hash except the first block.</li>
 <li>Deposit transactions can be derived from its L1 origin, identical with V0 batch.</li>
 <li>User transactions can be derived by following way:
 <ul>
-<li>Recover <code>V</code> value of TX signature from <code>y_parity_bits</code> and L2 chainId, as described in optimization strategies.</li>
+<li>Recover <code>V</code> value of TX signature from <code>y_parity_bits</code> and L2 chain id, as described in optimization strategies.</li>
 <li>When parsing <code>tx_tos</code>, <code>contract_creation_bits</code> is used to determine if the TX has <code>to</code> value or not.</li>
 </ul>
 </li>
@@ -7414,7 +7414,7 @@ social consensus MUST be used to determine the chain that represents the canonic
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
 of executing messages.</p>
 <p>The dependency set is configured on a per chain basis.</p>
-<p>The chainid of the local chain MUST be considered as part of its own dependency set.</p>
+<p>The chain id of the local chain MUST be considered as part of its own dependency set.</p>
 <p>While the dependency set explicitly defines the set of chains that are depended on for incoming messages,
 the full set of transitive dependencies must be known to allow for the progression of <a href="interop/dependency_set.html#safety">safety</a>.
 This means that the <code>op-node</code> needs to be aware of all transitive dependencies.</p>
@@ -7532,7 +7532,7 @@ unique pointer to a particular log. The derivation pipeline and fault proof prog
 <tr><td><code>blocknumber</code></td><td><code>uint256</code></td><td>Block number in which the log was emitted</td></tr>
 <tr><td><code>logIndex</code></td><td><code>uint256</code></td><td>The index of the log in the array of all logs emitted in the block</td></tr>
 <tr><td><code>timestamp</code></td><td><code>uint256</code></td><td>The timestamp that the log was emitted. Used to enforce the timestamp invariant</td></tr>
-<tr><td><code>chainid</code></td><td><code>uint256</code></td><td>The chainid of the chain that emitted the log</td></tr>
+<tr><td><code>chainid</code></td><td><code>uint256</code></td><td>The chain id of the chain that emitted the log</td></tr>
 </tbody></table>
 </div>
 <p>The <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a> includes the set of information to uniquely identify a log. When using an absolute
@@ -7800,7 +7800,7 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 <ul>
 <li>Only callable by the <code>CrossL2Inbox</code></li>
 <li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
-<li>The <code>_destination</code> chainid MUST be equal to the local chainid</li>
+<li>The <code>_destination</code> chain id MUST be equal to the local chain id</li>
 <li>The <code>CrossL2Inbox</code> cannot call itself</li>
 </ul>
 <h3 id="message-versioning-1"><a class="header" href="#message-versioning-1">Message Versioning</a></h3>
