@@ -1,14 +1,13 @@
+# Ecotone Network Upgrade
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Ecotone Network Upgrade](#ecotone-network-upgrade)
-  - [Execution Layer](#execution-layer)
-  - [Consensus Layer](#consensus-layer)
+- [Execution Layer](#execution-layer)
+- [Consensus Layer](#consensus-layer)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Ecotone Network Upgrade
 
 The Ecotone upgrade contains the Dencun upgrade from L1, and adopts EIP-4844 blobs for data-availability.
 
@@ -32,10 +31,13 @@ Dencun Upgrade:
 
 Data Availability (DA) upgrade:
 
-- Blobs Data Availability: support blobs DA the [L1 Data-retrieval stage](../../protocol/derivation.md#ecotone-blob-retrieval).
+[retrieval]: ../../protocol/derivation.md#ecotone-blob-retrieval
+[predeploy]: ../../protocol/deposits.md#ecotone-l1block-upgrade
+
+- Blobs Data Availability: support blobs DA the [L1 Data-retrieval stage][retrieval].
 - Rollup fee update: support blobs DA in
   [L1 Data Fee computation](../../protocol/exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da)
-- Auto-upgrading and extension of the [L1 Attributes Predeployed Contract](../../protocol/deposits.md#ecotone-l1block-upgrade)
+- Auto-upgrading and extension of the [L1 Attributes Predeployed Contract][predeploy]
   (also known as `L1Block` predeploy)
 
 ## Execution Layer

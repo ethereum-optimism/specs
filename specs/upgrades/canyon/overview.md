@@ -1,5 +1,13 @@
 # Canyon
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Canyon](#canyon)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 [eip3651]: https://eips.ethereum.org/EIPS/eip-3651
 [eip3855]: https://eips.ethereum.org/EIPS/eip-3855
 [eip3860]: https://eips.ethereum.org/EIPS/eip-3860
@@ -31,5 +39,3 @@ The Canyon upgrade contains the Shapella upgrade from L1 and some minor protocol
 The Canyon upgrade uses a _L2 block-timestamp_ activation-rule, and is specified in both the
 rollup-node (`canyon_time`) and execution engine (`config.canyonTime`). Shanghai time in the
 execution engine should be set to the same time as the Canyon time.
-
-

@@ -1,13 +1,15 @@
+# Ecotone Derivation
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [Ecotone: Blob Retrieval](#ecotone-blob-retrieval)
-  - [Blob Encoding](#blob-encoding)
+- [Blob Encoding](#blob-encoding)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-#### Ecotone: Blob Retrieval
+## Ecotone: Blob Retrieval
 
 With the Ecotone upgrade the retrieval stage is extended to support an additional DA source:
 [EIP-4844] blobs. After the Ecotone upgrade we modify the iteration over batcher transactions to
@@ -28,7 +30,7 @@ transactions to preserve the invariant that batches are always processed in the 
 in the block. We ignore calldata in blob transactions so that it may be used in the future for
 batch metadata or other purposes.
 
-##### Blob Encoding
+## Blob Encoding
 
 Each blob in a [EIP-4844] transaction really consists of `FIELD_ELEMENTS_PER_BLOB = 4096` field elements.
 

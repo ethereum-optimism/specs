@@ -1,14 +1,13 @@
+# Ecotone L1 Attributes
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-  - [L1 Attributes - Ecotone](#l1-attributes---ecotone)
 - [L1 Attributes Predeployed Contract](#l1-attributes-predeployed-contract)
   - [Ecotone L1Block upgrade](#ecotone-l1block-upgrade)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-#### L1 Attributes - Ecotone
 
 On the Ecotone activation block, and if Ecotone is not activated at Genesis,
 the L1 Attributes Transaction includes a call to `setL1BlockValues()`
@@ -53,7 +52,7 @@ and also set the following new attributes:
   Or `1` if the L1 block does not support blobs.
   The `1` value is derived from the EIP-4844 `MIN_BLOB_GASPRICE`.
 
-### L1 Attributes Predeployed Contract
+## L1 Attributes Predeployed Contract
 
 [predeploy]: #l1-attributes-predeployed-contract
 [sys-config]: ../../protocol/system_config.md
@@ -81,7 +80,7 @@ After running `pnpm build` in the `packages/contracts-bedrock` directory, the by
 the genesis file will be located in the `deployedBytecode` field of the build artifacts file at
 `/packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json`.
 
-#### Ecotone L1Block upgrade
+### Ecotone L1Block upgrade
 
 The L1 Attributes Predeployed contract, `L1Block.sol`, is upgraded as part of the Ecotone upgrade.
 The version is incremented to `1.2.0`, one new storage slot is introduced, and one existing slot
