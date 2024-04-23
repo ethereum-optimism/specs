@@ -173,7 +173,7 @@ Signaling is done through a L1 smart-contract that is monitored by the OP-Stack 
 Not all components of the OP-Stack are required to directly monitor L1 however:
 cross-component APIs like the Engine API may be used to forward the Protocol Version signals,
 to keep components encapsulated from L1.
-See [`engine_signalOPStackVersionV1`](../protocol/exec-engine.md#enginesignalopstackversionv1).
+See [`engine_signalOPStackVersionV1`](./exec-engine.md#enginesignalopstackversionv1).
 
 ### `ProtocolVersions` L1 contract
 

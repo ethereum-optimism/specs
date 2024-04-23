@@ -14,12 +14,12 @@
 [eip4895]: https://eips.ethereum.org/EIPS/eip-4895
 [eip6049]: https://eips.ethereum.org/EIPS/eip-6049
 
-[block-validation]: ../../protocol/rollup-node-p2p.md#block-validation
-[payload-attributes]: ../../protocol/derivation.md#building-individual-payload-attributes
-[1559-params]: ../../protocol/exec-engine.md#1559-parameters
-[channel-reading]: ../../protocol/derivation.md#reading
-[deposit-reading]: ../../protocol/deposits.md#deposit-receipt
-[create2deployer]: ../../protocol/predeploys.md#create2deployer
+[block-validation]: ../rollup-node-p2p.md#block-validation
+[payload-attributes]: ../derivation.md#building-individual-payload-attributes
+[1559-params]: ../exec-engine.md#1559-parameters
+[channel-reading]: ../derivation.md#reading
+[deposit-reading]: ../deposits.md#deposit-receipt
+[create2deployer]: ../predeploys.md#create2deployer
 
 The Canyon upgrade contains the Shapella upgrade from L1 and some minor protocol fixes.
 

@@ -8,7 +8,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-[span-batches]: ../../protocol/span-batches.md
+[span-batches]: ../span-batches.md
 
 The Delta upgrade consists of a single consensus-layer feature: [Span Batches][span-batches].
 

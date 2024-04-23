@@ -55,7 +55,7 @@ and also set the following new attributes:
 ## L1 Attributes Predeployed Contract
 
 [predeploy]: #l1-attributes-predeployed-contract
-[sys-config]: ../../protocol/system_config.md
+[sys-config]: ../system_config.md
 
 The predeploy stores the following values:
 
