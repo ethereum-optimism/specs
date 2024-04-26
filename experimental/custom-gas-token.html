@@ -305,10 +305,7 @@ as an immutable. This ensures that the same contract bytecode can be used by mul
 use <code>ether</code> as the gas paying token, and the getter for the token returns <code>ETHER_TOKEN_ADDRESS</code>. If the address in
 the <code>GAS_PAYING_TOKEN_SLOT</code> slot for <code>SystemConfig</code> is not <code>address(0)</code>, the system is configured to use a custom
 gas paying token, and the getter returns the address in the slot.</p>
-<pre class="mermaid">---
-title: Custom Gas Token Configuration
----
-flowchart LR
+<pre class="mermaid">flowchart LR
     subgraph Layer One
         OP[OptimismPortal]
         subgraph SystemConfig
@@ -495,10 +492,7 @@ Users must first <code>approve</code> the address of the <code>OptimismPortal</c
 <p>Users should withdraw value by calling the <code>L2ToL1MessagePasser</code> directly.</p>
 <p>The following diagram shows the control flow for when a user attempts to send <code>ether</code> through
 the <code>StandardBridge</code>, either on L1 or L2.</p>
-<pre class="mermaid">---
-title: Control Flow for Custom Gas Token Chain
----
-flowchart TD
+<pre class="mermaid">flowchart TD
     A1(User) --&gt;|Attempts to deposit/withdraw ether| A2(StandardBridge or CrossDomainMessenger)
     A2 --&gt;|Is chain using custom gas token?| A3{SystemConfig or L1Block}
     A3 --&gt; |Yes| A2
