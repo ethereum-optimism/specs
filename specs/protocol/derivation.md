@@ -535,7 +535,7 @@ describe the encoding of this polynomial.
 The field elements are encoded as big-endian integers (`KZG_ENDIANNESS = big`).
 
 To save computational overhead, only `254` bits per field element are used for rollup data.
-To optimize data encoding, `254` bits are defined as equivalent to `31.5` bytes. To ensure efficient and complete utilization of data, four elements are employed, summing to a total of `31.5` bytes multiplied by `4`, which yields `127` bytes.
+For efficient data encoding, `254` bits (equivalent to `31.75` bytes) are utilized. `4` elements combine to effectively use `127` bytes.
 `127` bytes of application-layer rollup data is encoded at a time, into 4 adjacent field elements of the blob:
 
 ```python
