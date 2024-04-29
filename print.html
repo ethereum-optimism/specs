@@ -3075,6 +3075,8 @@ This number does not represent a full <code>uint256</code>: <code>math.log2(BLS_
 describe the encoding of this polynomial.
 The field elements are encoded as big-endian integers (<code>KZG_ENDIANNESS = big</code>).</p>
 <p>To save computational overhead, only <code>254</code> bits per field element are used for rollup data.</p>
+<p>For efficient data encoding, <code>254</code> bits (equivalent to <code>31.75</code> bytes) are utilized.
+<code>4</code> elements combine to effectively use <code>127</code> bytes.</p>
 <p><code>127</code> bytes of application-layer rollup data is encoded at a time, into 4 adjacent field elements of the blob:</p>
 <pre><code class="language-python"># read(N): read the next N bytes from the application-layer rollup-data. The next read starts where the last stopped.
 # write(V): append V (one or more bytes) to the raw blob.
