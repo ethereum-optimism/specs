@@ -67,7 +67,7 @@ each claim, so an honest claim never has an honest sibling.
 ### Moves
 
 To respond to a claim with a depth in the range of `[1, MAX_DEPTH]`, the honest challenger determines if the claim
-has a valid commitment. If the state witness hash matches the honest challenger's at teh same trace
+has a valid commitment. If the state witness hash matches the honest challenger's at the same trace
 index, then we disagree with the claim's stance by move to [defend](fault-dispute-game.md#defend).
 Otherwise, the claim is [attacked](fault-dispute-game.md#attack).
 
