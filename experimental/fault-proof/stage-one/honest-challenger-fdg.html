@@ -228,8 +228,9 @@ three invariants for any game:</p>
 in the contract. This ordering ensures that a claim's ancestors are processed prior to the claim itself. For each claim,
 the honest challenger determines and tracks the set of honest responses to all claims, regardless of whether that
 response already exists in the full game state.</p>
-<p>The root claim is considered to be an honest claim if and only if it has a <a href="fault-dispute-game.html#claims">ClaimHash</a>
-that agrees with the honest challenger's ClaimHash for the root claim.</p>
+<p>The root claim is considered to be an honest claim if and only if it has a
+<a href="fault-dispute-game.html#claims">state witness Hash</a> that agrees with the honest challenger's state witness hash for the
+root claim.</p>
 <p>The honest challenger should counter a claim if and only if:</p>
 <ol>
 <li>The claim is a child of a claim in the set of honest responses</li>
@@ -240,8 +241,8 @@ claim's trace index</li>
 each claim, so an honest claim never has an honest sibling.</p>
 <h3 id="moves"><a class="header" href="#moves">Moves</a></h3>
 <p>To respond to a claim with a depth in the range of <code>[1, MAX_DEPTH]</code>, the honest challenger determines if the claim
-has a valid commitment (i.e. <code>ClaimHash</code>). If the <code>ClaimHash</code> matches the honest challenger's at teh same trace index,
-then we disagree with the claim's stance by move to <a href="fault-dispute-game.html#defend">defend</a>.
+has a valid commitment. If the state witness hash matches the honest challenger's at the same trace
+index, then we disagree with the claim's stance by move to <a href="fault-dispute-game.html#defend">defend</a>.
 Otherwise, the claim is <a href="fault-dispute-game.html#attack">attacked</a>.</p>
 <p>The claim that would be added as a result of the move is added to the set of honest moves being tracked.</p>
 <p>If the resulting claim does not already exist in the full game state, the challenger issue the move by calling
@@ -255,7 +256,7 @@ the only option for an honest challenger is to execute a VM step on-chain to dis
 challenger does not perform any action.</p>
 <p>Otherwise, similar to the above section, the honest challenger will issue an
 <a href="fault-dispute-game.html#step-types">attack step</a> when in response to such claims with
-invalid <code>ClaimHash</code> commitments. Otherwise, it issues a <em>defense step</em>.</p>
+invalid state witness commitments. Otherwise, it issues a <em>defense step</em>.</p>
 <h3 id="timeliness"><a class="header" href="#timeliness">Timeliness</a></h3>
 <p>The honest challenger responds to claims as soon as possible to avoid the clock of its
 counter-claim from expiring.</p>

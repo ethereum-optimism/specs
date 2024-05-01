@@ -254,7 +254,7 @@ Every execution trace has a unique starting state, <span class="katex"><span cla
 We refer to this state as the <strong>ABSOLUTE_PRESTATE</strong>.</p>
 <h3 id="claims"><a class="header" href="#claims">Claims</a></h3>
 <p>Claims assert an <a href="../../../glossary.html#L2-output-root">output root</a> or the state of the FPVM at a given instruction. This is represented as
-<code>ClaimHash</code>, a <code>bytes32</code> representing either an <a href="../../../glossary.html#L2-output-root">output root</a> or a commitment to the last VM state in a
+a <code>Hash</code> type, a <code>bytes32</code> representing either an <a href="../../../glossary.html#L2-output-root">output root</a> or a commitment to the last VM state in a
 trace. A FDG is initialized with an output root that corresponds to the state of L2 at a given L2 block number, and
 execution trace subgames at <code>SPLIT_DEPTH + 1</code> are initialized with a claim that commits to the entire execution trace
 between two consecutive output roots (a block <code>n -&gt; n+1</code> state transition). As we'll see later, there can be multiple
@@ -319,7 +319,7 @@ Positions higher up the game tree also cover the deepest, right-most positions r
 We refer to this coverage as the <strong>trace index</strong> of a Position.</p>
 <blockquote>
 <p>This means claims commit to an execution trace that terminates at the same index as their Position's trace index.
-That is, for a given trace index <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span>, its ClaimHash corresponds to the <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> th state in the trace.</p>
+That is, for a given trace index <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span>, its state witness hash corresponds to the <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> th state in the trace.</p>
 </blockquote>
 <p>Note that there can be multiple positions covering the same <em>trace index</em>.</p>
 <h3 id="max_clock_duration"><a class="header" href="#max_clock_duration">MAX_CLOCK_DURATION</a></h3>
@@ -380,7 +380,7 @@ However, they're not necessary as these nodes have complimentary, valid position
 with the same trace index within the tree. For example, a Position with gindex 5 has the same
 trace index as another Position with gindex 2. We can verify that all trace indices have valid moves within the game:</p>
 <p><img src="../../../static/assets/valid-moves.png" alt="Game Tree Showing All Valid Move Positions" /></p>
-<p>There may be multiple claims at the same position, so long as their <code>ClaimHash</code> are unique.</p>
+<p>There may be multiple claims at the same position, so long as their state witness hashes are unique.</p>
 <p>Each move adds new claims to the Game Tree at strictly increasing depth.
 Once a claim is at <code>MAX_GAME_DEPTH</code>, the only way to dispute such claims is to <strong>step</strong>.</p>
 <h3 id="step"><a class="header" href="#step">Step</a></h3>
