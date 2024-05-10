@@ -12,7 +12,7 @@
 
 ## Overview
 
-The rollback inbox contracts are responsible for storing the hashes of messages that failed on the other domain. They are built with the purpose of allowing contracts on the same domain to have the capability of handling what actions to perform when one of the messages they sent failed on the other domain.
+The rollback inbox contracts are responsible for storing the hashes of messages that failed on the other domain. They are built with the purpose of allowing contracts on the same domain to have the capability of handling what actions to perform when a message failed on the other domain and was rolled-back to it's origin domain.
 
 ```solidity
 interface RollbackInbox {
