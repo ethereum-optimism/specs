@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
 - [Token Depositing](#token-depositing)
+- [ERC20 Unlocking](#erc20-unlocking)
 - [Upgradability](#upgradability)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -29,15 +30,19 @@ interface StandardBridge {
     event ERC20BridgeInitiated(address indexed localToken, address indexed remoteToken, address indexed from, address to, uint256 amount, bytes extraData);
     event ETHBridgeFinalized(address indexed from, address indexed to, uint256 amount, bytes extraData);
     event ETHBridgeInitiated(address indexed from, address indexed to, uint256 amount, bytes extraData);
+    event ERC20Unlocked(address indexed localToken, address indexed remotetoken, address indexed from, uint256 amount, bytes32 messageHash);
 
     function bridgeERC20(address _localToken, address _remoteToken, uint256 _amount, uint32 _minGasLimit, bytes memory _extraData) external;
     function bridgeERC20To(address _localToken, address _remoteToken, address _to, uint256 _amount, uint32 _minGasLimit, bytes memory _extraData) external;
     function bridgeETH(uint32 _minGasLimit, bytes memory _extraData) payable external;
     function bridgeETHTo(address _to, uint32 _minGasLimit, bytes memory _extraData) payable external;
     function deposits(address, address) view external returns (uint256);
+    function processedMessages(bytes32 _messageHashes) view external returns (uint256);
+    function unlockERC20s(address _localToken, address _remoteToken, address _from, address _to, uint256 _amount, bytes calldata _extraData, uint240 _nonce, uint32 _minGasLimit) external;
     function finalizeBridgeERC20(address _localToken, address _remoteToken, address _from, address _to, uint256 _amount, bytes memory _extraData) external;
     function finalizeBridgeETH(address _from, address _to, uint256 _amount, bytes memory _extraData) payable external;
     function messenger() view external returns (address);
+    function ROLLBACK_INBOX() view external returns (address);
     function OTHER_BRIDGE() view external returns (address);
 }
 ```
@@ -48,6 +53,9 @@ The `bridgeERC20` function is used to send a token from one domain to another
 domain. An `OptimismMintableERC20` token contract must exist on the remote
 domain to be able to deposit tokens to that domain. One of these tokens can be
 deployed using the `OptimismMintableERC20Factory` contract.
+
+## ERC20 Unlocking
+The `ERC20Unlocked` function is used to unlock tokens stuck due to failure in relaying prior ERC20 bridging actions. A `messageHash` must exist in the `ROLLBACK_INBOX` contract to certify the message hash corresponding to an ERC20 bridging action started from the standard bridged failed on the other domain.
 
 ## Upgradability
 
