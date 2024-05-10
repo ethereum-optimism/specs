@@ -12,7 +12,10 @@
 
 ## Overview
 
-The rollback inbox contracts are responsible for storing the hashes of messages that failed on the other domain. They are built with the purpose of allowing contracts on the same domain to have the capability of handling what actions to perform when a message failed on the other domain and was rolled-back to it's origin domain.
+The rollback inbox contracts are responsible for storing the hashes of messages
+that failed on the other domain. They are built with the purpose of allowing contracts
+on the same domain to have the capability of handling what actions to perform when a
+message failed on the other domain and was rolled-back to it's origin domain.
 
 The `L2RollbackInbox` is a predeploy contract located at TO BE DEFINED.
 
@@ -29,7 +32,9 @@ interface RollbackInbox {
 
 ## Message Hash Reception
 
-The `receiveMessageHash` function is used to receive message hashes from the other domain. It must ensure the caller is the `CrossDomainMessenger` from this domain, and that the sender is the `CrossDomainMessenger` from the other domain.
+The `receiveMessageHash` function is used to receive message hashes from the other domain.
+It must ensure the caller is the `CrossDomainMessenger` from this domain, and that the
+sender is the `CrossDomainMessenger` from the other domain.
 
 ## Upgradability
 

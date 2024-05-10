@@ -55,7 +55,11 @@ domain to be able to deposit tokens to that domain. One of these tokens can be
 deployed using the `OptimismMintableERC20Factory` contract.
 
 ## ERC20 Unlocking
-The `ERC20Unlocked` function is used to unlock tokens stuck due to failure in relaying prior ERC20 bridging actions. A `messageHash` must exist in the `ROLLBACK_INBOX` contract to certify the message hash corresponding to an ERC20 bridging action started from the standard bridged failed on the other domain.
+
+The `ERC20Unlocked` function is used to unlock tokens stuck due to failure in
+relaying prior ERC20 bridging actions. A `messageHash` must exist in the `ROLLBACK_INBOX`
+contract to certify the message hash corresponding to an ERC20 bridging action started
+from the standard bridged failed on the other domain.
 
 ## Upgradability
 

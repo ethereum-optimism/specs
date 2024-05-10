@@ -85,7 +85,14 @@ on the OptimismPortal, which calls `relayMessage` on the
 `L1CrossDomainMessenger` to finalize the withdrawal.
 
 ## Rolling a Message Back
-The `sendHashToRollbackInbox` function is used to send the hashes of failed and unsuccesful messages to the `ROLLBACK_INBOX` contract on the other domain after a given delay, ensuring the message corresponding to the rolled back hash is never processed in the current domain. The main purpose of this function is to inform the other domain of failed messages so contracts living in this other domain can handle the message failure. This allows functionalities such as unlocking stuck ERC20s.
+
+The `sendHashToRollbackInbox` function is used to send the hashes of failed
+and unsuccesful messages to the `ROLLBACK_INBOX` contract on the other domain
+after a given delay, ensuring the message corresponding to the rolled back hash
+is never processed in the current domain. The main purpose of this function
+is to inform the other domain of failed messages so contracts living in
+this other domain can handle the message failure. This allows functionalities
+such as unlocking stuck ERC20s.
 
 ## Upgradability
 
