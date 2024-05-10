@@ -22,7 +22,7 @@
   - [SystemConfig](#systemconfig)
     - [initialize](#initialize)
   - [L1Block](#l1block)
-  - [WETH9](#weth9)
+  - [WETH](#weth)
 - [User Flow](#user-flow)
   - [When ETH is the Native Asset](#when-eth-is-the-native-asset)
   - [When an ERC20 Token is the Native Asset](#when-an-erc20-token-is-the-native-asset)
@@ -311,9 +311,9 @@ Any L2 contract that wants to learn the address of the gas paying token can call
 function setGasPayingToken(address _token, uint8 _decimals, byte32 _name, bytes32 _symbol) external;
 ```
 
-### WETH9
+### WETH
 
-The `WETH9` predeploy is updated so that it calls out to the `L1Block` contract to retreive the `name` and `symbol`.
+The `WETH`(renamed from `WETH9`) predeploy is updated so that it calls out to the `L1Block` contract to retreive the `name` and `symbol`.
 This allows for front ends to more easily trust the token contract. It should prepend `Wrapped` to the `name`
 and `W` to the `symbol`.
 
@@ -502,5 +502,5 @@ of another chain.
 
 ### Wrapped Ether
 
-The `WETH9` predeploy at `0x4200000000000000000000000000000000000006` represents wrapped native asset and
+The `WETH` predeploy at `0x4200000000000000000000000000000000000006` represents wrapped native asset and
 not wrapped `ether`. Portable and fungible `ether` across different domains is left for a future project.
