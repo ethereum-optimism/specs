@@ -129,7 +129,7 @@ Owners are recorded in this mapping in one of 4 ways:
 1. When a transaction is executed, the signatures on that transaction are passed to the guard and
    used to identify the signers. If more than the required number of signatures is provided, they
    are ignored.
-1. An owner may call the contract's `showLiveness()()` method directly in order to prove liveness.
+1. An owner may call the contract's `showLiveness()` method directly in order to prove liveness.
 
 Note that the first two methods do not require the owner to actually sign anything. However these mechanisms
 are necessary to prevent new owners from being removed before they have had a chance to show liveness.
