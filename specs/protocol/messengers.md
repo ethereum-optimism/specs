@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
 - [Message Passing](#message-passing)
+- [Rolling a Message Back](#rolling-a-message-back)
 - [Upgradability](#upgradability)
 - [Message Versioning](#message-versioning)
   - [Message Version 0](#message-version-0)
