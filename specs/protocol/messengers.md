@@ -38,6 +38,7 @@ interface CrossDomainMessenger {
     event RelayedMessage(bytes32 indexed msgHash);
     event SentMessage(address indexed target, address sender, bytes message, uint256 messageNonce, uint256 gasLimit);
     event SentMessageExtension1(address indexed sender, uint256 value);
+    event MessageSentToRollbackInbox(bytes32 indexed messageHash, address indexed target, address sender, bytes message, uint256 messageNonce, uint256 gasLimit);
 
     function MESSAGE_VERSION() external view returns (uint16);
     function MIN_GAS_CALLDATA_OVERHEAD() external view returns (uint64);
@@ -45,8 +46,10 @@ interface CrossDomainMessenger {
     function MIN_GAS_DYNAMIC_OVERHEAD_DENOMINATOR() external view returns (uint64);
     function MIN_GAS_DYNAMIC_OVERHEAD_NUMERATOR() external view returns (uint64);
     function OTHER_MESSENGER() external view returns (address);
+    function ROLLBACK_INBOX() external view returns (address);
+    function ROLLBACK_INBOX_DELAY() external view returns (uint256);
     function baseGas(bytes memory _message, uint32 _minGasLimit) external pure returns (uint64);
-    function failedMessages(bytes32) external view returns (bool);
+    function failedMessages(bytes32) external view returns (uint256);
     function messageNonce() external view returns (uint256);
     function relayMessage(
         uint256 _nonce,
@@ -57,7 +60,8 @@ interface CrossDomainMessenger {
         bytes memory _message
     ) external payable;
     function sendMessage(address _target, bytes memory _message, uint32 _minGasLimit) external payable;
-    function successfulMessages(bytes32) external view returns (bool);
+    function sendHashToRollbackInbox(bytes32 _versionedHash, bytes32 _minGasLimit) external;
+    function successfulMessages(bytes32) external view returns (uint256);
     function xDomainMessageSender() external view returns (address);
 }
 ```
@@ -78,6 +82,9 @@ When going from L2 into L1, the user proves their withdrawal on OptimismPortal,
 then waits for the finalization window to pass, and then finalizes the withdrawal
 on the OptimismPortal, which calls `relayMessage` on the
 `L1CrossDomainMessenger` to finalize the withdrawal.
+
+## Rolling a Message Back
+The `sendHashToRollbackInbox` function is used to send the hashes of failed and unsuccesful messages to the `ROLLBACK_INBOX` contract on the other domain after a given delay, ensuring the message corresponding to the rolled back hash is never processed in the current domain. The main purpose of this function is to inform the other domain of failed messages so contracts living in this other domain can handle the message failure. This allows functionalities such as unlocking stuck ERC20s.
 
 ## Upgradability
 
