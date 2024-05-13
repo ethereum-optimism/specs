@@ -1,0 +1,349 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Derivation - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../background.html"><strong aria-hidden="true">2.</strong> Background</a></li><li class="chapter-item expanded "><a href="../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">3.1.</strong> Network Upgrades</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/regolith/overview.html"><strong aria-hidden="true">3.1.1.</strong> Regolith</a></li><li class="chapter-item expanded "><a href="../protocol/canyon/overview.html"><strong aria-hidden="true">3.1.2.</strong> Canyon</a></li><li class="chapter-item expanded "><a href="../protocol/delta/overview.html"><strong aria-hidden="true">3.1.3.</strong> Delta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/delta/span-batches.html"><strong aria-hidden="true">3.1.3.1.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/ecotone/overview.html"><strong aria-hidden="true">3.1.4.</strong> Ecotone</a></li><li class="chapter-item expanded "><a href="../fjord/overview.html"><strong aria-hidden="true">3.1.5.</strong> Fjord</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../fjord/derivation.html" class="active"><strong aria-hidden="true">3.1.5.1.</strong> Derivation</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../protocol/bridges.html"><strong aria-hidden="true">3.2.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/messengers.html"><strong aria-hidden="true">3.2.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../protocol/deposits.html"><strong aria-hidden="true">3.2.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../protocol/withdrawals.html"><strong aria-hidden="true">3.2.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.2.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../protocol/proposals.html"><strong aria-hidden="true">3.2.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.3.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/exec-engine.html"><strong aria-hidden="true">3.3.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../protocol/rollup-node.html"><strong aria-hidden="true">3.3.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.3.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../protocol/derivation.html"><strong aria-hidden="true">3.3.2.2.</strong> Derivation</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/batcher.html"><strong aria-hidden="true">3.3.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li><li class="chapter-item expanded "><a href="../protocol/configurability.html"><strong aria-hidden="true">3.8.</strong> Configurability</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/index.html"><strong aria-hidden="true">4.1.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">4.1.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/bond-incentives.html"><strong aria-hidden="true">4.1.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../experimental/fault-proof/stage-one/bridge-integration.html"><strong aria-hidden="true">4.1.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../experimental/custom-gas-token.html"><strong aria-hidden="true">4.2.</strong> Custom Gas Token</a></li><li class="chapter-item expanded "><a href="../experimental/plasma.html"><strong aria-hidden="true">4.3.</strong> Plasma</a></li><li class="chapter-item expanded "><a href="../interop/overview.html"><strong aria-hidden="true">4.4.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../interop/dependency_set.html"><strong aria-hidden="true">4.4.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../interop/messaging.html"><strong aria-hidden="true">4.4.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../interop/predeploys.html"><strong aria-hidden="true">4.4.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../interop/execution.html"><strong aria-hidden="true">4.4.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../interop/sequencer.html"><strong aria-hidden="true">4.4.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../interop/verifier.html"><strong aria-hidden="true">4.4.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../interop/rollup_node_p2p.html"><strong aria-hidden="true">4.4.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../interop/fault_proof.html"><strong aria-hidden="true">4.4.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../interop/upgrade.html"><strong aria-hidden="true">4.4.9.</strong> Upgrade</a></li></ol></li><li class="chapter-item expanded "><a href="../experimental/security-council-safe.html"><strong aria-hidden="true">4.5.</strong> Security Council Safe</a></li></ol></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/fjord/derivation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="fjord-l2-chain-derivation-changes"><a class="header" href="#fjord-l2-chain-derivation-changes">Fjord L2 Chain Derivation Changes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#protocol-parameter-changes">Protocol Parameter Changes</a>
+<ul>
+<li><a href="#timestamp-activation">Timestamp Activation</a></li>
+<li><a href="#constant-maximum-sequencer-drift">Constant Maximum Sequencer Drift</a>
+<ul>
+<li><a href="#rationale">Rationale</a></li>
+<li><a href="#security-considerations">Security Considerations</a></li>
+</ul>
+</li>
+<li><a href="#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size">Increasing <code>MAX_RLP_BYTES_PER_CHANNEL</code> and <code>MAX_CHANNEL_BANK_SIZE</code></a>
+<ul>
+<li><a href="#rationale-1">Rationale</a></li>
+<li><a href="#security-considerations-1">Security Considerations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#brotli-channel-compression">Brotli Channel Compression</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h1 id="protocol-parameter-changes"><a class="header" href="#protocol-parameter-changes">Protocol Parameter Changes</a></h1>
+<p>The following table gives an overview of the changes in parameters.</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Pre-Fjord (default) value</th><th>Fjord value</th><th>Notes</th></tr></thead><tbody>
+<tr><td><code>max_sequencer_drift</code></td><td>600</td><td>1800</td><td>Was a protocol parameter since Bedrock. Now becomes a constant.</td></tr>
+<tr><td><code>MAX_RLP_BYTES_PER_CHANNEL</code></td><td>10,000,000</td><td>100,000,000</td><td>Protocol Constant is increasing.</td></tr>
+<tr><td><code>MAX_CHANNEL_BANK_SIZE</code></td><td>100,000,000</td><td>1,000,000,000</td><td>Protocol Constant is increasing.</td></tr>
+</tbody></table>
+</div>
+<h2 id="timestamp-activation"><a class="header" href="#timestamp-activation">Timestamp Activation</a></h2>
+<p>Fjord, like other network upgrades, is activated at a timestamp.
+Changes to the L2 Block execution rules are applied when the <code>L2 Timestamp &gt;= activation time</code>.
+Changes to derivation are applied when it is considering data from a L1 Block whose timestamp
+is greater than or equal to the activation timestamp.
+The change of the <code>max_sequencer_drift</code> parameter activates with the L1 origin block timestamp.</p>
+<h2 id="constant-maximum-sequencer-drift"><a class="header" href="#constant-maximum-sequencer-drift">Constant Maximum Sequencer Drift</a></h2>
+<p>With Fjord, the <code>max_sequencer_drift</code> parameter becomes a constant of value <code>1800</code> <em>seconds</em>,
+translating to a fixed maximum sequencer drift of 30 minutes.</p>
+<p>Before Fjord, this was a chain parameter that was set once at chain creation, with a default
+value of <code>600</code> seconds, i.e., 10 minutes. Most chains use this value currently.</p>
+<h3 id="rationale"><a class="header" href="#rationale">Rationale</a></h3>
+<p>Discussions amongst chain operators came to the unilateral conclusion that a larger value than the
+current default would be easier to work with. If a sequencer's L1 connection breaks, this drift
+value determines how long it can still produce blocks without violating the timestamp drift
+derivation rules.</p>
+<p>It was furthermore agreed that configurability after this increase is not important. So it is being
+made a constant. An alternative idea that is being considered for a future hardfork is to make this
+an L1-configurable protocol parameter via the <code>SystemConfig</code> update mechanism.</p>
+<h3 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h3>
+<p>The rules around the activation time are deliberately being kept simple, so no other logic needs to
+be applied other than to change the parameter to a constant. The first Fjord block would in theory
+accept older L1-origin timestamps than its predecessor. However, since the L1 origin timestamp must
+also increase, the only noteworthy scenario that can happen is that the first few Fjord blocks will
+be in the same epoch as the the last pre-Fjord blocks, even if these blocks would not be allowed to
+have these L1-origin timestamps according to pre-Fjord rules. So the same L1 timestamp would be
+shared within a pre- and post-Fjord mixed epoch. This is considered a feature and is not considered
+a security issue.</p>
+<h2 id="increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size"><a class="header" href="#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size">Increasing <code>MAX_RLP_BYTES_PER_CHANNEL</code> and <code>MAX_CHANNEL_BANK_SIZE</code></a></h2>
+<p>With Fjord, <code>MAX_RLP_BYTES_PER_CHANNEL</code> will be increased from 10,000,000 bytes to 100,000,000 bytes,
+and <code>MAX_CHANNEL_BANK_SIZE</code> will be increased from 100,000,000 bytes to 1,000,000,000 bytes.</p>
+<p>The usage of <code>MAX_RLP_BYTES_PER_CHANNEL</code> is defined in <a href="../protocol/derivation.html#channel-format">Channel Format</a>.
+The usage of <code>MAX_CHANNEL_BANK_SIZE</code> is defined in <a href="../protocol/derivation.html#pruning">Channel Bank Pruning</a>.</p>
+<p>Span Batches previously had a limit <code>MAX_SPAN_BATCH_SIZE</code> which was equal to <code>MAX_RLP_BYTES_PER_CHANNEL</code>.
+Fjord creates a new constant <code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> for the element count limit &amp; removes
+<code>MAX_SPAN_BATCH_SIZE</code>. The size of the channel is still checked with <code>MAX_RLP_BYTES_PER_CHANNEL</code>.</p>
+<p>The new value will be used when the timestamp of the L1 origin of the derivation pipeline &gt;= the Fjord activation
+timestamp.</p>
+<h3 id="rationale-1"><a class="header" href="#rationale-1">Rationale</a></h3>
+<p>A block with a gas limit of 30 Million gas has a maximum theoretical size of 7.5 Megabytes by being filled up
+with transactions have only zeroes. Currently, a byte with the value <code>0</code> consumes 4 gas.
+If the block gas limit is raised above 40 Million gas, it is possible to create a block that is large than
+<code>MAX_RLP_BYTES_PER_CHANNEL</code>.
+L2 blocks cannot be split across channels which means that a block that is larger than <code>MAX_RLP_BYTES_PER_CHANNEL</code>
+cannot be batch submitted.
+By raising this limit to 100,000,000 bytes, we can batch submit blocks with a gas limit of up to 400 Million Gas.
+In addition, we are able to improve compression ratios by increasing the amount of data that can be inserted into a
+single channel.
+With 33% compression ratio over 6 blobs, we are currently submitting 2.2 MB of compressed data &amp; 0.77 MB of uncompressed
+data per channel.
+This will allow use to use up to approximately 275 blobs per channel.</p>
+<p>Raising <code>MAX_CHANNEL_BANK_SIZE</code> is helpful to ensure that we are able to process these larger channels. We retain the
+same ratio of 10 between <code>MAX_RLP_BYTES_PER_CHANNEL</code> and <code>MAX_CHANNEL_BANK_SIZE</code>.</p>
+<h3 id="security-considerations-1"><a class="header" href="#security-considerations-1">Security Considerations</a></h3>
+<p>Raising the these limits increases the amount of resources a rollup node would require.
+Specifically nodes may have to allocate large chunks of memory for a channel and will have to potentially allocate more
+memory to the channel bank.
+<code>MAX_RLP_BYTES_PER_CHANNEL</code> was originally added to avoid zip bomb attacks.
+The system is still exposed to these attacks, but these limits are straightforward to handle in a node.</p>
+<p>The Fault Proof environment is more constrained than a typical node and increasing these limits will require more
+resources than are currently required.
+The change in <code>MAX_CHANNEL_BANK_SIZE</code> is not relevant to the first implementation of Fault Proofs because this limit
+only tells the node when to start pruning &amp; once memory is allocated in the FPVM, it is not garbage collected.
+This means that increasing <code>MAX_CHANNEL_BANK_SIZE</code> does not increase the maximum resource usage of the FPP.</p>
+<p>Increasing <code>MAX_RLP_BYTES_PER_CHANNEL</code> could cause more resource usage in FPVM; however, we consider this
+increase reasonable because this increase is in the amount of data handled at once rather than the total
+amount of data handled in the program. Instead of using a single channel, the batcher could submit 10 channels
+prior to this change which would cause the Fault Proof Program to consume a very similar amount of resources.</p>
+<h1 id="brotli-channel-compression"><a class="header" href="#brotli-channel-compression">Brotli Channel Compression</a></h1>
+<p>Fjord introduces a new versioned channel encoding format to support alternate compression
+algorithms, with the <a href="../protocol/derivation.html#channel-format">legacy channel format</a> remaining supported. The
+versioned format is as follows:</p>
+<pre><code class="language-text">channel_encoding = `channel_version_byte ++ compress(rlp_batches)`
+</code></pre>
+<p>The <code>channel_version_byte</code> must never have its 4 lower order bits set to <code>0b1000 = 8</code> or <code>0b1111 = 15</code>, which are reserved for usage by the header byte of zlib encoded data (see page 5 of
+<a href="https://www.rfc-editor.org/rfc/rfc1950.html">RFC-1950</a>). This allows a channel decoder to determine if a channel encoding is legacy or
+versioned format by testing for these bit values. If the channel encoding is determined to be
+versioned format, the only valid <code>channel_version_byte</code> is <code>1</code>, which indicates <code>compress()</code> is the
+Brotli compression algorithm (as specified in <a href="https://datatracker.ietf.org/doc/html/rfc7932">RFC-7932</a>) with no custom dictionary.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../fjord/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/bridges.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../fjord/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/bridges.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Ecotone - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../../background.html"><strong aria-hidden="true">2.</strong> Background</a></li><li class="chapter-item expanded "><a href="../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">3.1.</strong> Network Upgrades</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/regolith/overview.html"><strong aria-hidden="true">3.1.1.</strong> Regolith</a></li><li class="chapter-item expanded "><a href="../../protocol/canyon/overview.html"><strong aria-hidden="true">3.1.2.</strong> Canyon</a></li><li class="chapter-item expanded "><a href="../../protocol/delta/overview.html"><strong aria-hidden="true">3.1.3.</strong> Delta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/delta/span-batches.html"><strong aria-hidden="true">3.1.3.1.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/ecotone/overview.html" class="active"><strong aria-hidden="true">3.1.4.</strong> Ecotone</a></li><li class="chapter-item expanded "><a href="../../fjord/overview.html"><strong aria-hidden="true">3.1.5.</strong> Fjord</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fjord/derivation.html"><strong aria-hidden="true">3.1.5.1.</strong> Derivation</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/bridges.html"><strong aria-hidden="true">3.2.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/messengers.html"><strong aria-hidden="true">3.2.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../protocol/deposits.html"><strong aria-hidden="true">3.2.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../protocol/withdrawals.html"><strong aria-hidden="true">3.2.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.2.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../protocol/proposals.html"><strong aria-hidden="true">3.2.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.3.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/exec-engine.html"><strong aria-hidden="true">3.3.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/rollup-node.html"><strong aria-hidden="true">3.3.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.3.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../protocol/derivation.html"><strong aria-hidden="true">3.3.2.2.</strong> Derivation</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/batcher.html"><strong aria-hidden="true">3.3.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/predeploys.html"><strong aria-hidden="true">3.4.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../protocol/preinstalls.html"><strong aria-hidden="true">3.5.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.6.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.6.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.6.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/system_config.html"><strong aria-hidden="true">3.7.</strong> System Config</a></li><li class="chapter-item expanded "><a href="../../protocol/configurability.html"><strong aria-hidden="true">3.8.</strong> Configurability</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/index.html"><strong aria-hidden="true">4.1.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">4.1.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/stage-one/index.html"><strong aria-hidden="true">4.1.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">4.1.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">4.1.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">4.1.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/stage-one/bond-incentives.html"><strong aria-hidden="true">4.1.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../../experimental/fault-proof/stage-one/bridge-integration.html"><strong aria-hidden="true">4.1.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../experimental/custom-gas-token.html"><strong aria-hidden="true">4.2.</strong> Custom Gas Token</a></li><li class="chapter-item expanded "><a href="../../experimental/plasma.html"><strong aria-hidden="true">4.3.</strong> Plasma</a></li><li class="chapter-item expanded "><a href="../../interop/overview.html"><strong aria-hidden="true">4.4.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../interop/dependency_set.html"><strong aria-hidden="true">4.4.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../../interop/messaging.html"><strong aria-hidden="true">4.4.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../../interop/predeploys.html"><strong aria-hidden="true">4.4.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../interop/execution.html"><strong aria-hidden="true">4.4.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../../interop/sequencer.html"><strong aria-hidden="true">4.4.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../../interop/verifier.html"><strong aria-hidden="true">4.4.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../../interop/rollup_node_p2p.html"><strong aria-hidden="true">4.4.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../interop/fault_proof.html"><strong aria-hidden="true">4.4.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../../interop/upgrade.html"><strong aria-hidden="true">4.4.9.</strong> Upgrade</a></li></ol></li><li class="chapter-item expanded "><a href="../../experimental/security-council-safe.html"><strong aria-hidden="true">4.5.</strong> Security Council Safe</a></li></ol></li><li class="chapter-item expanded "><a href="../../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/ecotone/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="ecotone-network-upgrade"><a class="header" href="#ecotone-network-upgrade">Ecotone Network Upgrade</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#execution-layer">Execution Layer</a></li>
+<li><a href="#consensus-layer">Consensus Layer</a></li>
+<li><a href="#consensus-layer-1">Consensus Layer</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>The Ecotone upgrade contains the Dencun upgrade from L1, and adopts EIP-4844 blobs for data-availability.</p>
+<h2 id="execution-layer"><a class="header" href="#execution-layer">Execution Layer</a></h2>
+<ul>
+<li>Cancun (Execution Layer):
+<ul>
+<li><a href="https://eips.ethereum.org/EIPS/eip-1153">EIP-1153: Transient storage opcodes</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844: Shard Blob Transactions</a>
+<ul>
+<li><a href="../exec-engine.html#ecotone-disable-blob-transactions">Blob transactions are disabled</a></li>
+</ul>
+</li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788: Beacon block root in the EVM</a>
+<ul>
+<li><a href="../exec-engine.html#ecotone-beacon-block-root">The L1 beacon block root is embedded into L2</a></li>
+<li><a href="../derivation.html#ecotone-beacon-block-roots-contract-deployment-eip-4788">The Beacon roots contract deployment is automated</a></li>
+</ul>
+</li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-5656">EIP-5656: MCOPY - Memory copying instruction</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-6780">EIP-6780: SELFDESTRUCT only in same transaction</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7516">EIP-7516: BLOBBASEFEE opcode</a>
+<ul>
+<li><a href="../exec-engine.html#ecotone-disable-blob-transactions">BLOBBASEFEE always pushes 1 onto the stack</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Deneb (Consensus Layer): <em>not applicable to L2</em>
+<ul>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7044">EIP-7044: Perpetually Valid Signed Voluntary Exits</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7045">EIP-7045: Increase Max Attestation Inclusion Slot</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7514">EIP-7514: Add Max Epoch Churn Limit</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="consensus-layer"><a class="header" href="#consensus-layer">Consensus Layer</a></h2>
+<ul>
+<li>Blobs Data Availability: support blobs DA the <a href="../derivation.html#ecotone-blob-retrieval">L1 Data-retrieval stage</a>.</li>
+<li>Rollup fee update: support blobs DA in
+<a href="../exec-engine.html#ecotone-l1-cost-fee-changes-eip-4844-da">L1 Data Fee computation</a></li>
+<li>Auto-upgrading and extension of the <a href="../deposits.html#ecotone-l1block-upgrade">L1 Attributes Predeployed Contract</a>
+(also known as <code>L1Block</code> predeploy)</li>
+</ul>
+<h2 id="consensus-layer-1"><a class="header" href="#consensus-layer-1">Consensus Layer</a></h2>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/delta/span-batches.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../fjord/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/delta/span-batches.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../fjord/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
