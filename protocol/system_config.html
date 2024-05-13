@@ -280,6 +280,8 @@ in the total Blob data that is introduced by the data-transaction of the batch-s
 <p>The gas limit of the L2 blocks is configured through the system config.
 Changes to the L2 gas limit are fully applied in the first L2 block with the L1 origin that introduced the change,
 as opposed to the 1/1024 adjustments towards a target as seen in limit updates of L1 blocks.</p>
+<p>The gas limit may not be set to a value larger than <code>200_000_000</code>. This is to ensure that the L2 blocks are fault
+provable and of reasonable size to be processed by the client software. Over time, this value will be increased.</p>
 <h3 id="unsafeblocksigner-address"><a class="header" href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></h3>
 <p>Blocks are gossiped around the p2p network before they are made available on L1.
 To prevent denial of service on the p2p layer, these unsafe blocks must be
