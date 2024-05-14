@@ -197,13 +197,15 @@ The following security properties must be upheld:
 #### In the module
 
 1. During a shutdown the module correctly removes all signers, and converts the safe to a 1 of 1.
+1. After a shutdown, the module's removeOwner function is no longer callable.
 1. The module only removes an owner if they have not demonstrated liveness during the interval, or
    if enough other owners have been removed to activate the shutdown mechanism.
 1. The module correctly sets the Safe's threshold upon removing a signer.
 
-Note: neither the module nor guard attempt to prevent a quorum of owners from removing either the liveness
-module or guard. There are legitimate reasons they might wish to do so. Moreover, if such a quorum
-of owners exists, there is no benefit to removing them, as they are defacto 'sufficiently live'.
+Note: neither the module nor guard attempt to prevent a quorum of owners from removing either the
+liveness module or guard. There are legitimate reasons they might wish to do so. Moreover, if such a
+quorum of owners exists, there is no benefit to removing them, as they are defacto 'sufficiently
+live'.
 
 ### Interdependency between the guard and module
 
