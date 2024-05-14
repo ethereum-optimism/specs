@@ -213,7 +213,8 @@
 </li>
 <li><a href="#l1block">L1Block</a>
 <ul>
-<li><a href="#l1attributes">L1Attributes</a></li>
+<li><a href="#static-configuration">Static Configuration</a></li>
+<li><a href="#dependency-set">Dependency Set</a></li>
 </ul>
 </li>
 <li><a href="#security-considerations">Security Considerations</a></li>
@@ -375,32 +376,56 @@ getters.</p>
 <h2 id="l1block"><a class="header" href="#l1block">L1Block</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000015</code></td></tr>
+<tr><td><code>DEPOSITOR_ACCOUNT</code></td><td><code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code></td></tr>
 </tbody></table>
 </div>
-<p>The <code>L1Block</code> contract is updated to include the set of allowed chains. The L1 Attributes transaction
-sets the set of allowed chains. The <code>L1Block</code> contract MUST provide a public getter to check if a particular
-chain is in the dependency set called <code>isInDependencySet(uint256)</code>. This function MUST return true when
-the chain's chain id is passed in as an argument.</p>
-<p>The <code>setL1BlockValuesInterop()</code> function MUST be called on every block after the interop upgrade block.
-The interop upgrade block itself MUST include a call to <code>setL1BlockValuesEcotone</code>.</p>
-<h3 id="l1attributes"><a class="header" href="#l1attributes">L1Attributes</a></h3>
-<p>The L1 Atrributes transaction is updated to include the dependency set. Since the dependency set is dynamically sized,
-a <code>uint8</code> "interopSetSize" parameter prefixes tightly packed <code>uint256</code> values that represent each chain id.</p>
-<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
-<tr><td>{0x760ee04d}</td><td>bytes4</td><td>0-3</td><td>n/a</td></tr>
-<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
-<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
-<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
-<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
-<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
-<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
-<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
-<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
-<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
-<tr><td>interopSetSize</td><td>uint8</td><td>164-165</td><td>6</td></tr>
-<tr><td>chainIds</td><td>uint256[interopSetSize]</td><td>165-(32*interopSetSize)</td><td>6+</td></tr>
+<h3 id="static-configuration"><a class="header" href="#static-configuration">Static Configuration</a></h3>
+<p>The <code>L1Block</code> contract MUST include method <code>setConfig(ConfigType, bytes)</code> for setting the system's static values, which
+are defined as values that only change based on the chain operator's input. This function serves to reduce the size of
+the L1 Attributes transaction, as well as to reduce the need to add specific one off functions. It can only be called by
+<code>DEPOSITOR_ACCOUNT</code>.</p>
+<p>The <code>ConfigType</code> enum is defined as follows:</p>
+<pre><code class="language-solidity">enum ConfigType {
+    GAS_PAYING_TOKEN,
+    ADD_DEPENDENCY,
+    REMOVE_DEPENDENCY
+}
+</code></pre>
+<p>The second argument to <code>setConfig</code> is a <code>bytes</code> value that is ABI encoded with the necessary values for the <code>ConfigType</code>.</p>
+<div class="table-wrapper"><table><thead><tr><th>ConfigType</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>GAS_PAYING_TOKEN</code></td><td><code>abi.encode(token, decimals, name, symbol)</code></td></tr>
+<tr><td><code>ADD_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
+<tr><td><code>REMOVE_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
 </tbody></table>
 </div>
+<p>where</p>
+<ul>
+<li>
+<p><code>token</code> is the gas paying token's address (type <code>address</code>)</p>
+</li>
+<li>
+<p><code>decimals</code> is the gas paying token's decimals (type <code>uint8</code>)</p>
+</li>
+<li>
+<p><code>name</code> is the gas paying token's name (type <code>bytes32</code>)</p>
+</li>
+<li>
+<p><code>symbol</code> is the gas paying token's symbol (type <code>bytes32</code>)</p>
+</li>
+<li>
+<p><code>chainId</code> is the chain id intended to be added or removed from the dependency set (type <code>uint256</code>)</p>
+</li>
+</ul>
+<p>Calls to <code>setConfig</code> MUST originate from <code>SystemConfig</code> and are forwarded to <code>L1Block</code> by <code>OptimismPortal</code>.</p>
+<h3 id="dependency-set"><a class="header" href="#dependency-set">Dependency Set</a></h3>
+<p><code>L1Block</code> is updated to include the set of allowed chains. These chains are added and removed through <code>setConfig</code> calls
+with <code>ADD_DEPENDENCY</code> or <code>REMOVE_DEPENDENCY</code>, respectively.</p>
+<p><code>L1Block</code> MUST provide a public getter to check if a particular chain is in the dependency set called
+<code>isInDependencySet(uint256)</code>. This function MUST return true when a chain id in the dependency set, or the chain's chain
+id, is passed in as an argument, and false otherwise. Additionally, <code>L1Block</code> MUST provide a public getter to return the
+dependency set called <code>dependencySet()</code>. This function MUST return the array of chain ids that are in the dependency set.
+<code>L1Block</code> MUST also provide a public getter to get the dependency set size called <code>dependencySetSize()</code>. This function
+MUST return the length of the dependency set array.</p>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 <p>TODO</p>
 
