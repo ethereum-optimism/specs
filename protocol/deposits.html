@@ -280,7 +280,7 @@ API responses contain zeroed signature <code>v</code>, <code>r</code>, <code>s</
 API responses contain these as additional fields.</li>
 </ul>
 <p>We select <code>0x7E</code> because transaction type identifiers are currently allowed to go up to <code>0x7F</code>.
-Picking a high identifier minimizes the risk that the identifier will be used be claimed by another
+Picking a high identifier minimizes the risk that the identifier will be used by another
 transaction type on the L1 chain in the future. We don't pick <code>0x7F</code> itself in case it becomes used
 for a variable-length encoding scheme.</p>
 <h3 id="source-hash-computation"><a class="header" href="#source-hash-computation">Source hash computation</a></h3>
