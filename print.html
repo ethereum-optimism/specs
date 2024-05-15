@@ -8746,7 +8746,7 @@ particular software when building the block.</p>
 The network can be represented as a graph where each block across all chains are represented as
 a node and then a directed edge between two blocks represents the source block of the initiating
 message and the block that included the executing message.</p>
-<p>An input can be promoted from <code>safe</code> to <code>cross-unsafe</code> when the full dependency graph is resolved
+<p>An input can be promoted from <code>unsafe</code> to <code>cross-unsafe</code> when the full dependency graph is resolved
 such that all cross chain messages are verified to be valid and at least one message in the dependency
 graph is still <code>unsafe</code>.</p>
 <p>Note that the <code>cross-unsafe</code> is not meant to be exposed to the end user via the RPC label. It is
