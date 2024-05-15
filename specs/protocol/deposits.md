@@ -304,6 +304,8 @@ The predeploy stores the following values:
   - `overhead` (`uint256`): The L1 fee overhead to apply to L1 cost computation of transactions in this L2 block.
   - `scalar` (`uint256`): The L1 fee scalar to apply to L1 cost computation of transactions in this L2 block.
 - With the Ecotone upgrade, the predeploy additionally stores:
+  - `blobBaseFee`: the L1 blob base fee.
+  - `blobBaseFeeScaler`: The scalar value applied to the L1 blob base fee portion of the L1 cost computation
 
 The contract implements an authorization scheme, such that it only accepts state-changing calls from
 the [depositor account][depositor-account].
