@@ -201,7 +201,6 @@
 <ul>
 <li><a href="#timestamp-invariant">Timestamp Invariant</a></li>
 <li><a href="#chainid-invariant">ChainID Invariant</a></li>
-<li><a href="#only-eoa-invariant">Only EOA Invariant</a></li>
 <li><a href="#message-expiry-invariant">Message Expiry Invariant</a></li>
 </ul>
 </li>
@@ -268,25 +267,27 @@ a block. This would make building atomic cross chain messages more simple by not
 exact state of the block templates between multiple chains together.</p>
 <h2 id="messaging-ends"><a class="header" href="#messaging-ends">Messaging ends</a></h2>
 <h3 id="initiating-messages"><a class="header" href="#initiating-messages">Initiating Messages</a></h3>
-<p>Each Log (also known as <code>event</code> in solidity) forms an initiating message.
+<p>Each <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">Log</a> (also known as <code>event</code> in solidity) forms an initiating message.
 The raw log data froms the <a href="#message-payload">Message Payload</a>.</p>
 <p>Messages are <em>broadcast</em>: the protocol does not enshrine address-targeting within messages.</p>
 <p>The initiating message is uniquely identifiable with an <a href="#message-identifier"><code>Identifier</code></a>,
 such that it can be distinguished from other duplicate messages within the same transaction or block.</p>
 <p>An initiating message may be executed many times: no replay-protection is enshrined in the protocol.</p>
 <h3 id="executing-messages"><a class="header" href="#executing-messages">Executing Messages</a></h3>
-<p>All the information required to satisfy the invariants MUST be included in the calldata
-of the function that is used to execute messages.</p>
+<p>An executing message is represented by the <a href="./predeploys.html#executingmessage-event">ExecutingMessage event</a> that is emitted by
+the <code>CrossL2Inbox</code> predeploy. This event is coupled to a <code>CALL</code> with the payload that is emitted
+within the event, allowing introspection of the data without needing to do call tracing.
+All of the information required to satisfy the invariants MUST be included in this event.</p>
 <p>Both the block builder and the verifier use this information to ensure that all system invariants are held.</p>
 <p>The executing message is verified by checking if there is an existing initiating-message
 that originates at <a href="#message-identifier"><code>Identifier</code></a> with matching <a href="#message-payload">Message Payload</a>.</p>
+<p>Since an executing message is defined by a log, it means that reverting calls to the <code>CrossL2Inbox</code>
+do not count as executing messages.</p>
 <h2 id="messaging-invariants"><a class="header" href="#messaging-invariants">Messaging Invariants</a></h2>
 <ul>
 <li><a href="#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the executing message MUST
 be greater than or equal to the timestamp of the initiating message.</li>
 <li><a href="#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
-<li><a href="#only-eoa-invariant">Only EOA Invariant</a>: The executing message MUST be initiated by an externally owned
-account such that the top level EVM call frame enters the <code>CrossL2Inbox</code></li>
 <li><a href="#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
 message MUST be lower than the initiating message timestamp (as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
@@ -298,19 +299,6 @@ ordered before the initiating message in the same block.</p>
 <p>Without a guarantee on the set of dependencies of a chain, it may be impossible for the derivation
 pipeline to know which chain to source the initiating message from. This also allows for chain operators
 to explicitly define the set of chains that they depend on.</p>
-<h3 id="only-eoa-invariant"><a class="header" href="#only-eoa-invariant">Only EOA Invariant</a></h3>
-<p>The <code>onlyEOA</code> invariant on executing a cross chain message enables static analysis on executing messages.
-This allows for the derivation pipeline and block builders to reject executing messages that do not
-have a corresponding initiating message without needing to do any EVM execution.</p>
-<p>It may be possible to relax this invariant in the future if the block building process is efficient
-enough to do full simulations to gain the information required to verify the existence of the
-initiating transaction. Instead of the <a href="#message-identifier"><code>Identifier</code></a> being included in calldata, it would be emitted
-in an event that can be used after the fact to verify the existence of the initiating message.
-This adds complexity around mempool inclusion as it would require EVM execution and remote RPC
-access to learn if a transaction can enter the mempool.</p>
-<p>This feature could be added in a backwards compatible way by adding a new function to the <code>CrossL2Inbox</code>.</p>
-<p>One possible way to handle explicit denial of service attacks is to utilize identity
-in iterated games such that the block builder can ban identities that submit malicious transactions.</p>
 <h3 id="message-expiry-invariant"><a class="header" href="#message-expiry-invariant">Message Expiry Invariant</a></h3>
 <p>Note: Message Expiry as property of the protocol is in active discussion.
 It helps set a strict bound on total messaging activity to support, but also limits use-cases.
@@ -392,7 +380,7 @@ It is thus important for the graph to be reasonably bounded, such that it can be
 as per the <a href="#chainid-invariant">ChainID invariant</a>.</li>
 <li>Every block cannot depend on future blocks, as per the <a href="#timestamp-invariant">Timestamp invariant</a>.</li>
 <li>Every block has a maximum gas limit, an intrinsic cost per transaction,
-and thus a maximum inward degree of dependencies, as per the <a href="#only-eoa-invariant">Only-EOA invariant</a></li>
+and thus a maximum inward degree of dependencies.</li>
 <li>Every block cannot depend on expired messages, as per the <a href="#message-expiry-invariant">Message expiry invariant</a>.</li>
 </ul>
 <p>The verifier is responsible for filtering out non-canonical parts of the graph.</p>

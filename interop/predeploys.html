@@ -194,6 +194,7 @@
 <li><a href="#_target"><code>_target</code></a></li>
 </ul>
 </li>
+<li><a href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></li>
 <li><a href="#reference-implementation">Reference implementation</a></li>
 <li><a href="#identifier-getters"><code>Identifier</code> Getters</a></li>
 </ul>
@@ -258,10 +259,19 @@ there is no protocol enforcement on what this value is.</p>
 In practice, the <code>_target</code> will be a contract that needs to know the schema of the <code>_msg</code> so that it can be decoded.
 It MAY call back to the <code>CrossL2Inbox</code> to authenticate
 properties about the <code>_msg</code> using the information in the <code>Identifier</code>.</p>
+<h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
+<p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
+to <code>executeMessage</code>.</p>
+<pre><code class="language-solidity">event ExecutingMessage(bytes,bytes);
+</code></pre>
+<p>The data encoded in the event contains the <code>Identifier</code> and the <code>msg</code>.
+The following pseudocode shows the serialization:</p>
+<pre><code class="language-solidity">(bytes memory identifier, bytes memory log) = abi.decode(receipt.data, (bytes, bytes));
+Identifier id = abi.decode(identifier, (Identifier));
+</code></pre>
 <h3 id="reference-implementation"><a class="header" href="#reference-implementation">Reference implementation</a></h3>
 <p>A simple implementation of the <code>executeMessage</code> function is included below.</p>
 <pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes calldata _msg) public payable {
-    require(msg.sender == tx.origin);
     require(_id.timestamp &lt;= block.timestamp);
     require(L1Block.isInDependencySet(_id.chainid));
 
@@ -280,6 +290,8 @@ properties about the <code>_msg</code> using the information in the <code>Identi
     });
 
     require(success);
+
+    emit ExecutingMessage(abi.encode(_id), _msg);
 }
 </code></pre>
 <p>Note that the <code>executeMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
@@ -359,6 +371,8 @@ it is possible to send a message that is not playable.</p>
       tstore(CROSS_DOMAIN_MESSAGE_SOURCE_SLOT, _source)
     }
 
+    sentMessages[messageHash] = true;
+
     bool success = SafeCall.call({
        _target: _target,
        _value: msg.value,
@@ -366,8 +380,6 @@ it is possible to send a message that is not playable.</p>
     });
 
     require(success);
-
-    sentMessages[messageHash] = true;
 }
 </code></pre>
 <p>Note that the <code>relayMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>

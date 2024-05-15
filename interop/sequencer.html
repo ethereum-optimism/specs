@@ -218,13 +218,13 @@ by <a href="./verifier.html">verifiers</a> and <a href="./fault_proof.html">the 
 without adding additional state-transition complexity or cross-chain synchronicity to the protocol.</p>
 <h2 id="block-building"><a class="header" href="#block-building">Block Building</a></h2>
 <p>The goal is to present information in a way where it is as efficient as possible for the block builder to only include
-executing messages that have a corresponding initiating message.</p>
+executing messages that have a corresponding initiating message. It is not possible to enforce the ability to
+statically analyze a transaction, so execution MAY be required to determine the information required to include
+executing messages.</p>
 <h3 id="static-analysis"><a class="header" href="#static-analysis">Static analysis</a></h3>
-<p>The block builder SHOULD use static analysis on executing messages to determine the dependency of the message.</p>
-<p>When a transaction has a top level <a href="https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L52">to</a> field that is equal to the <code>CrossL2Inbox</code>
-and the 4-byte selector in the calldata matches the entrypoint interface,
-the block builder should use the chain-ID that is encoded in the <code>Identifier</code> to determine which chain includes
-the initiating transaction.</p>
+<p>Note that static analysis is never reliable because even if the top level <code>transaction.to</code>
+is equal to the <code>CrossL2Inbox</code>, it is possible that there is a reentrant <code>CALL</code>. The block
+builder SHOULD NOT rely on static analysis for building blocks.</p>
 <h3 id="dependency-confirmations"><a class="header" href="#dependency-confirmations">Dependency confirmations</a></h3>
 <p>The sequencer MAY include an executing message in a block with any desired level
 of confirmation safety around the dependency of the message.</p>
@@ -260,26 +260,35 @@ and can rely on its direct view of the remote chain.</p>
 that the identifier points to, if it trusts the remote canonical chain but not its RPC server.</p>
 <p>The block builder MAY also trust a remote RPC and use the following algorithm
 to verify the existence of the log.</p>
-<p>The following pseudocode represents how to check existence of a log based on an <code>Identifier</code>.</p>
-<pre><code class="language-python">target, message, id = abi.decode(calldata)
+<p>The following pseudocode represents how to check existence of a log based on an <code>Identifier</code>.
+If the value <code>True</code> is returned, then it is safe to include the transaction.</p>
+<pre><code class="language-python">success, receipt = evm.apply_transaction(tx)
 
-eth = clients[id.chainid]
+if not success:
+  return True
 
-if eth is None:
-  return False
+for log in receipt.logs:
+  if is_executing_message(log):
+      id, message = abi.decode(log.data)
 
-logs = eth.getLogs(id.origin, from=id.blocknumber, to=id.blocknumber)
-log = filter(lambda x: x.index == id.logIndex &amp;&amp; x.address == id.origin)
-if len(log) == 0:
-  return False
+      # assumes there is a client for each chain in the dependency set
+      eth = clients[id.chainid]
 
-if message != encode(log[0]):
-  return False
+      if eth is None:
+        return False
 
-block = eth.getBlockByNumber(id.blocknumber)
+      logs = eth.getLogs(id.origin, from=id.blocknumber, to=id.blocknumber)
+      log = filter(lambda x: x.index == id.logIndex &amp;&amp; x.address == id.origin)
+      if len(log) == 0:
+        return False
 
-if id.timestamp != block.timestamp:
-  return False
+      if message != encode(log[0]):
+        return False
+
+      block = eth.getBlockByNumber(id.blocknumber)
+
+      if id.timestamp != block.timestamp:
+        return False
 
 return True
 </code></pre>
