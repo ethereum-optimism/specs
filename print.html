@@ -4418,6 +4418,7 @@ so special care may have to be taken to not duplicate data submissions.</p>
 <li><a href="protocol/predeploys.html#l1feevault">L1FeeVault</a></li>
 <li><a href="protocol/predeploys.html#schemaregistry">SchemaRegistry</a></li>
 <li><a href="protocol/predeploys.html#eas">EAS</a></li>
+<li><a href="protocol/predeploys.html#beacon-block-root">Beacon Block Root</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-12"><a class="header" href="#overview-12">Overview</a></h2>
@@ -4456,6 +4457,7 @@ or <code>Bedrock</code> or <code>Canyon</code>. Deprecated contracts should not 
 <tr><td>L1FeeVault</td><td>0x420000000000000000000000000000000000001a</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
 <tr><td>SchemaRegistry</td><td>0x4200000000000000000000000000000000000020</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
 <tr><td>EAS</td><td>0x4200000000000000000000000000000000000021</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
+<tr><td>BeaconBlockRoot</td><td>0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</td><td>Ecotone</td><td>No</td><td>No</td></tr>
 </tbody></table>
 </div>
 <h2 id="legacymessagepasser"><a class="header" href="#legacymessagepasser">LegacyMessagePasser</a></h2>
@@ -4639,6 +4641,10 @@ protocol.</p>
 <p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/EAS/EAS.sol">Implementation</a></p>
 <p>Address: <code>0x4200000000000000000000000000000000000021</code></p>
 <p>The <code>EAS</code> predeploy implements the <code>Ethereum Attestation Service</code> protocol.</p>
+<h2 id="beacon-block-root"><a class="header" href="#beacon-block-root">Beacon Block Root</a></h2>
+<p>Address: <code>0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</code></p>
+<p>The <code>BeaconBlockRoot</code> predeploy provides access to the L1 beacon block roots. This was added during the
+Ecotone network upgrade and is specified in <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="preinstalls"><a class="header" href="#preinstalls">Preinstalls</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
