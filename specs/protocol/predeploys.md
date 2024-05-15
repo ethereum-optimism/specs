@@ -23,6 +23,7 @@
 - [L1FeeVault](#l1feevault)
 - [SchemaRegistry](#schemaregistry)
 - [EAS](#eas)
+- [RevenueSharer](#revenuesharer)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -69,6 +70,7 @@ or `Bedrock` or `Canyon`. Deprecated contracts should not be used.
 | L1FeeVault                    | 0x420000000000000000000000000000000000001a | Bedrock    | No         | Yes     |
 | SchemaRegistry                | 0x4200000000000000000000000000000000000020 | Bedrock    | No         | Yes     |
 | EAS                           | 0x4200000000000000000000000000000000000021 | Bedrock    | No         | Yes     |
+| RevenueSharer                 | 0x4200000000000000000000000000000000000024 | TBC        | No         | Yes     |
 
 ## LegacyMessagePasser
 
@@ -344,3 +346,13 @@ protocol.
 Address: `0x4200000000000000000000000000000000000021`
 
 The `EAS` predeploy implements the `Ethereum Attestation Service` protocol.
+
+## RevenueSharer
+[Implementation](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/RevenueSharer.sol) 
+ <!---
+TODO: update above link when implementation is merged
+-->
+
+Address: `0x4200000000000000000000000000000000000024`
+
+The `RevenueSharer` predepoly implements Revenue Sharing, disbursing funds from FeeVault contracts to the Optimism Collective.

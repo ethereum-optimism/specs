@@ -34,6 +34,7 @@ Chat with us on the [discussion board!](https://github.com/ethereum-optimism/spe
 - [Bridges](protocol/bridges.md)
 - [Predeploys](protocol/predeploys.md)
 - [Preinstalls](protocol/preinstalls.md)
+- [Revenue Sharing](protocol/revenue-sharing.md)
 - [Glossary](glossary.md)
 
 ### Experimental

@@ -81,7 +81,7 @@ The three types of fees are collected in 3 distinct L2 fee-vault deployments for
 fee payments are not registered as internal EVM calls, and thus distinguished better this way.
 
 These are hardcoded addresses, pointing at pre-deployed proxy contracts.
-The proxies are backed by vault contract deployments, based on `FeeVault`, to route vault funds to L1 securely.
+The proxies are backed by vault contract deployments, based on `FeeVault`. Funds are moved on from these vaults according to [Revenue Sharing](./revenue-sharing.md).
 
 | Vault Name          | Predeploy                                              |
 | ------------------- | ------------------------------------------------------ |
