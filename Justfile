@@ -36,6 +36,9 @@ lint-links:
     		--exclude twitter.com --exclude explorer.optimism.io --exclude linux-mips.org --exclude vitalik.ca \
     		--exclude-mail /input/README.md "/input/specs/**/*.md"
 
+build:
+    mdbook build
+
 # Serves the mdbook locally
 serve *args='':
     mdbook serve $@

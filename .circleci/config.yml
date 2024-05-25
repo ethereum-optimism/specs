@@ -36,6 +36,9 @@ jobs:
       - run:
           name: markdown toc
           command: just lint-specs-toc-check
+      - run:
+          name: build book
+          command: just build
   lint-links:
     machine:
       image: <<pipeline.parameters.base_image>>
