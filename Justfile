@@ -6,6 +6,7 @@ default:
 
 # Install required dependencies
 deps:
+    cargo install mdbook mdbook-katex mdbook-linkcheck mdbook-mermaid
     pnpm i --frozen-lockfile
 
 # Lint the workspace for all available targets
@@ -35,6 +36,9 @@ lint-links:
     docker run --init -it -v `pwd`:/input lycheeverse/lychee --verbose --no-progress --exclude-loopback \
     		--exclude twitter.com --exclude explorer.optimism.io --exclude linux-mips.org --exclude vitalik.ca \
     		--exclude-mail /input/README.md "/input/specs/**/*.md"
+
+build:
+    mdbook build
 
 # Serves the mdbook locally
 serve *args='':
