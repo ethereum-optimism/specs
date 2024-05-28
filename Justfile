@@ -6,6 +6,7 @@ default:
 
 # Install required dependencies
 deps:
+    cargo install mdbook mdbook-katex mdbook-linkcheck mdbook-mermaid
     pnpm i --frozen-lockfile
 
 # Lint the workspace for all available targets
