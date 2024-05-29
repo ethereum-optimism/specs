@@ -1,10 +1,10 @@
 * @protolambda @tynes @ajsutton @sebastianst @mslipper
 
-batcher.md @sebastianst @trianglesphere
+batcher.md @sebastianst @protolambda
 bridges.md @tynes @maurelian
 deposits.md @protolambda @tynes
-derivation.md @protolambda @trianglesphere
-exec-engine.md @sebastianst @trianglesphere
+derivation.md @protolambda @sebastianst
+exec-engine.md @sebastianst @protolambda
 # glossary.md
 guaranteed-gas-market.md @tynes @maurelian
 # introduction.md
@@ -12,13 +12,13 @@ messengers.md @tynes @maurelian
 # overview.md
 predeploys.md @tynes
 proposals.md @ajsutton @clabby @tynes @maurelian
-rollup-node-p2p.md @sebastianst @trianglesphere
-rollup-node.md @sebastianst @trianglesphere
+rollup-node-p2p.md @sebastianst @protolambda
+rollup-node.md @sebastianst @protolambda
 safe-liveness-checking.md @maurelian @mds1
-span-batches.md @sebastianst @trianglesphere
+span-batches.md @sebastianst @protolambda
 superchain-configuration.md @protolambda @tynes
 superchain-upgrades.md @protolambda @tynes
-system_config.md @sebastianst @trianglesphere
+system_config.md @sebastianst @protolambda
 withdrawals.md @tynes @maurelian @clabby
 
 # Fault Proofs
