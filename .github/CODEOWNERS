@@ -12,13 +12,13 @@ messengers.md @tynes @maurelian
 # overview.md
 predeploys.md @tynes
 proposals.md @ajsutton @clabby @tynes @maurelian
-rollup-node-p2p.md @sebastianst @protolambda
+rollup-node-p2p.md @sebastianst @protolambda @axelKingsley
 rollup-node.md @sebastianst @protolambda @axelKingsley 
 safe-liveness-checking.md @maurelian @mds1
-span-batches.md @sebastianst @protolambda @axelKingsley 
+span-batches.md @sebastianst @axelKingsley 
 superchain-configuration.md @protolambda @tynes
 superchain-upgrades.md @protolambda @tynes
-system_config.md @sebastianst @protolambda
+system_config.md @sebastianst @protolambda @tynes
 withdrawals.md @tynes @maurelian @clabby
 
 # Fault Proofs
