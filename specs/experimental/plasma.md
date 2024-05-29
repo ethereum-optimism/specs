@@ -284,11 +284,10 @@ The DA manager maintains an internal state of all the input commitments in the c
 as they are validated by the derivation pipeline.
 
 The L2 chain can be marked as finalized when the L1 block in which commitments can no longer be invalidated
-becomes finalized. Previously L2 blocks are fully derived from an L1 block when the batch is fully available.
-Plasma commitments are only partially derived when the commitment is found in a L1 block ("plasma safe"), and
-the become fully derived when that commitment can no longer be invalidated ("safe"). Then finalization can
-proceed as normal: when the L1 block than an L2 block is fully derived from becomes finalized, the L2 block
-can be marked as finalized.
+becomes finalized. Without Plasma Mode, L2 blocks are safe when the batch is on L1. Plasma commitments are
+only "optimistically safe" when the commitment is found in a L1 block. Plasma commitments then become safe
+when that commitment can no longer be invalidated. Then finalization can proceed as normal: when the L1 block
+that an L2 block is derived from becomes finalized, the L2 block can be marked as finalized.
 
 The engine queue will maintain a longer buffer of L2 blocks waiting for the DA window to expire
 and the L1 block with the commitment to be finalized in order to signal finality.
