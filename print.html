@@ -8501,12 +8501,16 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
 <ul>
 <li><a href="interop/predeploys.html#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
+<li><a href="interop/predeploys.html#sendexpire-invariants"><code>sendExpire</code> Invariants</a></li>
+<li><a href="interop/predeploys.html#relayexpire-invariants"><code>relayExpire</code> Invariants</a></li>
 <li><a href="interop/predeploys.html#message-versioning">Message Versioning</a></li>
 <li><a href="interop/predeploys.html#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></li>
 <li><a href="interop/predeploys.html#interfaces">Interfaces</a>
 <ul>
 <li><a href="interop/predeploys.html#sending-messages">Sending Messages</a></li>
 <li><a href="interop/predeploys.html#relaying-messages">Relaying Messages</a></li>
+<li><a href="interop/predeploys.html#sending-expired-message-hashes">Sending Expired Message Hashes</a></li>
+<li><a href="interop/predeploys.html#relaying-expired-message-hashes">Relaying Expired Message Hashes</a></li>
 </ul>
 </li>
 </ul>
@@ -8603,6 +8607,7 @@ properties about the <code>_msg</code>.</p>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000023</code></td></tr>
 <tr><td><code>MESSAGE_VERSION</code></td><td><code>uint256(0)</code></td></tr>
+<tr><td><code>EXPIRY_WINDOW</code></td><td><code>uint256(7200)</code></td></tr>
 </tbody></table>
 </div>
 <p>The <code>L2ToL2CrossDomainMessenger</code> is a higher level abstraction on top of the <code>CrossL2Inbox</code> that
@@ -8615,6 +8620,21 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 <li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
 <li>The <code>_destination</code> chain id MUST be equal to the local chain id</li>
 <li>The <code>CrossL2Inbox</code> cannot call itself</li>
+</ul>
+<h3 id="sendexpire-invariants"><a class="header" href="#sendexpire-invariants"><code>sendExpire</code> Invariants</a></h3>
+<ul>
+<li>The message MUST have not been successfully relayed</li>
+<li>The <code>EXPIRY_WINDOW</code> MUST have elapsed since the message first failed to be relayed</li>
+<li>The expired message MUST not have been previously sent back to source</li>
+<li>The expired message MUST not be relayable after being sent back</li>
+</ul>
+<h3 id="relayexpire-invariants"><a class="header" href="#relayexpire-invariants"><code>relayExpire</code> Invariants</a></h3>
+<ul>
+<li>Only callable by the <code>CrossL2Inbox</code></li>
+<li>The message source MUST be <code>block.chainid</code></li>
+<li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
+<li>The <code>expiredMessages</code> mapping MUST only contain messages that originated in this chain and failed to be relayed on destination.</li>
+<li>Already expired messages MUST NOT be relayed.</li>
 </ul>
 <h3 id="message-versioning-1"><a class="header" href="#message-versioning-1">Message Versioning</a></h3>
 <p>Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
@@ -8659,6 +8679,10 @@ the <code>_destination</code> equal to <code>block.chainid</code> to ensure that
 chain. The hash of the message is used for replay protection.</p>
 <p>It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
 it is possible to send a message that is not playable.</p>
+<p>When a message fails to be relayed, only the timestamp at which it
+first failed along with its source chain id are stored. This is
+needed for calculation of the failed message's expiry. The source chain id
+is also required to simplify the function signature of <code>sendExpire</code>.</p>
 <pre><code class="language-solidity">function relayMessage(uint256 _destination, uint256 _source, uint256 _nonce, address _sender, address _target, bytes memory _message) external payable {
     require(msg.sender == address(CROSS_L2_INBOX));
     require(_destination == block.chainid);
@@ -8680,12 +8704,75 @@ it is possible to send a message that is not playable.</p>
        _calldata: _message
     });
 
-    require(success);
-}
+    if (!success) {
+      emit FailedRelayedMessage(messageHash);
+
+      if (failedMessages[messageHash].timestamp == 0) {
+        failedMessages[messageHash] = FailedMessage({timestamp: block.timestamp, sourceChainId: _source});
+      }
+
+      return;
+    }
+
+    successfulMessages[messageHash] = true;
+    delete failedMessages[messageHash];
+    emit RelayedMessage(messageHash);
+};
 </code></pre>
 <p>Note that the <code>relayMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
 <p>To enable cross chain authorization patterns, both the <code>_sender</code> and the <code>_source</code> MUST be exposed via <code>public</code>
 getters.</p>
+<h4 id="sending-expired-message-hashes"><a class="header" href="#sending-expired-message-hashes">Sending Expired Message Hashes</a></h4>
+<p>When expiring a message that failed to be relayed on the destination chain
+to the source chain, it's crucial to ensure the message can only be sent back
+to the <code>L2ToL2CrossDomainMessenger</code> contract in its source chain.</p>
+<p>This function has no auth, which allows anyone to expire a given message hash.
+The <code>EXPIRY_WINDOW</code> variable is added to give the users enough time to replay their
+failed messages and to prevent malicious actors from performing a griefing attack
+by expiring messages upon arrival.</p>
+<p>Once the expired message is sent to the source chain, the message on the local chain is set
+as successful in the <code>successfulMessages</code> mapping to ensure non-replayability and deleted
+from <code>failedMessages</code>. An initiating message is then emitted to <code>relayExpire</code></p>
+<pre><code class="language-solidity">function sendExpire(bytes32 _expiredHash) external nonReentrant {
+    if (successfulMessages[_expiredHash]) revert MessageAlreadyRelayed();
+
+    (uint256 messageTimestamp, uint256 messageSource) = failedMessages[_expiredHash];
+
+    if (block.timestamp &lt;  messageTimestamp + EXPIRY_WINDOW) revert ExpiryWindowHasNotEnsued();
+
+    delete failedMessages[_expiredHash];
+    successfulMessages[_expiredHash] = true;
+
+    bytes memory data = abi.encodeCall(
+        L2ToL2CrossDomainMessenger.expired,
+        (_expiredHash, messageSource)
+    );
+    emit SentMessage(data);
+}
+</code></pre>
+<h4 id="relaying-expired-message-hashes"><a class="header" href="#relaying-expired-message-hashes">Relaying Expired Message Hashes</a></h4>
+<p>When relaying an expired message, only message hashes
+of actual failed messages should be stored, for this we must ensure the origin
+of the log, and caller are all expected contracts.</p>
+<p>It's also important to ensure only the hashes of messages that were initiated
+in this chain are accepted.</p>
+<p>If all checks have been successful, the message has is stored in the
+<code>expiredMessages</code> mapping. This enables smart contracts to read from it and
+check whether a message expired or not, and handle this case accordingly.</p>
+<pre><code class="language-solidity">function relayExpire(bytes32 _expiredHash, uint256 _messageSource) external {
+    if (_messageSource != block.chainid) revert IncorrectMessageSource();
+    if (expiredMessages[_expiredHash] != 0) revert ExpiredMessageAlreadyRelayed();
+    if (msg.sender != Predeploys.CROSS_L2_INBOX) revert ExpiredMessageCallerNotCrossL2Inbox();
+
+    if (CrossL2Inbox(Predeploys.CROSS_L2_INBOX).origin() != Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER) {
+        revert CrossL2InboxOriginNotL2ToL2CrossDomainMessenger();
+    }
+
+    expiredMessages[_expiredHash] = block.timestamp;
+
+    emit MessageHashExpired(_expiredHash);
+}
+</code></pre>
 <h2 id="l1block-2"><a class="header" href="#l1block-2">L1Block</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000015</code></td></tr>
