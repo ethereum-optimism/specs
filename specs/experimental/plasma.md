@@ -281,17 +281,14 @@ and users must use the “finalized” label for a guarantee that their state ca
 With Plasma mode on, the engine queue does receives finality signals from the L1 RPC AND
 from the DA manager that keeps track of challenges.
 The DA manager maintains an internal state of all the input commitments in the current `challengeWindow`
-as they are validated by the derivation pipeline. In addition, it filters challenge events to calculate
-when commitments are challenged/resolved and elect the next finalized L1 block such that:
+as they are validated by the derivation pipeline.
 
-```python
-if active_challenges_count > 0
-    challenge = findOldestActiveChallenge(active_challenges)
-    finality_delay = (challenge.block_number - challenge.commitment_block_number) + resolve_window + 1
-    l1_finalized_block_number = min(latest_l1_block_number - finality_delay, finalized_l1_block_number)
-else 
-    l1_finalized_block_number = min(latest_l1_block_number - challenge_window, finalized_l1_block_number)
-```
+The L2 chain can be marked as finalized when the L1 block in which commitments can no longer be invalidated
+becomes finalized. Previously L2 blocks are fully derived from an L1 block when the batch is fully available.
+Plasma commitments are only partially derived when the commitment is found in a L1 block ("plasma safe"), and
+the become fully derived when that commitment can no longer be invalidated ("safe"). Then finalization can
+proceed as normal: when the L1 block than an L2 block is fully derived from becomes finalized, the L2 block
+can be marked as finalized.
 
 The engine queue will maintain a longer buffer of L2 blocks waiting for the DA window to expire
 and the L1 block with the commitment to be finalized in order to signal finality.
