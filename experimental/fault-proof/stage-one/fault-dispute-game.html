@@ -231,7 +231,7 @@
 <!-- Glossary References -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The Fault Dispute Game (FDG) is a specific type of <a href="dispute-game-interface.html">dispute game</a> that verifies the
-validity of a root claim by iteratively bisecting over <a href="../../../glossary.html#L2-output-root">output roots</a> and execution traces of single
+validity of a root claim by iteratively bisecting over <a href="../../../glossary.html#l2-output-root">output roots</a> and execution traces of single
 block state transitions down to a single instruction step. It relies on a Virtual Machine (VM) to falsify invalid
 claims made at a single instruction step.</p>
 <p>Actors, i.e. Players, interact with the game by making claims that dispute other claims in the FDG.
@@ -258,8 +258,8 @@ for each <span class="katex"><span class="katex-html" aria-hidden="true"><span c
 Every execution trace has a unique starting state, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, that's preset to a FDG implementation.
 We refer to this state as the <strong>ABSOLUTE_PRESTATE</strong>.</p>
 <h3 id="claims"><a class="header" href="#claims">Claims</a></h3>
-<p>Claims assert an <a href="../../../glossary.html#L2-output-root">output root</a> or the state of the FPVM at a given instruction. This is represented as
-a <code>Hash</code> type, a <code>bytes32</code> representing either an <a href="../../../glossary.html#L2-output-root">output root</a> or a commitment to the last VM state in a
+<p>Claims assert an <a href="../../../glossary.html#l2-output-root">output root</a> or the state of the FPVM at a given instruction. This is represented as
+a <code>Hash</code> type, a <code>bytes32</code> representing either an <a href="../../../glossary.html#l2-output-root">output root</a> or a commitment to the last VM state in a
 trace. A FDG is initialized with an output root that corresponds to the state of L2 at a given L2 block number, and
 execution trace subgames at <code>SPLIT_DEPTH + 1</code> are initialized with a claim that commits to the entire execution trace
 between two consecutive output roots (a block <code>n -&gt; n+1</code> state transition). As we'll see later, there can be multiple
@@ -297,14 +297,14 @@ dispute game:</p>
 <li>Output Roots</li>
 <li>Execution Trace Commitments</li>
 </ol>
-<p>At and above the split depth, all subgame roots correspond to <a href="../../../glossary.html#L2-output-root">output roots</a>, or commitments to the full
+<p>At and above the split depth, all subgame roots correspond to <a href="../../../glossary.html#l2-output-root">output roots</a>, or commitments to the full
 state of L2 at a given L2 block number. Below the split depth, subgame roots correspond to commitments to the fault
 proof VM's state at a given instruction step.</p>
 <h3 id="game-tree"><a class="header" href="#game-tree">Game Tree</a></h3>
 <p>The Game Tree is a binary tree of positions. Every claim in the DAG references a position in the Game Tree.
 The Game Tree has a split depth and maximum depth, <code>SPLIT_DEPTH</code> and <code>MAX_GAME_DEPTH</code> respectively, that are both
 preset to an FDG implementation. The split depth defines the maximum depth at which claims about
-<a href="../../../glossary.html#L2-output-root">output roots</a> can occur, and below it, execution trace bisection occurs. Thus, the Game Tree contains
+<a href="../../../glossary.html#l2-output-root">output roots</a> can occur, and below it, execution trace bisection occurs. Thus, the Game Tree contains
 <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9324em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> positions, where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span> is the <code>MAX_GAME_DEPTH</code> (unless <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>, in which case there's only 1 position).</p>
 <p>The full game tree, with a layer of the tree allocated to output bisection, and sub-trees after an arbitrary split
 depth, looks like:</p>
@@ -319,7 +319,7 @@ bits is a unique bit pattern, allowing a unique identifier for each node in the 
 <li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">i</span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> is a function returning the index of the position at its depth (starting from the left).</li>
 </ul>
 <p>Positions at the deepest level of the game tree correspond to indices in the execution trace, whereas claims at the
-split depth represent single L2 blocks' <a href="../../../glossary.html#L2-output-root">output roots</a>.
+split depth represent single L2 blocks' <a href="../../../glossary.html#l2-output-root">output roots</a>.
 Positions higher up the game tree also cover the deepest, right-most positions relative to the current position.
 We refer to this coverage as the <strong>trace index</strong> of a Position.</p>
 <blockquote>
@@ -361,7 +361,7 @@ Team members share a common goal regarding the game's outcome. Players interact 
 <p>A Move is a challenge against an existing claim and must include an alternate claim asserting a different trace.
 Moves can either be attacks or defenses and serve to update to DAG by adding nodes and edges targeting the disputed
 claim.</p>
-<p>Moves within the fault dispute game can claim two separate values: <a href="../../../glossary.html#L2-output-root">output roots</a> and execution trace
+<p>Moves within the fault dispute game can claim two separate values: <a href="../../../glossary.html#l2-output-root">output roots</a> and execution trace
 commitments. At and above the <code>SPLIT_DEPTH</code>, claims correspond to output roots, while below the split depth, they
 correspond to execution trace commitments.</p>
 <p>Initially, claims added to the DAG are <em>uncontested</em> (i.e. not <strong>countered</strong>). Once a move targets a claim, that claim
