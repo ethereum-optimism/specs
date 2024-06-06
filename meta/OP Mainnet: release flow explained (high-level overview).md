@@ -1,7 +1,8 @@
-👣 Steps to take in order to properly manage the entire releases process for the OP mainnet:
+### 👣 Steps to take in order to properly manage the entire releases process for the OP mainnet:
+
 ## 1. Governance threshold check
 
-- As you first step, you need to look into governance threshold to know will your feature pass and understand the all the governance needs for your proposal.
+- As you first step, you will need to look into governance threshold to know will your feature pass and understand the all the governance needs for your proposal.
     
     *Good reads on the topic can be found: [OPerating manual](https://github.com/ethereum-optimism/OPerating-manual/tree/main?tab=readme-ov-file), [Optimism Agora](https://vote.optimism.io/)*
     
@@ -46,7 +47,7 @@ The threshold for which changes require a governance vote is based on the User P
     - Proposal is posted on Gov forums as a draft
     - Draft is finalized, shared on all relevant forums and all open comments are addressed
 
-# Process steps explained for all required checks:
+# Process steps explained for all required checks that we mentioned:
 
 ## 1. Determine Governance Threshold (Framework for Protocol Upgrades)
 
@@ -75,6 +76,7 @@ Using this framework, we can define the following rough upgrade types and whethe
     - EIP-4844
     - Shanghai
     - Any L1 upgrade that modifies a contract under the control of the Security Council. The Security Council cannot make any changes to L1 unless they are approved by governance *or* the result of an active or impending security issue.
+ 
 - **Predeploy Updates**
     
     **Vote required:** Yes
@@ -107,11 +109,11 @@ Using this framework, we can define the following rough upgrade types and whethe
     Network-wide features introduce functionality that may require coordination with alt-client developers, but without risk of a chain split. As such these changes satisfy all three user protections above as long as they are backwards-compatible and meet our bar for engineering rigor.
     
     Examples:
-    
     - Snap sync
+
 - **Changes Affecting Transaction Inclusion/Ordering**
     
-    **Vote required:** **Optional** - you proposal should be shared with other teams and presented
+    **Vote required:** **Optional** - you proposal should be shared with other teams and presented on a relevant sync call
     
     Even though the mempool is technically not part of consensus, it affects the way in which transactions get included into the chain and can negatively effect user experience. As a result, unilateral changes that affect transaction ordering violate protection two above and therefore need a vote. If the community detects that nonstandard ordering software is being run, it is grounds for removal from the sequencer allowlist.
     Examples:
