@@ -3,7 +3,7 @@
 batcher.md @sebastianst @axelKingsley
 bridges.md @tynes @maurelian
 deposits.md @protolambda @tynes
-derivation.md @protolambda @sebastianst @ajsutton 
+derivation.md @protolambda @sebastianst @ajsutton
 exec-engine.md @protolambda @sebastianst @ajsutton
 # glossary.md
 guaranteed-gas-market.md @tynes @maurelian
@@ -13,13 +13,13 @@ messengers.md @tynes @maurelian
 predeploys.md @tynes
 proposals.md @ajsutton @clabby @tynes @maurelian
 rollup-node-p2p.md @sebastianst @protolambda @axelKingsley
-rollup-node.md @sebastianst @protolambda @axelKingsley 
+rollup-node.md @sebastianst @protolambda @axelKingsley
 safe-liveness-checking.md @maurelian @mds1
-span-batches.md @sebastianst @axelKingsley 
+span-batches.md @sebastianst @axelKingsley
 superchain-configuration.md @protolambda @tynes
 superchain-upgrades.md @protolambda @tynes @axelKingsley @sebastianst
 system_config.md @sebastianst @protolambda @tynes
 withdrawals.md @tynes @maurelian @clabby
 
 # Fault Proofs
-/specs/experimental/fault-proof @ajsutton @clabby @inphi @refcell @mbaxter
+/specs/fault-proof @ajsutton @clabby @inphi @refcell @mbaxter
