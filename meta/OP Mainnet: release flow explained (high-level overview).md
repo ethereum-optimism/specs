@@ -1,11 +1,10 @@
 👣 Steps to take in order to properly manage the entire releases process for the OP mainnet:
 ## 1. Governance threshold check
 
-- [ ]  As you first step, you need to look into governance threshold to know will your feature pass and understand the all the governance needs for your proposal.
+- As you first step, you need to look into governance threshold to know will your feature pass and understand the all the governance needs for your proposal.
     
     *Good reads on the topic can be found: [OPerating manual](https://github.com/ethereum-optimism/OPerating-manual/tree/main?tab=readme-ov-file), [Optimism Agora](https://vote.optimism.io/)*
     
-
 ### Process explainer for this step:
 
 The threshold for which changes require a governance vote is based on the User Protections clause of the Law of Chains. In summary, these protections are:
@@ -14,115 +13,40 @@ The threshold for which changes require a governance vote is based on the User P
 2. **Security, Uptime, and Liveness:** Block production, sequencing, and bridging must satisfy uniform standards for security, uptime, and liveness across all OP Chains. This means that  changes that could cause users to be unable to transact (e.g., changing the gas limit to something untenable) are subject to a governance vote.
 3. **Universal, Governance-Approved Upgrades:** OP Chains must upgrade together under OP Stack releases that are approved by governance. Any upgrades that aren’t backwards compatible are therefore subject to a governance vote.
 
-Using this framework, we can define the following rough upgrade types and whether or not each upgrade type needs a governance vote. If you are uncertain if an upgrade requires governance approval, please request delegate feedback on the forum.
-- **Consensus Changes**
-    
-    **Vote required:** Yes
-    
-    Consensus changes modify the state transition function or messaging validity. As such, they must be approved by governance to satisfy protection one above. 
-    
-    For example:
-    
-    - Bedrock
-    - EIP-4844
-    - Shanghai
-    - Any L1 upgrade that modifies a contract under the control of the Security Council. The Security Council cannot make any changes to L1 unless they are approved by governance *or* the result of an active or impending security issue.
-- **Predeploy Updates**
-    
-    **Vote required:** Yes
-    
-    Predeploy updates must be approved by governance in order to satisfy protection three above. More specifically, changes to predeploys must be rolled out across all OP Chains in order to prevent functionality on one chain from diverging from all the others.
-    
-- **Cross-Chain Contracts**
-    
-    **Vote required:** No
-    
-    “preinstalls” refers to smart contracts like Gnosis SAFE or `create2deployer` which are deployed at the same address across multiple chains. These contracts do not require a governance vote because anyone can deploy them at any time on any chain. This is true even if we decide to add these contracts to the genesis state, since someone could always deploy them after the chain comes online.
-    Relevant link to review the current preinstalls we have is [here](https://github.com/ethereum-optimism/specs/blob/main/specs/protocol/preinstalls.md)
-    
-    Note that any changes to the `0x42...` namespace *do* need to go through governance, as do any contract deployments that require irregular state transitions.
-    
-- **Parameter Updates**
-    
-    **Vote required:** Change Dependent
-    
-    Parameter updates that impact protections one or two above will need to be approved by governance. For example, setting the gas limit or changing the EIP-1559 parameters will require governance approval since modifying these parameters can prevent users from transacting.
-    
-    Examples:
-    
-    - Updating the ProxyAdmin/challenger/guardian addresses requires a governance vote.
-    - Updating gas parameters require a governance vote until they’re explicitly configurable by the Chain Governor
-    - Updating the batcher/proposer addresses (among addresses already on the allowlist) do not require a governance vote as long as they are within the set of governance-approved addresses
-- **Non-Consensus Client Features**
-    
-    **Vote required:** No
-    
-    Network-wide features introduce functionality that may require coordination with alt-client developers, but without risk of a chain split. As such these changes satisfy all three user protections above as long as they are backwards-compatible and meet our bar for engineering rigor.
-    
-    Examples:
-    
-    - Snap sync or similar
-- **Changes Affecting Transaction Inclusion/Ordering**
-    
-    **Vote required:** Yes
-    
-    Even though the mempool is technically not part of consensus, it affects the way in which transactions get included into the chain and can negatively effect user experience. As a result, unilateral changes that affect transaction ordering violate protection two above and therefore need a vote. If the community detects that nonstandard ordering software is being run, it is grounds for removal from the sequencer allowlist.
-    
-    Examples:
-    
-    - Moving to a public mempool
-    - Running custom PBS/transaction pool software
-- **Non-Consensus, No-Coordination, Non-Ordering Changes**
-    
-    **Vote required:** No
-    
-    These changes are a catch-all for any change that doesn’t modify consensus or require coordination. These changes can be rolled out unilaterally without input from governance since they do not impact any of the protections described above.
-***Notes and pointes for the steps that will help you to d*etermine governance threshold:**
-
-<aside>
-📌 *The above sets are not always mutually exclusive. If a given change might fall into multiple buckets, if any one of them requires a vote, then the change requires a vote. If you are unsure if something requires a governance vote, please check it on relevance governance forums*
-
-</aside>
-
-<aside>
-📌 All upgrades which require the Security Council to take action require a governance vote, if they are not an emergency bugfix.
-
-</aside>
-
 ## 2. Call everything done on the development side
 
-- [ ]  Pass all check on the engineering criteria - in order to call something done on the development side, you need to go over the listed steps:
-    - [ ]  Code you have is implementation-complete 🏁
-    - [ ]  Code has automated tests, that are well explained
-    - [ ]  Code is behind a feature-flag 🚩
-    - [ ]  You have updated protocol specs and share it for reviews from the security team: https://github.com/ethereum-optimism/specs/tree/main/specs
-    - [ ]  Code has run on your internal-devnet for as long as necessary for you to test all features
-    - [ ]  Code has run on Goerli or Sepolia for a week and didn’t experience and bugs/performance/stability issues
+- Pass all check on the engineering criteria - in order to call something done on the development side, you need to go over the listed steps:
+  - Code you have is implementation-complete 🏁
+  - Code has automated tests, that are well explained
+  - Code is behind a feature-flag 🚩
+  - You have updated protocol specs and share it for reviews from the security team: https://github.com/ethereum-optimism/specs/tree/main/specs
+  - Code has run on your internal-devnet for as long as necessary for you to test all features
+  - Code has run on Goerli or Sepolia for a week and didn’t experience and bugs/performance/stability issues
 
     ## 3. Hardfork preparation (optional)
 
-- [ ]  Hardfork is prepared *[If needed - hardforks are needed if we are adding major/protocol-level changes to our stack]*
-    - [ ]  Named hardfork is created
-    - [ ]  Code has been configured to activate with the named hardfork
-    - [ ]  Upgrades of Fault Proof systems are prepared
+- Hardfork is prepared *[If needed - hardforks are needed if we are adding major/protocol-level changes to our stack]*
+   - Named hardfork is created
+   - Code has been configured to activate with the named hardfork
+   - Ugrades of Fault Proof systems are prepared
 
     ## 4. Security standards and criteria check are done
 
-- [ ]  Security criteria passed
-    - [ ]  The TL responsible for the launch needs to write a [Failure Mode Analyses (FMAs)](https://www.notion.so/Failure-Mode-Analyses-FMAs-1fb9f65a13e542e5b48af6c850763494?pvs=21) (FMA) describing failure modes and recovery paths for the launch.
-        - [ ]  [If Required] Security has signed-off on the FMA
-    - [ ]  [If Required] Audits are completed and issues fixed
-    - [ ]  [If Required] Security monitoring and block history integrity checks updated to support the new feature.
+-   Security criteria passed
+    - The TL responsible for the launch needs to write a [Failure Mode Analyses (FMAs)](https://www.notion.so/Failure-Mode-Analyses-FMAs-1fb9f65a13e542e5b48af6c850763494?pvs=21) (FMA) describing failure modes and recovery paths for the launch.
+        - [If Required] Security has signed-off on the FMA
+    - [If Required] Audits are completed and issues fixed
+    - [If Required] Security monitoring and block history integrity checks updated to support the new feature.
 
 ## 5. Governance standards and criteria check are done if
 
-- [ ]  [If Vote Required] Governance criteria passed
-    - [ ]  Governance proposal is created and shared [here](https://gov.optimism.io/c/other-proposals/protocol-upgrade/58)
-    - [ ]  FND approves the proposal
-    - [ ]  Proposal is posted on Gov forums as a draft
-    - [ ]  Draft is finalized, shared on all relevant forums and all open comments are addressed
+-   [If Vote Required] Governance criteria passed
+    - Governance proposal is created and shared [here](https://gov.optimism.io/c/other-proposals/protocol-upgrade/58)
+    - FND approves the proposal
+    - Proposal is posted on Gov forums as a draft
+    - Draft is finalized, shared on all relevant forums and all open comments are addressed
 
-# Process steps explained:
+# Process steps explained for all required checks:
 
 ## 1. Determine Governance Threshold (Framework for Protocol Upgrades)
 
@@ -199,9 +123,20 @@ Using this framework, we can define the following rough upgrade types and whethe
     **Vote required:** No
     
     These changes are a catch-all for any change that doesn’t modify consensus or require coordination. These changes can be rolled out unilaterally without input from governance since they do not impact any of the protections described above.
+
+  
+<aside>
+📌 The above sets are not always mutually exclusive. If a given change might fall into multiple buckets, if any one of them requires a vote, then the change requires a vote. If you are unsure if something requires a governance vote, please check it on relevance governance forums
+
+</aside>
+
+<aside>
+
+📌 All upgrades which require the Security Council to take action require a governance vote, if they are not an emergency bugfix.
+</aside>
     
 
-*Note: The above sets are not always mutually exclusive. If a given change might fall into multiple buckets, if any one of them requires a vote, then the change requires a vote. If you are unsure if something requires a governance vote, ask on our core contributors Discord or check with @Ben Edgington,  @Bobby Dresser or @Ben Jones for further steps*
+***Note**: If you are unsure if something requires a governance vote, ask on our core contributors Discord or check with @Ben Edgington,  @Bobby Dresser or @Ben Jones for further steps*
 
 ## 2. Do the Implementation Work
 
@@ -237,23 +172,22 @@ If a named hardfork doesn’t exist, we’ll need to create one. This involves m
 ## 4. Pass Security Criteria
 
 <aside>
-🔑 We (the security team) strongly recommend starting work on the security criteria early in the process to avoid surprises which might lead to delays.
+We (as the security team) strongly recommend starting work on the security criteria early in the process to avoid surprises which might lead to delays.
 
 </aside>
 
 It is up to the tech lead responsible for the launch to decide and get approval from the Project Board on whether to write an FMA and whether to require approval from security on the FMA. If an FMA is needed:
 
-- [ ]  write the [Failure Modes and Recovery Paths Analysis](https://www.notion.so/Failure-Mode-Analyses-FMAs-1fb9f65a13e542e5b48af6c850763494?pvs=21)
+- [ ]  write the doc [Failure Modes and Recovery Paths Analysis](https://www.notion.so/Failure-Mode-Analyses-FMAs-1fb9f65a13e542e5b48af6c850763494?pvs=21)
 - [ ]  [If Required] Security has signed-off on the analysis
 - [ ]  [If Applicable] Audits are completed and issues fixed
     
-    ### Failure Modes and Recovery Paths Analysis
+### Failure Modes and Recovery Paths Analysis
     
-    This analysis provides a description of the risks involved with the changes that developers are introducing, and the mitigations which can be taken to prevent issues or recover from them if they occur. 
+This analysis provides a description of the risks involved with the changes that developers are introducing, and the mitigations which can be taken to prevent issues or recover from them if they occur. 
     
-    The analysis template we have will guide you through the process, which should be completed prior to audits or testnet deployments. Please create a failure modes analysis by following the process at [Failure Mode Analyses (FMAs)](https://www.notion.so/Failure-Mode-Analyses-FMAs-1fb9f65a13e542e5b48af6c850763494?pvs=21).
+The analysis template we have will guide you through the process, which should be completed prior to audits or testnet deployments. Please create a failure modes analysis by following the process at [Failure Mode Analyses (FMAs)](https://www.notion.so/Failure-Mode-Analyses-FMAs-1fb9f65a13e542e5b48af6c850763494?pvs=21).
     
-
 ### Auditing requirements
 
 The framework that decides whether or not an audit is necessary is described in [this guide.](https://gov.optimism.io/t/op-labs-audit-framework-when-to-get-external-security-review-and-how-to-prepare-for-it/6864)
