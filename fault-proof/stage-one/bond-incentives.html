@@ -1,0 +1,415 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Bond Incentives - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../../background.html"><strong aria-hidden="true">2.</strong> Background</a></li><li class="chapter-item expanded "><a href="../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">3.1.</strong> Network Upgrades</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/regolith/overview.html"><strong aria-hidden="true">3.1.1.</strong> Regolith</a></li><li class="chapter-item expanded "><a href="../../protocol/canyon/overview.html"><strong aria-hidden="true">3.1.2.</strong> Canyon</a></li><li class="chapter-item expanded "><a href="../../protocol/delta/overview.html"><strong aria-hidden="true">3.1.3.</strong> Delta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/delta/span-batches.html"><strong aria-hidden="true">3.1.3.1.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/ecotone/overview.html"><strong aria-hidden="true">3.1.4.</strong> Ecotone</a></li><li class="chapter-item expanded "><a href="../../fjord/overview.html"><strong aria-hidden="true">3.1.5.</strong> Fjord</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fjord/exec-engine.html"><strong aria-hidden="true">3.1.5.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../fjord/derivation.html"><strong aria-hidden="true">3.1.5.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../fjord/predeploys.html"><strong aria-hidden="true">3.1.5.3.</strong> Predeploys</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/bridges.html"><strong aria-hidden="true">3.2.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/messengers.html"><strong aria-hidden="true">3.2.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../protocol/deposits.html"><strong aria-hidden="true">3.2.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../protocol/withdrawals.html"><strong aria-hidden="true">3.2.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.2.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../protocol/proposals.html"><strong aria-hidden="true">3.2.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.3.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/exec-engine.html"><strong aria-hidden="true">3.3.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/rollup-node.html"><strong aria-hidden="true">3.3.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.3.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../protocol/derivation.html"><strong aria-hidden="true">3.3.2.2.</strong> Derivation</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/batcher.html"><strong aria-hidden="true">3.3.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../fault-proof/index.html"><strong aria-hidden="true">3.4.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">3.4.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/index.html"><strong aria-hidden="true">3.4.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">3.4.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">3.4.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">3.4.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/bond-incentives.html" class="active"><strong aria-hidden="true">3.4.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/bridge-integration.html"><strong aria-hidden="true">3.4.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/precompiles.html"><strong aria-hidden="true">3.5.</strong> Precompiles</a></li><li class="chapter-item expanded "><a href="../../protocol/predeploys.html"><strong aria-hidden="true">3.6.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../protocol/preinstalls.html"><strong aria-hidden="true">3.7.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.8.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.8.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.8.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/system_config.html"><strong aria-hidden="true">3.9.</strong> System Config</a></li><li class="chapter-item expanded "><a href="../../protocol/configurability.html"><strong aria-hidden="true">3.10.</strong> Configurability</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/granite/custom-gas-token.html"><strong aria-hidden="true">4.1.</strong> Custom Gas Token</a></li><li class="chapter-item expanded "><a href="../../experimental/plasma.html"><strong aria-hidden="true">4.2.</strong> Plasma</a></li><li class="chapter-item expanded "><a href="../../interop/overview.html"><strong aria-hidden="true">4.3.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../interop/dependency_set.html"><strong aria-hidden="true">4.3.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../../interop/messaging.html"><strong aria-hidden="true">4.3.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../../interop/predeploys.html"><strong aria-hidden="true">4.3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../interop/execution.html"><strong aria-hidden="true">4.3.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../../interop/sequencer.html"><strong aria-hidden="true">4.3.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../../interop/verifier.html"><strong aria-hidden="true">4.3.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../../interop/rollup_node_p2p.html"><strong aria-hidden="true">4.3.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../interop/fault_proof.html"><strong aria-hidden="true">4.3.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../../interop/upgrade.html"><strong aria-hidden="true">4.3.9.</strong> Upgrade</a></li></ol></li><li class="chapter-item expanded "><a href="../../experimental/security-council-safe.html"><strong aria-hidden="true">4.4.</strong> Security Council Safe</a></li></ol></li><li class="chapter-item expanded "><a href="../../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/fault-proof/stage-one/bond-incentives.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="bond-incentives"><a class="header" href="#bond-incentives">Bond Incentives</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#moves">Moves</a></li>
+<li><a href="#subgame-resolution">Subgame Resolution</a>
+<ul>
+<li><a href="#leftmost-claim-incentives">Leftmost Claim Incentives</a></li>
+</ul>
+</li>
+<li><a href="#fault-proof-mainnet-incentives">Fault Proof Mainnet Incentives</a>
+<ul>
+<li><a href="#authenticated-roles">Authenticated Roles</a></li>
+<li><a href="#base-fee-assumption">Base Fee Assumption</a></li>
+<li><a href="#bond-scaling">Bond Scaling</a></li>
+<li><a href="#required-bond-formula">Required Bond Formula</a></li>
+<li><a href="#other-incentives">Other Incentives</a></li>
+<li><a href="#delayedweth">DelayedWETH</a>
+<ul>
+<li><a href="#sub-account-model">Sub-Account Model</a></li>
+<li><a href="#delay-period">Delay Period</a></li>
+<li><a href="#integration">Integration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Bonds is an add-on to the core <a href="fault-dispute-game.html">Fault Dispute Game</a>. The core game mechanics are
+designed to ensure honesty as the best response to winning subgames. By introducing financial incentives,
+Bonds makes it worthwhile for honest challengers to participate.
+Without the bond reward incentive, the FDG will be too costly for honest players to participate in given the
+cost of verifying and making claims.</p>
+<p>Implementations may allow the FDG to directly receive bonds, or delegate this responsibility to another entity.
+Regardless, there must be a way for the FDG to query and distribute bonds linked to a claim.</p>
+<p>Bonds are integrated into the FDG in two areas:</p>
+<ul>
+<li>Moves</li>
+<li>Subgame Resolution</li>
+</ul>
+<h2 id="moves"><a class="header" href="#moves">Moves</a></h2>
+<p>Moves must be adequately bonded to be added to the FDG. This document does not specify a
+scheme for determining the minimum bond requirement. FDG implementations should define a function
+computing the minimum bond requirement with the following signature:</p>
+<pre><code class="language-solidity">function getRequiredBond(Position _movePosition) public pure returns (uint256 requiredBond_)
+</code></pre>
+<p>As such, attacking or defending requires a check for the <code>getRequiredBond()</code> amount against the bond
+attached to the move. To incentivize participation, the minimum bond should cover the cost of a possible
+counter to the move being added. Thus, the minimum bond depends only on the position of the move that's added.</p>
+<h2 id="subgame-resolution"><a class="header" href="#subgame-resolution">Subgame Resolution</a></h2>
+<p>If a subgame root resolves incorrectly, then its bond is distributed to the <strong>leftmost claimant</strong> that countered
+it. This creates an incentive to identify the earliest point of disagreement in an execution trace.
+The subgame root claimant gets back its bond iff it resolves correctly.</p>
+<p>At maximum game depths, where a claimant counters a bonded claim via <code>step</code>, the bond is instead distributed
+to the account that successfully called <code>step</code>.</p>
+<h3 id="leftmost-claim-incentives"><a class="header" href="#leftmost-claim-incentives">Leftmost Claim Incentives</a></h3>
+<p>There exists defensive positions that cannot be countered, even if they hold invalid claims. These positions
+are located on the same level as honest claims, but situated to its right (i.e. its gindex &gt; honest claim's).</p>
+<p>An honest challenger can always successfully dispute any sibling claims not positioned to the right of an honest claim.
+The leftmost payoff rule encourages such disputes, ensuring only one claim is leftmost at correct depths.
+This claim will be the honest one, and thus bond rewards will be directed exclusively to honest claims.</p>
+<h2 id="fault-proof-mainnet-incentives"><a class="header" href="#fault-proof-mainnet-incentives">Fault Proof Mainnet Incentives</a></h2>
+<p>This section describes the specific bond incentives to be used for the Fault Proof Mainnet launch of the OP Stack fault
+proof system.</p>
+<h3 id="authenticated-roles"><a class="header" href="#authenticated-roles">Authenticated Roles</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Description</th></tr></thead><tbody>
+<tr><td>Guardian</td><td>Role responsible for blacklisting dispute game contracts and changing the respected dispute game type</td></tr>
+<tr><td>System Owner</td><td>Role that owns the <code>ProxyAdmin</code> contract that in turn owns most <code>Proxy</code> contracts within the OP Stack</td></tr>
+</tbody></table>
+</div>
+<h3 id="base-fee-assumption"><a class="header" href="#base-fee-assumption">Base Fee Assumption</a></h3>
+<p>FPM bonds are to assume a fixed 200 Gwei base fee.
+Future iterations of the fault proof may include a dynamic base fee calculation.
+For the moment, we suppose that the <code>Guardian</code> address may account for increased average base fees by updating the
+<code>OptimismPortal</code> contract to a new respected game type with a higher assumed base fee.</p>
+<h3 id="bond-scaling"><a class="header" href="#bond-scaling">Bond Scaling</a></h3>
+<p>FPM bonds are priced in the amount of gas that they are intended to cover.
+Bonds start at the very first depth of the game at a baseline of <code>400_000</code> gas.
+The <code>400_000</code> value is chosen as a deterrence amount that is approximately double the cost to respond at the top level.
+Bonds scale up to a value of <code>300_000_000</code> gas, a value chosen to cover approximately double the cost of a max-size
+Large Preimage Proposal.</p>
+<p>We use a multiplicative scaling mechanism to guarantee that the ratio between bonds remains constant.
+We determine the multiplier based on the proposed <code>MAX_DEPTH</code> of 73.
+We can use the formula <code>x = (300_000_000 / 400_000) ** (1 / 73)</code> to determine that <code>x = 1.09493</code>.
+At each depth <code>N</code>, the amount of gas charged is therefore <code>400_000 * (1.09493 ** N)</code></p>
+<p>Below is a diagram demonstrating this curve for a max depth of 73.</p>
+<p><img src="https://github.com/ethereum-optimism/specs/assets/14298799/b381037b-193d-42c5-9a9c-9cc5f43b255f" alt="bond scaling curve" /></p>
+<h3 id="required-bond-formula"><a class="header" href="#required-bond-formula">Required Bond Formula</a></h3>
+<p>Applying the <a href="#base-fee-assumption">Base Fee Assumption</a> and <a href="#bond-scaling">Bond Scaling</a> specifications, we have a
+<code>getRequiredBond</code> function:</p>
+<pre><code class="language-python">def get_required_bond(position):
+    assumed_gas_price = 200 gwei
+    base_gas_charged = 400_000
+    gas_charged = 400_000 * (1.09493 ** position.depth)
+    return gas_charged * assumed_gas_price
+</code></pre>
+<h3 id="other-incentives"><a class="header" href="#other-incentives">Other Incentives</a></h3>
+<p>There are other costs associated with participating in the game, including operating a challenger agent and the
+opportunity cost of locking up capital in the dispute game. While we do not explicitly create incentives to cover
+these costs, we assume that the current bond rewards, based on this specification, are enough as a whole to cover
+all other costs of participation.</p>
+<h3 id="delayedweth"><a class="header" href="#delayedweth">DelayedWETH</a></h3>
+<p>FPM introduces a contract <code>DelayedWETH</code> designed to hold the bonded ETH for each
+<a href="fault-dispute-game.html">Fault Dispute Game</a>.
+<code>DelayedWETH</code> is an extended version of the standard <code>WETH</code> contract that introduces a delayed unwrap mechanism that
+allows an owner address to function as a backstop in the case that a Fault Dispute Game would
+incorrectly distribute bonds.</p>
+<p><code>DelayedWETH</code> is modified from <code>WETH</code> as follows:</p>
+<ul>
+<li><code>DelayedWETH</code> is an upgradeable proxy contract.</li>
+<li><code>DelayedWETH</code> has an <code>owner()</code> address. We typically expect this to be set to the <code>System Owner</code> address.</li>
+<li><code>DelayedWETH</code> has a <code>delay()</code> function that returns a period of time that withdrawals will be delayed.</li>
+<li><code>DelayedWETH</code> has an <code>unlock(guy,wad)</code> function that modifies a mapping called <code>withdrawals</code> keyed as
+<code>withdrawals[msg.sender][guy] =&gt; WithdrawalRequest</code> where <code>WithdrawalRequest</code> is
+<code>struct Withdrawal Request { uint256 amount, uint256 timestamp }</code>. When <code>unlock</code> is called, the timestamp for
+<code>withdrawals[msg.sender][guy]</code> is set to the current timestamp and the amount is increased by the given amount.</li>
+<li><code>DelayedWETH</code> modifies the <code>WETH.withdraw</code> function such that an address <em>must</em> provide a "sub-account" to withdraw
+from. The function signature becomes <code>withdraw(guy,wad)</code>. The function retrieves <code>withdrawals[msg.sender][guy]</code> and
+checks that the current <code>block.timestamp</code> is greater than the timestamp on the withdrawal request plus the <code>delay()</code>
+seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
+request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
+<code>withdraw(wad)</code> function becomes an alias for <code>withdraw(msg.sender, wad)</code>.
+<code>withdraw(guy,wad)</code> will not be callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
+<li><code>DelayedWETH</code> has a <code>hold()</code> function that allows the <code>owner()</code> address to give itself an allowance from any address.</li>
+<li><code>DelayedWETH</code> has a <code>recover()</code> function that allows the <code>owner()</code> address to recover any amount of ETH from the
+contract.</li>
+</ul>
+<h4 id="sub-account-model"><a class="header" href="#sub-account-model">Sub-Account Model</a></h4>
+<p>This specification requires that withdrawal requests specify "sub-accounts" that these requests correspond to. This
+takes the form of requiring that <code>unlock</code> and <code>withdraw</code> both take an <code>address guy</code> parameter as input. By requiring
+this extra input, withdrawals are separated between accounts and it is always possible to see how much WETH a specific
+end-user of the <code>FaultDisputeGame</code> can withdraw at any given time. It is therefore possible for the <code>DelayedWETH</code>
+contract to account for all bug cases within the <code>FaultDisputeGame</code> as long as the <code>FaultDisputeGame</code> always passes the
+correct address into <code>withdraw</code>.</p>
+<h4 id="delay-period"><a class="header" href="#delay-period">Delay Period</a></h4>
+<p>We propose a delay period of 7 days for most OP Stack chains. 7 days provides sufficient time for the <code>owner()</code> of the
+<code>DelayedWETH</code> contract to act even if that owner is a large multisig that requires action from many different members
+over multiple timezones.</p>
+<h4 id="integration"><a class="header" href="#integration">Integration</a></h4>
+<p><code>DelayedWETH</code> is expected to be integrated into the Fault Dispute Game as follows:</p>
+<ul>
+<li>When <code>FaultDisputeGame.initialize</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
+<li>When <code>FaultDisputeGame.move</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
+<li>When <code>FaultDisputeGame.resolveClaim</code> is triggered, <code>DelayedWETH.unlock(recipient, bond)</code> is called.</li>
+<li>When <code>FaultDisputeGame.claimCredit</code> is triggered, <code>DelayedWETH.withdraw(recipient, claim)</code> is called.</li>
+</ul>
+<pre class="mermaid">sequenceDiagram
+    participant U as User
+    participant FDG as FaultDisputeGame
+    participant DW as DelayedWETH
+
+    U-&gt;&gt;FDG: initialize()
+    FDG-&gt;&gt;DW: deposit{value: msg.value}()
+    Note over DW: FDG gains balance in DW
+
+    loop move by Users
+        U-&gt;&gt;FDG: move()
+        FDG-&gt;&gt;DW: deposit{value: msg.value}()
+        Note over DW: Increases FDG balance in DW
+    end
+
+    loop resolveClaim by Users
+        U-&gt;&gt;FDG: resolveClaim()
+        FDG-&gt;&gt;DW: unlock(recipient, bond)
+        Note over DW: Starts timer for recipient
+    end
+
+    loop claimCredit by Users
+        U-&gt;&gt;FDG: claimCredit()
+        FDG-&gt;&gt;DW: withdraw(recipient, claim)
+        Note over DW: Checks timer/amount for recipient
+        DW-&gt;&gt;FDG: Transfer claim to FDG
+        FDG-&gt;&gt;U: Transfer claim to User
+    end
+</pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../fault-proof/stage-one/honest-challenger-fdg.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../fault-proof/stage-one/bridge-integration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../fault-proof/stage-one/honest-challenger-fdg.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../fault-proof/stage-one/bridge-integration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
