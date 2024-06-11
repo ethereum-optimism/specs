@@ -5,7 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
-  - [Checkpoints](#checkpoints)
+  - [Hook-based Integration with Alligator](#hook-based-integration-with-alligator)
   - [Token Minting](#token-minting)
   - [Token Burning](#token-burning)
   - [Voting Power](#voting-power)
@@ -24,72 +24,87 @@
 
 `GovernanceToken` is an [ERC20](https://eips.ethereum.org/EIPS/eip-20) token contract that inherits from `ERC20Burnable`,
 `ERC20Votes`, and `Ownable`. It allows token holders to delegate their voting power to other addresses, enabling a representative
-voting system.
+voting system. The contract integrates with the `Alligator` contract through a hook-based approach to enable advanced delegation
+functionality, including partial delegation and subdelegations.
 
-The specific implementation details of the voting and delegation logic are inherited from the `ERC20Votes` contract. The
-`GovernanceToken` contract focuses on integrating this functionality with `ERC20Burnable` and adding the minting
-capability. EIP-712 permit functionality is also inherited from `ERC20Permit`, which is imported by `ERC20Votes`.
+### Hook-based Integration with Alligator
 
-### Checkpoints
+The `GovernanceToken` contract integrates with the `Alligator` contract through a hook-based approach to enable advanced
+delegation features. The `_afterTokenTransfer` function in the `GovernanceToken` is modified to call the `afterTokenTransfer`
+function in the `Alligator` contract, allowing the `Alligator` to consume the hooks and update its delegation and checkpoint
+mappings accordingly.
 
-`ERC20Votes` uses checkpoints to track voting power history. A checkpoint is a "snapshot" of the voting power of an
-address at a specific block number.
+To ensure that token transfers can continue even if the call to the Alligator fails, a try-catch mechanism is implemented
+in the `_afterTokenTransfer` function. If the call to the Alligator's `afterTokenTransfer` function fails, the token transfer
+will still be completed, and an event will be emitted to indicate the failure. This prevents the token transfer from being
+blocked due to issues with the Alligator contract.
 
 ```solidity
-struct Checkpoint {
-    uint32 fromBlock;
-    uint224 votes;
+function _afterTokenTransfer(address from, address to, uint256 amount) internal override {
+    super._afterTokenTransfer(from, to, amount);
+    try IAlligator(alligatorAddress).afterTokenTransfer(from, to, amount) {
+        // Call successful, no action needed
+    } catch {
+        // Call failed, emit an event to indicate the failure
+        emit AlligatorCallFailed(from, to, amount);
+    }
 }
 ```
 
-Checkpoints are organized as a one-to-one mapping of user addresses to append-only lists of checkpoints. When a
-user is involved in a token transfer, mint, burn, or vote delegation, a new checkpoint is added to their corresponding
-list of checkpoints, reflecting the user's updated voting power at that block number.
+All delegation-related state, including the `delegates`, `checkpoints`, and `numCheckpoints` mappings, is shifted from the
+`GovernanceToken` to the `Alligator` contract. The `Alligator` treats the original checkpoints from the `GovernanceToken`
+as a starting point for its own checkpoints.
 
-```solidity
-mapping(address => Checkpoint[]) private _checkpoints;
-```
-
-For any checkpoint list, the `fromBlock` value of each checkpoint is strictly increasing as a factor of the checkpoint's
-index in the list. Additionally, if a checkpoint is created when there's already a checkpoint at the same block number,
-the new checkpoint replaces the old one.
+Basic delegation functions in the `GovernanceToken`, such as `delegate` and `delegateBySig`, are modified to forward the
+calls to the `Alligator` contract using an advanced delegation rule that mimics basic delegation.
 
 ### Token Minting
 
 `GovernanceToken` MUST have a `mint(address,uint256)` function with external visibility that allows the contract owner
-to mint an arbitrary number of new tokens to an specific address. This function MUST only be called by the contract
+to mint an arbitrary number of new tokens to a specific address. This function MUST only be called by the contract
 owner, the `MintManager`, as enforced by the `onlyOwner` modifier inherited from the `Ownable` contract. When tokens
-are minted, the voting power of the recipient address MUST be updated accordingly. The total token supply is capped to
-`2^208^ - 1` to prevent overflow risks in the voting system. If the total supply exceeds this limit,
-`_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
+are minted, the voting power of the recipient address MUST be updated accordingly in the `Alligator` contract. The total
+token supply is capped to `2^208^ - 1` to prevent overflow risks in the voting system. If the total supply exceeds this
+limit, `_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
 
 ### Token Burning
 
 The contract MUST allow token holders to burn their own tokens using the inherited `burn(uint256)` or
 `burnFrom(address,uint256)` functions inherited from `ERC20Burnable`. When tokens are burned, the total supply and the
-holder's voting power MUST be reduced accordingly.
+holder's voting power MUST be reduced accordingly in the `Alligator` contract.
 
 ### Voting Power
 
 Each token corresponds to one unit of voting power.
 By default, token balance does not account for voting power. To have their voting power counted, token holders MUST delegate
 their voting power to an address (can be their own address).
-The contract MUST offer public accessors for quering voting power, as outlined below.
+The contract MUST offer public accessors for querying voting power, as outlined below.
 
 #### Queries
 
-- The `getVotes()(uint256)` function MUST return the current voting power of an address.
+- The `getVotes()(uint256)` function MUST retrieve the current voting power of an address from the `Alligator` contract.
 - The `getPastVotes(address,uint256)(uint256)` function MUST allow querying the voting power of an address at a specific
-  block number in the past.
+  block number in the past from the `Alligator` contract.
 - The `getPastTotalSupply(uint256)(uint256)` function MUST return the total voting power at a specific block number in
-  the past.
+  the past from the `Alligator` contract.
 
 ### Delegation
 
 Vote power can be delegated either by calling the `delegate(address)` function directly (to delegate as the `msg.sender`)
 or by providing a signature to be used with function `delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)`,
-as inherited from `ERC20Votes`.
+as inherited from `ERC20Votes`. These functions are modified to forward the calls to the `Alligator` contract using an
+advanced delegation rule that mimics basic delegation.
 
-The delegation is recorded in a checkpoint. When a token holder delegates their voting power, the delegated address receives
-the voting power corresponding to the token holder's balance. Under token transfers, the voting power associated with the
-tokens is moved from the delegate of the sender to that of the recipient.
+Advanced delegation features, such as partial delegation and subdelegations, are handled by the `Alligator` contract.
+Partial delegation allows delegators to distribute their voting power among multiple delegatees in a fractional manner,
+while subdelegations enable delegatees to further delegate their received voting power to other delegatees based on predefined
+rules and constraints.
+
+The `Alligator` contract maintains the necessary invariants, such as preventing circular delegation chains, ensuring vote
+weight consistency, and managing checkpoints. It is incorporated as a predeploy of the OP stack to avoid manual deployments
+across the Superchain.
+
+By incorporating the try-catch mechanism in the `_afterTokenTransfer` function, the GovernanceToken contract ensures that
+token transfers can continue smoothly even if the Alligator contract encounters issues. This provides a robust fallback
+mechanism to maintain the functionality of the token while allowing the advanced delegation features to be handled
+separately by the Alligator contract.
