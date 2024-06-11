@@ -63,9 +63,9 @@ calls to the `Alligator` contract using an advanced delegation rule that mimics 
 `GovernanceToken` MUST have a `mint(address,uint256)` function with external visibility that allows the contract owner
 to mint an arbitrary number of new tokens to a specific address. This function MUST only be called by the contract
 owner, the `MintManager`, as enforced by the `onlyOwner` modifier inherited from the `Ownable` contract. When tokens
-are minted, the voting power of the recipient address MUST be updated accordingly in the `Alligator` contract via the transfer hook. The total
-token supply is capped to `2^208^ - 1` to prevent overflow risks in the voting system. If the total supply exceeds this
-limit, `_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
+are minted, the voting power of the recipient address MUST be updated accordingly in the `Alligator` contract via the 
+transfer hook. The total token supply is capped to `2^208^ - 1` to prevent overflow risks in the voting system. If the
+total supply exceeds this limit, `_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
 
 ### Token Burning
 
