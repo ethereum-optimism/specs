@@ -48,6 +48,7 @@ Chat with us on the [discussion board!](https://github.com/ethereum-optimism/spe
 Specifications of new features in active development.
 
 - [Plasma](./experimental/plasma.md)
+- [Engine Queue Block Derivation](./experimental/engine_queue_block_derivation.md)
 - [Interoperability](./interop/overview.md)
 - [Security Council Safe](./experimental/security-council-safe.md)
 
