@@ -41,13 +41,13 @@ blocked due to issues with the Alligator contract.
 
 ```solidity
 function _afterTokenTransfer(address from, address to, uint256 amount) internal override {
-    super._afterTokenTransfer(from, to, amount);
-    try IAlligator(alligatorAddress).afterTokenTransfer(from, to, amount) {
-        // Call successful, no action needed
-    } catch {
-        // Call failed, emit an event to indicate the failure
-        emit AlligatorCallFailed(from, to, amount);
+    bytes memory data = abi.encodeWithSelector(IAlligator.afterTokenTransfer.selector, from, to, amount);
+    bool success;
+    assembly ("memory-safe") {
+        success := call(gas(), alligatorAddress, 0, add(data, 0x20), mload(data), 0, 0)
     }
+    
+    if (!success) emit AlligatorCallFailed(from, to, amount);
 }
 ```
 
@@ -63,7 +63,7 @@ calls to the `Alligator` contract using an advanced delegation rule that mimics 
 `GovernanceToken` MUST have a `mint(address,uint256)` function with external visibility that allows the contract owner
 to mint an arbitrary number of new tokens to a specific address. This function MUST only be called by the contract
 owner, the `MintManager`, as enforced by the `onlyOwner` modifier inherited from the `Ownable` contract. When tokens
-are minted, the voting power of the recipient address MUST be updated accordingly in the `Alligator` contract. The total
+are minted, the voting power of the recipient address MUST be updated accordingly in the `Alligator` contract via the transfer hook. The total
 token supply is capped to `2^208^ - 1` to prevent overflow risks in the voting system. If the total supply exceeds this
 limit, `_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
 
@@ -71,7 +71,7 @@ limit, `_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
 
 The contract MUST allow token holders to burn their own tokens using the inherited `burn(uint256)` or
 `burnFrom(address,uint256)` functions inherited from `ERC20Burnable`. When tokens are burned, the total supply and the
-holder's voting power MUST be reduced accordingly in the `Alligator` contract.
+holder's voting power MUST be reduced accordingly in the `Alligator` contract via the transfer hook.
 
 ### Voting Power
 
@@ -103,8 +103,3 @@ rules and constraints.
 The `Alligator` contract maintains the necessary invariants, such as preventing circular delegation chains, ensuring vote
 weight consistency, and managing checkpoints. It is incorporated as a predeploy of the OP stack to avoid manual deployments
 across the Superchain.
-
-By incorporating the try-catch mechanism in the `_afterTokenTransfer` function, the GovernanceToken contract ensures that
-token transfers can continue smoothly even if the Alligator contract encounters issues. This provides a robust fallback
-mechanism to maintain the functionality of the token while allowing the advanced delegation features to be handled
-separately by the Alligator contract.
