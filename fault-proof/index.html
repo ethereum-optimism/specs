@@ -236,18 +236,18 @@
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>A fault proof, also known as fraud proof or interactive game, consists of 3 components:</p>
 <ul>
-<li><a href="#Fault-Proof-Program">Program</a>: given a commitment to all rollup inputs (L1 data) and the dispute, verify the dispute statelessly.</li>
-<li><a href="#Fault-Proof-VM">VM</a>: given a stateless program and its inputs, trace any instruction step, and prove it on L1.</li>
-<li><a href="#Fault-Proof-Interactive-Dispute-Game">Interactive Dispute Game</a>: bisect a dispute down to a single instruction, and resolve the base-case using the VM.</li>
+<li><a href="#fault-proof-program">Program</a>: given a commitment to all rollup inputs (L1 data) and the dispute, verify the dispute statelessly.</li>
+<li><a href="#fault-proof-vm">VM</a>: given a stateless program and its inputs, trace any instruction step, and prove it on L1.</li>
+<li><a href="#fault-proof-interactive-dispute-game">Interactive Dispute Game</a>: bisect a dispute down to a single instruction, and resolve the base-case using the VM.</li>
 </ul>
 <p>Each of these 3 components may have different implementations, which can be combined into different proof stacks,
 and contribute to proof diversity when resolving a dispute.</p>
 <p>"Stateless execution" of the program, and its individual instructions, refers to reproducing
-the exact same computation by authenticating the inputs with a <a href="#Pre-image-Oracle">Pre-image Oracle</a>.</p>
+the exact same computation by authenticating the inputs with a <a href="#pre-image-oracle">Pre-image Oracle</a>.</p>
 <p><img src="../static/assets/fault-proof.svg" alt="Diagram of Program and VM architecture" /></p>
 <h2 id="pre-image-oracle"><a class="header" href="#pre-image-oracle">Pre-image Oracle</a></h2>
 <p>The pre-image oracle is the only form of communication between
-the <a href="#Fault-Proof-Program">Program</a> (in the <a href="#client">Client</a> role) and the <a href="#Fault-Proof-VM">VM</a> (in the <a href="#server">Server</a> role).</p>
+the <a href="#fault-proof-program">Program</a> (in the <a href="#client">Client</a> role) and the <a href="#fault-proof-vm">VM</a> (in the <a href="#server">Server</a> role).</p>
 <p>The program uses the pre-image oracle to query any input data that is understood to be available to the user:</p>
 <ul>
 <li>The initial inputs to bootstrap the program. See <a href="#bootstrapping">Bootstrapping</a>.</li>
@@ -446,7 +446,7 @@ the L2 state by applying L1 data to prior agreed L2 history.</p>
 and matches the processing in the <a href="../protocol/rollup-node.html">rollup node</a> and
 <a href="../protocol/exec-engine.html">execution-engine</a>.</p>
 <p>The difference is that rather than retrieving inputs from an RPC and applying state changes to disk,
-the inputs are loaded through the <a href="#Pre-image-Oracle">pre-image oracle</a> and the changes accumulate in memory.</p>
+the inputs are loaded through the <a href="#pre-image-oracle">pre-image oracle</a> and the changes accumulate in memory.</p>
 <p>The derivation executes with two data-sources:</p>
 <ul>
 <li>Interface to read-only L1 chain, backed by the pre-image oracle:
