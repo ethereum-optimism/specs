@@ -15,7 +15,7 @@ Please chat with us on the [discussion board](https://github.com/ethereum-optimi
 
 ## Contributing
 
-We welcome your contributions. 
+We welcome your contributions. Read through [CONTRIBUTING.md](./CONTRIBUTING.md) for a general overview of the contributing process for this repository.
 
 ### Dependencies
 

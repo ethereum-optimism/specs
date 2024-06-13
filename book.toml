@@ -17,4 +17,15 @@ edit-url-template = "https://github.com/ethereum-optimism/specs/edit/main/{path}
 default-theme = "ayu"
 additional-js = ["specs/static/solidity.min.js", "specs/static/mermaid.min.js", "specs/static/mermaid-init.js"]
 
+[output.html.redirect]
+"/experimental/fault-proof/index.html" = "/fault-proof/index.html"
+"/experimental/fault-proof/cannon-fault-proof-vm.html" = "/fault-proof/cannon-fault-proof-vm.html"
+"/experimental/fault-proof/stage-one/index.html" = "/fault-proof/stage-one/index.html"
+"/experimental/fault-proof/stage-one/bond-incentives.html" = "/fault-proof/stage-one/bond-incentives.html"
+"/experimental/fault-proof/stage-one/bridge-integration.html" = "/fault-proof/stage-one/bridge-integration.html"
+"/experimental/fault-proof/stage-one/dispute-game-interface.html" = "/fault-proof/stage-one/dispute-game-interface.html"
+"/experimental/fault-proof/stage-one/fault-dispute-game.html" = "/fault-proof/stage-one/fault-dispute-game.html"
+"/experimental/fault-proof/stage-one/honest-challenger-fdg.html" = "/fault-proof/stage-one/honest-challenger-fdg.html"
+"/experimental/plasma.html" = "/experimental/alt-da.html"
+
 [output.linkcheck]

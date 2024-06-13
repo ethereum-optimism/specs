@@ -1,10 +1,10 @@
-@protolambda @tynes @ajsutton @sebastianst @mslipper
+* @protolambda @tynes @ajsutton @sebastianst @mslipper
 
-batcher.md @sebastianst @trianglesphere
+batcher.md @sebastianst @axelKingsley
 bridges.md @tynes @maurelian
 deposits.md @protolambda @tynes
-derivation.md @protolambda @trianglesphere
-exec-engine.md @sebastianst @trianglesphere
+derivation.md @protolambda @sebastianst @ajsutton
+exec-engine.md @protolambda @sebastianst @ajsutton
 # glossary.md
 guaranteed-gas-market.md @tynes @maurelian
 # introduction.md
@@ -12,14 +12,14 @@ messengers.md @tynes @maurelian
 # overview.md
 predeploys.md @tynes
 proposals.md @ajsutton @clabby @tynes @maurelian
-rollup-node-p2p.md @sebastianst @trianglesphere
-rollup-node.md @sebastianst @trianglesphere
+rollup-node-p2p.md @sebastianst @protolambda @axelKingsley
+rollup-node.md @sebastianst @protolambda @axelKingsley
 safe-liveness-checking.md @maurelian @mds1
-span-batches.md @sebastianst @trianglesphere
+span-batches.md @sebastianst @axelKingsley
 superchain-configuration.md @protolambda @tynes
-superchain-upgrades.md @protolambda @tynes
-system_config.md @sebastianst @trianglesphere
+superchain-upgrades.md @protolambda @tynes @axelKingsley @sebastianst
+system_config.md @sebastianst @protolambda @tynes
 withdrawals.md @tynes @maurelian @clabby
 
 # Fault Proofs
-/specs/experimental/fault-proof @ajsutton @clabby @inphi @refcell
+/specs/fault-proof @ajsutton @clabby @inphi @refcell @mbaxter
