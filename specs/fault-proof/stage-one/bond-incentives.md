@@ -55,14 +55,14 @@ counter to the move being added. Thus, the minimum bond depends only on the posi
 
 If a subgame root resolves incorrectly, then its bond is distributed to the **leftmost claimant** that countered
 it. This creates an incentive to identify the earliest point of disagreement in an execution trace.
-The subgame root claimant gets back its bond iff it resolves correctly.
+The subgame root claimant gets back its bond if it resolves correctly.
 
 At maximum game depths, where a claimant counters a bonded claim via `step`, the bond is instead distributed
 to the account that successfully called `step`.
 
 ### Leftmost Claim Incentives
 
-There exists defensive positions that cannot be countered, even if they hold invalid claims. These positions
+There exist defensive positions that cannot be countered, even if they hold invalid claims. These positions
 are located on the same level as honest claims, but situated to its right (i.e. its gindex > honest claim's).
 
 An honest challenger can always successfully dispute any sibling claims not positioned to the right of an honest claim.
