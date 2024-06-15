@@ -47,8 +47,8 @@ All delegation-related state, including the `delegates`, `checkpoints`, and `num
 `GovernanceToken` to the `Alligator` contract. The `Alligator` treats the original checkpoints from the `GovernanceToken`
 as a starting point for its own checkpoints.
 
-Basic delegation functions in the `GovernanceToken`, such as `delegate` and `delegateBySig`, are modified to forward the
-calls to the `Alligator` contract using an advanced delegation rule that mimics basic delegation.
+The `delegate` and `delegateBySig` functions in the `GovernanceToken` are modified to forward the
+calls to the `Alligator` contract which implements the required delegation logic.
 
 ### Token Minting
 
