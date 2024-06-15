@@ -84,8 +84,7 @@ The contract MUST offer public accessors for querying voting power, as outlined 
 
 Vote power can be delegated either by calling the `delegate(address)` function directly (to delegate as the `msg.sender`)
 or by providing a signature to be used with function `delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)`,
-as inherited from `ERC20Votes`. These functions are modified to forward the calls to the `Alligator` contract using an
-advanced delegation rule that mimics basic delegation.
+as inherited from `ERC20Votes`. These functions are modified to forward the calls to the `Alligator` contract which implements the required logic.
 
 Advanced delegation features, such as partial delegation and subdelegations, are handled by the `Alligator` contract.
 Partial delegation allows delegators to distribute their voting power among multiple delegatees in a fractional manner,
