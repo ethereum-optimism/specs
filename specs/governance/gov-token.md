@@ -31,12 +31,12 @@ functionality, including partial delegation and subdelegations.
 
 The `GovernanceToken` contract integrates with the `Alligator` contract through a hook-based approach to enable advanced
 delegation features. The `_afterTokenTransfer` function in the `GovernanceToken` is modified to call the `afterTokenTransfer`
-function in the `Alligator` contract, allowing the `Alligator` to consume the hooks and update its delegation and checkpoint
+function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update its delegation and checkpoint
 mappings accordingly.
 
-To ensure that token transfers can continue even if the call to the Alligator fails, a try-catch mechanism is implemented
-in the `_afterTokenTransfer` function. If the call to the Alligator's `afterTokenTransfer` function fails, the token transfer
-will still be completed, and an event will be emitted to indicate the failure. 
+If the call to the Alligator's `afterTokenTransfer` function fails, the token transfer
+must still be completed, and an `AlligatorCallFailed` event will be emitted to indicate the failed call. This prevents the token transfer from being
+blocked due to issues with the Alligator contract.
 
 ```solidity
 emit AlligatorCallFailed(from, to, amount);
