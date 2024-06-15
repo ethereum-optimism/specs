@@ -31,8 +31,8 @@ functionality, including partial delegation and subdelegations.
 
 The `GovernanceToken` contract integrates with the `Alligator` contract through a hook-based approach to enable advanced
 delegation features. The `_afterTokenTransfer` function in the `GovernanceToken` is modified to call the `afterTokenTransfer`
-function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update its delegation and checkpoint
-mappings accordingly.
+function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update its delegation and
+checkpoint mappings accordingly.
 
 If the call to the Alligator's `afterTokenTransfer` function fails, the token transfer must still be completed, and the following
 `AlligatorCallFailed` event will be emitted to indicate the failed call:
@@ -56,8 +56,8 @@ calls to the `Alligator` contract which implements the required delegation logic
 to mint an arbitrary number of new tokens to a specific address. This function MUST only be called by the contract
 owner, the `MintManager`, as enforced by the `onlyOwner` modifier inherited from the `Ownable` contract. When tokens
 are minted, the voting power of the recipient address MUST be updated accordingly in the `Alligator` contract via the
-`afterTokenTransfer` hook. The total token supply is capped to `2^208^ - 1` to prevent overflow risks in the voting system. If the
-total supply exceeds this limit, `_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
+`afterTokenTransfer` hook. The total token supply is capped to `2^208^ - 1` to prevent overflow risks in the voting
+system. If the total supply exceeds this limit, `_mint(address,uint256)`, as inherited from `ERC20Votes`, MUST revert.
 
 ### Token Burning
 
