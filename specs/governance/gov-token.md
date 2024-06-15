@@ -87,7 +87,7 @@ or by providing a signature to be used with function `delegateBySig(address,uint
 as inherited from `ERC20Votes`. These functions are modified to forward the calls to the `Alligator` contract which
 implements the required logic.
 
-Advanced delegation features, such as partial delegation and subdelegations, are handled by the `Alligator` contract.
+Partial delegation and subdelegations are handled by the `Alligator` contract.
 Partial delegation allows delegators to distribute their voting power among multiple delegatees in a fractional manner,
 while subdelegations enable delegatees to further delegate their received voting power to other delegatees based on predefined
 rules and constraints.
