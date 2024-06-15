@@ -63,7 +63,7 @@ total supply exceeds this limit, `_mint(address,uint256)`, as inherited from `ER
 
 The contract MUST allow token holders to burn their own tokens using the inherited `burn(uint256)` or
 `burnFrom(address,uint256)` functions inherited from `ERC20Burnable`. When tokens are burned, the total supply and the
-holder's voting power MUST be reduced accordingly in the `Alligator` contract via the transfer hook.
+holder's voting power MUST be reduced accordingly in the `Alligator` contract via the `afterTokenTransfer` hook.
 
 ### Voting Power
 
