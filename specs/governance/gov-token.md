@@ -24,15 +24,11 @@
 
 `GovernanceToken` is an [ERC20](https://eips.ethereum.org/EIPS/eip-20) token contract that inherits from `ERC20Burnable`,
 `ERC20Votes`, and `Ownable`. It allows token holders to delegate their voting power to other addresses, enabling a representative
-voting system. The contract integrates with the `Alligator` contract through a hook-based approach to enable advanced delegation
-functionality, including partial delegation and subdelegations.
+voting system. The contract integrates with the `Alligator` contract through a hook-based approach to support subdelegations.
 
 ### Hook-based Integration with Alligator
 
-The `GovernanceToken` contract integrates with the `Alligator` contract through a hook-based approach to enable advanced
-delegation features. The `_afterTokenTransfer` function in the `GovernanceToken` is modified to call the `afterTokenTransfer`
-function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update its delegation and
-checkpoint mappings accordingly.
+Subdelegations allow for advanced delegation use cases, such as partial, time-constrained & block-based delegations, relative & fixed allowances, and custom rules. The `_afterTokenTransfer` function in the `GovernanceToken` is modified to call the `afterTokenTransfer` function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update its delegation and checkpoint mappings accordingly.
 
 If the call to the Alligator's `afterTokenTransfer` function fails, the token transfer must still be completed, and the following
 `AlligatorCallFailed` event will be emitted to indicate the failed call:
@@ -87,9 +83,8 @@ or by providing a signature to be used with function `delegateBySig(address,uint
 as inherited from `ERC20Votes`. These functions are modified to forward the calls to the `Alligator` contract which
 implements the required logic.
 
-Partial delegation and subdelegations are handled by the `Alligator` contract.
-Partial delegation allows delegators to distribute their voting power among multiple delegatees in a fractional manner,
-while subdelegations enable delegatees to further delegate their received voting power to other delegatees based on predefined
+With subdelegations, delegators can distribute their voting power among multiple delegatees in a fractional manner,
+while also allowing delegatees to further delegate their received voting power to other delegatees based on predefined
 rules and constraints.
 
 The `Alligator` contract maintains the necessary invariants, such as preventing circular delegation chains, ensuring vote
