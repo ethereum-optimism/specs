@@ -36,20 +36,13 @@ mappings accordingly.
 
 To ensure that token transfers can continue even if the call to the Alligator fails, a try-catch mechanism is implemented
 in the `_afterTokenTransfer` function. If the call to the Alligator's `afterTokenTransfer` function fails, the token transfer
-will still be completed, and an event will be emitted to indicate the failure. This prevents the token transfer from being
-blocked due to issues with the Alligator contract.
+will still be completed, and an event will be emitted to indicate the failure. 
 
 ```solidity
-function _afterTokenTransfer(address from, address to, uint256 amount) internal override {
-    bytes memory data = abi.encodeWithSelector(IAlligator.afterTokenTransfer.selector, from, to, amount);
-    bool success;
-    assembly ("memory-safe") {
-        success := call(gas(), alligatorAddress, 0, add(data, 0x20), mload(data), 0, 0)
-    }
-    
-    if (!success) emit AlligatorCallFailed(from, to, amount);
-}
+emit AlligatorCallFailed(from, to, amount);
 ```
+
+This prevents the token transfer from being blocked due to issues with the Alligator contract.
 
 All delegation-related state, including the `delegates`, `checkpoints`, and `numCheckpoints` mappings, is shifted from the
 `GovernanceToken` to the `Alligator` contract. The `Alligator` treats the original checkpoints from the `GovernanceToken`
