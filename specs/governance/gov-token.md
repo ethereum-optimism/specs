@@ -38,7 +38,7 @@ If the call to the Alligator's `afterTokenTransfer` function fails, the token tr
 `AlligatorCallFailed` event will be emitted to indicate the failed call:
 
 ```solidity
-emit AlligatorCallFailed(from, to, amount);
+event AlligatorCallFailed(address indexed transferFrom, address indexed transferTo, uint256 amount);
 ```
 
 This prevents the token transfer from being blocked due to issues with the Alligator contract.
