@@ -28,20 +28,26 @@ voting system. The contract integrates with the `Alligator` contract through a h
 
 ### Hook-based Integration with Alligator
 
-Subdelegations allow for advanced delegation use cases, such as partial, time-constrained & block-based delegations, relative & fixed allowances, and custom rules. The `_afterTokenTransfer` function in the `GovernanceToken` is modified to call the `afterTokenTransfer` function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update its delegation and checkpoint mappings accordingly.
+Subdelegations allow for advanced delegation use cases, such as partial, time-constrained & block-based delegations, relative
+& fixed allowances, and custom rules. The `_afterTokenTransfer` function in the `GovernanceToken` is modified to call the
+`afterTokenTransfer` function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update
+its delegation and checkpoint mappings accordingly.
 
-If the call to the Alligator's `afterTokenTransfer` function fails, the token transfer must still be completed, and the following
-`AlligatorCallFailed` event will be emitted to indicate the failed call:
+If the call to the `Alligator`'s `afterTokenTransfer` function fails, the token transfer must still be completed, and the
+following `AlligatorCallFailed` event will be emitted to indicate the failed call:
 
 ```solidity
 event AlligatorCallFailed(address indexed transferFrom, address indexed transferTo, uint256 amount);
 ```
 
-This prevents the token transfer from being blocked due to issues with the Alligator contract.
+This prevents the token transfer from being blocked due to issues with the `Alligator` contract.
 
-All delegation-related state, including the `delegates`, `checkpoints`, and `numCheckpoints` mappings, is shifted from the
-`GovernanceToken` to the `Alligator` contract. The `Alligator` treats the original checkpoints from the `GovernanceToken`
-as a starting point for its own checkpoints.
+All delegation-related state, including the `delegates`, `checkpoints`, and `numCheckpoints` mappings, is gradually
+shifted from the `GovernanceToken` to the `Alligator` contract through transactions that call the `Alligator`'s hook
+(i.e., transfers). In the hook, the `Alligator` should check if the `to` and `from` addresses have been migrated.
+If an address hasn't been migrated, the `Alligator` should save a copy of the `GovernanceToken`'s mappings for that
+address in its state. When reading delegation data in the `Alligator` for a delegator that hasn't been migrated,
+the `Alligator` should pull the data from the `GovernanceToken`'s state.
 
 The `delegate` and `delegateBySig` functions in the `GovernanceToken` are modified to forward the
 calls to the `Alligator` contract which implements the required delegation logic.
