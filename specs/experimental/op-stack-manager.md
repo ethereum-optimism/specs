@@ -24,23 +24,21 @@ of governance approved [contract releases] can be found on the
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
-- [OP Stack Manager](#op-stack-manager)
-  - [Deployment](#deployment)
-  - [Interface](#interface)
-    - [`deploy`](#deploy)
-    - [Getter Methods](#getter-methods)
-  - [Implementation](#implementation)
-    - [Batch Inbox Address](#batch-inbox-address)
-    - [Contract Deployments](#contract-deployments)
-  - [Security Considerations](#security-considerations)
-    - [Chain ID Source of Truth](#chain-id-source-of-truth)
-    - [Chain ID Frontrunning](#chain-id-frontrunning)
-    - [Chain ID Value](#chain-id-value)
-    - [Proxy Admin Owner](#proxy-admin-owner)
-    - [Upgradeability (ABI Changes)](#upgradeability-abi-changes)
+- [Deployment](#deployment)
+- [Interface](#interface)
+  - [`deploy`](#deploy)
+  - [Getter Methods](#getter-methods)
+- [Implementation](#implementation)
+  - [Batch Inbox Address](#batch-inbox-address)
+  - [Contract Deployments](#contract-deployments)
+- [Security Considerations](#security-considerations)
+  - [Chain ID Source of Truth](#chain-id-source-of-truth)
+  - [Chain ID Frontrunning](#chain-id-frontrunning)
+  - [Chain ID Value](#chain-id-value)
+  - [Proxy Admin Owner](#proxy-admin-owner)
+  - [Upgradeability (ABI Changes)](#upgradeability-abi-changes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
