@@ -72,12 +72,7 @@ These requirements are currently a draft, pending governance approval.
 | [System Config Owner](https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L14C26-L14C44)                   | Account authorized to change values in the SystemConfig contract. All configuration is stored on L1 and picked up by L2 as part of the [derviation](./derivation.md) of the L2 chain. |                                     | [Batch submitter address](#service-roles), [Sequencer P2P / Unsafe head signer](#service-roles), [Fee Margin](#consensus-parameters), [Gas limit](#consensus-parameters), [System Config Owner](#admin-roles) | Chain Governor or Servicer | As defined in the [Law of Chains](https://github.com/ethereum-optimism/OPerating-manual/blob/main/Law%20of%20Chains.md) |
 
 [^of-sc-gnosis-safe-l1]: 2 of 2 GnosisSafe between Optimism Foundation (OF) and the Security Council (SC) on L1. Mainnet and Sepolia addresses can be found at [priviledged roles](https://docs.optimism.io/chain/security/privileged-roles#l1-proxy-admin).
-[^aliased-of-sc-gnosis-safe-l1]: Aliased address of the 2 of 2 GnosisSafe between Optimism Foundation (OF) and the Security Council (SC) on L1. The reason for aliasing can be found in the [glossary](../glossary.md#address-aliasing). This address was calculated by the following arithmetic:
-```
-  0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A
-+ 0x1111000000000000000000000000000000001111
----------------------------------------------- 
-= 0x6B1BAE59D09fCcbdDB6C6cceb07B7279367C4E3b
+[^aliased-of-sc-gnosis-safe-l1]: Aliased address of the 2 of 2 GnosisSafe between Optimism Foundation (OF) and the Security Council (SC) on L1. The reason for aliasing can be found in the [glossary](../glossary.md#address-aliasing). This address was calculated using the following arithmetic: `0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A` + `0x1111000000000000000000000000000000001111` = `0x6B1BAE59D09fCcbdDB6C6cceb07B7279367C4E3b`.
 ```
 [^of-gnosis-safe-l2]: 5 of 7 GnosisSafe for Optimism Foundation  on L2. Mainnet and Sepolia addresses can be found at [priviledged roles](https://docs.optimism.io/chain/security/privileged-roles#l2-proxy-admin).
 
