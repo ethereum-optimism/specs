@@ -208,8 +208,8 @@
 <p>Fjord updates the L1 cost calculation function to use a FastLZ-based compression estimator.
 The L1 cost is computed as:</p>
 <pre><code class="language-pseudocode">l1FeeScaled = baseFeeScalar*l1BaseFee*16 + blobFeeScalar*l1BlobBaseFee
-estimatedSize = max(minTransactionSize, intercept + fastlzCoef*fastlzSize)
-l1Cost = estimatedSize * l1FeeScaled / 1e12
+estimatedSizeScaled = max(minTransactionSize * 1e6, intercept + fastlzCoef*fastlzSize)
+l1Cost = estimatedSizeScaled * l1FeeScaled / 1e12
 </code></pre>
 <p>The final <code>l1Cost</code> computation is an unlimited precision unsigned integer computation, with the result in Wei and
 having <code>uint256</code> range. The values in this computation, are as follows:</p>
@@ -247,7 +247,7 @@ and datasets used can be found in this <a href="https://github.com/roberto-bayar
 <h3 id="l1-gas-usage-estimation"><a class="header" href="#l1-gas-usage-estimation">L1 Gas Usage Estimation</a></h3>
 <p>The <code>L1GasUsed</code> property on the transaction receipt is updated to take into account the improvement in
 <a href="./exec-engine.html#fees">compression estimation</a> accuracy. The value will be calculated by
-multiplying the <code>estimatedSize</code> of the transaction from the above L1 cost formula by 16. The value of 16 assumes most
+multiplying the <code>estimatedSizeScaled</code> of the transaction from the above L1 cost formula by 16. The value of 16 assumes most
 of the bytes in the compressed data are non-zero.</p>
 <p>The <code>L1GasUsed</code> property is deprecated due to it not capturing the L1 blob gas used by a transaction, and will be
 removed in a future network upgrade. Users can continue to use the <code>L1Fee</code> field to retrieve the L1 fee for a given
