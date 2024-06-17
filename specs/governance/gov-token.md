@@ -33,14 +33,9 @@ Subdelegations allow for advanced delegation use cases, such as partial, time-co
 `afterTokenTransfer` function in the `Alligator` contract, allowing the `Alligator` contract to consume the hooks and update
 its delegation and checkpoint mappings accordingly.
 
-If the call to the `Alligator`'s `afterTokenTransfer` function fails, the token transfer must still be completed, and the
-following `AlligatorCallFailed` event will be emitted to indicate the failed call:
-
-```solidity
-event AlligatorCallFailed(address indexed transferFrom, address indexed transferTo, uint256 amount);
-```
-
-This prevents the token transfer from being blocked due to issues with the `Alligator` contract.
+If the call to the `Alligator`'s `afterTokenTransfer` function fails, the token transfer MUST revert. This ensures that the `Alligator`
+remains in sync with the `GovernanceToken`. Otherwise, the `GovernanceToken` could be left in an inconsistent state
+relative to the `Alligator`, such as when a token transfer is successful but the delegation state is not updated.
 
 All delegation-related state, including the `delegates`, `checkpoints`, and `numCheckpoints` mappings, is gradually
 shifted from the `GovernanceToken` to the `Alligator` contract through transactions that call the `Alligator`'s hook
