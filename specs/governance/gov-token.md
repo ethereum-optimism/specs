@@ -44,6 +44,10 @@ If an address hasn't been migrated, the `Alligator` should save a copy of the `G
 address in its state. When reading delegation data in the `Alligator` for a delegator that hasn't been migrated,
 the `Alligator` should pull the data from the `GovernanceToken`'s state.
 
+For backwards compatibility, the getter methods in the `GovernanceToken` should be modified to check if the data of
+a given address has been migrated or not. If the data has been migrated, the `GovernanceToken` should forward the
+call to the `Alligator` contract. Otherwise, the `GovernanceToken` should read from its state. 
+
 The `delegate` and `delegateBySig` functions in the `GovernanceToken` are modified to forward the
 calls to the `Alligator` contract which implements the required delegation logic.
 
