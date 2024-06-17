@@ -73,7 +73,6 @@ These requirements are currently a draft, pending governance approval.
 
 [^of-sc-gnosis-safe-l1]: 2 of 2 GnosisSafe between Optimism Foundation (OF) and the Security Council (SC) on L1. Mainnet and Sepolia addresses can be found at [priviledged roles](https://docs.optimism.io/chain/security/privileged-roles#l1-proxy-admin).
 [^aliased-of-sc-gnosis-safe-l1]: Aliased address of the 2 of 2 GnosisSafe between Optimism Foundation (OF) and the Security Council (SC) on L1. The reason for aliasing can be found in the [glossary](../glossary.md#address-aliasing). This address was calculated using the following arithmetic: `0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A` + `0x1111000000000000000000000000000000001111` = `0x6B1BAE59D09fCcbdDB6C6cceb07B7279367C4E3b`.
-```
 [^of-gnosis-safe-l2]: 5 of 7 GnosisSafe for Optimism Foundation  on L2. Mainnet and Sepolia addresses can be found at [priviledged roles](https://docs.optimism.io/chain/security/privileged-roles#l2-proxy-admin).
 
 ## Service Roles
