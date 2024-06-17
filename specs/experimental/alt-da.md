@@ -91,7 +91,7 @@ or it could a specific DA focused blockchain.
 Content addressed systems like S3 should use the first `put/<hex_encoded_commitment>`
 because they can pre-commpute the commitment.
 Blockchain based DA layers should use `put` and then submit the returned commitment to L1.
-Because commitments can includ the block height or hash, the commitment cannot be computed prior to submitting
+Because commitments can include the block height or hash, the commitment cannot be computed prior to submitting
 it to the DA Layer.
 
 Any DA provider can implement the following endpoints to receive and serve input data:
