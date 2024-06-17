@@ -156,7 +156,7 @@ function implementation(
 ) external view returns (Implementation memory);
 
 /// @notice Maps an L2 Chain ID to the SystemConfig address for that chain.
-/// @notice Most information for a chain can be found from it's the SystemConfig,
+/// @notice Most information for a chain can be found from its SystemConfig,
 /// with ProtocolVersions being the exception. ProtocolVersions is a singleton
 /// for all chains deployed by this contract.
 function systemConfig(uint256 chainId) external view returns (SystemConfig);
