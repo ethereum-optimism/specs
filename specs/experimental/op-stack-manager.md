@@ -120,7 +120,7 @@ struct L2OutputOracleInputs {
 ```
 
 Details on each parameter can be found in the code comments of the [`L2OutputOracle` contract].
-Note that not all `L2OutputOracle` parameters are able to be configured, for the reason as the `SystemConfig`.
+Note that not all `L2OutputOracle` parameters are able to be configured, for the same reason as the `SystemConfig`.
 
 On success, the following event is emitted:
 
