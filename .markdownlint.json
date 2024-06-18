@@ -10,5 +10,6 @@
   "no-empty-links": false,
   "single-title": false,
   "no-emphasis-as-heading": false,
-  "no-duplicate-header": false
+  "no-duplicate-header": false,
+  "no-inline-html": false
 }
