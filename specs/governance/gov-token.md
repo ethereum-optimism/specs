@@ -48,8 +48,8 @@ For backwards compatibility, the getter methods in the `GovernanceToken` MUST ch
 migrated or not. If the data has been migrated, the `GovernanceToken` MUST forward the call to the `Alligator` contract.
 Otherwise, the `GovernanceToken` MUST read from its state.
 
-The `delegate` and `delegateBySig` functions in the `GovernanceToken` are modifier such that they MUST forward the calls
-to the `Alligator` contract, which implements the required delegation logic.
+The `delegate` and `delegateBySig` functions in the `GovernanceToken` MUST forward the calls to the `Alligator` contract,
+which implements the required delegation logic.
 
 ### Token Minting
 
