@@ -40,8 +40,8 @@ state relative to the `Alligator`, such as when a token transfer is successful b
 All delegation-related state, including the `delegates`, `checkpoints`, and `numCheckpoints` mappings, is gradually
 shifted from the `GovernanceToken` to the `Alligator` contract through transactions that call the `Alligator`'s hook
 (e.g. transfers). In the hook, the `Alligator` should check if the `to` and `from` addresses have been migrated.
-If an address hasn't been migrated, the `Alligator` should save a copy of the `GovernanceToken`'s mappings for that
-address in its state. When reading delegation data in the `Alligator` for a delegator that hasn't been migrated,
+If an address hasn't been migrated, the `Alligator` should write the data from the `GovernanceToken`'s mappings for that
+address to its own state. When reading delegation data in the `Alligator` for a delegator that hasn't been migrated,
 the `Alligator` should pull the data from the `GovernanceToken`'s state.
 
 For backwards compatibility, the getter methods in the `GovernanceToken` MUST check if the data of a given address has been
