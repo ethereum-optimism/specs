@@ -146,12 +146,12 @@ struct Implementation {
 /// @notice Returns the latest approved release of the OP Stack contracts.
 /// @notice Release strings follow semver and are named with the
 /// format `op-contracts/vX.Y.Z`.
-function latestRelease() external view returns (bytes32);
+function latestRelease() external view returns (string memory);
 
 /// @notice Maps a release version to a contract name to its implementation data.
 function implementation(
-  bytes32 release,
-  bytes32 contractName
+  string memory release,
+  string memory contractName
 ) external view returns (Implementation memory);
 
 /// @notice Maps an L2 Chain ID to the SystemConfig address for that chain.
