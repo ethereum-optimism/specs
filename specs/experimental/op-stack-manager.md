@@ -1,13 +1,11 @@
 # OP Stack Manager
 
-[`op-contracts/v1.3.0`]: https://github.com/ethereum-optimism/optimism/releases/tag/op-contracts%2Fv1.3.0
+[`op-contracts/v1.4.0`]: https://github.com/ethereum-optimism/optimism/releases/tag/op-contracts%2Fv1.4.0
 [Optimism Monorepo releases]: https://github.com/ethereum-optimism/optimism/releases
 [contract releases]: https://github.com/ethereum-optimism/optimism/blob/main/packages/contracts-bedrock/VERSIONING.md
-[interop specification]: ../interop/overview.md
-[ethereum-optimism/specs#94]: https://github.com/ethereum-optimism/specs/issues/94
 [admin roles]: https://specs.optimism.io/protocol/configurability.html#admin-roles
-[`SystemConfig` contract]: https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.3.0/packages/contracts-bedrock/src/L1/SystemConfig.sol
-[`L2OutputOracle` contract]: https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.3.0/packages/contracts-bedrock/src/L1/L2OutputOracle.sol
+[`SystemConfig` contract]: https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.4.0/packages/contracts-bedrock/src/L1/SystemConfig.sol
+[`L2OutputOracle` contract]: https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.4.0/packages/contracts-bedrock/src/L1/L2OutputOracle.sol
 [standard configuration]: ../protocol/configurability.md
 [superchain registry]: https://github.com/ethereum-optimism/superchain-registry
 [ethereum-lists/chains]: https://github.com/ethereum-lists/chains
@@ -44,14 +42,23 @@ of governance approved [contract releases] can be found on the
 
 ## Deployment
 
-The OP Stack Manager is deployed at `0xTODO`. It can be deployed as follows:
+The OP Stack Manager is a proxied contract deployed at `0xTODO`. It can be deployed as follows:
 
 TODO.
 
 ## Interface
 
-Version 1.0.0 of the OP Stack Manager deploys the [`op-contracts/v1.3.0`]
+Version 1.0.0 of the OP Stack Manager deploys the [`op-contracts/v1.4.0`]
 contracts release.
+
+### `Proxy.sol`
+
+The OP Stack Manager is a proxied contract using the standard `Proxy.sol` contract that lives in
+the Optimism monorepo. Therefore the OP Stack Manager will have the same interface as the
+`Proxy.sol`, in addition to other methods defined in this specification.
+
+The privileged methods of the OP Stack Manager will be held by the L1 ProxyAdmin owner, as
+specified by the [standard configuration].
 
 ### `deploy`
 
@@ -61,7 +68,7 @@ complies with the [standard configuration]. It has the following interface:
 
 ```solidity
 function deploy(
-  uint64 l2ChainId,
+  uint256 l2ChainId,
   address proxyAdminOwner,
   SystemConfigInputs memory systemConfigInputs,
   L2OutputOracleInputs memory l2OutputOracleInputs
@@ -78,18 +85,12 @@ This corresponds to the L1 ProxyAdmin owner and L2 ProxyAdmin owner [admin roles
 
 The `l2ChainId` has the following restrictions:
 
-- It is limited to a `uint64`. This contradicts the [interop specification],
-which allows chain ID to be a `uint256`. This contradiction exists because it is
-currently unspecified how to unify a 256-bit chain ID with the existing batch inbox
-address convention, as tracked in [ethereum-optimism/specs#94]. This limitation
-may be removed in a future version of the OP Stack Manager once a solution to
-that issue is found.
 - It must not be equal to 0.
 - It must not be equal to the chain ID of the chain the OP Stack Manager is
 deployed on.
 - It must not be equal to a chain ID that is already present in the
 [ethereum-lists/chains] repository. This is not enforced onchain, but may matter
-for future versions of OP Stack Manager that handle upgrades via a privileged role.
+for future versions of OP Stack Manager that handle upgrades.
 
 The `SystemConfigInputs` struct is defined as follows:
 
@@ -164,23 +165,9 @@ function systemConfig(uint256 chainId) external view returns (SystemConfig);
 
 ### Batch Inbox Address
 
-Limiting the L2 chain ID to a `uint64` allows the chain's [Batch Inbox] address
-to be computed and set by the OP Stack Manager at `deploy` time. The batch
-inbox address follows the convention `0xFF000...000{l2ChainId}`. Specifically,
-it is computed as follows:
-
-```solidity
-/// @notice Maps an L2 chain ID to an L1 batch inbox address of the
-/// form `0xFF000...000{chainId}`.
-function chainIdToBatchInboxAddress(uint256 l2ChainId) public pure returns (address) {
-    return address(uint160(0xFF) << 152 | uint160(l2ChainId));
-}
-```
-
-This provides the property of ensuring a chain's batch inbox address can be
-derived as a pure function of chain ID. Aside from the UX benefit of easily
-converting between batch inbox address and chain ID, it also ensures
-uniqueness of batch inbox addresses.
+The chain's [Batch Inbox] address is computed at deploy time using the recommend approach defined
+in the [standard configuration]. This improves UX by removing an input, and ensures uniqueness of
+the batch inbox addresses.
 
 ### Contract Deployments
 
@@ -190,23 +177,22 @@ salt equal to either:
 - The L2 chain ID, or
 - `keccak256(bytes.concat(bytes32(uint256(l2ChainId)), contractName))`.
 
-The former is used when we are only deploying a single instance of given bytecode
-which is the case for the `ProxyAdmin`, `L1ChugSplashProxy`, `ResolvedDelegateProxy`, and `AddressManager` contracts.
-
-The latter is used when we are deploying multiple instances of given bytecode,
+The former is used when only a single instance of a given contract is deployed for a chain.
+The latter is used when deploying multiple instances of a given contract for a chain,
 which is the case of all `Proxy` contracts. For these, the `contractName`
 is the name of the implementation contract that will be used with the proxy.
 
 This provides the following benefits:
 
-- All contract addresses for a chain can be derived as a function of chain
-ID without any RPC calls.
+- Contract addresses for a chain can be derived as a function of chain ID without any RPC calls.
 - Chain ID uniqueness is enforced for free, as a deploy using the same chain ID
 will result in attempting to deploy to the same address, which is prohibited by
 the EVM.
   - This property is contingent on the proxy and `AddressManager` code not
   changing when OP Stack Manager is upgraded. Both of these are not planned to
   change.
+  - The OP Stack Manager is not responsible for enforcing chain ID uniqueness, so it is acceptable
+  if this property is not preserved in future versions of the OP Stack Manager.
 
 ## Security Considerations
 
@@ -238,10 +224,10 @@ transactions can be frontrun.
 While not specific to OP Stack Manager, when choosing a chain ID is important
 to consider that not all chain IDs are well supported by tools. For example,
 MetaMask [only supports](https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553)
-chain IDs up to `4503599627370476`, well below the max allowable `uint64` value.
+chain IDs up to `4503599627370476`, well below the max allowable 256-bit value.
 
 OP Stack Manager does not consider factors such as these. The EVM supports
-256-bit chain IDs, so OP Stack Manager sticks with the full `uint64` range to
+256-bit chain IDs, so OP Stack Manager sticks with the full 256-bit range to
 maximize compatibility.
 
 ### Proxy Admin Owner
