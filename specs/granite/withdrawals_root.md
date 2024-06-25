@@ -1,4 +1,4 @@
-# Fjord L2 Block Header Changes
+# Granite - `L2ToL1MessagePasser` Storage Root in Header
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -16,19 +16,24 @@
 
 # Header Changes
 
-After the Fjord hardfork's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
+After the Granite hardfork's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
 [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root _after_ the block has been executed.
 
 ## Timestamp Activation
 
-Fjord, like other network upgrades, is activated at a timestamp.
+Granite, like other network upgrades, is activated at a timestamp.
 Changes to the L2 Block execution rules are applied when the `L2 Timestamp >= activation time`.
 Changes to the L2 block header are applied when it is considering data from a L1 Block whose timestamp
 is greater than or equal to the activation timestamp.
 
 ## Header Validity Rules
 
-After Fjord activation, an L2 block header's `withdrawalsRoot` field is valid iff:
+Prior to Granite activation, the L2 block header's `withdrawalsRoot` field must be:
+
+- `nil` if Canyon has not been activated.
+- `keccak256(rlp(empty_string_code))` if Canyon has been activated.
+
+After Granite activation, an L2 block header's `withdrawalsRoot` field is valid iff:
 
 1. It is exactly 32 bytes in length.
 1. The [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root, as committed to in the `storageRoot` within the block
