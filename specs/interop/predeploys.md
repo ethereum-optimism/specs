@@ -11,6 +11,7 @@
     - [`_target`](#_target)
   - [`ExecutingMessage` Event](#executingmessage-event)
   - [Reference implementation](#reference-implementation)
+  - [Deposit Handling](#deposit-handling)
   - [`Identifier` Getters](#identifier-getters)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
@@ -26,6 +27,9 @@
 - [L1Block](#l1block)
   - [Static Configuration](#static-configuration)
   - [Dependency Set](#dependency-set)
+  - [Deposit Context](#deposit-context)
+    - [`isDeposit`](#isdeposit)
+    - [`setDepositing`](#setdepositing)
 - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -138,6 +142,12 @@ function executeMessage(Identifier calldata _id, address _target, bytes calldata
 ```
 
 Note that the `executeMessage` function is `payable` to enable relayers to earn in the gas paying asset.
+
+### Deposit Handling
+
+A call to `executeMessage` reverts if the call is made in a [deposit context](./derivation.md#deposit-context). The deposit context status can be determined by callling `isDeposit` on the `L1Block` contract.
+
+In the future, deposit handling will be modified to be more permissive. It will revert only in specific cases where interop dependency resolution is not feasible.
 
 ### `Identifier` Getters
 
@@ -415,6 +425,30 @@ id, is passed in as an argument, and false otherwise. Additionally, `L1Block` MU
 dependency set called `dependencySet()`. This function MUST return the array of chain ids that are in the dependency set.
 `L1Block` MUST also provide a public getter to get the dependency set size called `dependencySetSize()`. This function
 MUST return the length of the dependency set array.
+
+### Deposit Context
+
+The `L1Block` contract is updated with the following methods to support [deposit contexts](./derivation.md#deposit-context).
+
+#### `isDeposit`
+
+```solidity
+function isDeposit() (return bool)
+```
+
+A new method added to `L1Block` indicating whether the current execution is in a [deposit context](./derivation.md#deposit-context). The method has the following signature:
+
+
+Only the `CrossL2Inbox` is authorized to call `isDeposit`.
+
+#### `setDepositing`
+
+```solidity
+function setDepositing(bool _isDepositing)
+```
+A new method added to indicate whether the current execution is in a deposit context.
+
+Only the `DEPOSITOR_ACCOUNT` is authorized to call `setDepositing`.
 
 ## Security Considerations
 

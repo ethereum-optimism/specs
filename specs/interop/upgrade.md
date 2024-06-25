@@ -5,6 +5,7 @@
 **Table of Contents**
 
 - [Security Considerations](#security-considerations)
+  - [Deposit Transactions During Upgrades](#deposit-transactions-during-upgrades)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -27,5 +28,10 @@ The execution payload MUST set `noTxPool` to `true` for this block.
 The exact definitions for these upgrade transactions are still to be defined.
 
 ## Security Considerations
+
+TODO
+
+
+### Deposit Transactions During Upgrades
 
 TODO
