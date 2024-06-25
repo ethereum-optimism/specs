@@ -16,7 +16,7 @@
       - [Derivation](./fjord/derivation.md)
       - [Predeploys](./fjord/predeploys.md)
     - [Granite]()
-      - [Receipt Accumulator](./granite/receipts_accumulator.md)
+      - [Header Accumulator](./granite/header_accumulator.md)
   - [Bridges](./protocol/bridges.md)
     - [Messengers](./protocol/messengers.md)
     - [Deposits](./protocol/deposits.md)
