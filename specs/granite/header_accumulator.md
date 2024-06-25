@@ -1,18 +1,18 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 # Granite - Header Accumulator
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Overview](#overview)
 - [Timestamp Activation](#timestamp-activation)
 - [Rationale](#rationale)
 - [Constants & Definitions](#constants--definitions)
 - [Accumulator Tree Construction](#accumulator-tree-construction)
   - [Interior Commitment Truncation Rules](#interior-commitment-truncation-rules)
 - [Block Execution Changes](#block-execution-changes)
+  - [Block Validity Changes](#block-validity-changes)
   - [Header Changes](#header-changes)
-    - [`extraData` size enforcement](#extradata-size-enforcement)
     - [`extraData` format](#extradata-format)
     - [Header RLP Size Considerations](#header-rlp-size-considerations)
   - [Accumulator Tree Functions](#accumulator-tree-functions)
@@ -50,6 +50,11 @@ program to produce only a single L2 block at a height that includes _all receipt
 validated to resolve its dependents. With this, the computational complexity of resolving a dependency is drastically
 reduced, only requiring two merkle proofs as well as `n` merkle patricia trie proofs to verify inclusion within the
 receipt roots within the headers commited to in the accumulator tree.
+
+This feature also allows for very efficient historical state lookups for other situations that are periphery to this
+optimization for interop. For example, in the fault proof program, this feature removes the need for a commit-reveal
+walkback when retrieving data within the historical chain. Instead, we would only need to provide small inclusion
+proofs for a constant-time lookup of any data in the historical state accumulator.
 
 ## Constants & Definitions
 
