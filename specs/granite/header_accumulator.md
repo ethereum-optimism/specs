@@ -30,8 +30,8 @@
 ## Overview
 
 The Granite hardfork introduces a new phase of block execution, header hash accumulation. After fork activation,
-every `2 ** HEADER_BATCH_TREE_DEPTH` blocks, the execution layer must append a binary merkle tree of depth
-`HEADER_BATCH_TREE_DEPTH` of the previous `2 ** HEADER_BATCH_TREE_DEPTH` blocks (exclusive of the current block) to
+every `HEADER_BATCH_SIZE` blocks, the execution layer must append a binary merkle tree of depth
+`HEADER_BATCH_TREE_DEPTH` containing the previous `HEADER_BATCH_SIZE` block hashes (exclusive of the current block) to
 the header accumulation merkle tree of depth `ACCUMULATOR_TREE_DEPTH` in the previous header accumulation block.
 
 ## Timestamp Activation
@@ -60,24 +60,25 @@ proofs for a constant-time lookup of any data in the historical state accumulato
 
 ## Constants & Definitions
 
-| Term                      | Description                                                                                                                                   |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCUMULATOR_TREE_DEPTH`  | `27`                                                                                                                                          |
-| `HEADER_BATCH_TREE_DEPTH` | `5`                                                                                                                                           |
-| `TOTAL_TREE_DEPTH`        | `ACCUMULATOR_TREE_DEPTH + HEADER_BATCH_TREE_DEPTH`                                                                                            |
-| `TRUNCATED_COMMITMENT`    | `20` bytes. Must be sufficiently long to protect against hash collision.                                                                      |
-| `MERKLE_STACK_SIZE`       | `TRUNCATED_COMMITMENT * ACCUMULATOR_TREE_DEPTH`                                                                                               |
-| Accumulator Tree          | A partial merkle tree of depth `ACCUMULATOR_TREE_DEPTH`, storing the root nodes of header batch trees as leaves.                              |
-| Header Batch Tree         | A binary merkle tree of depth `HEADER_BATCH_TREE_DEPTH`, storing the header hashes of `2 ** HEADER_BATCH_TREE_DEPTH` block headers as leaves. |
-| Header Hash               | `keccak256(rlp(header))`                                                                                                                      |
-| Merkle Stack              | The path to the latest node added to the Accumulator Tree. This is an array of `MERKLE_STACK_SIZE` bytes in length.                           |
-| Partial Merkle Tree       | As specified in [_End-to-End Formal Verification of Ethereum 2.0 Deposit Smart Contract_][imt] by Daejun Park, Yi Zhang, and Grigore Rosu.    |
-| Zero Hashes               | As specified in [_End-to-End Formal Verification of Ethereum 2.0 Deposit Smart Contract_][imt] by Daejun Park, Yi Zhang, and Grigore Rosu.    |
+| Term                      | Description                                                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ACCUMULATOR_TREE_DEPTH`  | `27`                                                                                                                                       |
+| `HEADER_BATCH_TREE_DEPTH` | `5`                                                                                                                                        |
+| `TOTAL_TREE_DEPTH`        | `ACCUMULATOR_TREE_DEPTH + HEADER_BATCH_TREE_DEPTH`                                                                                         |
+| `TRUNCATED_COMMITMENT`    | `20` bytes. Must be sufficiently long to protect against hash collision.                                                                   |
+| `MERKLE_STACK_SIZE`       | `TRUNCATED_COMMITMENT * ACCUMULATOR_TREE_DEPTH`                                                                                            |
+| `HEADER_BATCH_SIZE`       | `2 ** HEADER_BATCH_TREE_DEPTH`                                                                                                             |
+| Accumulator Tree          | A partial merkle tree of depth `ACCUMULATOR_TREE_DEPTH`, storing the root nodes of header batch trees as leaves.                           |
+| Header Batch Tree         | A binary merkle tree of depth `HEADER_BATCH_TREE_DEPTH`, storing the header hashes of `HEADER_BATCH_SIZE` block headers as leaves.         |
+| Header Hash               | `keccak256(rlp(header))`                                                                                                                   |
+| Merkle Stack              | The path to the latest node added to the Accumulator Tree. This is an array of `MERKLE_STACK_SIZE` bytes in length.                        |
+| Partial Merkle Tree       | As specified in [_End-to-End Formal Verification of Ethereum 2.0 Deposit Smart Contract_][imt] by Daejun Park, Yi Zhang, and Grigore Rosu. |
+| Zero Hashes               | As specified in [_End-to-End Formal Verification of Ethereum 2.0 Deposit Smart Contract_][imt] by Daejun Park, Yi Zhang, and Grigore Rosu. |
 
 ## Accumulator Tree Construction
 
 The header accumulator tree is constructed as a partial merkle tree of depth `ACCUMULATOR_TREE_DEPTH`, with leaves
-representing the merkle roots of binary header batch trees, containing `2 ** HEADER_BATCH_TREE_DEPTH` blocks.
+representing the merkle roots of binary header batch trees, containing `HEADER_BATCH_SIZE` blocks.
 
 As an example, below is an accumulator tree with `ACCUMULATOR_TREE_DEPTH = 1` and `HEADER_BATCH_TREE_DEPTH = 2`,
 holding a total of `8` blocks' header hashes across two batches:
@@ -120,7 +121,7 @@ produced digest as a big-endian 32-byte unsigned integer.
 
 ## Block Execution Changes
 
-After Granite activation, every time `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the execution layer will:
+After Granite activation, every time `block.number % HEADER_BATCH_SIZE == 0`, the execution layer will:
 
 1. Craft a binary merkle tree of depth `HEADER_BATCH_TREE_DEPTH` with the block hashes of
    `[block.number - HEADER_BATCH_TREE_DEPTH, block)` and compute its root, using the `keccak256` hash function.
@@ -142,23 +143,23 @@ After Granite activation, every time `block.number % 2 ** HEADER_BATCH_TREE_DEPT
 
 ### Block Validity Changes
 
-1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the accumulator tree merkle root in the `extraData` must
+1. If `block.number % HEADER_BATCH_SIZE == 0`, the accumulator tree merkle root in the `extraData` must
    contain all previous header batches from the previous accumulator tree, in-order, with the current header
    batch appended in the next available leaf.
    - If `block.number` is the first header accumulation block, the accumulator merkle root in `extraData` must contain
      only the current header batch at the `0`th index.
-1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the `header_batch_num` in the header must equal the
+1. If `block.number % HEADER_BATCH_SIZE == 0`, the `header_batch_num` in the header must equal the
    previous header accumulation block's `header_batch_num` plus `1`.
    - If `block.number` is the first header accumulation block, `header_batch_num` must equal `1`.
-1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the `extraData` size must be
+1. If `block.number % HEADER_BATCH_SIZE == 0`, the `extraData` size must be
    `8 + MERKLE_STACK_SIZE`.
-1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH > 0`, the `extraData` size must be `0`.
+1. If `block.number % HEADER_BATCH_SIZE > 0`, the `extraData` size must be `0`.
 
 ### Header Changes
 
 #### `extraData` format
 
-For header accumulation blocks (`block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`), the accumulator tree root
+For header accumulation blocks (`block.number % HEADER_BATCH_SIZE == 0`), the accumulator tree root
 as well as the merkle stack should be encoded as follows:
 
 ```txt
@@ -179,7 +180,7 @@ By extending the `extraData` field to occasionally include the merkle root of th
 merkle stack of the previously added leaf, we do introduce a risk for bloating historical state. Mitigations for
 this state expansion in this proposal include:
 
-1. Batching additions to the global accumulator root every `2 ** HEADER_BATCH_TREE_DEPTH` blocks to remove the
+1. Batching additions to the global accumulator root every `HEADER_BATCH_SIZE` blocks to remove the
    requirement to store the accumulator tree root & merkle stack in every block header.
 1. Truncating the intermediate commitments within the global accumulator tree to reduce the `extraData` field's
    size by `(32 - TRUNCATED_COMMITMENT) * ACCUMULATOR_TREE_DEPTH` bytes per accumulator block.
@@ -188,7 +189,7 @@ The total size of the `extraData` field in header accumulation blocks' headers w
 `8 + MERKLE_STACK_SIZE` bytes in length.
 
 With the parameters of `TRUNCATED_COMMITMENT = 20` & `ACCUMULATOR_TREE_DEPTH = 27`, this would imply an extra `548`
-bytes per `2 ** HEADER_BATCH_TREE_DEPTH` blocks. At a block time of `2` seconds, this implies an extra `0.7398 MB` of
+bytes per `HEADER_BATCH_SIZE` blocks. At a block time of `2` seconds, this implies an extra `0.7398 MB` of
 data added to historical state per day.
 
 ### Accumulator Tree Functions
@@ -290,7 +291,7 @@ cause us issues. However, this proposal seeks to temporarily include the informa
 
 For most execution clients, this should have a very minimal impact on block execution performance. Because the state
 of the previous `256` blocks is commonly kept in-memory for EVM opcodes such as `BLOCKHASH`, fetching the `extraData`
-field from the previous header accumulation block and recomputing the rerceipts batch + accumulator trie should be
+field from the previous header accumulation block and recomputing the header batch + accumulator trie should be
 very fast, assuming `HEADER_BATCH_TREE_DEPTH` is not too large.
 
 ## Infrastructure Considerations
