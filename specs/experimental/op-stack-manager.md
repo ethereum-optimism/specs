@@ -23,6 +23,7 @@ of governance approved [contract releases] can be found on the
 
 - [Deployment](#deployment)
 - [Interface](#interface)
+  - [`Proxy.sol`](#proxysol)
   - [`deploy`](#deploy)
   - [Getter Methods](#getter-methods)
 - [Implementation](#implementation)
