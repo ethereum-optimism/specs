@@ -3,9 +3,6 @@
 [`op-contracts/v1.4.0`]: https://github.com/ethereum-optimism/optimism/releases/tag/op-contracts%2Fv1.4.0
 [Optimism Monorepo releases]: https://github.com/ethereum-optimism/optimism/releases
 [contract releases]: https://github.com/ethereum-optimism/optimism/blob/main/packages/contracts-bedrock/VERSIONING.md
-[admin roles]: https://specs.optimism.io/protocol/configurability.html#admin-roles
-[`SystemConfig` contract]: https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.4.0/packages/contracts-bedrock/src/L1/SystemConfig.sol
-[`L2OutputOracle` contract]: https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.4.0/packages/contracts-bedrock/src/L1/L2OutputOracle.sol
 [standard configuration]: ../protocol/configurability.md
 [superchain registry]: https://github.com/ethereum-optimism/superchain-registry
 [ethereum-lists/chains]: https://github.com/ethereum-lists/chains
@@ -67,21 +64,21 @@ deploy the full set of L1 contracts required to setup a new OP Stack chain that
 complies with the [standard configuration]. It has the following interface:
 
 ```solidity
+struct Roles {
+  address proxyAdminOwner;
+  address systemConfigOwner;
+  bytes32 batcherHash;
+  address unsafeBlockSigner;
+  address proposer;
+  address challenger;
+}
+
 function deploy(
-  uint256 l2ChainId,
-  address proxyAdminOwner,
-  SystemConfigInputs memory systemConfigInputs,
-  L2OutputOracleInputs memory l2OutputOracleInputs
-) external returns (SystemConfig systemConfig);
+  uint64 l2ChainId,
+  Roles roles,
+  uint256 scalar
+) external returns (SystemConfig)
 ```
-
-where:
-
-- `l2ChainId` is the chain ID of the OP Stack chain.
-- `proxyAdminOwner` is the address that will own the `ProxyAdmin` contract that will be deployed.
-This corresponds to the L1 ProxyAdmin owner and L2 ProxyAdmin owner [admin roles].
-- `systemConfigInputs` is a struct defining configuration of the `SystemConfig` inputs.
-- `l2OutputOracleInputs` is a struct defining configuration of the `L2OutputOracle` inputs.
 
 The `l2ChainId` has the following restrictions:
 
@@ -91,35 +88,6 @@ deployed on.
 - It must not be equal to a chain ID that is already present in the
 [ethereum-lists/chains] repository. This is not enforced onchain, but may matter
 for future versions of OP Stack Manager that handle upgrades.
-
-The `SystemConfigInputs` struct is defined as follows:
-
-```solidity
-struct SystemConfigInputs {
-  address systemConfigOwner;
-  uint256 overhead;
-  uint256 scalar;
-  bytes32 batcherHash;
-  address unsafeBlockSigner;
-}
-```
-
-Details on each parameter can be found in the code comments of the [`SystemConfig` contract].
-Note that not all `SystemConfig` parameters are able to be configured.
-This is because the OP Stack Manager enforces compliance with the [standard configuration], and only allows
-configuration where allowed by the standard configuration.
-
-The `L2OutputOracleInputs` struct is defined as follows:
-
-```solidity
-struct L2OutputOracleInputs {
-  address proposer;
-  address challenger;
-}
-```
-
-Details on each parameter can be found in the code comments of the [`L2OutputOracle` contract].
-Note that not all `L2OutputOracle` parameters are able to be configured, for the same reason as the `SystemConfig`.
 
 On success, the following event is emitted:
 
