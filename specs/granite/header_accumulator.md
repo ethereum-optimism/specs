@@ -16,6 +16,8 @@
     - [`extraData` format](#extradata-format)
     - [Header RLP Size Considerations](#header-rlp-size-considerations)
   - [Accumulator Tree Functions](#accumulator-tree-functions)
+    - [Zero Hashes](#zero-hashes)
+    - [Tree Root](#tree-root)
     - [Insertion](#insertion)
     - [Verification](#verification)
 - [Eventual Migration to EIP-7685](#eventual-migration-to-eip-7685)
@@ -140,8 +142,6 @@ After Granite activation, every time `block.number % 2 ** HEADER_BATCH_TREE_DEPT
 
 ### Block Validity Changes
 
-1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the header's merkle stack must hash to the same root as
-   exists in the `extraData`.
 1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the accumulator tree merkle root in the `extraData` must
    contain all previous header batches from the previous accumulator tree, in-order, with the current header
    batch appended in the next available leaf.
@@ -192,6 +192,43 @@ bytes per `2 ** HEADER_BATCH_TREE_DEPTH` blocks. At a block time of `2` seconds,
 data added to historical state per day.
 
 ### Accumulator Tree Functions
+
+#### Zero Hashes
+
+_Modified from the
+[Beacon Chain Specification](https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#is_valid_merkle_branch),
+to account for the truncated digests._
+
+```python
+def zero_hashes(depth: uint64) -> Sequence[Bytes20]:
+  """
+  Computes the zero hashes for an incremental tree of ``depth``
+  """
+  zero_hashes = Sequence[Bytes20.ZERO; depth]
+  for height in range(depth - 1):
+    zero_hashes[height + 1] = keccak256(zero_hashes[height] + zero_hashes[height])[0:20]
+  return zero_hashes
+```
+
+#### Tree Root
+
+_Modified from the
+[Beacon Chain Specification](https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#is_valid_merkle_branch),
+to account for the truncated digests._
+
+```python
+def tree_root(branch: Sequence[Bytes20], depth: uint64) -> Bytes20:
+    """
+    Computes the root node of the incremental merkle tree, based off of the previous ``branch``
+    """
+    node = Bytes20.ZERO
+    for height in range(depth):
+      if ((size & 1) == 1):
+        node = keccak256(branch[height] + node)
+      else:
+        node = keccak256(node, zero_hashes[height])
+    return node
+```
 
 #### Insertion
 
