@@ -2631,6 +2631,7 @@ will not match that of the block with that number and the call will revert.</p>
 </li>
 <li><a href="protocol/exec-engine.html#ecotone-disable-blob-transactions">Ecotone: disable Blob-transactions</a></li>
 <li><a href="protocol/exec-engine.html#ecotone-beacon-block-root">Ecotone: Beacon Block Root</a></li>
+<li><a href="protocol/exec-engine.html#p2p-modifications">P2P Modifications</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <p>This document outlines the modifications, configuration and usage of a L1 execution engine for L2.</p>
@@ -2989,6 +2990,10 @@ And thus with <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> the
 <li>The "Beacon roots contract" is deployed at Ecotone upgrade-time, or embedded at genesis if activated at genesis.</li>
 <li>The block state-transition process now includes the same special beacon-block-root EVM processing as L1 ethereum.</li>
 </ul>
+<h2 id="p2p-modifications"><a class="header" href="#p2p-modifications">P2P Modifications</a></h2>
+<p>The Ethereum Node Record (ENR) for an Optimism execution node must contain an <code>opel</code> key-value pair where the key is
+<code>opel</code> and the value is a <a href="https://eips.ethereum.org/EIPS/eip-2124">EIP-2124</a> fork id.
+The EL uses a different key from the CL in order to stop EL and CL nodes from connecting to each other.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="rollup-node-specification"><a class="header" href="#rollup-node-specification">Rollup Node Specification</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -3128,7 +3133,7 @@ This may include halting the engine, with consent of the rollup node operator.</
 <li><a href="protocol/rollup-node-p2p.html#identification">Identification</a></li>
 <li><a href="protocol/rollup-node-p2p.html#discv5">Discv5</a>
 <ul>
-<li><a href="protocol/rollup-node-p2p.html#structure">Structure</a></li>
+<li><a href="protocol/rollup-node-p2p.html#consesus-layer-structure">Consesus Layer Structure</a></li>
 </ul>
 </li>
 <li><a href="protocol/rollup-node-p2p.html#libp2p">LibP2P</a>
@@ -3212,7 +3217,7 @@ The network identity is a <code>secp256k1</code> key, used for both discovery an
 and L2 network identification. Generally encoded in base64.</li>
 </ul>
 <h3 id="discv5"><a class="header" href="#discv5">Discv5</a></h3>
-<h4 id="structure"><a class="header" href="#structure">Structure</a></h4>
+<h4 id="consesus-layer-structure"><a class="header" href="#consesus-layer-structure">Consesus Layer Structure</a></h4>
 <p>The Ethereum Node Record (ENR) for an Optimism rollup node must contain the following values, identified by unique keys:</p>
 <ul>
 <li>An IPv4 address (<code>ip</code> field) and/or IPv6 address (<code>ip6</code> field).</li>
