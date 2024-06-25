@@ -133,13 +133,23 @@ After Granite activation, every time `block.number % 2 ** HEADER_BATCH_TREE_DEPT
 1. Encode the merkle root and modified merkle stack as defined below, and insert into the executed block's header
    prior to sealing it.
 
-### Header Changes
+### Block Validity Changes
 
-#### `extraData` size enforcement
-
+1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the header's merkle stack must hash to the same root as
+   exists in the `extraData`.
+1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the accumulator tree merkle root in the `extraData` must
+   contain all previous header batches from the previous accumulator tree, in-order, with the current header
+   batch appended in the next available leaf.
+   - If `block.number` is the first header accumulation block, the accumulator merkle root in `extraData` must contain
+     only the current header batch at the `0`th index.
+1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the `header_batch_num` in the header must equal the
+   previous header accumulation block's `header_batch_num` plus `1`.
+   - If `block.number` is the first header accumulation block, `header_batch_num` must equal `1`.
 1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the `extraData` size must be
    `8 + 32 * 2 + TRUNCATED_COMMITMENT * (ACCUMULATOR_TREE_DEPTH - 1)`.
 1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH > 0`, the `extraData` size must be `0`.
+
+### Header Changes
 
 #### `extraData` format
 
@@ -150,6 +160,12 @@ as well as the merkle stack should be encoded as follows:
 merkle_stack = sibling_leaf_32b ++ intermediate_20b_0 ++ ... ++ intermediate_20b_n
 extra_data = u64(header_batch_num) ++ accumulator_tree_root ++ merkle_stack
 ```
+
+| Byte Range                                          | Field                                                   |
+| --------------------------------------------------- | ------------------------------------------------------- |
+| `[0, 8)`                                            | `header_batch_num` (big-endian 64-bit unsigned integer) |
+| `[8, 40)`                                           | `accumulator_trie_root`                                 |
+| `[40, 40 + 32 + (ACCUMULATOR_TREE_DEPTH - 1) * 20)` | `merkle_stack`                                          |
 
 where `++` denotes concatenation.
 
