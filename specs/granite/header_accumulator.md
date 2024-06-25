@@ -102,9 +102,9 @@ flowchart TD
 ```
 
 Both the global accumulator tree as well as the header batch tree use `keccak256` as their hashing function. For all
-nodes within the header accumulator tree, barring `depth = 0` and `depth = ACCUMULATOR_TREE_DEPTH`, all commitments
-are shortened to `TRUNCATED_COMMITMENT` bytes in length to save space in the Header's `extraData` field by virtue of
-shortening the merkle stack's encoded length.
+nodes within the header accumulator tree, all commitments are shortened to `TRUNCATED_COMMITMENT` bytes in length to
+save space in the Header's `extraData` field by virtue of shortening the merkle stack's encoded length. Commitments
+within the header batch tree are not to be truncated.
 
 ### Interior Commitment Truncation Rules
 
@@ -151,7 +151,7 @@ After Granite activation, every time `block.number % 2 ** HEADER_BATCH_TREE_DEPT
    previous header accumulation block's `header_batch_num` plus `1`.
    - If `block.number` is the first header accumulation block, `header_batch_num` must equal `1`.
 1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 0`, the `extraData` size must be
-   `8 + 32 * 2 + TRUNCATED_COMMITMENT * (ACCUMULATOR_TREE_DEPTH - 1)`.
+   `8 + MERKLE_STACK_SIZE`.
 1. If `block.number % 2 ** HEADER_BATCH_TREE_DEPTH > 0`, the `extraData` size must be `0`.
 
 ### Header Changes
@@ -162,15 +162,14 @@ For header accumulation blocks (`block.number % 2 ** HEADER_BATCH_TREE_DEPTH == 
 as well as the merkle stack should be encoded as follows:
 
 ```txt
-merkle_stack = sibling_leaf_32b ++ intermediate_20b_0 ++ ... ++ intermediate_20b_n
-extra_data = u64(header_batch_num) ++ accumulator_tree_root ++ merkle_stack
+merkle_stack = intermediate_0 ++ ... ++ intermediate_n
+extra_data = u64(header_batch_num) ++ merkle_stack
 ```
 
-| Byte Range                                          | Field                                                   |
-| --------------------------------------------------- | ------------------------------------------------------- |
-| `[0, 8)`                                            | `header_batch_num` (big-endian 64-bit unsigned integer) |
-| `[8, 40)`                                           | `accumulator_trie_root`                                 |
-| `[40, 40 + 32 + (ACCUMULATOR_TREE_DEPTH - 1) * 20)` | `merkle_stack`                                          |
+| Byte Range                   | Field                                                   |
+| ---------------------------- | ------------------------------------------------------- |
+| `[0, 8)`                     | `header_batch_num` (big-endian 64-bit unsigned integer) |
+| `[8, 8 + MERKLE_STACK_SIZE)` | `merkle_stack`                                          |
 
 where `++` denotes concatenation.
 
@@ -183,13 +182,13 @@ this state expansion in this proposal include:
 1. Batching additions to the global accumulator root every `2 ** HEADER_BATCH_TREE_DEPTH` blocks to remove the
    requirement to store the accumulator tree root & merkle stack in every block header.
 1. Truncating the intermediate commitments within the global accumulator tree to reduce the `extraData` field's
-   size by `(32 - TRUNCATED_COMMITMENT) * (ACCUMULATOR_TREE_DEPTH - 1)` bytes per accumulator block.
+   size by `(32 - TRUNCATED_COMMITMENT) * ACCUMULATOR_TREE_DEPTH` bytes per accumulator block.
 
 The total size of the `extraData` field in header accumulation blocks' headers will be
-`8 + 32 * 2 + TRUNCATED_COMMITMENT * (ACCUMULATOR_TREE_DEPTH - 1)` bytes in length.
+`8 + MERKLE_STACK_SIZE` bytes in length.
 
-With the parameters of `TRUNCATED_COMMITMENT = 20` & `ACCUMULATOR_TREE_DEPTH = 27`, this would imply an extra `592`
-bytes per `2 ** HEADER_BATCH_TREE_DEPTH` blocks. At a block time of `2` seconds, this implies an extra `0.7992 MB` of
+With the parameters of `TRUNCATED_COMMITMENT = 20` & `ACCUMULATOR_TREE_DEPTH = 27`, this would imply an extra `548`
+bytes per `2 ** HEADER_BATCH_TREE_DEPTH` blocks. At a block time of `2` seconds, this implies an extra `0.7398 MB` of
 data added to historical state per day.
 
 ### Accumulator Tree Functions
@@ -201,13 +200,14 @@ _Modified from the
 to account for the truncated digests._
 
 ```python
-def insert_leaf(node: Bytes, branch: Sequence[Bytes], header_batch_num: uint64, depth: uint64) -> bool:
+def insert_leaf(node: Bytes32, branch: Sequence[Bytes20], header_batch_num: uint64, depth: uint64) -> bool:
     """
     Inserts the ``node`` into the merkle branch ``branch`` at ``header_batch_num + 1``. Returns false
     if the loop was exhausted without returning, which should be considered a critical failure.
     """
     header_batch_num += 1
     size = header_batch_num
+    node = node[0:20]
     for height in range(depth):
       if ((size & 1) == 1):
         branch[height] = node
@@ -224,11 +224,11 @@ _Modified from the
 to account for the truncated digests._
 
 ```python
-def is_valid_merkle_branch(leaf: Bytes, branch: Sequence[Bytes], depth: uint64, index: uint64, root: Root) -> bool:
+def is_valid_merkle_branch(leaf: Bytes32, branch: Sequence[Bytes20], depth: uint64, index: uint64, root: Root) -> bool:
     """
     Check if ``leaf`` at ``index`` verifies against the Merkle ``root`` and ``branch``.
     """
-    value = leaf
+    value = leaf[0:20]
     for i in range(depth):
         if index // (2**i) % 2:
             value = hash(branch[i] + value)[0:20]
