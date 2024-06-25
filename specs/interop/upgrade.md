@@ -31,7 +31,6 @@ The exact definitions for these upgrade transactions are still to be defined.
 
 TODO
 
-
 ### Deposit Transactions During Upgrades
 
 TODO
