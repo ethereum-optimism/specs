@@ -68,7 +68,7 @@ complies with the [standard configuration]. It has the following interface:
 struct Roles {
   address proxyAdminOwner;
   address systemConfigOwner;
-  bytes32 batcherHash;
+  address batcher;
   address unsafeBlockSigner;
   address proposer;
   address challenger;
@@ -77,7 +77,8 @@ struct Roles {
 function deploy(
   uint64 l2ChainId,
   Roles roles,
-  uint256 scalar
+  uint32 basefeeScalar,
+  uint32 blobBasefeeScalar
 ) external returns (SystemConfig)
 ```
 
@@ -167,16 +168,20 @@ the EVM.
 
 ### Chain ID Source of Truth
 
-One of the restrictions on chain ID is that `deploy` can only be called once per
-chain ID, because contract addresses are a function of chain ID. However,
-future versions of OP Stack Manager may manage upgrades, which will require
-"registering" existing pre-OP Stack Manager chains in the OP Stack Manager.
-Registration will be a privileged action, and the [superchain registry] will be
+One of the implicit restrictions on chain ID is that `deploy` can only be called
+once per chain ID, because contract addresses are a function of chain ID. However,
+future versions of OP Stack Manager may:
+
+- Change the Proxy code used, which would allow a duplicate chain ID to be deployed
+if there is only the implicit check.
+- Manage upgrades, which will require "registering" existing pre-OP Stack Manager
+chains in the OP Stack Manager. Registration will be a privileged action, and the [superchain registry] will be
 used as the source of truth for registrations.
 
 This means, for example, if deploying a chain with a chain ID of 10—which is OP
 Mainnet's chain ID—deployment will execute successfully, but the entry in OP
-Stack Manager may be overwritten in a future upgrade. Therefore, it is strongly
+Stack Manager may be overwritten in a future upgrade. Therefore, chain ID
+uniqueness is not enforced by the OP Stack Manager, and it is strongly
 recommended to only use chain IDs that are not already present in the
 [ethereum-lists/chains] repository.
 
