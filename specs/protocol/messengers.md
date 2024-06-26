@@ -34,6 +34,7 @@ The base `CrossDomainMessenger` interface is:
 
 ```solidity
 interface CrossDomainMessenger {
+    event RefundedRelayMessage(bytes32 indexed msgHash);
     event FailedRelayedMessage(bytes32 indexed msgHash);
     event RelayedMessage(bytes32 indexed msgHash);
     event SentMessage(address indexed target, address sender, bytes message, uint256 messageNonce, uint256 gasLimit);
@@ -67,8 +68,9 @@ interface CrossDomainMessenger {
 The `sendMessage` function is used to send a cross domain message. To trigger
 the execution on the other side, the `relayMessage` function is called.
 Successful messages have their hash stored in the `successfulMessages` mapping
-while unsuccessful messages have their hash stored in the `failedMessages`
-mapping.
+while unsuccessful but replayable messages have their hash stored in the `failedMessages`
+mapping. For the unsuccessful and non-replayable messages, their whole ETH amounts are
+sent back to the sender on the source chain.
 
 The user experience when sending from L1 to L2 is a bit different than when
 sending a transaction from L2 to L1. When going into L1 from L2, the user does
