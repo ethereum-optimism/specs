@@ -15,6 +15,8 @@
       - [Execution Engine](./fjord/exec-engine.md)
       - [Derivation](./fjord/derivation.md)
       - [Predeploys](./fjord/predeploys.md)
+    - [Granite]()
+      - [Header Accumulator](./granite/header_accumulator.md)
   - [Bridges](./protocol/bridges.md)
     - [Messengers](./protocol/messengers.md)
     - [Deposits](./protocol/deposits.md)
