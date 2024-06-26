@@ -131,7 +131,7 @@ After Granite activation, every time `block.number % HEADER_BATCH_SIZE == 0`, th
      and continue to the next step.
    - If the current block is not the first header accumulation block, and the block header at
      `block.number - HEADER_BATCH_TREE_DEPTH` does not contain a valid header accumulator `extraData` field,
-     block execution should _always_ fail immediately.
+     block execution _must_ fail immediately.
    - If the current block is not the first header accumulation block, and the block header at
      `block.number - HEADER_BATCH_TREE_DEPTH` does contain a valid header accumulator `extraData` field, continue to
      the next step.
