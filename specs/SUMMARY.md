@@ -17,6 +17,7 @@
       - [Predeploys](./fjord/predeploys.md)
     - [Granite]()
       - [Header Accumulator](./granite/header_accumulator.md)
+      - [Withdrawals Root](./granite/withdrawals_root.md)
   - [Bridges](./protocol/bridges.md)
     - [Messengers](./protocol/messengers.md)
     - [Deposits](./protocol/deposits.md)
