@@ -32,6 +32,7 @@ they need not be the same entity in practice.
 - [Messaging](./messaging.md): messaging functionality, core of protocol-level interoperability.
 - [Predeploys](./predeploys.md): system contracts to interface with other chains.
 - [Execution](./execution.md): enhancements to the execution-layer.
+- [Driver](./driver.md): conditions of state-transition and safety changes.
 - [Sequencer](./sequencer.md): Sequencer Policy and block-building information.
 - [Verifier](./verifier.md): Verification of cross-L2 messaging.
 - [Rollup Node P2P](./rollup_node_p2p.md): modifications to the rollup-node P2P layer to support fast interop.
