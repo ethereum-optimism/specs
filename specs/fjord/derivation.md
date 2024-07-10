@@ -66,7 +66,7 @@ The rules around the activation time are deliberately being kept simple, so no o
 be applied other than to change the parameter to a constant. The first Fjord block would in theory
 accept older L1-origin timestamps than its predecessor. However, since the L1 origin timestamp must
 also increase, the only noteworthy scenario that can happen is that the first few Fjord blocks will
-be in the same epoch as the the last pre-Fjord blocks, even if these blocks would not be allowed to
+be in the same epoch as the last pre-Fjord blocks, even if these blocks would not be allowed to
 have these L1-origin timestamps according to pre-Fjord rules. So the same L1 timestamp would be
 shared within a pre- and post-Fjord mixed epoch. This is considered a feature and is not considered
 a security issue.
@@ -90,7 +90,7 @@ timestamp.
 
 A block with a gas limit of 30 Million gas has a maximum theoretical size of 7.5 Megabytes by being filled up
 with transactions have only zeroes. Currently, a byte with the value `0` consumes 4 gas.
-If the block gas limit is raised above 40 Million gas, it is possible to create a block that is large than
+If the block gas limit is raised above 40 Million gas, it is possible to create a block that is larger than
 `MAX_RLP_BYTES_PER_CHANNEL`.
 L2 blocks cannot be split across channels which means that a block that is larger than `MAX_RLP_BYTES_PER_CHANNEL`
 cannot be batch submitted.
@@ -99,14 +99,14 @@ In addition, we are able to improve compression ratios by increasing the amount 
 single channel.
 With 33% compression ratio over 6 blobs, we are currently submitting 2.2 MB of compressed data & 0.77 MB of uncompressed
 data per channel.
-This will allow use to use up to approximately 275 blobs per channel.
+This will allow us to use up to approximately 275 blobs per channel.
 
 Raising `MAX_CHANNEL_BANK_SIZE` is helpful to ensure that we are able to process these larger channels. We retain the
 same ratio of 10 between `MAX_RLP_BYTES_PER_CHANNEL` and `MAX_CHANNEL_BANK_SIZE`.
 
 ### Security Considerations
 
-Raising the these limits increases the amount of resources a rollup node would require.
+Raising these limits increases the amount of resources a rollup node would require.
 Specifically nodes may have to allocate large chunks of memory for a channel and will have to potentially allocate more
 memory to the channel bank.
 `MAX_RLP_BYTES_PER_CHANNEL` was originally added to avoid zip bomb attacks.
