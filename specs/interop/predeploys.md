@@ -334,7 +334,7 @@ of the log, and caller are all expected contracts.
 It's also important to ensure only the hashes of messages that were initiated
 in this chain are accepted.
 
-If all checks have been successful, the message has is stored in the
+If all checks have been successful, the message is stored in the
 `expiredMessages` mapping. This enables smart contracts to read from it and
 check whether a message expired or not, and handle this case accordingly.
 
