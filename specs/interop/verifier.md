@@ -95,7 +95,7 @@ to more quickly reorganize out invalid blocks.
 be signed by the sequencer. This signature represents the sequencer's claim that it
 built a block that conforms to the protocol. `unsafe` blocks exist to give low latency access to the
 latest information. To keep the latency as low as possible, cross chain messages are assumed valid
-at this stage. This means that the remote unsafe inputs are trusted soley because they were
+at this stage. This means that the remote unsafe inputs are trusted solely because they were
 included in a block by the sequencer.
 
 An alternative approach to `unsafe` inputs would be to include an SGX proof that the sequencer ran
@@ -106,7 +106,7 @@ particular software when building the block.
 - MUST have valid cross chain messages
 
 `cross-unsafe` represents the `unsafe` blocks that had their cross chain messages fully verified.
-The network can be represented as a graph where each block across all chains are represented as
+The network can be represented as a graph where each block across all chains is represented as
 a node and then a directed edge between two blocks represents the source block of the initiating
 message and the block that included the executing message.
 
