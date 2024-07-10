@@ -148,6 +148,6 @@ message. This can be done by wrapping the `L2ToL2CrossDomainMessenger` with a pa
 ### Cross Chain Message Latency
 
 The latency at which a cross chain message is relayed from the moment at which it was initiated is bottlenecked by
-the security of the preconfirmations. An initiating transaction and a executing transaction MAY have the same timestamp,
+the security of the preconfirmations. An initiating transaction and an executing transaction MAY have the same timestamp,
 meaning that a secure preconfirmation scheme enables atomic cross chain composability. Any sort of equivocation on
 behalf of the sequencer will result in the production of invalid blocks.
