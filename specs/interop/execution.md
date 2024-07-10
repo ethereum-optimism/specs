@@ -16,7 +16,7 @@ for the initial release.
 
 After the full execution of a block, the set of [logs][log] that are emitted MUST be merklized and
 included in the block header. This commitment MUST be included as the block header's
-[extra data field][block-extra-data]. The events are serialized with using [Simple Serialize][ssz] aka SSZ.
+[extra data field][block-extra-data]. The events are serialized by using [Simple Serialize][ssz] aka SSZ.
 
 The goal of committing to data in the extra data field is to make commitments to data required to
 verify executing messages easier. The commitment could also commit to the set of executing messages
