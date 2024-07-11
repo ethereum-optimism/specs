@@ -2,30 +2,32 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Message](#message)
-  - [Message payload](#message-payload)
-  - [Message Identifier](#message-identifier)
-- [Messaging ends](#messaging-ends)
-  - [Initiating Messages](#initiating-messages)
-  - [Executing Messages](#executing-messages)
-- [Messaging Invariants](#messaging-invariants)
-  - [Timestamp Invariant](#timestamp-invariant)
-  - [ChainID Invariant](#chainid-invariant)
-  - [Message Expiry Invariant](#message-expiry-invariant)
-- [Message Graph](#message-graph)
-  - [Invalid messages](#invalid-messages)
-    - [Block reorgs](#block-reorgs)
-    - [Block Recommits](#block-recommits)
-  - [Intra-block messaging: cycles](#intra-block-messaging-cycles)
-  - [Resolving cross-chain safety](#resolving-cross-chain-safety)
-  - [Horizon timestamp](#horizon-timestamp)
-  - [Pruning the graph](#pruning-the-graph)
-  - [Bounding the graph](#bounding-the-graph)
-- [Security Considerations](#security-considerations)
-  - [Cyclic dependencies](#cyclic-dependencies)
-  - [Transitive dependencies](#transitive-dependencies)
+- [Messaging](#messaging)
+  - [Message](#message)
+    - [Message payload](#message-payload)
+    - [Message Identifier](#message-identifier)
+  - [Messaging ends](#messaging-ends)
+    - [Initiating Messages](#initiating-messages)
+    - [Executing Messages](#executing-messages)
+  - [Messaging Invariants](#messaging-invariants)
+    - [Timestamp Invariant](#timestamp-invariant)
+    - [ChainID Invariant](#chainid-invariant)
+    - [Message Expiry Invariant](#message-expiry-invariant)
+  - [Message Graph](#message-graph)
+    - [Invalid messages](#invalid-messages)
+      - [Block reorgs](#block-reorgs)
+      - [Block Recommits](#block-recommits)
+    - [Intra-block messaging: cycles](#intra-block-messaging-cycles)
+    - [Resolving cross-chain safety](#resolving-cross-chain-safety)
+    - [Horizon timestamp](#horizon-timestamp)
+    - [Pruning the graph](#pruning-the-graph)
+    - [Bounding the graph](#bounding-the-graph)
+  - [Security Considerations](#security-considerations)
+    - [Cyclic dependencies](#cyclic-dependencies)
+    - [Transitive dependencies](#transitive-dependencies)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -69,7 +71,7 @@ struct Identifier {
 ```
 
 | Name          | Type      | Description                                                                     |
-|---------------|-----------|---------------------------------------------------------------------------------|
+| ------------- | --------- | ------------------------------------------------------------------------------- |
 | `origin`      | `address` | Account that emits the log                                                      |
 | `blocknumber` | `uint256` | Block number in which the log was emitted                                       |
 | `logIndex`    | `uint256` | The index of the log in the array of all logs emitted in the block              |
@@ -89,9 +91,9 @@ exact state of the block templates between multiple chains together.
 [log]: https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29
 
 Each [Log][log] (also known as `event` in solidity) forms an initiating message.
-The raw log data froms the [Message Payload](#message-payload).
+The raw log data forms the [Message Payload](#message-payload).
 
-Messages are *broadcast*: the protocol does not enshrine address-targeting within messages.
+Messages are _broadcast_: the protocol does not enshrine address-targeting within messages.
 
 The initiating message is uniquely identifiable with an [`Identifier`](#message-identifier),
 such that it can be distinguished from other duplicate messages within the same transaction or block.
@@ -176,7 +178,7 @@ commit to the block it may reference.
 
 Messages may be executed before the block that initiates them is sealed.
 
-When tracking message dependencies, edges are maintained for *all* identified source blocks.
+When tracking message dependencies, edges are maintained for _all_ identified source blocks.
 
 Reorgs are resolved by filtering the view of the solver to only canonical blocks.
 If the source block is not canonical, the dependency is invalid.
