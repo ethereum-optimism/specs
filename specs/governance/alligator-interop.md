@@ -1,3 +1,17 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Overview](#overview)
+  - [Interface](#interface)
+    - [Core Functions](#core-functions)
+  - [Diagram](#diagram)
+  - [Implementation](#implementation)
+  - [Backwards Compatibility](#backwards-compatibility)
+  - [Security Considerations](#security-considerations)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Overview
 
 The goal of this specification is to allow interoperability between the base and superchains for that use the [`Alligator`](alligator.md) predeploy. This allows the support of the
