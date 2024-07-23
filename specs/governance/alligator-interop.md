@@ -15,7 +15,7 @@
 # Overview
 
 The goal of this specification is to allow interoperability between the base and superchains for that use the [`Alligator`](alligator.md) predeploy. This allows the support of the
-subdelegation flow with for the [`GovernanceToken`](gov-token.md) by making a few changes to the existing interface for cross-chain message passing as it pertains to the checkpoint state. 
+subdelegation flow with for the [`GovernanceToken`](gov-token.md) by making a few changes to the existing interface for cross-chain message passing as it pertains to the checkpoint state.
 
 ## Interface
 
@@ -52,12 +52,13 @@ sequenceDiagram
   participant delegate
   participant AlligatorSuperChain as AlligatorSuperChain (Chain A)
   participant AlligatorOPMainnet as AlligatorOPMainnet (Chain B)
+  participant Inbox as CrossL2Inbox
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
 
   delegate->>AlligatorSuperChain: afterTokenTransfer(src, dst, amt)
   AlligatorSuperChain->>Messenger_A: sendMessage(nativeChainId, message)
-  Messenger->>Inbox: executeMessage()
+  Messenger_A->>Inbox: executeMessage()
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>AlligatorOPMainnet: afterTokenTransferInterop(src, dst, amount, chainId)
 ```
@@ -71,7 +72,7 @@ function afterTokenTransfer(
     uint256 amount
 ) external {
     if (src != dst && amount > 0) {
-	      if (src != address(0)) {
+       if (src != address(0)) {
             (uint256 oldWeight, uint256 newWeight) = _writeCheckpoint(_checkpoints[src], _subtract, amount);
             emit DelegateVotesChanged(src, oldWeight, newWeight);
         }
@@ -127,11 +128,9 @@ The contract may support a function to get the chainId or another modifier to pr
 
 ## Backwards Compatibility
 
-Previous instances of `Alligator` will not be able to interface with the OP mainnet contract given that they do not support the cross-chain message passing. However, the existing state 
+Previous instances of `Alligator` will not be able to interface with the OP mainnet contract given that they do not support the cross-chain message passing. However, the existing state
 of voting power on the superchain shall remained unchanged.
 
 ## Security Considerations
 
 We must ensure that that both the `GovernanceToken` and `Alligator` use the same address across all chains.
-
-
