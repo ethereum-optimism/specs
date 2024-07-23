@@ -857,11 +857,11 @@ matching the encoding of the fields as in the <a href="https://eips.ethereum.org
 </ul>
 <h3 id="span-batch-size-limits"><a class="header" href="#span-batch-size-limits">Span Batch Size Limits</a></h3>
 <p>The total size of an encoded span batch is limited to <code>MAX_RLP_BYTES_PER_CHANNEL</code>, which is defined in the
-<a href="protocol/delta/span-batches.html#protocol-parameters">Protocol Parameters table</a>.
+<a href="protocol/delta/../derivation.html#protocol-parameters">Protocol Parameters table</a>.
 This is done at the channel level rather than at the span batch level.</p>
 <p>In addition to the byte limit, the number of blocks, and total transactions is limited to <code>MAX_SPAN_BATCH_ELEMENT_COUNT</code>.
 This does imply that the max number of transactions per block is also <code>MAX_SPAN_BATCH_ELEMENT_COUNT</code>.
-<code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> is defined in <a href="protocol/delta/span-batches.html#protocol-parameters">Protocol Parameters table</a>.</p>
+<code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> is defined in <a href="protocol/delta/../derivation.html#protocol-parameters">Protocol Parameters table</a>.</p>
 <h3 id="future-batch-format-extension"><a class="header" href="#future-batch-format-extension">Future batch-format extension</a></h3>
 <p>This is an experimental extension of the span-batch format, and not activated with the Delta upgrade yet.</p>
 <p>Introduce version <code>2</code> to the <a href="protocol/delta/../derivation.html#batch-format">batch-format</a> table:</p>
@@ -2824,7 +2824,7 @@ so if <code>engine_forkchoiceUpdatedV2</code> returns <code>STATUS_INVALID</code
 This field overrides the gas limit used during block-building.
 If not specified as rollup, a <code>STATUS_INVALID</code> is returned.</p>
 <h3 id="engine_forkchoiceupdatedv3"><a class="header" href="#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a></h3>
-<p>See <a href="protocol/exec-engine.html#engine_forkchoiceUpdatedV2"><code>engine_forkchoiceUpdatedV2</code></a> for a description of the forkchoice updated method.
+<p>See <a href="protocol/exec-engine.html#engine_forkchoiceupdatedv2"><code>engine_forkchoiceUpdatedV2</code></a> for a description of the forkchoice updated method.
 <code>engine_forkchoiceUpdatedV3</code> <strong>must only be called with Ecotone payload.</strong></p>
 <p>To support rollup functionality, one backwards-compatible change is introduced
 to <a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_forkchoiceupdatedv3"><code>engine_forkchoiceUpdatedV3</code></a>: the extended <code>PayloadAttributesV3</code></p>
@@ -4706,7 +4706,7 @@ the exact same computation by authenticating the inputs with a <a href="fault-pr
 <p><img src="fault-proof/../static/assets/fault-proof.svg" alt="Diagram of Program and VM architecture" /></p>
 <h2 id="pre-image-oracle"><a class="header" href="#pre-image-oracle">Pre-image Oracle</a></h2>
 <p>The pre-image oracle is the only form of communication between
-the <a href="fault-proof/index.html#fault-proof-program">Program</a> (in the <a href="fault-proof/index.html#client">Client</a> role) and the <a href="fault-proof/index.html#fault-proof-vm">VM</a> (in the <a href="fault-proof/index.html#server">Server</a> role).</p>
+the <a href="fault-proof/index.html#fault-proof-program">Program</a> (in the Client role) and the <a href="fault-proof/index.html#fault-proof-vm">VM</a> (in the Server role).</p>
 <p>The program uses the pre-image oracle to query any input data that is understood to be available to the user:</p>
 <ul>
 <li>The initial inputs to bootstrap the program. See <a href="fault-proof/index.html#bootstrapping">Bootstrapping</a>.</li>
@@ -4936,7 +4936,7 @@ and any unchanged state nodes accessible through the read-only L2 history view.<
 </ul>
 </li>
 </ul>
-<p>See <a href="fault-proof/index.html#pre-image-routes">Pre-image routes</a> for specifications of the pre-image oracle backing of these data sources.</p>
+<p>See <a href="fault-proof/index.html#pre-image-hinting-routes">Pre-image routes</a> for specifications of the pre-image oracle backing of these data sources.</p>
 <p>Using these data-sources, the derivation pipeline is processed till we hit one of two conditions:</p>
 <ul>
 <li><code>EOF</code>: when we run out of L1 data, the L2 chain will not change further, and the epilogue can start.</li>
@@ -5981,7 +5981,11 @@ digraph G {
 -->
 <!-- markdownlint-disable no-inline-html -->
 <p align="center">
-<img src="https://github.com/ethereum-optimism/optimism/assets/8406232/9b20ba8d-0b64-47b3-9962-5533f7eb4ef7" width=60%>
+  <img
+    src="https://github.com/ethereum-optimism/optimism/assets/8406232/9b20ba8d-0b64-47b3-9962-5533f7eb4ef7"
+    width=60%
+    alt="subgame resolution"
+  >
 </p>
 <p>Given these rules, players are motivated to move quickly to challenge all dishonest claims.
 Each move bisects the historical state of L2 and eventually, <code>MAX_GAME_DEPTH</code> is reached where disputes
@@ -6455,7 +6459,7 @@ The <code>Guardian</code> role can blacklist certain <code>DisputeGame</code> ad
 the dispute game that the withdrawal was proven against is present in the <code>disputeGameBlacklist</code> mapping, the call
 should always revert.</p>
 <p><strong>Dispute Game Maturity</strong>
-See <a href="fault-proof/stage-one/bridge-integration.html#Air-gap">"Air-gap"</a></p>
+See <a href="fault-proof/stage-one/bridge-integration.html#air-gap">"Air-gap"</a></p>
 <h4 id="changed-invariants---finalizewithdrawaltransaction"><a class="header" href="#changed-invariants---finalizewithdrawaltransaction">Changed Invariants - <code>finalizeWithdrawalTransaction</code></a></h4>
 <p><strong>Output Proposal Validity</strong>
 Instead of checking if the proven withdrawal's output proposal has existed for longer the legacy finalization period,
@@ -6470,7 +6474,7 @@ against the dispute game to be finalized. Because the <code>FaultDisputeGame</co
 of the <code>DisputeGameFactory</code>, it is safe to trust that this value is honestly set.</p>
 <h4 id="blacklisting-disputegames"><a class="header" href="#blacklisting-disputegames">Blacklisting <code>DisputeGame</code>s</a></h4>
 <p>A new method is added to assign <code>DisputeGame</code>s in the <code>disputeGameBlacklist</code> mapping mentioned in
-<a href="fault-proof/stage-one/bridge-integration.html#State-Layout">"State Layout"</a>, in the event that a dispute game is detected to have resolved incorrectly. The only
+<a href="fault-proof/stage-one/bridge-integration.html#state-layout">"State Layout"</a>, in the event that a dispute game is detected to have resolved incorrectly. The only
 actor who may call this function is the <code>Guardian</code> role.</p>
 <p>Blacklisting a dispute game means that no withdrawals proven against it will be allowed to finalize
 (per the "Dispute Game Blacklist" invariant), and they must re-prove against a new dispute game that resolves correctly.
@@ -8278,7 +8282,7 @@ of executing messages.</p>
 <p>The dependency set is configured on a per chain basis.</p>
 <p>The chain id of the local chain MUST be considered as part of its own dependency set.</p>
 <p>While the dependency set explicitly defines the set of chains that are depended on for incoming messages,
-the full set of transitive dependencies must be known to allow for the progression of <a href="interop/dependency_set.html#safety">safety</a>.
+the full set of transitive dependencies must be known to allow for the progression of safety.
 This means that the <code>op-node</code> needs to be aware of all transitive dependencies.</p>
 <h2 id="chain-id"><a class="header" href="#chain-id">Chain ID</a></h2>
 <p>The concept of a chain id was introduced in <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> to prevent
@@ -9909,6 +9913,7 @@ the required inputs to the <code>deploy</code> method may change as new contract
 are supported. Therefore, if calling this contract from another contract, be
 sure to account for future breaking changes to the ABI.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<!-- markdownlint-disable MD053 -->
 <h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

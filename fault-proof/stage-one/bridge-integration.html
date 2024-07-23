@@ -360,7 +360,7 @@ The <code>Guardian</code> role can blacklist certain <code>DisputeGame</code> ad
 the dispute game that the withdrawal was proven against is present in the <code>disputeGameBlacklist</code> mapping, the call
 should always revert.</p>
 <p><strong>Dispute Game Maturity</strong>
-See <a href="#Air-gap">"Air-gap"</a></p>
+See <a href="#air-gap">"Air-gap"</a></p>
 <h4 id="changed-invariants---finalizewithdrawaltransaction"><a class="header" href="#changed-invariants---finalizewithdrawaltransaction">Changed Invariants - <code>finalizeWithdrawalTransaction</code></a></h4>
 <p><strong>Output Proposal Validity</strong>
 Instead of checking if the proven withdrawal's output proposal has existed for longer the legacy finalization period,
@@ -375,7 +375,7 @@ against the dispute game to be finalized. Because the <code>FaultDisputeGame</co
 of the <code>DisputeGameFactory</code>, it is safe to trust that this value is honestly set.</p>
 <h4 id="blacklisting-disputegames"><a class="header" href="#blacklisting-disputegames">Blacklisting <code>DisputeGame</code>s</a></h4>
 <p>A new method is added to assign <code>DisputeGame</code>s in the <code>disputeGameBlacklist</code> mapping mentioned in
-<a href="#State-Layout">"State Layout"</a>, in the event that a dispute game is detected to have resolved incorrectly. The only
+<a href="#state-layout">"State Layout"</a>, in the event that a dispute game is detected to have resolved incorrectly. The only
 actor who may call this function is the <code>Guardian</code> role.</p>
 <p>Blacklisting a dispute game means that no withdrawals proven against it will be allowed to finalize
 (per the "Dispute Game Blacklist" invariant), and they must re-prove against a new dispute game that resolves correctly.

@@ -247,7 +247,7 @@ the exact same computation by authenticating the inputs with a <a href="#pre-ima
 <p><img src="../static/assets/fault-proof.svg" alt="Diagram of Program and VM architecture" /></p>
 <h2 id="pre-image-oracle"><a class="header" href="#pre-image-oracle">Pre-image Oracle</a></h2>
 <p>The pre-image oracle is the only form of communication between
-the <a href="#fault-proof-program">Program</a> (in the <a href="#client">Client</a> role) and the <a href="#fault-proof-vm">VM</a> (in the <a href="#server">Server</a> role).</p>
+the <a href="#fault-proof-program">Program</a> (in the Client role) and the <a href="#fault-proof-vm">VM</a> (in the Server role).</p>
 <p>The program uses the pre-image oracle to query any input data that is understood to be available to the user:</p>
 <ul>
 <li>The initial inputs to bootstrap the program. See <a href="#bootstrapping">Bootstrapping</a>.</li>
@@ -477,7 +477,7 @@ and any unchanged state nodes accessible through the read-only L2 history view.<
 </ul>
 </li>
 </ul>
-<p>See <a href="#pre-image-routes">Pre-image routes</a> for specifications of the pre-image oracle backing of these data sources.</p>
+<p>See <a href="#pre-image-hinting-routes">Pre-image routes</a> for specifications of the pre-image oracle backing of these data sources.</p>
 <p>Using these data-sources, the derivation pipeline is processed till we hit one of two conditions:</p>
 <ul>
 <li><code>EOF</code>: when we run out of L1 data, the L2 chain will not change further, and the epilogue can start.</li>

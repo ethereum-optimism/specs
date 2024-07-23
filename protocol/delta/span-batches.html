@@ -332,11 +332,11 @@ matching the encoding of the fields as in the <a href="https://eips.ethereum.org
 </ul>
 <h3 id="span-batch-size-limits"><a class="header" href="#span-batch-size-limits">Span Batch Size Limits</a></h3>
 <p>The total size of an encoded span batch is limited to <code>MAX_RLP_BYTES_PER_CHANNEL</code>, which is defined in the
-<a href="#protocol-parameters">Protocol Parameters table</a>.
+<a href="../derivation.html#protocol-parameters">Protocol Parameters table</a>.
 This is done at the channel level rather than at the span batch level.</p>
 <p>In addition to the byte limit, the number of blocks, and total transactions is limited to <code>MAX_SPAN_BATCH_ELEMENT_COUNT</code>.
 This does imply that the max number of transactions per block is also <code>MAX_SPAN_BATCH_ELEMENT_COUNT</code>.
-<code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> is defined in <a href="#protocol-parameters">Protocol Parameters table</a>.</p>
+<code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> is defined in <a href="../derivation.html#protocol-parameters">Protocol Parameters table</a>.</p>
 <h3 id="future-batch-format-extension"><a class="header" href="#future-batch-format-extension">Future batch-format extension</a></h3>
 <p>This is an experimental extension of the span-batch format, and not activated with the Delta upgrade yet.</p>
 <p>Introduce version <code>2</code> to the <a href="../derivation.html#batch-format">batch-format</a> table:</p>
