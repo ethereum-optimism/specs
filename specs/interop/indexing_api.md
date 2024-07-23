@@ -9,6 +9,9 @@
   - [`interop_checkMessage`](#interop_checkmessage)
     - [Parameters](#parameters)
     - [Returns](#returns)
+  - [`interop_crossUnsafe`](#interop_crossunsafe)
+    - [Parameters](#parameters-1)
+    - [Returns](#returns-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -19,6 +22,10 @@ cross-chain validity checks. To aid compatibility between different implementati
 backends, a standard API for indexers to expose is defined here.
 
 The API uses [JSON-RPC] and follows the same conventions as the [Ethereum JSON-RPC API].
+
+[JSON-RPC]: https://www.jsonrpc.org/specification
+
+[Ethereum JSON-RPC API]: https://ethereum.org/en/developers/docs/apis/json-rpc/
 
 ## Methods
 
@@ -44,13 +51,42 @@ by the tx-pool and block-building, to verify user-input before inclusion into th
 - `conflicts` - data is available for the block referenced by the identifier but does not contain a matching log
 - `unknown` - data for the block referenced by the identifier is not yet available
 - `finalized` - the specified log exists
-- `unsafe` - the specified log exists and meets the requirements of [`unsafe` inputs`](./verifier.md#unsafe-inputs)
-- `cross-unsafe` - the specified log exists and meets the requirements
-  of [`cross-unsafe` inputs`](./verifier.md#cross-unsafe-inputs)
-- `safe` - the specified log exists and meets the requirements of [`safe` inputs`](./verifier.md#safe-inputs)
-- `finalized` - the specified log exists and meets the requirements
-  of [`finalized` inputs`](./verifier.md#finalized-inputs)
+- `unsafe` - the specified log exists and meets the requirements of [`unsafe` inputs]
+- `cross-unsafe` - the specified log exists and meets the requirements of [`cross-unsafe` inputs]
+- `safe` - the specified log exists and meets the requirements of [`safe` inputs]
+- `finalized` - the specified log exists and meets the requirements of [`finalized` inputs]
 
-[JSON-RPC]: https://www.jsonrpc.org/specification
+### `interop_crossUnsafe`
 
-[Ethereum JSON-RPC API]: https://ethereum.org/en/developers/docs/apis/json-rpc/
+Returns the latest `cross-unsafe` block in the canonical chain of the indexer, up to and including the
+specified `maxBlockNumber`. This can be used by sequencers or verifiers to determine when blocks on their chain have met
+all cross-chain dependencies. For example, batchers may avoid posting batch data for transactions that have unsatisfied
+cross-chain dependencies.
+
+As the indexer and caller may have different local views of the chain, e.g. because a reorg has not yet been processed,
+callers MUST confirm that the returned block is canonical in their local view of the chain. Callers MAY retry the query
+with a lower `maxBlockNumber` if the returned block is non-canonical.
+
+Indexers SHOULD consider calls where `maxBlockNumber` is ahead of their current `unsafe` head for a chain to be a signal
+that additional blocks may be available to be indexed. However, indexers MUST eventually index available blocks even
+if `interop_crossUnsafe` is not called.
+
+#### Parameters
+
+1. chainID: QUANTITY - Chain ID of the chain to return data for
+2. maxBlockNumber: QUANTITY - The maximum block number to return information for
+
+#### Returns
+
+`Object` - Block ID that meets the requirements of [`cross-unsafe` inputs] and `block.number <= maxBlockNumber`
+
+- `hash` - the hash of the block
+- `number` the number of the block
+
+[`unsafe` inputs]: ./verifier.md#unsafe-inputs
+
+[`cross-unsafe` inputs]: ./verifier.md#cross-unsafe-inputs
+
+[`safe` inputs]: ./verifier.md#safe-inputs
+
+[`finalized` inputs]: ./verifier.md#finalized-inputs
