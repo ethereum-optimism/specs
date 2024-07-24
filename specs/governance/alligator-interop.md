@@ -97,7 +97,7 @@ The contract may support a function to get the chainId or another modifier to pr
 ## Backwards Compatibility
 
 Previous instances of `Alligator` will not be able to interface with the OP mainnet contract given that they do not support the cross-chain message passing. However, the existing state
-of voting power on the superchain shall remained unchanged.
+of voting power on the non-mainnet chains shall remained unchanged.
 
 ## Security Considerations
 
