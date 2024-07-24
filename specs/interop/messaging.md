@@ -89,7 +89,7 @@ exact state of the block templates between multiple chains together.
 [log]: https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29
 
 Each [Log][log] (also known as `event` in solidity) forms an initiating message.
-The raw log data froms the [Message Payload](#message-payload).
+The raw log data forms the [Message Payload](#message-payload).
 
 Messages are *broadcast*: the protocol does not enshrine address-targeting within messages.
 
@@ -138,7 +138,7 @@ to explicitly define the set of chains that they depend on.
 ### Message Expiry Invariant
 
 Note: Message Expiry as property of the protocol is in active discussion.
-It helps set a strict bound on total messaging activity to support, but also limits use-cases.
+It helps set a strict bound on total messaging activity to support, but also limits use cases.
 This trade-off is in review. This invariant may be ignored in initial interop testnets.
 
 The expiry invariant invalidates inclusion of any executing message with

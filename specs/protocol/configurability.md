@@ -31,12 +31,12 @@ There are four categories of OP Stack configuration options:
 - **Service Roles**: These roles are used to manage the day-to-day
   operations of the chain, and therefore are often hot wallets.
 
-Each category also defines the standard configuration values for it's given parameters.
+Each category also defines the standard configuration values for its given parameters.
 Standard configuration is the set of requirements for an OP Stack chain to be considered a
 Standard Chain within the superchain.
 These requirements are currently a draft, pending governance approval.
 
-The recommended way to deploy L1 contracts for an OP chain that meet the standard configuration will be with the
+The recommended way to deploy L1 contracts for an OP chain that meets the standard configuration will be with the
 [OP Stack Manager](../experimental/op-stack-manager.md).
 
 ## Consensus Parameters
