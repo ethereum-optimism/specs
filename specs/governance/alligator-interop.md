@@ -56,11 +56,7 @@ sequenceDiagram
 ```solidity
 
 function getChainId() external view returns (uint256) {
-    uint256 chainId;
-    assembly {
-         chainId := chainid()
-    }
-
+    uint256 chainId = block.chainid;
     return chainId;
 }
 
