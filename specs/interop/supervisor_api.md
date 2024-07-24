@@ -1,10 +1,10 @@
-# Indexing API
+# Supervisor API
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Optional Indexing Backend](#optional-indexing-backend)
+- [Optional Supervisor Backend](#optional-supervisor-backend)
 - [Methods](#methods)
   - [`interop_checkMessage`](#interop_checkmessage)
     - [Parameters](#parameters)
@@ -15,11 +15,11 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Optional Indexing Backend
+## Optional Supervisor Backend
 
 Sequencers or verifies MAY utilise an external service to index the logs from chains in the dependency set and optimise
 cross-chain validity checks. To aid compatibility between different implementations of sequencers, verifiers and
-backends, a standard API for indexers to expose is defined here.
+these supervisors, a standard API for such services to expose is defined here.
 
 The API uses [JSON-RPC] and follows the same conventions as the [Ethereum JSON-RPC API].
 
@@ -58,18 +58,19 @@ by the tx-pool and block-building, to verify user-input before inclusion into th
 
 ### `interop_crossUnsafe`
 
-Returns the latest `cross-unsafe` block in the canonical chain of the indexer, up to and including the
+Returns the latest `cross-unsafe` block in the canonical chain of the supervisor, up to and including the
 specified `maxBlockNumber`. This can be used by sequencers or verifiers to determine when blocks on their chain have met
 all cross-chain dependencies. For example, batchers may avoid posting batch data for transactions that have unsatisfied
 cross-chain dependencies.
 
-As the indexer and caller may have different local views of the chain, e.g. because a reorg has not yet been processed,
+As the supervisor and caller may have different local views of the chain, e.g. because a reorg has not yet been
+processed,
 callers MUST confirm that the returned block is canonical in their local view of the chain. Callers MAY retry the query
 with a lower `maxBlockNumber` if the returned block is non-canonical.
 
-Indexers SHOULD consider calls where `maxBlockNumber` is ahead of their current `unsafe` head for a chain to be a signal
-that additional blocks may be available to be indexed. However, indexers MUST eventually index available blocks even
-if `interop_crossUnsafe` is not called.
+Supervisors SHOULD consider calls where `maxBlockNumber` is ahead of their current `unsafe` head for a chain to be a
+signal that additional blocks may be available to be indexed. However, supervisors MUST eventually index available
+blocks even if `interop_crossUnsafe` is not called.
 
 #### Parameters
 

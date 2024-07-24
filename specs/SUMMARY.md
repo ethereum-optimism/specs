@@ -54,7 +54,7 @@
     - [Sequencer](./interop/sequencer.md)
     - [Verifier](./interop/verifier.md)
     - [Rollup Node P2P](./interop/rollup_node_p2p.md)
-    - [Indexing API](./interop/indexing_api)
+    - [Supervisor API](./interop/supervisor_api)
     - [Fault Proof](./interop/fault_proof.md)
     - [Upgrade](./interop/upgrade.md)
     - [Token Bridging](./interop/token-bridging.md)
