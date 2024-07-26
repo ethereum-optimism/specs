@@ -18,7 +18,7 @@ safe-liveness-checking.md @maurelian @mds1
 span-batches.md @sebastianst @axelKingsley
 superchain-configuration.md @protolambda @tynes
 superchain-upgrades.md @protolambda @tynes @axelKingsley @sebastianst
-system_config.md @sebastianst @protolambda @tynes
+system-config.md @sebastianst @protolambda @tynes
 withdrawals.md @tynes @maurelian @clabby
 
 # Fault Proofs
