@@ -55,6 +55,7 @@
     - [Verifier](./interop/verifier.md)
     - [Rollup Node P2P](./interop/rollup_node_p2p.md)
     - [Supervisor API](./interop/supervisor-api)
+    - [Honest Nodes](./interop/honest-nodes)
     - [Fault Proof](./interop/fault_proof.md)
     - [Upgrade](./interop/upgrade.md)
     - [Token Bridging](./interop/token-bridging.md)
