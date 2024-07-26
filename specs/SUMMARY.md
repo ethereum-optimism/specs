@@ -60,4 +60,6 @@
     - [SuperchainWETH](./interop/superchain-weth.md)
   - [Security Council Safe](./experimental/security-council-safe.md)
   - [OP Stack Manager](./experimental/op-stack-manager.md)
+- [Legacy Content]()
+  - [L2 Output Oracle](./legacy/l2-output-oracle.md)
 - [Glossary](./glossary.md)
