@@ -10,7 +10,7 @@ deps:
     pnpm i --frozen-lockfile
 
 # Lint the workspace for all available targets
-lint: lint-specs-md-check lint-specs-toc-check lint-links
+lint: lint-specs-md-check lint-specs-toc-check lint-filenames lint-links
 
 # Updates all files to fix linting issues
 lint-fix: lint-specs-md-fix lint-specs-toc
@@ -36,6 +36,15 @@ lint-links:
     docker run --init -it -v `pwd`:/input lycheeverse/lychee --verbose --no-progress --exclude-loopback \
     		--exclude twitter.com --exclude explorer.optimism.io --exclude linux-mips.org --exclude vitalik.eth.limo \
     		--exclude-mail /input/README.md "/input/specs/**/*.md"
+
+lint-filenames:
+    #!/usr/bin/env bash
+    for file in $(find . -type f); do
+      if [[ "$file" == *_* ]]; then
+        echo "File with underscore found: $file"
+        exit 1
+      fi
+    done
 
 build:
     mdbook build
