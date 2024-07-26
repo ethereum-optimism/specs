@@ -9330,24 +9330,26 @@ privileges on cross-chain enabled tokens, this approach allows users to call met
 <h4 id="senderc20"><a class="header" href="#senderc20"><code>sendERC20</code></a></h4>
 <p>Transfer <code>_amount</code> amount of tokens to address <code>_to</code> in chain <code>_chainId</code>.</p>
 <p>It SHOULD burn <code>_amount</code> tokens and initialize a message to the <code>L2ToL2CrossChainMessenger</code> to mint the <code>_amount</code>
-in the target address <code>_to</code> at <code>_chainId</code>.</p>
+in the target address <code>_to</code> at <code>_chainId</code> and emit the <code>SendERC20</code> event including the <code>msg.sender</code> as parameter.</p>
 <pre><code class="language-solidity">sendERC20(address _to, uint256 _amount, uint256 _chainId)
 </code></pre>
 <h4 id="relayerc20"><a class="header" href="#relayerc20"><code>relayERC20</code></a></h4>
 <p>Process incoming messages IF AND ONLY IF initiated
 by the same contract (token) address on a different chain
 and come from the <code>L2ToL2CrossChainMessenger</code> in the local chain.
-It will mint <code>_amount</code> to address <code>_to</code>, as defined in <code>sendERC20</code>.</p>
-<pre><code class="language-solidity">relayERC20(address _to, uint256 _amount)
+It SHOULD mint <code>_amount</code> to address <code>_to</code>, as defined in <code>sendERC20</code>
+and emit an event including the <code>_from</code> and chain id from the
+<code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
+<pre><code class="language-solidity">relayERC20(address _from, address _to, uint256 _amount)
 </code></pre>
 <h3 id="events"><a class="header" href="#events">Events</a></h3>
 <h4 id="senderc20-1"><a class="header" href="#senderc20-1"><code>SendERC20</code></a></h4>
 <p>MUST trigger when a cross-chain transfer is initiated using <code>sendERC20</code>.</p>
-<pre><code class="language-solidity">event SendERC20(address indexed _from, address indexed _to, uint256 _amount, uint256 _chainId)
+<pre><code class="language-solidity">event SendERC20(address indexed from, address indexed to, uint256 amount, uint256 destination)
 </code></pre>
 <h4 id="relayerc20-1"><a class="header" href="#relayerc20-1"><code>RelayERC20</code></a></h4>
 <p>MUST trigger when a cross-chain transfer is finalized using <code>relayERC20</code>.</p>
-<pre><code class="language-solidity">event RelayERC20(address indexed to, uint256 amount);
+<pre><code class="language-solidity">event RelayERC20(address indexed from, address indexed to, uint256 amount, uint256 source);
 </code></pre>
 <h2 id="diagram"><a class="header" href="#diagram">Diagram</a></h2>
 <p>The following diagram depicts a cross-chain transfer.</p>
@@ -9363,9 +9365,11 @@ It will mint <code>_amount</code> to address <code>_to</code>, as defined in <co
   from-&gt;&gt;SuperERC20_A: sendERC20To(to, amount, chainID)
   SuperERC20_A-&gt;&gt;SuperERC20_A: burn(from, amount)
   SuperERC20_A-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  SuperERC20_A--&gt;SuperERC20_A: emit SendERC20(from, to, amount, destination)
   Inbox-&gt;&gt;Messenger_B: relayMessage()
-  Messenger_B-&gt;&gt;SuperERC20_B: relayERC20(to, amount)
+  Messenger_B-&gt;&gt;SuperERC20_B: relayERC20(from, to, amount)
   SuperERC20_B-&gt;&gt;SuperERC20_B: mint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit RelayERC20(from, to, amount, source)
 </pre>
 <h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
 <p>An example implementation that depends on deterministic deployments across chains
@@ -9374,17 +9378,19 @@ This construction builds on top of the <a href="interop/./predeploys.html#l2tol2
 for both replay protection and domain binding.</p>
 <pre><code class="language-solidity">function sendERC20(address _to, uint256 _amount, uint256 _chainId) public {
   _burn(msg.sender, _amount);
-  bytes memory _message = abi.encodeCall(this.relayERC20, (_to, _amount));
+  bytes memory _message = abi.encodeCall(this.relayERC20, (msg.sender, _to, _amount));
   L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
   emit SendERC20(msg.sender, _to, _amount, _chainId);
 }
 
-function relayERC20(address _to, uint256 _amount) external {
+function relayERC20(address _from, address _to, uint256 _amount) external {
   require(msg.sender == address(L2ToL2CrossChainMessenger));
   require(L2ToL2CrossChainMessenger.crossDomainMessageSender() == address(this));
+  uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
+
   _mint(_to, _amount);
 
-  emit RelayERC20(_to, _amount)
+  emit RelayERC20(_from, _to, _amount, _source);
 }
 </code></pre>
 <h2 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h2>
