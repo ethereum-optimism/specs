@@ -335,6 +335,7 @@ meaning that "sending to the other domain" indicates it can be used for both dep
 | Native Asset Deposit | `OptimismPortal.depositTransaction(address,uint256,uint64,bool,bytes) payable` | None |
 | ERC20 Send to Other Domain | `L1StandardBridge.bridgeERC20(address,address,uint256,uint32,bytes)` | Approve `L1StandardBridge` for ERC20 |
 | Native Asset Withdrawal | `L2ToL1MessagePasser.initiateWithdrawal(address,uint256,bytes) payable` | None |
+| ERC20 Withdrawal Back to Domain | `L2StandardBridge.withdraw(address,uint256,uint32,bytes)` | Approve `L2StandardBridge` for ERC20 |
 
 There are multiple APIs for users to deposit or withdraw `ether`. Depending on the usecase, different APIs should be
 preferred. For a simple send of just `ether` with no calldata, the `OptimismPortal` or `L2ToL1MessagePasser` should
@@ -348,6 +349,7 @@ should be used. Using the `StandardBridge` is the most expensive and has no real
 | Native Asset Deposit | `OptimismPortal.depositERC20Transaction(address,uint256,uint256,uint64,bool,bytes)` | Approve `OptimismPortal` for ERC20 |
 | ERC20 Send to Other Domain | `L1StandardBridge.bridgeERC20(address,address,uint256,uint32,bytes)` | Approve `L1StandardBridge` for ERC20 |
 | Native Asset Withdrawal | `L2ToL1MessagePasser.initiateWithdrawal(address,uint256,bytes) payable` | None |
+| ERC20 Withdrawal Back to Domain | `L2StandardBridge.bridgeERC20(address,address,uint256,uint32,bytes)` | Approve `L2StandardBridge` for ERC20 |
 
 Users should deposit native asset by calling `depositERC20Transaction` on the `OptimismPortal` contract.
 Users must first `approve` the address of the `OptimismPortal` so that the `OptimismPortal` can use
