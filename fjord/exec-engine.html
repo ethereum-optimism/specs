@@ -207,24 +207,24 @@
 <h4 id="fjord-l1-cost-fee-changes-fastlz-estimator"><a class="header" href="#fjord-l1-cost-fee-changes-fastlz-estimator">Fjord L1-Cost fee changes (FastLZ estimator)</a></h4>
 <p>Fjord updates the L1 cost calculation function to use a FastLZ-based compression estimator.
 The L1 cost is computed as:</p>
-<pre><code class="language-pseudocode">l1FeeScaled = baseFeeScalar*l1BaseFee*16 + blobFeeScalar*l1BlobBaseFee
+<pre><code class="language-pseudocode">l1FeeScaled = l1BaseFeeScalar*l1BaseFee*16 + l1BlobFeeScalar*l1BlobBaseFee
 estimatedSizeScaled = max(minTransactionSize * 1e6, intercept + fastlzCoef*fastlzSize)
-l1Cost = estimatedSizeScaled * l1FeeScaled / 1e12
+l1Fee = estimatedSizeScaled * l1FeeScaled / 1e12
 </code></pre>
-<p>The final <code>l1Cost</code> computation is an unlimited precision unsigned integer computation, with the result in Wei and
+<p>The final <code>l1Fee</code> computation is an unlimited precision unsigned integer computation, with the result in Wei and
 having <code>uint256</code> range. The values in this computation, are as follows:</p>
 <div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Description</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>l1BaseFee</code></td><td><code>uint256</code></td><td>L1 base fee of the latest L1 origin registered in the L2 chain</td><td>varies, L1 fee</td></tr>
 <tr><td><code>l1BlobBaseFee</code></td><td><code>uint256</code></td><td>Blob gas price of the latest L1 origin registered in the L2 chain</td><td>varies, L1 fee</td></tr>
 <tr><td><code>fastlzSize</code></td><td><code>uint256</code></td><td>Size of the FastLZ-compressed RLP-encoded signed tx</td><td>varies, per transaction</td></tr>
-<tr><td><code>baseFeeScalar</code></td><td><code>uint32</code></td><td>L1 base fee scalar, scaled by <code>1e6</code></td><td>varies, L2 configuration</td></tr>
-<tr><td><code>blobFeeScalar</code></td><td><code>uint32</code></td><td>L1 blob fee scalar, scaled by <code>1e6</code></td><td>varies, L2 configuration</td></tr>
+<tr><td><code>l1BaseFeeScalar</code></td><td><code>uint32</code></td><td>L1 base fee scalar, scaled by <code>1e6</code></td><td>varies, L2 configuration</td></tr>
+<tr><td><code>l1BlobFeeScalar</code></td><td><code>uint32</code></td><td>L1 blob fee scalar, scaled by <code>1e6</code></td><td>varies, L2 configuration</td></tr>
 <tr><td><code>intercept</code></td><td><code>int32</code></td><td>Intercept constant, scaled by <code>1e6</code> (can be negative)</td><td>-42_585_600</td></tr>
 <tr><td><code>fastlzCoef</code></td><td><code>uint32</code></td><td>FastLZ coefficient, scaled by <code>1e6</code></td><td>836_500</td></tr>
 <tr><td><code>minTransactionSize</code></td><td><code>uint32</code></td><td>A lower bound on transaction size, in bytes</td><td>100</td></tr>
 </tbody></table>
 </div>
-<p>Previously, <code>baseFeeScalar</code> and <code>blobFeeScalar</code> were used to encode the compression ratio, due to the inaccuracy of
+<p>Previously, <code>l1BaseFeeScalar</code> and <code>l1BlobFeeScalar</code> were used to encode the compression ratio, due to the inaccuracy of
 the L1 cost function. However, the new cost function takes into account the compression ratio, so these scalars should
 be adjusted to account for any previous compression ratio they encoded.</p>
 <h5 id="fastlz-implementation"><a class="header" href="#fastlz-implementation">FastLZ Implementation</a></h5>
@@ -245,10 +245,6 @@ the dependent variable and <code>fastlzSize</code> as the independent variable.<
 the most representative of performance across multiple chains and time periods. More details on the linear regression
 and datasets used can be found in this <a href="https://github.com/roberto-bayardo/compression-analysis/tree/main">repository</a>.</p>
 <h3 id="l1-gas-usage-estimation"><a class="header" href="#l1-gas-usage-estimation">L1 Gas Usage Estimation</a></h3>
-<p>The <code>L1GasUsed</code> property on the transaction receipt is updated to take into account the improvement in
-<a href="./exec-engine.html#fees">compression estimation</a> accuracy. The value will be calculated by
-multiplying the <code>estimatedSizeScaled</code> of the transaction from the above L1 cost formula by 16. The value of 16 assumes most
-of the bytes in the compressed data are non-zero.</p>
 <p>The <code>L1GasUsed</code> property is deprecated due to it not capturing the L1 blob gas used by a transaction, and will be
 removed in a future network upgrade. Users can continue to use the <code>L1Fee</code> field to retrieve the L1 fee for a given
 transaction.</p>
