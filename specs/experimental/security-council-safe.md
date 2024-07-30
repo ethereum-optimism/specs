@@ -74,29 +74,40 @@ document describes the system of Safe's and their purposes.
 
 ```mermaid
 flowchart LR
-    subgraph System
-        Safety[Upgrades\nDispute Game\nFinality]
-        Liveness[Pausability \n+ Other \nLiveness controls]
-        PV[ProtocolVersions]
-    end
+   subgraph SuperchainSystem[Superchain System]
+      subgraph Liveness
+         Pausability
+         OtherLiveness[Other Liveness controls]
+      end
+      subgraph Safety
+         ContractUpgrades
+         DisputeGame
+         OtherSafety[Other Safety]
+      end
+      subgraph NonProtocol[Out of Protocol]
+         PV[ProtocolVersions]
+      end
+   end
 
-    subgraph Upgrade System
-	    FndUp[Foundation Upgrade Safe]
 
-	    POA[ProxyAdminOwner Safe]
-	    subgraph Security Council Safe
-        Council[Security Council Safe\n+ LivenessGuard]
-        LM[Liveness Module]
-	    end
-	  end
+   subgraph UpgradeSystem[Upgrade System]
+      FndUp[Foundation Upgrade Safe]
+      POA[ProxyAdminOwner Safe]
+      subgraph Security Council Safe
+         Council[Security Council Safe\n+ LivenessGuard]
+         LM[Liveness Module]
+      end
+   end
 
-    subgraph Guardian System
-        FndOps[Foundation Ops Safe]
-        GS[Guardian Safe]
-        DGM[Deputy Guardian Module]
-    end
+   subgraph GuardianSystem[Guardian System]
+      FndOps[Foundation Ops Safe]
+      subgraph GuardianSafe[Guardian Safe]
+         GS[Guardian Safe]
+         DGM[Deputy Guardian Module]
+      end
+   end
 
-    POA -->|controls| Safety[Contract Upgrades\nDispute Game\nSafety and Finality Controls]
+    POA -->|controls| Safety
     FndUp --> POA
     Council --> POA
     Council --> GS
@@ -105,6 +116,12 @@ flowchart LR
     LM -->|execTransactionFromModule| Council
     DGM -->|execTransactionFromModule| GS
     GS -->|controls| Liveness
+
+   %% Declare a class to make the outer boxes somewhat transparent to provide some contrast
+   classDef outer fill:#ffffff44
+   class SuperchainSystem outer
+   class GuardianSystem outer
+   class UpgradeSystem outer
 ```
 
 The remainder of this document outlines each safe, including its key configuration parameters, and
