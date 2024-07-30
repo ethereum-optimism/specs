@@ -25,9 +25,11 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-Highly sensitive actions are managed by a system of multisignature Safe contracts, as well as custom
-extensions to those Safe contracts which provide additional functionality. This document describes
-the system of Safe's and their purposes.
+## Overview
+
+Administrative actions in the Superchain are managed by a system of multisignature Safe contracts,
+ as well as custom extensions to those Safe contracts which provide additional functionality. This
+document describes the system of Safe's and their purposes.
 
 1. **The ProxyAdminOwner Safe:** The name of this Safe is slightly misleading. While it does control
    the `ProxyAdmin` contract, can therefore upgrade contracts in the system, more generally it is
@@ -43,26 +45,27 @@ the system of Safe's and their purposes.
 1. **The Guardian Safe:** This Safe is in charge of _liveness_, meaning it should control any action
    which may cause a delay in the finalization of L2 states, or in the settlement on L1 resulting
    from those states on L1. This includes but is not limited to pausing all code paths related to
-   withdrawals.
-
-   This safe is extended with the `DeputyGuardianModule` which is detailed below.
+   withdrawals. It is also extended with the `DeputyGuardianModule` which is detailed below.
 
    This Safe has a threshold of 1 and is owned by the Security Council Safe.
+
 
 1. **The Security Council Safe:** This Safe is one of the two owners of the ProxyAdminOwner Safe. It
    is extended with the Liveness Checking system which is detailed below.
 
-   This Safe has a threshold of 10, and currently has 13 owners.
+   This Safe currently has a threshold of 10 and 13 owners. Anytime owners are added or removed, the
+   threshold should also be modified to ensure it is the lowest value which is greater than 75% of
+   the number of owners. This is intended to meet Stage 1 requirements.
 
 1. **The Foundation Upgrade Safe:** This Safe is one of the two owners of the ProxyAdminOwner Safe.
    It is also able to update the recommended and required versions on the `ProtocolVersions` contract,
    given that observing the state of this contract is optional, this is not considered to be
    affect safety and can therefore be managed the Foundation Safe.
 
-   This Safe has a threshold of 5 and currently has 7 owners.
+   This Safe has a threshold of 5 and has 7 owners.
 
-1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that it should
-   be able, via the `DeputyGuardianModule` to call any functions in the system which impact
+1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that (via the
+   Guardian Safes's `DeputyGuardianModule`) can call any functions in the system which impact
    liveness.
 
    This Safe has a threshold of 5 and has the same 7 owners as the Foundation Upgrade Safe.
