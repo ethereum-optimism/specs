@@ -1,9 +1,13 @@
-# Safe contract configuration
+# Superchain Administration and Authorization Model
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Overview](#overview)
+- [List of Safes](#list-of-safes)
+- [Ownership model diagram](#ownership-model-diagram)
+- [Guardian Safe](#guardian-safe)
 - [Deputy guardian module](#deputy-guardian-module)
   - [Deputy Guardian Module Security Properties](#deputy-guardian-module-security-properties)
 - [Liveness checking mechanism](#liveness-checking-mechanism)
@@ -27,9 +31,13 @@
 
 ## Overview
 
-Administrative actions in the Superchain are managed by a system of multisignature Safe contracts,
- as well as custom extensions to those Safe contracts which provide additional functionality. This
-document describes the system of Safe's and their purposes.
+Authorization of administrative actions in the Superchain are managed by a system of multisignature
+ Safe contracts, as well as custom extensions to those Safe contracts which provide additional
+functionality. This document describes the system of Safe's and their purposes.
+
+## List of Safes
+
+This list outlines the various Safes, including thresholds, ownership and extensions.
 
 1. **The ProxyAdminOwner Safe:** The name of this Safe is slightly misleading. While it does control
    the `ProxyAdmin` contract, can therefore upgrade contracts in the system, more generally it is
@@ -71,6 +79,8 @@ document describes the system of Safe's and their purposes.
    This Safe has a threshold of 5 and has the same 7 owners as the Foundation Upgrade Safe.
 
 ## Ownership model diagram
+
+The following diagram outlines the control relationships between the contracts in the
 
 ```mermaid
 flowchart LR
