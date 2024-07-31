@@ -7,7 +7,6 @@
 - [Overview](#overview)
 - [List of Safes](#list-of-safes)
 - [Ownership model diagram](#ownership-model-diagram)
-- [Guardian Safe](#guardian-safe)
 - [Deputy guardian module](#deputy-guardian-module)
   - [Deputy Guardian Module Security Properties](#deputy-guardian-module-security-properties)
 - [Liveness checking mechanism](#liveness-checking-mechanism)
