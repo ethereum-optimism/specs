@@ -129,9 +129,7 @@ flowchart LR
 
    %% Declare a class to make the outer boxes somewhat transparent to provide some contrast
    classDef outer fill:#ffffff44
-   class SuperchainSystem outer
-   class GuardianSystem outer
-   class UpgradeSystem outer
+   class SuperchainSystem,GuardianSystem,UpgradeSystem outer
 ```
 
 The remainder of this document outlines each safe, including its key configuration parameters, and
