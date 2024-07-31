@@ -138,13 +138,6 @@ Note: in the diagram above, the [`ProtocolVersions`
    Protocol", because the decision to follow the version signals in the contract is optional. It is
    included here for completeness, but is not considered as either Safety or Liveness affecting.
 
-## Guardian Safe
-
-The Security Council (at
-[eth:0xc2819DC788505Aac350142A7A707BF9D03E3Bd03](https://etherscan.io/address/0xc2819DC788505Aac350142A7A707BF9D03E3Bd03))
-uses a specially extended Safe multisig contract to provide additional security guarantees on top of
-those provided by the Safe contract.
-
 ## Deputy guardian module
 
 The Security Council acts as the Guardian, which is authorized to activate the [Superchain
