@@ -132,8 +132,10 @@ flowchart LR
    class SuperchainSystem,GuardianSystem,UpgradeSystem outer
 ```
 
-The remainder of this document outlines each safe, including its key configuration parameters, and
-where applicable details the specific extensions (Safe Modules and Guards) employed on them.
+Note: in the diagram above, the [`ProtocolVersions`
+   contract](../protocol/superchain-upgrades.md#protocolversions-l1-contract) is listed as "Out of
+   Protocol", because the decision to follow the version signals in the contract is optional. It is
+   included here for completeness, but is not considered as either Safety or Liveness affecting.
 
 ## Guardian Safe
 
