@@ -266,15 +266,16 @@ properties about the <code>_msg</code> using the information in the <code>Identi
 <h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
 <p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
 to <code>executeMessage</code>.</p>
-<pre><code class="language-solidity">event ExecutingMessage(bytes,bytes);
+<pre><code class="language-solidity">event ExecutingMessage(bytes32 indexed msgHash, Identifier identifier);
 </code></pre>
-<p>The data encoded in the event contains the <code>Identifier</code> and the <code>msg</code>.
+<p>The data encoded in the event contains the keccak hash of the <code>msg</code> and the <code>Identifier</code>.
 The following pseudocode shows the deserialization:</p>
-<pre><code class="language-solidity">(bytes memory identifier, bytes memory log) = abi.decode(log.data, (bytes, bytes));
-Identifier id = abi.decode(identifier, (Identifier));
+<pre><code class="language-solidity">bytes32 msgHash = log.topics[1];
+Identifier identifier = abi.decode(log.data, (Identifier));
 </code></pre>
-<p>It is not possible to use solidity structs directly in events, which is why it is ABI encoded
-into <code>bytes</code> first.</p>
+<p>Emitting the hash of the message is more efficient than emitting the
+message in its entirety. Equality with the initiating message can be handled off-chain through
+hash comparison.</p>
 <h3 id="reference-implementation"><a class="header" href="#reference-implementation">Reference implementation</a></h3>
 <p>A simple implementation of the <code>executeMessage</code> function is included below.</p>
 <pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes calldata _msg) public payable {
@@ -297,7 +298,7 @@ into <code>bytes</code> first.</p>
 
     require(success);
 
-    emit ExecutingMessage(abi.encode(_id), _msg);
+    emit ExecutingMessage(keccak256(_msg), _id);
 }
 </code></pre>
 <p>Note that the <code>executeMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
