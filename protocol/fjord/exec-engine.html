@@ -1,0 +1,305 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Execution Engine - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../root.html"><strong aria-hidden="true">1.</strong> Root</a></li><li class="chapter-item expanded "><a href="../../background.html"><strong aria-hidden="true">2.</strong> Background</a></li><li class="chapter-item expanded "><a href="../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">3.1.</strong> Network Upgrades</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/regolith/overview.html"><strong aria-hidden="true">3.1.1.</strong> Regolith</a></li><li class="chapter-item expanded "><a href="../../protocol/canyon/overview.html"><strong aria-hidden="true">3.1.2.</strong> Canyon</a></li><li class="chapter-item expanded "><a href="../../protocol/delta/overview.html"><strong aria-hidden="true">3.1.3.</strong> Delta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/delta/span-batches.html"><strong aria-hidden="true">3.1.3.1.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/ecotone/overview.html"><strong aria-hidden="true">3.1.4.</strong> Ecotone</a></li><li class="chapter-item expanded "><a href="../../protocol/fjord/overview.html"><strong aria-hidden="true">3.1.5.</strong> Fjord</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/fjord/exec-engine.html" class="active"><strong aria-hidden="true">3.1.5.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/fjord/derivation.html"><strong aria-hidden="true">3.1.5.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../protocol/fjord/predeploys.html"><strong aria-hidden="true">3.1.5.3.</strong> Predeploys</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/bridges.html"><strong aria-hidden="true">3.2.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/messengers.html"><strong aria-hidden="true">3.2.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../protocol/deposits.html"><strong aria-hidden="true">3.2.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../protocol/withdrawals.html"><strong aria-hidden="true">3.2.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.2.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../protocol/proposals.html"><strong aria-hidden="true">3.2.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.3.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/exec-engine.html"><strong aria-hidden="true">3.3.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/rollup-node.html"><strong aria-hidden="true">3.3.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.3.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../protocol/derivation.html"><strong aria-hidden="true">3.3.2.2.</strong> Derivation</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/batcher.html"><strong aria-hidden="true">3.3.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../fault-proof/index.html"><strong aria-hidden="true">3.4.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">3.4.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/index.html"><strong aria-hidden="true">3.4.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">3.4.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">3.4.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">3.4.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/bond-incentives.html"><strong aria-hidden="true">3.4.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/bridge-integration.html"><strong aria-hidden="true">3.4.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/precompiles.html"><strong aria-hidden="true">3.5.</strong> Precompiles</a></li><li class="chapter-item expanded "><a href="../../protocol/predeploys.html"><strong aria-hidden="true">3.6.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../protocol/preinstalls.html"><strong aria-hidden="true">3.7.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.8.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.8.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.8.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/system-config.html"><strong aria-hidden="true">3.9.</strong> System Config</a></li><li class="chapter-item expanded "><a href="../../protocol/configurability.html"><strong aria-hidden="true">3.10.</strong> Configurability</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/custom-gas-token.html"><strong aria-hidden="true">4.1.</strong> Custom Gas Token</a></li><li class="chapter-item expanded "><a href="../../experimental/alt-da.html"><strong aria-hidden="true">4.2.</strong> Alt-DA</a></li><li class="chapter-item expanded "><a href="../../interop/overview.html"><strong aria-hidden="true">4.3.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../interop/dependency-set.html"><strong aria-hidden="true">4.3.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../../interop/messaging.html"><strong aria-hidden="true">4.3.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../../interop/predeploys.html"><strong aria-hidden="true">4.3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../interop/execution.html"><strong aria-hidden="true">4.3.4.</strong> Execution</a></li><li class="chapter-item expanded "><a href="../../interop/sequencer.html"><strong aria-hidden="true">4.3.5.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../../interop/verifier.html"><strong aria-hidden="true">4.3.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../../interop/rollup-node-p2p.html"><strong aria-hidden="true">4.3.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../interop/fault-proof.html"><strong aria-hidden="true">4.3.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../../interop/upgrade.html"><strong aria-hidden="true">4.3.9.</strong> Upgrade</a></li><li class="chapter-item expanded "><a href="../../interop/token-bridging.html"><strong aria-hidden="true">4.3.10.</strong> Token Bridging</a></li><li class="chapter-item expanded "><a href="../../interop/superchain-weth.html"><strong aria-hidden="true">4.3.11.</strong> SuperchainWETH</a></li></ol></li><li class="chapter-item expanded "><a href="../../experimental/security-council-safe.html"><strong aria-hidden="true">4.4.</strong> Security Council Safe</a></li><li class="chapter-item expanded "><a href="../../experimental/op-stack-manager.html"><strong aria-hidden="true">4.5.</strong> OP Stack Manager</a></li></ol></li><li class="chapter-item expanded "><a href="../../glossary.html"><strong aria-hidden="true">5.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/fjord/exec-engine.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l2-execution-engine"><a class="header" href="#l2-execution-engine">L2 Execution Engine</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#fees">Fees</a>
+<ul>
+<li><a href="#l1-cost-fees-l1-fee-vault">L1-Cost fees (L1 Fee Vault)</a>
+<ul>
+<li><a href="#fjord-l1-cost-fee-changes-fastlz-estimator">Fjord L1-Cost fee changes (FastLZ estimator)</a>
+<ul>
+<li><a href="#fastlz-implementation">FastLZ Implementation</a></li>
+<li><a href="#l1-cost-linear-regression-details">L1-Cost linear regression details</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#l1-gas-usage-estimation">L1 Gas Usage Estimation</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="fees"><a class="header" href="#fees">Fees</a></h2>
+<h3 id="l1-cost-fees-l1-fee-vault"><a class="header" href="#l1-cost-fees-l1-fee-vault">L1-Cost fees (L1 Fee Vault)</a></h3>
+<h4 id="fjord-l1-cost-fee-changes-fastlz-estimator"><a class="header" href="#fjord-l1-cost-fee-changes-fastlz-estimator">Fjord L1-Cost fee changes (FastLZ estimator)</a></h4>
+<p>Fjord updates the L1 cost calculation function to use a FastLZ-based compression estimator.
+The L1 cost is computed as:</p>
+<pre><code class="language-pseudocode">l1FeeScaled = l1BaseFeeScalar*l1BaseFee*16 + l1BlobFeeScalar*l1BlobBaseFee
+estimatedSizeScaled = max(minTransactionSize * 1e6, intercept + fastlzCoef*fastlzSize)
+l1Fee = estimatedSizeScaled * l1FeeScaled / 1e12
+</code></pre>
+<p>The final <code>l1Fee</code> computation is an unlimited precision unsigned integer computation, with the result in Wei and
+having <code>uint256</code> range. The values in this computation, are as follows:</p>
+<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Description</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>l1BaseFee</code></td><td><code>uint256</code></td><td>L1 base fee of the latest L1 origin registered in the L2 chain</td><td>varies, L1 fee</td></tr>
+<tr><td><code>l1BlobBaseFee</code></td><td><code>uint256</code></td><td>Blob gas price of the latest L1 origin registered in the L2 chain</td><td>varies, L1 fee</td></tr>
+<tr><td><code>fastlzSize</code></td><td><code>uint256</code></td><td>Size of the FastLZ-compressed RLP-encoded signed tx</td><td>varies, per transaction</td></tr>
+<tr><td><code>l1BaseFeeScalar</code></td><td><code>uint32</code></td><td>L1 base fee scalar, scaled by <code>1e6</code></td><td>varies, L2 configuration</td></tr>
+<tr><td><code>l1BlobFeeScalar</code></td><td><code>uint32</code></td><td>L1 blob fee scalar, scaled by <code>1e6</code></td><td>varies, L2 configuration</td></tr>
+<tr><td><code>intercept</code></td><td><code>int32</code></td><td>Intercept constant, scaled by <code>1e6</code> (can be negative)</td><td>-42_585_600</td></tr>
+<tr><td><code>fastlzCoef</code></td><td><code>uint32</code></td><td>FastLZ coefficient, scaled by <code>1e6</code></td><td>836_500</td></tr>
+<tr><td><code>minTransactionSize</code></td><td><code>uint32</code></td><td>A lower bound on transaction size, in bytes</td><td>100</td></tr>
+</tbody></table>
+</div>
+<p>Previously, <code>l1BaseFeeScalar</code> and <code>l1BlobFeeScalar</code> were used to encode the compression ratio, due to the inaccuracy of
+the L1 cost function. However, the new cost function takes into account the compression ratio, so these scalars should
+be adjusted to account for any previous compression ratio they encoded.</p>
+<h5 id="fastlz-implementation"><a class="header" href="#fastlz-implementation">FastLZ Implementation</a></h5>
+<p>All compression algorithms must be implemented equivalently to the <code>fastlz_compress</code> function in <code>fastlz.c</code> at the
+following <a href="https://github.com/ariya/FastLZ/blob/344eb4025f9ae866ebf7a2ec48850f7113a97a42/fastlz.c#L482-L506">commit</a>.</p>
+<h5 id="l1-cost-linear-regression-details"><a class="header" href="#l1-cost-linear-regression-details">L1-Cost linear regression details</a></h5>
+<p>The <code>intercept</code> and <code>fastlzCoef</code> constants are calculated by linear regression using a dataset
+of previous L2 transactions. The dataset is generated by iterating over all transactions in a given time range, and
+performing the following actions. For each transaction:</p>
+<ol>
+<li>Compress the payload using FastLZ. Record the size of the compressed payload as <code>fastlzSize</code>.</li>
+<li>Emulate the change in batch size adding the transaction to a batch, compressed with Brotli 10. Record the change in
+batch size as <code>bestEstimateSize</code>.</li>
+</ol>
+<p>Once this dataset is generated, a linear regression can be calculated using the <code>bestEstimateSize</code> as
+the dependent variable and <code>fastlzSize</code> as the independent variable.</p>
+<p>We generated a dataset from two weeks of post-Ecotone transactions on Optimism Mainnet, as we found that was
+the most representative of performance across multiple chains and time periods. More details on the linear regression
+and datasets used can be found in this <a href="https://github.com/roberto-bayardo/compression-analysis/tree/main">repository</a>.</p>
+<h3 id="l1-gas-usage-estimation"><a class="header" href="#l1-gas-usage-estimation">L1 Gas Usage Estimation</a></h3>
+<p>The <code>L1GasUsed</code> property is deprecated due to it not capturing the L1 blob gas used by a transaction, and will be
+removed in a future network upgrade. Users can continue to use the <code>L1Fee</code> field to retrieve the L1 fee for a given
+transaction.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/fjord/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/fjord/derivation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/fjord/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/fjord/derivation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
