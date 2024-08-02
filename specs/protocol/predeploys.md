@@ -295,8 +295,10 @@ The `OptimismMintableERC20Factory` is responsible for creating ERC20 contracts o
 used for depositing native L1 tokens into (`OptimismMintableERC20`). These ERC20 contracts can be created permisionlessly
 and implement the interface required by the `StandardBridge` to just work with deposits and withdrawals.
 
-Each `OptimismMintableERC20` contract that is created by the `OptimismMintableERC20Factory` allows for the `L2StandardBridge` to mint
-and burn tokens, depending on if the user is depositing from L1 to L2 or withdrawing from L2 to L1.
+Each `OptimismMintableERC20` contract that is created by the `OptimismMintableERC20Factory`
+allows for the `L2StandardBridge` to mint
+and burn tokens, depending on if the user is
+depositing from L1 to L2 or withdrawing from L2 to L1.
 
 The factory will deploy using `CREATE3`, where the salt will depend on the user inputs:
 `remoteToken`, `name`, `symbol`, and `decimals`.
@@ -313,7 +315,7 @@ _optimismMintableERC20 = CREATE3.deploy(salt, _creationCode);
 ```
 
 The `OptimismMintableERC20Factory` will include a `deployments` mapping
-to store the `remoteToken` address for each deployed `OptimsimMintableERC20`. 
+to store the `remoteToken` address for each deployed `OptimsimMintableERC20`.
 
 ## OptimismMintableERC721Factory
 
