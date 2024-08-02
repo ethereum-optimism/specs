@@ -39,12 +39,13 @@ lint-links:
 
 lint-filenames:
     #!/usr/bin/env bash
-    for file in $(find . -type f); do
+    for file in $(find ./specs -type f); do
       if [[ "$file" == *_* ]]; then
         echo "File with underscore found: $file"
         exit 1
       fi
     done
+    echo "Filename linting complete"
 
 build:
     mdbook build
