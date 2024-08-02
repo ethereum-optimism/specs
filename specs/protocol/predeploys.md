@@ -289,16 +289,29 @@ upgraded by changing its proxy's implementation key.
 
 ## OptimismMintableERC20Factory
 
-[Implementation](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/OptimismMintableERC20Factory.sol)
-
 Address: `0x4200000000000000000000000000000000000012`
 
 The `OptimismMintableERC20Factory` is responsible for creating ERC20 contracts on L2 that can be
-used for depositing native L1 tokens into. These ERC20 contracts can be created permisionlessly
+used for depositing native L1 tokens into (`OptimismMintableERC20`). These ERC20 contracts can be created permisionlessly
 and implement the interface required by the `StandardBridge` to just work with deposits and withdrawals.
 
-Each ERC20 contract that is created by the `OptimismMintableERC20Factory` allows for the `L2StandardBridge` to mint
+Each `OptimismMintableERC20` contract that is created by the `OptimismMintableERC20Factory` allows for the `L2StandardBridge` to mint
 and burn tokens, depending on if the user is depositing from L1 to L2 or withdrawing from L2 to L1.
+
+The factory will deploy using `CREATE3`, where the salt will depend on the user inputs: `remoteToken`, `name`, `symbol`, and `decimals`. The use of `CREATE3` over `CREATE2` removes any dependence on the compiler.
+
+```solidity
+bytes memory _creationCode = abi.encodePacked(
+  type(OptimismMintableERC20).creationCode,
+  abi.encode(_bridge, _remoteToken, _name, _symbol, _decimals)
+);
+
+bytes32 salt = keccak256(abi.encode(_remoteToken, _name, _symbol, _decimals));
+_optimismMintableERC20 = CREATE3.deploy(salt, _creationCode);
+```
+
+The `OptimismMintableERC20Factory` will include a `deployments` mapping to store the `remoteToken` address for each deployed `OptimsimMintableERC20`. 
+
 
 ## OptimismMintableERC721Factory
 
