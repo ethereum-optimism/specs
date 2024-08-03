@@ -9,6 +9,7 @@
   "no-duplicate-heading": {
     "siblings_only": true
   },
+  "no-duplicate-heading": false,
   "no-blanks-blockquote": false,
   "no-empty-links": false,
   "single-title": false,
