@@ -25,15 +25,6 @@
   - [Main content](#main-content)
   - [Epilogue](#epilogue)
   - [Pre-image hinting routes](#pre-image-hinting-routes)
-    - [`l1-block-header <blockhash>`](#l1-block-header-blockhash)
-    - [`l1-transactions <blockhash>`](#l1-transactions-blockhash)
-    - [`l1-receipts <blockhash>`](#l1-receipts-blockhash)
-    - [`l1-precompile <precompile ++ inputbytes>`](#l1-precompile-precompile--inputbytes)
-    - [`l2-block-header <blockhash>`](#l2-block-header-blockhash)
-    - [`l2-transactions <blockhash>`](#l2-transactions-blockhash)
-    - [`l2-code <codehash>`](#l2-code-codehash)
-    - [`l2-state-node <nodehash>`](#l2-state-node-nodehash)
-    - [`l2-output <outputroot>`](#l2-output-outputroot)
   - [Precompile Accelerators](#precompile-accelerators)
 - [Fault Proof VM](#fault-proof-vm)
 - [Fault Proof Interactive Dispute Game](#fault-proof-interactive-dispute-game)
@@ -393,50 +384,11 @@ The fault proof program implements hint handling for the VM to use,
 as well as any program testing outside of VM environment.
 This can be exposed via a CLI, or alternative inter-process API.
 
-Every instance of `<blockhash>` in the below routes is `0x`-prefixed, lowercase, hex-encoded.
-
-#### `l1-block-header <blockhash>`
-
-Requests the host to prepare the L1 block header RLP pre-image of the block `<blockhash>`.
-
-#### `l1-transactions <blockhash>`
-
-Requests the host to prepare the list of transactions of the L1 block with `<blockhash>`:
-prepare the RLP pre-images of each of them, including transactions-list MPT nodes.
-
-#### `l1-receipts <blockhash>`
-
-Requests the host to prepare the list of receipts of the L1 block with `<blockhash>`:
-prepare the RLP pre-images of each of them, including receipts-list MPT nodes.
-
-#### `l1-precompile <precompile ++ inputbytes>`
-
-Requests the host to prepare the result of an L1 call to the `precompile` address given
-`<inputbytes>` as the input. The host also prepares a [global keccak256 preimage](#type-2-global-keccak256-key)
-of the hint data `<precompile ++ inputbytes>`.
-
-#### `l2-block-header <blockhash>`
-
-Requests the host to prepare the L2 block header RLP pre-image of the block `<blockhash>`.
-
-#### `l2-transactions <blockhash>`
-
-Requests the host to prepare the list of transactions of the L2 block with `<blockhash>`:
-prepare the RLP pre-images of each of them, including transactions-list MPT nodes.
-
-#### `l2-code <codehash>`
-
-Requests the host to prepare the L2 smart-contract code with the given `<codehash>`.
-
-#### `l2-state-node <nodehash>`
-
-Requests the host to prepare the L2 MPT node preimage with the given `<nodehash>`.
-
-#### `l2-output <outputroot>`
-
-Requests the host to prepare the L2 Output at the l2 output root `<outputroot>`.
-The L2 Output is the preimage of a
-[computed output root](../protocol/proposals.md#l2-output-commitment-construction).
+Hints are outbound messages from the client program to the attached host program,
+and are an implementation-specific construct. All data received must be adherant
+to the [preimage key types](#pre-image-key-types). Each client/host implementation
+may handle hint submissions as they please, and are encouraged to do so in
+separate ways.
 
 ### Precompile Accelerators
 
