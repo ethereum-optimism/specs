@@ -8239,7 +8239,6 @@ they need not be the same entity in practice.</p>
 <li><a href="interop/./dependency-set.html">Dependency Set</a>: definition of chains and chain-dependencies in the Superchain.</li>
 <li><a href="interop/./messaging.html">Messaging</a>: messaging functionality, core of protocol-level interoperability.</li>
 <li><a href="interop/./predeploys.html">Predeploys</a>: system contracts to interface with other chains.</li>
-<li><a href="interop/./execution.html">Execution</a>: enhancements to the execution-layer.</li>
 <li><a href="interop/./sequencer.html">Sequencer</a>: Sequencer Policy and block-building information.</li>
 <li><a href="interop/./verifier.html">Verifier</a>: Verification of cross-L2 messaging.</li>
 <li><a href="interop/./rollup-node-p2p.html">Rollup Node P2P</a>: modifications to the rollup-node P2P layer to support fast interop.</li>
@@ -8890,44 +8889,6 @@ MUST return the length of the dependency set array.</p>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="execution-1"><a class="header" href="#execution-1">Execution</a></h1>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="interop/execution.html#overview">Overview</a></li>
-<li><a href="interop/execution.html#security-considerations">Security Considerations</a></li>
-</ul>
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
-<p>This is an experimental section and may be changed in the future. It is not required
-for the initial release.</p>
-<p>After the full execution of a block, the set of <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">logs</a> that are emitted MUST be merklized and
-included in the block header. This commitment MUST be included as the block header's
-<a href="https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L115">extra data field</a>. The events are serialized with using <a href="https://github.com/ethereum/consensus-specs/blob/dev/ssz/simple-serialize.md">Simple Serialize</a> aka SSZ.</p>
-<p>The goal of committing to data in the extra data field is to make commitments to data required to
-verify executing messages easier. The commitment could also commit to the set of executing messages
-instead of just the logs which represent all possible initiating messages that originate in the block.
-This would reduce rounds of communication for nodes that use proofs to verify executing messages.</p>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
-<tr><td><code>MAX_LOG_DATA_SIZE</code></td><td><code>uint64(2**24)</code> or 16,777,216</td></tr>
-<tr><td><code>MAX_MESSAGES_PER_BLOCK</code></td><td><code>uint64(2**20)</code> or 1,048,576</td></tr>
-</tbody></table>
-</div>
-<pre><code class="language-python">class Log(Container):
-    address: ExecutionAddress
-    topics: List[bytes32, 4]
-    data: ByteList[MAX_LOG_DATA_SIZE]
-    transaction_hash: bytes32
-    transaction_index: uint64
-    log_index: uint64
-
-logs = List[Log, MAX_MESSAGES_PER_BLOCK](
-  log_0, log_1, log_2, ...)
-
-block.extra_data = logs.hash_tree_root()
-</code></pre>
-<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
-<p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -9051,7 +9012,7 @@ over the blocks of the chains in the dependency set, to further ensure increased
 <p>If a user does not have ether to pay for the gas of an executing message, application layer sponsorship
 solutions can be created. It is possible to create an MEV incentive by paying <code>tx.origin</code> in the executing
 message. This can be done by wrapping the <code>L2ToL2CrossDomainMessenger</code> with a pair of relaying contracts.</p>
-<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
+<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
 <h3 id="cross-chain-message-latency"><a class="header" href="#cross-chain-message-latency">Cross Chain Message Latency</a></h3>
 <p>The latency at which a cross chain message is relayed from the moment at which it was initiated is bottlenecked by
 the security of the preconfirmations. An initiating transaction and a executing transaction MAY have the same timestamp,
@@ -9189,7 +9150,7 @@ to the block building code that the <a href="interop/./sequencer.html#direct-dep
 follows. The main difference is that the validity of included executing
 messages is verified instead of verifying possible executing messages before
 inclusion.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
+<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <h3 id="forced-inclusion-of-cross-chain-messages"><a class="header" href="#forced-inclusion-of-cross-chain-messages">Forced Inclusion of Cross Chain Messages</a></h3>
 <p>The design is particular to not introduce any sort of "forced inclusion" between L2s. This design space introduces
 risky synchrony assumptions and forces the introduction of a message queue to prevent denial of service attacks where
@@ -9229,7 +9190,7 @@ to decrease the latency of this process. This could look like the sequencer sign
 sets of executing messages to nodes of remote chains so that they know exactly what initiating
 messages to look for. An optimization on this would involve working with commitments to this data
 so that less data is sent around via p2p.</p>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
@@ -9247,7 +9208,7 @@ so that less data is sent around via p2p.</p>
 <p>TODO</p>
 <p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
 The insight is that the fault proof program can be a superset of the state transition function.</p>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <p>TODO</p>
 <h3 id="cascading-dependencies"><a class="header" href="#cascading-dependencies">Cascading dependencies</a></h3>
 <p>Deposits are a special case, synchronous with derivation, at enforced cross-L2 delay.
@@ -9280,7 +9241,7 @@ based upgrade transactions are deterministically generated by the derivation pip
 </ul>
 <p>The execution payload MUST set <code>noTxPool</code> to <code>true</code> for this block.</p>
 <p>The exact definitions for these upgrade transactions are still to be defined.</p>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
@@ -9316,7 +9277,7 @@ based upgrade transactions are deterministically generated by the derivation pip
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
+<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> unifies ERC20 token bridging to make it fungible across the Superchain.
 It builds on top of the messaging protocol, as the most trust minimized bridging solution.</p>
@@ -10021,7 +9982,7 @@ if this property is not preserved in future versions of the OP Stack Manager.</l
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
