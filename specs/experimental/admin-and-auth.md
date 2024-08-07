@@ -86,7 +86,9 @@ extensions.
 
 ## Ownership model diagram
 
-The following diagram outlines the control relationships between the contracts in the
+The following diagram outlines the control relationships between the contracts in the system.
+
+
 
 ```mermaid
 flowchart LR
