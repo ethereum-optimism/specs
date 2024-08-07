@@ -347,7 +347,8 @@ the <code>CrossDomainMessenger</code>.</p>
 </code></pre>
 <h3 id="no-native-support-for-cross-chain-ether-sends"><a class="header" href="#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></h3>
 <p>To enable interoperability between chains that use a custom gas token, there is no native support for
-sending <code>ether</code> between chains. <code>ether</code> must first be wrapped into WETH before sending between chains.</p>
+sending <code>ether</code> between chains. <code>ether</code> must first be wrapped into WETH before sending between chains.
+See <a href="./superchain-weth.html">SuperchainWETH</a> for more information.</p>
 <h3 id="interfaces"><a class="header" href="#interfaces">Interfaces</a></h3>
 <p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code> but
 the <code>_minGasLimit</code> is removed to prevent complexity around EVM gas introspection and the <code>_destination</code>
