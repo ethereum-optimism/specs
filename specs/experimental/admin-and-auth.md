@@ -39,50 +39,43 @@ functionality. This document describes the system of Safe's and their purposes.
 This list outlines the various Safes, including mainnet addresses, thresholds, ownership, and any
 extensions.
 
-1. **[The ProxyAdminOwner
-   Safe](https://etherscan.io/address/0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A):** The name of
-    this Safe is slightly misleading. While it does control the `ProxyAdmin` contract, can therefore
-   upgrade contracts in the system, more generally it is in charge of _safety_, meaning it should
-   control any action which has an impact on the determination of a valid L2 state, or the custody
-   of bridged assets. This includes but is not limited to upgrading L1 contracts, and modifying the
-   implementation of the dispute game.
-
    This safe has a threshold of 2, and is owned by two other Safes:
       1. The Security Council Safe.
       2. The Foundation Upgrade Safe.
+1. **The ProxyAdminOwner Safe:** The name of this Safe is slightly misleading. While it does control
+   the `ProxyAdmin` contract, and can therefore upgrade contracts in the system, more generally it
+   is in charge of _safety_, meaning it should control any action which has an impact on the
+   determination of a valid L2 state, or the custody of bridged assets. This includes but is not
+   limited to upgrading L1 contracts, and modifying the implementation of the dispute game.
 
-1. **[The Guardian Safe](https://etherscan.io/address/0x09f7150D8c019BeF34450d6920f6B3608ceFdAf2):**
-   This Safe is in charge of _liveness_, meaning it should control any action which may cause a
-   delay in the finalization of L2 states, or in the settlement on L1 resulting from those states on
-   L1. This includes but is not limited to pausing all code paths related to withdrawals. It is also
-   extended with the `DeputyGuardianModule` which is detailed below.
+   Accordingly, this Safe is authorized to call the following safety-critical functions:
+      - All `ProxyAdmin` `onlyOwner` functions.
+      - All `DisputeGameFactory` `onlyOwner` functions.
 
    This Safe has a threshold of 1 and is owned by the Security Council Safe.
 
-1. **[The Security Council
-   Safe](https://etherscan.io/address/0xc2819DC788505Aac350142A7A707BF9D03E3Bd03):** This Safe is
-   one of the two owners of the ProxyAdminOwner Safe. It is extended with the Liveness Checking
-   system which is detailed below.
+1. **The Guardian Safe:** This Safe is in charge of _liveness_, meaning it should control any action
+   which may cause a delay in the finalization of L2 states, or in the settlement on L1 resulting
+   from those states on L1. This includes but is not limited to pausing all code paths related to
+   withdrawals. It is also extended with the `DeputyGuardianModule` which is detailed below.
 
-   This Safe currently has a threshold of 10 and 13 owners. Anytime owners are added or removed, the
-   threshold should also be modified to ensure it is the lowest value which is greater than 75% of
-   the number of owners. This is intended to meet Stage 1 requirements.
+   Accordingly, this Safe is authorized to call the following liveness-critical functions:
+      - All `SuperchainConfig` `onlyOwner` functions.
+      - All `OptimismPortal2` `onlyOwner` functions.
 
-1. **[The Foundation Upgrade
-   Safe](https://etherscan.io/address/0x847B5c174615B1B7fDF770882256e2D3E95b9D92):** This Safe is
-   one of the two owners of the ProxyAdminOwner Safe. It is also able to update the recommended and
-   required versions on the `ProtocolVersions` contract, given that observing the state of this
-   contract is optional, this is not considered to be affect safety and can therefore be managed the
-   Foundation Safe.
+   This Safe has a threshold of 1 and is owned by the Security Council Safe.
 
-   This Safe has a threshold of 5 and has 7 owners.
+1. **The Security Council Safe:** This Safe is one of the two owners of the ProxyAdminOwner Safe. It
+   is extended with the Liveness Checking system which is detailed below.
 
-1. **[The Foundation Operations
-   Safe](https://etherscan.io/address/0x9BA6e03D8B90dE867373Db8cF1A58d2F7F006b3A):** This Safe acts
-   as the Deputy Guardian, meaning that (via the Guardian Safes's `DeputyGuardianModule`) can call
-   any functions in the system which impact liveness.
+1. **The Foundation Upgrade Safe:** This Safe is one of the two owners of the ProxyAdminOwner Safe.
+   It is also able to update the recommended and required versions on the `ProtocolVersions`
+   contract, given that observing the state of this contract is optional, this is not considered to
+   be affect safety and can therefore be managed the Foundation Safe.
 
-   This Safe has a threshold of 5 and has the same 7 owners as the Foundation Upgrade Safe.
+1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that (via the
+   Guardian Safes's `DeputyGuardianModule`) can call any functions in the system which impact
+   liveness.
 
 ## Ownership model diagram
 
