@@ -39,9 +39,6 @@ functionality. This document describes the system of Safe's and their purposes.
 This list outlines the various Safes, including mainnet addresses, thresholds, ownership, and any
 extensions.
 
-   This safe has a threshold of 2, and is owned by two other Safes:
-      1. The Security Council Safe.
-      2. The Foundation Upgrade Safe.
 1. **The ProxyAdminOwner Safe:** The name of this Safe is slightly misleading. While it does control
    the `ProxyAdmin` contract, and can therefore upgrade contracts in the system, more generally it
    is in charge of _safety_, meaning it should control any action which has an impact on the
@@ -52,7 +49,9 @@ extensions.
       - All `ProxyAdmin` `onlyOwner` functions.
       - All `DisputeGameFactory` `onlyOwner` functions.
 
-   This Safe has a threshold of 1 and is owned by the Security Council Safe.
+   This safe has a threshold of 2, and is owned by two other Safes:
+      1. The Security Council Safe.
+      2. The Foundation Upgrade Safe.
 
 1. **The Guardian Safe:** This Safe is in charge of _liveness_, meaning it should control any action
    which may cause a delay in the finalization of L2 states, or in the settlement on L1 resulting
@@ -81,8 +80,6 @@ extensions.
 
 The following diagram outlines the control relationships between the contracts in the system.
 
-
-
 ```mermaid
 flowchart LR
    subgraph SuperchainSystem[Superchain System]
@@ -99,7 +96,6 @@ flowchart LR
          PV[ProtocolVersions]
       end
    end
-
 
    subgraph UpgradeSystem[Upgrade System]
       FndUp[Foundation Upgrade Safe]
