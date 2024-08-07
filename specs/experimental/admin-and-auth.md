@@ -1,9 +1,12 @@
-# Security Council Safe
+# Superchain Administration and Authorization Model
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Overview](#overview)
+- [List of Safes](#list-of-safes)
+- [Ownership model diagram](#ownership-model-diagram)
 - [Deputy guardian module](#deputy-guardian-module)
   - [Deputy Guardian Module Security Properties](#deputy-guardian-module-security-properties)
 - [Liveness checking mechanism](#liveness-checking-mechanism)
@@ -25,21 +28,122 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-The Security Council (at
-[eth:0xc2819DC788505Aac350142A7A707BF9D03E3Bd03](https://etherscan.io/address/0xc2819DC788505Aac350142A7A707BF9D03E3Bd03))
-uses a specially extended Safe multisig contract to provide additional security guarantees on top of
-those provided by the Safe contract.
+## Overview
+
+Authorization of administrative actions in the Superchain are managed by a system of multisignature
+ Safe contracts, as well as custom extensions to those Safe contracts which provide additional
+functionality. This document describes the system of Safe's and their purposes.
+
+## List of Safes
+
+This list outlines the various Safes, including mainnet addresses, thresholds, ownership, and any
+extensions.
+
+1. **The ProxyAdminOwner Safe:** The name of this Safe is slightly misleading. While it does control
+   the `ProxyAdmin` contract, and can therefore upgrade contracts in the system, more generally it
+   is in charge of _safety_, meaning it should control any action which has an impact on the
+   determination of a valid L2 state, or the custody of bridged assets. This includes but is not
+   limited to upgrading L1 contracts, and modifying the implementation of the dispute game.
+
+   Accordingly, this Safe is authorized to call the following safety-critical functions:
+      - All `ProxyAdmin` `onlyOwner` functions.
+      - All `DisputeGameFactory` `onlyOwner` functions.
+
+   This safe has a threshold of 2, and is owned by two other Safes:
+      1. The Security Council Safe.
+      2. The Foundation Upgrade Safe.
+
+1. **The Guardian Safe:** This Safe is in charge of _liveness_, meaning it should control any action
+   which may cause a delay in the finalization of L2 states, or in the settlement on L1 resulting
+   from those states on L1. This includes but is not limited to pausing all code paths related to
+   withdrawals. It is also extended with the `DeputyGuardianModule` which is detailed below.
+
+   Accordingly, this Safe is authorized to call the following liveness-critical functions:
+      - All `SuperchainConfig` `onlyOwner` functions.
+      - All `OptimismPortal2` `onlyOwner` functions.
+
+   This Safe has a threshold of 1 and is owned by the Security Council Safe.
+
+1. **The Security Council Safe:** This Safe is one of the two owners of the ProxyAdminOwner Safe. It
+   is extended with the Liveness Checking system which is detailed below.
+
+1. **The Foundation Upgrade Safe:** This Safe is one of the two owners of the ProxyAdminOwner Safe.
+   It is also able to update the recommended and required versions on the `ProtocolVersions`
+   contract, given that observing the state of this contract is optional, this is not considered to
+   be affect safety and can therefore be managed the Foundation Safe.
+
+1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that (via the
+   Guardian Safes's `DeputyGuardianModule`) can call any functions in the system which impact
+   liveness.
+
+## Ownership model diagram
+
+The following diagram outlines the control relationships between the contracts in the system.
+
+```mermaid
+flowchart LR
+   subgraph SuperchainSystem[Superchain System]
+      subgraph Liveness
+         Pausability
+         OtherLiveness[Other Liveness controls]
+      end
+      subgraph Safety
+         ContractUpgrades
+         DisputeGame
+         OtherSafety[Other Safety]
+      end
+      subgraph NonProtocol[Out of Protocol]
+         PV[ProtocolVersions]
+      end
+   end
+
+   subgraph UpgradeSystem[Upgrade System]
+      FndUp[Foundation Upgrade Safe]
+      POA[ProxyAdminOwner Safe]
+      subgraph Security Council Safe
+         Council[Security Council Safe\n+ LivenessGuard]
+         LM[Liveness Module]
+      end
+   end
+
+   subgraph GuardianSystem[Guardian System]
+      FndOps[Foundation Ops Safe]
+      subgraph GuardianSafe[Guardian Safe]
+         GS[Guardian Safe]
+         DGM[Deputy Guardian Module]
+      end
+   end
+
+    POA -->|controls| Safety
+    FndUp --> POA
+    Council --> POA
+    Council --> GS
+    FndOps -->|pause\nunpause\nsetRespectedGameType\nblackListDisputeGame| DGM
+    FndUp -->|set versions|PV
+    LM -->|execTransactionFromModule| Council
+    DGM -->|execTransactionFromModule| GS
+    GS -->|controls| Liveness
+
+   %% Declare a class to make the outer boxes somewhat transparent to provide some contrast
+   classDef outer fill:#ffffff44
+   class SuperchainSystem,GuardianSystem,UpgradeSystem outer
+```
+
+Note: in the diagram above, the [`ProtocolVersions`
+   contract](../protocol/superchain-upgrades.md#protocolversions-l1-contract) is listed as "Out of
+   Protocol", because the decision to follow the version signals in the contract is optional. It is
+   included here for completeness, but is not considered as either Safety or Liveness affecting.
 
 ## Deputy guardian module
 
 The Security Council acts as the Guardian, which is authorized to activate the [Superchain
 Pause](../protocol/superchain-configuration.md#pausability) functionality and for
-[blacklisting](../fault-proof/stage-one/bond-incentives.md#authenticated-roles) dispute
-game contracts.
+[blacklisting](../fault-proof/stage-one/bond-incentives.md#authenticated-roles) dispute game
+contracts.
 
 However the Security Council cannot be expected to react quickly in an emergency situation.
-Therefore the Deputy Guardian module enables the Security Council to share this
-authorization with another account.
+Therefore the Deputy Guardian module enables the Security Council to share this authorization with
+another account.
 
 The module has the following minimal interface:
 
@@ -77,8 +181,9 @@ interface DeputyGuardianModule {
 }
 ```
 
-For simplicity, the `DeputyGuardianModule` module does not have functions for updating the `safe` and
-`deputyGuardian` addresses. If necessary these can be modified by swapping out with a new module.
+For simplicity, the `DeputyGuardianModule` module does not have functions for updating the `safe`
+and `deputyGuardian` addresses. If necessary these can be modified by swapping out with a new
+module.
 
 ### Deputy Guardian Module Security Properties
 
@@ -129,28 +234,30 @@ Owners are recorded in this mapping in one of 4 ways:
 1. When a transaction is executed, the signatures on that transaction are passed to the guard and
    used to identify the signers. If more than the required number of signatures is provided, they
    are ignored.
-1. An owner may call the contract's `showLiveness()()` method directly in order to prove liveness.
+1. An owner may call the contract's `showLiveness()` method directly in order to prove liveness.
 
-Note that the first two methods do not require the owner to actually sign anything. However these mechanisms
-are necessary to prevent new owners from being removed before they have had a chance to show liveness.
+Note that the first two methods do not require the owner to actually sign anything. However these
+mechanisms are necessary to prevent new owners from being removed before they have had a chance to
+show liveness.
 
 ### The liveness module
 
 A `LivenessModule` is also created which does the following:
 
-1. Has a function `removeOwners()` that anyone may call to specify one or more owners to be removed from the
-   Safe.
-1. The Module would then check the `LivenessGuard.lastLive()` to determine if the signer is
-   eligible for removal.
+1. Has a function `removeOwners()` that anyone may call to specify one or more owners to be removed
+   from the Safe.
+1. The Module would then check the `LivenessGuard.lastLive()` to determine if the signer is eligible
+   for removal.
 1. If so, it will call the Safe's `removeSigner()` to remove the non-live signer, and if necessary
    reduce the threshold.
 1. When a member is removed, the signing parameters are modified such that `M/N` is the lowest ratio
-   which remains greater than or equal to 75%. Using integer math, this can be expressed as `M = (N * 75 + 99) / 100`.
+   which remains greater than or equal to 75%. Using integer math, this can be expressed as
+   `M = (N * 75 + 99) / 100`.
 
 ### Owner removal call flow
 
-The following diagram illustrates the flow for removing a single owner. The `verifyFinalState`
-box indicates calls to the Safe which ensure the final state is valid.
+The following diagram illustrates the flow for removing a single owner. The `verifyFinalState` box
+indicates calls to the Safe which ensure the final state is valid.
 
 ```mermaid
 sequenceDiagram
@@ -173,8 +280,8 @@ sequenceDiagram
 ### Shutdown
 
 In the unlikely event that the signer set (`N`) is reduced below the allowed minimum number of
-owners, then (and only then) is a shutdown mechanism activated which removes the existing
-signers, and hands control of the multisig over to a predetermined entity.
+owners, then (and only then) is a shutdown mechanism activated which removes the existing signers,
+and hands control of the multisig over to a predetermined entity.
 
 ### Liveness Security Properties
 
@@ -197,18 +304,20 @@ The following security properties must be upheld:
 #### In the module
 
 1. During a shutdown the module correctly removes all signers, and converts the safe to a 1 of 1.
+1. After a shutdown, the module's removeOwner function is no longer callable.
 1. The module only removes an owner if they have not demonstrated liveness during the interval, or
    if enough other owners have been removed to activate the shutdown mechanism.
 1. The module correctly sets the Safe's threshold upon removing a signer.
 
-Note: neither the module nor guard attempt to prevent a quorum of owners from removing either the liveness
-module or guard. There are legitimate reasons they might wish to do so. Moreover, if such a quorum
-of owners exists, there is no benefit to removing them, as they are defacto 'sufficiently live'.
+Note: neither the module nor guard attempt to prevent a quorum of owners from removing either the
+liveness module or guard. There are legitimate reasons they might wish to do so. Moreover, if such a
+quorum of owners exists, there is no benefit to removing them, as they are defacto 'sufficiently
+live'.
 
 ### Interdependency between the guard and module
 
-The guard has no dependency on the module, and can be used independently to track liveness of
-Safe owners.
+The guard has no dependency on the module, and can be used independently to track liveness of Safe
+owners.
 
 This means that the module can be removed or replaced without any affect on the guard.
 
@@ -230,7 +339,8 @@ therefore be done prior to adding a new owner.
 The module and guard are intended to be deployed and installed on the safe in the following
 sequence:
 
-1. Deploy the guard contract. The guard's constructor will read the Safe's owners and set a timestamp.
+1. Deploy the guard contract. The guard's constructor will read the Safe's owners and set a
+   timestamp.
 1. Deploy the module.
 1. Set the guard on the safe.
 1. Enable the module on the safe.
