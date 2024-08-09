@@ -271,7 +271,7 @@ RPC access to the derivation pipeline and make the upgrade transactions non dete
 
 ### L1Block Deployment
 
-- `from`: `0x4210000000000000000000000000000000000002`
+- `from`: `0x4210000000000000000000000000000000000000`
 - `to`: `null`
 - `mint`: `0`
 - `value`: `0`
