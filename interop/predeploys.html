@@ -222,11 +222,30 @@
 <li><a href="#dependency-set">Dependency Set</a></li>
 </ul>
 </li>
+<li><a href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a>
+<ul>
+<li><a href="#optimismmintableerc20">OptimismMintableERC20</a></li>
+<li><a href="#updates">Updates</a></li>
+<li><a href="#functions">Functions</a>
+<ul>
+<li><a href="#createoptimismmintableerc20withdecimals"><code>createOptimismMintableERC20WithDecimals</code></a></li>
+<li><a href="#createoptimismmintableerc20"><code>createOptimismMintableERC20</code></a></li>
+<li><a href="#createstandardl2token"><code>createStandardL2Token</code></a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></li>
+<li><a href="#standardl2tokencreated"><code>StandardL2TokenCreated</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <p>Two new system level predeploys are introduced for managing cross chain messaging along with
-an update to the <code>L1Block</code> contract with additional functionality.</p>
+an update to the <code>L1Block</code> and <code>OptimismMintableERC20Factory</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000022</code></td></tr>
@@ -533,6 +552,64 @@ id, is passed in as an argument, and false otherwise. Additionally, <code>L1Bloc
 dependency set called <code>dependencySet()</code>. This function MUST return the array of chain ids that are in the dependency set.
 <code>L1Block</code> MUST also provide a public getter to get the dependency set size called <code>dependencySetSize()</code>. This function
 MUST return the length of the dependency set array.</p>
+<h2 id="optimismmintableerc20factory"><a class="header" href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000012</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="optimismmintableerc20"><a class="header" href="#optimismmintableerc20">OptimismMintableERC20</a></h3>
+<p>The <code>OptimismMintableERC20Factory</code> creates ERC20 contracts on L2 that can be used to deposit
+native L1 tokens into (<code>OptimismMintableERC20</code>). Anyone can deploy <code>OptimismMintableERC20</code> contracts.</p>
+<p>Each <code>OptimismMintableERC20</code> contract created by the <code>OptimismMintableERC20Factory</code>
+allows for the <code>L2StandardBridge</code> to mint
+and burn tokens, depending on whether the user is
+depositing from L1 to L2 or withdrawing from L2 to L1.</p>
+<h3 id="updates"><a class="header" href="#updates">Updates</a></h3>
+<p>The <code>OptimismMintableERC20Factory</code> is updated to include a <code>deployments</code> mapping
+that stores the <code>remoteToken</code> address for each deployed <code>OptimismMintableERC20</code>.
+This is essential for the liquidity migration process defined in the liquidity migration spec.</p>
+<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<h4 id="createoptimismmintableerc20withdecimals"><a class="header" href="#createoptimismmintableerc20withdecimals"><code>createOptimismMintableERC20WithDecimals</code></a></h4>
+<p>Creates an instance of the <code>OptimismMintableERC20</code> contract with a set of metadata defined by:</p>
+<ul>
+<li><code>_remoteToken</code>: address of the underlying token in its native chain.</li>
+<li><code>_name</code>: <code>OptimismMintableERC20</code> name</li>
+<li><code>_symbol</code>: <code>OptimismMintableERC20</code> symbol</li>
+<li><code>_decimals</code>: <code>OptimismMintableERC20</code> decimals</li>
+</ul>
+<pre><code class="language-solidity">createOptimismMintableERC20WithDecimals(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
+</code></pre>
+<p><strong>Invariants</strong></p>
+<ul>
+<li>The function MUST use <code>CREATE2</code> to deploy new contracts.</li>
+<li>The salt MUST be computed by applying <code>keccak256</code> to the <code>abi.encode</code>
+of the four input parameters (<code>_remoteToken</code>, <code>_name</code>, <code>_symbol</code>, and <code>_decimals</code>).
+This will ensure a unique <code>OptimismMintableERC20</code> for each set of ERC20 metadata.</li>
+<li>The function MUST store the <code>_remoteToken</code> address for each deployed <code>OptimismMintableERC20</code> in a <code>deployments</code> mapping.</li>
+</ul>
+<h4 id="createoptimismmintableerc20"><a class="header" href="#createoptimismmintableerc20"><code>createOptimismMintableERC20</code></a></h4>
+<p>Creates an instance of the <code>OptimismMintableERC20</code> contract with a set of metadata defined
+by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fixed <code>decimals</code> to the standard value 18.</p>
+<pre><code class="language-solidity">createOptimismMintableERC20(address _remoteToken, string memory _name, string memory _symbol) returns (address)
+</code></pre>
+<h4 id="createstandardl2token"><a class="header" href="#createstandardl2token"><code>createStandardL2Token</code></a></h4>
+<p>Creates an instance of the <code>OptimismMintableERC20</code> contract with a set of metadata defined
+by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fixed <code>decimals</code> to the standard value 18.</p>
+<pre><code class="language-solidity">createStandardL2Token(address _remoteToken, string memory _name, string memory _symbol) returns (address)
+</code></pre>
+<p>This function exists for backwards compatibility with the legacy version.</p>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h4 id="optimismmintableerc20created"><a class="header" href="#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></h4>
+<p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.</p>
+<pre><code class="language-solidity">event OptimismMintableERC20Created(address indexed localToken, address indexed remoteToken, address deployer);
+</code></pre>
+<h4 id="standardl2tokencreated"><a class="header" href="#standardl2tokencreated"><code>StandardL2TokenCreated</code></a></h4>
+<p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.
+This event exists for backward compatibility with legacy version.</p>
+<pre><code class="language-solidity">event StandardL2TokenCreated(address indexed remoteToken, address indexed localToken);
+</code></pre>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 <p>TODO</p>
 
