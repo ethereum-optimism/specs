@@ -5072,6 +5072,12 @@ And <a href="fault-proof/stage-one/dispute-game-interface.html">dispute-game-int
 </ul>
 </li>
 <li><a href="fault-proof/cannon-fault-proof-vm.html#exceptions">Exceptions</a></li>
+<li><a href="fault-proof/cannon-fault-proof-vm.html#security-model">Security Model</a>
+<ul>
+<li><a href="fault-proof/cannon-fault-proof-vm.html#compiler-correctness">Compiler Correctness</a></li>
+<li><a href="fault-proof/cannon-fault-proof-vm.html#compiler-assumptions">Compiler Assumptions</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-13"><a class="header" href="#overview-13">Overview</a></h2>
@@ -5232,6 +5238,39 @@ outside the general purpose registers).</li>
 <p>VM implementations may raise an exception in other cases that is specific to the implementation.
 For example, an on-chain FPVM that relies on pre-supplied merkle proofs for memory access may
 raise an exception if the supplied merkle proof does not match the pre-state <code>memRoot</code>.</p>
+<h2 id="security-model"><a class="header" href="#security-model">Security Model</a></h2>
+<h3 id="compiler-correctness"><a class="header" href="#compiler-correctness">Compiler Correctness</a></h3>
+<p>Cannon is designed to prove the correctness of a particular state transition that emulates a MIPS32 machine.
+Cannon does not guarantee that the MIPS32 instructions correctly implement the program that the user intends to prove.
+As a result, Cannon's use as a Fault Proof system inherently depends on some extent on the correctness of the compiler
+used to generate the MIPS32 instructions over which Cannon operates.</p>
+<p>To illustrate this concept, suppose that a user intends to prove simple program <code>input + 1 = output</code>.
+Suppose then that the user's compiler for this program contains a bug and errantly generates the MIPS instructions for a
+slightly different program <code>input + 2 = output</code>. Although Cannon would correctly prove the operation of this compiled program,
+the result proven would differ from the user's intent. Cannon proves the MIPS state transition but makes no assertion about
+the correctness of the translation between the user's high-level code and the resulting MIPS program.</p>
+<p>As a consequence of the above, it is the responsibility of a program developer to develop tests that demonstrate that Cannon
+is capable of proving their intended program correctly over a large number of possible inputs. Such tests defend against
+bugs in the user's compiler as well as ways in which the compiler may inadvertantly break one of Cannon's
+<a href="fault-proof/cannon-fault-proof-vm.html#compiler-assumptions">Compiler Assumptions</a>. Users of Fault Proof systems are strongly encouraged to utilize multiple
+proof systems and/or compilers to mitigate the impact of errant behavior in any one toolchain.</p>
+<h3 id="compiler-assumptions"><a class="header" href="#compiler-assumptions">Compiler Assumptions</a></h3>
+<p>Cannon makes the simplifying assumption that users are utilizing compilers that do not rely on MIPS exception states for
+standard program behavior. In other words, Cannon generally assumes that the user's compiler generates spec-compliant
+instructions that would not trigger an exception. Refer to <a href="fault-proof/cannon-fault-proof-vm.html#exceptions">Exceptions</a> for a list of conditions that are
+explicitly handled.</p>
+<p>Certain cases that would typically be asserted by a strict implementation of the MIPS32 specification are not handled by
+Cannon as follows:</p>
+<ul>
+<li><code>add</code>, <code>addi</code>, and <code>sub</code> do not trigger an exception on signed integer overflow.</li>
+<li>Instruction encoding validation does not trigger an exception for fields that should be zero.</li>
+<li>Memory instructions do not trigger an exception when addresses are not naturally aligned.</li>
+</ul>
+<p>Many compilers, including the Golang compiler, will not generate code that would trigger these conditions under bug-free
+operation. Given the inherent reliance on <a href="fault-proof/cannon-fault-proof-vm.html#compiler-correctness">Compiler Correctness</a> in applications using Cannon, the
+tests and defense mechanisms that must necessarily be employed by Cannon users to protect their particular programs
+against compiler bugs should also suffice to surface bugs that would break these compiler assumptions. Stated simply, Cannon
+can rely on specific compiler behaviors because users inherently must employ safety nets to guard against compiler bugs.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <!-- DOCTOC SKIP -->
 <h1 id="stage-one-decentralization"><a class="header" href="#stage-one-decentralization">Stage One Decentralization</a></h1>
