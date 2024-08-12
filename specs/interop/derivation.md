@@ -37,7 +37,7 @@ The order of deposit transactions occurs as follows:
 
 1. L1 attributes transaction calling [`setL1BlockValuesInterop()`](./l1_attributes.md).
 1. User deposits
-1. L1 attributes transaction calling [`resetIsDeposit()`](./l1_attributes.md)
+1. L1 attributes transaction calling [`depositsComplete()`](./l1_attributes.md)
 
 ### Gas Considerations
 

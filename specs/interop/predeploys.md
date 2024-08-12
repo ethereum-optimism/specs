@@ -29,7 +29,7 @@
   - [Dependency Set](#dependency-set)
   - [Deposit Context](#deposit-context)
   - [`isDeposit()`](#isdeposit)
-    - [`resetIsDeposit()`](#resetisdeposit)
+    - [`depositsComplete()`](#depositscomplete)
 - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -444,11 +444,11 @@ Returns true iff the current execution occurs in a [deposit context](./derivatio
 Only the `CrossL2Inbox` is authorized to call `isDeposit`.
 This is done to prevent apps from easily detecting and censoring deposits.
 
-#### `resetIsDeposit()`
+#### `depositsComplete()`
 
 Called after processing the first L1 Attributes transaction and user deposits to destroy the deposit context.
 
-Only the `DEPOSITOR_ACCOUNT` is authorized to call `resetIsDeposit()`.
+Only the `DEPOSITOR_ACCOUNT` is authorized to call `depositsComplete()`.
 
 ## Security Considerations
 
