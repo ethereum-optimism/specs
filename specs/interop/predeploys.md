@@ -445,7 +445,7 @@ MUST return the length of the dependency set array.
 
 ### Deposit Context
 
-The `L1Block` contract is updated with new methods to interact with [deposit contexts](./derivation.md#deposit-context).
+The `L1BlockInterop` contract will extend from `L1Block` to add new methods to interact with [deposit contexts](./derivation.md#deposit-context).
 
 ```solidity
 function isDeposit() public view returns (bool);
@@ -454,7 +454,7 @@ function depositsComplete() public;
 
 ### `isDeposit()`
 
-Returns true iff the current execution occurs in a [deposit context](./derivation.md#deposit-context).
+Returns true if the current execution occurs in a [deposit context](./derivation.md#deposit-context).
 
 Only the `CrossL2Inbox` is authorized to call `isDeposit`.
 This is done to prevent apps from easily detecting and censoring deposits.
