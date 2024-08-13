@@ -28,6 +28,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install pnpm
+          command: npm install -g pnpm@9.1.0
+      - run:
           name: Install deps
           command: just deps
       - run:

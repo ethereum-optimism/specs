@@ -29,7 +29,7 @@ The threshold for which changes require a governance vote is based on the User P
 - Hardfork is prepared *[If needed - hardforks are needed if we are adding major/protocol-level changes to our stack]*
    - Named hardfork is created
    - Code has been configured to activate with the named hardfork
-   - Ugrades of Fault Proof systems are prepared
+   - Upgrades of Fault Proof systems are prepared
 
     ## 4. Security standards and criteria check are done
 
