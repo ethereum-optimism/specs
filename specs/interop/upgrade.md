@@ -44,7 +44,7 @@ pre-Interop L1 Attributes predeploy:
 
 - `isDeposit` (`bool`) - Set to `true` iff the current execution occurs in a [deposit context](./derivation.md#deposit-context).
 
-`setL1BlockValuesInterop` extends the behavior of `setL1BlockValuesEcotone` by additionally setting the
+`setL1BlockValuesIsthmus` extends the behavior of `setL1BlockValuesEcotone` by additionally setting the
 `isDeposit` state storage to `true`.
 
 ### Interop L1Block upgrade
@@ -58,12 +58,12 @@ The function called by the L1 attributes transaction depends on the network upgr
   - `setL1BlockValuesEcotone` is called, following the pre-Interop L1 attributes rules.
 - At the Interop activation block:
   - `setL1BlockValuesEcotone` function MUST be called, except if activated at genesis.
-    The contract is upgraded later in this block, to support `setL1BlockValuesInterop`.
+    The contract is upgraded later in this block, to support `setL1BlockValuesIsthmus`.
 - After the Interop activation:
   - `setL1BlockValuesEcotone` function is deprecated and MUST never be called.
-  - `setL1BlockValuesInterop` MUST be called.
+  - `setL1BlockValuesIsthmus` MUST be called.
 
-The `setL1BlockValuesInterop` input parameters are identical to `setL1BlockValuesEcotone` as described in
+The `setL1BlockValuesIsthmus` input parameters are identical to `setL1BlockValuesEcotone` as described in
 [L1 Attributes Deposited Transaction Calldata](/specs/protocol/ecotone/l1-attributes.md#l1-attributes-deposited-transaction-calldata).
 
 ## Security Considerations
