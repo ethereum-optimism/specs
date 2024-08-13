@@ -135,8 +135,6 @@ software, and complexity in general.
 
 ### Validation and Authorization of Deposited Transactions
 
-[authorization]: #validation-and-authorization-of-deposited-transaction
-
 As noted above, the deposited transaction type does not include a signature for validation. Rather,
 authorization is handled by the [L2 chain derivation][g-derivation] process, which when correctly
 applied will only derive transactions with a `from` address attested to by the logs of the [L1
@@ -299,7 +297,7 @@ The predeploy stores the following values:
 - `sequenceNumber` (`uint64`): This equals the L2 block number relative to the start of the epoch,
   i.e. the L2 block distance to the L2 block height that the L1 attributes last changed,
   and reset to 0 at the start of a new epoch.
-- System configurables tied to the L1 block, see [System configuration specification](system_config.md):
+- System configurables tied to the L1 block, see [System configuration specification](system-config.md):
   - `batcherHash` (`bytes32`): A versioned commitment to the batch-submitter(s) currently operating.
   - `overhead` (`uint256`): The L1 fee overhead to apply to L1 cost computation of transactions in this L2 block.
   - `scalar` (`uint256`): The L1 fee scalar to apply to L1 cost computation of transactions in this L2 block.

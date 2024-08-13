@@ -6,7 +6,7 @@
 
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
-  - [`DEPENDENCY_SET` UpdateType](#dependency_set-updatetype)
+  - [`dependency-set` UpdateType](#dependency-set-updatetype)
 - [Security Considerations](#security-considerations)
   - [Dynamic Size of L1 Attributes Transaction](#dynamic-size-of-l1-attributes-transaction)
   - [Maximum Size of the Dependency Set](#maximum-size-of-the-dependency-set)
@@ -29,7 +29,7 @@ The dependency set is configured on a per chain basis.
 The chain id of the local chain MUST be considered as part of its own dependency set.
 
 While the dependency set explicitly defines the set of chains that are depended on for incoming messages,
-the full set of transitive dependencies must be known to allow for the progression of [safety](#safety).
+the full set of transitive dependencies must be known to allow for the progression of safety.
 This means that the `op-node` needs to be aware of all transitive dependencies.
 
 ## Chain ID
@@ -53,9 +53,9 @@ enum is added that corresponds to a change in the dependency set.
 
 The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
 
-### `DEPENDENCY_SET` UpdateType
+### `dependency-set` UpdateType
 
-When a `ConfigUpdate` event is emitted where the `UpdateType` is `DEPENDENCY_SET`, the L2 network will
+When a `ConfigUpdate` event is emitted where the `UpdateType` is `dependency-set`, the L2 network will
 update its dependency set. The chain operator SHOULD be able to add or remove chains from the dependency set.
 
 ## Security Considerations
@@ -82,4 +82,4 @@ a feature of the first release. This section should be clarified when the decisi
 
 If layer one is part of the dependency set, then it means that any event on L1 can be pulled
 into any L2. This is a very powerful abstraction as a minimal amount of execution can happen
-on L1 which triggers additional exeuction across all L2s in the OP Stack.
+on L1 which triggers additional execution across all L2s in the OP Stack.

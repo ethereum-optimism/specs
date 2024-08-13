@@ -40,7 +40,7 @@ chain derivation must be reset, omitting the input data when rederiving therefor
 
 The [batching][batcher] and compression of input data remain unchanged. When a batch is ready
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
-commitment (specified below) is submitted as the bacher inbox transaction call data.
+commitment (specified below) is submitted as the batcher inbox transaction call data.
 
 Commitment txdata introduces version `1` to the [transaction format][batchertx], in order to interpret
 the txdata as a commitment during the l1 retrieval step of the derivation pipeline:
@@ -89,7 +89,7 @@ This service is responsible to interacting with the Data Availability Layer (DA 
 The layer could be a content addressable storage layer like IPFS or any S3 compatible storage
 or it could a specific DA focused blockchain.
 Content addressed systems like S3 should use the first `put/<hex_encoded_commitment>`
-because they can pre-commpute the commitment.
+because they can pre-compute the commitment.
 Blockchain based DA layers should use `put` and then submit the returned commitment to L1.
 Because commitments can include the block height or hash, the commitment cannot be computed prior to submitting
 it to the DA Layer.
@@ -149,6 +149,11 @@ Data availability is guaranteed via a permissionless challenge contract on the L
 Users have a set number of L1 blocks (`challengeWindow`) during which they are able to call
 the `challenge` method of the contract with the following inputs:
 
+**Note:** Resolving Input Data through the Data Availability Challenge Contract is implemented
+only for `type=0 (keccak)` commitments. This is because `type=1 (da-service)` commitments are designed to be
+handled by a DA Server which is responsible for the mapping between commitment and input data.
+Due to this "generic" handling nature, there is currently no on-chain mechanism to verify commitments.
+
 ```solidity
 function challenge(uint256 challengedBlockNumber, bytes calldata challengedCommitment) external payable
 ```
@@ -171,7 +176,7 @@ If the gas cost of resolving the challenge was lower than the bond, the differen
 `cost = (fixedResolutionCost + preImageLength * variableResolutionCost / variableResolutionCostPrecision) * gasPrice`
 and the rest of the bond is burnt. If the challenge is not resolved in time and expired,
 the bond is returned and can be withdrawn by the challenger or used to challenge another commitment.
-`bondSize` can be updated by the contract owner similar to [SystemConfig](../protocol/system_config.md) variables.
+`bondSize` can be updated by the contract owner similar to [SystemConfig](../protocol/system-config.md) variables.
 See [Security Considerations](#security-considerations) for more details on bond management.
 
 The state of all challenges can be read from the contract state or by syncing contract events.

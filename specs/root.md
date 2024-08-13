@@ -27,7 +27,7 @@ Chat with us on the [discussion board!](https://github.com/ethereum-optimism/spe
 - [Rollup Node P2p](protocol/rollup-node-p2p.md)
 - [L2 Chain Derivation](protocol/derivation.md)
 - [Superchain Upgrades](protocol/superchain-upgrades.md)
-- [System Config](protocol/system_config.md)
+- [System Config](protocol/system-config.md)
 - [Batch Submitter](protocol/batcher.md)
 - [Guaranteed Gas Market](protocol/guaranteed-gas-market.md)
 - [Messengers](protocol/messengers.md)
@@ -35,7 +35,7 @@ Chat with us on the [discussion board!](https://github.com/ethereum-optimism/spe
 - [Predeploys](protocol/predeploys.md)
 - [Preinstalls](protocol/preinstalls.md)
 - [Fault Proof](fault-proof/index.md)
-  - [Stage One Decentralization]()
+  - [Stage One Decentralization](fault-proof/stage-one/index.md)
     - [Dispute Game Interface](fault-proof/stage-one/dispute-game-interface.md)
     - [Fault Dispute Game](fault-proof/stage-one/fault-dispute-game.md)
       - [Bond Incentives](fault-proof/stage-one/bond-incentives.md)
@@ -47,9 +47,11 @@ Chat with us on the [discussion board!](https://github.com/ethereum-optimism/spe
 
 Specifications of new features in active development.
 
+- [Custom Gas Token](./experimental/custom-gas-token.md)
 - [Alt-DA](./experimental/alt-da.md)
 - [Interoperability](./interop/overview.md)
 - [Security Council Safe](./experimental/security-council-safe.md)
+- [OP Stack Manager](./experimental/op-stack-manager.md)
 
 ## Design Goals
 
