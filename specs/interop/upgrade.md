@@ -64,7 +64,7 @@ The function called by the L1 attributes transaction depends on the network upgr
   - `setL1BlockValuesInterop` MUST be called.
 
 The `setL1BlockValuesInterop` input parameters are identical to `setL1BlockValuesEcotone` as described in
-[L1 Attributes Deposited Transaction Calldata](/specs/protocol/ecotone/l1_attributes.md#l1-attributes-deposited-transaction-calldata).
+[L1 Attributes Deposited Transaction Calldata](/specs/protocol/ecotone/l1-attributes.md#l1-attributes-deposited-transaction-calldata).
 
 ## Security Considerations
 

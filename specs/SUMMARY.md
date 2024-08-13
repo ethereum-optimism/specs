@@ -52,6 +52,7 @@
     - [Predeploys](./interop/predeploys.md)
     - [Execution](./interop/execution.md)
     - [Sequencer](./interop/sequencer.md)
+    - [Derivation](./interop/derivation.md)
     - [Verifier](./interop/verifier.md)
     - [Rollup Node P2P](./interop/rollup-node-p2p.md)
     - [Fault Proof](./interop/fault-proof.md)
