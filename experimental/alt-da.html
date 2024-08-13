@@ -220,7 +220,7 @@ chain derivation must be reset, omitting the input data when rederiving therefor
 <h2 id="input-commitment-submission"><a class="header" href="#input-commitment-submission">Input Commitment Submission</a></h2>
 <p>The <a href="../protocol/derivation.html#batch-submission">batching</a> and compression of input data remain unchanged. When a batch is ready
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
-commitment (specified below) is submitted as the bacher inbox transaction call data.</p>
+commitment (specified below) is submitted as the batcher inbox transaction call data.</p>
 <p>Commitment txdata introduces version <code>1</code> to the <a href="../protocol/derivation.html#batcher-transaction-format">transaction format</a>, in order to interpret
 the txdata as a commitment during the l1 retrieval step of the derivation pipeline:</p>
 <div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>tx_data</code></th></tr></thead><tbody>
@@ -257,7 +257,7 @@ challenges if the input cannot be retrieved during the challenge window, as deta
 The layer could be a content addressable storage layer like IPFS or any S3 compatible storage
 or it could a specific DA focused blockchain.
 Content addressed systems like S3 should use the first <code>put/&lt;hex_encoded_commitment&gt;</code>
-because they can pre-commpute the commitment.
+because they can pre-compute the commitment.
 Blockchain based DA layers should use <code>put</code> and then submit the returned commitment to L1.
 Because commitments can include the block height or hash, the commitment cannot be computed prior to submitting
 it to the DA Layer.</p>

@@ -825,7 +825,7 @@ fork choice state parameter for now - just know that one of its fields is the L2
 is set to the block hash of the tip of the L2 chain. The Engine API returns a payload ID.</li>
 <li>Call <a href="protocol/derivation.html#engine-api-usage">get payload</a> with the payload ID returned in step 1. The engine API returns a payload object
 that includes a block hash as one of its fields.</li>
-<li>Call <a href="protocol/derivation.html#engine-api-usage">new payload</a> with the payload returned in step 2. (Ectone blocks, must use V3, pre-Ecotone
+<li>Call <a href="protocol/derivation.html#engine-api-usage">new payload</a> with the payload returned in step 2. (Ecotone blocks, must use V3, pre-Ecotone
 blocks MUST use the V2 version)</li>
 <li>Call <a href="protocol/derivation.html#engine-api-usage">fork choice updated</a> with the fork choice parameter's <code>headBlockHash</code> set to the block hash
 returned in step 2. The tip of the L2 chain is now the block created in step 1.</li>
@@ -1746,7 +1746,7 @@ approach can encompass more than 99.99% of transactions.</p>
 <pre><code class="language-solidity">function getL1FeeUpperBound(uint256 unsignedTxSize) external view returns (uint256) {
     // Add 68 to account for unsigned tx
     uint256 txSize = unsignedTxSize + 68;
-    // txSize / 255 + 16 is the pratical fastlz upper-bound covers 99.99% txs.
+    // txSize / 255 + 16 is the practical fastlz upper-bound covers 99.99% txs.
     uint256 flzUpperBound = txSize + txSize / 255 + 16;
 
     int256 estimatedSize = costIntercept + costFastlzCoef * flzUpperBound;
@@ -3339,7 +3339,7 @@ This may include halting the engine, with consent of the rollup node operator.</
 <li><a href="protocol/rollup-node-p2p.html#identification">Identification</a></li>
 <li><a href="protocol/rollup-node-p2p.html#discv5">Discv5</a>
 <ul>
-<li><a href="protocol/rollup-node-p2p.html#consesus-layer-structure">Consesus Layer Structure</a></li>
+<li><a href="protocol/rollup-node-p2p.html#consensus-layer-structure">Consensus Layer Structure</a></li>
 </ul>
 </li>
 <li><a href="protocol/rollup-node-p2p.html#libp2p">LibP2P</a>
@@ -3423,7 +3423,7 @@ The network identity is a <code>secp256k1</code> key, used for both discovery an
 and L2 network identification. Generally encoded in base64.</li>
 </ul>
 <h3 id="discv5"><a class="header" href="#discv5">Discv5</a></h3>
-<h4 id="consesus-layer-structure"><a class="header" href="#consesus-layer-structure">Consesus Layer Structure</a></h4>
+<h4 id="consensus-layer-structure"><a class="header" href="#consensus-layer-structure">Consensus Layer Structure</a></h4>
 <p>The Ethereum Node Record (ENR) for an Optimism rollup node must contain the following values, identified by unique keys:</p>
 <ul>
 <li>An IPv4 address (<code>ip</code> field) and/or IPv6 address (<code>ip6</code> field).</li>
@@ -3932,7 +3932,7 @@ data availability costs.</p>
 into chunks known as <a href="protocol/../glossary.html#channel-frame">channel frames</a>. A single batcher transaction can also carry multiple frames
 (belonging to the same or to different channels).</p>
 <p>This design gives use the maximum flexibility in how we aggregate batches into channels, and split channels over batcher
-transactions. It notably allows us to maximize data utilisation in a batcher transaction: for instance it allows us to
+transactions. It notably allows us to maximize data utilization in a batcher transaction: for instance it allows us to
 pack the final (small) frame of a window with large frames from the next window.</p>
 <p>In the future this channel identification feature also allows the <a href="protocol/../glossary.html#batcher">batcher</a> to employ multiple signers
 (private keys) to submit one or multiple channels in parallel (1).</p>
@@ -5216,7 +5216,7 @@ This approach ensures that the fault proof program can complete a state transiti
 amount of time.</p>
 <p>During program execution, the precompiles are substituted with interactions with pre-image oracle.
 The program hints the host for a precompile input. Which it the subsequently retrieves the result of the precompile
-opereation using the <a href="fault-proof/index.html#type-6-global-precompile-key">type 6 global precompile key</a>.
+operation using the <a href="fault-proof/index.html#type-6-global-precompile-key">type 6 global precompile key</a>.
 All accelerated precompiles must be functionally equivalent to their EVM equivalent.</p>
 <h2 id="fault-proof-vm"><a class="header" href="#fault-proof-vm">Fault Proof VM</a></h2>
 <p>A fault proof VM implements:</p>
@@ -5459,7 +5459,7 @@ the result proven would differ from the user's intent. Cannon proves the MIPS st
 the correctness of the translation between the user's high-level code and the resulting MIPS program.</p>
 <p>As a consequence of the above, it is the responsibility of a program developer to develop tests that demonstrate that Cannon
 is capable of proving their intended program correctly over a large number of possible inputs. Such tests defend against
-bugs in the user's compiler as well as ways in which the compiler may inadvertantly break one of Cannon's
+bugs in the user's compiler as well as ways in which the compiler may inadvertently break one of Cannon's
 <a href="fault-proof/cannon-fault-proof-vm.html#compiler-assumptions">Compiler Assumptions</a>. Users of Fault Proof systems are strongly encouraged to utilize multiple
 proof systems and/or compilers to mitigate the impact of errant behavior in any one toolchain.</p>
 <h3 id="compiler-assumptions"><a class="header" href="#compiler-assumptions">Compiler Assumptions</a></h3>
@@ -6038,7 +6038,7 @@ The FDG will assert that an existing claim commits to the state data provided by
 <p>Certain steps (VM state transitions) require external data to be available by the <code>PreimageOracle</code>.
 To ensure a successful state transition, players should provide this data in advance.
 The FDG provides the following interface to manage data loaded to the <code>PreimageOracle</code>:</p>
-<pre><code class="language-solidity">/// @notice Posts the requested local data to the VM's `PreimageOralce`.
+<pre><code class="language-solidity">/// @notice Posts the requested local data to the VM's `PreimageOracle`.
 /// @param _ident The local identifier of the data to post.
 /// @param _execLeafIdx The index of the leaf claim in an execution subgame that requires the local data for a step.
 /// @param _partOffset The offset of the data to post.
@@ -6073,7 +6073,7 @@ commitments to the intermediate state of the <code>keccak256</code> function aft
 This data is progressively merkleized on-chain as it is streamed in, with each leaf constructed as follows:</p>
 <pre><code class="language-solidity">/// @notice Returns a leaf hash to add to a preimage proposal merkle tree.
 /// @param input A single 136 byte chunk of the input.
-/// @param blockIndex The index of the block that `input` corresponds to in the full preimage's absorbtion.
+/// @param blockIndex The index of the block that `input` corresponds to in the full preimage's absorption.
 /// @param stateCommitment The hash of the full 5x5 state matrix *after* absorbing and permuting `input`.
 function hashLeaf(
     bytes memory input,
@@ -6097,7 +6097,7 @@ setup state of the matrix is constant.) within the proposal's merkle root.</li>
 <li>Computing the state matrix at the agreed upon prestate (not necessary if the invalid leaf is the first one, the
 setup state of the matrix is constant.)</li>
 </ol>
-<p>The challenger then submits this data to the <code>PreimageOracle</code>, where the post state leaf's claimed input is absored into
+<p>The challenger then submits this data to the <code>PreimageOracle</code>, where the post state leaf's claimed input is absorbed into
 the pre state leaf's state matrix and the SHA3 permutation is executed on-chain. After that, the resulting state matrix
 is hashed and compared with the proposer's claim in the post state leaf. If the hash does not match, the proposal
 is marked as challenged, and it may not be finalized. If, after the challenge period is concluded, a proposal has no
@@ -6288,7 +6288,7 @@ as well as a trace provider (ex: <a href="fault-proof/stage-one/../cannon-fault-
 The trace provider must be configured with the <a href="fault-proof/stage-one/fault-dispute-game.html#execution-trace">ABSOLUTE_PRESTATE</a>
 of the game being interacted with to generate the traces needed to make truthful claims.</p>
 <h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
-<p>To ensure an accurate and incentive compatible fault dispute system, the honest challenger behaviour must preserve
+<p>To ensure an accurate and incentive compatible fault dispute system, the honest challenger behavior must preserve
 three invariants for any game:</p>
 <ol>
 <li>The game resolves as <code>DefenderWins</code> if the root claim is correct and <code>ChallengerWins</code> if the root claim is incorrect</li>
@@ -7010,7 +7010,7 @@ upgraded by changing its proxy's implementation key.</p>
 <p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/OptimismMintableERC20Factory.sol">Implementation</a></p>
 <p>Address: <code>0x4200000000000000000000000000000000000012</code></p>
 <p>The <code>OptimismMintableERC20Factory</code> is responsible for creating ERC20 contracts on L2 that can be
-used for depositing native L1 tokens into. These ERC20 contracts can be created permisionlessly
+used for depositing native L1 tokens into. These ERC20 contracts can be created permissionlessly
 and implement the interface required by the <code>StandardBridge</code> to just work with deposits and withdrawals.</p>
 <p>Each ERC20 contract that is created by the <code>OptimismMintableERC20Factory</code> allows for the <code>L2StandardBridge</code> to mint
 and burn tokens, depending on if the user is depositing from L1 to L2 or withdrawing from L2 to L1.</p>
@@ -7478,7 +7478,7 @@ but the matching L1-origin information may not be present at the time of activat
 <h2 id="post-bedrock-network-upgrades"><a class="header" href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a></h2>
 <h3 id="activation-timestamps"><a class="header" href="#activation-timestamps">Activation Timestamps</a></h3>
 <p>Governance approves all network upgrades &amp; the time at which the upgrade activates. The approved governance
-proposal is the canonoical document for the timestamp; however, the timestamps are replicated here for ease of use.</p>
+proposal is the canonical document for the timestamp; however, the timestamps are replicated here for ease of use.</p>
 <div class="table-wrapper"><table><thead><tr><th>Network Upgrade</th><th>Mainnet Upgrade Timestamp</th><th>Sepolia Upgrade Timestamp</th><th>Goerli Upgrade Timestamp</th></tr></thead><tbody>
 <tr><td>Canyon</td><td>1704992401</td><td>1699981200</td><td>1699981200</td></tr>
 <tr><td>Delta</td><td>1708560000</td><td>1703203200</td><td>1703116800</td></tr>
@@ -7828,7 +7828,7 @@ and is represented by EVM opcodes such as <code>CALLVALUE</code> (<code>msg.valu
 <p>Both the L1 and L2 smart contract systems MUST be able to introspect on the address of the gas paying token to
 ensure the security of the system. The source of truth for the configuration of the address of the token is
 in the L1 <code>SystemConfig</code> smart contract.</p>
-<p>The terms "custom gas token", "gas paying token", "native asset" and "gas paying asset" can all be used interchangebly.
+<p>The terms "custom gas token", "gas paying token", "native asset" and "gas paying asset" can all be used interchangeably.
 Note, Ether is not a <strong>custom</strong> gas token, but may be used to pay gas. More on this in
 <a href="experimental/custom-gas-token.html#configuring-the-gas-paying-token">Configuring the Gas Paying Token</a>.</p>
 <h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
@@ -7991,11 +7991,11 @@ are passed as <code>bytes32</code> to prevent the usage of dynamically sized <co
 </ul>
 <p>These methods are deprecated and subject to be removed in the future.</p>
 <h3 id="crossdomainmessenger"><a class="header" href="#crossdomainmessenger">CrossDomainMessenger</a></h3>
-<p>The <code>CrossDomainMessenger</code> contracts on both L1 and L2 MUST NOT be able to faciliate the transfer of native asset
+<p>The <code>CrossDomainMessenger</code> contracts on both L1 and L2 MUST NOT be able to facilitate the transfer of native asset
 on custom gas token chains due to their tight coupling with <code>ether</code> and the <code>OptimismPortal</code> and <code>L2ToL1MessagePasser</code>
 contracts.</p>
 <p>It is possible to support this in the future with a redesign of the <code>CrossDomainMessenger</code> contract.
-It would need to have conditional logic based on being a custom gas token chain and faciliate transfer
+It would need to have conditional logic based on being a custom gas token chain and facilitate transfer
 of the ERC20 token to the end user on the other side. It adds a layer of extra state modifying calls
 so it may not be worth adding.</p>
 <p>The following methods MUST revert when <code>CALLVALUE</code> is non zero:</p>
@@ -8031,7 +8031,7 @@ token is not meant to be dynamic config whereas the arguments to <code>setL1Bloc
 <pre><code class="language-solidity">function setGasPayingToken(address _token, uint8 _decimals, byte32 _name, bytes32 _symbol) external;
 </code></pre>
 <h3 id="weth9-1"><a class="header" href="#weth9-1">WETH9</a></h3>
-<p>The <code>WETH9</code> predeploy is updated so that it calls out to the <code>L1Block</code> contract to retreive the <code>name</code> and <code>symbol</code>.
+<p>The <code>WETH9</code> predeploy is updated so that it calls out to the <code>L1Block</code> contract to retrieve the <code>name</code> and <code>symbol</code>.
 This allows for front ends to more easily trust the token contract. It should prepend <code>Wrapped</code> to the <code>name</code>
 and <code>W</code> to the <code>symbol</code>.</p>
 <h2 id="user-flow"><a class="header" href="#user-flow">User Flow</a></h2>
@@ -8096,7 +8096,7 @@ are deterministically generated by the derivation pipeline in the following orde
 </li>
 </ul>
 <p>The deployment transactions MUST have a <code>from</code> value that has no code and has no known
-private key. This is to guarantee it cannot be frontran and have its nonce modified.
+private key. This is to guarantee it cannot be frontrun and have its nonce modified.
 If this was possible, then an attacker would be able to modify the address that the
 implementation is deployed to because it is based on <code>CREATE</code> and not <code>CREATE2</code>.
 This would then cause the proxy implementation set transactions to set an incorrect
@@ -8234,7 +8234,7 @@ chain derivation must be reset, omitting the input data when rederiving therefor
 <h2 id="input-commitment-submission"><a class="header" href="#input-commitment-submission">Input Commitment Submission</a></h2>
 <p>The <a href="experimental/../protocol/derivation.html#batch-submission">batching</a> and compression of input data remain unchanged. When a batch is ready
 to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
-commitment (specified below) is submitted as the bacher inbox transaction call data.</p>
+commitment (specified below) is submitted as the batcher inbox transaction call data.</p>
 <p>Commitment txdata introduces version <code>1</code> to the <a href="experimental/../protocol/derivation.html#batcher-transaction-format">transaction format</a>, in order to interpret
 the txdata as a commitment during the l1 retrieval step of the derivation pipeline:</p>
 <div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>tx_data</code></th></tr></thead><tbody>
@@ -8271,7 +8271,7 @@ challenges if the input cannot be retrieved during the challenge window, as deta
 The layer could be a content addressable storage layer like IPFS or any S3 compatible storage
 or it could a specific DA focused blockchain.
 Content addressed systems like S3 should use the first <code>put/&lt;hex_encoded_commitment&gt;</code>
-because they can pre-commpute the commitment.
+because they can pre-compute the commitment.
 Blockchain based DA layers should use <code>put</code> and then submit the returned commitment to L1.
 Because commitments can include the block height or hash, the commitment cannot be computed prior to submitting
 it to the DA Layer.</p>
@@ -8562,7 +8562,7 @@ to support it. It is known that it is possible but it is not known if this is go
 a feature of the first release. This section should be clarified when the decision is made.</p>
 <p>If layer one is part of the dependency set, then it means that any event on L1 can be pulled
 into any L2. This is a very powerful abstraction as a minimal amount of execution can happen
-on L1 which triggers additional exeuction across all L2s in the OP Stack.</p>
+on L1 which triggers additional execution across all L2s in the OP Stack.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="messaging"><a class="header" href="#messaging">Messaging</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -8652,7 +8652,7 @@ exact state of the block templates between multiple chains together.</p>
 <h2 id="messaging-ends"><a class="header" href="#messaging-ends">Messaging ends</a></h2>
 <h3 id="initiating-messages"><a class="header" href="#initiating-messages">Initiating Messages</a></h3>
 <p>Each <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">Log</a> (also known as <code>event</code> in solidity) forms an initiating message.
-The raw log data froms the <a href="interop/messaging.html#message-payload">Message Payload</a>.</p>
+The raw log data from the <a href="interop/messaging.html#message-payload">Message Payload</a>.</p>
 <p>Messages are <em>broadcast</em>: the protocol does not enshrine address-targeting within messages.</p>
 <p>The initiating message is uniquely identifiable with an <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a>,
 such that it can be distinguished from other duplicate messages within the same transaction or block.</p>
@@ -9436,7 +9436,7 @@ to more quickly reorganize out invalid blocks.</p>
 be signed by the sequencer. This signature represents the sequencer's claim that it
 built a block that conforms to the protocol. <code>unsafe</code> blocks exist to give low latency access to the
 latest information. To keep the latency as low as possible, cross chain messages are assumed valid
-at this stage. This means that the remote unsafe inputs are trusted soley because they were
+at this stage. This means that the remote unsafe inputs are trusted solely because they were
 included in a block by the sequencer.</p>
 <p>An alternative approach to <code>unsafe</code> inputs would be to include an SGX proof that the sequencer ran
 particular software when building the block.</p>
@@ -10806,7 +10806,7 @@ then submitted to a <a href="glossary.html#data-availability-provider">data avai
 derivation then acts as a sanity check and a way to detect L1 chain <a href="glossary.html#chain-re-organization">re-orgs</a>.</p>
 <p>In validator mode, the rollup node performs derivation as indicated above, but is also able to "run ahead" of the L1
 chain by getting blocks directly from the sequencer, in which case derivation serves to validate the sequencer's
-behaviour.</p>
+behavior.</p>
 <p>A rollup node running in validator mode is sometimes called <em>a replica</em>.</p>
 <blockquote>
 <p><strong>TODO</strong> expand this to include output root submission</p>
