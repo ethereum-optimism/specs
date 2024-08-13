@@ -449,7 +449,7 @@ The `L1Block` contract is updated with new methods to interact with [deposit con
 
 ```solidity
 function isDeposit() public view returns (bool);
-function resetIsDeposit() public;
+function depositsComplete() public;
 ```
 
 ### `isDeposit()`
