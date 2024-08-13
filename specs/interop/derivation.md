@@ -29,9 +29,9 @@ A deposit context is created by two operations:
 This instantiates a deposit context for the current block.
 - An L1 attributes transaction that sets `isDeposit = false`. This destroys the existing deposit context.
 
-These two operations wrap user deposits, such that `isDeposit = true` occurrs during the first L1 attributes
-transaction and `isDeposit = false` occurs immediately either after either the last user deposit,
-if one exists, or after the first L1 attributes transaction if there are no user deposits.
+These two operations wrap user deposits, such that `isDeposit = true` occurs during the first L1 attributes
+transaction and `isDeposit = false` occurs immediately after the last user deposit,
+if any exists, or after the first L1 attributes transaction if there are no user deposits.
 
 The order of deposit transactions occurs as follows:
 
@@ -43,7 +43,7 @@ The order of deposit transactions occurs as follows:
 
 There must be sufficient gas available in the block to destroy deposit context.
 There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
-may be filled by the other deposit transactions. As a consequence, a deposit context may spill onto multiple blocks.
+may be filled by the other deposit transactions. As a consequence, a deposit context may spill into multiple blocks.
 
 This will be fixed in the future.
 
