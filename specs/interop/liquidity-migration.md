@@ -138,8 +138,8 @@ The tradeoff would be losing error precision.
 
 #### Version
 
-The `OptimismMintableERC20Factory` should not use CREATE as the creation method and should make the salt depend on
-the token metadata.
+The [`OptimismMintableERC20Factory`][OptimismMintableERC20Factory-repo] should not use CREATE
+as the creation method and should make the salt depend on the token metadata.
 
 The CREATE2 version depends on the compiler and is therefore not suggested for the long term.
 For these reasons, it is recommended that the Factory version
@@ -160,7 +160,7 @@ via storage manipulation to include the list of allowed tokens
 
 #### `createOptimismMintableERC20`
 
-The [function](createOptimismMintable) should be modified to update the `deployments` mapping.
+The [function][createOptimismMintable] should be modified to update the `deployments` mapping.
 
 ```solidity
 deployments[localToken] = _remoteToken;

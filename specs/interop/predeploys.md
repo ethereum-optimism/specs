@@ -156,7 +156,8 @@ Note that the `executeMessage` function is `payable` to enable relayers to earn 
 
 ### Deposit Handling
 
-A call to `executeMessage` reverts if the call is made in a [deposit context](./derivation.md#deposit-context).
+Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event will reverts
+if the call is made in a [deposit context](./derivation.md#deposit-context).
 The deposit context status can be determined by callling `isDeposit` on the `L1Block` contract.
 
 In the future, deposit handling will be modified to be more permissive.
@@ -463,7 +464,6 @@ This is done to prevent apps from easily detecting and censoring deposits.
 Called after processing the first L1 Attributes transaction and user deposits to destroy the deposit context.
 
 Only the `DEPOSITOR_ACCOUNT` is authorized to call `depositsComplete()`.
-
 
 ## OptimismMintableERC20Factory
 

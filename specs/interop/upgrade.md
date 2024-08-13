@@ -39,9 +39,6 @@ The input args and encoding of `setL1BlockValuesInterop` are identical to `setL1
 
 ### L1 Attributes Predeployed Contract
 
-[predeploy]: #l1-attributes-predeployed-contract
-[sys-config]: ../system_config.md
-
 The L1 Attributes predeploy adds a new storage state in addition to the existing ones contained in the
 pre-Interop L1 Attributes predeploy:
 
