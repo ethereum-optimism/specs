@@ -186,10 +186,20 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#architecture-design-goals">Architecture Design Goals</a></li>
-<li><a href="#components">Components</a>
+<li><a href="#architecture-overview">Architecture Overview</a>
 <ul>
-<li><a href="#l1-components">L1 Components</a></li>
-<li><a href="#l2-components">L2 Components</a></li>
+<li><a href="#core-l1-smart-contracts">Core L1 Smart Contracts</a>
+<ul>
+<li><a href="#notes-for-core-l1-smart-contracts">Notes for Core L1 Smart Contracts</a></li>
+</ul>
+</li>
+<li><a href="#core-l2-smart-contracts">Core L2 Smart Contracts</a>
+<ul>
+<li><a href="#notes-for-core-l2-smart-contracts">Notes for Core L2 Smart Contracts</a></li>
+</ul>
+</li>
+<li><a href="#smart-contract-proxies">Smart Contract Proxies</a></li>
+<li><a href="#l2-node-components">L2 Node Components</a></li>
 <li><a href="#transactionblock-propagation">Transaction/Block Propagation</a></li>
 </ul>
 </li>
@@ -238,64 +248,262 @@ mechanisms.</li>
 </ul>
 </li>
 </ul>
-<h2 id="components"><a class="header" href="#components">Components</a></h2>
-<p><img src="../static/assets/components.svg" alt="Components" /></p>
-<h3 id="l1-components"><a class="header" href="#l1-components">L1 Components</a></h3>
+<h2 id="architecture-overview"><a class="header" href="#architecture-overview">Architecture Overview</a></h2>
+<h3 id="core-l1-smart-contracts"><a class="header" href="#core-l1-smart-contracts">Core L1 Smart Contracts</a></h3>
+<p>Below you'll find an architecture diagram describing the core L1 smart contracts for the OP Stack.
+Smart contracts that are considered "peripheral" and not core to the operation of the OP Stack system are described separately.</p>
+<pre class="mermaid">graph LR
+    subgraph &quot;External Contracts&quot;
+        ExternalERC20(External ERC20 Contracts)
+        ExternalERC721(External ERC721 Contracts)
+    end
+
+    subgraph &quot;L1 Smart Contracts&quot;
+        BatchDataEOA(&lt;a href=&quot;../glossary.html#batcher-transaction&quot;&gt;Batch Inbox Address&lt;/a&gt;)
+        L1StandardBridge(&lt;a href=&quot;./bridges.html&quot;&gt;L1StandardBridge&lt;/a&gt;)
+        L1ERC721Bridge(&lt;a href=&quot;./bridges.html&quot;&gt;L1ERC721Bridge&lt;/a&gt;)
+        L1CrossDomainMessenger(&lt;a href=&quot;./messengers.html&quot;&gt;L1CrossDomainMessenger&lt;/a&gt;)
+        OptimismPortal(&lt;a href=&quot;./withdrawals.html#the-optimism-portal-contract&quot;&gt;OptimismPortal&lt;/a&gt;)
+        SuperchainConfig(&lt;a href=&quot;./superchain-configuration.html&quot;&gt;SuperchainConfig&lt;/a&gt;)
+        SystemConfig(&lt;a href=&quot;./system-config.html&quot;&gt;SystemConfig&lt;/a&gt;)
+        DisputeGameFactory(&lt;a href=&quot;../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface&quot;&gt;DisputeGameFactory&lt;/a&gt;)
+        FaultDisputeGame(&lt;a href=&quot;../fault-proof/stage-one/fault-dispute-game.html&quot;&gt;FaultDisputeGame&lt;/a&gt;)
+        AnchorStateRegistry(&lt;a href=&quot;../fault-proof/stage-one/fault-dispute-game.html#anchor-state-registry&quot;&gt;AnchorStateRegistry&lt;/a&gt;)
+        DelayedWETH(&lt;a href=&quot;../fault-proof/stage-one/bond-incentives.html#delayedweth#de&quot;&gt;DelayedWETH&lt;/a&gt;)
+    end
+
+    subgraph &quot;User Interactions (Permissionless)&quot;
+        Users(Users)
+        Challengers(Challengers)
+    end
+
+    subgraph &quot;System Interactions&quot;
+        Guardian(Guardian)
+        Batcher(&lt;a href=&quot;./batcher.html&quot;&gt;Batcher&lt;/a&gt;)
+    end
+
+    subgraph &quot;Layer 2 Interactions&quot;
+        L2Nodes(Layer 2 Nodes)
+    end
+
+    L2Nodes -.-&gt;|fetch transaction batches| BatchDataEOA
+    L2Nodes -.-&gt;|fetch deposit events| OptimismPortal
+
+    Batcher --&gt;|publish transaction batches| BatchDataEOA
+
+    ExternalERC20 &lt;--&gt;|mint/burn/transfer tokens| L1StandardBridge
+    ExternalERC721 &lt;--&gt;|mint/burn/transfer tokens| L1ERC721Bridge
+
+    L1StandardBridge &lt;--&gt;|send/receive messages| L1CrossDomainMessenger
+    L1StandardBridge -.-&gt;|query pause state| SuperchainConfig
+
+    L1ERC721Bridge &lt;--&gt;|send/receive messages| L1CrossDomainMessenger
+    L1ERC721Bridge -.-&gt;|query pause state| SuperchainConfig
+
+    L1CrossDomainMessenger &lt;--&gt;|send/receive messages| OptimismPortal
+    L1CrossDomainMessenger -.-&gt;|query pause state| SuperchainConfig
+
+    OptimismPortal -.-&gt;|query pause state| SuperchainConfig
+    OptimismPortal -.-&gt;|query config| SystemConfig
+    OptimismPortal -.-&gt;|query state proposals| DisputeGameFactory
+
+    DisputeGameFactory --&gt;|generate instances| FaultDisputeGame
+
+    FaultDisputeGame --&gt;|store bonds| DelayedWETH
+    FaultDisputeGame --&gt;|query/update anchor states| AnchorStateRegistry
+
+    Users &lt;--&gt;|deposit/withdraw ETH/ERC20s| L1StandardBridge
+    Users &lt;--&gt;|deposit/withdraw ERC721s| L1ERC721Bridge
+    Users --&gt;|prove/execute withdrawals| OptimismPortal
+
+    Challengers --&gt;|propose output roots| DisputeGameFactory
+    Challengers --&gt;|verify/challenge/defend proposals| FaultDisputeGame
+
+    Guardian --&gt;|pause/unpause| SuperchainConfig
+    Guardian --&gt;|safety net actions| OptimismPortal
+    Guardian --&gt;|safety net actions| DisputeGameFactory
+    Guardian --&gt;|safety net actions| DelayedWETH
+
+    classDef extContracts stroke:#ff9,stroke-width:2px;
+    classDef l1Contracts stroke:#bbf,stroke-width:2px;
+    classDef l1EOA stroke:#bbb,stroke-width:2px;
+    classDef userInt stroke:#f9a,stroke-width:2px;
+    classDef systemUser stroke:#f9a,stroke-width:2px;
+    classDef l2Nodes stroke:#333,stroke-width:2px
+    class ExternalERC20,ExternalERC721 extContracts;
+    class L1StandardBridge,L1ERC721Bridge,L1CrossDomainMessenger,OptimismPortal,SuperchainConfig,SystemConfig,DisputeGameFactory,FaultDisputeGame,DelayedWETH,AnchorStateRegistry l1Contracts;
+    class BatchDataEOA l1EOA;
+    class Users,Challengers userInt;
+    class Batcher,Guardian systemUser;
+    class L2Nodes l2Nodes;
+</pre>
+<h4 id="notes-for-core-l1-smart-contracts"><a class="header" href="#notes-for-core-l1-smart-contracts">Notes for Core L1 Smart Contracts</a></h4>
 <ul>
-<li>
-<p><strong>OptimismPortal</strong>: A feed of L2 transactions which originated as smart contract calls in the L1 state.</p>
+<li>The <code>Batch Data Address</code> described above (<strong>highlighted in GREY</strong>) is <em>not</em> a smart contract and is instead an arbitrarily
+selected account that is assumed to have no known private key. This account is typically chosen as the account
+<code>0xFF0000....&lt;L2 chain ID&gt;</code> where <code>&lt;L2 chain ID&gt;</code> is chain ID of the Layer 2 network for which the data is being posted.
+For instance, for OP Mainnet, this account is chosen as <code>0xFF00000000000000000000000000000000000010</code>. However, this is
+not a strict requirement and some OP Stack chains may not follow this convention.</li>
+<li>Smart contracts that sit behind <code>Proxy</code> contracts are <strong>highlighted in BLUE</strong>. Refer to the
+<a href="#smart-contract-proxies">Smart Contract Proxies</a> section below to understand how these proxies are designed.
 <ul>
-<li>The <code>OptimismPortal</code> contract emits <code>TransactionDeposited</code> events, which the rollup driver reads in order to process
-deposits.</li>
-<li>Deposits are guaranteed to be reflected in the L2 state within the <em>sequencing window</em>.</li>
-<li>Beware that <em>transactions</em> are deposited, not tokens. However deposited transactions are a key part of implementing
-token deposits (tokens are locked on L1, then minted on L2 via a deposited transaction).</li>
+<li>The <code>L1CrossDomainMessenger</code> contract sits behind the <a href="https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/legacy/ResolvedDelegateProxy.sol"><code>ResolvedDelegateProxy</code></a>
+contract, a legacy proxy contract type used within older versions of the OP Stack. This proxy type is used exclusively
+for the <code>L1CrossDomainMessenger</code> to maintain backwards compatibility.</li>
+<li>The <code>L1StandardBridge</code> contract sits behind the <a href="https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/legacy/L1ChugSplashProxy.sol"><code>L1ChugSplashProxy</code></a>
+contract, a legacy proxy contract type used within older versions of the OP Stack. This proxy type is used exclusively
+for the <code>L1StandardBridge</code> contract to maintain backwards compatibility.</li>
 </ul>
 </li>
-<li>
-<p><strong>BatchInbox</strong>: An L1 address to which the Batch Submitter submits transaction batches.</p>
+</ul>
+<h3 id="core-l2-smart-contracts"><a class="header" href="#core-l2-smart-contracts">Core L2 Smart Contracts</a></h3>
+<p>Here you'll find an architecture diagram describing the core OP Stack smart contracts that exist natively on the L2 chain
+itself.</p>
+<pre class="mermaid">graph LR
+    subgraph &quot;Layer 1 (Ethereum)&quot;
+        L1SmartContracts(L1 Smart Contracts)
+    end
+
+    subgraph &quot;L2 Client&quot;
+        L2Node(L2 Node)
+    end
+
+    subgraph &quot;L2 System Contracts&quot;
+        L1Block(&lt;a href=&quot;./predeploys.html#l1block&quot;&gt;L1Block&lt;/a&gt;)
+        GasPriceOracle(&lt;a href=&quot;./predeploys.html#gaspriceoracle&quot;&gt;GasPriceOracle&lt;/a&gt;)
+        L1FeeVault(&lt;a href=&quot;./predeploys.html#l1feevault&quot;&gt;L1FeeVault&lt;/a&gt;)
+        BaseFeeVault(&lt;a href=&quot;./predeploys.html#basefeevault&quot;&gt;BaseFeeVault&lt;/a&gt;)
+        SequencerFeeVault(&lt;a href=&quot;./predeploys.html#sequencerfeevault&quot;&gt;SequencerFeeVault&lt;/a&gt;)
+    end
+
+    subgraph &quot;L2 Bridge Contracts&quot;
+        L2CrossDomainMessenger(&lt;a href=&quot;./predeploys.html#l2crossdomainmessenger&quot;&gt;L2CrossDomainMessenger&lt;/a&gt;)
+        L2ToL1MessagePasser(&lt;a href=&quot;./predeploys.html#l2tol1messagepasser&quot;&gt;L2ToL1MessagePasser&lt;/a&gt;)
+        L2StandardBridge(&lt;a href=&quot;./predeploys.html#l2standardbridge&quot;&gt;L2StandardBridge&lt;/a&gt;)
+        L2ERC721Bridge(&lt;a href=&quot;./predeploys.html&quot;&gt;L2ERC721Bridge&lt;/a&gt;)
+    end
+
+    subgraph &quot;Transactions&quot;
+        DepositTransaction(Deposit Transaction)
+        UserTransaction(User Transaction)
+    end
+
+    subgraph &quot;External Contracts&quot;
+        ExternalERC20(External ERC20 Contracts)
+        ExternalERC721(External ERC721 Contracts)
+    end
+
+    subgraph &quot;Remaining L2 Universe&quot;
+        OtherContracts(Any Contracts and Addresses)
+    end
+
+    L2Node -.-&gt;|derives chain from| L1SmartContracts
+    L2Node --&gt;|updates| L1Block
+    L2Node --&gt;|distributes fees to| L1FeeVault
+    L2Node --&gt;|distributes fees to| BaseFeeVault
+    L2Node --&gt;|distributes fees to| SequencerFeeVault
+    L2Node --&gt;|derives from deposits| DepositTransaction
+    L2Node --&gt;|derives from chain data| UserTransaction
+
+    UserTransaction --&gt;|can trigger| OtherContracts
+    DepositTransaction --&gt;|maybe triggers| L2CrossDomainMessenger
+    DepositTransaction --&gt;|can trigger| OtherContracts
+
+    ExternalERC20 &lt;--&gt;|mint/burn/transfer| L2StandardBridge
+    ExternalERC721 &lt;--&gt;|mint/burn/transfer| L2ERC721Bridge
+
+    L2StandardBridge &lt;--&gt;|sends/receives messages| L2CrossDomainMessenger
+    L2ERC721Bridge &lt;--&gt;|sends/receives messages| L2CrossDomainMessenger
+    GasPriceOracle -.-&gt;|queries| L1Block
+    L2CrossDomainMessenger --&gt;|sends messages| L2ToL1MessagePasser
+
+    classDef extContracts stroke:#ff9,stroke-width:2px;
+    classDef l2Contracts stroke:#bbf,stroke-width:2px;
+    classDef transactions stroke:#fba,stroke-width:2px;
+    classDef l2Node stroke:#f9a,stroke-width:2px;
+
+    class ExternalERC20,ExternalERC721 extContracts;
+    class L2CrossDomainMessenger,L2ToL1MessagePasser,L2StandardBridge,L2ERC721Bridge l2Contracts;
+    class L1Block,L1FeeVault,BaseFeeVault,SequencerFeeVault,GasPriceOracle l2Contracts;
+    class UserTransaction,DepositTransaction transactions;
+    class L2Node l2Node;
+</pre>
+<h4 id="notes-for-core-l2-smart-contracts"><a class="header" href="#notes-for-core-l2-smart-contracts">Notes for Core L2 Smart Contracts</a></h4>
 <ul>
-<li>Transaction batches include L2 transaction calldata, timestamps, and ordering information.</li>
-<li>The BatchInbox is a regular EOA address. This lets us pass on gas cost savings by not executing any EVM code.</li>
+<li>Contracts highlighted as "L2 System Contracts" are updated or mutated automatically as part of the chain derivation
+process. Users typically do not mutate these contracts directly, except in the case of the <code>FeeVault</code> contracts where
+any user may trigger a withdrawal of collected fees to the pre-determined withdrawal address.</li>
+<li>Smart contracts that sit behind <code>Proxy</code> contracts are <strong>highlighted in BLUE</strong>. Refer to the
+<a href="#smart-contract-proxies">Smart Contract Proxies</a> section below to understand how these proxies are designed.</li>
+<li>User interactions for the "L2 Bridge Contracts" have been omitted from this diagram but largely follow the same user
+interactions described in the architecture diagram for the <a href="#core-l1-smart-contracts">Core L1 Smart Contracts</a>.</li>
 </ul>
-</li>
-<li>
-<p><strong>L2OutputOracle</strong>: A smart contract that stores <a href="../glossary.html#l2-output">L2 output roots</a> for use with withdrawals
-and fault proofs.</p>
-</li>
-</ul>
-<h3 id="l2-components"><a class="header" href="#l2-components">L2 Components</a></h3>
-<ul>
-<li><strong>Rollup Node</strong>:
-<ul>
-<li>A standalone, stateless binary.</li>
-<li>Receives L2 transactions from users.</li>
-<li>Syncs and verifies rollup data on L1.</li>
-<li>Applies rollup-specific block production rules to synthesize blocks from L1.</li>
-<li>Appends blocks to the L2 chain using the Engine API.</li>
-<li>Handles L1 reorgs.</li>
-<li>Distributes unsubmitted blocks to other rollup nodes.</li>
-</ul>
-</li>
-<li><strong>Execution Engine (EE)</strong>:
-<ul>
-<li>A vanilla Geth node with minor modifications to support Optimism.</li>
-<li>Maintains L2 state.</li>
-<li>Sync state to other L2 nodes for fast onboarding.</li>
-<li>Serves the Engine API to the rollup node.</li>
-</ul>
-</li>
-<li><strong>Batch Submitter</strong>
-<ul>
-<li>A background process that submits <a href="../glossary.html#sequencer-batch">transaction batches</a> to the <code>BatchInbox</code> address.</li>
-</ul>
-</li>
-<li><strong>Output Submitter</strong>
-<ul>
-<li>A background process that submits L2 output commitments to the <code>L2OutputOracle</code>.</li>
-</ul>
-</li>
-</ul>
+<h3 id="smart-contract-proxies"><a class="header" href="#smart-contract-proxies">Smart Contract Proxies</a></h3>
+<p>Most OP Stack smart contracts sit behind <code>Proxy</code> contracts that are managed by a <code>ProxyAdmin</code> contract.
+The <code>ProxyAdmin</code> contract is controlled by some <code>owner</code> address that can be any EOA or smart contract.
+Below you'll find a diagram that explains the behavior of the typical proxy contract.</p>
+<pre class="mermaid">graph LR
+    ProxyAdminOwner(Proxy Admin Owner)
+    ProxyAdmin(&lt;a href=&quot;https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/ProxyAdmin.sol&quot;&gt;ProxyAdmin&lt;/a&gt;)
+
+    subgraph &quot;Logical Smart Contract&quot;
+        Proxy(&lt;a href=&quot;https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/Proxy.sol&quot;&gt;Proxy&lt;/a&gt;)
+        Implementation(Implementation)
+    end
+
+    ProxyAdminOwner --&gt;|manages| ProxyAdmin
+    ProxyAdmin --&gt;|upgrades| Proxy
+    Proxy --&gt;|delegatecall| Implementation
+
+    classDef l1Contracts stroke:#bbf,stroke-width:2px;
+    classDef systemUser stroke:#f9a,stroke-width:2px;
+    class Proxy l1Contracts;
+    class ProxyAdminOwner systemUser;
+</pre>
+<h3 id="l2-node-components"><a class="header" href="#l2-node-components">L2 Node Components</a></h3>
+<p>Below you'll find a diagram illustrating the basic interactions between the components that make up an L2 node as well
+as demonstrations of how different actors use these components to fulfill their roles.</p>
+<pre class="mermaid">graph LR
+    subgraph &quot;L2 Node&quot;
+        RollupNode(&lt;a href=&quot;./rollup-node.html&quot;&gt;Rollup Node&lt;/a&gt;)
+        ExecutionEngine(&lt;a href=&quot;./exec-engine.html&quot;&gt;Execution Engine&lt;/a&gt;)
+    end
+
+    subgraph &quot;System Interactions&quot;
+        BatchSubmitter(&lt;a href=&quot;./batcher.html&quot;&gt;Batch Submitter&lt;/a&gt;)
+        OutputSubmitter(Output Submitter)
+        Challenger(Challenger)
+    end
+
+    subgraph &quot;L1 Smart Contracts&quot;
+        BatchDataEOA(&lt;a href=&quot;../glossary.html#batcher-transaction&quot;&gt;Batch Inbox Address&lt;/a&gt;)
+        OptimismPortal(&lt;a href=&quot;./withdrawals.html#the-optimism-portal-contract&quot;&gt;OptimismPortal&lt;/a&gt;)
+        DisputeGameFactory(&lt;a href=&quot;../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface&quot;&gt;DisputeGameFactory&lt;/a&gt;)
+        FaultDisputeGame(&lt;a href=&quot;../fault-proof/stage-one/fault-dispute-game.html&quot;&gt;FaultDisputeGame&lt;/a&gt;)
+    end
+
+    BatchSubmitter -.-&gt;|fetch transaction batch info| RollupNode
+    BatchSubmitter -.-&gt;|fetch transaction batch info| ExecutionEngine
+    BatchSubmitter --&gt;|send transaction batches| BatchDataEOA
+
+    RollupNode -.-&gt;|fetch transaction batches| BatchDataEOA
+    RollupNode -.-&gt;|fetch deposit transactions| OptimismPortal
+    RollupNode --&gt;|drives| ExecutionEngine
+
+    OutputSubmitter -.-&gt;|fetch outputs| RollupNode
+    OutputSubmitter --&gt;|send output proposals| DisputeGameFactory
+
+    Challenger -.-&gt;|fetch dispute games| DisputeGameFactory
+    Challenger --&gt;|verify/challenge/defend games| FaultDisputeGame
+
+    classDef l2Components stroke:#333,stroke-width:2px;
+    classDef systemUser stroke:#f9a,stroke-width:2px;
+    classDef l1Contracts stroke:#bbf,stroke-width:2px;
+    
+    class RollupNode,ExecutionEngine l2Components;
+    class BatchSubmitter,OutputSubmitter,Challenger systemUser;
+    class BatchDataEOA,OptimismPortal,DisputeGameFactory,FaultDisputeGame l1Contracts;
+</pre>
 <h3 id="transactionblock-propagation"><a class="header" href="#transactionblock-propagation">Transaction/Block Propagation</a></h3>
 <p><strong>Spec links:</strong></p>
 <ul>
