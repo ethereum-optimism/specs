@@ -194,6 +194,7 @@
 <li><a href="#_target"><code>_target</code></a></li>
 </ul>
 </li>
+<li><a href="#interop-start-timestamp">Interop Start Timestamp</a></li>
 <li><a href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></li>
 <li><a href="#reference-implementation">Reference implementation</a></li>
 <li><a href="#identifier-getters"><code>Identifier</code> Getters</a></li>
@@ -282,6 +283,14 @@ there is no protocol enforcement on what this value is.</p>
 In practice, the <code>_target</code> will be a contract that needs to know the schema of the <code>_msg</code> so that it can be decoded.
 It MAY call back to the <code>CrossL2Inbox</code> to authenticate
 properties about the <code>_msg</code> using the information in the <code>Identifier</code>.</p>
+<h3 id="interop-start-timestamp"><a class="header" href="#interop-start-timestamp">Interop Start Timestamp</a></h3>
+<p>The Interop Start Timestamp represents the earliest timestamp which an initiating message (identifier) can have to be
+considered valid. This is important because OP Mainnet migrated from a legacy system that is not provable. We cannot
+allow for interop messages to come from unproven parts of the chain history, since interop is secured by fault proofs.</p>
+<p>Interop Start Timestamp is stored in the storage of the CrossL2Inbox predeploy. During the Interop Network Upgrade,
+each chain sets variable via a call to <code>setInteropStart()</code> by the <code>DEPOSITOR_ACCOUNT</code> which sets Interop Start Timestamp
+to be the block.timestamp of the network upgrade block. Chains deployed after the network upgrade will have to enshrine
+that timestamp into the pre-determined storage slot.</p>
 <h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
 <p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
 to <code>executeMessage</code>.</p>
@@ -300,6 +309,7 @@ hash comparison.</p>
 <pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes calldata _msg) public payable {
     require(_id.timestamp &lt;= block.timestamp);
     require(L1Block.isInDependencySet(_id.chainid));
+    require(_id.timestamp &gt; interopStart());
 
     assembly {
       tstore(ORIGIN_SLOT, _id.origin)

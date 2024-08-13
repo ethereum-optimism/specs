@@ -8669,14 +8669,15 @@ that originates at <a href="interop/messaging.html#message-identifier"><code>Ide
 do not count as executing messages.</p>
 <h2 id="messaging-invariants"><a class="header" href="#messaging-invariants">Messaging Invariants</a></h2>
 <ul>
-<li><a href="interop/messaging.html#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the executing message MUST
-be greater than or equal to the timestamp of the initiating message.</li>
+<li><a href="interop/messaging.html#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the initiating message MUST
+be less than or equal to the timestamp of the executing message as well as greater than or equal to the Interop Start Timestamp.</li>
 <li><a href="interop/messaging.html#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
 <li><a href="interop/messaging.html#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
 message MUST be lower than the initiating message timestamp (as defined in the <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
-<p>The timestamp invariant ensures that initiating messages cannot come from a future block. Note that since
+<p>The timestamp invariant ensures that initiating messages is at least the same timestamp as the Interop upgrade timestamp
+and cannot come from a future block than the block of its executing message. Note that since
 all transactions in a block have the same timestamp, it is possible for an executing transaction to be
 ordered before the initiating message in the same block.</p>
 <h3 id="chainid-invariant"><a class="header" href="#chainid-invariant">ChainID Invariant</a></h3>
@@ -8793,6 +8794,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#_target"><code>_target</code></a></li>
 </ul>
 </li>
+<li><a href="interop/predeploys.html#interop-start-timestamp">Interop Start Timestamp</a></li>
 <li><a href="interop/predeploys.html#executingmessage-event"><code>ExecutingMessage</code> Event</a></li>
 <li><a href="interop/predeploys.html#reference-implementation">Reference implementation</a></li>
 <li><a href="interop/predeploys.html#identifier-getters"><code>Identifier</code> Getters</a></li>
@@ -8881,6 +8883,14 @@ there is no protocol enforcement on what this value is.</p>
 In practice, the <code>_target</code> will be a contract that needs to know the schema of the <code>_msg</code> so that it can be decoded.
 It MAY call back to the <code>CrossL2Inbox</code> to authenticate
 properties about the <code>_msg</code> using the information in the <code>Identifier</code>.</p>
+<h3 id="interop-start-timestamp"><a class="header" href="#interop-start-timestamp">Interop Start Timestamp</a></h3>
+<p>The Interop Start Timestamp represents the earliest timestamp which an initiating message (identifier) can have to be
+considered valid. This is important because OP Mainnet migrated from a legacy system that is not provable. We cannot
+allow for interop messages to come from unproven parts of the chain history, since interop is secured by fault proofs.</p>
+<p>Interop Start Timestamp is stored in the storage of the CrossL2Inbox predeploy. During the Interop Network Upgrade,
+each chain sets variable via a call to <code>setInteropStart()</code> by the <code>DEPOSITOR_ACCOUNT</code> which sets Interop Start Timestamp
+to be the block.timestamp of the network upgrade block. Chains deployed after the network upgrade will have to enshrine
+that timestamp into the pre-determined storage slot.</p>
 <h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
 <p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
 to <code>executeMessage</code>.</p>
@@ -8899,6 +8909,7 @@ hash comparison.</p>
 <pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes calldata _msg) public payable {
     require(_id.timestamp &lt;= block.timestamp);
     require(L1Block.isInDependencySet(_id.chainid));
+    require(_id.timestamp &gt; interopStart());
 
     assembly {
       tstore(ORIGIN_SLOT, _id.origin)

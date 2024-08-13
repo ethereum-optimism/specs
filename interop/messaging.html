@@ -285,14 +285,15 @@ that originates at <a href="#message-identifier"><code>Identifier</code></a> wit
 do not count as executing messages.</p>
 <h2 id="messaging-invariants"><a class="header" href="#messaging-invariants">Messaging Invariants</a></h2>
 <ul>
-<li><a href="#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the executing message MUST
-be greater than or equal to the timestamp of the initiating message.</li>
+<li><a href="#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the initiating message MUST
+be less than or equal to the timestamp of the executing message as well as greater than or equal to the Interop Start Timestamp.</li>
 <li><a href="#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
 <li><a href="#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
 message MUST be lower than the initiating message timestamp (as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
-<p>The timestamp invariant ensures that initiating messages cannot come from a future block. Note that since
+<p>The timestamp invariant ensures that initiating messages is at least the same timestamp as the Interop upgrade timestamp
+and cannot come from a future block than the block of its executing message. Note that since
 all transactions in a block have the same timestamp, it is possible for an executing transaction to be
 ordered before the initiating message in the same block.</p>
 <h3 id="chainid-invariant"><a class="header" href="#chainid-invariant">ChainID Invariant</a></h3>
