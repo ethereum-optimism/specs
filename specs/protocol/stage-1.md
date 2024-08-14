@@ -1,4 +1,4 @@
-# Stage One Roles and Requirements
+# Stage 1 Roles and Requirements
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -13,7 +13,7 @@
 ## Overview
 
 This document outlines configuration requirements (including roles and other parameters)
-for an implementation of the OP Stack to satsify Stage One decentralization requirements as defined
+for an implementation of the OP Stack to satsify the Stage 1 decentralization requirements as defined
 by
 L2 Beat [[1](https://medium.com/l2beat/introducing-stages-a-framework-to-evaluate-rollups-maturity-d290bb22befe), [2](https://medium.com/l2beat/stages-update-security-council-requirements-4c79cea8ef52)].
 
