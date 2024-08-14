@@ -78,13 +78,13 @@ achieve Stage 1.
 
    The threshold and owner set of the Safe MUST meet L2Beat's Stage 1 requirements.
 
-1. **The Foundation Upgrade Safe:** This Safe is one of the two owners of the `ProxyAdminOwner` Safe.
+1. **The Foundation Upgrades Safe:** This Safe is one of the two owners of the `ProxyAdminOwner` Safe.
    It is also able to update the recommended and required versions on the `ProtocolVersions`
-   contract, given that observing the state of this contract is optional, this is not considered to
-   be affect safety and can therefore be managed the Foundation Safe.
+   contract. Given that observing the state of this contract is optional, this is not considered to
+   affect safety and can therefore be managed the Foundation Upgrades Safe.
 
 1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that (via the
-   Guardian Safes's `DeputyGuardianModule`) it can call any functions in the system which impact
+   Guardian Safe's `DeputyGuardianModule`) it can call any functions in the system which impacts
    liveness.
 
 ## Ownership model diagram
