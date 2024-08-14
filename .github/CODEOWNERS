@@ -22,6 +22,7 @@ system-config.md @sebastianst @protolambda @tynes
 withdrawals.md @tynes @maurelian @clabby
 safe-extensions.md @mds1 @maurelian
 stage-1.md  @mds1 @maurelian
+stage-one.md  @mds1 @maurelian
 
 # Fault Proofs
 /specs/fault-proof @ajsutton @clabby @inphi @refcell @mbaxter
