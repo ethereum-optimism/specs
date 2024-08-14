@@ -9984,11 +9984,11 @@ those provided by the Safe contract.</p>
 <h2 id="deputy-guardian-module"><a class="header" href="#deputy-guardian-module">Deputy guardian module</a></h2>
 <p>The Security Council acts as the Guardian, which is authorized to activate the <a href="experimental/../protocol/superchain-configuration.html#pausability">Superchain
 Pause</a> functionality and for
-<a href="experimental/../fault-proof/stage-one/bond-incentives.html#authenticated-roles">blacklisting</a> dispute
-game contracts.</p>
+<a href="experimental/../fault-proof/stage-one/bond-incentives.html#authenticated-roles">blacklisting</a> dispute game
+contracts.</p>
 <p>However the Security Council cannot be expected to react quickly in an emergency situation.
-Therefore the Deputy Guardian module enables the Security Council to share this
-authorization with another account.</p>
+Therefore the Deputy Guardian module enables the Security Council to share this authorization with
+another account.</p>
 <p>The module has the following minimal interface:</p>
 <pre><code class="language-solidity">interface DeputyGuardianModule {
    /// @dev The address of the Security Council Safe
@@ -10022,8 +10022,9 @@ authorization with another account.</p>
    function setRespectedGameType(address _portal, uint32 _gameType) external;
 }
 </code></pre>
-<p>For simplicity, the <code>DeputyGuardianModule</code> module does not have functions for updating the <code>safe</code> and
-<code>deputyGuardian</code> addresses. If necessary these can be modified by swapping out with a new module.</p>
+<p>For simplicity, the <code>DeputyGuardianModule</code> module does not have functions for updating the <code>safe</code>
+and <code>deputyGuardian</code> addresses. If necessary these can be modified by swapping out with a new
+module.</p>
 <h3 id="deputy-guardian-module-security-properties"><a class="header" href="#deputy-guardian-module-security-properties">Deputy Guardian Module Security Properties</a></h3>
 <p>The following security properties must be upheld by the <code>DeputyGuardianModule</code>:</p>
 <ol>
@@ -10068,23 +10069,25 @@ used to identify the signers. If more than the required number of signatures is 
 are ignored.</li>
 <li>An owner may call the contract's <code>showLiveness()()</code> method directly in order to prove liveness.</li>
 </ol>
-<p>Note that the first two methods do not require the owner to actually sign anything. However these mechanisms
-are necessary to prevent new owners from being removed before they have had a chance to show liveness.</p>
+<p>Note that the first two methods do not require the owner to actually sign anything. However these
+mechanisms are necessary to prevent new owners from being removed before they have had a chance to
+show liveness.</p>
 <h3 id="the-liveness-module"><a class="header" href="#the-liveness-module">The liveness module</a></h3>
 <p>A <code>LivenessModule</code> is also created which does the following:</p>
 <ol>
-<li>Has a function <code>removeOwners()</code> that anyone may call to specify one or more owners to be removed from the
-Safe.</li>
-<li>The Module would then check the <code>LivenessGuard.lastLive()</code> to determine if the signer is
-eligible for removal.</li>
+<li>Has a function <code>removeOwners()</code> that anyone may call to specify one or more owners to be removed
+from the Safe.</li>
+<li>The Module would then check the <code>LivenessGuard.lastLive()</code> to determine if the signer is eligible
+for removal.</li>
 <li>If so, it will call the Safe's <code>removeSigner()</code> to remove the non-live signer, and if necessary
 reduce the threshold.</li>
 <li>When a member is removed, the signing parameters are modified such that <code>M/N</code> is the lowest ratio
-which remains greater than or equal to 75%. Using integer math, this can be expressed as <code>M = (N * 75 + 99) / 100</code>.</li>
+which remains greater than or equal to 75%. Using integer math, this can be expressed as
+<code>M = (N * 75 + 99) / 100</code>.</li>
 </ol>
 <h3 id="owner-removal-call-flow"><a class="header" href="#owner-removal-call-flow">Owner removal call flow</a></h3>
-<p>The following diagram illustrates the flow for removing a single owner. The <code>verifyFinalState</code>
-box indicates calls to the Safe which ensure the final state is valid.</p>
+<p>The following diagram illustrates the flow for removing a single owner. The <code>verifyFinalState</code> box
+indicates calls to the Safe which ensure the final state is valid.</p>
 <pre class="mermaid">sequenceDiagram
     participant User
     participant LivenessModule
@@ -10103,8 +10106,8 @@ box indicates calls to the Safe which ensure the final state is valid.</p>
 </pre>
 <h3 id="shutdown"><a class="header" href="#shutdown">Shutdown</a></h3>
 <p>In the unlikely event that the signer set (<code>N</code>) is reduced below the allowed minimum number of
-owners, then (and only then) is a shutdown mechanism activated which removes the existing
-signers, and hands control of the multisig over to a predetermined entity.</p>
+owners, then (and only then) is a shutdown mechanism activated which removes the existing signers,
+and hands control of the multisig over to a predetermined entity.</p>
 <h3 id="liveness-security-properties"><a class="header" href="#liveness-security-properties">Liveness Security Properties</a></h3>
 <p>The following security properties must be upheld:</p>
 <h4 id="in-the-guard"><a class="header" href="#in-the-guard">In the guard</a></h4>
@@ -10131,12 +10134,13 @@ the end of the <code>checkAfterExecution</code> call.</li>
 if enough other owners have been removed to activate the shutdown mechanism.</li>
 <li>The module correctly sets the Safe's threshold upon removing a signer.</li>
 </ol>
-<p>Note: neither the module nor guard attempt to prevent a quorum of owners from removing either the liveness
-module or guard. There are legitimate reasons they might wish to do so. Moreover, if such a quorum
-of owners exists, there is no benefit to removing them, as they are defacto 'sufficiently live'.</p>
+<p>Note: neither the module nor guard attempt to prevent a quorum of owners from removing either the
+liveness module or guard. There are legitimate reasons they might wish to do so. Moreover, if such a
+quorum of owners exists, there is no benefit to removing them, as they are defacto 'sufficiently
+live'.</p>
 <h3 id="interdependency-between-the-guard-and-module"><a class="header" href="#interdependency-between-the-guard-and-module">Interdependency between the guard and module</a></h3>
-<p>The guard has no dependency on the module, and can be used independently to track liveness of
-Safe owners.</p>
+<p>The guard has no dependency on the module, and can be used independently to track liveness of Safe
+owners.</p>
 <p>This means that the module can be removed or replaced without any affect on the guard.</p>
 <p>The module however does have a dependency on the guard; if the guard is removed from the Safe, then
 the module will no longer be functional and calls to its <code>removeOwners</code> function will revert.</p>
@@ -10149,7 +10153,8 @@ therefore be done prior to adding a new owner.</p>
 <p>The module and guard are intended to be deployed and installed on the safe in the following
 sequence:</p>
 <ol>
-<li>Deploy the guard contract. The guard's constructor will read the Safe's owners and set a timestamp.</li>
+<li>Deploy the guard contract. The guard's constructor will read the Safe's owners and set a
+timestamp.</li>
 <li>Deploy the module.</li>
 <li>Set the guard on the safe.</li>
 <li>Enable the module on the safe.</li>
