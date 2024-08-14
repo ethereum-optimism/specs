@@ -2,7 +2,7 @@
 
 # Summary
 
-- [Root](./root.md)
+- [Introduction](./root.md)
 - [Background](./background.md)
 - [OP Stack Protocol](./protocol/overview.md)
   - [Network Upgrades]()
@@ -50,7 +50,6 @@
     - [Dependency Set](./interop/dependency-set.md)
     - [Messaging](./interop/messaging.md)
     - [Predeploys](./interop/predeploys.md)
-    - [Execution](./interop/execution.md)
     - [Sequencer](./interop/sequencer.md)
     - [Derivation](./interop/derivation.md)
     - [Verifier](./interop/verifier.md)
