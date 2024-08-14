@@ -7,6 +7,8 @@
 - [Overview](#overview)
 - [Permissionless Fault Proofs](#permissionless-fault-proofs)
 - [Roles for Stage 1](#roles-for-stage-1)
+- [Configuration of Safes](#configuration-of-safes)
+- [Ownership model diagram](#ownership-model-diagram)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
