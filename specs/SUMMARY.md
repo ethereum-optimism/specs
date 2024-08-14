@@ -11,6 +11,7 @@
     - [Delta](./protocol/delta/overview.md)
       - [Span Batches](./protocol/delta/span-batches.md)
     - [Ecotone](./protocol/ecotone/overview.md)
+      - [Derivation](./protocol/ecotone/derivation.md)
       - [L1 attributes](./protocol/ecotone/l1-attributes.md)
     - [Fjord](./protocol/fjord/overview.md)
       - [Execution Engine](./protocol/fjord/exec-engine.md)
