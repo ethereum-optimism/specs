@@ -39,5 +39,7 @@ Within the context of an OP Stack, the following roles are required for Stage 1:
 
 There may be additional [roles](./configurability.md#admin-roles) in the system, however they MUST
 not be able to perform any actions which have an impact on either the safety or liveness of the
-system. Any example of such a role is the `SystemConfig` owner (AKA Chain Operator), which can
-modify fees and other protocol parameters.
+system. An example of such a role is the `SystemConfig` owner (AKA Chain Operator), which can
+modify fees and other protocol parameters. Constraints MUST be placed on the allowable range of
+values for these parameters so that they do not result in a loss of liveness or safety.
+
