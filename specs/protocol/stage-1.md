@@ -42,3 +42,105 @@ Within the context of an OP Stack, the following roles are required for Stage 1:
 There may be additional [roles](./configurability.md#admin-roles) in the system, however they MUST
 not be able to perform any actions which have an impact on either the validity of L2 states, or the
 users ability to exit the system.
+
+## Configuration of Safes
+
+This list outlines the various Safes, their extensions, and other configuration details necessary to
+achieve Stage 1.
+
+1. **The L1 ProxyAdmin Owner Safe:** This Safe acts as the Upgrade Controller. Accordingly, it is
+   authorized to call the following safety-critical functions:
+      - All `ProxyAdmin` `onlyOwner` functions.
+      - All `DisputeGameFactory` `onlyOwner` functions.
+      - All `DelayedWETH` `onlyOwners` functions.
+
+   This safe has a threshold of 2, and is owned by two other Safes:
+      1. The Security Council Safe.
+      2. The Optimism Foundation Upgrades Safe.
+
+   In general, the threshold and owner set of the safe must be configured such that an upgrade
+   or other safety-critical action can be performed without the cooperation of the Security Council.
+
+1. **The Guardian Safe:** This Safe
+   includes but is not limited to pausing all code paths related to withdrawals. It is also extended
+   with the [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
+
+   Accordingly, this Safe is authorized to call the following liveness-critical functions:
+      - All `SuperchainConfig` `onlyOwner` functions.
+      - All `OptimismPortal2` `onlyOwner` functions.
+
+   This Safe has a threshold of 1 and is owned by the Security Council Safe.
+
+1. **The Security Council Safe:** This Safe is one of the two owners of the `ProxyAdminOwner` Safe.
+   It is extended with the [Liveness Checking system](./safe-extensions.md#liveness-checking-system),
+   although Liveness Checking is not required for Stage 1, it is an additional safety feature used
+   to prevent any loss of liveness on the Security Council Safe.
+
+   The threshold and owner set of the Safe MUST meet L2Beat's Stage 1 requirements.
+
+1. **The Foundation Upgrade Safe:** This Safe is one of the two owners of the `ProxyAdminOwner` Safe.
+   It is also able to update the recommended and required versions on the `ProtocolVersions`
+   contract, given that observing the state of this contract is optional, this is not considered to
+   be affect safety and can therefore be managed the Foundation Safe.
+
+1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that (via the
+   Guardian Safes's `DeputyGuardianModule`) it can call any functions in the system which impact
+   liveness.
+
+## Ownership model diagram
+
+The following diagram outlines the control relationships between the contracts in the system.
+
+```mermaid
+flowchart LR
+   subgraph SuperchainSystem[Superchain System]
+      subgraph Liveness
+         Pausability
+         OtherLiveness[Other Liveness controls]
+      end
+      subgraph Safety
+         ContractUpgrades
+         DisputeGame
+         OtherSafety[Other Safety]
+      end
+      subgraph NonProtocol[Out of Protocol]
+         PV[ProtocolVersions]
+      end
+   end
+
+   subgraph UpgradeSystem[Upgrade System]
+      FndUp[Foundation Upgrade Safe]
+      POA[ProxyAdminOwner Safe]
+      subgraph Security Council Safe
+         Council[Security Council Safe\n+ LivenessGuard]
+         LM[Liveness Module]
+      end
+   end
+
+   subgraph GuardianSystem[Guardian System]
+      FndOps[Foundation Ops Safe]
+      subgraph GuardianSafe[Guardian Safe]
+         GS[Guardian Safe]
+         DGM[Deputy Guardian Module]
+      end
+   end
+
+    POA -->|controls| Safety
+    FndUp --> POA
+    Council --> POA
+    Council --> GS
+    FndOps -->|pause\nunpause\nsetRespectedGameType\nblackListDisputeGame| DGM
+    FndUp -->|set versions|PV
+    LM -->|execTransactionFromModule| Council
+    DGM -->|execTransactionFromModule| GS
+    GS -->|controls| Liveness
+
+   %% Declare a class to make the outer boxes somewhat transparent to provide some contrast
+   classDef outer fill:#ffffff44
+   class SuperchainSystem,GuardianSystem,UpgradeSystem outer
+```
+
+Note: in the diagram above, the [`ProtocolVersions`
+   contract](../protocol/superchain-upgrades.md#protocolversions-l1-contract) is listed as "Out of
+   Protocol", because the decision to follow the version signals in the contract is optional. It is
+   included here for completeness, but is not considered as either Safety or Liveness affecting.
