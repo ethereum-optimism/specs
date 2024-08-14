@@ -59,4 +59,5 @@
     - [SuperchainWETH](./interop/superchain-weth.md)
   - [Security Council Safe](./experimental/security-council-safe.md)
   - [OP Stack Manager](./experimental/op-stack-manager.md)
+  - [Dispute Game V2](./experimental/dispute-game-v2/dispute-game-v2.md)
 - [Glossary](./glossary.md)
