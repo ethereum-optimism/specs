@@ -58,16 +58,18 @@ achieve Stage 1.
       1. The Security Council Safe.
       2. The Optimism Foundation Upgrades Safe.
 
-   In general, the threshold and owner set of the safe must be configured such that an upgrade
-   or other safety-critical action can be performed without the cooperation of the Security Council.
+   In general, the threshold and number of owners MUST be configured such that an upgrade
+   or other safety-critical action can NOT be performed without the cooperation of the Security Council.
 
 1. **The Guardian Safe:** This Safe
    includes but is not limited to pausing all code paths related to withdrawals. It is also extended
    with the [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
 
    Accordingly, this Safe is authorized to call the following liveness-critical functions:
-      - All `SuperchainConfig` `onlyOwner` functions.
-      - All `OptimismPortal2` `onlyOwner` functions.
+      - `SuperchainConfig.pause()`
+      - `SuperchainConfig.unpause()`
+      - `OptimismPortal2.setRespectedGameType()`
+      - `OptimismPortal2.blacklistDisputeGame()`
 
    This Safe has a threshold of 1 and is owned by the Security Council Safe.
 
