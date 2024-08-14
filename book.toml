@@ -27,9 +27,9 @@ additional-js = ["specs/static/solidity.min.js", "specs/static/mermaid.min.js", 
 "/experimental/fault-proof/stage-one/fault-dispute-game.html" = "/fault-proof/stage-one/fault-dispute-game.html"
 "/experimental/fault-proof/stage-one/honest-challenger-fdg.html" = "/fault-proof/stage-one/honest-challenger-fdg.html"
 "/experimental/plasma.html" = "/experimental/alt-da.html"
-"/fjord/overview.html" = "/protocol/fjord/overview.html"
-"/fjord/derivation.html" = "/protocol/fjord/derivation.html"
-"/fjord/exec-engine.html" = "/protocol/fjord/exec-engine.html"
-"/fjord/predeploys.html" = "/protocol/fjord/predeploys.html"
+"/fjord/overview.html" = "/protocol/upgrades/fjord/overview.html"
+"/fjord/derivation.html" = "/protocol/upgrades/fjord/derivation.html"
+"/fjord/exec-engine.html" = "/protocol/upgrades/fjord/exec-engine.html"
+"/fjord/predeploys.html" = "/protocol/upgrades/fjord/predeploys.html"
 
 [output.linkcheck]
