@@ -39,7 +39,7 @@ network forking.
 
 Predeploy addresses exist in 1 byte namespace `0x42000000000000000000000000000000000000xx`.
 Proxies are set at each possible predeploy address except for the
-`GovernanceToken` and the `ProxyAdmin`.
+`GovernanceToken`.
 
 The `LegacyERC20ETH` predeploy lives at a special address `0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000`
 and there is no proxy deployed at that account.
