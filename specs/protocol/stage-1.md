@@ -25,20 +25,18 @@ Stage 1 requires a chain to be operating with Permissionless Fault Proofs.
 
 Within the context of an OP Stack, the following roles are required for Stage 1:
 
-1. **Upgrade Controller:** Although named for its ability to perform an upgarde, more generally this
-   account is in charge of _safety_, meaning it MUST control any action which has an impact
-   on the determination of a valid L2 state, or the custody of bridged assets.
+1. **Upgrade Controller:** Although named for its ability to perform an upgrade, more generally this
+   account MUST control any action which has an impact on the determination of a valid L2 state,
+   or the custody and settlement of bridged assets.
 
    This includes upgrading L1 contracts, modifying the implementation of the dispute game, and
    any other safety-critical functions.
 
-2. **Guardian:** This account is in charge of _liveness_, meaning it MUST control any action which
-   may cause a delay in the finalization of L2 states and the resulting settlement on L1.
+2. **Guardian:** This account MUST control any action which may cause a delay in the finalization of
+   L2 states and the resulting settlement on L1.
 
    This includes but is not limited to pausing code paths related to withdrawals.
 
 There may be additional [roles](./configurability.md#admin-roles) in the system, however they MUST
-not be able to perform any actions which have an impact on either the safety or liveness of the
-system. An example of such a role is the `SystemConfig` owner (AKA Chain Operator), which can
-modify fees and other protocol parameters. Constraints MUST be placed on the allowable range of
-values for these parameters so that they do not result in a loss of liveness or safety.
+not be able to perform any actions which have an impact on either the validity of L2 states, or the
+users ability to exit the system.
