@@ -21,7 +21,7 @@ L2 Beat [[1](https://medium.com/l2beat/introducing-stages-a-framework-to-evaluat
 
 ## Permissionless Fault Proofs
 
-Stage 1 requires a chain to be operating with Permissionless Fault Proofs.
+Stage 1 requires a chain to be operating with Fault Proofs.
 
 ## Roles for Stage 1
 
