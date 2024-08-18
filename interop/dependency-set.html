@@ -186,15 +186,9 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#chain-id">Chain ID</a></li>
-<li><a href="#updating-the-dependency-set">Updating the Dependency Set</a>
-<ul>
-<li><a href="#dependency-set-updatetype"><code>dependency-set</code> UpdateType</a></li>
-</ul>
-</li>
+<li><a href="#updating-the-dependency-set">Updating the Dependency Set</a></li>
 <li><a href="#security-considerations">Security Considerations</a>
 <ul>
-<li><a href="#dynamic-size-of-l1-attributes-transaction">Dynamic Size of L1 Attributes Transaction</a></li>
-<li><a href="#maximum-size-of-the-dependency-set">Maximum Size of the Dependency Set</a></li>
 <li><a href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></li>
 </ul>
 </li>
@@ -223,24 +217,15 @@ configuration of the chain should deterministically map to a chain id and with c
 changes, all possible OP Stack chains in the superchain will be able to exist counterfactually.</p>
 <p>It is a known issue that not all software in the Ethereum can handle 32 byte chain ids.</p>
 <h2 id="updating-the-dependency-set"><a class="header" href="#updating-the-dependency-set">Updating the Dependency Set</a></h2>
-<p>The <code>SystemConfig</code> is updated to manage the dependency set. The chain operator can add or remove
-chains from the dependency set through the <code>SystemConfig</code>. A new <code>ConfigUpdate</code> event <code>UpdateType</code>
-enum is added that corresponds to a change in the dependency set.</p>
+<p>The <code>SystemConfig</code> is updated to manage a new role, <code>dependencyManager</code>.
+It can only updated by the <code>ProxyAdmin</code> during an contract upgrade.
+The sole holder of this role is the only address
+permissioned to update (remove/add to) the dependency set of that chain.</p>
+<p>The <code>SystemConfig</code> is also updated to manage the dependency set.
+The address with the <code>dependency manager</code> role can add or remove
+chains from the dependency set through the <code>SystemConfig</code>.</p>
 <p>The <code>SystemConfig</code> MUST enforce that the maximum size of the dependency set is <code>type(uint8).max</code> or 255.</p>
-<h3 id="dependency-set-updatetype"><a class="header" href="#dependency-set-updatetype"><code>dependency-set</code> UpdateType</a></h3>
-<p>When a <code>ConfigUpdate</code> event is emitted where the <code>UpdateType</code> is <code>dependency-set</code>, the L2 network will
-update its dependency set. The chain operator SHOULD be able to add or remove chains from the dependency set.</p>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
-<h3 id="dynamic-size-of-l1-attributes-transaction"><a class="header" href="#dynamic-size-of-l1-attributes-transaction">Dynamic Size of L1 Attributes Transaction</a></h3>
-<p>The L1 Attributes transaction includes the dependency set which is dynamically sized. This means that
-the worst case (largest size) transaction must be accounted for when ensuring that it is not possible
-to create a block that has force inclusion transactions that go over the L2 block gas limit.
-It MUST be impossible to produce an L2 block that consumes more than the L2 block gas limit.
-Limiting the dependency set size is an easy way to ensure this.</p>
-<h3 id="maximum-size-of-the-dependency-set"><a class="header" href="#maximum-size-of-the-dependency-set">Maximum Size of the Dependency Set</a></h3>
-<p>The maximum size of the dependency set is constrained by the L2 block gas limit. The larger the dependency set,
-the more costly it is to fully verify the network. It also makes the block building role more centralized
-as it requires more hardware to verify executing transactions before inclusion.</p>
 <h3 id="layer-1-as-part-of-the-dependency-set"><a class="header" href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></h3>
 <p>The layer one MAY be part of the dependency set if the fault proof implementation is set up
 to support it. It is known that it is possible but it is not known if this is going to be
