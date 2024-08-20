@@ -7727,7 +7727,7 @@ approach can encompass more than 99.99% of transactions.</p>
     }
   
     uint256 l1FeeScaled = baseFeeScalar() * l1BaseFee() * 16 + blobBaseFeeScalar() * blobBaseFee();
-    return uint256(estimatedSize) * feeScaled / (10 ** (DECIMALS * 2));
+    return uint256(estimatedSize) * l1FeeScaled / (10 ** (DECIMALS * 2));
 }
 </code></pre>
 <h3 id="l1-gas-usage-estimation-1"><a class="header" href="#l1-gas-usage-estimation-1">L1 Gas Usage Estimation</a></h3>
