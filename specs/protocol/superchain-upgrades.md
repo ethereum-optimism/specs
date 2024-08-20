@@ -255,6 +255,7 @@ but the matching L1-origin information may not be present at the time of activat
 - `v6.0.0`: 2024 Mar 14th - Ecotone network upgrade (4844 Blob Batches + Cancun).
   [Governance Proposal](https://gov.optimism.io/t/upgrade-proposal-5-ecotone-network-upgrade/7669).
 - `v7.0.0`: 2024 Jul 10th - Fjord network upgrade (RIP-7212 precompile + FastLZ cost fn + Brotli compression).
+  [Governance Proposal](https://gov.optimism.io/t/upgrade-proposal-9-fjord-network-upgrade/8236).
 - `v8.0.0`: 2024 Aug 19th (optimistic[^1]) - Granite network upgrade (Limit ecpairing input size + Reduce Channel Timeout).
   [Governance Proposal](https://gov.optimism.io/t/upgrade-proposal-10-granite-network-upgrade/8733).
 
