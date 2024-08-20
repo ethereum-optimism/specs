@@ -44,7 +44,7 @@
     - [Fjord](./protocol/fjord/overview.md)
       - [Execution Engine](./protocol/fjord/exec-engine.md)
       - [Derivation](./protocol/fjord/derivation.md)
-      - [Predeploys](./protocol/fjord/predeploys.md)     
+      - [Predeploys](./protocol/fjord/predeploys.md)
 - [Governance]()
   - [Governance Token](./governance/gov-token.md)
 - [Experimental]()
