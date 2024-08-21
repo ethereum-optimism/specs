@@ -8892,6 +8892,34 @@ the verifier relies on the verification work of the nodes that it sources its di
 </li>
 </ul>
 </li>
+<li><a href="interop/predeploys.html#optimismsuperchainerc20factory">OptimismSuperchainERC20Factory</a>
+<ul>
+<li><a href="interop/predeploys.html#optimismsuperchainerc20">OptimismSuperchainERC20</a></li>
+<li><a href="interop/predeploys.html#overview">Overview</a>
+<ul>
+<li><a href="interop/predeploys.html#proxy">Proxy</a></li>
+<li><a href="interop/predeploys.html#beacon-pattern">Beacon Pattern</a></li>
+<li><a href="interop/predeploys.html#deployment-history">Deployment history</a></li>
+</ul>
+</li>
+<li><a href="interop/predeploys.html#functions">Functions</a>
+<ul>
+<li><a href="interop/predeploys.html#deploy"><code>deploy</code></a></li>
+</ul>
+</li>
+<li><a href="interop/predeploys.html#events">Events</a>
+<ul>
+<li><a href="interop/predeploys.html#optimismsuperchainerc20created"><code>OptimismSuperchainERC20Created</code></a></li>
+</ul>
+</li>
+<li><a href="interop/predeploys.html#deployment-flow">Deployment Flow</a></li>
+</ul>
+</li>
+<li><a href="interop/predeploys.html#beaconcontract">BeaconContract</a>
+<ul>
+<li><a href="interop/predeploys.html#overview-1">Overview</a></li>
+</ul>
+</li>
 <li><a href="interop/predeploys.html#l1block">L1Block</a>
 <ul>
 <li><a href="interop/predeploys.html#static-configuration">Static Configuration</a></li>
@@ -8902,14 +8930,14 @@ the verifier relies on the verification work of the nodes that it sources its di
 <ul>
 <li><a href="interop/predeploys.html#optimismmintableerc20">OptimismMintableERC20</a></li>
 <li><a href="interop/predeploys.html#updates">Updates</a></li>
-<li><a href="interop/predeploys.html#functions">Functions</a>
+<li><a href="interop/predeploys.html#functions-1">Functions</a>
 <ul>
 <li><a href="interop/predeploys.html#createoptimismmintableerc20withdecimals"><code>createOptimismMintableERC20WithDecimals</code></a></li>
 <li><a href="interop/predeploys.html#createoptimismmintableerc20"><code>createOptimismMintableERC20</code></a></li>
 <li><a href="interop/predeploys.html#createstandardl2token"><code>createStandardL2Token</code></a></li>
 </ul>
 </li>
-<li><a href="interop/predeploys.html#events">Events</a>
+<li><a href="interop/predeploys.html#events-1">Events</a>
 <ul>
 <li><a href="interop/predeploys.html#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></li>
 <li><a href="interop/predeploys.html#standardl2tokencreated"><code>StandardL2TokenCreated</code></a></li>
@@ -8917,11 +8945,23 @@ the verifier relies on the verification work of the nodes that it sources its di
 </li>
 </ul>
 </li>
+<li><a href="interop/predeploys.html#l2standardbridge">L2StandardBridge</a>
+<ul>
+<li><a href="interop/predeploys.html#updates-1">Updates</a>
+<ul>
+<li><a href="interop/predeploys.html#convert">convert</a></li>
+<li><a href="interop/predeploys.html#converted"><code>Converted</code></a></li>
+</ul>
+</li>
+<li><a href="interop/predeploys.html#invariants">Invariants</a></li>
+<li><a href="interop/predeploys.html#conversion-flow">Conversion Flow</a></li>
+</ul>
+</li>
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>Two new system level predeploys are introduced for managing cross chain messaging along with
-an update to the <code>L1Block</code> and <code>OptimismMintableERC20Factory</code> contracts with additional functionalities.</p>
+<p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
+an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000022</code></td></tr>
@@ -9180,6 +9220,91 @@ check whether a message expired or not, and handle this case accordingly.</p>
     emit MessageHashExpired(_expiredHash);
 }
 </code></pre>
+<h2 id="optimismsuperchainerc20factory"><a class="header" href="#optimismsuperchainerc20factory">OptimismSuperchainERC20Factory</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000026</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="optimismsuperchainerc20"><a class="header" href="#optimismsuperchainerc20">OptimismSuperchainERC20</a></h3>
+<p>The <code>OptimismSuperchainERC20Factory</code> creates ERC20 contracts that implement to the <code>SuperchainERC20</code> <a href="interop/token-bridging.html">standard</a>
+and grant mint-burn rights to the <code>L2StandardBridge</code> (<code>OptimismSuperchainERC20</code>).
+These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
+The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
+of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
+<h3 id="overview-29"><a class="header" href="#overview-29">Overview</a></h3>
+<p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
+<h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
+<p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
+It follows the
+<a href="https://github.com/ethereum-optimism/optimism/blob/v1.1.4/packages/contracts-bedrock/src/universal/Proxy.sol"><code>Proxy.sol</code> implementation</a>
+and <code>delegatecall()</code> to the factory implementation address.</p>
+<h4 id="beacon-pattern"><a class="header" href="#beacon-pattern">Beacon Pattern</a></h4>
+<p>It MUST deploy <code>OptimismSuperchainERC20</code> as
+<a href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/beacon/BeaconProxy.sol">BeaconProxies</a>,
+as this is the easiest way to upgrade multiple contracts simultaneously.
+Each BeaconProxy delegatecalls to the implementation address provided by the Beacon Contract.</p>
+<p>The implementation MUST include an <code>initialize</code> function that
+receives <code>(address _remoteToken, string _name, string _symbol, uint8 _decimals)</code> and stores these in the BeaconProxy storage.</p>
+<h4 id="deployment-history"><a class="header" href="#deployment-history">Deployment history</a></h4>
+<p>The <code>L2StandardBridge</code> includes a <code>convert()</code> function that allows anyone to convert
+between any <code>OptimismMintableERC20</code> and its corresponding <code>OptimismSuperchainERC20</code>.
+For this method to work, the <code>OptimismSuperchainERC20Factory</code> MUST include a deployment history.</p>
+<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<h4 id="deploy"><a class="header" href="#deploy"><code>deploy</code></a></h4>
+<p>Creates an instance of the <code>OptimismSuperchainERC20</code> contract with a set of metadata defined by:</p>
+<ul>
+<li><code>_remoteToken</code>: address of the underlying token in its native chain.</li>
+<li><code>_name</code>: <code>OptimismSuperchainERC20</code> name</li>
+<li><code>_symbol</code>: <code>OptimismSuperchainERC20</code> symbol</li>
+<li><code>_decimals</code>: <code>OptimismSuperchainERC20</code> decimals</li>
+</ul>
+<pre><code class="language-solidity">deploy(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
+</code></pre>
+<p>It returns the address of the deployed <code>OptimismSuperchainERC20</code>.</p>
+<p>The function MUST use <code>CREATE3</code> to deploy its children.
+This ensures the same address deployment across different chains,
+which is necessary for the <a href="interop/token-bridging.html">standard</a> implementation.</p>
+<p>The salt used for deployment MUST be computed by applying <code>keccak256</code> to the <code>abi.encode</code>
+of the input parameters (<code>_remoteToken</code>, <code>_name</code>, <code>_symbol</code>, and <code>_decimals</code>).
+This implies that the same L1 token can have multiple <code>OptimismSuperchainERC20</code> representations as long as the metadata changes.</p>
+<p>The function MUST store the <code>_remoteToken</code> address for each deployed <code>OptimismSuperchainERC20</code> in a <code>deployments</code> mapping.</p>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h4 id="optimismsuperchainerc20created"><a class="header" href="#optimismsuperchainerc20created"><code>OptimismSuperchainERC20Created</code></a></h4>
+<p>It MUST trigger when <code>deploy</code> is called.</p>
+<pre><code class="language-solidity">event OptimismSuperchainERC20Created(address indexed superchainToken, address indexed remoteToken, address deployer);
+</code></pre>
+<p>where <code>superchainToken</code> is the address of the newly deployed <code>OptimismSuperchainERC20</code>,
+<code>remoteToken</code> is the address of the corresponding token in L1,
+and deployer<code>is the</code>msg.sender`.</p>
+<h3 id="deployment-flow"><a class="header" href="#deployment-flow">Deployment Flow</a></h3>
+<pre class="mermaid">sequenceDiagram
+  participant Alice
+  participant FactoryProxy
+  participant FactoryImpl
+  participant BeaconProxy as OptimismSuperchainERC20 BeaconProxy
+  participant Beacon Contract
+  participant Implementation
+  Alice-&gt;&gt;FactoryProxy: deploy(remoteToken, name, symbol, decimals)
+  FactoryProxy-&gt;&gt;FactoryImpl: delegatecall()
+  FactoryProxy-&gt;&gt;BeaconProxy: deploy with CREATE3
+  FactoryProxy--&gt;FactoryProxy: deployments[superchainToken]=remoteToken
+  FactoryProxy--&gt;FactoryProxy: emit OptimismSuperchainERC20Created(superchainToken, remoteToken, Alice)
+  BeaconProxy--&gt;Beacon Contract: reads implementation()
+  BeaconProxy-&gt;&gt;Implementation: delegatecall()
+  BeaconProxy-&gt;&gt;Implementation: initialize()
+</pre>
+<h2 id="beaconcontract"><a class="header" href="#beaconcontract">BeaconContract</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="overview-30"><a class="header" href="#overview-30">Overview</a></h3>
+<p>The <code>BeaconContract</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
+BeaconProxies deployed by the
+<a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
+<p>The Beacon Contract implements the interface defined
+in <a href="https://eips.ethereum.org/EIPS/eip-1967">EIP-1967</a>.</p>
+<p>The implementation address gets deduced similarly to the <code>GasPriceOracle</code> address in Ecotone and Fjord updates.</p>
 <h2 id="l1block-2"><a class="header" href="#l1block-2">L1Block</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000015</code></td></tr>
@@ -9253,7 +9378,7 @@ depositing from L1 to L2 or withdrawing from L2 to L1.</p>
 <p>The <code>OptimismMintableERC20Factory</code> is updated to include a <code>deployments</code> mapping
 that stores the <code>remoteToken</code> address for each deployed <code>OptimismMintableERC20</code>.
 This is essential for the liquidity migration process defined in the liquidity migration spec.</p>
-<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<h3 id="functions-1"><a class="header" href="#functions-1">Functions</a></h3>
 <h4 id="createoptimismmintableerc20withdecimals"><a class="header" href="#createoptimismmintableerc20withdecimals"><code>createOptimismMintableERC20WithDecimals</code></a></h4>
 <p>Creates an instance of the <code>OptimismMintableERC20</code> contract with a set of metadata defined by:</p>
 <ul>
@@ -9269,7 +9394,7 @@ This is essential for the liquidity migration process defined in the liquidity m
 <li>The function MUST use <code>CREATE2</code> to deploy new contracts.</li>
 <li>The salt MUST be computed by applying <code>keccak256</code> to the <code>abi.encode</code>
 of the four input parameters (<code>_remoteToken</code>, <code>_name</code>, <code>_symbol</code>, and <code>_decimals</code>).
-This will ensure a unique <code>OptimismMintableERC20</code> for each set of ERC20 metadata.</li>
+This ensures a unique <code>OptimismMintableERC20</code> for each set of ERC20 metadata.</li>
 <li>The function MUST store the <code>_remoteToken</code> address for each deployed <code>OptimismMintableERC20</code> in a <code>deployments</code> mapping.</li>
 </ul>
 <h4 id="createoptimismmintableerc20"><a class="header" href="#createoptimismmintableerc20"><code>createOptimismMintableERC20</code></a></h4>
@@ -9283,7 +9408,7 @@ by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fi
 <pre><code class="language-solidity">createStandardL2Token(address _remoteToken, string memory _name, string memory _symbol) returns (address)
 </code></pre>
 <p>This function exists for backwards compatibility with the legacy version.</p>
-<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h3 id="events-1"><a class="header" href="#events-1">Events</a></h3>
 <h4 id="optimismmintableerc20created"><a class="header" href="#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></h4>
 <p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
 <code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.</p>
@@ -9295,6 +9420,75 @@ by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fi
 This event exists for backward compatibility with legacy version.</p>
 <pre><code class="language-solidity">event StandardL2TokenCreated(address indexed remoteToken, address indexed localToken);
 </code></pre>
+<h2 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000010</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="updates-1"><a class="header" href="#updates-1">Updates</a></h3>
+<p>The <code>OptimismMintableERC20</code> and <code>L2StandardToken</code> tokens (<em>legacy tokens</em>),
+which correspond to locked liquidity in L1, are incompatible with interop.
+Legacy token owners must convert into a <code>OptimismSuperchainERC20</code> representation that implements the <a href="interop/token-bridging.html">standard</a>,
+to move across the Superchain.</p>
+<p>The conversion method uses the <code>L2StandardBridge</code> mint/burn rights
+over the legacy tokens to allow easy migration to and from the
+corresponding <code>OptimismSuperchainERC20</code>.</p>
+<h4 id="convert"><a class="header" href="#convert">convert</a></h4>
+<p>The <code>L2StandardBridge</code> SHOULD add a <code>convert</code> public function that
+converts <code>_amount</code> of <code>_from</code> token to <code>_amount</code> of <code>_to</code> token,
+if and only if the token addresses are valid (as defined below).</p>
+<pre><code class="language-solidity">convert(address _from, address _to, uint256 _amount)
+</code></pre>
+<p>The function</p>
+<ol>
+<li>Checks that <code>_from</code> and <code>_to</code> addresses are valid, paired and have the same amount of decimals.</li>
+<li>Burns <code>_amount</code> of <code>_from</code> from <code>msg.sender</code>.</li>
+<li>Mints <code>_amount</code> of <code>_to</code> to <code>msg.sender</code>.</li>
+</ol>
+<h4 id="converted"><a class="header" href="#converted"><code>Converted</code></a></h4>
+<p>The <code>L2StandardBridge</code> SHOULD include a <code>Converted</code> event
+that MUST trigger when anyone converts tokens
+with <code>convert</code>.</p>
+<pre><code class="language-solidity">event Converted(address indexed from, address indexed to, address indexed caller, uint256 amount);
+</code></pre>
+<p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
+<code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
+<h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
+<p>The <code>convert</code> function conserves the following invariants:</p>
+<ul>
+<li>Conservation of amount:
+The burnt amount should match the minted amount.</li>
+<li>Revert for non valid or non paired: <code>convert</code> SHOULD revert when called with:
+<ul>
+<li>Tokens with different decimals.</li>
+<li>Legacy tokens that are not in the <code>deployments</code> mapping from the <code>OptimismMintableERC20Factory</code>.</li>
+<li><code>OptimismSuperchainERC20</code> that are not in the <code>deployments</code> mapping from the <code>OptimismSuperchainERC20Factory</code>.</li>
+<li>Legacy tokens and <code>OptimismSuperchainERC20s</code>s
+corresponding to different
+remote token addresses.</li>
+</ul>
+</li>
+<li>Freedom of conversion for valid and paired tokens:
+anyone can convert between allowed legacy representations and
+valid <code>OptimismSuperchainERC20s</code> corresponding to the same remote token.</li>
+</ul>
+<h3 id="conversion-flow"><a class="header" href="#conversion-flow">Conversion Flow</a></h3>
+<pre class="mermaid">sequenceDiagram
+  participant Alice
+  participant L2StandardBridge
+  participant factory as OptimismMintableERC20Factory
+  participant superfactory as OptimismSuperchainERC20Factory
+  participant legacy as from Token
+  participant SuperERC20 as to Token
+
+  Alice-&gt;&gt;L2StandardBridge: convert(from, to, amount)
+  L2StandardBridge--&gt;factory: check legacy token is allowed
+  L2StandardBridge--&gt;superfactory: check super token is allowed
+  L2StandardBridge--&gt;L2StandardBridge: checks matching remote and decimals
+  L2StandardBridge-&gt;&gt;legacy: IERC20(from).burn(Alice, amount)
+  L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
+  L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
+</pre>
 <h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
@@ -9641,9 +9835,13 @@ based upgrade transactions are deterministically generated by the derivation pip
 <li>L1Block deployment</li>
 <li>CrossL2Inbox deployment</li>
 <li>L2ToL2CrossDomainMessenger deployment</li>
+<li>OptimismSuperchainERC20Factory deployment</li>
+<li>BeaconContract deployment</li>
 <li>Update L1Block Proxy ERC-1967 Implementation Slot</li>
 <li>Update CrossL2Inbox Proxy ERC-1967 Implementation Slot</li>
 <li>Update L2ToL2CrossDomainMessenger Proxy ERC-1967 Implementation Slot</li>
+<li>Update the L2StandardBridge</li>
+<li>Update the OptimismMintableERC20Factory</li>
 </ul>
 </li>
 </ul>
@@ -9685,7 +9883,7 @@ based upgrade transactions are deterministically generated by the derivation pip
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
+<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> unifies ERC20 token bridging to make it fungible across the Superchain.
 It builds on top of the messaging protocol, as the most trust minimized bridging solution.</p>
@@ -9693,7 +9891,7 @@ It builds on top of the messaging protocol, as the most trust minimized bridging
 where users interact with a bridge possessing mint and burn
 privileges on cross-chain enabled tokens, this approach allows users to call methods directly on the token contract.</p>
 <h2 id="interface-1"><a class="header" href="#interface-1">Interface</a></h2>
-<h3 id="functions-1"><a class="header" href="#functions-1">Functions</a></h3>
+<h3 id="functions-2"><a class="header" href="#functions-2">Functions</a></h3>
 <p>The standard will build on top of ERC20 and include the following functions:</p>
 <h4 id="senderc20"><a class="header" href="#senderc20"><code>sendERC20</code></a></h4>
 <p>Transfer <code>_amount</code> amount of tokens to address <code>_to</code> in chain <code>_chainId</code>.</p>
@@ -9710,7 +9908,7 @@ and emit an event including the <code>_from</code> and chain id from the
 <code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
 <pre><code class="language-solidity">relayERC20(address _from, address _to, uint256 _amount)
 </code></pre>
-<h3 id="events-1"><a class="header" href="#events-1">Events</a></h3>
+<h3 id="events-2"><a class="header" href="#events-2">Events</a></h3>
 <h4 id="senterc20"><a class="header" href="#senterc20"><code>SentERC20</code></a></h4>
 <p>MUST trigger when a cross-chain transfer is initiated using <code>sendERC20</code>.</p>
 <pre><code class="language-solidity">event SentERC20(address indexed from, address indexed to, uint256 amount, uint256 destination)
@@ -9761,7 +9959,7 @@ function relayERC20(address _from, address _to, uint256 _amount) external {
   emit RelayedERC20(_from, _to, _amount, _source);
 }
 </code></pre>
-<h2 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h2>
+<h2 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h2>
 <p>Besides the ERC20 invariants, the SuperchainERC20 will require the following interop specific properties:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -9932,7 +10130,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </tbody></table>
 </div>
 <h2 id="superchainweth"><a class="header" href="#superchainweth">SuperchainWETH</a></h2>
-<h3 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h3>
+<h3 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h3>
 <h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
 <ul>
 <li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
@@ -9977,7 +10175,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <li>Emits a <code>RelayERC0</code> event.</li>
 </ul>
 <h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
-<h3 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h3>
+<h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
 <h4 id="global-invariants"><a class="header" href="#global-invariants">Global Invariants</a></h4>
 <ul>
 <li>Initial balance must be set to <code>type(uint248).max</code> (wei). Purpose for using <code>type(uint248).max</code> is to guarantees that
@@ -10064,7 +10262,7 @@ the Optimism monorepo. Therefore the OP Stack Manager will have the same interfa
 <code>Proxy.sol</code>, in addition to other methods defined in this specification.</p>
 <p>The privileged methods of the OP Stack Manager will be held by the L1 ProxyAdmin owner, as
 specified by the <a href="experimental/../protocol/configurability.html">standard configuration</a>.</p>
-<h3 id="deploy"><a class="header" href="#deploy"><code>deploy</code></a></h3>
+<h3 id="deploy-1"><a class="header" href="#deploy-1"><code>deploy</code></a></h3>
 <p>The <code>deploy</code> method is the only non-view method in the contract. It is used to
 deploy the full set of L1 contracts required to setup a new OP Stack chain that
 complies with the <a href="experimental/../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
@@ -10218,7 +10416,7 @@ sure to account for future breaking changes to the ABI.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
+<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
