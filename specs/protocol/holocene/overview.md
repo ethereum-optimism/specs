@@ -16,6 +16,6 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
-- [Interop](../interop/overview.md)
+- [Stricter Derivation](./derivation.md#stricter-derivation-rules)
 
 ## Smart Contracts
