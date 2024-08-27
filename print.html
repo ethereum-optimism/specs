@@ -9813,21 +9813,22 @@ so that less data is sent around via p2p.</p>
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a>
-<ul>
 <li><a href="interop/fault-proof.html#cascading-dependencies">Cascading dependencies</a></li>
-</ul>
-</li>
+<li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>TODO</p>
+<p>The fault proof design is not complete, but the following docs show high level overviews of the direction:</p>
+<ul>
+<li><a href="https://oplabs.notion.site/External-Interop-Fault-Dispute-Game-Notes-1537bf9fad054bcfb2245dea88d48d16">Notes 1</a></li>
+<li><a href="https://oplabs.notion.site/External-Interop-Fault-Proofs-spec-WORK-IN-PROGRESS-29cfaae285994870b3fa51254d0391f2">Notes 2</a></li>
+</ul>
+<h2 id="cascading-dependencies"><a class="header" href="#cascading-dependencies">Cascading dependencies</a></h2>
+<p>Deposits are a special case, synchronous with derivation, at enforced cross-L2 delay.
+Thus deposits cannot reference each others events intra-block.</p>
 <p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
 The insight is that the fault proof program can be a superset of the state transition function.</p>
 <h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <p>TODO</p>
-<h3 id="cascading-dependencies"><a class="header" href="#cascading-dependencies">Cascading dependencies</a></h3>
-<p>Deposits are a special case, synchronous with derivation, at enforced cross-L2 delay.
-Thus deposits cannot reference each others events intra-block.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="interop-network-upgrade"><a class="header" href="#interop-network-upgrade">Interop Network Upgrade</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
