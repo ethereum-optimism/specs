@@ -1,3 +1,34 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Standard L2 Genesis](#standard-l2-genesis)
+  - [Overview](#overview)
+    - [Constants](#constants)
+  - [Predeploys](#predeploys)
+    - [L1Block](#l1block)
+      - [Storage](#storage)
+      - [Interface](#interface)
+        - [`baseFeeVaultConfig`](#basefeevaultconfig)
+        - [`sequencerFeeVaultConfig`](#sequencerfeevaultconfig)
+        - [`l1FeeVaultConfig`](#l1feevaultconfig)
+        - [`l1CrossDomainMessenger`](#l1crossdomainmessenger)
+        - [`l1StandardBridge`](#l1standardbridge)
+        - [`l1ERC721Bridge`](#l1erc721bridge)
+        - [`remoteChainId`](#remotechainid)
+    - [FeeVault](#feevault)
+      - [Interface](#interface-1)
+        - [`config`](#config)
+    - [L2CrossDomainMessenger](#l2crossdomainmessenger)
+      - [Interface](#interface-2)
+    - [L2ERC721Bridge](#l2erc721bridge)
+      - [Interface](#interface-3)
+    - [L2StandardBridge](#l2standardbridge)
+  - [Security Considerations](#security-considerations)
+    - [GovernanceToken](#governancetoken)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Standard L2 Genesis
 
 ## Overview
