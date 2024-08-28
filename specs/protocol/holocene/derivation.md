@@ -18,7 +18,28 @@ simplification of the channel and frame format under the stricter derivation rul
 
 ## Steady Batch Derivation
 
-TODO
+Steady Batch Derivation changes the derivation rules for invalid batches, and instead of giving them
+a second chance for a worst-case full sequencing window, they are immediately derived as
+deposit-only blocks. There are two stages at which this new rule takes effect, in the batch queue
+and in the engine queue.
+
+### Batch Queue
+
+With Holocene, whereever a singular batch would be dropped before, it is now immediately replaced
+by a deposit-only batch.
+
+TODO: details
+
+### Engine Queue
+
+Holocene changes the way in which the Engine Queue responds to payload attributes errors: On a
+payload processing error, the payload is immediately replaced by the respecive empty deposit-only
+attributes for the same block number and payload processing is reattempted with these new
+attributes. As before, a failure to process deposit-only attributes is a critical error.
+
+This new rule applies to both, processing of attributes to advance the safe or unsafe chain.
+This is in contract to just dropping the payload pre-Holocene and waiting for possible future valid
+payload attributes.
 
 ## Partial Span Batch Validity
 
@@ -91,6 +112,10 @@ The batch queue is also simplified in that batches are required to arrive strict
 are immediately derived as empty deposit-only blocks.
 
 TODO: details
+
+### Sync Start
+
+TODO: details on sync start simplifications.
 
 ## Activation
 
