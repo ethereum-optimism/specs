@@ -38,8 +38,8 @@ The exact definitions for these upgrade transactions are still to be defined.
 On the Interop activation block, and if Interop is not activated at Genesis,
 the L1 Attributes Transaction includes a call to `setL1BlockValuesEcotone`.
 
-Every subsequent L1 Attributes transaction should include a call to the new `setL1BlockValuesInterop` function.
-The input args and encoding of `setL1BlockValuesInterop` are identical to `setL1BlockValuesEcotone`.
+Every subsequent L1 Attributes transaction should include a call to the new `setL1BlockValuesIsthmus` function.
+The input args and encoding of `setL1BlockValuesIsthmus` are identical to `setL1BlockValuesEcotone`.
 
 ### L1 Attributes Predeployed Contract
 

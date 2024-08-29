@@ -596,7 +596,7 @@ MUST return the length of the dependency set array.
 
 ### Deposit Context
 
-The `L1BlockInterop` contract will extend from `L1Block` to add new methods to interact with [deposit contexts](./derivation.md#deposit-context).
+New methods will be added on the `L1Block` contract to interact with [deposit contexts](./derivation.md#deposit-context).
 
 ```solidity
 function isDeposit() public view returns (bool);
