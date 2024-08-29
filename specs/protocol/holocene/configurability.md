@@ -42,27 +42,59 @@ The `ConfigType` enum represents configuration that can be modified.
 
 ## `SystemConfig`
 
+### `ConfigUpdate`
+
+The following `ConfigUpdate` enum is defined where the `CONFIG_VERSION` is `uint256(0)`:
+
+| Name | Value | Definition | Usage |
+| ---- | ----- | --- | -- |
+| `BATCHER` | `uint8(0)` | `abi.encode(address)` | Modifies the account that is authorized to progress the safe chain |
+| `GAS_CONFIG` | `uint8(1)` | `(uint256(0x01) << 248) \| (uint256(_blobbasefeeScalar) << 32) \| _basefeeScalar` | Modifies the fee scalars |
+| `GAS_LIMIT` | `uint8(2)` | `abi.encode(uint64 _gasLimit)` | Modifies the L2 gas limit |
+| `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)` | Modifies the account that is authorized to progress the unsafe chain |
+| `EIP_1559_PARAMS` | `uint8(4)` | abi.encode(uint64 _denominator, uint64 _elasticity) | Modifies the EIP-1559 denominator and elasticity |
+
+### Modifying EIP-1559 Parameters
+
+A new `SystemConfig` `UpdateType` is introduced that enables the modification of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) parameters.
+This allows for the chain operator to modify the `BASE_FEE_MAX_CHANGE_DENOMINATOR` and the `ELASTICITY_MULTIPLIER`.
+
 ### Interface
 
-Each function calls `OptimismPortal.setConfig(ConfigType,bytes)` with its corresponding `ConfigType`.
+#### EIP-1559 Params
+
+##### `setEIP1559Params`
+
+This function MUST only be callable by the chain governor.
+
+```solidity
+function setEIP1559Params(uint64 _denominator, uint64 _elasticity)
+```
+
+The `_denominator` and `_elasticity` MUST be set to values greater to than 0.
+It is possible for the chain operator to set EIP-1559 parameters that result in poor user experience.
+
+#### Fee Vault Config
 
 For each `FeeVault`, there is a setter for its config. The arguments to the setter include
 the `RECIPIENT`, the `MIN_WITHDRAWAL_AMOUNT` and the `WithdrawalNetwork`.
 Each of these functions should be `public` and only callable by the chain governor.
 
-#### `setBaseFeeVaultConfig`
+Each function calls `OptimismPortal.setConfig(ConfigType,bytes)` with its corresponding `ConfigType`.
+
+##### `setBaseFeeVaultConfig`
 
 ```solidity
 function setBaseFeeVaultConfig(address,uint256,WithdrawalNetwork)
 ```
 
-#### `setL1FeeVaultConfig`
+##### `setL1FeeVaultConfig`
 
 ```solidity
 function setL1FeeVaultConfig(address,uint256,WithdrawalNetwork)
 ```
 
-#### `setSequencerFeeVaultConfig`
+##### `setSequencerFeeVaultConfig`
 
 ```solidity
 function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
