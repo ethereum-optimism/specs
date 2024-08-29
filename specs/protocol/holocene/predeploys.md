@@ -104,7 +104,7 @@ This function MUST only be callable by the `DEPOSITOR_ACCOUNT`. It modifies the 
 of the `L1Block` contract. It MUST handle all defined `ConfigType`s. To ensure a simple ABI, the
 `bytes` value MUST be abi decoded based on the `ConfigType`.
 
-```
+```solidity
 function setConfig(ConfigType,bytes)
 ```
 

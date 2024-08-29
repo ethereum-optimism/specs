@@ -21,7 +21,7 @@ The `ConfigType` enum represents configuration that can be modified.
 | `SET_GAS_LIMIT` | `uint8(0)` | Sets the L2 gas limit |
 | `SET_FEE_SCALARS` | `uint8(1)` | Sets the L2 fee configuration |
 | `SET_EIP_1559_PARAMS` | `uint8(2)` | Sets the EIP-1559 elasticity and denominator |
-| `SET_BATCHER_HASH` | `uint8(3)` | Sets the batcher role | 
+| `SET_BATCHER_HASH` | `uint8(3)` | Sets the batcher role |
 | `SET_UNSAFE_BLOCK_SIGNER` | `uint8(4)` | Sets the p2p sequencer key |
 | `SET_GAS_PAYING_TOKEN` | `uint8(5)` | Modifies the gas paying token for the chain |
 | `SET_BATCH_INBOX` | `uint8(6)` | Sets the canonical batch inbox address |
@@ -69,4 +69,5 @@ The following fields are included:
 - `from` is the `DEPOSITOR_ACCOUNT`
 - `to` is `Predeploys.L1Block`
 - `version` is `uint256(0)`
-- `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit` is `200_000`, `isCreation` is `false` and the `data` is `abi.encodeCall(L1Block.setConfig, (_type, _value))`
+- `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
+   is `200_000`, `isCreation` is `false` and the `data` is `abi.encodeCall(L1Block.setConfig, (_type, _value))`
