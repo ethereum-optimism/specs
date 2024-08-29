@@ -10,6 +10,8 @@
     - [Storage](#storage)
     - [Interface](#interface)
       - [`setL1BlockValuesHolocene`](#setl1blockvaluesholocene)
+      - [`eip1559Elasticity`](#eip1559elasticity)
+      - [`eip1559Denominator`](#eip1559denominator)
       - [`setConfig`](#setconfig)
       - [`baseFeeVaultConfig`](#basefeevaultconfig)
       - [`sequencerFeeVaultConfig`](#sequencerfeevaultconfig)
