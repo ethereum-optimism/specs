@@ -1,4 +1,4 @@
-## Overview
+# Overview
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -37,7 +37,7 @@ specific configuration out of the initial L2 genesis state. All network specific
 configuration is sourced from deposit transactions during the initialization
 of the `SystemConfig`.
 
-### Constants
+## Constants
 
 | Name | Value | Definition |
 | --------- | ------------------------- | -- |
