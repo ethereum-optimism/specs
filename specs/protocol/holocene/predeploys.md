@@ -1,3 +1,5 @@
+## Overview
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
@@ -29,8 +31,6 @@
   - [GovernanceToken](#governancetoken)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## Overview
 
 This upgrade enables a deterministic L2 genesis state by moving all network
 specific configuration out of the initial L2 genesis state. All network specific
