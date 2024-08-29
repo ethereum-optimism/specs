@@ -1,0 +1,323 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Derivation - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../root.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../../background.html"><strong aria-hidden="true">2.</strong> Background</a></li><li class="chapter-item expanded "><a href="../../protocol/overview.html"><strong aria-hidden="true">3.</strong> OP Stack Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/bridges.html"><strong aria-hidden="true">3.1.</strong> Bridges</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/messengers.html"><strong aria-hidden="true">3.1.1.</strong> Messengers</a></li><li class="chapter-item expanded "><a href="../../protocol/deposits.html"><strong aria-hidden="true">3.1.2.</strong> Deposits</a></li><li class="chapter-item expanded "><a href="../../protocol/withdrawals.html"><strong aria-hidden="true">3.1.3.</strong> Withdrawals</a></li><li class="chapter-item expanded "><a href="../../protocol/guaranteed-gas-market.html"><strong aria-hidden="true">3.1.4.</strong> Guaranteed Gas Market</a></li><li class="chapter-item expanded "><a href="../../protocol/proposals.html"><strong aria-hidden="true">3.1.5.</strong> Proposals</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Clients</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/exec-engine.html"><strong aria-hidden="true">3.2.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/rollup-node.html"><strong aria-hidden="true">3.2.2.</strong> Rollup Node</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/rollup-node-p2p.html"><strong aria-hidden="true">3.2.2.1.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../protocol/derivation.html"><strong aria-hidden="true">3.2.2.2.</strong> Derivation</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/batcher.html"><strong aria-hidden="true">3.2.3.</strong> Batch Submitter</a></li></ol></li><li class="chapter-item expanded "><a href="../../fault-proof/index.html"><strong aria-hidden="true">3.3.</strong> Fault Proof</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/cannon-fault-proof-vm.html"><strong aria-hidden="true">3.3.1.</strong> Cannon Fault Proof VM</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/index.html"><strong aria-hidden="true">3.3.2.</strong> Stage One Decentralization</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/dispute-game-interface.html"><strong aria-hidden="true">3.3.2.1.</strong> Dispute Game Interface</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/fault-dispute-game.html"><strong aria-hidden="true">3.3.2.2.</strong> Fault Dispute Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/honest-challenger-fdg.html"><strong aria-hidden="true">3.3.2.2.1.</strong> Honest Challenger</a></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/bond-incentives.html"><strong aria-hidden="true">3.3.2.2.2.</strong> Bond Incentives</a></li></ol></li><li class="chapter-item expanded "><a href="../../fault-proof/stage-one/bridge-integration.html"><strong aria-hidden="true">3.3.2.3.</strong> Bridge Integration</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/precompiles.html"><strong aria-hidden="true">3.4.</strong> Precompiles</a></li><li class="chapter-item expanded "><a href="../../protocol/predeploys.html"><strong aria-hidden="true">3.5.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../protocol/preinstalls.html"><strong aria-hidden="true">3.6.</strong> Preinstalls</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.7.</strong> Superchain</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/superchain-configuration.html"><strong aria-hidden="true">3.7.1.</strong> Superchain Configuration</a></li><li class="chapter-item expanded "><a href="../../protocol/superchain-upgrades.html"><strong aria-hidden="true">3.7.2.</strong> Superchain Upgrades</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/system-config.html"><strong aria-hidden="true">3.8.</strong> System Config</a></li><li class="chapter-item expanded "><a href="../../protocol/configurability.html"><strong aria-hidden="true">3.9.</strong> Configurability</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.10.</strong> Protocol Upgrades</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/regolith/overview.html"><strong aria-hidden="true">3.10.1.</strong> Regolith</a></li><li class="chapter-item expanded "><a href="../../protocol/canyon/overview.html"><strong aria-hidden="true">3.10.2.</strong> Canyon</a></li><li class="chapter-item expanded "><a href="../../protocol/delta/overview.html"><strong aria-hidden="true">3.10.3.</strong> Delta</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/delta/span-batches.html"><strong aria-hidden="true">3.10.3.1.</strong> Span Batches</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/ecotone/overview.html"><strong aria-hidden="true">3.10.4.</strong> Ecotone</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/ecotone/derivation.html" class="active"><strong aria-hidden="true">3.10.4.1.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../protocol/ecotone/l1-attributes.html"><strong aria-hidden="true">3.10.4.2.</strong> L1 attributes</a></li></ol></li><li class="chapter-item expanded "><a href="../../protocol/fjord/overview.html"><strong aria-hidden="true">3.10.5.</strong> Fjord</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../protocol/fjord/exec-engine.html"><strong aria-hidden="true">3.10.5.1.</strong> Execution Engine</a></li><li class="chapter-item expanded "><a href="../../protocol/fjord/derivation.html"><strong aria-hidden="true">3.10.5.2.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../protocol/fjord/predeploys.html"><strong aria-hidden="true">3.10.5.3.</strong> Predeploys</a></li></ol></li></ol></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Governance</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../governance/gov-token.html"><strong aria-hidden="true">4.1.</strong> Governance Token</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Experimental</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../experimental/custom-gas-token.html"><strong aria-hidden="true">5.1.</strong> Custom Gas Token</a></li><li class="chapter-item expanded "><a href="../../experimental/alt-da.html"><strong aria-hidden="true">5.2.</strong> Alt-DA</a></li><li class="chapter-item expanded "><a href="../../interop/overview.html"><strong aria-hidden="true">5.3.</strong> Interoperability</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../interop/dependency-set.html"><strong aria-hidden="true">5.3.1.</strong> Dependency Set</a></li><li class="chapter-item expanded "><a href="../../interop/messaging.html"><strong aria-hidden="true">5.3.2.</strong> Messaging</a></li><li class="chapter-item expanded "><a href="../../interop/predeploys.html"><strong aria-hidden="true">5.3.3.</strong> Predeploys</a></li><li class="chapter-item expanded "><a href="../../interop/sequencer.html"><strong aria-hidden="true">5.3.4.</strong> Sequencer</a></li><li class="chapter-item expanded "><a href="../../interop/derivation.html"><strong aria-hidden="true">5.3.5.</strong> Derivation</a></li><li class="chapter-item expanded "><a href="../../interop/verifier.html"><strong aria-hidden="true">5.3.6.</strong> Verifier</a></li><li class="chapter-item expanded "><a href="../../interop/rollup-node-p2p.html"><strong aria-hidden="true">5.3.7.</strong> Rollup Node P2P</a></li><li class="chapter-item expanded "><a href="../../interop/fault-proof.html"><strong aria-hidden="true">5.3.8.</strong> Fault Proof</a></li><li class="chapter-item expanded "><a href="../../interop/upgrade.html"><strong aria-hidden="true">5.3.9.</strong> Upgrade</a></li><li class="chapter-item expanded "><a href="../../interop/token-bridging.html"><strong aria-hidden="true">5.3.10.</strong> Token Bridging</a></li><li class="chapter-item expanded "><a href="../../interop/superchain-weth.html"><strong aria-hidden="true">5.3.11.</strong> SuperchainWETH</a></li></ol></li><li class="chapter-item expanded "><a href="../../experimental/security-council-safe.html"><strong aria-hidden="true">5.4.</strong> Security Council Safe</a></li><li class="chapter-item expanded "><a href="../../experimental/op-stack-manager.html"><strong aria-hidden="true">5.5.</strong> OP Stack Manager</a></li><li class="chapter-item expanded "><a href="../../experimental/gov-token.html"><strong aria-hidden="true">5.6.</strong> Governance Token</a></li></ol></li><li class="chapter-item expanded "><a href="../../glossary.html"><strong aria-hidden="true">6.</strong> Glossary</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/ecotone/derivation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="derivation"><a class="header" href="#derivation">Derivation</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a></li>
+<li><a href="#blob-encoding">Blob Encoding</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="ecotone-blob-retrieval"><a class="header" href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a></h2>
+<p>With the Ecotone upgrade the retrieval stage is extended to support an additional DA source:
+<a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> blobs. After the Ecotone upgrade we modify the iteration over batcher transactions to
+treat transactions of transaction-type == <code>0x03</code> (<code>BLOB_TX_TYPE</code>) differently. If the batcher
+transaction is a blob transaction, then its calldata MUST be ignored should it be present. Instead:</p>
+<ul>
+<li>For each blob hash in <code>blob_versioned_hashes</code>, retrieve the blob that matches it. A blob may be
+retrieved from any of a number different sources. Retrieval from a local beacon-node, through
+the <code>/eth/v1/beacon/blob_sidecars/</code> endpoint, with <code>indices</code> filter to skip unrelated blobs, is
+recommended. For each retrieved blob:
+<ul>
+<li>The blob SHOULD (MUST, if the source is untrusted) be cryptographically verified against its
+versioned hash.</li>
+<li>If the blob has a <a href="#blob-encoding">valid encoding</a>, decode it into its continuous byte-string
+and pass that on to the next phase. Otherwise the blob is ignored.</li>
+</ul>
+</li>
+</ul>
+<p>Note that batcher transactions of type blob must be processed in the same loop as other batcher
+transactions to preserve the invariant that batches are always processed in the order they appear
+in the block. We ignore calldata in blob transactions so that it may be used in the future for
+batch metadata or other purposes.</p>
+<h2 id="blob-encoding"><a class="header" href="#blob-encoding">Blob Encoding</a></h2>
+<p>Each blob in a <a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a> transaction really consists of <code>FIELD_ELEMENTS_PER_BLOB = 4096</code> field elements.</p>
+<p>Each field element is a number in a prime field of
+<code>BLS_MODULUS = 52435875175126190479447740508185965837690552500527637822603658699938581184513</code>.
+This number does not represent a full <code>uint256</code>: <code>math.log2(BLS_MODULUS) = 254.8570894...</code></p>
+<p>The <a href="https://github.com/ethereum/consensus-specs/blob/dev/specs/deneb/polynomial-commitments.md">L1 consensus-specs</a>
+describe the encoding of this polynomial.
+The field elements are encoded as big-endian integers (<code>KZG_ENDIANNESS = big</code>).</p>
+<p>To save computational overhead, only <code>254</code> bits per field element are used for rollup data.</p>
+<p>For efficient data encoding, <code>254</code> bits (equivalent to <code>31.75</code> bytes) are utilized.
+<code>4</code> elements combine to effectively use <code>127</code> bytes.</p>
+<p><code>127</code> bytes of application-layer rollup data is encoded at a time, into 4 adjacent field elements of the blob:</p>
+<pre><code class="language-python"># read(N): read the next N bytes from the application-layer rollup-data. The next read starts where the last stopped.
+# write(V): append V (one or more bytes) to the raw blob.
+bytes tailA = read(31)
+byte x = read(1)
+byte A = x &amp; 0b0011_1111
+write(A)
+write(tailA)
+
+bytes tailB = read(31)
+byte y = read(1)
+byte B = (y &amp; 0b0000_1111) | (x &amp; 0b1100_0000) &gt;&gt; 2)
+write(B)
+write(tailB)
+
+bytes tailC = read(31)
+byte z = read(1)
+byte C = z &amp; 0b0011_1111
+write(C)
+write(tailC)
+
+bytes tailD = read(31)
+byte D = ((z &amp; 0b1100_0000) &gt;&gt; 2) | ((y &amp; 0b1111_0000) &gt;&gt; 4)
+write(D)
+write(tailD)
+</code></pre>
+<p>Each written field element looks like this:</p>
+<ul>
+<li>Starts with one of the prepared 6-bit left-padded byte values, to keep the field element within valid range.</li>
+<li>Followed by 31 bytes of application-layer data, to fill the low 31 bytes of the field element.</li>
+</ul>
+<p>The written output should look like this:</p>
+<pre><code class="language-text">&lt;----- element 0 -----&gt;&lt;----- element 1 -----&gt;&lt;----- element 2 -----&gt;&lt;----- element 3 -----&gt;
+| byte A |  tailA...  || byte B |  tailB...  || byte C |  tailC...  || byte D |  tailD...  |
+</code></pre>
+<p>The above is repeated 1024 times, to fill all <code>4096</code> elements,
+with a total of <code>(4 * 31 + 3) * 1024 = 130048</code> bytes of data.</p>
+<p>When decoding a blob, the top-most two bits of each field-element must be 0,
+to make the encoding/decoding bijective.</p>
+<p>The first byte of rollup-data (second byte in first field element) is used as a version-byte.</p>
+<p>In version <code>0</code>, the next 3 bytes of data are used to encode the length of the rollup-data, as big-endian <code>uint24</code>.
+Any trailing data, past the length delimiter, must be 0, to keep the encoding/decoding bijective.
+If the length is larger than <code>130048 - 4</code>, the blob is invalid.</p>
+<p>If any of the encoding is invalid, the blob as a whole must be ignored.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/ecotone/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/ecotone/l1-attributes.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/ecotone/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/ecotone/l1-attributes.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
