@@ -19,12 +19,7 @@
 ## Overview
 
 The `SystemConfig` and `OptimismPortal` are updated with a new flow for chain
-configurability. This new flow reduces the need for the `ConfigUpdate` events
-emitted by the `SystemConfig`, which adds great cost to the fault proof program's
-execution as it results in the program to iterate through all possible logs to
-ensure that it has observed all of the events. It also enables the L1 Attributes
-transaction to not post duplicate data between transactions which reduces database
-size growth over time.
+configurability.
 
 ## Constants
 
@@ -34,30 +29,42 @@ The `ConfigType` enum represents configuration that can be modified.
 
 | Name | Value | Description |
 | ---- | ----- | --- |
-| `SET_GAS_LIMIT` | `uint8(0)` | Sets the L2 gas limit |
-| `SET_FEE_SCALARS` | `uint8(1)` | Sets the L2 fee configuration |
-| `SET_EIP_1559_PARAMS` | `uint8(2)` | Sets the EIP-1559 elasticity and denominator |
-| `SET_BATCHER_HASH` | `uint8(3)` | Sets the batcher role |
-| `SET_UNSAFE_BLOCK_SIGNER` | `uint8(4)` | Sets the p2p sequencer key |
-| `SET_GAS_PAYING_TOKEN` | `uint8(5)` | Modifies the gas paying token for the chain |
-| `SET_BATCH_INBOX` | `uint8(6)` | Sets the canonical batch inbox address |
-
-TODO: make sure that `SET_BATCH_INBOX` doesn't break the fault proof
+| `SET_GAS_PAYING_TOKEN` | `uint8(0)` | Modifies the gas paying token for the chain |
+| `SET_BASE_FEE_VAULT_CONFIG` | `uint8(1)` | Sets the Fee Vault Config for the `BaseFeeVault` |
+| `SET_L1_FEE_VAULT_CONFIG` | `uint8(2)` | Sets the Fee Vault Config for the `L1FeeVault` |
+| `SET_SEQUENCER_FEE_VAULT_CONFIG` | `uint8(3)` | Sets the Fee Vault Config for the `SequencerFeeVault` |
+| `SET_L1_CROSS_DOMAIN_MESSENGER_ADDRESS` | `uint8(4)` | Sets the `L1CrossDomainMessenger` address |
+| `SET_L1_ERC_721_BRIDGE_ADDRESS` | `uint8(5)` | Sets the `L1ERC721Bridge` address |
+| `SET_L1_STANDARD_BRIDGE_ADDRESS` | `uint8(6)` | Sets the `L1StandardBridge` address |
+| `SET_REMOTE_CHAIN_ID` | `uint8(7)` | Sets the chain id of the base chain |
 
 ## `SystemConfig`
 
 ### Interface
 
-Each listed function calls `OptimismPortal.setConfig(ConfigType)` with its corresponding
-`ConfigType`.
+Each function calls `OptimismPortal.setConfig(ConfigType,bytes)` with its corresponding `ConfigType`.
 
-- `setGasLimit(uint64)`
-- `setFeeScalars(uint32,uint32)`
-- `setEIP1559Params(uint64,uint64)`
-- `setBatcherHash(bytes32)`
-- `setUnsafeBlockSigner(address)`
-- `setGasPayingToken(address)`
-- `setBatchInbox(address)`
+For each `FeeVault`, there is a setter for its config. The arguments to the setter include
+the `RECIPIENT`, the `MIN_WITHDRAWAL_AMOUNT` and the `WithdrawalNetwork`.
+Each of these functions should be `public` and only callable by the chain governor.
+
+#### `setBaseFeeVaultConfig`
+
+```solidity
+function setBaseFeeVaultConfig(address,uint256,WithdrawalNetwork)
+```
+
+#### `setL1FeeVaultConfig`
+
+```solidity
+function setL1FeeVaultConfig(address,uint256,WithdrawalNetwork)
+```
+
+#### `setSequencerFeeVaultConfig`
+
+```solidity
+function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
+```
 
 ## `OptimismPortal`
 

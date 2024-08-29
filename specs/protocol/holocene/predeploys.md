@@ -65,7 +65,7 @@ rather than reading it from local state.
 ```mermaid
 graph LR
   subgraph L1
-  SystemConfig -- "setConfig(uint8)" --> OptimismPortal
+  SystemConfig -- "setConfig(uint8,bytes)" --> OptimismPortal
   end
   subgraph L2
   L1Block
@@ -77,7 +77,7 @@ graph LR
   L2ERC721Bridge -- "l1ERC721Bridge()(address)" --> L1Block
   OptimismMintableERC721Factory -- "remoteChainId()(uint256)" --> L1Block
   end
-  OptimismPortal -- "setConfig(uint8)" --> L1Block
+  OptimismPortal -- "setConfig(uint8,bytes)" --> L1Block
 ```
 
 ### L1Block
@@ -108,6 +108,8 @@ of the `L1Block` contract. It MUST handle all defined `ConfigType`s. To ensure a
 ```solidity
 function setConfig(ConfigType,bytes)
 ```
+
+Note that `ConfigType` is an enum which is an alias for a `uint8`.
 
 ##### `baseFeeVaultConfig`
 
