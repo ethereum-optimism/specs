@@ -19,3 +19,6 @@ This document is not finalized and should be considered experimental.
 ## Consensus Layer
 
 ## Smart Contracts
+
+- [Predeploys](./predeploys.md)
+- [SystemConfig](./system-config.md)

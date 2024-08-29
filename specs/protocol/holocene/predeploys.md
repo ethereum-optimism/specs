@@ -29,14 +29,14 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Standard L2 Genesis
+# Predeploys
 
 ## Overview
 
-A deterministic L2 genesis state enables simple integrity checks that prevent
-unknown state from being hidden in the genesis. Each hardfork constitutates
-a release of an L2 genesis state and all network specific configuration is sourced
-from deposit transactions during the initialization of the `SystemConfig`.
+This upgrade enables a deterministic L2 genesis state by moving all network
+specific configuration out of the initial L2 genesis state. All network specific
+configuration is sourced from deposit transactions during the initialization
+of the `SystemConfig`.
 
 ### Constants
 
@@ -46,7 +46,7 @@ from deposit transactions during the initialization of the `SystemConfig`.
 | `WithdrawalNetwork` | `uint8(0)` or `uint8(1)` | `0` means withdraw to L1, `1` means withdraw to L2  |
 | `RECIPIENT` | `address` | The account that will receive funds sent out of the `FeeVault` |
 | `MIN_WITHDRAWAL_AMOUNT` | `uint256` | The minimum amount of native asset held in the `FeeVault` before withdrawal is authorized |
-| Fee Vault Config | `bytes32` | `bytes32((WithdrawalNetwork << 248) |\| uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) |\| uint256(uint160(RECIPIENT)))` |
+| Fee Vault Config | `bytes32` | `bytes32((WithdrawalNetwork << 248) \|\| uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) \|\| uint256(uint160(RECIPIENT)))` |
 | `BASE_FEE_VAULT_CONFIG` | `bytes32(uint256(keccak256("opstack.basefeevaultconfig")) - 1)` | The Fee Vault Config for the `BaseFeeVault` |
 | `L1_FEE_VAULT_CONFIG` | `bytes32(uint256(keccak256("opstack.l1feevaultconfig")) - 1)` | The Fee Vault Config for the `L1FeeVault` |
 | `SEQUENCER_FEE_VAULT_CONFIG` | `bytes32(uint256(keccak256("opstack.sequencerfeevaultconfig")) - 1)` | The Fee Vault Config for the `SequencerFeeVault` |
