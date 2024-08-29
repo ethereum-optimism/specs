@@ -98,6 +98,16 @@ via a deposit transaction from the `DEPOSITOR_ACCOUNT`.
 
 #### Interface
 
+##### `setConfig`
+
+This function MUST only be callable by the `DEPOSITOR_ACCOUNT`. It modifies the storage directly
+of the `L1Block` contract. It MUST handle all defined `ConfigType`s. To ensure a simple ABI, the
+`bytes` value MUST be abi decoded based on the `ConfigType`.
+
+```
+function setConfig(ConfigType,bytes)
+```
+
 ##### `baseFeeVaultConfig`
 
 This function MUST be called by the `BaseFeeVault` to fetch network specific configuration.
