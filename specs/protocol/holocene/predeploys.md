@@ -4,8 +4,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Overview](#overview)
-  - [Constants](#constants)
+- [Constants](#constants)
 - [Predeploys](#predeploys)
   - [L1Block](#l1block)
     - [Storage](#storage)

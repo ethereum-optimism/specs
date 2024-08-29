@@ -1,1 +1,10 @@
 # Security Council Safe
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Security Council Safe](#security-council-safe)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
