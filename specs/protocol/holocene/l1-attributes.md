@@ -1,3 +1,12 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [L1 Block Attributes](#l1-block-attributes)
+  - [Overview](#overview)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # L1 Block Attributes
 
 ## Overview

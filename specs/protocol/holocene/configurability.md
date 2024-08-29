@@ -1,3 +1,19 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Configurability](#configurability)
+  - [Overview](#overview)
+  - [Constants](#constants)
+    - [`ConfigType`](#configtype)
+  - [`SystemConfig`](#systemconfig)
+    - [Interface](#interface)
+  - [`OptimismPortal`](#optimismportal)
+    - [Interface](#interface-1)
+      - [`setConfig`](#setconfig)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Configurability
 
 ## Overview

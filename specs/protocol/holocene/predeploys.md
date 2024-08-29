@@ -2,13 +2,14 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Standard L2 Genesis](#standard-l2-genesis)
+- [Predeploys](#predeploys)
   - [Overview](#overview)
     - [Constants](#constants)
-  - [Predeploys](#predeploys)
+  - [Predeploys](#predeploys-1)
     - [L1Block](#l1block)
       - [Storage](#storage)
       - [Interface](#interface)
+        - [`setConfig`](#setconfig)
         - [`baseFeeVaultConfig`](#basefeevaultconfig)
         - [`sequencerFeeVaultConfig`](#sequencerfeevaultconfig)
         - [`l1FeeVaultConfig`](#l1feevaultconfig)
