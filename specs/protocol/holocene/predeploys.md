@@ -8,6 +8,7 @@
   - [L1Block](#l1block)
     - [Storage](#storage)
     - [Interface](#interface)
+      - [`setL1BlockValuesHolocene`](#setl1blockvaluesholocene)
       - [`setConfig`](#setconfig)
       - [`baseFeeVaultConfig`](#basefeevaultconfig)
       - [`sequencerFeeVaultConfig`](#sequencerfeevaultconfig)
