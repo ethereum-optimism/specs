@@ -10,8 +10,19 @@
 
 ## Overview
 
-The L1 block attributes transaction is updated to remove redundant data.
+The L1 block attributes transaction is updated to include the EIP-1559 parameters.
 
 | Input arg         | Type    | Calldata bytes | Segment |
 | ----------------- | ------- | -------------- | ------- |
-| {0xTODO}      |         | 0-3            | n/a     |
+| {0xd1fbe15b}      |         | 0-3            | n/a     |
+| baseFeeScalar     | uint32  | 4-7            | 1       |
+| blobBaseFeeScalar | uint32  | 8-11           |         |
+| sequenceNumber    | uint64  | 12-19          |         |
+| l1BlockTimestamp  | uint64  | 20-27          |         |
+| l1BlockNumber     | uint64  | 28-35          |         |
+| basefee           | uint256 | 36-67          | 2       |
+| blobBaseFee       | uint256 | 68-99          | 3       |
+| l1BlockHash       | bytes32 | 100-131        | 4       |
+| batcherHash       | bytes32 | 132-163        | 5       |
+| 1559Denominator   | uint64  | 164-171        | 6       |
+| 1559Elasticity    | uint64  | 172-179        |         |

@@ -96,6 +96,11 @@ via a deposit transaction from the `DEPOSITOR_ACCOUNT`.
 
 #### Interface
 
+##### `setL1BlockValuesHolocene`
+
+This function MUST only be callable by the `DEPOSITOR_ACCOUNT`. It is a replacement
+for `setL1BlockValuesEcotone` and its calldata is defined in [L1 Attributes](./l1-attributes.md).
+
 ##### `setConfig`
 
 This function MUST only be callable by the `DEPOSITOR_ACCOUNT`. It modifies the storage directly
