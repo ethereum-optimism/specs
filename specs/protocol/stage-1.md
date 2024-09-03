@@ -67,7 +67,7 @@ achieve Stage 1.
    [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
 
 
-   Accordingly, this Safe is authorized to call the following liveness-critical functions:
+   Accordingly, this Safe is authorized to call the following functions:
       - `SuperchainConfig.pause()`
       - `SuperchainConfig.unpause()`
       - `OptimismPortal2.setRespectedGameType()`
