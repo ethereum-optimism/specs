@@ -98,9 +98,9 @@ The following diagram outlines the control relationships between the contracts i
 ```mermaid
 flowchart LR
    subgraph SuperchainSystem[Superchain System]
-      subgraph Withdrawals
+      subgraph Exit[User Exit Controls]
          Pausability
-         OtherLiveness[Other Liveness controls]
+         OtherExit[Other Exit Controls]
       end
       subgraph Safety
          ContractUpgrades
@@ -137,7 +137,7 @@ flowchart LR
     FndUp -->|set versions|PV
     LM -->|execTransactionFromModule| Council
     DGM -->|execTransactionFromModule| GS
-    GS -->|controls| Liveness
+    GS -->|controls| Exit
 
    %% Declare a class to make the outer boxes somewhat transparent to provide some contrast
    classDef outer fill:#ffffff44
