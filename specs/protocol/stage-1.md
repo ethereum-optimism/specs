@@ -62,7 +62,7 @@ achieve Stage 1.
    In general, the threshold and number of owners MUST be configured such that an upgrade
    or other safety-critical action can NOT be performed without the cooperation of the Security Council.
 
-1. **The Guardian Safe:** This Safe controls any code paths which impact on the users ability to
+1. **The Guardian Safe:** This Safe controls any code paths which impact a users ability to
    exit the system. It is extended with the
    [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
 
