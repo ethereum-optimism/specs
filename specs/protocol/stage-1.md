@@ -72,6 +72,7 @@ achieve Stage 1.
       - `SuperchainConfig.unpause()`
       - `OptimismPortal2.setRespectedGameType()`
       - `OptimismPortal2.blacklistDisputeGame()`
+      - `AnchorStateRegistry.setAnchorState()`
 
    This Safe has a threshold of 1 and is owned by the Security Council Safe.
 
