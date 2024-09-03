@@ -34,7 +34,8 @@ Within the context of an OP Stack, the following roles are required for Stage 1:
    This includes upgrading L1 contracts, modifying the implementation of the dispute game, and
    any other safety-critical functions.
 
-2. **Guardian:** This account MUST control any action which may cause a delay in the finalization of
+2. **Guardian:** This account MUST control any action which may delay a users ability to
+   exit the system to L1. Such delays may result from anything that impacts the finalization of
    L2 states and the resulting settlement on L1.
 
    This includes but is not limited to pausing code paths related to withdrawals.
@@ -49,7 +50,7 @@ This list outlines the various Safes, their extensions, and other configuration 
 achieve Stage 1.
 
 1. **The L1 ProxyAdmin Owner Safe:** This Safe acts as the Upgrade Controller. Accordingly, it is
-   authorized to call the following safety-critical functions:
+   authorized to call the following functions:
       - All `ProxyAdmin` `onlyOwner` functions.
       - All `DisputeGameFactory` `onlyOwner` functions.
       - All `DelayedWETH` `onlyOwners` functions.
@@ -61,9 +62,10 @@ achieve Stage 1.
    In general, the threshold and number of owners MUST be configured such that an upgrade
    or other safety-critical action can NOT be performed without the cooperation of the Security Council.
 
-1. **The Guardian Safe:** This Safe
-   includes but is not limited to pausing all code paths related to withdrawals. It is also extended
-   with the [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
+1. **The Guardian Safe:** This Safe controls any code paths which impact on the users ability to
+   exit the system. It is extended with the
+   [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
+
 
    Accordingly, this Safe is authorized to call the following liveness-critical functions:
       - `SuperchainConfig.pause()`
@@ -96,7 +98,7 @@ The following diagram outlines the control relationships between the contracts i
 ```mermaid
 flowchart LR
    subgraph SuperchainSystem[Superchain System]
-      subgraph Liveness
+      subgraph Withdrawals
          Pausability
          OtherLiveness[Other Liveness controls]
       end
