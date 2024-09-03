@@ -81,7 +81,7 @@ achieve Stage 1.
    although Liveness Checking is not required for Stage 1, it is an additional safety feature used
    to prevent any loss of liveness on the Security Council Safe.
 
-   The threshold and owner set of the Safe MUST meet L2Beat's Stage 1 requirements.
+   The threshold and owner set on the Safe MUST meet L2Beat's Stage 1 requirements.
 
 1. **The Foundation Upgrades Safe:** This Safe is one of the two owners of the `ProxyAdminOwner` Safe.
    It is also able to update the recommended and required versions on the `ProtocolVersions`
