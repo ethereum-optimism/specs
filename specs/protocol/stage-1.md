@@ -53,7 +53,7 @@ achieve Stage 1.
    authorized to call the following functions:
       - All `ProxyAdmin` `onlyOwner` functions.
       - All `DisputeGameFactory` `onlyOwner` functions.
-      - All `DelayedWETH` `onlyOwners` functions.
+      - All `DelayedWETH` `onlyOwner` functions.
 
    This safe has a threshold of 2, and is owned by two other Safes:
       1. The Security Council Safe.
