@@ -191,7 +191,6 @@
 <li><a href="#gas-considerations">Gas Considerations</a></li>
 </ul>
 </li>
-<li><a href="#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
@@ -213,7 +212,7 @@ transaction and <code>isDeposit = false</code> occurs immediately after the last
 if any exists, or after the first L1 attributes transaction if there are no user deposits.</p>
 <p>The order of deposit transactions occurs as follows:</p>
 <ol>
-<li>L1 attributes transaction calling <a href="../protocol/ecotone/l1-attributes.html"><code>setL1BlockValuesInterop()</code></a>.</li>
+<li>L1 attributes transaction calling <a href="../protocol/ecotone/l1-attributes.html"><code>setL1BlockValuesIsthmus()</code></a>.</li>
 <li>User deposits</li>
 <li>L1 attributes transaction calling <a href="../protocol/ecotone/l1-attributes.html"><code>depositsComplete()</code></a></li>
 </ol>
@@ -222,8 +221,6 @@ if any exists, or after the first L1 attributes transaction if there are no user
 There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
 may be filled by the other deposit transactions. As a consequence, a deposit context may spill into multiple blocks.</p>
 <p>This will be fixed in the future.</p>
-<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
-<p>TODO</p>
 
                     </main>
 

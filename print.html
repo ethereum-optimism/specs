@@ -9869,7 +9869,6 @@ behalf of the sequencer will result in the production of invalid blocks.</p>
 <li><a href="interop/derivation.html#gas-considerations">Gas Considerations</a></li>
 </ul>
 </li>
-<li><a href="interop/derivation.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
@@ -9891,7 +9890,7 @@ transaction and <code>isDeposit = false</code> occurs immediately after the last
 if any exists, or after the first L1 attributes transaction if there are no user deposits.</p>
 <p>The order of deposit transactions occurs as follows:</p>
 <ol>
-<li>L1 attributes transaction calling <a href="interop/../protocol/ecotone/l1-attributes.html"><code>setL1BlockValuesInterop()</code></a>.</li>
+<li>L1 attributes transaction calling <a href="interop/../protocol/ecotone/l1-attributes.html"><code>setL1BlockValuesIsthmus()</code></a>.</li>
 <li>User deposits</li>
 <li>L1 attributes transaction calling <a href="interop/../protocol/ecotone/l1-attributes.html"><code>depositsComplete()</code></a></li>
 </ol>
@@ -9900,8 +9899,6 @@ if any exists, or after the first L1 attributes transaction if there are no user
 There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
 may be filled by the other deposit transactions. As a consequence, a deposit context may spill into multiple blocks.</p>
 <p>This will be fixed in the future.</p>
-<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
-<p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="verifier"><a class="header" href="#verifier">Verifier</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -10034,7 +10031,7 @@ to the block building code that the <a href="interop/./sequencer.html#direct-dep
 follows. The main difference is that the validity of included executing
 messages is verified instead of verifying possible executing messages before
 inclusion.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
+<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <h3 id="forced-inclusion-of-cross-chain-messages"><a class="header" href="#forced-inclusion-of-cross-chain-messages">Forced Inclusion of Cross Chain Messages</a></h3>
 <p>The design is particular to not introduce any sort of "forced inclusion" between L2s. This design space introduces
 risky synchrony assumptions and forces the introduction of a message queue to prevent denial of service attacks where
@@ -10074,7 +10071,7 @@ to decrease the latency of this process. This could look like the sequencer sign
 sets of executing messages to nodes of remote chains so that they know exactly what initiating
 messages to look for. An optimization on this would involve working with commitments to this data
 so that less data is sent around via p2p.</p>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
@@ -10096,7 +10093,7 @@ so that less data is sent around via p2p.</p>
 Thus deposits cannot reference each others events intra-block.</p>
 <p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
 The insight is that the fault proof program can be a superset of the state transition function.</p>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="interop-network-upgrade"><a class="header" href="#interop-network-upgrade">Interop Network Upgrade</a></h1>
@@ -10174,7 +10171,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </ul>
 <p>The <code>setL1BlockValuesIsthmus</code> input parameters are identical to <code>setL1BlockValuesEcotone</code> as described in
 <a href="interop/../protocol/ecotone/l1-attributes.html#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a>.</p>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
@@ -10680,7 +10677,7 @@ if this property is not preserved in future versions of the OP Stack Manager.</l
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
