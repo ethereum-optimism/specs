@@ -66,7 +66,6 @@ achieve Stage 1.
    exit the system. It is extended with the
    [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
 
-
    Accordingly, this Safe is authorized to call the following functions:
       - `SuperchainConfig.pause()`
       - `SuperchainConfig.unpause()`
