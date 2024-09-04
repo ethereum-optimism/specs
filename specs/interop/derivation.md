@@ -34,7 +34,7 @@ if any exists, or after the first L1 attributes transaction if there are no user
 
 The order of deposit transactions occurs as follows:
 
-1. L1 attributes transaction calling [`setL1BlockValuesIsthumus()`](../protocol/ecotone/l1-attributes.md).
+1. L1 attributes transaction calling [`setL1BlockValuesIsthmus()`](../protocol/ecotone/l1-attributes.md).
 1. User deposits
 1. L1 attributes transaction calling [`depositsComplete()`](../protocol/ecotone/l1-attributes.md)
 
