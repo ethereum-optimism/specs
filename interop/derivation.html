@@ -188,14 +188,16 @@
 <li><a href="#overview">Overview</a>
 <ul>
 <li><a href="#deposit-context">Deposit Context</a></li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
 <li><a href="#gas-considerations">Gas Considerations</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>This is an experimental section and may be changed in the future. It is not required
-for the initial release.</p>
 <h3 id="deposit-context"><a class="header" href="#deposit-context">Deposit Context</a></h3>
 <p>Derivation is extended to create <strong>deposit contexts</strong>, which signifies the execution of a depositing transaction.
 A deposit context is scoped to a single block, commencing with the execution of the first deposited transaction
@@ -216,6 +218,7 @@ if any exists, or after the first L1 attributes transaction if there are no user
 <li>User deposits</li>
 <li>L1 attributes transaction calling <a href="../protocol/ecotone/l1-attributes.html"><code>depositsComplete()</code></a></li>
 </ol>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 <h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
 <p>There must be sufficient gas available in the block to destroy deposit context.
 There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block

@@ -8765,22 +8765,25 @@ is refunded to the resolver (where <code>0 &lt;= refund_factor &lt;= 1</code>) w
 <h1 id="interop"><a class="header" href="#interop">Interop</a></h1>
 <p>The ability for a blockchain to easily read the state of another blockchain is called interoperability.
 Low latency interoperability allows for horizontally scalable blockchains, a key feature of the superchain.</p>
-<p>Note: this document references an "interop network upgrade" as a temporary name. The actual name of the
-network upgrade will be included in this document in the future.</p>
+<p>Note: this document references an "interop network upgrade" as a temporary name. The pending name of the
+network upgrade is isthmus.</p>
 <div class="table-wrapper"><table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>
 <tr><td>Source Chain</td><td>A blockchain that includes an initiating message</td></tr>
 <tr><td>Destination Chain</td><td>A blockchain that includes an executing message</td></tr>
 <tr><td>Initiating Message</td><td>An event emitted from a source chain</td></tr>
-<tr><td>Executing Message</td><td>An event emitted from a destination chain's <code>CrossL2Inbox</code> that includes an initiating message</td></tr>
+<tr><td>Identifier</td><td>A unique pointer to an initiating message</td></tr>
+<tr><td>Executing Message</td><td>An event emitted from a destination chain's <code>CrossL2Inbox</code> that includes an initiating message and identifier</td></tr>
 <tr><td>Cross Chain Message</td><td>The cumulative execution and side effects of the initiating message and executing message</td></tr>
 <tr><td>Dependency Set</td><td>The set of chains that originate initiating transactions where the executing transactions are valid</td></tr>
 </tbody></table>
 </div>
 <p>A total of two transactions are required to complete a cross chain message.
-The first transaction is submitted to the source chain and emits an event that can be consumed on a destination chain.
-The second transaction is submitted to a destination chain, where the block builder SHOULD only include it if they are
-certain that the first transaction was included in the source chain.
-There is no strict requirement that the executing message is ever submitted.</p>
+The first transaction is submitted to the source chain and emits an event (initiating message) that can be
+consumed on a destination chain. The second transaction is submitted to the destination chain and includes the
+initiating message as well as the identifier that uniquely points to the initiating message.</p>
+<p>The chain's fork choice rule will reorg out any blocks that contain an executing message that is not valid,
+meaning that the identifier actually points to the initiating message that was passed into the remote chain.
+This means that the block builder SHOULD only include an executing message if they have already checked its validity.</p>
 <p>The term "block builder" is used interchangeably with the term "sequencer" for the purposes of this document but
 they need not be the same entity in practice.</p>
 <h2 id="specifications"><a class="header" href="#specifications">Specifications</a></h2>
@@ -8819,8 +8822,11 @@ in the dependency set.</p>
 social consensus MUST be used to determine the chain that represents the canonical chain id. This
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
 of executing messages.</p>
-<p>The dependency set is configured on a per chain basis.</p>
-<p>The chain id of the local chain MUST be considered as part of its own dependency set.</p>
+<p>The dependency set is configured on a per chain basis and is a unidirectional relationship. This means
+that it is possible to depend on a chain without it depending back. This means that it is possible
+to send assets to a chain where they cannot be sent back.</p>
+<p>The chain id of the local chain MUST be considered as part of its own dependency set. This allows a chain
+to consume logs that it has produced much more cheaply than providing a block hash proof.</p>
 <p>While the dependency set explicitly defines the set of chains that are depended on for incoming messages,
 the full set of transitive dependencies must be known to allow for the progression of safety.
 This means that the <code>op-node</code> needs to be aware of all transitive dependencies.</p>
@@ -9866,14 +9872,16 @@ behalf of the sequencer will result in the production of invalid blocks.</p>
 <li><a href="interop/derivation.html#overview">Overview</a>
 <ul>
 <li><a href="interop/derivation.html#deposit-context">Deposit Context</a></li>
+</ul>
+</li>
+<li><a href="interop/derivation.html#security-considerations">Security Considerations</a>
+<ul>
 <li><a href="interop/derivation.html#gas-considerations">Gas Considerations</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
-<p>This is an experimental section and may be changed in the future. It is not required
-for the initial release.</p>
 <h3 id="deposit-context-1"><a class="header" href="#deposit-context-1">Deposit Context</a></h3>
 <p>Derivation is extended to create <strong>deposit contexts</strong>, which signifies the execution of a depositing transaction.
 A deposit context is scoped to a single block, commencing with the execution of the first deposited transaction
@@ -9894,6 +9902,7 @@ if any exists, or after the first L1 attributes transaction if there are no user
 <li>User deposits</li>
 <li>L1 attributes transaction calling <a href="interop/../protocol/ecotone/l1-attributes.html"><code>depositsComplete()</code></a></li>
 </ol>
+<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
 <p>There must be sufficient gas available in the block to destroy deposit context.
 There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
@@ -10031,7 +10040,7 @@ to the block building code that the <a href="interop/./sequencer.html#direct-dep
 follows. The main difference is that the validity of included executing
 messages is verified instead of verifying possible executing messages before
 inclusion.</p>
-<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <h3 id="forced-inclusion-of-cross-chain-messages"><a class="header" href="#forced-inclusion-of-cross-chain-messages">Forced Inclusion of Cross Chain Messages</a></h3>
 <p>The design is particular to not introduce any sort of "forced inclusion" between L2s. This design space introduces
 risky synchrony assumptions and forces the introduction of a message queue to prevent denial of service attacks where
@@ -10071,7 +10080,7 @@ to decrease the latency of this process. This could look like the sequencer sign
 sets of executing messages to nodes of remote chains so that they know exactly what initiating
 messages to look for. An optimization on this would involve working with commitments to this data
 so that less data is sent around via p2p.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
@@ -10093,7 +10102,7 @@ so that less data is sent around via p2p.</p>
 Thus deposits cannot reference each others events intra-block.</p>
 <p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
 The insight is that the fault proof program can be a superset of the state transition function.</p>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="interop-network-upgrade"><a class="header" href="#interop-network-upgrade">Interop Network Upgrade</a></h1>
@@ -10171,7 +10180,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </ul>
 <p>The <code>setL1BlockValuesIsthmus</code> input parameters are identical to <code>setL1BlockValuesEcotone</code> as described in
 <a href="interop/../protocol/ecotone/l1-attributes.html#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a>.</p>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
@@ -10677,7 +10686,7 @@ if this property is not preserved in future versions of the OP Stack Manager.</l
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
