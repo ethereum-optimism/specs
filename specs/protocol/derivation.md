@@ -246,11 +246,6 @@ This design gives use the maximum flexibility in how we aggregate batches into c
 transactions. It notably allows us to maximize data utilization in a batcher transaction: for instance it allows us to
 pack the final (small) frame of one channel with one or more frames from the next channel.
 
-In the future this channel identification feature also allows the [batcher][g-batcher] to employ multiple signers
-(private keys) to submit one or multiple channels in parallel (1).
-
-(1) This helps alleviate issues where, because of transaction nonce values affecting the L2 tx-pool and thus inclusion:
-multiple transactions made by the same signer are stuck waiting on the inclusion of a previous transaction.
 
 Also note that we use a streaming compression scheme, and we do not need to know how many blocks a channel will end up
 containing when we start a channel, or even as we send the first frames in the channel.
@@ -395,6 +390,12 @@ where zlib_compress is the ZLIB algorithm (as specified in [RFC-1950][rfc1950]) 
 The Fjord upgrade introduces an additional [versioned channel encoding
 format](./fjord/derivation.md#brotli-channel-compression) to support alternate compression
 algorithms.
+
+In the future this channel identification feature also allows the [batcher][g-batcher] to employ multiple signers
+(private keys) to submit one or multiple channels in parallel[^1].
+
+[^1]: This helps alleviate issues where, because of transaction nonce values affecting the L2 tx-pool and thus inclusion:
+multiple transactions made by the same signer are stuck waiting on the inclusion of a previous transaction.
 
 When decompressing a channel, we limit the amount of decompressed data to `MAX_RLP_BYTES_PER_CHANNEL` (defined in the
 [Protocol Parameters table](#protocol-parameters)), in order to avoid "zip-bomb" types of attack (where a small
