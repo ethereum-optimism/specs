@@ -246,7 +246,6 @@ This design gives use the maximum flexibility in how we aggregate batches into c
 transactions. It notably allows us to maximize data utilization in a batcher transaction: for instance it allows us to
 pack the final (small) frame of one channel with one or more frames from the next channel.
 
-
 Also note that we use a streaming compression scheme, and we do not need to know how many batches a channel will end up
 containing when we start a channel, or even as we send the first frames in the channel.
 
@@ -392,7 +391,8 @@ format](./fjord/derivation.md#brotli-channel-compression) to support alternate c
 algorithms.
 
 In the future this channel identification feature also allows the [batcher][g-batcher] to employ multiple signers
-(private keys) to submit one or multiple channels in parallel. This may help to alleviate issues where, because of transaction nonce values affecting the L1 tx-pool and thus inclusion:
+(private keys) to submit one or multiple channels in parallel.
+This may help to alleviate issues where, because of transaction nonce values affecting the L1 tx-pool and thus inclusion:
 multiple transactions made by the same signer are stuck waiting on the inclusion of a previous transaction.
 
 When decompressing a channel, we limit the amount of decompressed data to `MAX_RLP_BYTES_PER_CHANNEL` (defined in the
