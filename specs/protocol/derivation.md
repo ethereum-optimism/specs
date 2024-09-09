@@ -244,7 +244,7 @@ into chunks known as [channel frames][g-channel-frame]. A single batcher transac
 
 This design gives use the maximum flexibility in how we aggregate batches into channels, and split channels over batcher
 transactions. It notably allows us to maximize data utilization in a batcher transaction: for instance it allows us to
-pack the final (small) frame of one channel with large frames from the next channel.
+pack the final (small) frame of one channel with one or more frames from the next channel.
 
 In the future this channel identification feature also allows the [batcher][g-batcher] to employ multiple signers
 (private keys) to submit one or multiple channels in parallel (1).
