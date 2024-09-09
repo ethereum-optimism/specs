@@ -33,6 +33,7 @@
     - [Superchain Upgrades](./protocol/superchain-upgrades.md)
   - [System Config](./protocol/system-config.md)
   - [Configurability](./protocol/configurability.md)
+  - [Safe Extensions](./protocol/safe-extensions.md)
   - [Protocol Upgrades]()
     - [Regolith](./protocol/regolith/overview.md)
     - [Canyon](./protocol/canyon/overview.md)
