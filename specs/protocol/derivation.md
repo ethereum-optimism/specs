@@ -247,7 +247,7 @@ transactions. It notably allows us to maximize data utilization in a batcher tra
 pack the final (small) frame of one channel with one or more frames from the next channel.
 
 
-Also note that we use a streaming compression scheme, and we do not need to know how many blocks a channel will end up
+Also note that we use a streaming compression scheme, and we do not need to know how many batches a channel will end up
 containing when we start a channel, or even as we send the first frames in the channel.
 
 And by splitting channels across multiple data transactions, the L2 can have larger block data than the
