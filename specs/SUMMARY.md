@@ -34,6 +34,7 @@
   - [System Config](./protocol/system-config.md)
   - [Configurability](./protocol/configurability.md)
   - [Safe Extensions](./protocol/safe-extensions.md)
+    - [Stage 1 Roles and Requirements](./protocol/stage-1.md)
   - [Protocol Upgrades]()
     - [Regolith](./protocol/regolith/overview.md)
     - [Canyon](./protocol/canyon/overview.md)
