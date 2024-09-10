@@ -256,7 +256,7 @@ but the matching L1-origin information may not be present at the time of activat
   [Governance Proposal](https://gov.optimism.io/t/upgrade-proposal-5-ecotone-network-upgrade/7669).
 - `v7.0.0`: 2024 Jul 10th - Fjord network upgrade (RIP-7212 precompile + FastLZ cost fn + Brotli compression).
   [Governance Proposal](https://gov.optimism.io/t/upgrade-proposal-9-fjord-network-upgrade/8236).
-- `v8.0.0`: 2024 Aug 19th - Granite network upgrade (Limit ecpairing input size + Reduce Channel Timeout).
+- `v8.0.0`: 2024 Sep 11th - Granite network upgrade (Limit ecpairing input size + Reduce Channel Timeout).
   [Governance Proposal](https://gov.optimism.io/t/upgrade-proposal-10-granite-network-upgrade/8733).
 
 ## Post-Bedrock Network upgrades
