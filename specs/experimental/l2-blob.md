@@ -5,6 +5,14 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Enable BLOB Transacion in EL](#enable-blob-transacion-in-el)
+- [Uploading BLOB to Alt-DA](#uploading-blob-to-alt-da)
+- [DataAavaliblityChallenage Contract](#dataaavaliblitychallenage-contract)
+- [BLOB Gas Cost](#blob-gas-cost)
+- [Derivation](#derivation)
+- [Fault Proof](#fault-proof)
+  - [`l2-blob <commitment>`](#l2-blob-commitment)
+  - [`l1-challenge-status <commitment> <blocknumber>`](#l1-challenge-status-commitment-blocknumber)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -27,8 +35,8 @@ The following diagram illustrates the transaction data flow for a hybrid Layer 2
 flowchart
     A[Users] -->|Non-financial Tx Using BLOB| B(Layer 2)
     A[Users] -->|Financial Tx Using Calldata| B(Layer 2)
-    B -->|BLOB| C(Alt-DA)
-    B -->|Calldata| D(L1 On-chain DA)
+    B -->|L2 BLOB| C(Alt-DA)
+    B -->|L2 Calldata| D(L1 On-chain DA)
 ```
 
 ## Enable BLOB Transacion in EL
@@ -59,9 +67,24 @@ function resolve(
 This new resolve function SHOULD use Layer 1 BLOB transaction to upload the BLOB and then use EIP-4844 blobhash() opcode to obtained the `versionedhash` of the BLOB.
 
 ## BLOB Gas Cost
+According to EIP-4844 spec, the BLOBs must be kept for at least [MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS](https://github.com/ethereum/consensus-specs/blob/4de1d156c78b555421b72d6067c73b614ab55584/configs/mainnet.yaml#L148) epochs, which is around 18 days. We can then calcuate the Cap of disk requirement will be `BLOB_SIZE * MAX_BLOB_PER_BLOCK / BLOCK_TIME * MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS * SECONDS_PER_EPOCH`, assume the `MAX_BLOB_PER_BLOCK = 6` and `BLOCK_TIME = 2`, the CAP will be around 618 GB.
+
+To serve the data challenage purpose, we can even lower disk requirement. According to the Alt-DA [spec](https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md#data-availability-challenge-contract), we only need to keep the data avaliable in `challengeWindow + resolveWindow`. Suppose both of them are 3600 seconds (Redstone mainnet [config](https://etherscan.io/address/0x97a2da87d3439b172e6dd027220e01c9cb565b80#readProxyContract)), the disk reqirement will be around 2.8 GB.
+
+Since those disk requirement are affordable for an commodity computer, the cost of stroing those data are costant and miniual comparing to the L1 data uploading cost, we can cover the cost by adjust the L1 attribute `blobBaseFeeScalar` value.
 
 ## Derivation
+The most derivation and re-org logic should be the same as Alt-DA, except that when the op-node download a batch, they need to track the challenage and resolve status for the BLOB hashes included in the batch. If there are some BLOBs being chanllegged and failed to be resolved, the op-node SHOULD throw an `ResetError` to trigger an re-org, and then the op-node will return to an older finilized block to derive the block again, when op-node derive the block include the expired BLOB hash, it will delete the corresponding transaction that contains this hash in the block, and pass the rest of block data into EL.
 
 ## Fault Proof
+The derivation pipeline is integrated with fault proofs by adding additional hint types to the
+preimage oracle in order to query the input data from the DA provider as well as onchain challenge status.
 
-## Safety and Finality
+### `l2-blob <commitment>`
+
+The input data stored on the DA storage for the given `<commitment>`.
+
+### `l1-challenge-status <commitment> <blocknumber>`
+
+The status of the challenge for the given `<commitment>` at the given `<blocknumber>` on the L1
+DataAvailabilityChallenge contract.
