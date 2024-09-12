@@ -25,13 +25,38 @@ The third option, referred to as a “hybrid Layer 2”, combines the best featu
 The following diagram illustrates the transaction data flow for a hybrid Layer 2:
 ```mermaid
 flowchart
-    A[Users] -->|Non-financial BLOB Tx| B(Layer 2)
-    A[Users] -->|Financial Tx| B(Layer 2)
-    B -->|BLOB Tx Data| C(Alt-DA)
-    B -->|Normal Tx Data| D(L1 On-chain DA)
+    A[Users] -->|Non-financial Tx Using BLOB| B(Layer 2)
+    A[Users] -->|Financial Tx Using Calldata| B(Layer 2)
+    B -->|BLOB| C(Alt-DA)
+    B -->|Calldata| D(L1 On-chain DA)
 ```
 
-## Data Uploading
+## Enable BLOB Transacion in EL
+The interface and implematation should keep the same as the corresponding Layer 1 EL so that the application can be migrated seamlessly. Please note that while BLOBs are gossiping in the L1 P2P network, for an enshined BLOB DA support, the BLOBs should be sent to the sequencer directly on the layer2.
+
+## Uploading BLOB to Alt-DA
+The sequencer have the responsbility of uploading the BLOBs to a DA layer. When the CL (op-node) receives payload from EL through engine API, they should open the envelope to see if there are any `BlobsBundle` and upload them to Alt-DA. Only make sure the BLOBs are uploaded successfully, the sequencer can upload the block data to the on-chain DA. As the same as the Alt-DA, the sequecenr may want to response to any data avalibity challenage afterwards.
+
+## DataAavaliblityChallenage Contract
+Any third party including the full nodes which are actively derivating the L1 data may found they can't request the data correpsonding the data hash included in the BLOB transaction, they can initilize a data challendage, the whole workflow should most likely be the same as Alt-DA [here](https://github.com/ethstorage/specs/blob/l2-blob/specs/experimental/alt-da.md#data-availability-challenge-contract).
+
+Note that since the data hash included in the BLOB transaction is [VersionedHash](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4844.md#helpers) instead of Keccak256 hash, we need to use it as the commitment when doing BLOB uploading/downloading and challenaging/resoling. So we need to add an CommitmentType in the DataAvailabilityChallenge contract:
+
+```solidity
+enum CommitmentType {
+    Keccak256,
+    VersionedHash
+}
+```
+And also add a new resolve function in the contract:
+
+```solidity
+function resolve(
+    uint256 challengedBlockNumber,
+    bytes calldata challengedCommitment,
+)
+```
+This new resolve function SHOULD use Layer 1 BLOB transaction to upload the BLOB and then use EIP-4844 blobhash() opcode to obtained the `versionedhash` of the BLOB.
 
 ## BLOB Gas Cost
 
