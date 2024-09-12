@@ -39,16 +39,16 @@ flowchart
     B -->|L2 Calldata| D(L1 On-chain DA)
 ```
 
-## Enable BLOB Transacion in EL
-The interface and implematation should keep the same as the corresponding Layer 1 EL so that the application can be migrated seamlessly. Please note that while BLOBs are gossiping in the L1 P2P network, for an enshined BLOB DA support, the BLOBs should be sent to the sequencer directly on the layer2.
+## Enabling BLOB Transactions in EL
+The interface and implementation should remain consistent with Layer 1 EL to ensure seamless migration of applications. Note that while BLOBs are gossiped within the L1 P2P network, for enshrined BLOB DA support in Layer 2, the BLOBs should be sent directly to the Layer 2 sequencer.
 
 ## Uploading BLOB to Alt-DA
-The sequencer have the responsbility of uploading the BLOBs to a DA layer. When the CL (op-node) receives payload from EL through engine API, they should open the envelope to see if there are any `BlobsBundle` and upload them to Alt-DA. Only make sure the BLOBs are uploaded successfully, the sequencer can upload the block data to the on-chain DA. As the same as the Alt-DA, the sequecenr may want to response to any data avalibity challenage afterwards.
+The sequencer is responsible for uploading BLOBs to a DA layer. When the CL (op-node) receives the payload from EL via the engine API, it should inspect the envelope for any `BlobsBundle` and upload them to Alt-DA. Only after ensuring successful BLOB uploads can the sequencer upload the block data to the on-chain DA. Similarly, the sequencer may need to respond to any data availability challenges afterward.
 
 ## DataAavaliblityChallenage Contract
-Any third party including the full nodes which are actively derivating the L1 data may found they can't request the data correpsonding the data hash included in the BLOB transaction, they can initilize a data challendage, the whole workflow should most likely be the same as Alt-DA [here](https://github.com/ethstorage/specs/blob/l2-blob/specs/experimental/alt-da.md#data-availability-challenge-contract).
+Any third party, including full nodes deriving L1 data, might find they cannot access the data corresponding to the hash included in the BLOB transaction. In this case, they can initiate a data availability challenge. The workflow will largely follow the Alt-DA process outlined [here](https://github.com/ethstorage/specs/blob/l2-blob/specs/experimental/alt-da.md#data-availability-challenge-contract).
 
-Note that since the data hash included in the BLOB transaction is [VersionedHash](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4844.md#helpers) instead of Keccak256 hash, we need to use it as the commitment when doing BLOB uploading/downloading and challenaging/resoling. So we need to add an CommitmentType in the DataAvailabilityChallenge contract:
+Since the data hash in the BLOB transaction is a [VersionedHash](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4844.md#helpers) instead of a Keccak256 hash, we need to use this as the commitment for BLOB uploading/downloading and during challenge resolution. Therefore, we need to add a CommitmentType to the DataAvailabilityChallenge contract:
 
 ```solidity
 enum CommitmentType {
@@ -56,7 +56,7 @@ enum CommitmentType {
     VersionedHash
 }
 ```
-And also add a new resolve function in the contract:
+Additionally, a new resolve function should be added to the contract:
 
 ```solidity
 function resolve(
@@ -64,27 +64,25 @@ function resolve(
     bytes calldata challengedCommitment,
 )
 ```
-This new resolve function SHOULD use Layer 1 BLOB transaction to upload the BLOB and then use EIP-4844 blobhash() opcode to obtained the `versionedhash` of the BLOB.
+This new resolve function should use a Layer 1 BLOB transaction to upload the BLOB, then employ the EIP-4844 blobhash() opcode to obtain the `versionedhash` of the BLOB.
 
 ## BLOB Gas Cost
-According to EIP-4844 spec, the BLOBs must be kept for at least [MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS](https://github.com/ethereum/consensus-specs/blob/4de1d156c78b555421b72d6067c73b614ab55584/configs/mainnet.yaml#L148) epochs, which is around 18 days. We can then calcuate the Cap of disk requirement will be `BLOB_SIZE * MAX_BLOB_PER_BLOCK / BLOCK_TIME * MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS * SECONDS_PER_EPOCH`, assume the `MAX_BLOB_PER_BLOCK = 6` and `BLOCK_TIME = 2`, the CAP will be around 618 GB.
+According to the EIP-4844 specification, BLOBs must be kept for at least [MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS](https://github.com/ethereum/consensus-specs/blob/4de1d156c78b555421b72d6067c73b614ab55584/configs/mainnet.yaml#L148) epochs, which is around 18 days. The storage upper limit can be calculated using the formula: `BLOB_SIZE * MAX_BLOB_PER_BLOCK / BLOCK_TIME * MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS * SECONDS_PER_EPOCH`. Assuming `MAX_BLOB_PER_BLOCK = 6` and `BLOCK_TIME = 2`, the upper limit is approximately 618 GB.
 
-To serve the data challenage purpose, we can even lower disk requirement. According to the Alt-DA [spec](https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md#data-availability-challenge-contract), we only need to keep the data avaliable in `challengeWindow + resolveWindow`. Suppose both of them are 3600 seconds (Redstone mainnet [config](https://etherscan.io/address/0x97a2da87d3439b172e6dd027220e01c9cb565b80#readProxyContract)), the disk reqirement will be around 2.8 GB.
+To serve data challenge purposes, we can reduce disk requirements even further. According to the Alt-DA [specification](https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md#data-availability-challenge-contract), data only needs to be available for `challengeWindow + resolveWindow`. If both are 3600 seconds (as in the Redstone mainnet [configuration](https://etherscan.io/address/0x97a2da87d3439b172e6dd027220e01c9cb565b80#readProxyContract)), the disk requirement will be around 2.8 GB.
 
-Since those disk requirement are affordable for an commodity computer, the cost of stroing those data are costant and miniual comparing to the L1 data uploading cost, we can cover the cost by adjust the L1 attribute `blobBaseFeeScalar` value.
+These storage requirements are manageable for a commodity computer, and the cost of storing the data is minimal compared to L1 data upload costs. This cost can be covered by adjusting the L1 `blobBaseFeeScalar` value.
 
 ## Derivation
-The most derivation and re-org logic should be the same as Alt-DA, except that when the op-node download a batch, they need to track the challenage and resolve status for the BLOB hashes included in the batch. If there are some BLOBs being chanllegged and failed to be resolved, the op-node SHOULD throw an `ResetError` to trigger an re-org, and then the op-node will return to an older finilized block to derive the block again, when op-node derive the block include the expired BLOB hash, it will delete the corresponding transaction that contains this hash in the block, and pass the rest of block data into EL.
+Most of the derivation and reorg logic remains consistent with Alt-DA. However, when the op-node downloads a batch, it needs to track the challenge and resolution status for the BLOB hashes included in the batch. If some BLOBs are challenged and fail to be resolved, the op-node should trigger a `ResetError` to initiate a reorg. The op-node will revert to an older finalized block and rederive the chain. When the op-node encounters a block containing the expired BLOB hash, it will remove the corresponding transaction and pass the remaining block data to EL.
 
 ## Fault Proof
-The derivation pipeline is integrated with fault proofs by adding additional hint types to the
-preimage oracle in order to query the input data from the DA provider as well as onchain challenge status.
+The derivation pipeline integrates with fault proofs by adding additional hint types to the preimage oracle to query input data from the DA provider and the on-chain challenge status.
 
 ### `l2-blob <commitment>`
 
-The input data stored on the DA storage for the given `<commitment>`.
+Retrieves BLOB data stored on the DA provider for the given `<commitment>`.
 
 ### `l1-challenge-status <commitment> <blocknumber>`
 
-The status of the challenge for the given `<commitment>` at the given `<blocknumber>` on the L1
-DataAvailabilityChallenge contract.
+Retrieves the challenge status for the given `<commitment>` at the specified `<blocknumber>` on the L1 DataAvailabilityChallenge contract.
