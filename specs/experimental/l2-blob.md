@@ -20,8 +20,9 @@ Furthermore, this spec proposes adding an option to use [Alt-DA]((https://github
 2.	Both the calldata and BLOBs use Alt-DA.
 3.	Calldata uses Layer 1 on-chain DA, while BLOBs use Alt-DA.
 
-The third option, referred to as a “hybrid Layer 2,” combines the best features of different DA solutions. This allows users and applications to choose between on-chain and off-chain data availability for different types of transactions within the same network. Specifically, users can upload and store non-financial data at a very low cost using off-chain DA, while still conducting critical financial transactions using on-chain DA. In some cases, these two types of transactions may even occur within the same application. For example, users might use a platform like Twitter primarily for social networking, while also sending payments to other users.
+The third option, referred to as a “hybrid Layer 2”, combines the best features of different DA solutions. This allows users and applications to choose between on-chain and off-chain data availability for different types of transactions within the same network. Specifically, users can upload and store non-financial data at a very low cost using off-chain DA, while still conducting critical financial transactions using on-chain DA. In some cases, these two types of transactions may even occur within the same application. For example, users might use a platform like Twitter primarily for social networking, while also sending payments to other users.
 
+The following diagram illustrates the transaction data flow for a hybrid Layer 2:
 ```mermaid
 flowchart
     A[Users] -->|Non-financial BLOB Tx| B(Layer 2)
@@ -29,3 +30,13 @@ flowchart
     B -->|BLOB Tx Data| C(Alt-DA)
     B -->|Normal Tx Data| D(L1 On-chain DA)
 ```
+
+## Data Uploading
+
+## BLOB Gas Cost
+
+## Derivation
+
+## Fault Proof
+
+## Safety and Finality
