@@ -74,7 +74,11 @@ To serve data challenge purposes, we can reduce disk requirements even further. 
 These storage requirements are manageable for a commodity computer, and the cost of storing the data is minimal compared to L1 data upload costs. This cost can be covered by adjusting the L1 `blobBaseFeeScalar` value.
 
 ## Derivation
-Most of the derivation and reorg logic remains consistent with Alt-DA. However, when the op-node downloads a batch, it needs to track the challenge and resolution status for the BLOB hashes included in the batch. If some BLOBs are challenged and fail to be resolved, the op-node should trigger a `ResetError` to initiate a reorg. The op-node will revert to an older finalized block and rederive the chain. When the op-node encounters a block containing the expired BLOB hash, it will remove the corresponding transaction and pass the remaining block data to EL.
+Most of the derivation and reorg logic remains consistent with Alt-DA. However, instead of invalidating the entire batch, only the transaction containing the BLOB that is challenged and fails to be resolved will be deleted. The basic workflow is as follows:
+
+1. When the op-node derives a batch from the `BatchQueue`, it collects all the BLOB commitments included in the batch.
+2. It tracks the challenge and resolution status for the collected BLOB hashes. If some BLOBs are challenged and fail to be resolved, the op-node should trigger a `ResetError` to initiate a reorg.
+3. If a reorg is triggered, the op-node will revert to an older block and rederive the chain. Upon encountering a block containing the expired BLOB hash, it will remove the corresponding transaction and pass the remaining block data to the EL.
 
 ## Fault Proof
 The derivation pipeline integrates with fault proofs by adding additional hint types to the preimage oracle to query input data from the DA provider and the on-chain challenge status.
