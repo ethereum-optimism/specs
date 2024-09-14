@@ -40,7 +40,7 @@ flowchart
 ```
 
 ## Enabling BLOB Transactions in EL
-The interface and implementation should remain consistent with Layer 1 EL to ensure seamless migration of applications. Note that while BLOBs are gossiped within the L1 P2P network, for enshrined BLOB DA support in L2, the BLOBs should be sent directly to the L2 sequencer.
+The interface and implementation should remain consistent with L1 EL to ensure seamless migration of applications. Note that while BLOBs are gossiped within the L1 P2P network, for enshrined BLOB DA support in L2, the BLOBs should be sent directly to the L2 sequencer.
 
 ## Uploading BLOB to Alt-DA
 The sequencer is responsible for uploading BLOBs to a DA layer. When the CL (op-node) receives the payload from EL via the engine API, it should inspect the envelope for any `BlobsBundle` and upload them to Alt-DA. Only after ensuring successful BLOB uploads can the sequencer upload the block data to the on-chain DA. Similarly, the sequencer may need to respond to any data availability challenges afterward.
