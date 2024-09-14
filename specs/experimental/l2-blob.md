@@ -45,20 +45,27 @@ The interface and implementation should remain consistent with L1 EL to ensure s
 ## Uploading BLOB to Alt-DA
 The sequencer is responsible for uploading BLOBs to a DA layer. When the CL (op-node) receives the payload from EL via the engine API, it should inspect the envelope for any `BlobsBundle` and upload them to Alt-DA. Only after ensuring successful BLOB uploads can the sequencer upload the block data to the on-chain DA. Similarly, the sequencer may need to respond to any data availability challenges afterward.
 
-## DataAavaliblityChallenage Contract
+## Data Availability Challenge
 Any third party, including full nodes deriving L1 data, might find they cannot access the data corresponding to the hash included in the BLOB transaction. In this case, they can initiate a data availability challenge. The workflow will largely follow the Alt-DA process outlined [here](https://github.com/ethstorage/specs/blob/l2-blob/specs/experimental/alt-da.md#data-availability-challenge-contract).
 
-Since the data hash in the BLOB transaction is a [VersionedHash](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4844.md#helpers) instead of a Keccak256 hash, we need to use this as the commitment for BLOB uploading/downloading and during challenge resolution. Therefore, we need to add a CommitmentType to the DataAvailabilityChallenge contract:
+We will reuse the [DataAvailabilityChallenge](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L1/DataAvailabilityChallenge.sol) contract with minimal modification. First, since the data hash in the BLOB transaction is a [VersionedHash](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4844.md#helpers) instead of a Keccak256 hash, we need to use this as the commitment for BLOB uploading/downloading and during challenge resolution. Therefore, we need to add a CommitmentType to the DataAvailabilityChallenge contract:
 
 ```solidity
 enum CommitmentType {
     Keccak256,
+    Generic,
     VersionedHash
 }
 ```
-Additionally, a new resolve function should be added to the contract:
+Additionally, a new challenge and resolve function should be added to the contract:
 
 ```solidity
+function challengeL2BLOB(
+    uint256 challengedL1BlockNumber, 
+    uint256 challengedL2BlockNumber, 
+    bytes calldata challengedCommitment
+) external payable
+
 function resolve(
     uint256 challengedBlockNumber,
     bytes calldata challengedCommitment,
