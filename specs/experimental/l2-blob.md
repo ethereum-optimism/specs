@@ -28,7 +28,7 @@ Furthermore, this spec proposes adding an option to use [Alt-DA]((https://github
 2.	Both the calldata and BLOBs in L2 use Alt-DA.
 3.	L2 Calldata uses L1 on-chain DA, while L2 BLOBs use Alt-DA.
 
-The third option, referred to as a “hybrid DA L2”, combines the best features of different DA solutions. This allows users and applications to choose between on-chain and alt DA for different types of transactions within the same network. Specifically, users can upload and store non-financial data at a very low cost using Alt-DA, while still conducting critical financial transactions using on-chain DA. In some cases, these two types of transactions may even occur within the same application. For example, users might use a platform like Twitter primarily for social networking, while also sending payments to other users.
+The third option, referred to as a “hybrid DA Layer 2”, combines the best features of different DA solutions. This allows users and applications to choose between on-chain DA and alt-DA for different types of transactions within the same network. Specifically, users can upload and store non-financial data at a very low cost using Alt-DA, while still conducting critical financial transactions using on-chain DA. In some cases, these two types of transactions may even occur within the same application. For example, users might use a platform like Twitter primarily for social networking, while also sending payments to other users.
 
 The following diagram illustrates the transaction data flow for a hybrid L2:
 ```mermaid
