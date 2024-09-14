@@ -18,9 +18,9 @@
 
 ## Overview
 
-The Ethereum Cancun upgrade has significantly reduced Layer 2 data uploading costs by introducing BLOB transaction to Layer 1. This innovation has also enabled a variety of applications based on the BLOBs due to their low cost, such as [blob.fm](https://blob.fm/), [Ethstorage](https://ethstorage.io), and [Ethscriptions](https://ethscriptions.com/). However, while the data upload costs are now lower, the execution costs remain high compared to Layer 2. This presents challenges for state proposals on Layer 2 and for non-financial applications that rely on BLOBs, which still face relatively high costs.
+The Ethereum Cancun upgrade has significantly reduced L2 data uploading costs by introducing BLOB transaction to Layer 1. This innovation has also enabled a variety of applications based on the BLOBs due to their low cost, such as [blob.fm](https://blob.fm/), [Ethstorage](https://ethstorage.io), and [Ethscriptions](https://ethscriptions.com/). However, while the data upload costs are now lower, the execution costs remain high compared to L2. This presents challenges for state proposals on L2 and for non-financial applications that rely on BLOBs, which still face relatively high costs.
 
-The goal of this specification is to support L2 BLOB transaction in the OP Stack. This would allow Layer 3 solutions, which settle on Layer 2, to have an enshrined 4844-compatiable DA layer that they can use directly, without needing to integrate third-party DA providers or deal with the security risks associated with DA bridges. Additionally, the applications mentioned above could migrate to Layer 2 with minimal costs.
+The goal of this specification is to support L2 BLOB transaction in the OP Stack. This would allow L3 solutions, which settle on L2, to have an enshrined 4844-compatiable DA layer that they can use directly, without needing to integrate third-party DA providers or deal with the security risks associated with DA bridges. Additionally, the applications mentioned above could migrate to L2 with minimal costs.
 
 Furthermore, this spec proposes adding an option to use [Alt-DA]((https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md)) to support L2 BLOB transactions, while still allowing L1 DA (or on-chain DA) for calldata. This would result in three possible configurations for a L2:
 
@@ -28,19 +28,19 @@ Furthermore, this spec proposes adding an option to use [Alt-DA]((https://github
 2.	Both the calldata and BLOBs in L2 use Alt-DA.
 3.	L2 Calldata uses L1 on-chain DA, while L2 BLOBs use Alt-DA.
 
-The third option, referred to as a “hybrid DA Layer 2”, combines the best features of different DA solutions. This allows users and applications to choose between on-chain and alt DA for different types of transactions within the same network. Specifically, users can upload and store non-financial data at a very low cost using Alt-DA, while still conducting critical financial transactions using on-chain DA. In some cases, these two types of transactions may even occur within the same application. For example, users might use a platform like Twitter primarily for social networking, while also sending payments to other users.
+The third option, referred to as a “hybrid DA L2”, combines the best features of different DA solutions. This allows users and applications to choose between on-chain and alt DA for different types of transactions within the same network. Specifically, users can upload and store non-financial data at a very low cost using Alt-DA, while still conducting critical financial transactions using on-chain DA. In some cases, these two types of transactions may even occur within the same application. For example, users might use a platform like Twitter primarily for social networking, while also sending payments to other users.
 
-The following diagram illustrates the transaction data flow for a hybrid Layer 2:
+The following diagram illustrates the transaction data flow for a hybrid L2:
 ```mermaid
 flowchart
-    A[Users] -->|Non-financial Tx Using BLOB| B(Layer 2)
-    A[Users] -->|Financial Tx Using Calldata| B(Layer 2)
+    A[Users] -->|Non-financial Tx Using BLOB| B(L2)
+    A[Users] -->|Financial Tx Using Calldata| B(L2)
     B -->|L2 BLOB| C(Alt-DA)
     B -->|L2 Calldata| D(L1 On-chain DA)
 ```
 
 ## Enabling BLOB Transactions in EL
-The interface and implementation should remain consistent with Layer 1 EL to ensure seamless migration of applications. Note that while BLOBs are gossiped within the L1 P2P network, for enshrined BLOB DA support in Layer 2, the BLOBs should be sent directly to the Layer 2 sequencer.
+The interface and implementation should remain consistent with Layer 1 EL to ensure seamless migration of applications. Note that while BLOBs are gossiped within the L1 P2P network, for enshrined BLOB DA support in L2, the BLOBs should be sent directly to the L2 sequencer.
 
 ## Uploading BLOB to Alt-DA
 The sequencer is responsible for uploading BLOBs to a DA layer. When the CL (op-node) receives the payload from EL via the engine API, it should inspect the envelope for any `BlobsBundle` and upload them to Alt-DA. Only after ensuring successful BLOB uploads can the sequencer upload the block data to the on-chain DA. Similarly, the sequencer may need to respond to any data availability challenges afterward.
