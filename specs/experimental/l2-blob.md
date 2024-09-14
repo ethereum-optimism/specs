@@ -22,7 +22,7 @@ The Ethereum Cancun upgrade has significantly reduced L2 data uploading costs by
 
 The goal of this specification is to support L2 BLOB transaction in the OP Stack. This would allow L3 solutions, which settle on L2, to have an enshrined 4844-compatiable DA layer that they can use directly, without needing to integrate third-party DA providers or deal with the security risks associated with DA bridges. Additionally, the applications mentioned above could migrate to L2 with minimal costs.
 
-Furthermore, this spec proposes adding an option to use [Alt-DA]((https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md)) to support L2 BLOB transactions, while still allowing L1 DA (or on-chain DA) for calldata. This would result in three possible configurations for a L2:
+Furthermore, this spec proposes adding an option to use [Alt-DA]((https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md)) to uploading L2 BLOB, while still allowing L1 DA (or on-chain DA) for L2 calldata. This would result in three possible configurations for a L2:
 
 1.	Both the calldata and BLOBs in L2 use on-chain DA.
 2.	Both the calldata and BLOBs in L2 use Alt-DA.
