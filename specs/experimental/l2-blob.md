@@ -66,8 +66,9 @@ function challengeL2BLOB(
     bytes calldata challengedCommitment
 ) external payable
 
-function resolve(
-    uint256 challengedBlockNumber,
+function resolveL2BLOB(
+    uint256 challengedL1BlockNumber, 
+    uint256 challengedL2BlockNumber, 
     bytes calldata challengedCommitment,
 )
 ```
