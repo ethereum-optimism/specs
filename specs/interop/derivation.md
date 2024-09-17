@@ -42,7 +42,7 @@ A new `L1Block` predeploy function is introduced to set the L1 attributes: `setL
 
 The block-attributes contents are unchanged from the previous fork.
 See [Ecotone L1 attributes specifications](../protocol/ecotone/l1-attributes.md),
-and tentative [Holocene specifications](../protocol/holocene).
+and [Holocene specifications](../protocol/holocene/overview.md).
 
 In addition to the setting L1 block attributes, the `setL1BlockValuesIsthmus` function
 now sets `isDeposit = true` on the `L1Block` predeploy contract.
