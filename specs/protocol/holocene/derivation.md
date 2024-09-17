@@ -1,45 +1,163 @@
 # Holocene Chain Derivation Changes
 
-# Stricter Derivation Rules
+The Holocene hardfork introduces several changes to block derivation rules that render the
+derivation pipeline mostly stricter and simpler, improve worst-case scenarios for Fault Proofs and
+Interop. The changes are:
 
-The Holocene hardfork introduces several changes to batch derivation rules that render the
-derivation pipeline stricter and simpler.
-The changes are:
-
-- _Steady Batch Derivation_ derives invalid singluar batches immediately as deposit-only
-blocks.
-- _Partial Span Batch Validity_ determines the validity of singular batches within a span batch
-individually, only invalidating the remaining span batch upon the first invalid batch.
 - _Strict Batch Ordering_ required batches within and across channels to be strictly ordered.
+- _Partial Span Batch Validity_ determines the validity of singular batches from a span batch
+individually, only invalidating the remaining span batch upon the first invalid singular batch.
+- _Fast Channel Invalidation_, similarly to Partial Span Batch Validity applied to the channel
+layer, forward-invalidates a channel upon finding an invalid batch.
+- _Steady Block Derivation_ derives invalid payload attributes immediately as deposit-only
+blocks.
+
+The combined effect of these changes is that the impact of an invalid batch is contained to the
+block number at hand, instead of propagating forwards or backwards in the safe chain, while also
+containing invalid payloads at the engine stage to the engine, not propagating backwards in the
+derivation pipeline.
 
 The channel and frame format are not changed, see also [A note on the current channel
 format](#a-note-on-the-current-channel-format) for a discussion about a possible future
-simplification of the channel and frame format under the stricter derivation rules.
+simplification of the channel and frame format under the changed derivation rules.
 
-## Steady Batch Derivation
+Holocene derivation comprises the following changes to the derivation pipeline to achieve the above.
 
-Steady Batch Derivation changes the derivation rules for invalid batches, and instead of giving them
-a second chance for a worst-case full sequencing window, they are immediately derived as
-deposit-only blocks. There are two stages at which this new rule takes effect, in the batch queue
-and in the engine queue.
+## Frame Queue
 
-### Batch Queue
+The frame queue retains its function and queues all frames of the last batcher transaction(s) that
+weren't assembled into a channel yet. Holocene still allows multiple frames per batcher transaction,
+possibly from different channels. As before, this allows for optionally filling up the remaining
+space of a batcher transaction with a starting frame of the next channel.
 
-With Holocene, whereever a singular batch would be dropped before, it is now immediately replaced
-by a deposit-only batch.
+However, Strict Batch Ordering leads to the following additional checks and rules to the frame
+queue:
+- If a _non-first frame_ (i.e., a frame with index >0) decoded from a batcher transaction is _out of
+order_, it is *immediately dropped*, where the frame is called _out of order_ if
+  - the frame queue is empty, or
+  - the non-first frame has a different channel ID than the previous frame in the frame queue, or
+  - the previous frame already closed the channel with the same ID.
+- If a _first frame_ is decoded while the previous frame isn't a _last frame_ (i.e., `is_last` is
+`false`), all previous frames for the same channel are dropped and this new first frame remains in
+the queue.
 
-TODO: details
+These rules guarantee that the frame queue always holds frames whose indices are ordered,
+contiguous and include the first frame, per channel. Plus, a first frame of a channel is either the
+first frame in the queue, or is preceded by a closing frame of a previous channel.
 
-### Engine Queue
+Note that these rules are in contrast to pre-Holocene rules, where out of order frames were
+buffered. Pre-Holocene, frame validity checks were only done at the Channel Bank stage. Performing
+these checks already at the Frame Queue stage leads to faster discarding of invalid frames, keeping
+the memory consumption of any implementation leaner.
 
-Holocene changes the way in which the Engine Queue responds to payload attributes errors: On a
-payload processing error, the payload is immediately replaced by the respecive empty deposit-only
-attributes for the same block number and payload processing is reattempted with these new
-attributes. As before, a failure to process deposit-only attributes is a critical error.
+## Channel Bank
 
-This new rule applies to both, processing of attributes to advance the safe or unsafe chain.
-This is in contract to just dropping the payload pre-Holocene and waiting for possible future valid
-payload attributes.
+Because channel frames have to arrive in order, the Channel Bank becomes much simpler and only
+holds at most a single channel at a time.
+
+### Pruning
+
+Pruning is vastly simplified as there's at most only one open channel in the channel bank. So the
+channel bank's queue becomes effectively a staging slot for a single channel, the _staging channel_.
+The `MAX_CHANNEL_BANK_SIZE` parameter becomes ineffective and the size of a channel is bounded, as
+before, during decompression to be at most of size `MAX_RLP_BYTES_PER_CHANNEL`.
+
+### Timeout
+
+The timeout is applied as before, just only to the single staging channel.
+
+### Reading & Frame Loading
+
+The frame queue is guaranteed to hold ordered and contiguous frames, per channel. So reading and
+frame loading becomes simpler in the channel bank:
+- A first frame for a new channel starts a new channel as the staging channel.
+  - If there already is an open, non-completed staging channel, it is dropped and replaced by this
+  new channel. This is consistent with how the frame queue drops all frames of an non-closed channel
+  upon the arrival of a first frame for a new channel.
+- If the current channel is timed-out, but not yet pruned, and the incoming frame would be the next
+correct frame for this channel, the frame and channel are dropped, including all future frames for
+the channel that might still be in the frame queue. Note that the equivalent rule was already
+present pre-Holocene.
+
+## Span Batches
+
+Partial Span Batch Validity changes the atomic validity model of [Span Batches](../delta/span-batches.md).
+In Holocene, a span batch is treated as an optional stage in the derivation pipeline that sits
+before the batch queue, so that the batch queue pulls singular batches from this previous Span Batch
+stage. When encountering an invalid singular batch, it is dropped, as is the remaining span batch
+for consistency reasons. We call this _forwards-invalidation_. However, we don't
+_backwards-invalidate_ previous valid batches that came from the same span batch, as pre-Holocene.
+
+An implementation may choose to put the current span batch, from which singular batches are derived
+from, into a separate stage, or process it within the batch queue under the new rules.
+
+When a batch derived from the current staging channel is a singular batch, it is directly forwarded
+to the batch queue. Otherwise, it is set as the current span batch in the span batch stage. The
+following span batch validity checks are done, before singular batches are derived from it.
+Definitions are borrowed from the [original Span Batch specs](../delta/span-batches.md).
+- If the span batch _L1 origin check_ is not part of the canonical L1 chain, the span batch is
+invalid.
+- A failed parent check invalidates the span batch.
+- If `span_start.timestamp > next_timestamp`, the span batch is invalid, because we disallow gaps
+due to the new strict batch ordering rules.
+- If `span_end.timestamp < next_timestamp`, the span batch is invalid, as it doesn't contain any new
+batches (this would also happen if applying timestamp checks to each derived singular batch
+individually).
+- Note that we still allow span batches to overlap with the safe chain (`span_start.timestamp < next_timestamp`).
+
+If any of the above checks invalidate the span batch, it is dropped and the remaining channel from
+which the span batch was derived, is also immediately dropped (see also
+[Fast Channel Invalidation](#fast-channel-invalidation)).
+
+## Batch Queue
+
+The batch queue is also simplified in that batches are required to arrive strictly ordered, and any
+batches that violate the ordering requirements are immediately dropped, instead of buffered.
+
+So the following changes are made to the [Bedrock Batch Queue](../derivation.md#batch-queue):
+- The reordering step is removed, so that later checks will drop batches that are not sequential.
+- The `future` batch validity status is removed, and batches that were determined to be in the
+future are now directly `drop`-ped. This effectively disallows gaps, instead of buffering future batches.
+- The other rules stay the same, including empty batch generation when the sequencing window
+elapses.
+
+If a batch is found to be invalid and is dropped, the remaining span batch it originated from, if
+applicable, is also discarded.
+
+### Fast Channel Invalidation
+
+Furthermore, upon finding an invalid batch, the remaining channel it got derived from is also discarded.
+
+TODO: I believe that the batch queue, similarly to the channel bank, now actually only holds at most
+one single staging batch, because we eagerly derive payloads from any valid singular batch. And the
+span batch stage before it would similarly only hold at most one staging span batch.
+
+## Engine Queue
+
+If the engine returns an `INVALID` status for a regularly derived payload, the payload is replaced
+by a payload with the same fields, except for the `transaction_list`, which is replaced
+- by the deposit transactions included in the L1 block, if the payloads are for the first block of
+the current sequencing epoch,
+- by an empty list otherwise.
+
+As before, a failure to then process the deposit-only attributes is a critical error.
+
+If an invalid payload is replaced by a deposit-only payload, for consistency reasons, the remaining
+span batch, if applicable, and channel it originated from are dropped as well.
+
+## Activation
+
+The new batch rules activate when the _L1 inclusion block timestamp_ is greater or equal to the
+Holocene activation timestamp. Note that this is in contrast to how span batches activated, namely
+via the span batch L1 origin timestamp.
+
+TODO: state reset at activation.
+
+## Sync Start
+
+TODO: details on sync start simplifications.
+
+# Rationale
 
 ## Partial Span Batch Validity
 
@@ -66,85 +184,33 @@ ordered. Note that this is already guaranteed for singular batcher derived from 
 The strict ordering rules are implemented in the derivation pipeline by applying the following
 changes. 
 
-### Frame Queue
+## Steady Block Derivation
 
-The frame queue retains its function and holds all frames of the last batcher transaction. Holocene
-still allows multiple frames per batcher transaction. As before, this allows for optionally filling
-up remaining space of a batcher transactions with a starting frame of the next channel.
+Steady Block Derivation changes the derivation rules for invalid payload attributes, replacing an
+invalid payload by a deposit-only/empty payload. Crucially, this means that an invalid payload
+doesn't propagate backwards in the derivation pipeline.
 
-### Channel Bank
+Invalid batches are still dropped, as before, and given another chance to be replaced by a batch in
+a later channel for the same block number.
 
-The Channel Bank becomes much simpler and only builds up a single channel.
-Channel frames have to arrive in order, and only one channel can be open at a time.
-
-#### Pruning
-
-Pruning is vastly simplified as there's at most only one open channel in the channel bank. So the
-channel bank's queue becomes effectively a staging slot for a single channel, the _staging channel_.
-The `MAX_CHANNEL_BANK_SIZE` parameter becomes ineffective and the size of a channel is bounded, as
-before, during decompression to be at most of size `MAX_RLP_BYTES_PER_CHANNEL`.
-
-#### Timeout
-
-The timeout is applied as before, just only to the single staging channel.
-
-#### Reading & Frame Loading
-
-Since the channel bank now only holds a single staging channel, and frames have to arrive in
-order, frames are read until the channel is complete, and then the complete channel can be pulled
-form the channel bank.
-
-The following rules are applied to incoming frames:
-- A first frame for a new channel starts a new channel as the staging channel.
-  - If there already is an open staging channel, it is dropped and replaced by this new channel.
-- An out of order frame is immediately dropped.
-  - If it belongs to the currently open channel, that channel is also dropped as the staging channel.
-  - This rule also covers dropping duplicate frames, as before Holocene.
-
-Otherwise, the pre-Holocene rules are applied:
-- If the current channel is timed-out, but not yet pruned, and the incoming frame would be the next
-  correct frame for this channel, it is dropped.
-- If a channel got closed by a _last_ frame, new frames for that channel are dropped.
-
-### Batch Queue
-
-The batch queue is also simplified in that batches are required to arrive strictly ordered, and gaps
-are immediately derived as empty deposit-only blocks.
-
-TODO: details
-
-### Sync Start
-
-TODO: details on sync start simplifications.
-
-## Activation
-
-The new batch rules activate when the _L1 inclusion block timestamp_ is greater or equal to the
-Holocene activation timestamp. Note that this is in contrast to how span batches activated, namely
-via the span batch L1 origin timestamp.
-
-## Rationale
-
-### Steady Batch Derivation
-
-Steady Batch Derivation ensures a more timely progression of the derivation pipeline. Invalid
+Steady Block Derivation ensures a more timely progression of the derivation pipeline. Invalid
 batches are not substituted by possible future batch replacements any more, but instead are directly
 derived as deposit-only blocks. Prior to this change, in a worst case scenario, an invalid batch
 could be replaced by a valid batch for a full sequencing window, and batches after the gap would
 need to be buffered for that period.
 
-Steady Batch Derivation has benefits for Fault Proofs and Interop, because it guarantees that each
+Steady Block Derivation has benefits for Fault Proofs and Interop, because it guarantees that each
 block is final when derived once from a batch, which simplifies the reasoning about block
 progression and avoids larger derivation pipeline resets.
 
-### Strict Batch Ordering
+## Strict Batch Ordering
 
-Combining Steady Batch Derivationwith Strict Batch Ordering yields even stronger guarantees of
+Combining Steady Block Derivation with Strict Batch Ordering yields even stronger guarantees of
 derivation progress. This way, not only any (even invalid) batches finalize the decision about that
 block height, but any batch guarantees progress for _at least_ the next block height. A consequence
 of the strict ordering rules guarantee that gaps are immediately derived as deposit-only blocks.
 
-### Partial Span Batch Validity
+## Partial Span Batch Validity
 
 Finally, Partial Span Batch Validity guarantees that a valid singular batch derived from a span batch can
 immediately be processed as valid, instead of being in an undecided state until the full span batch is
@@ -153,7 +219,16 @@ guarantees for Fault Proofs because the vailidty of a block doesn't depend on th
 of any future blocks any more. Note that before Holocene, to verify the first block of a span batch
 required validating the full span batch.
 
-### Less Defensive Protocol
+## Fast Channel Invalidation
+
+The new Fast Channel Invalidation rule is a consistency implication of the Strict Ordering Rules.
+Because batches inside channels must be ordered and contiguous, assuming that all batches inside a
+channel are self-consistent (i.e., parent L2 hashes point to the block resulting from the previous
+batch), an invalid batch also forward-invalidates all remaining batches of the same channel.
+
+Similarly to Partial Span Batch Validity, the 
+
+## Less Defensive Protocol
 
 The stricter derivation rules lead to a less defensive protocol. The old protocol rules
 allowed for second chances for invalid batches and submitting frames and channels out of order.
