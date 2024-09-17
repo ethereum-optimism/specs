@@ -47,14 +47,14 @@ The OP Stack Manager is deployed as part of a wider deployment system. The diagr
 flowchart TB
 
    %% Input and Output blocks for DeploySuperchain
-   subgraph DeploySuperchainInput[Deploy Superchain Input]
-      POA[Proxy Admin Owner Safe]
+   subgraph DeploySuperchainInput[DeploySuperchainInput]
+      POA[ProxyAdminOwnerSafe]
       Paused[Paused]
-      RequiredProtocolVersion[Required Protocol Version]
-      RecommendedProtocolVersion[Recommended Protocol Version]
+      RequiredProtocolVersion[RequiredProtocolVersion]
+      RecommendedProtocolVersion[RecommendedProtocolVersion]
       subgraph Roles
-         ProxyAdminOwner[Proxy Admin Owner]
-         ProtocolVersionsOwner[Protocol Versions Owner]
+         ProxyAdminOwner[ProxyAdminOwner]
+         ProtocolVersionsOwner[ProtocolVersionsOwner]
          Guardian[Guardian]
       end
    end
@@ -63,25 +63,25 @@ flowchart TB
       DeploySuperchainTextNode["Deploys core contracts for Superchain abstraction"]
    end
 
-   subgraph DeploySuperchainOutput[Deploy Superchain Output]
-      SuperchainConfigProxy[Superchain Config Proxy]
-      SuperchainConfig[Superchain Config Implementation]
-      ProtocolVersionsProxy[Protocol Versions Proxy]
-      ProtocolVersions[Protocol Versions Implementation]
-      ProxyAdmin[Proxy Admin]
+   subgraph DeploySuperchainOutput[DeploySuperchainOutput]
+      SuperchainConfigProxy[SuperchainConfigProxy]
+      SuperchainConfig[SuperchainConfig - Impl]
+      ProtocolVersionsProxy[ProtocolVersionsProxy]
+      ProtocolVersions[ProtocolVersions - Impl]
+      ProxyAdmin[ProxyAdmin]
    end
 
    %% Input and Output blocks for DeployImplementations
-   subgraph DeployImplementationsInput[Deploy Implementations Input]
+   subgraph DeployImplementationsInput[DeployImplementationsInput]
       Salt[Salt]
-      WithdrawalDelaySeconds[Withdrawal Delay Seconds]
-      MinProposalSizeBytes[Minimum Proposal Size - Bytes]
-      ChallengePeriodSeconds[Challenge Period Seconds]
-      ProofMaturityDelaySeconds[Proof Maturity Delay Seconds]
-      DisputeGameFinalityDelaySeconds[Dispute Game Finality Delay Seconds]
+      WithdrawalDelaySeconds[WithdrawalDelaySeconds]
+      MinProposalSizeBytes[MinimumProposalSizeBytes]
+      ChallengePeriodSeconds[ChallengePeriodSeconds]
+      ProofMaturityDelaySeconds[ProofMaturityDelaySeconds]
+      DisputeGameFinalityDelaySeconds[DisputeGameFinalityDelaySeconds]
       Release[Release]
-      SuperchainConfigProxyDII[Superchain Config Proxy]
-      ProtocolVersionsProxyDII[Protocol Versions Proxy]
+      SuperchainConfigProxyDII[SuperchainConfigProxy]
+      ProtocolVersionsProxyDII[ProtocolVersionsProxy]
    end
 
    subgraph DeployImplementations[DeployImplementations.s.sol]
@@ -90,27 +90,27 @@ flowchart TB
       DeployImplementationsOPStackManagerDeployTextNode["Deploys and initializes OPStackManager (proxied)"]
    end
 
-   subgraph DeployImplementationsOutput[Deploy Implementations Output]
-      L1CrossDomainMessenger[L1 Cross-Domain Messenger]
-      OptimismPortal[Optimism Portal]
-      SystemConfig[System Config]
-      OptimismMintableERC20Factory[Mintable ERC20 Factory]
-      L1ERC721Bridge[L1 ERC721 Bridge]
-      DelayedWETH[Delayed WETH]
-      L1StandardBridge[L1 Standard Bridge]
-      DisputeGameFactory[Dispute Game Factory]
-      OpStackManagerProxy[OpStackManager Proxy]
-      PreImageOracle[Pre-Image Oracle - Singleton]
-      MIPS[MIPS Singleton]
+   subgraph DeployImplementationsOutput[DeployImplementationsOutput]
+      L1CrossDomainMessenger[L1CrossDomainMessenger]
+      OptimismPortal[OptimismPortal]
+      SystemConfig[SystemConfig]
+      OptimismMintableERC20Factory[MintableERC20Factory]
+      L1ERC721Bridge[L1ERC721Bridge]
+      DelayedWETH[DelayedWETH]
+      L1StandardBridge[L1StandardBridge]
+      DisputeGameFactory[DisputeGameFactory]
+      OpStackManagerProxy[OpStackManagerProxy]
+      PreImageOracle[PreImageOracle - Singleton]
+      MIPS[MIPS - Singleton]
    end
 
    %% Blueprints subgraph
    subgraph Blueprints[Blueprints]
-      AddressManager[Address Manager]
+      AddressManager[AddressManager]
       Proxy[Proxy]
-      ProxyAdmin[Proxy Admin]
-      L1ChugSplashProxy[L1 ChugSplash Proxy]
-      ResolvedDelegateProxy[Resolved Delegate Proxy]
+      ProxyAdmin[ProxyAdmin]
+      L1ChugSplashProxy[L1ChugSplashProxy]
+      ResolvedDelegateProxy[ResolvedDelegateProxy]
    end
 
    %% OPStackManager subgraph
@@ -120,18 +120,18 @@ flowchart TB
    end
 
    %% Input and Output blocks for DeployOPChain
-   subgraph DeployOPChainInput[Deploy OPChain Input]
+   subgraph DeployOPChainInput[DeployOPChainInput]
       subgraph DeployOPChainRoles[Roles]
-         OPChainProxyAdminOwner[OP Chain Proxy Admin Owner]
-         SystemConfigOwner[System Config Owner]
+         OPChainProxyAdminOwner[OP Chain ProxyAdminOwner]
+         SystemConfigOwner[SystemConfigOwner]
          Batcher[Batcher]
-         UnsafeBlockSigner[Unsafe Block Signer]
+         UnsafeBlockSigner[UnsafeBlockSigner]
          Proposer[Proposer]
          Challenger[Challenger]
       end
-      BaseFeeScalar[Base Fee Scalar]
-      BlobBaseFeeScalar[Blob Base Fee Scalar]
-      L2ChainId[L2 Chain ID]
+      BaseFeeScalar[BaseFeeScalar]
+      BlobBaseFeeScalar[BlobBaseFeeScalar]
+      L2ChainId[L2ChainId]
       OPStackManagerDOI[OPStackManager]
    end
 
@@ -139,40 +139,40 @@ flowchart TB
       DeployOPChainTextNode["Invokes deploy function on OPStackManager"]
    end
 
-   subgraph DeployOPChainOutput[Deploy OPChain Output]
-      ProxyAdminDOO[Proxy Admin]
-      AddressManagerDOO[Address Manager]
-      L1ERC721BridgeProxyDOO[L1 ERC721 Bridge Proxy]
-      SystemConfigProxyDOO[System Config Proxy]
-      FaultDisputeGame[Fault Dispute Game]
-      OptimismMintableERC20FactoryProxyDOO[Mintable ERC20 Factory Proxy]
-      L1StandardBridgeProxyDOO[L1 Standard Bridge Proxy]
-      L1CrossDomainMessengerProxyDOO[L1 Cross-Domain Messenger Proxy]
-      OptimismPortalProxyDOO[Optimism Portal Proxy]
-      PermissionedDisputeGameDOO[Permissioned Dispute Game]
-      DelayedWETHProxyPermDOO[Delayed WETH Proxy - permissioned]
-      DelayedWETHProxyPermlessDOO[Delayed WETH Proxy - permissionless]
-      AnchorStateRegistryProxyDOO[Anchor State Registry Proxy]
-      AnchorStateRegistryDOO[Anchor State Registry - Impl]
-      DisputeGameFactoryProxyDOO[Dispute Game Factory Proxy]
-      DisputeGameFactoryDOO[Dispute Game Factory - Impl]
+   subgraph DeployOPChainOutput[DeployOPChainOutput]
+      ProxyAdminDOO[ProxyAdmin]
+      AddressManagerDOO[AddressManager]
+      L1ERC721BridgeProxyDOO[L1ERC721BridgeProxy]
+      SystemConfigProxyDOO[SystemConfigProxy]
+      FaultDisputeGame[FaultDisputeGame]
+      OptimismMintableERC20FactoryProxyDOO[OptimismMintableERC20FactoryProxy]
+      L1StandardBridgeProxyDOO[L1StandardBridgeProxy]
+      L1CrossDomainMessengerProxyDOO[L1CrossDomainMessengerProxy]
+      OptimismPortalProxyDOO[OptimismPortalProxy]
+      PermissionedDisputeGameDOO[PermissionedDisputeGame]
+      DelayedWETHProxyPermDOO[DelayedWETHProxy - permissioned]
+      DelayedWETHProxyPermlessDOO[DelayedWETHProxy - permissionless]
+      AnchorStateRegistryProxyDOO[AnchorStateRegistryProxy]
+      AnchorStateRegistryDOO[AnchorStateRegistry - Impl]
+      DisputeGameFactoryProxyDOO[DisputeGameFactory Proxy]
+      DisputeGameFactoryDOO[DisputeGameFactory - Impl]
    end
    AnchorStateRegistryProxyDOO-->|proxies|AnchorStateRegistryDOO
    DisputeGameFactoryProxyDOO-->|proxies|DisputeGameFactoryDOO
 
    %% Input roles for OPStackManager
-   subgraph OPStackManagerInput[OPStackManager Input]
+   subgraph OPStackManagerInput[OPStackManagerInput]
       subgraph OPStackManagerRoles[Roles]
-         OPChainProxyAdminOwnerOPSM[OP Chain Proxy Admin Owner]
-         SystemConfigOwnerOPSM[System Config Owner]
+         OPChainProxyAdminOwnerOPSM[OP Chain ProxyAdminOwner]
+         SystemConfigOwnerOPSM[SystemConfigOwner]
          BatcherOPSM[Batcher]
-         UnsafeBlockSignerOPSM[Unsafe Block Signer]
+         UnsafeBlockSignerOPSM[UnsafeBlockSigner]
          ProposerOPSM[Proposer]
          ChallengerOPSM[Challenger]
       end
-      BaseFeeScalarOPSM[Base Fee Scalar]
-      BlobBaseFeeScalarOPSM[Blob Base Fee Scalar]
-      L2ChainIdOPSM[L2 Chain ID]
+      BaseFeeScalarOPSM[BaseFeeScalar]
+      BlobBaseFeeScalarOPSM[BlobBaseFeeScalar]
+      L2ChainIdOPSM[L2ChainId]
    end
 
    %% Flow connections with steps
