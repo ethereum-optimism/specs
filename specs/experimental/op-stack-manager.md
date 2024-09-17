@@ -21,6 +21,7 @@ of governance approved [contract releases] can be found on the
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Overview](#overview)
 - [Deployment](#deployment)
 - [Interface](#interface)
   - [`Proxy.sol`](#proxysol)
@@ -37,6 +38,173 @@ of governance approved [contract releases] can be found on the
   - [Upgradeability (ABI Changes)](#upgradeability-abi-changes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Overview
+
+The OP Stack Manager is deployed as part of a wider deployment system. The diagram below outlines the how the OP Stack Manager fits into this deployment system. You can see how it's deployed and then later used to deploy L1 contracts for an OP Stack chain.
+
+```mermaid
+flowchart TB
+
+   %% Input and Output blocks for DeploySuperchain
+   subgraph DeploySuperchainInput[Deploy Superchain Input]
+      POA[Proxy Admin Owner Safe]
+      Paused[Paused]
+      RequiredProtocolVersion[Required Protocol Version]
+      RecommendedProtocolVersion[Recommended Protocol Version]
+      subgraph Roles
+         ProxyAdminOwner[Proxy Admin Owner]
+         ProtocolVersionsOwner[Protocol Versions Owner]
+         Guardian[Guardian]
+      end
+   end
+
+   subgraph DeploySuperchain[DeploySuperchain.s.sol]
+      DeploySuperchainTextNode["Deploys core contracts for Superchain abstraction"]
+   end
+
+   subgraph DeploySuperchainOutput[Deploy Superchain Output]
+      SuperchainConfigProxy[Superchain Config Proxy]
+      SuperchainConfig[Superchain Config Implementation]
+      ProtocolVersionsProxy[Protocol Versions Proxy]
+      ProtocolVersions[Protocol Versions Implementation]
+      ProxyAdmin[Proxy Admin]
+   end
+
+   %% Input and Output blocks for DeployImplementations
+   subgraph DeployImplementationsInput[Deploy Implementations Input]
+      Salt[Salt]
+      WithdrawalDelaySeconds[Withdrawal Delay Seconds]
+      MinProposalSizeBytes[Minimum Proposal Size - Bytes]
+      ChallengePeriodSeconds[Challenge Period Seconds]
+      ProofMaturityDelaySeconds[Proof Maturity Delay Seconds]
+      DisputeGameFinalityDelaySeconds[Dispute Game Finality Delay Seconds]
+      Release[Release]
+      SuperchainConfigProxyDII[Superchain Config Proxy]
+      ProtocolVersionsProxyDII[Protocol Versions Proxy]
+   end
+
+   subgraph DeployImplementations[DeployImplementations.s.sol]
+      DeployImplementationsTextNode["Deploys implementation contracts and OPStackManager per chain"]
+      DeployImplementationsBluePrintsTextNode["Deploys Blueprints used in OPStackManager"]
+      DeployImplementationsOPStackManagerDeployTextNode["Deploys and initializes OPStackManager (proxied)"]
+   end
+
+   subgraph DeployImplementationsOutput[Deploy Implementations Output]
+      L1CrossDomainMessenger[L1 Cross-Domain Messenger]
+      OptimismPortal[Optimism Portal]
+      SystemConfig[System Config]
+      OptimismMintableERC20Factory[Mintable ERC20 Factory]
+      L1ERC721Bridge[L1 ERC721 Bridge]
+      DelayedWETH[Delayed WETH]
+      L1StandardBridge[L1 Standard Bridge]
+      DisputeGameFactory[Dispute Game Factory]
+      OpStackManagerProxy[OpStackManager Proxy]
+      PreImageOracle[Pre-Image Oracle - Singleton]
+      MIPS[MIPS Singleton]
+   end
+
+   %% Blueprints subgraph
+   subgraph Blueprints[Blueprints]
+      AddressManager[Address Manager]
+      Proxy[Proxy]
+      ProxyAdmin[Proxy Admin]
+      L1ChugSplashProxy[L1 ChugSplash Proxy]
+      ResolvedDelegateProxy[Resolved Delegate Proxy]
+   end
+
+   %% OPStackManager subgraph
+   subgraph OPStackManager[OPStackManager]
+      OPStackManagerDeployTextNode["Deploys and initializes OPStackManager (via OPStackManager contract)"]
+      OPStackManagerInvokeTextNode["DeployOPChain.s.sol invokes OPStackManager deploy function"]
+   end
+
+   %% Input and Output blocks for DeployOPChain
+   subgraph DeployOPChainInput[Deploy OPChain Input]
+      subgraph DeployOPChainRoles[Roles]
+         OPChainProxyAdminOwner[OP Chain Proxy Admin Owner]
+         SystemConfigOwner[System Config Owner]
+         Batcher[Batcher]
+         UnsafeBlockSigner[Unsafe Block Signer]
+         Proposer[Proposer]
+         Challenger[Challenger]
+      end
+      BaseFeeScalar[Base Fee Scalar]
+      BlobBaseFeeScalar[Blob Base Fee Scalar]
+      L2ChainId[L2 Chain ID]
+      OPStackManagerDOI[OPStackManager]
+   end
+
+   subgraph DeployOPChain[DeployOPChain.s.sol]
+      DeployOPChainTextNode["Invokes deploy function on OPStackManager"]
+   end
+
+   subgraph DeployOPChainOutput[Deploy OPChain Output]
+      ProxyAdminDOO[Proxy Admin]
+      AddressManagerDOO[Address Manager]
+      L1ERC721BridgeProxyDOO[L1 ERC721 Bridge Proxy]
+      SystemConfigProxyDOO[System Config Proxy]
+      FaultDisputeGame[Fault Dispute Game]
+      OptimismMintableERC20FactoryProxyDOO[Mintable ERC20 Factory Proxy]
+      L1StandardBridgeProxyDOO[L1 Standard Bridge Proxy]
+      L1CrossDomainMessengerProxyDOO[L1 Cross-Domain Messenger Proxy]
+      OptimismPortalProxyDOO[Optimism Portal Proxy]
+      PermissionedDisputeGameDOO[Permissioned Dispute Game]
+      DelayedWETHProxyPermDOO[Delayed WETH Proxy - permissioned]
+      DelayedWETHProxyPermlessDOO[Delayed WETH Proxy - permissionless]
+      AnchorStateRegistryProxyDOO[Anchor State Registry Proxy]
+      AnchorStateRegistryDOO[Anchor State Registry - Impl]
+      DisputeGameFactoryProxyDOO[Dispute Game Factory Proxy]
+      DisputeGameFactoryDOO[Dispute Game Factory - Impl]
+   end
+   AnchorStateRegistryProxyDOO-->|proxies|AnchorStateRegistryDOO
+   DisputeGameFactoryProxyDOO-->|proxies|DisputeGameFactoryDOO
+
+   %% Input roles for OPStackManager
+   subgraph OPStackManagerInput[OPStackManager Input]
+      subgraph OPStackManagerRoles[Roles]
+         OPChainProxyAdminOwnerOPSM[OP Chain Proxy Admin Owner]
+         SystemConfigOwnerOPSM[System Config Owner]
+         BatcherOPSM[Batcher]
+         UnsafeBlockSignerOPSM[Unsafe Block Signer]
+         ProposerOPSM[Proposer]
+         ChallengerOPSM[Challenger]
+      end
+      BaseFeeScalarOPSM[Base Fee Scalar]
+      BlobBaseFeeScalarOPSM[Blob Base Fee Scalar]
+      L2ChainIdOPSM[L2 Chain ID]
+   end
+
+   %% Flow connections with steps
+   DeploySuperchainInput-->|Step 1|DeploySuperchain
+   DeploySuperchain-->|Step 2|DeploySuperchainOutput
+   ProtocolVersionsProxy-->|proxies|ProtocolVersions
+   SuperchainConfigProxy-->|proxies|SuperchainConfig
+   ProtocolVersionsProxy-->ProtocolVersionsProxyDII
+   SuperchainConfigProxy-->SuperchainConfigProxyDII
+   DeployImplementationsInput-->|Step 3|DeployImplementations
+   DeployImplementations-->|Step 4: Deploys|Blueprints
+   DeployImplementations-->|Step 5: Deploys|OPStackManager
+   DeployImplementations-->|Step 6|DeployImplementationsOutput
+   Blueprints-->|input for OPStackManager|OPStackManager
+   ProtocolVersionsProxyDII-->|input for OPStackManager|OPStackManager
+   SuperchainConfigProxyDII-->|input for OPStackManager|OPStackManager
+   L1CrossDomainMessenger-->|input for OPStackManager|OPStackManager
+   OptimismPortal-->|input for OPStackManager|OPStackManager
+   SystemConfig-->|input for OPStackManager|OPStackManager
+   OptimismMintableERC20Factory-->|input for OPStackManager|OPStackManager
+   L1ERC721Bridge-->|input for OPStackManager|OPStackManager
+   L1StandardBridge-->|input for OPStackManager|OPStackManager
+   DeployOPChainInput-->|Step 7|DeployOPChain
+   DeployOPChain-->|Step 8: invokes deploy|OPStackManagerInput
+   OPStackManagerInput-->|Step 8: invokes deploy|OPStackManager
+   DeployOPChain-->|Step 9|DeployOPChainOutput
+
+   %% Outer box transparency for better contrast
+   classDef outer fill:#ffffff44
+   class DeploySuperchainInput,DeploySuperchain,DeploySuperchainOutput,DeployImplementationsInput,DeployImplementations,DeployImplementationsOutput,DeployOPChainInput,OPStackManager,DeployOPChain,OPStackManagerInput,DeployOPChainOutput outer
+```
+
 
 ## Deployment
 
