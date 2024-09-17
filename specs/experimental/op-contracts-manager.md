@@ -41,7 +41,7 @@ of governance approved [contract releases] can be found on the
 
 ## Overview
 
-The OP Stack Manager is deployed as part of a wider deployment system. The diagram below outlines the how the OP Stack Manager fits into this deployment system. You can see how it's deployed and then later used to deploy L1 contracts for an OP Stack chain.
+The OP Contracts Manager is deployed as part of a wider deployment system. The diagram below outlines the how the OP Contracts Manager fits into this deployment system. You can see how it's deployed and then later used to deploy L1 contracts for an OP Contracts chain.
 
 ```mermaid
 flowchart TB
@@ -85,9 +85,9 @@ flowchart TB
    end
 
    subgraph DeployImplementations[DeployImplementations.s.sol]
-      DeployImplementationsTextNode["Deploys implementation contracts and OPStackManager per chain"]
-      DeployImplementationsBluePrintsTextNode["Deploys Blueprints used in OPStackManager"]
-      DeployImplementationsOPStackManagerDeployTextNode["Deploys and initializes OPStackManager (proxied)"]
+      DeployImplementationsTextNode["Deploys implementation contracts and OPContractsManager per chain"]
+      DeployImplementationsBluePrintsTextNode["Deploys Blueprints used in OPContractsManager"]
+      DeployImplementationsOPContractsManagerDeployTextNode["Deploys and initializes OPContractsManager (proxied)"]
    end
 
    subgraph DeployImplementationsOutput[DeployImplementationsOutput]
@@ -99,7 +99,7 @@ flowchart TB
       DelayedWETH[DelayedWETH]
       L1StandardBridge[L1StandardBridge]
       DisputeGameFactory[DisputeGameFactory]
-      OpStackManagerProxy[OpStackManagerProxy]
+      OPContractsManagerProxy[OPContractsManagerProxy]
       PreImageOracle[PreImageOracle - Singleton]
       MIPS[MIPS - Singleton]
    end
@@ -113,10 +113,10 @@ flowchart TB
       ResolvedDelegateProxy[ResolvedDelegateProxy]
    end
 
-   %% OPStackManager subgraph
-   subgraph OPStackManager[OPStackManager]
-      OPStackManagerDeployTextNode["Deploys and initializes OPStackManager (via OPStackManager contract)"]
-      OPStackManagerInvokeTextNode["DeployOPChain.s.sol invokes OPStackManager deploy function"]
+   %% OPContractsManager subgraph
+   subgraph OPContractsManager[OPContractsManager]
+      OPContractsManagerDeployTextNode["Deploys and initializes OPContractsManager (via OPContractsManager contract)"]
+      OPContractsManagerInvokeTextNode["DeployOPChain.s.sol invokes OPContractsManager deploy function"]
    end
 
    %% Input and Output blocks for DeployOPChain
@@ -132,11 +132,11 @@ flowchart TB
       BaseFeeScalar[BaseFeeScalar]
       BlobBaseFeeScalar[BlobBaseFeeScalar]
       L2ChainId[L2ChainId]
-      OPStackManagerDOI[OPStackManager]
+      OPContractsManagerDOI[OPContractsManager]
    end
 
    subgraph DeployOPChain[DeployOPChain.s.sol]
-      DeployOPChainTextNode["Invokes deploy function on OPStackManager"]
+      DeployOPChainTextNode["Invokes deploy function on OPContractsManager"]
    end
 
    subgraph DeployOPChainOutput[DeployOPChainOutput]
@@ -160,9 +160,9 @@ flowchart TB
    AnchorStateRegistryProxyDOO-->|proxies|AnchorStateRegistryDOO
    DisputeGameFactoryProxyDOO-->|proxies|DisputeGameFactoryDOO
 
-   %% Input roles for OPStackManager
-   subgraph OPStackManagerInput[OPStackManagerInput]
-      subgraph OPStackManagerRoles[Roles]
+   %% Input roles for OPContractsManager
+   subgraph OPContractsManagerInput[OPContractsManagerInput]
+      subgraph OPContractsManagerRoles[Roles]
          OPChainProxyAdminOwnerOPSM[OP Chain ProxyAdminOwner]
          SystemConfigOwnerOPSM[SystemConfigOwner]
          BatcherOPSM[Batcher]
@@ -184,25 +184,25 @@ flowchart TB
    SuperchainConfigProxy-->SuperchainConfigProxyDII
    DeployImplementationsInput-->|Step 3|DeployImplementations
    DeployImplementations-->|Step 4: Deploys|Blueprints
-   DeployImplementations-->|Step 5: Deploys|OPStackManager
+   DeployImplementations-->|Step 5: Deploys|OPContractsManager
    DeployImplementations-->|Step 6|DeployImplementationsOutput
-   Blueprints-->|input for OPStackManager|OPStackManager
-   ProtocolVersionsProxyDII-->|input for OPStackManager|OPStackManager
-   SuperchainConfigProxyDII-->|input for OPStackManager|OPStackManager
-   L1CrossDomainMessenger-->|input for OPStackManager|OPStackManager
-   OptimismPortal-->|input for OPStackManager|OPStackManager
-   SystemConfig-->|input for OPStackManager|OPStackManager
-   OptimismMintableERC20Factory-->|input for OPStackManager|OPStackManager
-   L1ERC721Bridge-->|input for OPStackManager|OPStackManager
-   L1StandardBridge-->|input for OPStackManager|OPStackManager
+   Blueprints-->|input for OPContractsManager|OPContractsManager
+   ProtocolVersionsProxyDII-->|input for OPContractsManager|OPContractsManager
+   SuperchainConfigProxyDII-->|input for OPContractsManager|OPContractsManager
+   L1CrossDomainMessenger-->|input for OPContractsManager|OPContractsManager
+   OptimismPortal-->|input for OPContractsManager|OPContractsManager
+   SystemConfig-->|input for OPContractsManager|OPContractsManager
+   OptimismMintableERC20Factory-->|input for OPContractsManager|OPContractsManager
+   L1ERC721Bridge-->|input for OPContractsManager|OPContractsManager
+   L1StandardBridge-->|input for OPContractsManager|OPContractsManager
    DeployOPChainInput-->|Step 7|DeployOPChain
-   DeployOPChain-->|Step 8: invokes deploy|OPStackManagerInput
-   OPStackManagerInput-->|Step 8: invokes deploy|OPStackManager
+   DeployOPChain-->|Step 8: invokes deploy|OPContractsManagerInput
+   OPContractsManagerInput-->|Step 8: invokes deploy|OPContractsManager
    DeployOPChain-->|Step 9|DeployOPChainOutput
 
    %% Outer box transparency for better contrast
    classDef outer fill:#ffffff44
-   class DeploySuperchainInput,DeploySuperchain,DeploySuperchainOutput,DeployImplementationsInput,DeployImplementations,DeployImplementationsOutput,DeployOPChainInput,OPStackManager,DeployOPChain,OPStackManagerInput,DeployOPChainOutput outer
+   class DeploySuperchainInput,DeploySuperchain,DeploySuperchainOutput,DeployImplementationsInput,DeployImplementations,DeployImplementationsOutput,DeployOPChainInput,OPContractsManager,DeployOPChain,OPContractsManagerInput,DeployOPChainOutput outer
 ```
 
 
@@ -346,7 +346,7 @@ used as the source of truth for registrations.
 
 This means, for example, if deploying a chain with a chain ID of 10—which is OP
 Mainnet's chain ID—deployment will execute successfully, but the entry in OP
-Stack Manager may be overwritten in a future upgrade. Therefore, chain ID
+Contracts Manager may be overwritten in a future upgrade. Therefore, chain ID
 uniqueness is not enforced by the OP Contracts Manager, and it is strongly
 recommended to only use chain IDs that are not already present in the
 [ethereum-lists/chains] repository.
