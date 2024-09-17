@@ -50,6 +50,7 @@
     - [Granite](./protocol/granite/overview.md)
       - [Execution Engine](./protocol/granite/exec-engine.md)
       - [Derivation](./protocol/granite/derivation.md)
+    - [Holocene](./protocol/holocene/overview.md)
 - [Governance]()
   - [Governance Token](./governance/gov-token.md)
 - [Experimental]()
