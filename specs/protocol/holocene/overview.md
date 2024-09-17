@@ -14,8 +14,8 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
-## Consensus Layer
+- [L2ToL1MessagePasser Storage Root in Header](./exec-engine.md##l2tol1messagepasser-storage-root-in-header)
 
-- [Interop](../interop/overview.md)
+## Consensus Layer
 
 ## Smart Contracts
