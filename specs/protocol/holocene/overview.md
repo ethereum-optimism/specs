@@ -14,6 +14,14 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
+- [L2ToL1MessagePasser Storage Root in Header](./exec-engine.md##l2tol1messagepasser-storage-root-in-header)
+
 ## Consensus Layer
 
+- [Derivation](./derivation.md)
+
 ## Smart Contracts
+
+- [Predeploys](./predeploys.md)
+- [L1 Block Attributes](./l1-attributes.md)
+- [Configurability](./configurability.md)
