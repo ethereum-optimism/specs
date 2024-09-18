@@ -59,6 +59,25 @@ The following `ConfigUpdate` enum is defined where the `CONFIG_VERSION` is `uint
 | `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)` | Modifies the account that is authorized to progress the unsafe chain |
 | `EIP_1559_PARAMS` | `uint8(4)` | `uint256(uint64(_denominator)) << 32 | uint64(_elasticity)` | Modifies the EIP-1559 denominator and elasticity |
 
+### Initialization
+
+The following actions should happen during the initialization of the `SystemConfig`:
+- `emit ConfigUpdate.BATCHER`
+- `emit ConfigUpdate.FEE_SCALARS`
+- `emit ConfigUpdate.GAS_LIMIT`
+- `emit ConfigUpdate.UNSAFE_BLOCK_SIGNER`
+- `emit ConfigUpdate.EIP_1559_PARAMS`
+- `setConfig(SET_GAS_PAYING_TOKEN)`
+- `setConfig(SET_BASE_FEE_VAULT_CONFIG)`
+- `setConfig(SET_L1_FEE_VAULT_CONFIG)`
+- `setConfig(SET_SEQUENCER_FEE_VAULT_CONFIG)`
+- `setConfig(SET_L1_CROSS_DOMAIN_MESSENGER_ADDRESS)`
+- `setConfig(SET_L1_ERC_721_BRIDGE_ADDRESS)`
+- `setConfig(SET_L1_STANDARD_BRIDGE_ADDRESS)`
+- `setConfig(SET_REMOTE_CHAIN_ID)`
+
+These actions MAY only be triggered if there is a diff to the value.
+
 ### Modifying EIP-1559 Parameters
 
 A new `SystemConfig` `UpdateType` is introduced that enables the modification of
