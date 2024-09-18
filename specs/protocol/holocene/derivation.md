@@ -1,9 +1,10 @@
-# Holocene Chain Derivation Changes
+# Holocene L2 Chain Derivation Changes
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Holocene Derivation](#holocene-derivation)
   - [Summary](#summary)
   - [Frame Queue](#frame-queue)
   - [Channel Bank](#channel-bank)
@@ -27,6 +28,8 @@
   - [Batcher Hardening](#batcher-hardening)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Holocene Derivation
 
 ## Summary
 
