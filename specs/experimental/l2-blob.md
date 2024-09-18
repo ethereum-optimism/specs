@@ -18,25 +18,27 @@
 
 ## Overview
 
-The Ethereum Cancun upgrade has significantly reduced Layer 2 (L2) data uploading costs by introducing BLOB transactions to Layer 1 (L1). This innovation has also enabled a variety of additional applications based on the BLOBs due to their low cost, such as [blob.fm](https://blob.fm/), [EthStorage](https://ethstorage.io), and [Ethscriptions](https://ethscriptions.com/). However, while the data upload costs are now lower, the execution costs remain high compared to L2. This presents high costs for state proposals of L2 and for non-financial applications that rely on BLOBs.
+The Ethereum Cancun upgrade has significantly reduced Layer 2 (L2) data uploading costs by introducing BLOB transactions to Layer 1 (L1). This innovation has also enabled a variety of additional applications based on the BLOBs due to their low cost, such as [blob.fm](https://blob.fm/), [EthStorage](https://ethstorage.io), and [Ethscriptions](https://ethscriptions.com/). However, while the data upload costs have decreased, the execution costs on L1 remain high compared to L2, leading to high costs for L2 state proposals and non-financial applications that rely on BLOBs.
 
 The goal of this specification is to **support L2 BLOB transactions in the OP Stack**. This would allow L3 solutions, which settle on L2, to have an enshrined 4844-compatiable DA layer that they can use directly, without needing to integrate third-party DA providers or deal with the security risks associated with DA bridges. Additionally, the applications mentioned above could migrate to L2 with minimal costs.
 
-Furthermore, this spec proposes adding an option to use [Alt-DA]((https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md)) to upload L2 BLOBs, while still allowing the use of L1 DA to upload L2 calldata. This would result in three possible DA configurations for an L2:
+Furthermore, this spec proposes adding an option to use [Alt-DA](https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md) to upload L2 BLOBs, while still allowing the use of L1 DA to upload L2 calldata. This would result in three possible DA configurations for an L2:
 
 1.	Both the calldata and BLOBs in L2 use L1 DA.
 2.	Both the calldata and BLOBs in L2 use Alt-DA.
 3.	L2 calldata uses L1 DA, while L2 BLOBs use Alt-DA.
 
-The third option, referred to as a “hybrid DA L2”, combines the best features of different DA solutions. This allows users and applications of an L2 to choose between L1 DA and alt-DA for different types of transaction data within the same network, without maintaining multiple L2s. Specifically, users can upload and store non-financial data at a very low cost using L2 BLOBs and Alt-DA, while still conducting critical financial data using L2 calldata and L1 DA. In some cases, these two types of data may even occur within the same transaction. For example, users might use a platform like Twitter primarily for social networking, while also sending payments to other users.
+The third option, referred to as a “hybrid DA L2”, combines the best features of different DA solutions. This allows users and applications of an L2 to choose between L1 DA and alt-DA for different types of transaction data within the same network, without the need to maintain multiple L2s. Specifically, users can upload and store non-financial data at a very low cost using L2 BLOBs and Alt-DA, while still conducting critical financial data using L2 calldata and L1 DA. In some cases, these two types of data may even occur within the same transaction. Here are a few potential scenarios:
+ - While the Optimism mainnet continues to use L1 DA for uploading calldata, multiple app-specific or game-focused L3s settled on it can benefit from the lower DA costs of L2 BLOBs and Alt-DA.
+ - Users might use a platform like Decentralized Twitter primarily for social networking (non-financial), while also sending payments (financial) to other users within the same application.
 
-The following diagram illustrates the transaction data flow for a hybrid L2:
+The following diagram illustrates the transaction data flow for a hybrid DA L2:
 ```mermaid
 flowchart
     A[Users] -->|Non-financial Tx Using BLOB| B(L2)
     A[Users] -->|Financial Tx Using Calldata| B(L2)
     B -->|L2 BLOB| C(Alt-DA)
-    B -->|L2 Calldata| D(L1 On-chain DA)
+    B -->|L2 Calldata| D(L1 DA)
 ```
 
 ## Enabling BLOB Transactions in L2 EL
