@@ -63,6 +63,7 @@ The following `ConfigUpdate` enum is defined where the `CONFIG_VERSION` is `uint
 ### Initialization
 
 The following actions should happen during the initialization of the `SystemConfig`:
+
 - `emit ConfigUpdate.BATCHER`
 - `emit ConfigUpdate.FEE_SCALARS`
 - `emit ConfigUpdate.GAS_LIMIT`
