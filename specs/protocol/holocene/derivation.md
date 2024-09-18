@@ -1,5 +1,35 @@
 # Holocene Chain Derivation Changes
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+  - [Summary](#summary)
+  - [Frame Queue](#frame-queue)
+  - [Channel Bank](#channel-bank)
+    - [Pruning](#pruning)
+    - [Timeout](#timeout)
+    - [Reading & Frame Loading](#reading--frame-loading)
+  - [Span Batches](#span-batches)
+  - [Batch Queue](#batch-queue)
+    - [Fast Channel Invalidation](#fast-channel-invalidation)
+  - [Engine Queue](#engine-queue)
+  - [Activation](#activation)
+  - [Sync Start](#sync-start)
+- [Rationale](#rationale)
+  - [Strict Frame and Batch Ordering](#strict-frame-and-batch-ordering)
+  - [Partial Span Batch Validity](#partial-span-batch-validity)
+  - [Fast Channel Invalidation](#fast-channel-invalidation-1)
+  - [Steady Block Derivation](#steady-block-derivation)
+  - [Less Defensive Protocol](#less-defensive-protocol)
+- [Security and Implementation Considerations](#security-and-implementation-considerations)
+  - [Reorgs](#reorgs)
+  - [Batcher Hardening](#batcher-hardening)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Summary
+
 The Holocene hardfork introduces several changes to block derivation rules that render the
 derivation pipeline mostly stricter and simpler, improve worst-case scenarios for Fault Proofs and
 Interop. The changes are:
@@ -28,8 +58,9 @@ space of a batcher transaction with a starting frame of the next channel.
 
 However, Strict Batch Ordering leads to the following additional checks and rules to the frame
 queue:
+
 - If a _non-first frame_ (i.e., a frame with index >0) decoded from a batcher transaction is _out of
-order_, it is *immediately dropped*, where the frame is called _out of order_ if
+order_, it is **immediately dropped**, where the frame is called _out of order_ if
   - the frame queue is empty, or
   - the non-first frame has a different channel ID than the previous frame in the frame queue, or
   - the previous frame already closed the channel with the same ID.
@@ -66,6 +97,7 @@ The timeout is applied as before, just only to the single staging channel.
 
 The frame queue is guaranteed to hold ordered and contiguous frames, per channel. So reading and
 frame loading becomes simpler in the channel bank:
+
 - A first frame for a new channel starts a new channel as the staging channel.
   - If there already is an open, non-completed staging channel, it is dropped and replaced by this
   new channel. This is consistent with how the frame queue drops all frames of an non-closed channel
@@ -91,6 +123,7 @@ When a batch derived from the current staging channel is a singular batch, it is
 to the batch queue. Otherwise, it is set as the current span batch in the span batch stage. The
 following span batch validity checks are done, before singular batches are derived from it.
 Definitions are borrowed from the [original Span Batch specs](../delta/span-batches.md).
+
 - If the span batch _L1 origin check_ is not part of the canonical L1 chain, the span batch is
 invalid.
 - A failed parent check invalidates the span batch.
@@ -111,6 +144,7 @@ The batch queue is also simplified in that batches are required to arrive strict
 batches that violate the ordering requirements are immediately dropped, instead of buffered.
 
 So the following changes are made to the [Bedrock Batch Queue](../derivation.md#batch-queue):
+
 - The reordering step is removed, so that later checks will drop batches that are not sequential.
 - The `future` batch validity status is removed, and batches that were determined to be in the
 future are now directly `drop`-ped. This effectively disallows gaps, instead of buffering future batches.
@@ -135,6 +169,7 @@ span batch stage before it would similarly only hold at most one staging span ba
 
 If the engine returns an `INVALID` status for a regularly derived payload, the payload is replaced
 by a payload with the same fields, except for the `transaction_list`, which is replaced
+
 - by the deposit transactions included in the L1 block, if the payloads are for the first block of
 the current sequencing epoch,
 - by an empty list otherwise.
@@ -152,7 +187,8 @@ Holocene activation timestamp. Note that this is in contrast to how span batches
 
 When the L1 traversal stage of the derivation pipeline moves its origin to the L1 block whose
 timestamp matches the Holocene activation timestamp, the derivation pipeline's state is mostly reset
-by *discarding*
+by **discarding**
+
 - all frames in the frame queue,
 - channels in the channel bank, and
 - all batches in the batch queue.
@@ -169,6 +205,7 @@ transaction.
 
 Thanks to the new strict frame and batch ordering rules, the sync start algorithm can be simplified in the
 average case. The rules guarantee that
+
 - an incoming first frame for a new channel leads to discarding previous incomplete frames for a
 non-closed previous channel in the frame queue and channel bank, and
 - when the derivation pipeline L1 origin progresses, the batch queue is empty.
@@ -177,11 +214,12 @@ So the sync start algorithm can optimistically select the last L2 unsafe, safe a
 from the engine and if the L2 safe head's L1 origin is _plausible_ (see the
 [original sync start description](../derivation.md#finding-the-sync-starting-point) for details),
 start deriving from this L1 origin.
+
 - If the first frame we find is a _first frame_ for a channel that includes the safe head (TODO: or
 even just the following L2 block with the current safe head as parent?), we can
 safely continue derivation from this channel because no previous derivation pipeline state could
 have influenced the L2 safe head.
-_ If the first frame we find is a non-first frame, then we need to go back a full channel
+- If the first frame we find is a non-first frame, then we need to go back a full channel
 timeout window to see if we find the start of that channel.
   - If we find the starting frame, we can continue derivation from it.
   - If we don't find the starting frame, we need to go back a full sequencing window. (TODO: verify)
@@ -195,6 +233,7 @@ during sync start yet._
 
 Strict Frame and Batch Ordering simplifies implementations of the derivation pipeline, and leads to
 better worst-case cached data usage.
+
 - The frame queue only ever holds frames from a single batcher transaction.
 - The channel bank only ever holds a single staging channel, that is either being built up by
 incoming frames, or is is being processed by later stages.
@@ -247,6 +286,7 @@ theoretical heightened risk for unsafe chain reorgs. To the best of our knowledg
 experienced this on OP Mainnet or other mainnet OP Stack chains yet.
 
 The only conceivable scenarios in which a _valid_ batch leads to an _invalid_ payload are
+
 - a buggy or malicious sequencer+batcher
 - in the future, that an previously valid Interop dependency referenced in that payload is later
 invalidated, while the block that contained the Interop dependency got already batched.

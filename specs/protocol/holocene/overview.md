@@ -16,6 +16,6 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
-- [Stricter Derivation](./derivation.md#stricter-derivation-rules)
+- [Holocene Derivation](./derivation.md)
 
 ## Smart Contracts
