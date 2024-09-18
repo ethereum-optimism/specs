@@ -1,5 +1,14 @@
 # Derivation
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Derivation](#derivation)
+- [Network upgrade automation transactions](#network-upgrade-automation-transactions)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Network upgrade automation transactions
 
 The Holocene hardfork activation block contains the following transactions, in this order:
