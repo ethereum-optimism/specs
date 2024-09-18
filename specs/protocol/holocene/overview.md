@@ -18,6 +18,8 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
+- [Derivation](./derivation.md)
+
 ## Smart Contracts
 
 - [Predeploys](./predeploys.md)
