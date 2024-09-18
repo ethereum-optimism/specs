@@ -74,6 +74,8 @@ function resolveL2BLOB(
 ```
 This new resolve function should use a L1 BLOB transaction to upload the BLOB, then employ the EIP-4844 `blobhash()` opcode to obtain the `versionedhash` of the BLOB.
 
+Note that the parameter `challengedOriginBlockNumber` in both the new challenge and resolve functions refers to the original L1 block number corresponding to the L2 block containing the BLOB being challenged. This change also requires that the `challenge_window` must be larger than the `sequence_window` to prevent cases where the challenge window has already passed by the time the sequencer submits the batch on L1
+
 ## Storage Requirement and BLOB Gas Cost
 According to the EIP-4844 specification, BLOBs must be kept for at least [MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS](https://github.com/ethereum/consensus-specs/blob/4de1d156c78b555421b72d6067c73b614ab55584/configs/mainnet.yaml#L148) epochs, which is around 18 days. The storage upper limit can be calculated using the formula: `BLOB_SIZE * MAX_BLOB_PER_BLOCK / BLOCK_TIME * MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS * SECONDS_PER_EPOCH`. Assuming `MAX_BLOB_PER_BLOCK = 6` and `BLOCK_TIME = 2`, the upper limit is approximately 618 GB.
 
