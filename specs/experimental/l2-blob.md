@@ -5,14 +5,14 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Enable BLOB Transacion in EL](#enable-blob-transacion-in-el)
+- [Enabling BLOB Transactions in L2 EL](#enabling-blob-transactions-in-l2-el)
 - [Uploading BLOB to Alt-DA](#uploading-blob-to-alt-da)
-- [DataAavaliblityChallenage Contract](#dataaavaliblitychallenage-contract)
-- [BLOB Gas Cost](#blob-gas-cost)
+- [Data Availability Challenge](#data-availability-challenge)
+- [Storage Requirement and BLOB Gas Cost](#storage-requirement-and-blob-gas-cost)
 - [Derivation](#derivation)
 - [Fault Proof](#fault-proof)
   - [`l2-blob <commitment>`](#l2-blob-commitment)
-  - [`l1-challenge-status <commitment> <blocknumber>`](#l1-challenge-status-commitment-blocknumber)
+  - [`l1-l2blob-challenge-status <commitment> <blocknumber>`](#l1-l2blob-challenge-status-commitment-blocknumber)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
