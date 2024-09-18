@@ -26,6 +26,7 @@
 - [Security and Implementation Considerations](#security-and-implementation-considerations)
   - [Reorgs](#reorgs)
   - [Batcher Hardening](#batcher-hardening)
+- [Network upgrade automation transactions](#network-upgrade-automation-transactions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
