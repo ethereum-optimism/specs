@@ -24,5 +24,5 @@ The L1 block attributes transaction is updated to include the EIP-1559 parameter
 | blobBaseFee       | uint256 | 68-99          | 3       |
 | l1BlockHash       | bytes32 | 100-131        | 4       |
 | batcherHash       | bytes32 | 132-163        | 5       |
-| 1559Denominator   | uint64  | 164-171        | 6       |
-| 1559Elasticity    | uint64  | 172-179        |         |
+| eip1559Denominator   | uint64  | 164-171        | 6       |
+| eip1559Elasticity    | uint64  | 172-179        |         |
