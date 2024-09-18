@@ -51,6 +51,7 @@
       - [Execution Engine](./protocol/granite/exec-engine.md)
       - [Derivation](./protocol/granite/derivation.md)
     - [Holocene](./protocol/holocene/overview.md)
+      - [Derivation](./protocol/holocene/derivation.md)
       - [Execution Engine](./protocol/holocene/exec-engine.md)
       - [Predeploys](./protocol/holocene/predeploys.md)
       - [L1 Block Attributes](./protocol/holocene/l1-attributes.md)
