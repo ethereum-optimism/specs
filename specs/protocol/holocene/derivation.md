@@ -17,10 +17,6 @@ block number at hand, instead of propagating forwards or backwards in the safe c
 containing invalid payloads at the engine stage to the engine, not propagating backwards in the
 derivation pipeline.
 
-The channel and frame format are not changed, see also [A note on the current channel
-format](#a-note-on-the-current-channel-format) for a discussion about a possible future
-simplification of the channel and frame format under the changed derivation rules.
-
 Holocene derivation comprises the following changes to the derivation pipeline to achieve the above.
 
 ## Frame Queue
@@ -241,7 +237,7 @@ Experiences from running OP Stack chains for over one and a half years have show
 derivation rules are (almost) never needed, so stricter rules that improve worst-case scenarios for
 Fault Proofs and Interop are favorable.
 
-# Security Considerations
+# Security and Implementation Considerations
 
 ## Reorgs
 
@@ -261,18 +257,28 @@ avoids a cascade of cross-L2 Interop reorgs.
 
 ## Batcher Hardening
 
-TODO
+In a sense, Holocene shifts some complexity from derivation to the batching phase. Simpler and
+stricter derivation rules need to be met by a more complex batcher implementation.
 
-## Outlook on a new channel format
+The batcher must be hardened to guarantee the strict ordering requirements. They are already mostly
+met in practice by the current Go implementation, but more by accident than by design. There are
+edge cases in which the batcher might violate the strict ordering rules. For example, if a channel
+fails to submit within a set period, the blocks are requeued and some out of order batching might
+occur. A batcher implementation also needs to take extra care that dynamic blobs/calldata switching
+doesn't lead to out of order or gaps of batches in scenarios where blocks are requeued, while future
+channels are already waiting in the mempool for inclusion.
 
-With these new consensus rules, several features that the current channel and frame format provide
-become unnecessary. The current format allows for frames to arrive out of order,
-and to already submit frames while the channel is still being built. These features required each
-frame to be self-contained, so they have to contain as metadata the channel ID, frame number, frame
-data length and a marker whether they are the last frame of a channel.
+Batcher implementations are suggested to follow a fixed nonce to block-range assignment, once the
+first batcher transaction (which is almost always the only batcher transaction for a channel for
+current production batcher configurations) starts being submitted. This should avoid out-of-order or
+gaps of batches. It might require to implement some form of persistence in the transaction
+management, since it isn't possible to reliably recover all globally pending batcher transactions in
+the L1 network.
 
-Technically, with the Stricter Derivation rules, the channel and frame format could be vastly simplified.
-With the streaming feature of channels dropped, and the strict ordering rules, a new channel format
-could be as simple as holding a single `uint32` channel size at the start of the first frame, while
-still splitting a channel as frames over batcher transactions. Channel IDs could be dropped. The
-introduction of such a simplified channel format is out of scope for Holocene.
+Furthermore, batcher implementations need to be made aware of the Steady Block Derivation rules,
+namely that invalid payloads will be derived as deposit-only blocks. So in case of an unsafe reorg,
+the batcher should wait on the sequencer until it has derived all blocks from L1 in order to only
+start batching new blocks on top of the possibly deposit-only derived reorg'd chain segment. The
+sync-status should repeatedly be queried and matched against the expected safe chain. In case of any
+discrepancy, the batcher should then stop batching and wait for the sequencer to fully derive up
+until the latest L1 batcher transactions, and only then continue batching.
