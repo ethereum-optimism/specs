@@ -124,13 +124,16 @@ elapses.
 If a batch is found to be invalid and is dropped, the remaining span batch it originated from, if
 applicable, is also discarded.
 
+Note that when the L1 origin of the batch queue moves forward, it is guaranteed that it is empty,
+because future batches aren't buffered any more.
+
 ### Fast Channel Invalidation
 
 Furthermore, upon finding an invalid batch, the remaining channel it got derived from is also discarded.
 
-TODO: I believe that the batch queue, similarly to the channel bank, now actually only holds at most
+_TODO: I believe that the batch queue, similarly to the channel bank, now actually only holds at most
 one single staging batch, because we eagerly derive payloads from any valid singular batch. And the
-span batch stage before it would similarly only hold at most one staging span batch.
+span batch stage before it would similarly only hold at most one staging span batch._
 
 ## Engine Queue
 
@@ -148,76 +151,71 @@ span batch, if applicable, and channel it originated from are dropped as well.
 ## Activation
 
 The new batch rules activate when the _L1 inclusion block timestamp_ is greater or equal to the
-Holocene activation timestamp. Note that this is in contrast to how span batches activated, namely
-via the span batch L1 origin timestamp.
+Holocene activation timestamp. Note that this is in contrast to how span batches activated in
+[Delta](../delta/overview.md), namely via the span batch L1 origin timestamp.
 
-TODO: state reset at activation.
+When the L1 traversal stage of the derivation pipeline moves its origin to the L1 block whose
+timestamp matches the Holocene activation timestamp, the derivation pipeline's state is mostly reset
+by *discarding*
+- all frames in the frame queue,
+- channels in the channel bank, and
+- all batches in the batch queue.
+
+The three stages are then replaces by the new Holocene frame queue, channel bank and batch queue
+(and, depending on the implementation, the optional span batch stage is added).
+
+Note that batcher implementations must be aware of this activation behavior, so any frames of a
+partially submitted channel that were included pre-Holocene must be sent again. This is a very
+unlikely scenario since production batchers are usually configured to submit a channel in a single
+transaction.
 
 ## Sync Start
 
-TODO: details on sync start simplifications.
+Thanks to the new strict frame and batch ordering rules, the sync start algorithm can be simplified in the
+average case. The rules guarantee that
+- an incoming first frame for a new channel leads to discarding previous incomplete frames for a
+non-closed previous channel in the frame queue and channel bank, and
+- when the derivation pipeline L1 origin progresses, the batch queue is empty.
+
+So the sync start algorithm can optimistically select the last L2 unsafe, safe and finalized heads
+from the engine and if the L2 safe head's L1 origin is _plausible_ (see the
+[original sync start description](../derivation.md#finding-the-sync-starting-point) for details),
+start deriving from this L1 origin.
+- If the first frame we find is a _first frame_ for a channel that includes the safe head (TODO: or
+even just the following L2 block with the current safe head as parent?), we can
+safely continue derivation from this channel because no previous derivation pipeline state could
+have influenced the L2 safe head.
+_ If the first frame we find is a non-first frame, then we need to go back a full channel
+timeout window to see if we find the start of that channel.
+  - If we find the starting frame, we can continue derivation from it.
+  - If we don't find the starting frame, we need to go back a full sequencing window. (TODO: verify)
+
+_TODO: above needs to be verified, we don't do batcher transaction into frame metadata during sync
+start yet._
 
 # Rationale
 
-## Partial Span Batch Validity
+## Strict Frame and Batch Ordering
 
-Partial Span Batch Validity changes the span batch validation rules by only invalidating the
-remaining span batch once an invalid singular batch is encountered. Prior to this, span batch
-validity was treated atomically, so earlier pending valid singular batches could be invalidated by a
-later invalid singular batch pulled from a span batch.
-To accomplish this new behavior, the [Delta span batch batch queue rules](../delta/span-batches.md#batch-queue)
-are changed in the following ways.
+Strict Frame and Batch Ordering simplifies implementations of the derivation pipeline, and leads to
+better worst-case cached data usage.
+- The frame queue only ever holds frames from a single batcher transaction.
+- The channel bank only ever holds a single staging channel, that is either being built up by
+incoming frames, or is is being processed by later stages.
+- The batch queue only ever holds at most a single span batch (that is being processed) and a single singular
+batch (from the span batch, or the staging channel directly)
+- The sync start greatly simplifies in the average production case.
 
-The max sequencer time drift check is applied to each singluar batch derived from a span batch
-individually. Once a singular batch is found to be invalid, only the remaining span batch is
-dropped. Note that the sequencing window check still applies to the span batch in full, because the
-oldest blocks would be the first to be invalidated and if dropped would also invalidate newer
-blocks.
-
-TODO: other changes to validation checks.
-
-## Strict Batch Ordering
-
-The new Strict Batch Ordering rule requires batches within and across channels to be strictly
-ordered. Note that this is already guaranteed for singular batcher derived from span batches by design.
-
-The strict ordering rules are implemented in the derivation pipeline by applying the following
-changes. 
-
-## Steady Block Derivation
-
-Steady Block Derivation changes the derivation rules for invalid payload attributes, replacing an
-invalid payload by a deposit-only/empty payload. Crucially, this means that an invalid payload
-doesn't propagate backwards in the derivation pipeline.
-
-Invalid batches are still dropped, as before, and given another chance to be replaced by a batch in
-a later channel for the same block number.
-
-Steady Block Derivation ensures a more timely progression of the derivation pipeline. Invalid
-batches are not substituted by possible future batch replacements any more, but instead are directly
-derived as deposit-only blocks. Prior to this change, in a worst case scenario, an invalid batch
-could be replaced by a valid batch for a full sequencing window, and batches after the gap would
-need to be buffered for that period.
-
-Steady Block Derivation has benefits for Fault Proofs and Interop, because it guarantees that each
-block is final when derived once from a batch, which simplifies the reasoning about block
-progression and avoids larger derivation pipeline resets.
-
-## Strict Batch Ordering
-
-Combining Steady Block Derivation with Strict Batch Ordering yields even stronger guarantees of
-derivation progress. This way, not only any (even invalid) batches finalize the decision about that
-block height, but any batch guarantees progress for _at least_ the next block height. A consequence
-of the strict ordering rules guarantee that gaps are immediately derived as deposit-only blocks.
+This has advantages for Fault Proof program implementations.
 
 ## Partial Span Batch Validity
 
-Finally, Partial Span Batch Validity guarantees that a valid singular batch derived from a span batch can
-immediately be processed as valid, instead of being in an undecided state until the full span batch is
-converted into singular batches. This leads to swifter derivation and gives strong worst-case
-guarantees for Fault Proofs because the vailidty of a block doesn't depend on the validity
-of any future blocks any more. Note that before Holocene, to verify the first block of a span batch
-required validating the full span batch.
+Partial Span Batch Validity guarantees that a valid singular batch derived from a span batch can
+immediately be processed as valid and advance the safe chain, instead of being in an undecided state
+until the full span batch is converted into singular batches. This leads to swifter derivation and
+gives strong worst-case guarantees for Fault Proofs because the vailidty of a block doesn't depend
+on the validity of any future blocks any more. Note that before Holocene, to verify the first block
+of a span batch required validating the full span batch.
 
 ## Fast Channel Invalidation
 
@@ -226,15 +224,23 @@ Because batches inside channels must be ordered and contiguous, assuming that al
 channel are self-consistent (i.e., parent L2 hashes point to the block resulting from the previous
 batch), an invalid batch also forward-invalidates all remaining batches of the same channel.
 
-Similarly to Partial Span Batch Validity, the 
+## Steady Block Derivation
+
+Steady Block Derivation changes the derivation rules for invalid payload attributes, replacing an
+invalid payload by a deposit-only/empty payload. Crucially, this means that the effect of an invalid
+payload doesn't propagate backwards in the derivation pipeline.
+This has benefits for Fault Proofs and Interop, because it guarantees that
+batch validity is not influenced by future stages and the block derived from a valid batch will be determined 
+by the engine stage before it pulls new payload attributes from the previous stage.
+This avoids larger derivation pipeline resets.
 
 ## Less Defensive Protocol
 
-The stricter derivation rules lead to a less defensive protocol. The old protocol rules
-allowed for second chances for invalid batches and submitting frames and channels out of order.
-Experiences from running OP Stack chains for over one and a half years have shown that these
-relaxed derivation rules are almost never needed, so stricter rules that improve worst-case
-scenarios for Fault Proofs and Interop are favorable.
+The stricter derivation rules lead to a less defensive protocol. The old protocol rules allowed for
+second chances for invalid payloads and submitting frames and batches within channels out of order.
+Experiences from running OP Stack chains for over one and a half years have shown that these relaxed
+derivation rules are (almost) never needed, so stricter rules that improve worst-case scenarios for
+Fault Proofs and Interop are favorable.
 
 ## Security Considerations
 
