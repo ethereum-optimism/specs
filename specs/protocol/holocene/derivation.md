@@ -4,7 +4,6 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Derivation](#derivation)
 - [Network upgrade automation transactions](#network-upgrade-automation-transactions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->

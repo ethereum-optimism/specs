@@ -29,6 +29,8 @@
   - [L2ERC721Bridge](#l2erc721bridge)
     - [Interface](#interface-3)
   - [L2StandardBridge](#l2standardbridge)
+    - [Interface](#interface-4)
+  - [OptimismMintableERC721Factory](#optimismmintableerc721factory)
 - [Security Considerations](#security-considerations)
   - [GovernanceToken](#governancetoken)
 
@@ -246,10 +248,17 @@ The following functions are updated to read from the `L1Block` contract by calli
 
 ### L2StandardBridge
 
+#### Interface
+
 The following functions are updated to read from the `L1Block` contract by calling `L1Block.l1StandardBridge()`
 
 - `otherBridge()(address)`
 - `OTHER_BRIDGE()(address)`
+
+### OptimismMintableERC721Factory
+
+The chain id is no longer read from storage but instead is read from the `L1Block` contract by calling
+`L1Block.remoteChainId()`
 
 ## Security Considerations
 
