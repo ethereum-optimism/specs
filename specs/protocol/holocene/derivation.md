@@ -325,3 +325,16 @@ start batching new blocks on top of the possibly deposit-only derived reorg'd ch
 sync-status should repeatedly be queried and matched against the expected safe chain. In case of any
 discrepancy, the batcher should then stop batching and wait for the sequencer to fully derive up
 until the latest L1 batcher transactions, and only then continue batching.
+
+# Network upgrade automation transactions
+
+The Holocene hardfork activation block contains the following transactions, in this order:
+
+- L1 Attributes Transaction
+- User deposits from L1
+- Network Upgrade Transactions
+  - L1Block deployment
+  - Update L1Block Proxy ERC-1967 Implementation
+  - L1Block Enable Holocene
+  - OptimismMintableERC20Factory deployment
+  - Update OptimismMintableERC20Factory Proxy ERC-1967 Implementation
