@@ -29,7 +29,7 @@ Furthermore, this spec proposes adding an option to use [Alt-DA](https://github.
 3.	L2 calldata uses L1 DA, while L2 BLOBs use Alt-DA.
 
 The third option, referred to as a “hybrid DA L2”, combines the best features of different DA solutions. This allows users and applications of an L2 to choose between L1 DA and alt-DA for different types of transaction data within the same network, without the need to maintain multiple L2s. Specifically, users can upload and store non-financial data at a very low cost using L2 BLOBs and Alt-DA, while still conducting critical financial data using L2 calldata and L1 DA. In some cases, these two types of data may even occur within the same transaction. Here are a few potential scenarios:
- - While the Optimism mainnet continues to use L1 DA for uploading calldata, multiple app-specific or game-focused L3s settled on it can benefit from the lower DA costs of L2 BLOBs and Alt-DA.
+ - While the Optimism mainnet continues to use L1 DA for uploading calldata, multiple app-specific or game-focused L3s settled on it can benefit from the lower DA costs of L2 BLOBs and Alt-DA. If those L3s were originally L2s, they can seamlessly migrate to L3.
  - Users might use a platform like Decentralized Twitter primarily for social networking (non-financial), while also sending payments (financial) to other users within the same application.
 
 The following diagram illustrates the transaction data flow for a hybrid DA L2:
