@@ -190,8 +190,8 @@ timeout window to see if we find the start of that channel.
   - If we find the starting frame, we can continue derivation from it.
   - If we don't find the starting frame, we need to go back a full sequencing window. (TODO: verify)
 
-_TODO: above needs to be verified, we don't do batcher transaction into frame metadata during sync
-start yet._
+_TODO: above needs to be verified, we don't introspect batcher transactions and frame metadata
+during sync start yet._
 
 # Rationale
 
@@ -228,11 +228,10 @@ batch), an invalid batch also forward-invalidates all remaining batches of the s
 
 Steady Block Derivation changes the derivation rules for invalid payload attributes, replacing an
 invalid payload by a deposit-only/empty payload. Crucially, this means that the effect of an invalid
-payload doesn't propagate backwards in the derivation pipeline.
-This has benefits for Fault Proofs and Interop, because it guarantees that
-batch validity is not influenced by future stages and the block derived from a valid batch will be determined 
-by the engine stage before it pulls new payload attributes from the previous stage.
-This avoids larger derivation pipeline resets.
+payload doesn't propagate backwards in the derivation pipeline. This has benefits for Fault Proofs
+and Interop, because it guarantees that batch validity is not influenced by future stages and the
+block derived from a valid batch will be determined by the engine stage before it pulls new payload
+attributes from the previous stage. This avoids larger derivation pipeline resets.
 
 ## Less Defensive Protocol
 
@@ -242,13 +241,25 @@ Experiences from running OP Stack chains for over one and a half years have show
 derivation rules are (almost) never needed, so stricter rules that improve worst-case scenarios for
 Fault Proofs and Interop are favorable.
 
-## Security Considerations
+# Security Considerations
 
-### Reorgs
+## Reorgs
 
-TODO
+Before Steady Block Derivation, invalid payloads got second chances to be replaced by valid future
+payloads. Because they will now be immediately replaced by as deposit-only payloads, there is a
+theoretical heightened risk for unsafe chain reorgs. To the best of our knowledge, we haven't
+experienced this on OP Mainnet or other mainnet OP Stack chains yet.
 
-### Batcher Hardening
+The only conceivable scenarios in which a _valid_ batch leads to an _invalid_ payload are
+- a buggy or malicious sequencer+batcher
+- in the future, that an previously valid Interop dependency referenced in that payload is later
+invalidated, while the block that contained the Interop dependency got already batched.
+
+It is this latter case that inspired the Steady Block Derivation rule. It guarantees that the
+secondary effects of an invalid Interop dependency are contained to a single block only, which
+avoids a cascade of cross-L2 Interop reorgs.
+
+## Batcher Hardening
 
 TODO
 
