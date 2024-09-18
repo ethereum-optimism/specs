@@ -9,6 +9,7 @@
   - [`ConfigType`](#configtype)
 - [`SystemConfig`](#systemconfig)
   - [`ConfigUpdate`](#configupdate)
+  - [Initialization](#initialization)
   - [Modifying EIP-1559 Parameters](#modifying-eip-1559-parameters)
   - [Interface](#interface)
     - [EIP-1559 Params](#eip-1559-params)
