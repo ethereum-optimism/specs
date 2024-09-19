@@ -16,7 +16,6 @@
     - [Fast Channel Invalidation](#fast-channel-invalidation)
   - [Engine Queue](#engine-queue)
   - [Activation](#activation)
-  - [Sync Start](#sync-start)
 - [Rationale](#rationale)
   - [Strict Frame and Batch Ordering](#strict-frame-and-batch-ordering)
   - [Partial Span Batch Validity](#partial-span-batch-validity)
@@ -26,6 +25,7 @@
 - [Security and Implementation Considerations](#security-and-implementation-considerations)
   - [Reorgs](#reorgs)
   - [Batcher Hardening](#batcher-hardening)
+  - [Sync Start](#sync-start)
 - [Network upgrade automation transactions](#network-upgrade-automation-transactions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -104,7 +104,7 @@ frame loading becomes simpler in the channel bank:
 
 - A first frame for a new channel starts a new channel as the staging channel.
   - If there already is an open, non-completed staging channel, it is dropped and replaced by this
-  new channel. This is consistent with how the frame queue drops all frames of an non-closed channel
+  new channel. This is consistent with how the frame queue drops all frames of a non-closed channel
   upon the arrival of a first frame for a new channel.
 - If the current channel is timed-out, but not yet pruned, and the incoming frame would be the next
 correct frame for this channel, the frame and channel are dropped, including all future frames for
@@ -119,9 +119,6 @@ before the batch queue, so that the batch queue pulls singular batches from this
 stage. When encountering an invalid singular batch, it is dropped, as is the remaining span batch
 for consistency reasons. We call this _forwards-invalidation_. However, we don't
 _backwards-invalidate_ previous valid batches that came from the same span batch, as pre-Holocene.
-
-An implementation may choose to put the current span batch, from which singular batches are derived
-from, into a separate stage, or process it within the batch queue under the new rules.
 
 When a batch derived from the current staging channel is a singular batch, it is directly forwarded
 to the batch queue. Otherwise, it is set as the current span batch in the span batch stage. The
@@ -165,7 +162,7 @@ because future batches aren't buffered any more.
 
 Furthermore, upon finding an invalid batch, the remaining channel it got derived from is also discarded.
 
-_TODO: I believe that the batch queue, similarly to the channel bank, now actually only holds at most
+_TBD: I believe that the batch queue, similarly to the channel bank, now actually only holds at most
 one single staging batch, because we eagerly derive payloads from any valid singular batch. And the
 span batch stage before it would similarly only hold at most one staging span batch._
 
@@ -197,39 +194,13 @@ by **discarding**
 - channels in the channel bank, and
 - all batches in the batch queue.
 
-The three stages are then replaces by the new Holocene frame queue, channel bank and batch queue
+The three stages are then replaced by the new Holocene frame queue, channel bank and batch queue
 (and, depending on the implementation, the optional span batch stage is added).
 
 Note that batcher implementations must be aware of this activation behavior, so any frames of a
 partially submitted channel that were included pre-Holocene must be sent again. This is a very
 unlikely scenario since production batchers are usually configured to submit a channel in a single
 transaction.
-
-## Sync Start
-
-Thanks to the new strict frame and batch ordering rules, the sync start algorithm can be simplified in the
-average case. The rules guarantee that
-
-- an incoming first frame for a new channel leads to discarding previous incomplete frames for a
-non-closed previous channel in the frame queue and channel bank, and
-- when the derivation pipeline L1 origin progresses, the batch queue is empty.
-
-So the sync start algorithm can optimistically select the last L2 unsafe, safe and finalized heads
-from the engine and if the L2 safe head's L1 origin is _plausible_ (see the
-[original sync start description](../derivation.md#finding-the-sync-starting-point) for details),
-start deriving from this L1 origin.
-
-- If the first frame we find is a _first frame_ for a channel that includes the safe head (TODO: or
-even just the following L2 block with the current safe head as parent?), we can
-safely continue derivation from this channel because no previous derivation pipeline state could
-have influenced the L2 safe head.
-- If the first frame we find is a non-first frame, then we need to go back a full channel
-timeout window to see if we find the start of that channel.
-  - If we find the starting frame, we can continue derivation from it.
-  - If we don't find the starting frame, we need to go back a full sequencing window. (TODO: verify)
-
-_TODO: above needs to be verified, we don't introspect batcher transactions and frame metadata
-during sync start yet._
 
 # Rationale
 
@@ -280,6 +251,10 @@ Experiences from running OP Stack chains for over one and a half years have show
 derivation rules are (almost) never needed, so stricter rules that improve worst-case scenarios for
 Fault Proofs and Interop are favorable.
 
+Furthermore, the more relaxed rules created a lot more corner cases and complex interactions, which
+made it harder to reason about and test the protocol, increasing the risk of chain splits between
+different implementations.
+
 # Security and Implementation Considerations
 
 ## Reorgs
@@ -297,7 +272,7 @@ invalidated, while the block that contained the Interop dependency got already b
 
 It is this latter case that inspired the Steady Block Derivation rule. It guarantees that the
 secondary effects of an invalid Interop dependency are contained to a single block only, which
-avoids a cascade of cross-L2 Interop reorgs.
+avoids a cascade of cross-L2 Interop reorgs that revisit L2 chains more than once.
 
 ## Batcher Hardening
 
@@ -326,6 +301,35 @@ start batching new blocks on top of the possibly deposit-only derived reorg'd ch
 sync-status should repeatedly be queried and matched against the expected safe chain. In case of any
 discrepancy, the batcher should then stop batching and wait for the sequencer to fully derive up
 until the latest L1 batcher transactions, and only then continue batching.
+
+## Sync Start
+
+Thanks to the new strict frame and batch ordering rules, the sync start algorithm can be simplified
+in the average case. The rules guarantee that
+
+- an incoming first frame for a new channel leads to discarding previous incomplete frames for a
+non-closed previous channel in the frame queue and channel bank, and
+- when the derivation pipeline L1 origin progresses, the batch queue is empty.
+
+So the sync start algorithm can optimistically select the last L2 unsafe, safe and finalized heads
+from the engine and if the L2 safe head's L1 origin is _plausible_ (see the
+[original sync start description](../derivation.md#finding-the-sync-starting-point) for details),
+start deriving from this L1 origin.
+
+- If the first frame we find is a _first frame_ for a channel that includes the safe head (TBD: or
+even just the following L2 block with the current safe head as parent), we can
+safely continue derivation from this channel because no previous derivation pipeline state could
+have influenced the L2 safe head.
+- If the first frame we find is a non-first frame, then we need to walk back a full channel
+timeout window to see if we find the start of that channel.
+  - If we find the starting frame, we can continue derivation from it.
+  - If we don't find the starting frame, we need to go back a full channel timeout window before the
+    finalized L2 head's L1 origin.
+
+Note regarding the last case that if we don't find a starting frame within a channel timeout window,
+the channel we did find a frame from must be timed out and would be discarded. The safe block we're
+looking for can't be in any channel that timed out before its L1 origin so we wouldn't need to
+search any further back, so we go back a channel timeout before the finalized L2 head.
 
 # Network upgrade automation transactions
 
