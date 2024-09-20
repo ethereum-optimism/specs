@@ -119,6 +119,7 @@ that the `challenge_window` must be larger than the `sequence_window` to prevent
 already passed by the time the sequencer submits the batch on L1
 
 [1]: https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L1/DataAvailabilityChallenge.sol
+
 ## Storage Requirement and BLOB Gas Cost
 
 According to the EIP-4844 specification, BLOBs must be kept for at least
