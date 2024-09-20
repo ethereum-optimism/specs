@@ -96,8 +96,6 @@ sequenceDiagram
 ## Implementation
 
 An example implementation for the `sendERC20` and `relayERC20` functions is provided.
-This construction builds on top of the
-for both replay protection and domain binding.
 
 ```solidity
 function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) public {

@@ -901,7 +901,8 @@ The bridging of `SuperchainERC20` using the `InteropStandardBridge` will require
 - Unique Address: The `sendERC20()` function must exclusively send a message
   to the same address on the target chain.
   Similarly, the `relayERC20()` function should only process messages originating from the same address.
-  - Note: The `Create2Deployer` preinstall and the custom Factory will ensure same address deployment.
+  - Note: The [`Create2Deployer` preinstall](../protocol/preinstalls.md#create2deployer)
+  and the custom Factory will ensure same address deployment.
 - Locally initiated: The bridging action should be initialized
   from the chain where funds are located only.
   - This is because the same address might correspond to different users cross-chain.
