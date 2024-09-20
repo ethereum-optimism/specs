@@ -321,7 +321,7 @@ To ensure a successful state transition, players should provide this data in adv
 The FDG provides the following interface to manage data loaded to the `PreimageOracle`:
 
 ```solidity
-/// @notice Posts the requested local data to the VM's `PreimageOralce`.
+/// @notice Posts the requested local data to the VM's `PreimageOracle`.
 /// @param _ident The local identifier of the data to post.
 /// @param _execLeafIdx The index of the leaf claim in an execution subgame that requires the local data for a step.
 /// @param _partOffset The offset of the data to post.
@@ -362,7 +362,7 @@ This data is progressively merkleized on-chain as it is streamed in, with each l
 ```solidity
 /// @notice Returns a leaf hash to add to a preimage proposal merkle tree.
 /// @param input A single 136 byte chunk of the input.
-/// @param blockIndex The index of the block that `input` corresponds to in the full preimage's absorbtion.
+/// @param blockIndex The index of the block that `input` corresponds to in the full preimage's absorption.
 /// @param stateCommitment The hash of the full 5x5 state matrix *after* absorbing and permuting `input`.
 function hashLeaf(
     bytes memory input,
@@ -387,7 +387,7 @@ proposal in the `PreimageOracle`. This involves:
 3. Computing the state matrix at the agreed upon prestate (not necessary if the invalid leaf is the first one, the
    setup state of the matrix is constant.)
 
-The challenger then submits this data to the `PreimageOracle`, where the post state leaf's claimed input is absored into
+The challenger then submits this data to the `PreimageOracle`, where the post state leaf's claimed input is absorbed into
 the pre state leaf's state matrix and the SHA3 permutation is executed on-chain. After that, the resulting state matrix
 is hashed and compared with the proposer's claim in the post state leaf. If the hash does not match, the proposal
 is marked as challenged, and it may not be finalized. If, after the challenge period is concluded, a proposal has no
@@ -531,7 +531,11 @@ digraph G {
 
 <!-- markdownlint-disable no-inline-html -->
 <p align="center">
-<img src="https://github.com/ethereum-optimism/optimism/assets/8406232/9b20ba8d-0b64-47b3-9962-5533f7eb4ef7" width=60%>
+  <img
+    src="https://github.com/ethereum-optimism/optimism/assets/8406232/9b20ba8d-0b64-47b3-9962-5533f7eb4ef7"
+    width=60%
+    alt="subgame resolution"
+  >
 </p>
 
 Given these rules, players are motivated to move quickly to challenge all dishonest claims.

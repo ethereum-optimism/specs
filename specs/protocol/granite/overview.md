@@ -6,17 +6,13 @@
 
 - [Execution Layer](#execution-layer)
 - [Consensus Layer](#consensus-layer)
-- [Smart Contracts](#smart-contracts)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-This document is not finalized and should be considered experimental.
-
 ## Execution Layer
+
+- [Limit `bn256Pairing` precompile input size](./exec-engine.md#bn256pairing-precompile-input-restriction)
 
 ## Consensus Layer
 
-## Smart Contracts
-
-- [Custom Gas Token](./custom-gas-token.md)
-- [Predeploys](./predeploys.md)
+- [Reduce Channel Timeout to 50](./derivation.md#reduce-channel-timeout)

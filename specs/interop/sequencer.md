@@ -22,7 +22,7 @@
 
 Sequencer Policy is the process of optimistically enacting rules outside of consensus
 (the state-transition function in this context), and the choices can then be asynchronously validated
-by [verifiers](./verifier.md) and [the fault-proof](./fault_proof.md).
+by [verifiers](./verifier.md) and [the fault-proof](./fault-proof.md).
 
 In the context of superchain interoperability, sequencer policy is utilized to enable cross-chain message relay
 without adding additional state-transition complexity or cross-chain synchronicity to the protocol.
@@ -103,7 +103,8 @@ if not success:
 
 for log in receipt.logs:
   if is_executing_message(log):
-      id, message = abi.decode(log.data)
+      id = abi.decode(log.data)
+      messageHash = log.topics[1]
 
       # assumes there is a client for each chain in the dependency set
       eth = clients[id.chainid]
@@ -116,7 +117,7 @@ for log in receipt.logs:
       if len(log) == 0:
         return False
 
-      if message != encode(log[0]):
+      if messageHash != hash(encode(log[0])):
         return False
 
       block = eth.getBlockByNumber(id.blocknumber)
@@ -126,8 +127,6 @@ for log in receipt.logs:
 
 return True
 ```
-
-[tx-to]: https://github.com/ethereum/execution-specs/blob/1fed0c0074f9d6aab3861057e1924411948dc50b/src/ethereum/frontier/fork_types.py#L52
 
 #### Transitive-dependency confirmation
 

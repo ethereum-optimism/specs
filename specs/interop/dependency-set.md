@@ -6,10 +6,7 @@
 
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
-  - [`DEPENDENCY_SET` UpdateType](#dependency_set-updatetype)
 - [Security Considerations](#security-considerations)
-  - [Dynamic Size of L1 Attributes Transaction](#dynamic-size-of-l1-attributes-transaction)
-  - [Maximum Size of the Dependency Set](#maximum-size-of-the-dependency-set)
   - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -24,12 +21,15 @@ social consensus MUST be used to determine the chain that represents the canonic
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
 of executing messages.
 
-The dependency set is configured on a per chain basis.
+The dependency set is configured on a per chain basis and is a unidirectional relationship. This means
+that it is possible to depend on a chain without it depending back. This means that it is possible
+to send assets to a chain where they cannot be sent back.
 
-The chain id of the local chain MUST be considered as part of its own dependency set.
+The chain id of the local chain MUST be considered as part of its own dependency set. This allows a chain
+to consume logs that it has produced much more cheaply than providing a block hash proof.
 
 While the dependency set explicitly defines the set of chains that are depended on for incoming messages,
-the full set of transitive dependencies must be known to allow for the progression of [safety](#safety).
+the full set of transitive dependencies must be known to allow for the progression of safety.
 This means that the `op-node` needs to be aware of all transitive dependencies.
 
 ## Chain ID
@@ -47,32 +47,18 @@ It is a known issue that not all software in the Ethereum can handle 32 byte cha
 
 ## Updating the Dependency Set
 
-The `SystemConfig` is updated to manage the dependency set. The chain operator can add or remove
-chains from the dependency set through the `SystemConfig`. A new `ConfigUpdate` event `UpdateType`
-enum is added that corresponds to a change in the dependency set.
+The `SystemConfig` is updated to manage a new role, `dependencyManager`.
+It can only updated by the `ProxyAdmin` during an contract upgrade.
+The sole holder of this role is the only address
+permissioned to update (remove/add to) the dependency set of that chain.
+
+The `SystemConfig` is also updated to manage the dependency set.
+The address with the `dependency manager` role can add or remove
+chains from the dependency set through the `SystemConfig`.
 
 The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
 
-### `DEPENDENCY_SET` UpdateType
-
-When a `ConfigUpdate` event is emitted where the `UpdateType` is `DEPENDENCY_SET`, the L2 network will
-update its dependency set. The chain operator SHOULD be able to add or remove chains from the dependency set.
-
 ## Security Considerations
-
-### Dynamic Size of L1 Attributes Transaction
-
-The L1 Attributes transaction includes the dependency set which is dynamically sized. This means that
-the worst case (largest size) transaction must be accounted for when ensuring that it is not possible
-to create a block that has force inclusion transactions that go over the L2 block gas limit.
-It MUST be impossible to produce an L2 block that consumes more than the L2 block gas limit.
-Limiting the dependency set size is an easy way to ensure this.
-
-### Maximum Size of the Dependency Set
-
-The maximum size of the dependency set is constrained by the L2 block gas limit. The larger the dependency set,
-the more costly it is to fully verify the network. It also makes the block building role more centralized
-as it requires more hardware to verify executing transactions before inclusion.
 
 ### Layer 1 as Part of the Dependency Set
 
@@ -82,4 +68,4 @@ a feature of the first release. This section should be clarified when the decisi
 
 If layer one is part of the dependency set, then it means that any event on L1 can be pulled
 into any L2. This is a very powerful abstraction as a minimal amount of execution can happen
-on L1 which triggers additional exeuction across all L2s in the OP Stack.
+on L1 which triggers additional execution across all L2s in the OP Stack.

@@ -61,17 +61,12 @@
 [g-exec-engine]: ../glossary.md#execution-engine
 [g-reorg]: ../glossary.md#chain-re-organization
 [g-receipts]: ../glossary.md#receipt
-[g-inception]: ../glossary.md#L2-chain-inception
 [g-deposit-contract]: ../glossary.md#deposit-contract
 [g-deposited]: ../glossary.md#deposited-transaction
 [g-l1-attr-deposit]: ../glossary.md#l1-attributes-deposited-transaction
 [g-l1-origin]: ../glossary.md#l1-origin
 [g-user-deposited]: ../glossary.md#user-deposited-transaction
 [g-deposits]: ../glossary.md#deposits
-[g-deposit-contract]: ../glossary.md#deposit-contract
-[g-l1-attr-predeploy]: ../glossary.md#l1-attributes-predeployed-contract
-[g-depositing-call]: ../glossary.md#depositing-call
-[g-depositing-transaction]: ../glossary.md#depositing-transaction
 [g-sequencing]: ../glossary.md#sequencing
 [g-sequencer]: ../glossary.md#sequencer
 [g-sequencing-epoch]: ../glossary.md#sequencing-epoch
@@ -88,7 +83,6 @@
 [g-channel]: ../glossary.md#channel
 [g-channel-frame]: ../glossary.md#channel-frame
 [g-rollup-node]: ../glossary.md#rollup-node
-[g-channel-timeout]: ../glossary.md#channel-timeout
 [g-block-time]: ../glossary.md#block-time
 [g-time-slot]: ../glossary.md#time-slot
 [g-consolidation]: ../glossary.md#unsafe-block-consolidation
@@ -97,7 +91,6 @@
 [g-unsafe-l2-head]: ../glossary.md#unsafe-l2-head
 [g-unsafe-l2-block]: ../glossary.md#unsafe-l2-block
 [g-unsafe-sync]: ../glossary.md#unsafe-sync
-[g-l1-origin]: ../glossary.md#l1-origin
 [g-deposit-tx-type]: ../glossary.md#deposited-transaction-type
 [g-finalized-l2-head]: ../glossary.md#finalized-l2-head
 [g-system-config]: ../glossary.md#system-configuration
@@ -194,10 +187,10 @@ protocol upgrades.
 
 | Parameter | Bedrock (default) value | Latest (default) value | Changes | Notes |
 | --------- | ----------------------- | ---------------------- | ------- | ----- |
-| `max_sequencer_drift` | 600 | 1800 | [Fjord](../fjord/derivation.md#constant-maximum-sequencer-drift) | Changed from a chain parameter to a constant with Fjord. |
-| `MAX_RLP_BYTES_PER_CHANNEL` | 10,000,000 | 100,000,000 | [Fjord](../fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size) | Constant increased with Fjord. |
-| `MAX_CHANNEL_BANK_SIZE` | 100,000,000 | 1,000,000,000 | [Fjord](../fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size) | Constant increased with Fjord. |
-| `MAX_SPAN_BATCH_ELEMENT_COUNT` | 10,000,000 | 10,000,000 | Effectively introduced in [Fjord](../fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size)| Number of elements |
+| `max_sequencer_drift` | 600 | 1800 | [Fjord](./fjord/derivation.md#constant-maximum-sequencer-drift) | Changed from a chain parameter to a constant with Fjord. |
+| `MAX_RLP_BYTES_PER_CHANNEL` | 10,000,000 | 100,000,000 | [Fjord](./fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size) | Constant increased with Fjord. |
+| `MAX_CHANNEL_BANK_SIZE` | 100,000,000 | 1,000,000,000 | [Fjord](./fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size) | Constant increased with Fjord. |
+| `MAX_SPAN_BATCH_ELEMENT_COUNT` | 10,000,000 | 10,000,000 | Effectively introduced in [Fjord](./fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size)| Number of elements |
 
 ---
 
@@ -250,16 +243,10 @@ into chunks known as [channel frames][g-channel-frame]. A single batcher transac
 (belonging to the same or to different channels).
 
 This design gives use the maximum flexibility in how we aggregate batches into channels, and split channels over batcher
-transactions. It notably allows us to maximize data utilisation in a batcher transaction: for instance it allows us to
-pack the final (small) frame of a window with large frames from the next window.
+transactions. It notably allows us to maximize data utilization in a batcher transaction: for instance it allows us to
+pack the final (small) frame of one channel with one or more frames from the next channel.
 
-In the future this channel identification feature also allows the [batcher][g-batcher] to employ multiple signers
-(private keys) to submit one or multiple channels in parallel (1).
-
-(1) This helps alleviate issues where, because of transaction nonce values affecting the L2 tx-pool and thus inclusion:
-multiple transactions made by the same signer are stuck waiting on the inclusion of a previous transaction.
-
-Also note that we use a streaming compression scheme, and we do not need to know how many blocks a channel will end up
+Also note that we use a streaming compression scheme, and we do not need to know how many batches a channel will end up
 containing when we start a channel, or even as we send the first frames in the channel.
 
 And by splitting channels across multiple data transactions, the L2 can have larger block data than the
@@ -400,7 +387,7 @@ where zlib_compress is the ZLIB algorithm (as specified in [RFC-1950][rfc1950]) 
 [rfc1950]: https://www.rfc-editor.org/rfc/rfc1950.html
 
 The Fjord upgrade introduces an additional [versioned channel encoding
-format](../fjord/derivation.md#brotli-channel-compression) to support alternate compression
+format](./fjord/derivation.md#brotli-channel-compression) to support alternate compression
 algorithms.
 
 When decompressing a channel, we limit the amount of decompressed data to `MAX_RLP_BYTES_PER_CHANNEL` (defined in the
@@ -466,8 +453,6 @@ This section describes how the L2 chain is produced from the L1 batches using a 
 A verifier may implement this differently, but must be semantically equivalent to not diverge from the L2 chain.
 
 ## L2 Chain Derivation Pipeline
-
-[pipeline]: #l2-chain-derivation-pipeline
 
 Our architecture decomposes the derivation process into a pipeline made up of the following stages:
 
@@ -999,7 +984,6 @@ This process happens during the payloads-attributes queue ran by a verifier node
 ran by a sequencer node (the sequencer may enable the tx-pool usage if the transactions are batch-submitted).
 
 [expanded-payload]: exec-engine.md#extended-payloadattributesv1
-[eth-payload]: https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#payloadattributesv1
 
 ## Deriving the Transaction List
 
@@ -1279,8 +1263,6 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 [EIP-155]: https://eips.ethereum.org/EIPS/eip-155
 
 ## Building Individual Payload Attributes
-
-[payload attributes]: #building-individual-payload-attributes
 
 After deriving the transactions list, the rollup node constructs a [`PayloadAttributesV2`][extended-attributes] as
 follows:

@@ -145,7 +145,7 @@ This contract is deprecated and its usage should be avoided.
 
 ## WETH9
 
-[Implementation](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/vendor/WETH9.sol)
+[Implementation](https://github.com/ethereum-optimism/optimism/blob/2b1c99b39744579cc226077d356ae9e5f162db4a/packages/contracts-bedrock/src/vendor/WETH9.sol)
 
 Address: `0x4200000000000000000000000000000000000006`
 
@@ -248,7 +248,7 @@ Following the Ecotone upgrade, the values used for L1 fee computation are:
 - blobBaseFeeScalar
 - decimals
 
-[ecotone-scalars]: system_config.md#ecotone-scalar-overhead-uint256uint256-change
+[ecotone-scalars]: system-config.md#ecotone-scalar-overhead-uint256uint256-change
 
 These new scalar values are managed by the `SystemConfig` contract on the L1 by introducing a
 backwards compatible [versioned encoding scheme][ecotone-scalars] of its `scalars` storage
@@ -294,7 +294,7 @@ upgraded by changing its proxy's implementation key.
 Address: `0x4200000000000000000000000000000000000012`
 
 The `OptimismMintableERC20Factory` is responsible for creating ERC20 contracts on L2 that can be
-used for depositing native L1 tokens into. These ERC20 contracts can be created permisionlessly
+used for depositing native L1 tokens into. These ERC20 contracts can be created permissionlessly
 and implement the interface required by the `StandardBridge` to just work with deposits and withdrawals.
 
 Each ERC20 contract that is created by the `OptimismMintableERC20Factory` allows for the `L2StandardBridge` to mint
