@@ -5,7 +5,8 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Interface](#interface)
+- [`SuperchainERC20` standard](#superchainerc20-standard)
+- [`InteropStandardBridge`](#interopstandardbridge)
   - [Functions](#functions)
     - [`sendERC20`](#senderc20)
     - [`relayERC20`](#relayerc20)
@@ -24,28 +25,52 @@
 ## Overview
 
 Without a standardized security model, bridged assets may not be fungible with each other.
-The `SuperchainERC20` unifies ERC20 token bridging to make it fungible across the Superchain.
-It builds on top of the messaging protocol, as the most trust minimized bridging solution.
+The `SuperchainERC20` standard is a set of properties allowing ERC20 to be fungible across the
+Superchain using the official `InteropStandardBridge`.
+The `InteropStandardBridge` is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.
 
-Unlike other standards, such as [xERC20](https://www.xerc20.com/),
-where users interact with a bridge possessing mint and burn
-privileges on cross-chain enabled tokens, this approach allows users to call methods directly on the token contract.
+## `SuperchainERC20` standard
 
-## Interface
+The standard will build on top of ERC20 and include the following properties:
+
+1. Give `mint` and `burn` rights to the `InteropStandardBridge`.
+2. Be deployed at the same address on every chain in the Superchain.
+
+The first property will allow the `InteropStandardBridge` to have a liquidity guarantee,
+which would not be possible in a model based on lock/unlock.
+Liquidity availability is fundamental to achieving fungibility.
+
+The second property removes the need for cross-chain access control lists.
+Otherwise, the `InteropStandardBridge` would need a way to verify if the tokens they mint on
+destination correspond to the tokens that were burned on source.
+Same address abstracts away cross-chain validation.
+
+One way to guarantee the same address across the Superchain, and also bind it to the same `init_code`
+and constructor arguments is to use the
+[`Create2Deployer` preinstall](../protocol/preinstalls.md#create2deployer).
+There is also a [`OptimismSuperchainERC20Factory`](predeploys.md#optimismmintableerc20factory)
+predeploy that facilitates this process for L1 native tokens.
+
+Notice that ERC20s that do not implement the standard can still be fungible
+using interop message passing but would need to use a custom bridge.
+
+## `InteropStandardBridge`
+
+The `InteropStandardBridge` is a predeploy that works as an abstraction
+on top of the `L2toL2CrossDomainMessenger` for token bridging.
 
 ### Functions
 
-The standard will build on top of ERC20 and include the following functions:
-
 #### `sendERC20`
 
-Transfer `_amount` amount of tokens to address `_to` in chain `_chainId`.
+Initializes a transfer of `_amount` amount of tokens with address `_tokenAddress` to target address `_to` in chain `_chainId`.
 
-It SHOULD burn `_amount` tokens and initialize a message to the `L2ToL2CrossChainMessenger` to mint the `_amount`
+It SHOULD burn `_amount` tokens with address `_tokenAddress` and initialize a message to the
+`L2ToL2CrossChainMessenger` to mint the `_amount` of the same token
 in the target address `_to` at `_chainId` and emit the `SentERC20` event including the `msg.sender` as parameter.
 
 ```solidity
-sendERC20(address _to, uint256 _amount, uint256 _chainId)
+sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId)
 ```
 
 #### `relayERC20`
@@ -53,12 +78,12 @@ sendERC20(address _to, uint256 _amount, uint256 _chainId)
 Process incoming messages IF AND ONLY IF initiated
 by the same contract (token) address on a different chain
 and come from the `L2ToL2CrossChainMessenger` in the local chain.
-It SHOULD mint `_amount` to address `_to`, as defined in `sendERC20`
-and emit an event including the `_from` and chain id from the
+It SHOULD mint `_amount` of tokens with address `_tokenAddress` to address `_to`, as defined in `sendERC20`
+and emit an event including the `_tokenAddress`, the `_from` and chain id from the
 `source` chain, where `_from` is the `msg.sender` of `sendERC20`.
 
 ```solidity
-relayERC20(address _from, address _to, uint256 _amount)
+relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
 ```
 
 ### Events
@@ -68,7 +93,7 @@ relayERC20(address _from, address _to, uint256 _amount)
 MUST trigger when a cross-chain transfer is initiated using `sendERC20`.
 
 ```solidity
-event SentERC20(address indexed from, address indexed to, uint256 amount, uint256 destination)
+event SentERC20(address indexed tokenAddress, address indexed from, address indexed to, uint256 amount, uint256 destination)
 ```
 
 #### `RelayedERC20`
@@ -76,7 +101,7 @@ event SentERC20(address indexed from, address indexed to, uint256 amount, uint25
 MUST trigger when a cross-chain transfer is finalized using `relayERC20`.
 
 ```solidity
-event RelayedERC20(address indexed from, address indexed to, uint256 amount, uint256 source);
+event RelayedERC20(address indexed tokenAddress, address indexed from, address indexed to, uint256 amount, uint256 source);
 ```
 
 ## Diagram
@@ -86,21 +111,22 @@ The following diagram depicts a cross-chain transfer.
 ```mermaid
 sequenceDiagram
   participant from
+  participant L2SBA as L2StandardBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as L2StandardBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
-  participant Recipient as to
 
-  from->>SuperERC20_A: sendERC20To(to, amount, chainID)
-  SuperERC20_A->>SuperERC20_A: burn(from, amount)
-  SuperERC20_A->>Messenger_A: sendMessage(chainId, message)
-  SuperERC20_A-->SuperERC20_A: emit SentERC20(from, to, amount, destination)
+  from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
+  L2SBA->>SuperERC20_A: burn(from, amount)
+  L2SBA->>Messenger_A: sendMessage(chainId, message)
+  L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox->>Messenger_B: relayMessage()
-  Messenger_B->>SuperERC20_B: relayERC20(from, to, amount)
-  SuperERC20_B->>SuperERC20_B: mint(to, amount)
-  SuperERC20_B-->SuperERC20_B: emit RelayedERC20(from, to, amount, source)
+  Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB->>SuperERC20_B: mint(to, amount)
+  L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
 
 ## Implementation
@@ -113,27 +139,30 @@ for both replay protection and domain binding.
 [l2-to-l2]: ./predeploys.md#l2tol2crossdomainmessenger
 
 ```solidity
-function sendERC20(address _to, uint256 _amount, uint256 _chainId) public {
-  _burn(msg.sender, _amount);
-  bytes memory _message = abi.encodeCall(this.relayERC20, (msg.sender, _to, _amount));
+function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) public {
+  _token.burn(msg.sender, _amount);
+
+  bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
   L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
-  emit SentERC20(msg.sender, _to, _amount, _chainId);
+  
+  emit SendERC20(address(_token), msg.sender, _to, _amount, _chainId);
 }
 
-function relayERC20(address _from, address _to, uint256 _amount) external {
+function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 _amount) external {
   require(msg.sender == address(L2ToL2CrossChainMessenger));
   require(L2ToL2CrossChainMessenger.crossDomainMessageSender() == address(this));
+  
   uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
 
-  _mint(_to, _amount);
+  _token.mint(_to, _amount);
 
-  emit RelayedERC20(_from, _to, _amount, _source);
+  emit RelayERC20(address(_token), _from, _to, _amount, _source);
 }
 ```
 
 ## Invariants
 
-Besides the ERC20 invariants, the SuperchainERC20 will require the following interop specific properties:
+The bridging of `SuperchainERC20` using the `InteropStandardBridge` will require the following invariants:
 
 - Conservation of bridged `amount`: The minted `amount` in `relayERC20()` should match the `amount`
   that was burnt in `sendERC20()`, as long as target chain has the initiating chain in the dependency set.
@@ -150,11 +179,10 @@ Besides the ERC20 invariants, the SuperchainERC20 will require the following int
   using `sendERC20()` and `relayERC20()`, respectively.
 - Unique Messenger: The `sendERC20()` function must exclusively use the `L2toL2CrossDomainMessenger` for messaging.
   Similarly, the `relayERC20()` function should only process messages originating from the `L2toL2CrossDomainMessenger`.
-  - Corollary: xERC20 and other standards from third-party bridges should use different functions.
 - Unique Address: The `sendERC20()` function must exclusively send a message
   to the same address on the target chain.
   Similarly, the `relayERC20()` function should only process messages originating from the same address.
-  - Note: The Factory will ensure same address deployment.
+  - Note: The `Create2Deployer` preinstall and the custom Factory will ensure same address deployment.
 - Locally initiated: The bridging action should be initialized
   from the chain where funds are located only.
   - This is because the same address might correspond to different users cross-chain.
@@ -214,21 +242,25 @@ This vertical has much potential but can also be achieved outside the standard i
 sequenceDiagram
   participant from
   participant Intermediate_A as intermediate A
-  participant SuperERC20_A as SuperERC20 (Chain A)
+  participant L2SBA as L2StandardBridge (Chain A)
+  participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
-  participant Inbox_B as CrossL2Inbox (Chain B)
+  participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant SuperERC20_B as SuperERC20 (Chain B)
+  participant L2SBB as L2StandardBridge (Chain B)
+  participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>Intermediate_A: sendWithData(data)
-  Intermediate_A->>SuperERC20_A: sendERC20(amount, chainId)
-  SuperERC20_A->>SuperERC20_A: burn(from, amount)
-  SuperERC20_A->>Messenger_A: sendMessage(chainId, message)
+  Intermediate_A->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
+  L2SBA->>SuperERC20_A: burn(from, amount)
+  L2SBA->>Messenger_A: sendMessage(chainId, message)
+  L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Intermediate_A->>Messenger_A: sendMessage(chainId, to, data)
-  Inbox_B->>Messenger_B: relayMessage(): transfer
-  Messenger_B->>SuperERC20_B: finalizeSendERC20(to, amount)
-  SuperERC20_B->>SuperERC20_B: mint(to, amount)
-  Inbox_B->>Messenger_B: relayMessage(): call
+  Inbox->>Messenger_B: relayMessage()
+  Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB->>SuperERC20_B: mint(to, amount)
+  Inbox->>Messenger_B: relayMessage(): call
+  L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B->>to: call(data)
 ```
 
