@@ -41,7 +41,7 @@ Same address abstracts away cross-chain validation.
 One way to guarantee the same address across the Superchain, and also bind it to the same `init_code`
 and constructor arguments is to use the
 [`Create2Deployer` preinstall](../protocol/preinstalls.md#create2deployer).
-There is also a [`OptimismSuperchainERC20Factory`](predeploys.md#optimismmintableerc20factory)
+There is also the [`OptimismSuperchainERC20Factory`](predeploys.md#optimismmintableerc20factory)
 predeploy that facilitates this process for L1 native tokens.
 
 Notice that ERC20s that do not implement the standard can still be fungible
@@ -50,8 +50,9 @@ using interop message passing but would need to use a custom bridge.
 ## `InteropStandardBridge`
 
 The `InteropStandardBridge` is a predeploy that works as an abstraction
-on top of the `L2toL2CrossDomainMessenger` for token bridging.
-It includes two functions:
+on top of the [L2ToL2CrossDomainMessenger][l2-to-l2] for token bridging. The `L2ToL2CrossDomainMessenger` is used for replay protection,
+domain binding and access to additional message information.
+The `InteropStandardBridge` includes two functions for bridging:
 
 - `sendERC20`: initializes a cross-chain transfer of a `SuperchainERC20`
 by burning the tokens locally and sending a message to the `InteropStandardBridge`
@@ -61,6 +62,8 @@ and mints the corresponding amount of the `SuperchainERC20`
 
 The full specifications and invariants are detailed
 in the [predeploys spec](./predeploys.md#interopstandardbridge).
+
+[l2-to-l2]: ./predeploys.md#l2tol2crossdomainmessenger
 
 ## Diagram
 
@@ -89,12 +92,9 @@ sequenceDiagram
 
 ## Implementation
 
-An example implementation that depends on deterministic deployments across chains
-for security is provided.
-This construction builds on top of the [L2ToL2CrossDomainMessenger][l2-to-l2]
+An example implementation for the `sendERC20` and `relayERC20` functions is provided.
+This construction builds on top of the 
 for both replay protection and domain binding.
-
-[l2-to-l2]: ./predeploys.md#l2tol2crossdomainmessenger
 
 ```solidity
 function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) public {
