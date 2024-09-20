@@ -60,6 +60,16 @@
     - [`Converted`](#converted)
   - [Invariants](#invariants)
   - [Conversion Flow](#conversion-flow)
+- [InteropStandardBridge](#interopstandardbridge)
+  - [Overview](#overview-2)
+  - [Functions](#functions-2)
+    - [`sendERC20`](#senderc20)
+    - [`relayERC20`](#relayerc20)
+  - [Events](#events-2)
+    - [`SentERC20`](#senterc20)
+    - [`RelayedERC20`](#relayederc20)
+  - [Diagram](#diagram)
+  - [Invariants](#invariants-1)
 - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -816,8 +826,8 @@ sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId)
 #### `relayERC20`
 
 Process incoming messages IF AND ONLY IF initiated
-by the same contract (token) address on a different chain
-and come from the `L2ToL2CrossChainMessenger` in the local chain.
+by the same contract (bridge) address on a different chain
+and relayed from the `L2ToL2CrossChainMessenger` in the local chain.
 It SHOULD mint `_amount` of tokens with address `_tokenAddress` to address `_to`, as defined in `sendERC20`
 and emit an event including the `_tokenAddress`, the `_from` and chain id from the
 `source` chain, where `_from` is the `msg.sender` of `sendERC20`.
