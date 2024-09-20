@@ -76,4 +76,5 @@
     - [Transaction Pool](./interop/tx-pool.md)
   - [OP Stack Manager](./experimental/op-stack-manager.md)
   - [Governance Token](./experimental/gov-token.md)
+  - [Multithreaded Cannon Fault Proof VM](./experimental/cannon-fault-proof-vm-mt.md)
 - [Glossary](./glossary.md)
