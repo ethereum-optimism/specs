@@ -45,12 +45,15 @@ There is also the [`OptimismSuperchainERC20Factory`](predeploys.md#optimismminta
 predeploy that facilitates this process for L1 native tokens.
 
 Notice that ERC20s that do not implement the standard can still be fungible
-using interop message passing but would need to use a custom bridge.
+using interop message passing
+using a custom bridge or implementing `sendERC20` and `relayERC20` on their own contracts.
 
 ## `InteropStandardBridge`
 
 The `InteropStandardBridge` is a predeploy that works as an abstraction
-on top of the [L2ToL2CrossDomainMessenger][l2-to-l2] for token bridging. The `L2ToL2CrossDomainMessenger` is used for replay protection,
+on top of the [L2ToL2CrossDomainMessenger][l2-to-l2]
+for token bridging.
+The `L2ToL2CrossDomainMessenger` is used for replay protection,
 domain binding and access to additional message information.
 The `InteropStandardBridge` includes two functions for bridging:
 
@@ -72,12 +75,12 @@ The following diagram depicts a cross-chain transfer.
 ```mermaid
 sequenceDiagram
   participant from
-  participant L2SBA as L2StandardBridge (Chain A)
+  participant L2SBA as InteropStandardBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as L2StandardBridge (Chain B)
+  participant L2SBB as InteropStandardBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
@@ -93,7 +96,7 @@ sequenceDiagram
 ## Implementation
 
 An example implementation for the `sendERC20` and `relayERC20` functions is provided.
-This construction builds on top of the 
+This construction builds on top of the
 for both replay protection and domain binding.
 
 ```solidity

@@ -861,12 +861,12 @@ The following diagram depicts a cross-chain transfer.
 ```mermaid
 sequenceDiagram
   participant from
-  participant L2SBA as L2StandardBridge (Chain A)
+  participant L2SBA as InteropStandardBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as L2StandardBridge (Chain B)
+  participant L2SBB as InteropStandardBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
