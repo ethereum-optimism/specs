@@ -211,7 +211,9 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="l2tol1messagepasser-storage-root-in-header"><a class="header" href="#l2tol1messagepasser-storage-root-in-header"><code>L2ToL1MessagePasser</code> Storage Root in Header</a></h2>
 <p>After the Holocene hardfork's activation, the L2 block header's <code>withdrawalsRoot</code> field will consist of the 32-byte
-<a href="../../protocol/predeploys.html#L2ToL1MessagePasser"><code>L2ToL1MessagePasser</code></a> account storage root <em>after</em> the block has been executed.</p>
+<a href="../../protocol/predeploys.html#L2ToL1MessagePasser"><code>L2ToL1MessagePasser</code></a> account storage root <em>after</em> the block has been executed, and <em>after</em> the
+insertions and deletions have been applied to the trie. In other words, the storage root should be the same root
+that is returned by <code>eth_getProof</code> at the given block number.</p>
 <h3 id="timestamp-activation"><a class="header" href="#timestamp-activation">Timestamp Activation</a></h3>
 <p>Holocene, like other network upgrades, is activated at a timestamp.
 Changes to the L2 Block execution rules are applied when the <code>L2 Timestamp &gt;= activation time</code>.
