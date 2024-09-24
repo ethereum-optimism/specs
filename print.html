@@ -8527,9 +8527,9 @@ queue:</p>
 <li>If a <em>non-first frame</em> (i.e., a frame with index &gt;0) decoded from a batcher transaction is <em>out of
 order</em>, it is <strong>immediately dropped</strong>, where the frame is called <em>out of order</em> if
 <ul>
-<li>the frame queue is empty, or</li>
-<li>the non-first frame has a different channel ID than the previous frame in the frame queue, or</li>
-<li>the previous frame already closed the channel with the same ID.</li>
+<li>its frame number is not the previous frame's plus one, if it has the same channel ID, or</li>
+<li>the previous frame already closed the channel with the same ID, or</li>
+<li>the non-first frame has a different channel ID than the previous frame in the frame queue.</li>
 </ul>
 </li>
 <li>If a <em>first frame</em> is decoded while the previous frame isn't a <em>last frame</em> (i.e., <code>is_last</code> is
