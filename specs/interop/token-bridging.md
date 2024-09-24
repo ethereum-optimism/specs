@@ -6,7 +6,7 @@
 
 - [Overview](#overview)
 - [`SuperchainERC20` standard](#superchainerc20-standard)
-- [`InteropStandardBridge`](#interopstandardbridge)
+- [`SuperchainERC20Bridge`](#superchainerc20bridge)
 - [Diagram](#diagram)
 - [Implementation](#implementation)
 - [Future Considerations](#future-considerations)
@@ -19,22 +19,22 @@
 
 Without a standardized security model, bridged assets may not be fungible with each other.
 The `SuperchainERC20` standard is a set of properties allowing ERC20 to be fungible across the
-Superchain using the official `InteropStandardBridge`.
-The `InteropStandardBridge` is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.
+Superchain using the official `SuperchainERC20Bridge`.
+The `SuperchainERC20Bridge` is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.
 
 ## `SuperchainERC20` standard
 
 The standard will build on top of ERC20 and include the following properties:
 
-1. Give `mint` and `burn` rights to the `InteropStandardBridge`.
+1. Give `mint` and `burn` rights to the `SuperchainERC20Bridge`.
 2. Be deployed at the same address on every chain in the Superchain.
 
-The first property will allow the `InteropStandardBridge` to have a liquidity guarantee,
+The first property will allow the `SuperchainERC20Bridge` to have a liquidity guarantee,
 which would not be possible in a model based on lock/unlock.
 Liquidity availability is fundamental to achieving fungibility.
 
 The second property removes the need for cross-chain access control lists.
-Otherwise, the `InteropStandardBridge` would need a way to verify if the tokens they mint on
+Otherwise, the `SuperchainERC20Bridge` would need a way to verify if the tokens they mint on
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.
 
@@ -48,23 +48,23 @@ Notice that ERC20s that do not implement the standard can still be fungible
 using interop message passing
 using a custom bridge or implementing `sendERC20` and `relayERC20` on their own contracts.
 
-## `InteropStandardBridge`
+## `SuperchainERC20Bridge`
 
-The `InteropStandardBridge` is a predeploy that works as an abstraction
+The `SuperchainERC20Bridge` is a predeploy that works as an abstraction
 on top of the [L2ToL2CrossDomainMessenger][l2-to-l2]
 for token bridging.
 The `L2ToL2CrossDomainMessenger` is used for replay protection,
 domain binding and access to additional message information.
-The `InteropStandardBridge` includes two functions for bridging:
+The `SuperchainERC20Bridge` includes two functions for bridging:
 
 - `sendERC20`: initializes a cross-chain transfer of a `SuperchainERC20`
-by burning the tokens locally and sending a message to the `InteropStandardBridge`
+by burning the tokens locally and sending a message to the `SuperchainERC20Bridge`
 on the target chain using the `L2toL2CrossDomainMessenger`.
 - `relayERC20`: process incoming messages from the `L2toL2CrossDomainMessenger`
 and mints the corresponding amount of the `SuperchainERC20`
 
 The full specifications and invariants are detailed
-in the [predeploys spec](./predeploys.md#interopstandardbridge).
+in the [predeploys spec](./predeploys.md#superchainerc20bridge).
 
 [l2-to-l2]: ./predeploys.md#l2tol2crossdomainmessenger
 
@@ -75,12 +75,12 @@ The following diagram depicts a cross-chain transfer.
 ```mermaid
 sequenceDiagram
   participant from
-  participant L2SBA as InteropStandardBridge (Chain A)
+  participant L2SBA as SuperchainERC20Bridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as InteropStandardBridge (Chain B)
+  participant L2SBB as SuperchainERC20Bridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
