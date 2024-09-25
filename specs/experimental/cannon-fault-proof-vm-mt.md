@@ -202,7 +202,8 @@ The FPVM is a state transition function that operates on a state object consisti
 1. `wakeup` - 32-bit address set via a futex syscall signaling that the VM has entered wakeup traversal or else
     `0xFFFFFFFF` (-1) if there is no active wakeup signal. For details see ["Wakeup Traversal"](#wakeup-traversal).
 1. `traverseRight` - 8-bit boolean that indicates whether the currently active thread is on the left or right thread
-    stack, as well as some details on thread traversal mechanics.  See ["Thread Traversal Mechanics"](#thread-traversal-mechanics) for details.
+    stack, as well as some details on thread traversal mechanics.
+    See ["Thread Traversal Mechanics"](#thread-traversal-mechanics) for details.
 1. `leftThreadStack` - a `bytes32` hash of the contents of the left thread stack.
    For details, see the [“Thread Stack Hashing” section.](#thread-stack-hashing)
 1. `rightThreadStack` - a `bytes32` hash of the contents of the right thread stack.
