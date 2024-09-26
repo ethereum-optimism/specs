@@ -61,7 +61,7 @@
   - [Conversion Flow](#conversion-flow)
 - [SuperchainERC20Bridge](#superchainerc20bridge)
   - [Overview](#overview-2)
-  - [Functions](#functions-2)
+  - [Functions](#functions-3)
     - [`sendERC20`](#senderc20)
     - [`relayERC20`](#relayerc20)
   - [Events](#events-2)
@@ -131,7 +131,7 @@ The following fields are required for validating a cross chain message:
 | `_msgHash` | `bytes32`    | The keccak256 hash of the message payload matching the initiating message. |
 
 ```solidity
-validateMessage(Identifier calldata _id, bytes32 memory _msgHash)
+validateMessage(Identifier calldata _id, bytes32 _msgHash)
 ```
 
 ### Interop Start Timestamp
@@ -198,23 +198,51 @@ function executeMessage(Identifier calldata _id, address _target, bytes calldata
 
 Note that the `executeMessage` function is `payable` to enable relayers to earn in the gas paying asset.
 
-An example of a custom entrypoint utilizing `validateMessage` for cross-chain messages
+An example of encoding a cross chain call directly in an event. However realize the
+[L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger) predeploy provides a cleaner and user
+friendly abstraction for cross chain calls.
+
+```solidity
+contract MyCrossChainApp {
+    function sendMessage() external {
+        bytes memory data = abi.encodeCall(MyCrossChainApp.relayMessage, (1, address(0x20)));
+
+        // Encoded payload matches the required calldata by omission of an event topic
+        assembly {
+          log0(add(data, 0x20), mload(data))
+        }
+    }
+
+    function relayMessage(uint256 value, address recipient) external {
+        // Assert that this is only executed directly from the inbox
+        require(msg.sender == Predeploys.CrossL2Inbox);
+    }
+}
+```
+
+An example of a custom entrypoint utilizing `validateMessage` to consume a known
+event. Note that in this example, the contract is consuming its own event
+from another chain, however **any** event emitted from **any** contract is consumable!
 
 ```solidity
 contract MyCrossChainApp {
     event MyCrossChainEvent();
 
-    function relayMessage(Identifier calldata _id, bytes calldata _msg) public {
+    function sendMessage() external {
+        emit MyCrossChainEvent();
+    }
+
+    function relayMessage(Identifier calldata _id, bytes calldata _msg) external {
         // Example app-level validation
-        //  - Expected event via the selector
+        //  - Expected event via the selector (first topic)
         //  - Assertion on the expected emitter of the event
-        require(MyCrossChainEvent.selector == _msg[:4]);
+        require(MyCrossChainEvent.selector == _msg[:32]);
         require(_id.origin == address(this));
 
-        // Authenticate this cross-chain message
+        // Authenticate this cross chain message
         CrossL2Inbox.validateMessage(_id, keccak256(_msg));
 
-        // Further introspect the event & actions.
+        // ABI decode the event message & perform actions.
         // ...
     }
 }
@@ -224,7 +252,7 @@ contract MyCrossChainApp {
 
 Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event will reverts
 if the call is made in a [deposit context](./derivation.md#deposit-context).
-The deposit context status can be determined by callling `isDeposit` on the `L1Block` contract.
+The deposit context status can be determined by calling `isDeposit` on the `L1Block` contract.
 
 In the future, deposit handling will be modified to be more permissive.
 It will revert only in specific cases where interop dependency resolution is not feasible.
