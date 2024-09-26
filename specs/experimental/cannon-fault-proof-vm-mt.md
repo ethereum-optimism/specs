@@ -105,7 +105,7 @@ For details, see [“Thread Stack Hashing”](#thread-stack-hashing).
 ### Thread Traversal Mechanics
 
 Threads are traversed deterministically by moving from the first thread to the last thread,
-then back to the first thread repeatedly.  For example, given the set of threads: {0,1,2,3},
+then from the last thread to the first thread repeatedly.  For example, given the set of threads: {0,1,2,3},
 the FPVM would traverse to each as follows: 0, 1, 2, 3, 3, 2, 1, 0, 0, 1, 2, 3, 3, 2, ….
 
 #### Thread Preemption
