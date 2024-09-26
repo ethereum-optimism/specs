@@ -195,25 +195,10 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#interface">Interface</a>
-<ul>
-<li><a href="#functions">Functions</a>
-<ul>
-<li><a href="#senderc20"><code>sendERC20</code></a></li>
-<li><a href="#relayerc20"><code>relayERC20</code></a></li>
-</ul>
-</li>
-<li><a href="#events">Events</a>
-<ul>
-<li><a href="#senterc20"><code>SentERC20</code></a></li>
-<li><a href="#relayederc20"><code>RelayedERC20</code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a></li>
+<li><a href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></li>
 <li><a href="#diagram">Diagram</a></li>
 <li><a href="#implementation">Implementation</a></li>
-<li><a href="#invariants">Invariants</a></li>
 <li><a href="#future-considerations">Future Considerations</a>
 <ul>
 <li><a href="#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></li>
@@ -224,130 +209,89 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
-The <code>SuperchainERC20</code> unifies ERC20 token bridging to make it fungible across the Superchain.
-It builds on top of the messaging protocol, as the most trust minimized bridging solution.</p>
-<p>Unlike other standards, such as <a href="https://www.xerc20.com/">xERC20</a>,
-where users interact with a bridge possessing mint and burn
-privileges on cross-chain enabled tokens, this approach allows users to call methods directly on the token contract.</p>
-<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
-<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
-<p>The standard will build on top of ERC20 and include the following functions:</p>
-<h4 id="senderc20"><a class="header" href="#senderc20"><code>sendERC20</code></a></h4>
-<p>Transfer <code>_amount</code> amount of tokens to address <code>_to</code> in chain <code>_chainId</code>.</p>
-<p>It SHOULD burn <code>_amount</code> tokens and initialize a message to the <code>L2ToL2CrossChainMessenger</code> to mint the <code>_amount</code>
-in the target address <code>_to</code> at <code>_chainId</code> and emit the <code>SentERC20</code> event including the <code>msg.sender</code> as parameter.</p>
-<pre><code class="language-solidity">sendERC20(address _to, uint256 _amount, uint256 _chainId)
-</code></pre>
-<h4 id="relayerc20"><a class="header" href="#relayerc20"><code>relayERC20</code></a></h4>
-<p>Process incoming messages IF AND ONLY IF initiated
-by the same contract (token) address on a different chain
-and come from the <code>L2ToL2CrossChainMessenger</code> in the local chain.
-It SHOULD mint <code>_amount</code> to address <code>_to</code>, as defined in <code>sendERC20</code>
-and emit an event including the <code>_from</code> and chain id from the
-<code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
-<pre><code class="language-solidity">relayERC20(address _from, address _to, uint256 _amount)
-</code></pre>
-<h3 id="events"><a class="header" href="#events">Events</a></h3>
-<h4 id="senterc20"><a class="header" href="#senterc20"><code>SentERC20</code></a></h4>
-<p>MUST trigger when a cross-chain transfer is initiated using <code>sendERC20</code>.</p>
-<pre><code class="language-solidity">event SentERC20(address indexed from, address indexed to, uint256 amount, uint256 destination)
-</code></pre>
-<h4 id="relayederc20"><a class="header" href="#relayederc20"><code>RelayedERC20</code></a></h4>
-<p>MUST trigger when a cross-chain transfer is finalized using <code>relayERC20</code>.</p>
-<pre><code class="language-solidity">event RelayedERC20(address indexed from, address indexed to, uint256 amount, uint256 source);
-</code></pre>
+The <code>SuperchainERC20</code> standard is a set of properties allowing ERC20 to be fungible across the
+Superchain using the official <code>SuperchainERC20Bridge</code>.
+The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.</p>
+<h2 id="superchainerc20-standard"><a class="header" href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a></h2>
+<p>The standard will build on top of ERC20 and include the following properties:</p>
+<ol>
+<li>Give <code>mint</code> and <code>burn</code> rights to the <code>SuperchainERC20Bridge</code>.</li>
+<li>Be deployed at the same address on every chain in the Superchain.</li>
+</ol>
+<p>The first property will allow the <code>SuperchainERC20Bridge</code> to have a liquidity guarantee,
+which would not be possible in a model based on lock/unlock.
+Liquidity availability is fundamental to achieving fungibility.</p>
+<p>The second property removes the need for cross-chain access control lists.
+Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens they mint on
+destination correspond to the tokens that were burned on source.
+Same address abstracts away cross-chain validation.</p>
+<p>One way to guarantee the same address across the Superchain, and also bind it to the same <code>init_code</code>
+and constructor arguments is to use the
+<a href="../protocol/preinstalls.html#create2deployer"><code>Create2Deployer</code> preinstall</a>.
+There is also the <a href="predeploys.html#optimismmintableerc20factory"><code>OptimismSuperchainERC20Factory</code></a>
+predeploy that facilitates this process for L1 native tokens.</p>
+<p>Notice that ERC20s that do not implement the standard can still be fungible
+using interop message passing
+using a custom bridge or implementing <code>sendERC20</code> and <code>relayERC20</code> on their own contracts.</p>
+<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></h2>
+<p>The <code>SuperchainERC20Bridge</code> is a predeploy that works as an abstraction
+on top of the <a href="./predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
+for token bridging.
+The <code>L2ToL2CrossDomainMessenger</code> is used for replay protection,
+domain binding and access to additional message information.
+The <code>SuperchainERC20Bridge</code> includes two functions for bridging:</p>
+<ul>
+<li><code>sendERC20</code>: initializes a cross-chain transfer of a <code>SuperchainERC20</code>
+by burning the tokens locally and sending a message to the <code>SuperchainERC20Bridge</code>
+on the target chain using the <code>L2toL2CrossDomainMessenger</code>.</li>
+<li><code>relayERC20</code>: process incoming messages from the <code>L2toL2CrossDomainMessenger</code>
+and mints the corresponding amount of the <code>SuperchainERC20</code></li>
+</ul>
+<p>The full specifications and invariants are detailed
+in the <a href="./predeploys.html#superchainerc20bridge">predeploys spec</a>.</p>
 <h2 id="diagram"><a class="header" href="#diagram">Diagram</a></h2>
 <p>The following diagram depicts a cross-chain transfer.</p>
 <pre class="mermaid">sequenceDiagram
   participant from
+  participant L2SBA as SuperchainERC20Bridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as SuperchainERC20Bridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
-  participant Recipient as to
 
-  from-&gt;&gt;SuperERC20_A: sendERC20To(to, amount, chainID)
-  SuperERC20_A-&gt;&gt;SuperERC20_A: burn(from, amount)
-  SuperERC20_A-&gt;&gt;Messenger_A: sendMessage(chainId, message)
-  SuperERC20_A--&gt;SuperERC20_A: emit SentERC20(from, to, amount, destination)
+  from-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
+  L2SBA-&gt;&gt;SuperERC20_A: burn(from, amount)
+  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox-&gt;&gt;Messenger_B: relayMessage()
-  Messenger_B-&gt;&gt;SuperERC20_B: relayERC20(from, to, amount)
-  SuperERC20_B-&gt;&gt;SuperERC20_B: mint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit RelayedERC20(from, to, amount, source)
+  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: mint(to, amount)
+  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
-<p>An example implementation that depends on deterministic deployments across chains
-for security is provided.
-This construction builds on top of the <a href="./predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
-for both replay protection and domain binding.</p>
-<pre><code class="language-solidity">function sendERC20(address _to, uint256 _amount, uint256 _chainId) public {
-  _burn(msg.sender, _amount);
-  bytes memory _message = abi.encodeCall(this.relayERC20, (msg.sender, _to, _amount));
+<p>An example implementation for the <code>sendERC20</code> and <code>relayERC20</code> functions is provided.</p>
+<pre><code class="language-solidity">function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) public {
+  _token.burn(msg.sender, _amount);
+
+  bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
   L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
-  emit SentERC20(msg.sender, _to, _amount, _chainId);
+  
+  emit SendERC20(address(_token), msg.sender, _to, _amount, _chainId);
 }
 
-function relayERC20(address _from, address _to, uint256 _amount) external {
+function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 _amount) external {
   require(msg.sender == address(L2ToL2CrossChainMessenger));
   require(L2ToL2CrossChainMessenger.crossDomainMessageSender() == address(this));
+  
   uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
 
-  _mint(_to, _amount);
+  _token.mint(_to, _amount);
 
-  emit RelayedERC20(_from, _to, _amount, _source);
+  emit RelayERC20(address(_token), _from, _to, _amount, _source);
 }
 </code></pre>
-<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
-<p>Besides the ERC20 invariants, the SuperchainERC20 will require the following interop specific properties:</p>
-<ul>
-<li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
-that was burnt in <code>sendERC20()</code>, as long as target chain has the initiating chain in the dependency set.
-<ul>
-<li>Corollary 1: Finalized cross-chain transactions will conserve the sum of <code>totalSupply</code>
-and each user's balance for each chain in the Superchain.</li>
-<li>Corollary 2: Each initiated but not finalized message (included in initiating chain but not yet in target chain)
-will decrease the <code>totalSupply</code> and the initiating user balance precisely by the burnt <code>amount</code>.</li>
-<li>Corollary 3: <code>SuperchainERC20s</code> should not charge a token fee or increase the balance when moving cross-chain.</li>
-<li>Note: if the target chain is not in the initiating chain dependency set,
-funds will be locked, similar to sending funds to the wrong address.
-If the target chain includes it later, these could be unlocked.</li>
-</ul>
-</li>
-<li>Freedom of movement: Users should be able to send and receive tokens in any target
-chain with the initiating chain in its dependency set
-using <code>sendERC20()</code> and <code>relayERC20()</code>, respectively.</li>
-<li>Unique Messenger: The <code>sendERC20()</code> function must exclusively use the <code>L2toL2CrossDomainMessenger</code> for messaging.
-Similarly, the <code>relayERC20()</code> function should only process messages originating from the <code>L2toL2CrossDomainMessenger</code>.
-<ul>
-<li>Corollary: xERC20 and other standards from third-party bridges should use different functions.</li>
-</ul>
-</li>
-<li>Unique Address: The <code>sendERC20()</code> function must exclusively send a message
-to the same address on the target chain.
-Similarly, the <code>relayERC20()</code> function should only process messages originating from the same address.
-<ul>
-<li>Note: The Factory will ensure same address deployment.</li>
-</ul>
-</li>
-<li>Locally initiated: The bridging action should be initialized
-from the chain where funds are located only.
-<ul>
-<li>This is because the same address might correspond to different users cross-chain.
-For example, two SAFEs with the same address in two chains might have different owners.
-With the prospects of a smart wallet future, it is impossible to assume
-there will be a way to distinguish EOAs from smart wallets.</li>
-<li>A way to allow for remotely initiated bridging is to include remote approval,
-i.e. approve a certain address in a certain chainId to spend local funds.</li>
-</ul>
-</li>
-<li>Bridge Events:
-<ul>
-<li><code>sendERC20()</code> should emit a <code>SentERC20</code> event. `</li>
-<li><code>relayERC20()</code> should emit a <code>RelayedERC20</code> event.</li>
-</ul>
-</li>
-</ul>
 <h2 id="future-considerations"><a class="header" href="#future-considerations">Future Considerations</a></h2>
 <h3 id="cross-chain-transferfrom"><a class="header" href="#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></h3>
 <p>In addition to standard locally initialized bridging,
@@ -384,21 +328,25 @@ i.e. bridge funds and then do X.</p>
 <pre class="mermaid">sequenceDiagram
   participant from
   participant Intermediate_A as intermediate A
-  participant SuperERC20_A as SuperERC20 (Chain A)
+  participant L2SBA as L2StandardBridge (Chain A)
+  participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
-  participant Inbox_B as CrossL2Inbox (Chain B)
+  participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant SuperERC20_B as SuperERC20 (Chain B)
+  participant L2SBB as L2StandardBridge (Chain B)
+  participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from-&gt;&gt;Intermediate_A: sendWithData(data)
-  Intermediate_A-&gt;&gt;SuperERC20_A: sendERC20(amount, chainId)
-  SuperERC20_A-&gt;&gt;SuperERC20_A: burn(from, amount)
-  SuperERC20_A-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  Intermediate_A-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
+  L2SBA-&gt;&gt;SuperERC20_A: burn(from, amount)
+  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Intermediate_A-&gt;&gt;Messenger_A: sendMessage(chainId, to, data)
-  Inbox_B-&gt;&gt;Messenger_B: relayMessage(): transfer
-  Messenger_B-&gt;&gt;SuperERC20_B: finalizeSendERC20(to, amount)
-  SuperERC20_B-&gt;&gt;SuperERC20_B: mint(to, amount)
-  Inbox_B-&gt;&gt;Messenger_B: relayMessage(): call
+  Inbox-&gt;&gt;Messenger_B: relayMessage()
+  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: mint(to, amount)
+  Inbox-&gt;&gt;Messenger_B: relayMessage(): call
+  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B-&gt;&gt;to: call(data)
 </pre>
 <p>Adding the call to the standard would remove the dependence on the sequencer regarding the proper tx ordering

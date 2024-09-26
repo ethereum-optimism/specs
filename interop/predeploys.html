@@ -298,6 +298,25 @@
 <li><a href="#conversion-flow">Conversion Flow</a></li>
 </ul>
 </li>
+<li><a href="#superchainerc20bridge">SuperchainERC20Bridge</a>
+<ul>
+<li><a href="#overview-2">Overview</a></li>
+<li><a href="#functions-2">Functions</a>
+<ul>
+<li><a href="#senderc20"><code>sendERC20</code></a></li>
+<li><a href="#relayerc20"><code>relayERC20</code></a></li>
+</ul>
+</li>
+<li><a href="#events-2">Events</a>
+<ul>
+<li><a href="#senterc20"><code>SentERC20</code></a></li>
+<li><a href="#relayederc20"><code>RelayedERC20</code></a></li>
+</ul>
+</li>
+<li><a href="#diagram">Diagram</a></li>
+<li><a href="#invariants-1">Invariants</a></li>
+</ul>
+</li>
 <li><a href="#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -573,8 +592,9 @@ check whether a message expired or not, and handle this case accordingly.</p>
 </tbody></table>
 </div>
 <h3 id="optimismsuperchainerc20"><a class="header" href="#optimismsuperchainerc20">OptimismSuperchainERC20</a></h3>
-<p>The <code>OptimismSuperchainERC20Factory</code> creates ERC20 contracts that implement to the <code>SuperchainERC20</code> <a href="token-bridging.html">standard</a>
-and grant mint-burn rights to the <code>L2StandardBridge</code> (<code>OptimismSuperchainERC20</code>).
+<p>The <code>OptimismSuperchainERC20Factory</code> creates ERC20 contracts that implements the <code>SuperchainERC20</code> <a href="token-bridging.html">standard</a>,
+grants mint-burn rights to the <code>L2StandardBridge</code> (<code>OptimismSuperchainERC20</code>)
+and include a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
@@ -829,7 +849,7 @@ remote token addresses.</li>
 </li>
 <li>Freedom of conversion for valid and paired tokens:
 anyone can convert between allowed legacy representations and
-valid <code>OptimismSuperchainERC20s</code> corresponding to the same remote token.</li>
+valid <code>OptimismSuperchainERC20</code> corresponding to the same remote token.</li>
 </ul>
 <h3 id="conversion-flow"><a class="header" href="#conversion-flow">Conversion Flow</a></h3>
 <pre class="mermaid">sequenceDiagram
@@ -848,6 +868,110 @@ valid <code>OptimismSuperchainERC20s</code> corresponding to the same remote tok
   L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
   L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
 </pre>
+<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge">SuperchainERC20Bridge</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="overview-2"><a class="header" href="#overview-2">Overview</a></h3>
+<p>The <code>SuperchainERC20Bridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
+that facilitates token bridging using interop.
+It has mint and burn rights over <code>SuperchainERC20</code> tokens
+as described in the <a href="./token-bridging.html">token bridging spec</a>.</p>
+<h3 id="functions-2"><a class="header" href="#functions-2">Functions</a></h3>
+<h4 id="senderc20"><a class="header" href="#senderc20"><code>sendERC20</code></a></h4>
+<p>Initializes a transfer of <code>_amount</code> amount of tokens with address <code>_tokenAddress</code> to target address <code>_to</code> in chain <code>_chainId</code>.</p>
+<p>It SHOULD burn <code>_amount</code> tokens with address <code>_tokenAddress</code> and initialize a message to the
+<code>L2ToL2CrossChainMessenger</code> to mint the <code>_amount</code> of the same token
+in the target address <code>_to</code> at <code>_chainId</code> and emit the <code>SentERC20</code> event including the <code>msg.sender</code> as parameter.</p>
+<pre><code class="language-solidity">sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId)
+</code></pre>
+<h4 id="relayerc20"><a class="header" href="#relayerc20"><code>relayERC20</code></a></h4>
+<p>Process incoming messages IF AND ONLY IF initiated
+by the same contract (bridge) address on a different chain
+and relayed from the <code>L2ToL2CrossChainMessenger</code> in the local chain.
+It SHOULD mint <code>_amount</code> of tokens with address <code>_tokenAddress</code> to address <code>_to</code>, as defined in <code>sendERC20</code>
+and emit an event including the <code>_tokenAddress</code>, the <code>_from</code> and chain id from the
+<code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
+<pre><code class="language-solidity">relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
+</code></pre>
+<h3 id="events-2"><a class="header" href="#events-2">Events</a></h3>
+<h4 id="senterc20"><a class="header" href="#senterc20"><code>SentERC20</code></a></h4>
+<p>MUST trigger when a cross-chain transfer is initiated using <code>sendERC20</code>.</p>
+<pre><code class="language-solidity">event SentERC20(address indexed tokenAddress, address indexed from, address indexed to, uint256 amount, uint256 destination)
+</code></pre>
+<h4 id="relayederc20"><a class="header" href="#relayederc20"><code>RelayedERC20</code></a></h4>
+<p>MUST trigger when a cross-chain transfer is finalized using <code>relayERC20</code>.</p>
+<pre><code class="language-solidity">event RelayedERC20(address indexed tokenAddress, address indexed from, address indexed to, uint256 amount, uint256 source);
+</code></pre>
+<h3 id="diagram"><a class="header" href="#diagram">Diagram</a></h3>
+<p>The following diagram depicts a cross-chain transfer.</p>
+<pre class="mermaid">sequenceDiagram
+  participant from
+  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant SuperERC20_A as SuperchainERC20 (Chain A)
+  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
+  participant Inbox as CrossL2Inbox
+  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant SuperERC20_B as SuperchainERC20 (Chain B)
+
+  from-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
+  L2SBA-&gt;&gt;SuperERC20_A: burn(from, amount)
+  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
+  Inbox-&gt;&gt;Messenger_B: relayMessage()
+  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: mint(to, amount)
+  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
+</pre>
+<h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
+<p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainERC20Bridge</code> will require the following invariants:</p>
+<ul>
+<li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
+that was burnt in <code>sendERC20()</code>, as long as target chain has the initiating chain in the dependency set.
+<ul>
+<li>Corollary 1: Finalized cross-chain transactions will conserve the sum of <code>totalSupply</code>
+and each user's balance for each chain in the Superchain.</li>
+<li>Corollary 2: Each initiated but not finalized message (included in initiating chain but not yet in target chain)
+will decrease the <code>totalSupply</code> and the initiating user balance precisely by the burnt <code>amount</code>.</li>
+<li>Corollary 3: <code>SuperchainERC20s</code> should not charge a token fee or increase the balance when moving cross-chain.</li>
+<li>Note: if the target chain is not in the initiating chain dependency set,
+funds will be locked, similar to sending funds to the wrong address.
+If the target chain includes it later, these could be unlocked.</li>
+</ul>
+</li>
+<li>Freedom of movement: Users should be able to send and receive tokens in any target
+chain with the initiating chain in its dependency set
+using <code>sendERC20()</code> and <code>relayERC20()</code>, respectively.</li>
+<li>Unique Messenger: The <code>sendERC20()</code> function must exclusively use the <code>L2toL2CrossDomainMessenger</code> for messaging.
+Similarly, the <code>relayERC20()</code> function should only process messages originating from the <code>L2toL2CrossDomainMessenger</code>.</li>
+<li>Unique Address: The <code>sendERC20()</code> function must exclusively send a message
+to the same address on the target chain.
+Similarly, the <code>relayERC20()</code> function should only process messages originating from the same address.
+<ul>
+<li>Note: The <a href="../protocol/preinstalls.html#create2deployer"><code>Create2Deployer</code> preinstall</a>
+and the custom Factory will ensure same address deployment.</li>
+</ul>
+</li>
+<li>Locally initiated: The bridging action should be initialized
+from the chain where funds are located only.
+<ul>
+<li>This is because the same address might correspond to different users cross-chain.
+For example, two SAFEs with the same address in two chains might have different owners.
+With the prospects of a smart wallet future, it is impossible to assume
+there will be a way to distinguish EOAs from smart wallets.</li>
+<li>A way to allow for remotely initiated bridging is to include remote approval,
+i.e. approve a certain address in a certain chainId to spend local funds.</li>
+</ul>
+</li>
+<li>Bridge Events:
+<ul>
+<li><code>sendERC20()</code> should emit a <code>SentERC20</code> event. `</li>
+<li><code>relayERC20()</code> should emit a <code>RelayedERC20</code> event.</li>
+</ul>
+</li>
+</ul>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 <p>TODO</p>
 
