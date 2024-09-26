@@ -21,6 +21,7 @@ of governance approved [contract releases] can be found on the
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Overview](#overview)
 - [Deployment](#deployment)
 - [Interface](#interface)
   - [`Proxy.sol`](#proxysol)
@@ -37,6 +38,173 @@ of governance approved [contract releases] can be found on the
   - [Upgradeability (ABI Changes)](#upgradeability-abi-changes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Overview
+
+The OP Contracts Manager is deployed as part of a wider deployment system. The diagram below outlines the how the OP Contracts Manager fits into this deployment system. You can see how it's deployed and then later used to deploy L1 contracts for an OP Contracts chain.
+
+```mermaid
+flowchart TB
+
+   %% Input and Output blocks for DeploySuperchain
+   subgraph DeploySuperchainInput[DeploySuperchainInput]
+      POA[ProxyAdminOwnerSafe]
+      Paused[Paused]
+      RequiredProtocolVersion[RequiredProtocolVersion]
+      RecommendedProtocolVersion[RecommendedProtocolVersion]
+      subgraph Roles
+         ProxyAdminOwner[ProxyAdminOwner]
+         ProtocolVersionsOwner[ProtocolVersionsOwner]
+         Guardian[Guardian]
+      end
+   end
+
+   subgraph DeploySuperchain[DeploySuperchain.s.sol]
+      DeploySuperchainTextNode["Deploys core contracts for Superchain abstraction"]
+   end
+
+   subgraph DeploySuperchainOutput[DeploySuperchainOutput]
+      SuperchainConfigProxy[SuperchainConfigProxy]
+      SuperchainConfig[SuperchainConfig - Impl]
+      ProtocolVersionsProxy[ProtocolVersionsProxy]
+      ProtocolVersions[ProtocolVersions - Impl]
+      ProxyAdmin[ProxyAdmin]
+   end
+
+   %% Input and Output blocks for DeployImplementations
+   subgraph DeployImplementationsInput[DeployImplementationsInput]
+      Salt[Salt]
+      WithdrawalDelaySeconds[WithdrawalDelaySeconds]
+      MinProposalSizeBytes[MinimumProposalSizeBytes]
+      ChallengePeriodSeconds[ChallengePeriodSeconds]
+      ProofMaturityDelaySeconds[ProofMaturityDelaySeconds]
+      DisputeGameFinalityDelaySeconds[DisputeGameFinalityDelaySeconds]
+      Release[Release]
+      SuperchainConfigProxyDII[SuperchainConfigProxy]
+      ProtocolVersionsProxyDII[ProtocolVersionsProxy]
+   end
+
+   subgraph DeployImplementations[DeployImplementations.s.sol]
+      DeployImplementationsTextNode["Deploys implementation contracts and OPContractsManager per chain"]
+      DeployImplementationsBluePrintsTextNode["Deploys Blueprints used in OPContractsManager"]
+      DeployImplementationsOPContractsManagerDeployTextNode["Deploys and initializes OPContractsManager (proxied)"]
+   end
+
+   subgraph DeployImplementationsOutput[DeployImplementationsOutput]
+      L1CrossDomainMessenger[L1CrossDomainMessenger]
+      OptimismPortal[OptimismPortal]
+      SystemConfig[SystemConfig]
+      OptimismMintableERC20Factory[MintableERC20Factory]
+      L1ERC721Bridge[L1ERC721Bridge]
+      DelayedWETH[DelayedWETH]
+      L1StandardBridge[L1StandardBridge]
+      DisputeGameFactory[DisputeGameFactory]
+      OPContractsManagerProxy[OPContractsManagerProxy]
+      PreImageOracle[PreImageOracle - Singleton]
+      MIPS[MIPS - Singleton]
+   end
+
+   %% Blueprints subgraph
+   subgraph Blueprints[Blueprints]
+      AddressManager[AddressManager]
+      Proxy[Proxy]
+      ProxyAdmin[ProxyAdmin]
+      L1ChugSplashProxy[L1ChugSplashProxy]
+      ResolvedDelegateProxy[ResolvedDelegateProxy]
+   end
+
+   %% OPContractsManager subgraph
+   subgraph OPContractsManager[OPContractsManager]
+      OPContractsManagerDeployTextNode["Deploys and initializes OPContractsManager (via OPContractsManager contract)"]
+      OPContractsManagerInvokeTextNode["DeployOPChain.s.sol invokes OPContractsManager deploy function"]
+   end
+
+   %% Input and Output blocks for DeployOPChain
+   subgraph DeployOPChainInput[DeployOPChainInput]
+      subgraph DeployOPChainRoles[Roles]
+         OPChainProxyAdminOwner[OP Chain ProxyAdminOwner]
+         SystemConfigOwner[SystemConfigOwner]
+         Batcher[Batcher]
+         UnsafeBlockSigner[UnsafeBlockSigner]
+         Proposer[Proposer]
+         Challenger[Challenger]
+      end
+      BaseFeeScalar[BaseFeeScalar]
+      BlobBaseFeeScalar[BlobBaseFeeScalar]
+      L2ChainId[L2ChainId]
+      OPContractsManagerDOI[OPContractsManager]
+   end
+
+   subgraph DeployOPChain[DeployOPChain.s.sol]
+      DeployOPChainTextNode["Invokes deploy function on OPContractsManager"]
+   end
+
+   subgraph DeployOPChainOutput[DeployOPChainOutput]
+      ProxyAdminDOO[ProxyAdmin]
+      AddressManagerDOO[AddressManager]
+      L1ERC721BridgeProxyDOO[L1ERC721BridgeProxy]
+      SystemConfigProxyDOO[SystemConfigProxy]
+      FaultDisputeGame[FaultDisputeGame]
+      OptimismMintableERC20FactoryProxyDOO[OptimismMintableERC20FactoryProxy]
+      L1StandardBridgeProxyDOO[L1StandardBridgeProxy]
+      L1CrossDomainMessengerProxyDOO[L1CrossDomainMessengerProxy]
+      OptimismPortalProxyDOO[OptimismPortalProxy]
+      PermissionedDisputeGameDOO[PermissionedDisputeGame]
+      DelayedWETHProxyPermDOO[DelayedWETHProxy - permissioned]
+      DelayedWETHProxyPermlessDOO[DelayedWETHProxy - permissionless]
+      AnchorStateRegistryProxyDOO[AnchorStateRegistryProxy]
+      AnchorStateRegistryDOO[AnchorStateRegistry - Impl]
+      DisputeGameFactoryProxyDOO[DisputeGameFactory Proxy]
+      DisputeGameFactoryDOO[DisputeGameFactory - Impl]
+   end
+   AnchorStateRegistryProxyDOO-->|proxies|AnchorStateRegistryDOO
+   DisputeGameFactoryProxyDOO-->|proxies|DisputeGameFactoryDOO
+
+   %% Input roles for OPContractsManager
+   subgraph OPContractsManagerInput[OPContractsManagerInput]
+      subgraph OPContractsManagerRoles[Roles]
+         OPChainProxyAdminOwnerOPSM[OP Chain ProxyAdminOwner]
+         SystemConfigOwnerOPSM[SystemConfigOwner]
+         BatcherOPSM[Batcher]
+         UnsafeBlockSignerOPSM[UnsafeBlockSigner]
+         ProposerOPSM[Proposer]
+         ChallengerOPSM[Challenger]
+      end
+      BaseFeeScalarOPSM[BaseFeeScalar]
+      BlobBaseFeeScalarOPSM[BlobBaseFeeScalar]
+      L2ChainIdOPSM[L2ChainId]
+   end
+
+   %% Flow connections with steps
+   DeploySuperchainInput-->|Step 1|DeploySuperchain
+   DeploySuperchain-->|Step 2|DeploySuperchainOutput
+   ProtocolVersionsProxy-->|proxies|ProtocolVersions
+   SuperchainConfigProxy-->|proxies|SuperchainConfig
+   ProtocolVersionsProxy-->ProtocolVersionsProxyDII
+   SuperchainConfigProxy-->SuperchainConfigProxyDII
+   DeployImplementationsInput-->|Step 3|DeployImplementations
+   DeployImplementations-->|Step 4: Deploys|Blueprints
+   DeployImplementations-->|Step 5: Deploys|OPContractsManager
+   DeployImplementations-->|Step 6|DeployImplementationsOutput
+   Blueprints-->|input for OPContractsManager|OPContractsManager
+   ProtocolVersionsProxyDII-->|input for OPContractsManager|OPContractsManager
+   SuperchainConfigProxyDII-->|input for OPContractsManager|OPContractsManager
+   L1CrossDomainMessenger-->|input for OPContractsManager|OPContractsManager
+   OptimismPortal-->|input for OPContractsManager|OPContractsManager
+   SystemConfig-->|input for OPContractsManager|OPContractsManager
+   OptimismMintableERC20Factory-->|input for OPContractsManager|OPContractsManager
+   L1ERC721Bridge-->|input for OPContractsManager|OPContractsManager
+   L1StandardBridge-->|input for OPContractsManager|OPContractsManager
+   DeployOPChainInput-->|Step 7|DeployOPChain
+   DeployOPChain-->|Step 8: invokes deploy|OPContractsManagerInput
+   OPContractsManagerInput-->|Step 8: invokes deploy|OPContractsManager
+   DeployOPChain-->|Step 9|DeployOPChainOutput
+
+   %% Outer box transparency for better contrast
+   classDef outer fill:#ffffff44
+   class DeploySuperchainInput,DeploySuperchain,DeploySuperchainOutput,DeployImplementationsInput,DeployImplementations,DeployImplementationsOutput,DeployOPChainInput,OPContractsManager,DeployOPChain,OPContractsManagerInput,DeployOPChainOutput outer
+```
+
 
 ## Deployment
 
@@ -178,7 +346,7 @@ used as the source of truth for registrations.
 
 This means, for example, if deploying a chain with a chain ID of 10—which is OP
 Mainnet's chain ID—deployment will execute successfully, but the entry in OP
-Stack Manager may be overwritten in a future upgrade. Therefore, chain ID
+Contracts Manager may be overwritten in a future upgrade. Therefore, chain ID
 uniqueness is not enforced by the OP Contracts Manager, and it is strongly
 recommended to only use chain IDs that are not already present in the
 [ethereum-lists/chains] repository.
