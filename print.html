@@ -8891,8 +8891,8 @@ span batch, if applicable, and channel it originated from are dropped as well.</
 Holocene activation timestamp. Note that this is in contrast to how span batches activated in
 <a href="protocol/holocene/../delta/overview.html">Delta</a>, namely via the span batch L1 origin timestamp.</p>
 <p>When the L1 traversal stage of the derivation pipeline moves its origin to the L1 block whose
-timestamp matches the Holocene activation timestamp, the derivation pipeline's state is mostly reset
-by <strong>discarding</strong></p>
+timestamp is the first to be greater or equal to the Holocene activation timestamp, the derivation
+pipeline's state is mostly reset by <strong>discarding</strong></p>
 <ul>
 <li>all frames in the frame queue,</li>
 <li>channels in the channel bank, and</li>
