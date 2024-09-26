@@ -2646,7 +2646,8 @@ the above needs to be compressed after encoding, and decompressed before decodin
 <ul>
 <li><code>domain</code> is 32 bytes, reserved for message types and versioning info. All zero for this signature.</li>
 <li><code>chain_id</code> is a big-endian encoded <code>uint256</code>.</li>
-<li><code>payload_hash</code> is <code>keccak256(payload)</code>, where <code>payload</code> is the remaining bytes of the payload.</li>
+<li><code>payload_hash</code> is <code>keccak256(payload)</code>, where <code>payload</code> is the <code>payload</code> in V1 and V2,
+and <code>parentBeaconBlockRoot ++ payload</code> in V3.</li>
 </ul>
 <p>The <code>secp256k1</code> signature must have <code>y_parity = 1 or 0</code>, the <code>chain_id</code> is already signed over.</p>
 <h3 id="block-validation"><a class="header" href="#block-validation">Block validation</a></h3>
