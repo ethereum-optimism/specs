@@ -30,16 +30,10 @@ which settle on L2, to have an enshrined 4844-compatiable DA layer that they can
 integrate third-party DA providers or deal with the security risks associated with DA bridges. Additionally, the
 applications mentioned above could migrate to L2 with minimal costs.
 
-Furthermore, this spec proposes adding an option to use
-[Alt-DA](https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md) to upload L2 BLOBs, while
-still allowing the use of L1 DA to upload L2 calldata. This would result in three possible DA configurations
-for an L2:
-
-1. Both the calldata and BLOBs in L2 use L1 DA.
-2. Both the calldata and BLOBs in L2 use Alt-DA.
-3. L2 calldata uses L1 DA, while L2 BLOBs use Alt-DA.
-
-The third option, referred to as a “hybrid DA L2”, combines the best features of different DA solutions. This allows
+Furthermore, this spec proposes using
+[Alt-DA](https://github.com/ethereum-optimism/specs/blob/main/specs/experimental/alt-da.md) to upload L2 BLOBs while
+still using L1 DA for L2 calldata. This approach, referred to as a “hybrid DA L2”, combines the best features of
+different DA solutions. This allows
 users and applications of an L2 to choose between L1 DA and alt-DA for different types of transaction data within the
 same network, without the need to maintain multiple L2s. Specifically, users can upload and store non-financial data
 at a very low cost using L2 BLOBs and Alt-DA, while still conducting critical financial data using L2 calldata and
@@ -70,7 +64,7 @@ BLOBs should be sent directly to the L2 sequencer.
 
 ## Uploading BLOB to Alt-DA
 
-For the hybrid DA L2 case, the sequencer is responsible for uploading BLOBs to the Alt-DA layer. When the
+The sequencer is responsible for uploading BLOBs to the Alt-DA layer. When the
 CL (op-node) receives the payload from EL via the engine API, it should inspect the envelope for any `BlobsBundle`
 and upload them to the Alt-DA. Only after ensuring successful BLOB uploads can the sequencer upload the block data
 to the L1 DA. Similarly, the sequencer may need to respond to any data availability challenges afterward.
