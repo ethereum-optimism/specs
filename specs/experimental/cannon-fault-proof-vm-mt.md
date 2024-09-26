@@ -17,6 +17,7 @@
   - [Waiting Threads](#waiting-threads)
   - [Voluntary Preemption](#voluntary-preemption)
   - [Forced Preemption](#forced-preemption)
+- [Stateful Instructions](#stateful-instructions)
 - [FPVM State](#fpvm-state)
   - [State](#state)
   - [State Hash](#state-hash)
@@ -45,8 +46,10 @@
 
 This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
-it can be referred to as Multithreaded Cannon (MTCannon).
-MTCannon FPVM emulates a minimal uniprocessor Linux-based system running on big-endian 32-bit MIPS32 architecture.
+it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
+the original Cannon implementation can be referred to as Singlethreaded Cannon (STCannon) where necessary for clarity.
+
+The MTCannon FPVM emulates a minimal uniprocessor Linux-based system running on big-endian 32-bit MIPS32 architecture.
 A lot of its behaviors are copied from Linux/MIPS with a few tweaks made for fault proofs.
 For the rest of this doc, we refer to the MTCannon FPVM as simply the FPVM.
 
@@ -180,6 +183,45 @@ For each step executed on a particular thread, the state field `stepsSinceLastCo
 When a thread is preempted, `StepsSinceLastContextSwitch` is reset to 0.
 If `StepsSinceLastContextSwitch` reaches a maximum value (`SchedQuantum` = 100_000),
 the FPVM preempts the active thread.
+
+## Stateful Instructions
+
+The Load Linked Word (`ll`) and Store Conditional Word (`sc`) instructions provide the low-level
+primitives used to implement atomic read-modify-write (RMW) operations.  A typical RMW sequence might play out as
+follows:
+
+- `ll` place a "reservation" on a particular memory address.
+- Subsequent instructions take the value at this address and perform some operation on it:
+  - For example, maybe a counter variable is reserved and incremented.
+- `sc` is called and the modified value is stored at the reserved address only if it has not been modified since the
+reservation was placed.
+
+This RMW sequence ensures that if another thread or process modifies a target memory address while
+an atomic update is being performed, the atomic update will fail.
+
+Prior to MTCannon, we could be assured that no intervening process would modify that target memory location because
+STCannon is singlethreaded.  With the introduction of multithreading, additional fields need to be stored in the
+FPVM state to track memory reservations initiated by `ll` operations.
+
+When an `ll` instruction is executed:
+
+- `llReservationActive` is set to true.
+- `llAddress` is set to the memory address specified by `ll`.
+- `llOwnerThread` is set to the `threadID` of the active thread.
+
+Only a single memory reservation can be active at a given time - a new reservation will clear any previous reservation.
+
+When the VM writes any data to memory, these `ll`-related fields are checked and the memory reservation is cleared if
+a memory write touches a reserved `llAddress`.
+
+When an `sc` instruction is executed, the operation will only succeed if:
+
+- There exists an active reservation (`llReservationActive == true`).
+- The active thread's `threadID` matches `llOwnerThread`.
+- The requested address matches `llAddress`.
+
+On success, `sc` stores a value at the target memory address, clears the memory reservation and returns `1`.
+On failure, `sc` returns `0`.
 
 ## FPVM State
 
