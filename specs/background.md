@@ -4,23 +4,24 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Overview](#overview)
-- [Foundations](#foundations)
-  - [Ethereum Scalability](#ethereum-scalability)
-  - [Optimistic Rollups](#optimistic-rollups)
-  - [EVM Equivalence](#evm-equivalence)
-- [Protocol Guarantees](#protocol-guarantees)
-  - [Liveness](#liveness)
-  - [Validity](#validity)
-  - [Availability](#availability)
-- [Network Participants](#network-participants)
-  - [Users](#users)
-  - [Sequencers](#sequencers)
-  - [Verifiers](#verifiers)
-- [Key Interaction Diagrams](#key-interaction-diagrams)
-  - [Depositing and Sending Transactions](#depositing-and-sending-transactions)
-  - [Withdrawing](#withdrawing)
-- [Next Steps](#next-steps)
+- [Background](#background)
+  - [Overview](#overview)
+  - [Foundations](#foundations)
+    - [Ethereum Scalability](#ethereum-scalability)
+    - [Optimistic Rollups](#optimistic-rollups)
+    - [EVM Equivalence](#evm-equivalence)
+  - [Protocol Guarantees](#protocol-guarantees)
+    - [Liveness](#liveness)
+    - [Validity](#validity)
+    - [Availability](#availability)
+  - [Network Participants](#network-participants)
+    - [Users](#users)
+    - [Sequencers](#sequencers)
+    - [Verifiers](#verifiers)
+  - [Key Interaction Diagrams](#key-interaction-diagrams)
+    - [Depositing and Sending Transactions](#depositing-and-sending-transactions)
+    - [Withdrawing](#withdrawing)
+  - [Next Steps](#next-steps)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -171,7 +172,7 @@ The following diagram demonstrates this interaction and all key OP Stack compone
 ```mermaid
 graph TD
     subgraph "Ethereum L1"
-        OptimismPortal(<a href="./withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
+        OptimismPortal(<a href="./protocol/withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
         BatchInbox(<a href="../glossary.html#batcher-transaction">Batch Inbox Address</a>)
     end
 
@@ -206,7 +207,7 @@ graph LR
         BatchInbox(<a href="../glossary.html#batcher-transaction">Batch Inbox Address</a>)
         DisputeGameFactory(<a href="../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface">DisputeGameFactory</a>)
         FaultDisputeGame(<a href="../fault-proof/stage-one/fault-dispute-game.html">FaultDisputeGame</a>)
-        OptimismPortal(<a href="./withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
+        OptimismPortal(<a href="./protocol/withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
         ExternalContracts(External Contracts)
     end
 
