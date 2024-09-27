@@ -6,6 +6,10 @@
 
 - [Overview](#overview)
 - [`SuperchainERC20` standard](#superchainerc20-standard)
+  - [Properties](#properties)
+  - [Interface](#interface)
+    - [`mintFromBridge`](#mintfrombridge)
+    - [`burnFromBridge`](#burnfrombridge)
 - [`SuperchainERC20Bridge`](#superchainerc20bridge)
 - [Diagram](#diagram)
 - [Implementation](#implementation)
@@ -18,11 +22,13 @@
 ## Overview
 
 Without a standardized security model, bridged assets may not be fungible with each other.
-The `SuperchainERC20` standard is a set of properties allowing ERC20 to be fungible across the
+The `SuperchainERC20` standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official `SuperchainERC20Bridge`.
 The `SuperchainERC20Bridge` is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.
 
 ## `SuperchainERC20` standard
+
+### Properties
 
 The standard will build on top of ERC20 and include the following properties:
 
@@ -47,6 +53,26 @@ predeploy that facilitates this process for L1 native tokens.
 Notice that ERC20s that do not implement the standard can still be fungible
 using interop message passing
 using a custom bridge or implementing `sendERC20` and `relayERC20` on their own contracts.
+
+### Interface
+
+Implementations of the `SuperchainERC20` standard will need to implement the following two public functions:
+
+#### `mintFromBridge`
+
+Mints `_amount` of token to address `_account`. It should only be callable by the `SuperchainERC20Bridge`
+
+```solidity
+mintFromBridge(address _account, uint256 _amount)
+```
+
+#### `burnFromBridge`
+
+Burns `_amount` of token from address `_account`. It should only be callable by the `SuperchainERC20Bridge`
+
+```solidity
+burnFromBridge(address _account, uint256 _amount)
+```
 
 ## `SuperchainERC20Bridge`
 
@@ -84,12 +110,12 @@ sequenceDiagram
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA->>SuperERC20_A: burn(from, amount)
+  L2SBA->>SuperERC20_A: burnFromBridge(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB->>SuperERC20_B: mint(to, amount)
+  L2SBB->>SuperERC20_B: mintFromBridge(to, amount)
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
 
@@ -99,7 +125,7 @@ An example implementation for the `sendERC20` and `relayERC20` functions is prov
 
 ```solidity
 function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) public {
-  _token.burn(msg.sender, _amount);
+  _token.burnFromBridge(msg.sender, _amount);
 
   bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
   L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
@@ -113,7 +139,7 @@ function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 
   
   uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
 
-  _token.mint(_to, _amount);
+  _token.mintFromBridge(_to, _amount);
 
   emit RelayERC20(address(_token), _from, _to, _amount, _source);
 }
@@ -176,13 +202,13 @@ sequenceDiagram
 
   from->>Intermediate_A: sendWithData(data)
   Intermediate_A->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA->>SuperERC20_A: burn(from, amount)
+  L2SBA->>SuperERC20_A: burnFromBridge(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Intermediate_A->>Messenger_A: sendMessage(chainId, to, data)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB->>SuperERC20_B: mint(to, amount)
+  L2SBB->>SuperERC20_B: mintFromBridge(to, amount)
   Inbox->>Messenger_B: relayMessage(): call
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B->>to: call(data)
