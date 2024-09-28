@@ -259,7 +259,7 @@ configurability.</p>
 <tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
 <tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
 <tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
-<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td>`uint256(uint64(_denominator)) &lt;&lt; 32</td><td>uint64(_elasticity)`</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(_denominator)) &lt;&lt; 32 | uint64(_elasticity)</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
 </tbody></table>
 </div>
 <h3 id="initialization"><a class="header" href="#initialization">Initialization</a></h3>
