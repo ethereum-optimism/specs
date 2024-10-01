@@ -855,9 +855,9 @@ It SHOULD burn `_amount` tokens with address `_tokenAddress` and initialize a me
 in the target address `_to` at `_chainId` and emit the `SentERC20` event including the `msg.sender` as parameter.
 
 To burn the token, the `sendERC20` function
-calls `burnFromBridge` in the token contract,
+calls `__superchainBurn` in the token contract,
 which is included as part of the the `SuperchainERC20`
-[standard](./token-bridging.md#burnfrombridge).
+[standard](./token-bridging.md#__superchainburn).
 
 ```solidity
 sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId)
@@ -873,9 +873,9 @@ and emit an event including the `_tokenAddress`, the `_from` and chain id from t
 `source` chain, where `_from` is the `msg.sender` of `sendERC20`.
 
 To mint the token, the `relayERC20` function
-calls `mintFromBridge` in the token contract,
+calls `__superchainMint` in the token contract,
 which is included as part of the the `SuperchainERC20`
-[standard](./token-bridging.md#mintfrombridge).
+[standard](./token-bridging.md#__superchainmint).
 
 ```solidity
 relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
@@ -915,12 +915,12 @@ sequenceDiagram
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA->>SuperERC20_A: burnFromBridge(from, amount)
+  L2SBA->>SuperERC20_A: __superchainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB->>SuperERC20_B: mintFromBridge(to, amount)
+  L2SBB->>SuperERC20_B: __superchainMint(to, amount)
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
 
