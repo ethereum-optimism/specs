@@ -177,6 +177,13 @@ As before, a failure to then process the deposit-only attributes is a critical e
 If an invalid payload is replaced by a deposit-only payload, for consistency reasons, the remaining
 span batch, if applicable, and channel it originated from are dropped as well.
 
+## Attributes Builder
+
+When the fork is activated, the `PayloadAttributes` produced by the attributes builder will include
+the `eip1559Params` field described in the [execution engine specs](./exec-engine.md#eip1559params-encoding).
+
+Prior to the fork activation, this field should be set to `null`.
+
 ## Activation
 
 The new batch rules activate when the _L1 inclusion block timestamp_ is greater or equal to the

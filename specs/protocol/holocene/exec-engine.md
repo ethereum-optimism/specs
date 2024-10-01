@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [`L2ToL1MessagePasser` Storage Root in Header](#l2tol1messagepasser-storage-root-in-header)
@@ -72,6 +73,51 @@ an outbound withdrawal for a long period of time, the node may not have access t
 [`L2ToL1MessagePasser`][l2-to-l1-mp]. In this case, the client would be unable to keep consensus. However, most modern
 clients are able to at the very least reconstruct the account storage root at a given block on the fly if it does not
 directly store this information.
+
+## Extended `PayloadAttributesV3`
+
+The [`PayloadAttributesV3`](https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#payloadattributesv3)
+type is extended to:
+
+```
+PayloadAttributesV3: {
+    timestamp: QUANTITY
+    random: DATA (32 bytes)
+    suggestedFeeRecipient: DATA (20 bytes)
+    withdrawals: array of WithdrawalV1
+    parentBeaconBlockRoot: DATA (32 bytes)
+    transactions: array of DATA
+    noTxPool: bool
+    gasLimit: QUANTITY or null
+    eip1559Params: QUANTITY or null
+}
+```
+
+### `eip1559Params` encoding
+
+```
+u64_be(eip1559Params) = (u32_be(denominator) << 32) ++ u32_be(elasticity)
+```
+
+where `++` denotes concatenation.
+
+| Name          | Type  | Range    |
+| ------------- | ----- | -------- |
+| `denominator` | `u32` | `[0, 4)` |
+| `elasticity`  | `u32` | `[4, 8)` |
+
+### Execution
+
+During execution, the EIP-1559 parameters used to calculate transaction fees should come from the 
+`PayloadAttributesV3` type. 
+* If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the engine.
+* If, after Holocene activation, `eip1559Params` is `null`, the attributes are to be considered invalid by the engine.
+
+### Rationale
+
+In order to supply the execution engine with the EIP-1559 parameters dynamically, the `PayloadAttributesV3` type is extended
+to include these values. As described in the [derivation - AttributesBuilder] section, the derivation pipeline handles
+populating this field from the `SystemConfig` during payload building.
 
 [l2-to-l1-mp]: ../../protocol/predeploys.md#L2ToL1MessagePasser
 [output-root]: ../../glossary.md#l2-output-root
