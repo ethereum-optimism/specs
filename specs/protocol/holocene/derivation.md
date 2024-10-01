@@ -180,10 +180,15 @@ span batch, if applicable, and channel it originated from are dropped as well.
 
 ## Attributes Builder
 
-When the fork is activated, the `PayloadAttributes` produced by the attributes builder will include
-the `eip1559Params` field described in the [execution engine specs](./exec-engine.md#eip1559params-encoding).
+Starting after the fork activation block, the `PayloadAttributes` produced by the attributes builder will include
+the `eip1559Params` field described in the [execution engine specs](./exec-engine.md#eip1559params-encoding). This
+value exists within the `SystemConfig`.
 
-Prior to the fork activation, this field should be set to `null`.
+On the fork activation block, the attributes builder will include a `null` `eip1559Params`, as to instruct
+the engine to use the [canyon base fee parameter constants](../exec-engine.md#1559-parameters). This
+is to prime the pipeline's view of the `SystemConfig` with the default EIP-1559 parameter values. After the first
+Holocene payload has been processed, future payloads should use the `SystemConfig`'s EIP-1559 denominator and elasticity
+parameter as the `eip1559Params` field's value.
 
 ## Activation
 

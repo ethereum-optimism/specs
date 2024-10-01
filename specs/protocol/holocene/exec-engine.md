@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Timestamp Activation](#timestamp-activation)
@@ -110,12 +111,12 @@ PayloadAttributesV3: {
 ### Execution
 
 During execution, the EIP-1559 parameters used to calculate the next block base fee should come from the
-`PayloadAttributesV3` type rather than the previous protocol constants.
+`PayloadAttributesV3` type rather than the previous protocol constants, if it is non-null.
 
 - If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the
   engine.
 - After Holocene activation:
-  - if `eip1559Params` is `null`, the [canyon base fee parameter constants](../canyon/overview.md#1559-parameters) are
+  - if `eip1559Params` is `null`, the [canyon base fee parameter constants](../exec-engine.md#1559-parameters) are
     used.
   - if `eip1559Params` are non-null, the values from the attributes are used.
 
@@ -128,8 +129,7 @@ how it must reference the `SystemConfig` for `gasLimit` field.
 
 ## `eip1559Params` in Header
 
-After Holocene's activation, the L2 block header's `nonce` field will consist of the 8-byte
-`eip1559Params` value from the `PayloadAttributesV3`.
+Upon Holocene activation, the L2 block header's `nonce` field will consist of the 8-byte `eip1559Params` value.
 
 ### Header Validity Rules
 
