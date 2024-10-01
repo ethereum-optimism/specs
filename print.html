@@ -7061,8 +7061,8 @@ existing <a href="protocol/../fault-proof/stage-one/bridge-integration.html#perm
 <sup class="footnote-reference"><a href="#of-gnosis-safe-l1">4</a></sup><br/>
 <strong>Notes:</strong> Optimism Foundation (OF) multisig
 leveraging <a href="https://github.com/safe-global/safe-smart-account">battle-tested software</a>. This role is only active when
-the <code>OptimismPortal</code> respected game type is <a href="https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31">
-<code>PERMISSIONED_CANNON</code></a>.<br/></p>
+the <code>OptimismPortal</code> respected game type is [<code>PERMISSIONED_CANNON</code>]
+(<a href="https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31">https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31</a>).<br/></p>
 <h3 id="guardian-address"><a class="header" href="#guardian-address"><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SuperchainConfig.sol#L50">Guardian address</a></a></h3>
 <p><strong>Description:</strong> Account authorized to pause L1 withdrawals from contracts, blacklist dispute games, and set the
 respected game type in the <code>OptimismPortal</code>.<br/>
@@ -7078,8 +7078,8 @@ with <a href="protocol/../fault-proof/stage-one/bridge-integration.html#permissi
 L1.<br/>
 <strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin</a><br/>
 <strong>Requirement:</strong> No requirement<br/>
-<strong>Notes:</strong> This role is only active when the <code>OptimismPortal</code> respected game type is <a href="https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31">
-<code>PERMISSIONED_CANNON</code></a>.
+<strong>Notes:</strong> This role is only active when the <code>OptimismPortal</code> respected game type is [<code>PERMISSIONED_CANNON</code>]
+(<a href="https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31">https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31</a>).
 The <code>L1ProxyAdmin</code> sets the implementation of the <code>PERMISSIONED_CANNON</code> game type. Thus, it determines the proposer
 configuration of the permissioned dispute game.<br/></p>
 <h3 id="sequencer-p2p--unsafe-head-signer"><a class="header" href="#sequencer-p2p--unsafe-head-signer"><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L250">Sequencer P2P / Unsafe head signer</a></a></h3>
