@@ -102,24 +102,22 @@ PayloadAttributesV3: {
 
 ### `eip1559Params` encoding
 
-```rs
-u64_be(eip1559Params) = (u32_be(denominator) << 32) ++ u32_be(elasticity)
-```
-
-where `++` denotes concatenation.
-
-| Name          | Type  | Range    |
-| ------------- | ----- | -------- |
-| `denominator` | `u32` | `[0, 4)` |
-| `elasticity`  | `u32` | `[4, 8)` |
+| Name          | Type  | Byte Offset |
+| ------------- | ----- | ----------- |
+| `denominator` | `u32` | `[0, 4)`    |
+| `elasticity`  | `u32` | `[4, 8)`    |
 
 ### Execution
 
 During execution, the EIP-1559 parameters used to calculate the next block base fee should come from the
 `PayloadAttributesV3` type rather than the previous protocol constants.
 
-- If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the engine.
-- If, after Holocene activation, `eip1559Params` is `null`, the attributes are to be considered invalid by the engine.
+- If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the
+  engine.
+- After Holocene activation:
+  - if `eip1559Params` is `null`, the [canyon base fee parameter constants](../canyon/overview.md#1559-parameters) are
+    used.
+  - if `eip1559Params` are non-null, the values from the attributes are used.
 
 ### Rationale
 
