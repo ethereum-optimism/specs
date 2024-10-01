@@ -2,7 +2,6 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [`L2ToL1MessagePasser` Storage Root in Header](#l2tol1messagepasser-storage-root-in-header)
@@ -12,6 +11,10 @@
     - [Rationale](#rationale)
     - [Forwards Compatibility Considerations](#forwards-compatibility-considerations)
     - [Client Implementation Considerations](#client-implementation-considerations)
+- [Extended `PayloadAttributesV3`](#extended-payloadattributesv3)
+  - [`eip1559Params` encoding](#eip1559params-encoding)
+  - [Execution](#execution)
+  - [Rationale](#rationale-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -79,7 +82,7 @@ directly store this information.
 The [`PayloadAttributesV3`](https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#payloadattributesv3)
 type is extended to:
 
-```
+```rs
 PayloadAttributesV3: {
     timestamp: QUANTITY
     random: DATA (32 bytes)
@@ -95,7 +98,7 @@ PayloadAttributesV3: {
 
 ### `eip1559Params` encoding
 
-```
+```rs
 u64_be(eip1559Params) = (u32_be(denominator) << 32) ++ u32_be(elasticity)
 ```
 
@@ -108,16 +111,17 @@ where `++` denotes concatenation.
 
 ### Execution
 
-During execution, the EIP-1559 parameters used to calculate transaction fees should come from the 
-`PayloadAttributesV3` type. 
-* If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the engine.
-* If, after Holocene activation, `eip1559Params` is `null`, the attributes are to be considered invalid by the engine.
+During execution, the EIP-1559 parameters used to calculate transaction fees should come from the `PayloadAttributesV3`
+type.
+
+- If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the engine.
+- If, after Holocene activation, `eip1559Params` is `null`, the attributes are to be considered invalid by the engine.
 
 ### Rationale
 
 In order to supply the execution engine with the EIP-1559 parameters dynamically, the `PayloadAttributesV3` type is extended
-to include these values. As described in the [derivation - AttributesBuilder] section, the derivation pipeline handles
-populating this field from the `SystemConfig` during payload building.
+to include these values. As described in the [derivation - AttributesBuilder](./derivation.md#attributes-builder)
+section, the derivation pipeline handles populating this field from the `SystemConfig` during payload building.
 
 [l2-to-l1-mp]: ../../protocol/predeploys.md#L2ToL1MessagePasser
 [output-root]: ../../glossary.md#l2-output-root

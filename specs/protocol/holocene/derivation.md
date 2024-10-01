@@ -15,6 +15,7 @@
   - [Batch Queue](#batch-queue)
     - [Fast Channel Invalidation](#fast-channel-invalidation)
   - [Engine Queue](#engine-queue)
+  - [Attributes Builder](#attributes-builder)
   - [Activation](#activation)
 - [Rationale](#rationale)
   - [Strict Frame and Batch Ordering](#strict-frame-and-batch-ordering)
