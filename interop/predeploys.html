@@ -913,6 +913,10 @@ as described in the <a href="./token-bridging.html">token bridging spec</a>.</p>
 <p>It SHOULD burn <code>_amount</code> tokens with address <code>_tokenAddress</code> and initialize a message to the
 <code>L2ToL2CrossChainMessenger</code> to mint the <code>_amount</code> of the same token
 in the target address <code>_to</code> at <code>_chainId</code> and emit the <code>SentERC20</code> event including the <code>msg.sender</code> as parameter.</p>
+<p>To burn the token, the <code>sendERC20</code> function
+calls <code>__superchainBurn</code> in the token contract,
+which is included as part of the the <code>SuperchainERC20</code>
+<a href="./token-bridging.html#__superchainburn">standard</a>.</p>
 <pre><code class="language-solidity">sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId)
 </code></pre>
 <h4 id="relayerc20"><a class="header" href="#relayerc20"><code>relayERC20</code></a></h4>
@@ -922,6 +926,10 @@ and relayed from the <code>L2ToL2CrossChainMessenger</code> in the local chain.
 It SHOULD mint <code>_amount</code> of tokens with address <code>_tokenAddress</code> to address <code>_to</code>, as defined in <code>sendERC20</code>
 and emit an event including the <code>_tokenAddress</code>, the <code>_from</code> and chain id from the
 <code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
+<p>To mint the token, the <code>relayERC20</code> function
+calls <code>__superchainMint</code> in the token contract,
+which is included as part of the the <code>SuperchainERC20</code>
+<a href="./token-bridging.html#__superchainmint">standard</a>.</p>
 <pre><code class="language-solidity">relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
 </code></pre>
 <h3 id="events-2"><a class="header" href="#events-2">Events</a></h3>
@@ -946,12 +954,14 @@ and emit an event including the <code>_tokenAddress</code>, the <code>_from</cod
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA-&gt;&gt;SuperERC20_A: burn(from, amount)
+  L2SBA-&gt;&gt;SuperERC20_A: __superchainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB-&gt;&gt;SuperERC20_B: mint(to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: __superchainMint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit SuperchainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>

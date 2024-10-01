@@ -195,7 +195,19 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a></li>
+<li><a href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a>
+<ul>
+<li><a href="#properties">Properties</a></li>
+<li><a href="#interface">Interface</a>
+<ul>
+<li><a href="#__superchainmint"><code>__superchainMint</code></a></li>
+<li><a href="#__superchainburn"><code>__superchainBurn</code></a></li>
+<li><a href="#superchainmint"><code>SuperchainMint</code></a></li>
+<li><a href="#superchainburn"><code>SuperchainBurn</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></li>
 <li><a href="#diagram">Diagram</a></li>
 <li><a href="#implementation">Implementation</a></li>
@@ -209,10 +221,11 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
-The <code>SuperchainERC20</code> standard is a set of properties allowing ERC20 to be fungible across the
+The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainERC20Bridge</code>.
 The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.</p>
 <h2 id="superchainerc20-standard"><a class="header" href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a></h2>
+<h3 id="properties"><a class="header" href="#properties">Properties</a></h3>
 <p>The standard will build on top of ERC20 and include the following properties:</p>
 <ol>
 <li>Give <code>mint</code> and <code>burn</code> rights to the <code>SuperchainERC20Bridge</code>.</li>
@@ -233,6 +246,24 @@ predeploy that facilitates this process for L1 native tokens.</p>
 <p>Notice that ERC20s that do not implement the standard can still be fungible
 using interop message passing
 using a custom bridge or implementing <code>sendERC20</code> and <code>relayERC20</code> on their own contracts.</p>
+<h3 id="interface"><a class="header" href="#interface">Interface</a></h3>
+<p>Implementations of the <code>SuperchainERC20</code> standard will need to implement the following two public functions:</p>
+<h4 id="__superchainmint"><a class="header" href="#__superchainmint"><code>__superchainMint</code></a></h4>
+<p>Mints <code>_amount</code> of token to address <code>_account</code>. It should only be callable by the <code>SuperchainERC20Bridge</code></p>
+<pre><code class="language-solidity">__superchainMint(address _account, uint256 _amount)
+</code></pre>
+<h4 id="__superchainburn"><a class="header" href="#__superchainburn"><code>__superchainBurn</code></a></h4>
+<p>Burns <code>_amount</code> of token from address <code>_account</code>. It should only be callable by the <code>SuperchainERC20Bridge</code></p>
+<pre><code class="language-solidity">__superchainBurn(address _account, uint256 _amount)
+</code></pre>
+<h4 id="superchainmint"><a class="header" href="#superchainmint"><code>SuperchainMint</code></a></h4>
+<p>MUST trigger when <code>__superchainMint</code> is called</p>
+<pre><code class="language-solidity">event SuperchainMint(address indexed _to, uint256 _amount)
+</code></pre>
+<h4 id="superchainburn"><a class="header" href="#superchainburn"><code>SuperchainBurn</code></a></h4>
+<p>MUST trigger when <code>__superchainBurn</code> is called</p>
+<pre><code class="language-solidity">event SuperchainBurn(address indexed _from, uint256 _amount)
+</code></pre>
 <h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></h2>
 <p>The <code>SuperchainERC20Bridge</code> is a predeploy that works as an abstraction
 on top of the <a href="./predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
@@ -262,18 +293,20 @@ in the <a href="./predeploys.html#superchainerc20bridge">predeploys spec</a>.</p
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA-&gt;&gt;SuperERC20_A: burn(from, amount)
+  L2SBA-&gt;&gt;SuperERC20_A: __superchainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB-&gt;&gt;SuperERC20_B: mint(to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: __superchainMint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit SuperchainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
 <p>An example implementation for the <code>sendERC20</code> and <code>relayERC20</code> functions is provided.</p>
 <pre><code class="language-solidity">function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) public {
-  _token.burn(msg.sender, _amount);
+  _token.__superchainBurn(msg.sender, _amount);
 
   bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
   L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
@@ -287,7 +320,7 @@ function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 
   
   uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
 
-  _token.mint(_to, _amount);
+  _token.__superchainMint(_to, _amount);
 
   emit RelayERC20(address(_token), _from, _to, _amount, _source);
 }
@@ -338,13 +371,15 @@ i.e. bridge funds and then do X.</p>
 
   from-&gt;&gt;Intermediate_A: sendWithData(data)
   Intermediate_A-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA-&gt;&gt;SuperERC20_A: burn(from, amount)
+  L2SBA-&gt;&gt;SuperERC20_A: __superchainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Intermediate_A-&gt;&gt;Messenger_A: sendMessage(chainId, to, data)
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB-&gt;&gt;SuperERC20_B: mint(to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: __superchainMint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit SuperchainMint(to, amount)
   Inbox-&gt;&gt;Messenger_B: relayMessage(): call
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B-&gt;&gt;to: call(data)
