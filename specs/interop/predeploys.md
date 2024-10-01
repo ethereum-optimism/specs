@@ -413,8 +413,8 @@ as expired in the `successfulMessages` mapping to ensure non-replayability and d
 from `failedMessages`. An initiating message is then emitted to `relayExpire`.
 
 `sendExpire` sets the sender of the message as the `L2ToL2CrossDomainMessenger` to add a path
-for `relayExpire` to ensure that the message originated in `sendExpire`. There's should be no 
-other path where a message can have the `L2ToL2CrossDomainMessenger` as `origin` and `sender`.  
+for `relayExpire` to ensure that the message originated in `sendExpire`. There's should be no
+other path where a message can have the `L2ToL2CrossDomainMessenger` as `origin` and `sender`.
 
 ```solidity
 function sendExpire(bytes32 _expiredHash) external nonReentrant {
@@ -454,7 +454,7 @@ If all checks have been successful, the message hash is stored in the
 `expiredMessages` mapping. This enables smart contracts to read from it and
 check whether a message expired or not, and handle this case accordingly.
 
-An expiry message is relayed by providing the [identifier](./messaging.md#message-identifier) 
+An expiry message is relayed by providing the [identifier](./messaging.md#message-identifier)
 to a `SentMessage` event and its corresponding [message payload](./messaging.md#message-payload).
 
 ```solidity
