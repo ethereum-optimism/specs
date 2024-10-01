@@ -14,6 +14,8 @@
   - [Interface](#interface)
     - [EIP-1559 Params](#eip-1559-params)
       - [`setEIP1559Params`](#seteip1559params)
+      - [`getEIP1559Denominator`](#geteip1559denominator)
+      - [`getEIP1559Elasticity`](#geteip1559elasticity)
     - [Fee Vault Config](#fee-vault-config)
       - [`setBaseFeeVaultConfig`](#setbasefeevaultconfig)
       - [`setL1FeeVaultConfig`](#setl1feevaultconfig)
@@ -100,6 +102,22 @@ function setEIP1559Params(uint32 _denominator, uint32 _elasticity)
 
 The `_denominator` and `_elasticity` MUST be set to values greater to than 0.
 It is possible for the chain operator to set EIP-1559 parameters that result in poor user experience.
+
+##### `eip1559Elasticity`
+
+This function returns the currently configured EIP-1559 elasticity.
+
+```solidity
+function eip1559Elasticity()(uint64)
+```
+
+##### `eip1559Denominator`
+
+This function returns the currently configured EIP-1559 denominator.
+
+```solidity
+function eip1559Denominator()(uint64)
+```
 
 #### Fee Vault Config
 

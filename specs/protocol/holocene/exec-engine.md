@@ -26,8 +26,6 @@
 
 Holocene, like other network upgrades, is activated at a timestamp.
 Changes to the L2 Block execution rules are applied when the `L2 Timestamp >= activation time`.
-Changes to the execution engine are applied when it is considering data from a L1 Block whose timestamp
-is greater than or equal to the activation timestamp.
 
 ## `L2ToL1MessagePasser` Storage Root in Header
 
@@ -102,10 +100,10 @@ PayloadAttributesV3: {
 
 ### `eip1559Params` encoding
 
-| Name          | Type  | Byte Offset |
-| ------------- | ----- | ----------- |
-| `denominator` | `u32` | `[0, 4)`    |
-| `elasticity`  | `u32` | `[4, 8)`    |
+| Name          | Type               | Byte Offset |
+| ------------- | ------------------ | ----------- |
+| `denominator` | `u32 (big-endian)` | `[0, 4)`    |
+| `elasticity`  | `u32 (big-endian)` | `[4, 8)`    |
 
 ### Execution
 
@@ -124,7 +122,7 @@ During execution, the EIP-1559 parameters used to calculate the next block base 
 This type is made available in the payload attributes to allow the block builder to dynamically control the EIP-1559
 parameters of the chain. As described in the [derivation - AttributesBuilder](./derivation.md#attributes-builder)
 section, the derivation pipeline must populate this field from the `SystemConfig` during payload building, similar to
-how it must reference the `SystemConfig` for `gasLimit` field.
+how it must reference the `SystemConfig` for the `gasLimit` field.
 
 ## `eip1559Params` in Header
 
