@@ -353,12 +353,8 @@ one single staging batch, because we eagerly derive payloads from any valid sing
 span batch stage before it would similarly only hold at most one staging span batch.</em></p>
 <h2 id="engine-queue"><a class="header" href="#engine-queue">Engine Queue</a></h2>
 <p>If the engine returns an <code>INVALID</code> status for a regularly derived payload, the payload is replaced
-by a payload with the same fields, except for the <code>transaction_list</code>, which is replaced</p>
-<ul>
-<li>by the deposit transactions included in the L1 block, if the payloads are for the first block of
-the current sequencing epoch,</li>
-<li>by an empty list otherwise.</li>
-</ul>
+by a payload with the same fields, except for the <code>transaction_list</code>, which is trimmed to include
+only its deposit transactions.</p>
 <p>As before, a failure to then process the deposit-only attributes is a critical error.</p>
 <p>If an invalid payload is replaced by a deposit-only payload, for consistency reasons, the remaining
 span batch, if applicable, and channel it originated from are dropped as well.</p>
