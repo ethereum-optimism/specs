@@ -385,7 +385,7 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
         emit RelayedMessage(_source, _nonce, messageHash);
     } else {
         if (failedMessages[messageHash].timestamp == 0) {
-          failedMessages[messageHash] = FailedMessage{timestamp: block.timestamp, sourceChain: _source};
+          failedMessages[messageHash] = FailedMessage({timestamp: block.timestamp, sourceChain: _source});
         }
         emit FailedRelayedMessage(_source, _nonce, messageHash);
     }
