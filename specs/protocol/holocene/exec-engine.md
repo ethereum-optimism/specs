@@ -18,19 +18,19 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## `L2ToL1MessagePasser` Storage Root in Header
-
-After the Holocene hardfork's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
-[`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root _after_ the block has been executed, and _after_ the
-insertions and deletions have been applied to the trie. In other words, the storage root should be the same root
-that is returned by `eth_getProof` at the given block number.
-
-### Timestamp Activation
+## Timestamp Activation
 
 Holocene, like other network upgrades, is activated at a timestamp.
 Changes to the L2 Block execution rules are applied when the `L2 Timestamp >= activation time`.
-Changes to the L2 block header are applied when it is considering data from a L1 Block whose timestamp
+Changes to the execution engine are applied when it is considering data from a L1 Block whose timestamp
 is greater than or equal to the activation timestamp.
+
+## `L2ToL1MessagePasser` Storage Root in Header
+
+After Holocene's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
+[`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root _after_ the block has been executed, and _after_ the
+insertions and deletions have been applied to the trie. In other words, the storage root should be the same root
+that is returned by `eth_getProof` at the given block number.
 
 ### Header Validity Rules
 
@@ -119,9 +119,34 @@ type.
 
 ### Rationale
 
-In order to supply the execution engine with the EIP-1559 parameters dynamically, the `PayloadAttributesV3` type is extended
-to include these values. As described in the [derivation - AttributesBuilder](./derivation.md#attributes-builder)
-section, the derivation pipeline handles populating this field from the `SystemConfig` during payload building.
+This type is made available in the payload attributes to allow the block builder to dynamically control the EIP-1559
+parameters of the chain. As described in the [derivation - AttributesBuilder](./derivation.md#attributes-builder)
+section, the derivation pipeline must populate this field from the `SystemConfig` during payload building, similar to 
+how it must reference the `SystemConfig` for `gasLimit` field.
+
+## `eip1559Params` in Header
+
+After Holocene's activation, the L2 block header's `nonce` field will consist of the 8-byte
+`eip1559Params` value from the `PayloadAttributesV3`.
+
+### Header Validity Rules
+
+Prior to Holocene activation, the L2 block header's `nonce` field is valid iff it is equal to `u64(0)`.
+
+After Holocene activation, The L2 block header's `nonce` field is valid iff it is non-zero.
+
+### Encoding
+
+The encoding of the `eip1559Params` value is described in [`eip1559Params` encoding](#eip1559params-encoding).
+
+### Rationale
+
+By chosing to put the `eip1559Params` in the `PayloadAttributes` rather than in the L1 block info transaction,
+the EIP-1559 parameters for the chain are not available within history. This would place a burden on performing
+historical execution, as L1 would have to be consulted for fetching the values from the `SystemConfig` contract.
+Instead, we re-use an unused field in the L1 block header as to make these parameters available, retaining the
+purity of the function that computes the next block's base fee from the chain configuration, parent block header,
+and next block timestamp.
 
 [l2-to-l1-mp]: ../../protocol/predeploys.md#L2ToL1MessagePasser
 [output-root]: ../../glossary.md#l2-output-root
