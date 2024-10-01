@@ -96,7 +96,7 @@ PayloadAttributesV3: {
     transactions: array of DATA
     noTxPool: bool
     gasLimit: QUANTITY or null
-    eip1559Params: QUANTITY or null
+    eip1559Params: DATA (8 bytes)
 }
 ```
 
@@ -112,10 +112,10 @@ PayloadAttributesV3: {
 During execution, the EIP-1559 parameters used to calculate the next block base fee should come from the
 `PayloadAttributesV3` type rather than the previous protocol constants, if it is non-null.
 
-- If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the
+- If, before Holocene activation, `eip1559Parameters` is non-zero, the attributes are to be considered invalid by the
   engine.
 - After Holocene activation:
-  - if `eip1559Params` is `null`, the [canyon base fee parameter constants](../exec-engine.md#1559-parameters) are
+  - if `eip1559Params` is zero, the [canyon base fee parameter constants](../exec-engine.md#1559-parameters) are
     used.
   - if `eip1559Params` are non-null, the values from the attributes are used.
 
