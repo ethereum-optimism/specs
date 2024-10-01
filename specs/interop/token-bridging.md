@@ -10,6 +10,8 @@
   - [Interface](#interface)
     - [`__superchainMint`](#__superchainmint)
     - [`__superchainBurn`](#__superchainburn)
+    - [`SuperchainMint`](#superchainmint)
+    - [`SuperchainBurn`](#superchainburn)
 - [`SuperchainERC20Bridge`](#superchainerc20bridge)
 - [Diagram](#diagram)
 - [Implementation](#implementation)
@@ -74,6 +76,22 @@ Burns `_amount` of token from address `_account`. It should only be callable by 
 __superchainBurn(address _account, uint256 _amount)
 ```
 
+#### `SuperchainMint`
+
+MUST trigger when `__superchainMint` is called
+
+```solidity
+event SuperchainMint(address indexed _to, uint256 _amount)
+```
+
+#### `SuperchainBurn`
+
+MUST trigger when `__superchainBurn` is called
+
+```solidity
+event SuperchainBurn(address indexed _from, uint256 _amount)
+```
+
 ## `SuperchainERC20Bridge`
 
 The `SuperchainERC20Bridge` is a predeploy that works as an abstraction
@@ -111,11 +129,13 @@ sequenceDiagram
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
   L2SBA->>SuperERC20_A: __superchainBurn(from, amount)
+  SuperERC20_A-->SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB->>SuperERC20_B: __superchainMint(to, amount)
+  SuperERC20_B-->SuperERC20_B: emit SuperchainMint(to, amount)
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
 
@@ -203,12 +223,14 @@ sequenceDiagram
   from->>Intermediate_A: sendWithData(data)
   Intermediate_A->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
   L2SBA->>SuperERC20_A: __superchainBurn(from, amount)
+  SuperERC20_A-->SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Intermediate_A->>Messenger_A: sendMessage(chainId, to, data)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB->>SuperERC20_B: __superchainMint(to, amount)
+  SuperERC20_B-->SuperERC20_B: emit SuperchainMint(to, amount)
   Inbox->>Messenger_B: relayMessage(): call
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B->>to: call(data)

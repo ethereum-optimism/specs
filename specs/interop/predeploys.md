@@ -916,11 +916,13 @@ sequenceDiagram
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
   L2SBA->>SuperERC20_A: __superchainBurn(from, amount)
+  SuperERC20_A-->SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB->>SuperERC20_B: __superchainMint(to, amount)
+  SuperERC20_B-->SuperERC20_B: emit SuperchainMint(to, amount)
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
 
