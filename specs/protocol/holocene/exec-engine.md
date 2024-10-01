@@ -4,8 +4,8 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Timestamp Activation](#timestamp-activation)
 - [`L2ToL1MessagePasser` Storage Root in Header](#l2tol1messagepasser-storage-root-in-header)
-  - [Timestamp Activation](#timestamp-activation)
   - [Header Validity Rules](#header-validity-rules)
   - [Header Withdrawals Root](#header-withdrawals-root)
     - [Rationale](#rationale)
@@ -15,6 +15,10 @@
   - [`eip1559Params` encoding](#eip1559params-encoding)
   - [Execution](#execution)
   - [Rationale](#rationale-1)
+- [`eip1559Params` in Header](#eip1559params-in-header)
+  - [Header Validity Rules](#header-validity-rules-1)
+  - [Encoding](#encoding)
+  - [Rationale](#rationale-2)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -111,8 +115,8 @@ where `++` denotes concatenation.
 
 ### Execution
 
-During execution, the EIP-1559 parameters used to calculate transaction fees should come from the `PayloadAttributesV3`
-type.
+During execution, the EIP-1559 parameters used to calculate the next block base fee should come from the
+`PayloadAttributesV3` type rather than the previous protocol constants.
 
 - If, before Holocene activation, `eip1559Parameters` is non-`null`, the attributes are to be considered invalid by the engine.
 - If, after Holocene activation, `eip1559Params` is `null`, the attributes are to be considered invalid by the engine.
@@ -121,7 +125,7 @@ type.
 
 This type is made available in the payload attributes to allow the block builder to dynamically control the EIP-1559
 parameters of the chain. As described in the [derivation - AttributesBuilder](./derivation.md#attributes-builder)
-section, the derivation pipeline must populate this field from the `SystemConfig` during payload building, similar to 
+section, the derivation pipeline must populate this field from the `SystemConfig` during payload building, similar to
 how it must reference the `SystemConfig` for `gasLimit` field.
 
 ## `eip1559Params` in Header
