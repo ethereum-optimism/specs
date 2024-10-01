@@ -188,7 +188,8 @@ On the fork activation block, the attributes builder will include a `null` `eip1
 the engine to use the [canyon base fee parameter constants](../exec-engine.md#1559-parameters). This
 is to prime the pipeline's view of the `SystemConfig` with the default EIP-1559 parameter values. After the first
 Holocene payload has been processed, future payloads should use the `SystemConfig`'s EIP-1559 denominator and elasticity
-parameter as the `eip1559Params` field's value.
+parameter as the `eip1559Params` field's value. When the pipeline encounters a `UpdateType.EIP_1559_PARAMS`,
+`ConfigUpdate` event, the pipeline's system config will be synchronized with the `SystemConfig` contract's.
 
 ## Activation
 
