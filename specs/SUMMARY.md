@@ -74,7 +74,7 @@
     - [SuperchainWETH](./interop/superchain-weth.md)
     - [Derivation](./interop/derivation.md)
     - [Transaction Pool](./interop/tx-pool.md)
-  - [OP Stack Manager](./experimental/op-stack-manager.md)
+  - [OP Contracts Manager](./experimental/op-contracts-manager.md)
   - [Governance Token](./experimental/gov-token.md)
   - [Multithreaded Cannon FPVM](./experimental/cannon-fault-proof-vm-mt.md)
 - [Glossary](./glossary.md)

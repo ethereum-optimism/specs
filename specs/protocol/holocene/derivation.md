@@ -65,9 +65,9 @@ queue:
 
 - If a _non-first frame_ (i.e., a frame with index >0) decoded from a batcher transaction is _out of
 order_, it is **immediately dropped**, where the frame is called _out of order_ if
-  - the frame queue is empty, or
-  - the non-first frame has a different channel ID than the previous frame in the frame queue, or
-  - the previous frame already closed the channel with the same ID.
+  - its frame number is not the previous frame's plus one, if it has the same channel ID, or
+  - the previous frame already closed the channel with the same ID, or
+  - the non-first frame has a different channel ID than the previous frame in the frame queue.
 - If a _first frame_ is decoded while the previous frame isn't a _last frame_ (i.e., `is_last` is
 `false`), all previous frames for the same channel are dropped and this new first frame remains in
 the queue.
@@ -169,11 +169,8 @@ span batch stage before it would similarly only hold at most one staging span ba
 ## Engine Queue
 
 If the engine returns an `INVALID` status for a regularly derived payload, the payload is replaced
-by a payload with the same fields, except for the `transaction_list`, which is replaced
-
-- by the deposit transactions included in the L1 block, if the payloads are for the first block of
-the current sequencing epoch,
-- by an empty list otherwise.
+by a payload with the same fields, except for the `transaction_list`, which is trimmed to include
+only its deposit transactions.
 
 As before, a failure to then process the deposit-only attributes is a critical error.
 
@@ -187,8 +184,8 @@ Holocene activation timestamp. Note that this is in contrast to how span batches
 [Delta](../delta/overview.md), namely via the span batch L1 origin timestamp.
 
 When the L1 traversal stage of the derivation pipeline moves its origin to the L1 block whose
-timestamp matches the Holocene activation timestamp, the derivation pipeline's state is mostly reset
-by **discarding**
+timestamp is the first to be greater or equal to the Holocene activation timestamp, the derivation
+pipeline's state is mostly reset by **discarding**
 
 - all frames in the frame queue,
 - channels in the channel bank, and
