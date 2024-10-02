@@ -4,11 +4,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [SuperchainConfig](#superchainconfig)
-  - [Overview](#overview)
-  - [Constants](#constants)
-  - [Interface](#interface)
-  - [Initialization](#initialization)
+- [Overview](#overview)
+- [Constants](#constants)
+- [Interface](#interface)
+- [Initialization](#initialization)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
