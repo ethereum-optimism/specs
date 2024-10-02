@@ -14,7 +14,8 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
-- [L2ToL1MessagePasser Storage Root in Header](./exec-engine.md##l2tol1messagepasser-storage-root-in-header)
+- [Extended `PayloadAttributesV3`](./exec-engine.md#extended-payloadattributesv3)
+- [`eip1559Params` in Header](./exec-engine.md#eip1559params-in-header)
 
 ## Consensus Layer
 
