@@ -961,7 +961,7 @@ which is included as part of the the <code>SuperchainERC20</code>
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: __superchainMint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit SuperchainMint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit SuperchainMinted(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
