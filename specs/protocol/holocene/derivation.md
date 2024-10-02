@@ -27,7 +27,6 @@
   - [Reorgs](#reorgs)
   - [Batcher Hardening](#batcher-hardening)
   - [Sync Start](#sync-start)
-- [Network upgrade automation transactions](#network-upgrade-automation-transactions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
