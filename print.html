@@ -8705,7 +8705,6 @@ The new rule activation timestamp is based on the blocktime of the L1 block that
 <h2 id="consensus-layer-5"><a class="header" href="#consensus-layer-5">Consensus Layer</a></h2>
 <ul>
 <li><a href="protocol/holocene/./derivation.html#holocene-derivation">Holocene Derivation</a></li>
-<li><a href="protocol/holocene/./derivation.html#network-upgrade-automation-transactions">Network upgrade automation transactions</a></li>
 </ul>
 <h2 id="smart-contracts"><a class="header" href="#smart-contracts">Smart Contracts</a></h2>
 <ul>
@@ -8756,7 +8755,6 @@ The new rule activation timestamp is based on the blocktime of the L1 block that
 <li><a href="protocol/holocene/derivation.html#sync-start">Sync Start</a></li>
 </ul>
 </li>
-<li><a href="protocol/holocene/derivation.html#network-upgrade-automation-transactions">Network upgrade automation transactions</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h1 id="holocene-derivation"><a class="header" href="#holocene-derivation">Holocene Derivation</a></h1>
@@ -9020,21 +9018,6 @@ finalized L2 head's L1 origin.</li>
 the channel we did find a frame from must be timed out and would be discarded. The safe block we're
 looking for can't be in any channel that timed out before its L1 origin so we wouldn't need to
 search any further back, so we go back a channel timeout before the finalized L2 head.</p>
-<h1 id="network-upgrade-automation-transactions-2"><a class="header" href="#network-upgrade-automation-transactions-2">Network upgrade automation transactions</a></h1>
-<p>The Holocene hardfork activation block contains the following transactions, in this order:</p>
-<ul>
-<li>L1 Attributes Transaction</li>
-<li>User deposits from L1</li>
-<li>Network Upgrade Transactions
-<ul>
-<li>L1Block deployment</li>
-<li>Update L1Block Proxy ERC-1967 Implementation</li>
-<li>L1Block Enable Holocene</li>
-<li>OptimismMintableERC20Factory deployment</li>
-<li>Update OptimismMintableERC20Factory Proxy ERC-1967 Implementation</li>
-</ul>
-</li>
-</ul>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l2-execution-engine-3"><a class="header" href="#l2-execution-engine-3">L2 Execution Engine</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
