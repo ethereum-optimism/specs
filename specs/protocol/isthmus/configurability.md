@@ -10,12 +10,7 @@
 - [`SystemConfig`](#systemconfig)
   - [`ConfigUpdate`](#configupdate)
   - [Initialization](#initialization)
-  - [Modifying EIP-1559 Parameters](#modifying-eip-1559-parameters)
   - [Interface](#interface)
-    - [EIP-1559 Params](#eip-1559-params)
-      - [`setEIP1559Params`](#seteip1559params)
-      - [`eip1559Elasticity`](#eip1559elasticity)
-      - [`eip1559Denominator`](#eip1559denominator)
     - [Fee Vault Config](#fee-vault-config)
       - [`setBaseFeeVaultConfig`](#setbasefeevaultconfig)
       - [`setL1FeeVaultConfig`](#setl1feevaultconfig)
@@ -82,42 +77,7 @@ The following actions should happen during the initialization of the `SystemConf
 
 These actions MAY only be triggered if there is a diff to the value.
 
-### Modifying EIP-1559 Parameters
-
-A new `SystemConfig` `UpdateType` is introduced that enables the modification of
-[EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) parameters. This allows for the chain
-operator to modify the `BASE_FEE_MAX_CHANGE_DENOMINATOR` and the `ELASTICITY_MULTIPLIER`.
-
 ### Interface
-
-#### EIP-1559 Params
-
-##### `setEIP1559Params`
-
-This function MUST only be callable by the chain governor.
-
-```solidity
-function setEIP1559Params(uint32 _denominator, uint32 _elasticity)
-```
-
-The `_denominator` and `_elasticity` MUST be set to values greater to than 0.
-It is possible for the chain operator to set EIP-1559 parameters that result in poor user experience.
-
-##### `eip1559Elasticity`
-
-This function returns the currently configured EIP-1559 elasticity.
-
-```solidity
-function eip1559Elasticity()(uint64)
-```
-
-##### `eip1559Denominator`
-
-This function returns the currently configured EIP-1559 denominator.
-
-```solidity
-function eip1559Denominator()(uint64)
-```
 
 #### Fee Vault Config
 
