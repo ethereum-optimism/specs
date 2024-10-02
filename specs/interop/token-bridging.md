@@ -78,7 +78,7 @@ __superchainBurn(address _account, uint256 _amount)
 
 #### `SuperchainMinted`
 
-MUST trigger when `__superchainMinted` is called
+MUST trigger when `__superchainMint` is called
 
 ```solidity
 event SuperchainMinted(address indexed _to, uint256 _amount)
@@ -86,7 +86,7 @@ event SuperchainMinted(address indexed _to, uint256 _amount)
 
 #### `SuperchainBurnt`
 
-MUST trigger when `__superchainBurnt` is called
+MUST trigger when `__superchainBurn` is called
 
 ```solidity
 event SuperchainBurnt(address indexed _from, uint256 _amount)
