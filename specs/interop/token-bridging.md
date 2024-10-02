@@ -144,7 +144,7 @@ sequenceDiagram
 An example implementation for the `sendERC20` and `relayERC20` functions is provided.
 
 ```solidity
-function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) public {
+function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) external {
   _token.__superchainBurn(msg.sender, _amount);
 
   bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
