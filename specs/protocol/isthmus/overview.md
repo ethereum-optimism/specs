@@ -6,6 +6,7 @@
 
 - [Execution Layer](#execution-layer)
 - [Consensus Layer](#consensus-layer)
+- [Smart Contracts](#smart-contracts)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -17,3 +18,6 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
+## Smart Contracts
+
+- [SuperchainConfig](./superchain-config.md)

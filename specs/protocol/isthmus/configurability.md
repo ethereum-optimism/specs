@@ -18,6 +18,7 @@
 - [`OptimismPortal`](#optimismportal)
   - [Interface](#interface-1)
     - [`setConfig`](#setconfig)
+    - [`upgrade`](#upgrade)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -133,3 +134,26 @@ The following fields are included:
 - `version` is `uint256(0)`
 - `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
    is `200_000`, `isCreation` is `false` and the `data` is `abi.encodeCall(L1Block.setConfig, (_type, _value))`
+
+#### `upgrade`
+
+The `upgrade` function MUST only be callable by the `UPGRADER` role as defined
+in the [`SuperchainConfig`](./superchain-config.md).
+
+```solidity
+function upgrade(bytes memory _data) external
+```
+
+This function emits a `TransactionDeposited` event.
+
+```solidity
+event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
+```
+
+The following fields are included:
+
+- `from` is the `DEPOSITOR_ACCOUNT`
+- `to` is `Predeploys.ProxyAdmin`
+- `version` is `uint256(0)`
+- `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
+   is `200_000`, `isCreation` is `false` and the `data` is the data passed into `upgrade`.

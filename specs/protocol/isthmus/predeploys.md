@@ -6,10 +6,11 @@
 
 - [Constants](#constants)
 - [Predeploys](#predeploys)
+  - [ProxyAdmin](#proxyadmin)
   - [L1Block](#l1block)
     - [Storage](#storage)
     - [Interface](#interface)
-      - [`setHolocene`](#setholocene)
+      - [`setIsthmus`](#setisthmus)
       - [`setConfig`](#setconfig)
       - [`baseFeeVaultConfig`](#basefeevaultconfig)
       - [`sequencerFeeVaultConfig`](#sequencerfeevaultconfig)
@@ -79,6 +80,13 @@ graph LR
   OptimismPortal -- "setConfig(uint8,bytes)" --> L1Block
 ```
 
+### ProxyAdmin
+
+The `ProxyAdmin` is updated to have its `owner` be the `DEPOSITOR_ACCOUNT`.
+This means that it can be deterministically called by network upgrade transactions
+or by special deposit transactions emitted by the `OptimismPortal` that assume
+the identity of the `DEPOSITOR_ACCOUNT`.
+
 ### L1Block
 
 #### Storage
@@ -98,7 +106,7 @@ via a deposit transaction from the `DEPOSITOR_ACCOUNT`.
 
 #### Interface
 
-##### `setHolocene`
+##### `setIsthmus`
 
 This function is meant to be called once on the activation block of the holocene network upgrade.
 It MUST only be callable by the `DEPOSITOR_ACCOUNT` once. When it is called, it MUST call
