@@ -22,5 +22,4 @@ This document is not finalized and should be considered experimental.
 
 ## Smart Contracts
 
-- [Predeploys](./predeploys.md)
 - [Configurability](./configurability.md)
