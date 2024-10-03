@@ -10,10 +10,7 @@
 - [`SystemConfig`](#systemconfig)
   - [`ConfigUpdate`](#configupdate)
   - [Initialization](#initialization)
-  - [Modifying EIP-1559 Parameters](#modifying-eip-1559-parameters)
   - [Interface](#interface)
-    - [EIP-1559 Params](#eip-1559-params)
-      - [`setEIP1559Params`](#seteip1559params)
     - [Fee Vault Config](#fee-vault-config)
       - [`setBaseFeeVaultConfig`](#setbasefeevaultconfig)
       - [`setL1FeeVaultConfig`](#setl1feevaultconfig)
@@ -21,6 +18,7 @@
 - [`OptimismPortal`](#optimismportal)
   - [Interface](#interface-1)
     - [`setConfig`](#setconfig)
+    - [`upgrade`](#upgrade)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -50,7 +48,7 @@ The `ConfigType` enum represents configuration that can be modified.
 
 ### `ConfigUpdate`
 
-The following `ConfigUpdate` enum is defined where the `CONFIG_VERSION` is `uint256(0)`:
+The following `ConfigUpdate` event is defined where the `CONFIG_VERSION` is `uint256(0)`:
 
 | Name | Value | Definition | Usage |
 | ---- | ----- | --- | -- |
@@ -58,7 +56,7 @@ The following `ConfigUpdate` enum is defined where the `CONFIG_VERSION` is `uint
 | `FEE_SCALARS` | `uint8(1)` | `(uint256(0x01) << 248) \| (uint256(_blobbasefeeScalar) << 32) \| _basefeeScalar` | Modifies the fee scalars |
 | `GAS_LIMIT` | `uint8(2)` | `abi.encode(uint64 _gasLimit)` | Modifies the L2 gas limit |
 | `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)` | Modifies the account that is authorized to progress the unsafe chain |
-| `EIP_1559_PARAMS` | `uint8(4)` | `uint256(uint64(_denominator)) << 32 \| uint64(_elasticity)` | Modifies the EIP-1559 denominator and elasticity |
+| `EIP_1559_PARAMS` | `uint8(4)` | `uint256(uint64(uint32(_denominator))) << 32 \| uint64(uint32(_elasticity))` | Modifies the EIP-1559 denominator and elasticity |
 
 ### Initialization
 
@@ -80,26 +78,7 @@ The following actions should happen during the initialization of the `SystemConf
 
 These actions MAY only be triggered if there is a diff to the value.
 
-### Modifying EIP-1559 Parameters
-
-A new `SystemConfig` `UpdateType` is introduced that enables the modification of
-[EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) parameters. This allows for the chain
-operator to modify the `BASE_FEE_MAX_CHANGE_DENOMINATOR` and the `ELASTICITY_MULTIPLIER`.
-
 ### Interface
-
-#### EIP-1559 Params
-
-##### `setEIP1559Params`
-
-This function MUST only be callable by the chain governor.
-
-```solidity
-function setEIP1559Params(uint64 _denominator, uint64 _elasticity)
-```
-
-The `_denominator` and `_elasticity` MUST be set to values greater to than 0.
-It is possible for the chain operator to set EIP-1559 parameters that result in poor user experience.
 
 #### Fee Vault Config
 
@@ -155,3 +134,26 @@ The following fields are included:
 - `version` is `uint256(0)`
 - `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
    is `200_000`, `isCreation` is `false` and the `data` is `abi.encodeCall(L1Block.setConfig, (_type, _value))`
+
+#### `upgrade`
+
+The `upgrade` function MUST only be callable by the `UPGRADER` role as defined
+in the [`SuperchainConfig`](./superchain-config.md).
+
+```solidity
+function upgrade(bytes memory _data) external
+```
+
+This function emits a `TransactionDeposited` event.
+
+```solidity
+event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
+```
+
+The following fields are included:
+
+- `from` is the `DEPOSITOR_ACCOUNT`
+- `to` is `Predeploys.ProxyAdmin`
+- `version` is `uint256(0)`
+- `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
+   is `200_000`, `isCreation` is `false` and the `data` is the data passed into `upgrade`.
