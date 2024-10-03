@@ -65,7 +65,7 @@ token standard, that includes two external functions and two events:
 
 #### `__crosschainMint`
 
-Mints `_amount` of token to address `_account`. It should only be callable by the `SuperchainERC20Bridge`
+Mints `_amount` of token to address `_account`.
 
 ```solidity
 __crosschainMint(address _account, uint256 _amount)
@@ -73,7 +73,7 @@ __crosschainMint(address _account, uint256 _amount)
 
 #### `__crosschainBurn`
 
-Burns `_amount` of token from address `_account`. It should only be callable by the `SuperchainERC20Bridge`
+Burns `_amount` of token from address `_account`.
 
 ```solidity
 __crosschainBurn(address _account, uint256 _amount)
