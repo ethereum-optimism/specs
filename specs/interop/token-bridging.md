@@ -7,7 +7,7 @@
 - [Overview](#overview)
 - [`SuperchainERC20` standard](#superchainerc20-standard)
   - [Properties](#properties)
-  - [Interface](#interface)
+  - [`ICrosschainERC20`](#icrosschainerc20)
     - [`__crosschainMint`](#__crosschainmint)
     - [`__crosschainBurn`](#__crosschainburn)
     - [`CrosschainMinted`](#crosschainminted)
