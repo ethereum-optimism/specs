@@ -8,10 +8,10 @@
 - [`SuperchainERC20` standard](#superchainerc20-standard)
   - [Properties](#properties)
   - [Interface](#interface)
-    - [`__superchainMint`](#__superchainmint)
-    - [`__superchainBurn`](#__superchainburn)
-    - [`SuperchainMinted`](#superchainminted)
-    - [`SuperchainBurnt`](#superchainburnt)
+    - [`__crosschainMint`](#__crosschainmint)
+    - [`__crosschainBurn`](#__crosschainburn)
+    - [`CrosschainMinted`](#crosschainminted)
+    - [`CrosschainBurnt`](#crosschainburnt)
 - [`SuperchainERC20Bridge`](#superchainerc20bridge)
 - [Diagram](#diagram)
 - [Implementation](#implementation)
@@ -32,7 +32,7 @@ The `SuperchainERC20Bridge` is a predeploy that builds on the messaging protocol
 
 ### Properties
 
-The standard will build on top of ERC20 and include the following properties:
+The standard will build on top of ERC20, implement the [`ICrosschainERC20`](#icrosschainerc20) interface and include the following properties:
 
 1. Give `mint` and `burn` rights to the `SuperchainERC20Bridge`.
 2. Be deployed at the same address on every chain in the Superchain.
@@ -56,40 +56,40 @@ Notice that ERC20s that do not implement the standard can still be fungible
 using interop message passing
 using a custom bridge or implementing `sendERC20` and `relayERC20` on their own contracts.
 
-### Interface
+### `ICrosschainERC20`
 
-Implementations of the `SuperchainERC20` standard will need to implement two external functions and two events:
+Implementations of the `SuperchainERC20` standard will need to implement the `ICrosschainERC20` token standard, that includes two external functions and two events:
 
-#### `__superchainMint`
+#### `__crosschainMint`
 
 Mints `_amount` of token to address `_account`. It should only be callable by the `SuperchainERC20Bridge`
 
 ```solidity
-__superchainMint(address _account, uint256 _amount)
+__crosschainMint(address _account, uint256 _amount)
 ```
 
-#### `__superchainBurn`
+#### `__crosschainBurn`
 
 Burns `_amount` of token from address `_account`. It should only be callable by the `SuperchainERC20Bridge`
 
 ```solidity
-__superchainBurn(address _account, uint256 _amount)
+__crosschainBurn(address _account, uint256 _amount)
 ```
 
-#### `SuperchainMinted`
+#### `CrosschainMinted`
 
-MUST trigger when `__superchainMint` is called
+MUST trigger when `__crosschainMint` is called
 
 ```solidity
-event SuperchainMinted(address indexed _to, uint256 _amount)
+event CrosschainMinted(address indexed _to, uint256 _amount)
 ```
 
-#### `SuperchainBurnt`
+#### `CrosschainBurnt`
 
-MUST trigger when `__superchainBurn` is called
+MUST trigger when `__crosschainBurn` is called
 
 ```solidity
-event SuperchainBurnt(address indexed _from, uint256 _amount)
+event CrosschainBurnt(address indexed _from, uint256 _amount)
 ```
 
 ## `SuperchainERC20Bridge`
@@ -128,14 +128,14 @@ sequenceDiagram
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA->>SuperERC20_A: __superchainBurn(from, amount)
-  SuperERC20_A-->SuperERC20_A: emit SuperchainBurnt(from, amount)
+  L2SBA->>SuperERC20_A: __crosschainBurn(from, amount)
+  SuperERC20_A-->SuperERC20_A: emit CrosschainBurnt(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB->>SuperERC20_B: __superchainMint(to, amount)
-  SuperERC20_B-->SuperERC20_B: emit SuperchainMinted(to, amount)
+  L2SBB->>SuperERC20_B: __crosschainMint(to, amount)
+  SuperERC20_B-->SuperERC20_B: emit CrosschainMinted(to, amount)
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
 
@@ -145,7 +145,7 @@ An example implementation for the `sendERC20` and `relayERC20` functions is prov
 
 ```solidity
 function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) external {
-  _token.__superchainBurn(msg.sender, _amount);
+  _token.__crosschainBurn(msg.sender, _amount);
 
   bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
   L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
@@ -159,7 +159,7 @@ function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 
   
   uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
 
-  _token.__superchainMint(_to, _amount);
+  _token.__crosschainMint(_to, _amount);
 
   emit RelayERC20(address(_token), _from, _to, _amount, _source);
 }
@@ -222,15 +222,15 @@ sequenceDiagram
 
   from->>Intermediate_A: sendWithData(data)
   Intermediate_A->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA->>SuperERC20_A: __superchainBurn(from, amount)
-  SuperERC20_A-->SuperERC20_A: emit SuperchainBurnt(from, amount)
+  L2SBA->>SuperERC20_A: __crosschainBurn(from, amount)
+  SuperERC20_A-->SuperERC20_A: emit CrosschainBurnt(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Intermediate_A->>Messenger_A: sendMessage(chainId, to, data)
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB->>SuperERC20_B: __superchainMint(to, amount)
-  SuperERC20_B-->SuperERC20_B: emit SuperchainMinted(to, amount)
+  L2SBB->>SuperERC20_B: __crosschainMint(to, amount)
+  SuperERC20_B-->SuperERC20_B: emit CrosschainMinted(to, amount)
   Inbox->>Messenger_B: relayMessage(): call
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B->>to: call(data)
