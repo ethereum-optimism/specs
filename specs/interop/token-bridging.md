@@ -32,9 +32,11 @@ The `SuperchainERC20Bridge` is a predeploy that builds on the messaging protocol
 
 ### Properties
 
-The standard will build on top of ERC20, implement the [`ICrosschainERC20`](#icrosschainerc20) interface and include the following properties:
+The standard will build on top of ERC20, implement the [`ICrosschainERC20`](#icrosschainerc20)
+interface and include the following properties:
 
-1. Give `mint` and `burn` rights to the `SuperchainERC20Bridge`.
+1. Only allow `SuperchainERC20Bridge` to call
+[`__crosschainMint`](#__crosschainmint) and [`__crosschainBurn`](#__crosschainburn).
 2. Be deployed at the same address on every chain in the Superchain.
 
 The first property will allow the `SuperchainERC20Bridge` to have a liquidity guarantee,
@@ -58,7 +60,8 @@ using a custom bridge or implementing `sendERC20` and `relayERC20` on their own 
 
 ### `ICrosschainERC20`
 
-Implementations of the `SuperchainERC20` standard will need to implement the `ICrosschainERC20` token standard, that includes two external functions and two events:
+Implementations of the `SuperchainERC20` standard will need to implement the `ICrosschainERC20`
+token standard, that includes two external functions and two events:
 
 #### `__crosschainMint`
 
