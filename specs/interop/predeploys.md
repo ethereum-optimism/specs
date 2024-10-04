@@ -863,7 +863,7 @@ implemented by the `SuperchainERC20` standard.
 Returns the `msgHash_` crafted by the `L2ToL2CrossChainMessenger`.
 
 ```solidity
-sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 _msgHash)
+sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
 ```
 
 #### `relayERC20`
