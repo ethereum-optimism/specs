@@ -151,7 +151,7 @@ the VM state.
 ### Waiting Threads
 
 Threads enter a waiting state when a futex wait syscall is successfully executed, setting the thread's
-`futexAddr`, `futexVal`, and `futexTimeout` fields according to the futex syscall arguments.
+`futexAddr`, `futexVal`, and `futexTimeoutStep` fields according to the futex syscall arguments.
 
 During normal execution, when the active thread is in a waiting state (its `futexAddr` is not `0xFFFFFFFF`), the VM
 checks if it can be woken up.
