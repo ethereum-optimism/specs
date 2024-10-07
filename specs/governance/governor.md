@@ -15,6 +15,8 @@
     - [`castVoteWithReason`](#castvotewithreason)
     - [`castVoteWithReasonAndParams`](#castvotewithreasonandparams)
     - [`castVoteWithReasonAndParamsBySig`](#castvotewithreasonandparamsbysig)
+    - [`subdelegate`](#subdelegate)
+    - [`subdelegateBatched`](#subdelegatebatched)
     - [`editProposalType`](#editproposaltype)
     - [`execute`](#execute)
     - [`executeWithModule`](#executewithmodule)
@@ -56,6 +58,8 @@
     - [`weightCast`](#weightcast)
   - [Events](#events)
     - [`ProposalCanceled`](#proposalcanceled)
+    - [`SubDelegation`](#subdelegation)
+    - [`SubDelegations`](#subdelegations)
     - [`VoteCast`](#votecast)
     - [`VoteCastWithParams`](#votecastwithparams)
     - [`ProposalTypeUpdated`](#proposaltypeupdated)
@@ -68,8 +72,10 @@
     - [`QuorumNumeratorUpdated`](#quorumnumeratorupdated)
 - [Proposal Types](#proposal-types)
   - [Interface](#interface-1)
-- [Modules](#modules)
+- [SubdelegationRules](#subdelegationrules)
   - [Interface](#interface-2)
+- [Modules](#modules)
+  - [Interface](#interface-3)
 - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -176,6 +182,31 @@ function castVoteWithReasonAndParams(uint256 _proposalId, uint8 _support, string
 
 This function MUST emit the `VoteCastWithParams` event if the length of the parameters is more than zero. Otherwise,
 the function MUST emit the `VoteCast` event. The function MUST also return the voting weight.
+
+#### `subdelegate`
+
+Implements the partial and redelegation of voting power to a single address.
+
+```solidity
+function subdelegate(address to, SubdelegationRules calldata subdelegateRules) external;
+```
+
+This function must emit `SubDelegation` event.
+
+#### `subdelegateBatched`
+
+Subdelegate to a list of address based on a set of rules. Two functions exist one that takes in a single set of subdelegation rules while the other accepts a list that map to each
+target address.
+
+```solidity
+function subdelegateBatched(address[] calldata targets, SubdelegationRules calldata subdelegateRules) external;
+```
+
+```solidity
+ function subdelegateBatched(address[] calldata targets, SubdelegationRules[] calldata subdelegationRules) external;
+```
+
+These functions must emit `SubDelegations` event.
 
 #### `editProposalType`
 
@@ -551,6 +582,25 @@ MUST trigger when a proposal is cancelled, per the [`cancel`](#cancel) and [`can
 ```solidity
 event ProposalCanceled(uint256 proposalId);
 ```
+#### `SubDelegation`
+
+Must trigger when a vote is being subdelegated per the [`subdelegate`](#subdelegate) function.
+
+```solidity
+event SubDelegation(address indexed from, address indexed to, IGovernanceDelegation.SubdelegationRules subdelegationRules);
+```
+
+#### `SubDelegations`
+
+Must trigger when handling the batch subdelegations as per the [`subdelegateBatched`](#subdelegatebatched) functions.
+
+```solidity
+event SubDelegations(address indexed from, address[] to, IGovernanceDelegation.SubdelegationRules subdelegationRules);
+```
+
+```solidity
+event SubDelegations(address indexed from, address[] to, IGovernanceDelegation.SubdelegationRules[] subdelegationRules);
+```
 
 #### `VoteCast`
 
@@ -667,6 +717,43 @@ interface IProposalTypesConfigurator {
   /// @param _approvalThreshold The approval threshold percentage.
   /// @param _name The proposal type name.
   function setProposalType(uint256 _proposalTypeId, uint16 _quorum, uint16 _approvalThreshold, string memory _name) external;
+}
+```
+
+## SubdelegationRules
+
+The methods that utilize `SubdelegationRules` struct MUST use the following interface when setting subdelegations:
+
+### Interface
+
+```solidity
+interface GovernanceDelegation {
+    enum AllowanceType {
+        Absolute,
+        Relative
+    }
+
+    /**
+     * @param maxRedelegations The maximum number of times the delegated votes can be redelegated.
+     * @param blocksBeforeVoteCloses The number of blocks before the vote closes that the delegation is valid.
+     * @param notValidBefore The timestamp after which the delegation is valid.
+     * @param notValidAfter The timestamp before which the delegation is valid.
+     * @param customRule The address of a contract that implements the `IRule` interface.
+     * @param baseRules The base subdelegation rules.
+     * @param allowanceType The type of allowance. If Absolute, the amount of votes delegated is fixed.
+     * If Relative, the amount of votes delegated is relative to the total amount of votes the delegator has.
+     * @param allowance The amount of votes delegated. If `allowanceType` is Relative 100% of allowance corresponds
+     * to 1e5, otherwise this is the exact amount of votes delegated.
+     */
+    struct SubdelegationRules {
+        uint8 maxRedelegations;
+        uint16 blocksBeforeVoteCloses;
+        uint32 notValidBefore;
+        uint32 notValidAfter;
+        address customRule;
+        AllowanceType allowanceType;
+        uint256 allowance;
+    }
 }
 ```
 
