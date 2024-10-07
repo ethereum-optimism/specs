@@ -918,7 +918,8 @@ calls <code>__crosschainBurn</code> in the token contract,
 which is included as part of the the <code>ICrosschainERC20</code>
 <a href="./token-bridging.html#__crosschainburn">interface</a>
 implemented by the <code>SuperchainERC20</code> standard.</p>
-<pre><code class="language-solidity">sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId)
+<p>Returns the <code>msgHash_</code> crafted by the <code>L2ToL2CrossChainMessenger</code>.</p>
+<pre><code class="language-solidity">sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
 </code></pre>
 <h4 id="relayerc20"><a class="header" href="#relayerc20"><code>relayERC20</code></a></h4>
 <p>Process incoming messages IF AND ONLY IF initiated
@@ -955,11 +956,13 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
   participant L2SBB as SuperchainERC20Bridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
-  from-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
+  from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
   L2SBA-&gt;&gt;SuperERC20_A: __crosschainBurn(from, amount)
   SuperERC20_A--&gt;SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  Messenger_A-&gt;&gt;L2SBA: return msgHash_ 
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
+  L2SBA-&gt;&gt;from: return msgHash_ 
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: __crosschainMint(to, amount)
