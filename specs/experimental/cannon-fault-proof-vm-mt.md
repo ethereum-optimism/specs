@@ -522,7 +522,7 @@ raise an exception if the supplied merkle proof does not match the pre-state `me
 
 Cannon is designed to prove the correctness of a particular state transition that emulates a MIPS32 machine.
 Cannon does not guarantee that the MIPS32 instructions correctly implement the program that the user intends to prove.
-As a result, Cannon's use as a Fault Proof system inherently depends on some extent on the correctness of the compiler
+As a result, Cannon's use as a Fault Proof system inherently depends to some extent on the correctness of the compiler
 used to generate the MIPS32 instructions over which Cannon operates.
 
 To illustrate this concept, suppose that a user intends to prove simple program `input + 1 = output`.
