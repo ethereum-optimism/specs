@@ -10,8 +10,17 @@
   - [Header Validity Rules](#header-validity-rules)
   - [Header Withdrawals Root](#header-withdrawals-root)
     - [Rationale](#rationale)
+    - [Genesis Block](#genesis-block)
+    - [State Processing](#state-processing)
+    - [P2P](#p2p)
+    - [Backwards Compatibility Considerations](#backwards-compatibility-considerations)
     - [Forwards Compatibility Considerations](#forwards-compatibility-considerations)
     - [Client Implementation Considerations](#client-implementation-considerations)
+      - [Transaction Simulation](#transaction-simulation)
+- [Block Body Withdrawals List](#block-body-withdrawals-list)
+- [Engine API Updates](#engine-api-updates)
+  - [Update to `ExecutableData`](#update-to-executabledata)
+  - [`engine_newPayloadV3` API](#engine_newpayloadv3-api)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -24,22 +33,29 @@ The storage root of the `L2ToL1MessagePasser` is included in the block header's
 
 Isthmus, like other network upgrades, is activated at a timestamp.
 Changes to the L2 Block execution rules are applied when the `L2 Timestamp >= activation time`.
+Changes to the L2 block header are applied when it is considering data from a L1 Block whose timestamp
+is greater than or equal to the activation timestamp.
 
 ## `L2ToL1MessagePasser` Storage Root in Header
 
-After Holocene's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
+After Isthumus hardfork's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
 [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root _after_ the block has been executed, and _after_ the
 insertions and deletions have been applied to the trie. In other words, the storage root should be the same root
-that is returned by `eth_getProof` at the given block number.
+that is returned by `eth_getProof` at the given block number -- it is the storage root of the post state,
+similar to how the state root of the post state is stored in the block header.
+
+For an accurate storage root to be determined, the block state has to be committed first and only then, the
+`withdrawalsRoot` can be set accurately. Hence the `withdrawalsRoot` attribute should be set right after setting
+the state root attribute in the header.
 
 ### Header Validity Rules
 
-Prior to holocene activation, the L2 block header's `withdrawalsRoot` field must be:
+Prior to isthumus activation, the L2 block header's `withdrawalsRoot` field must be:
 
 - `nil` if Canyon has not been activated.
 - `keccak256(rlp(empty_string_code))` if Canyon has been activated.
 
-After Holocene activation, an L2 block header's `withdrawalsRoot` field is valid iff:
+After isthumus activation, an L2 block header's `withdrawalsRoot` field is valid iff:
 
 1. It is exactly 32 bytes in length.
 1. The [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root, as committed to in the `storageRoot` within the block
@@ -63,6 +79,33 @@ places a burden on users of the system in a post-fault-proofs world, where:
 Placing the [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root in the `withdrawalsRoot` field alleviates this burden
 for users and protocol participants alike, allowing them to propose and verify other proposals with lower operating costs.
 
+#### Genesis Block
+
+If isthumus is active at the genesis block, the withdrawals root is the empty withdrawals root, regardless of L2 state.
+
+#### State Processing
+
+At the time of state processing, the header for which transactions are being validated should not make it's `withdrawalsRoot`
+available to the EVM/application layer.
+
+#### P2P
+
+During sync, the block body withdrawal hash is computed from the withdrawals list in the block body. If Isthumus is
+active at such a block's header, we expect that the computed withdrawal hash must match the hash of an empty list of
+withdrawals. The header `withdrawalsRoot` MPT hash can be any non-null value in this case. Verification is performed
+after a header is available so that the header's timestamp can be checked to see if Isthumus is active.
+
+#### Backwards Compatibility Considerations
+
+Beginning at Shanghai and prior to Isthumus activation, the `withdrawalsRoot` field is set to the MPT root
+of an empty withdrawals list. This is the same root as an empty storage root. The withdrawals are captured
+in the L2 state, however they are not reflected in the `withdrawalsRoot`. Hence, prior to Isthumus activation,
+even if a `withdrawalsRoot` is present and a MPT root is present in the header, it should not be used.
+Any implementation that calculates output root should be careful not to use the header `withdrawalsRoot`.
+
+After Isthumus activation, if there was never any withdrawal contract storage, a MPT root of an empty list
+can be set as the `withdrawalsRoot`
+
 #### Forwards Compatibility Considerations
 
 As it stands, the `withdrawalsRoot` field is unused within the OP Stack's header consensus format, and will never be
@@ -76,3 +119,24 @@ an outbound withdrawal for a long period of time, the node may not have access t
 [`L2ToL1MessagePasser`][l2-to-l1-mp]. In this case, the client would be unable to keep consensus. However, most modern
 clients are able to at the very least reconstruct the account storage root at a given block on the fly if it does not
 directly store this information.
+[l2-to-l1-mp]: ../../protocol/predeploys.md#L2ToL1MessagePasser
+[output-root]: ../../glossary.md#l2-output-root
+
+##### Transaction Simulation
+
+An empty withdrawals root should be included at the end of all applied simulated transactions, when the block is sealed.
+
+## Block Body Withdrawals List
+
+withdrawals list in the block body is encoded as an empty RLP list.
+
+## Engine API Updates
+
+### Update to `ExecutableData`
+
+`ExecutableData` will contain an extra field for `withdrawalsRoot` after Isthumus hard fork.
+
+### `engine_newPayloadV3` API
+
+Post Isthumus, `engine_newPayloadV3` will be used with the additional `ExecutionPayload` attribute. This attribute
+is omitted prior to Isthumus.
