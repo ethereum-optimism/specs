@@ -132,16 +132,16 @@ Wakeup traversal proceeds as follows across multiple steps:
 - On each subsequent step while `wakeup` is set:
   - The currently active thread's `futexAddr` is checked for a match with `wakeup`.
   - If a match is found:
-    - The wakeup traversal completes<sup>*</sup>, leaving the matching thread as the currently active thread.
+    - The wakeup traversal completes [^traversal-completion], leaving the matching thread as the currently active thread.
   - If the currently active thread is not a match:
     - The active thread is preempted.
     - If the right thread stack is now empty:
       - This means all threads have been visited (the traversal begins by moving
         left, then right so this is the end of the traversal).
-      - The wakeup traversal completes <sup>*</sup>.
+      - The wakeup traversal completes [^traversal-completion].
 
-> **<sup>*</sup>** Wakeup traversal is completed by setting the FPVM state's `wakeup` field to `0xFFFFFFFF` (-1),
-> causing the FPVM to resume normal execution.
+[^traversal-completion]: Wakeup traversal is completed by setting the FPVM state's `wakeup` field to `0xFFFFFFFF` (-1),
+causing the FPVM to resume normal execution.
 
 ### Exited Threads
 
