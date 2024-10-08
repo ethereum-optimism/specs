@@ -112,6 +112,10 @@ where:
    then the withdrawal against that storage root), we can prove against the L2toL1MessagePasser's storage root directly,
    thus reducing the verification cost of withdrawals on L1.
 
+   After the Isthumus hard fork, the `withdrawal_storage_root` is present in the
+  [block header as `withdrawalsRoot`](../protocol/isthmus/exec-engine.md#l2tol1messagepasser-storage-root-in-header)
+   and can be used directly, instead of computing the storage root of the L2toL1MessagePasser contract.
+
 ## L2 Output Oracle Smart Contract
 
 L2 blocks are produced at a constant rate of `L2_BLOCK_TIME` (2 seconds).
