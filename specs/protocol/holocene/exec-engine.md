@@ -101,6 +101,3 @@ historical execution, as L1 would have to be consulted for fetching the values f
 Instead, we re-use an unused field in the L1 block header as to make these parameters available, retaining the
 purity of the function that computes the next block's base fee from the chain configuration, parent block header,
 and next block timestamp.
-
-[l2-to-l1-mp]: ../../protocol/predeploys.md#L2ToL1MessagePasser
-[output-root]: ../../glossary.md#l2-output-root

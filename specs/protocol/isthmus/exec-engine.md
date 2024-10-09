@@ -12,6 +12,10 @@
     - [Rationale](#rationale)
     - [Forwards Compatibility Considerations](#forwards-compatibility-considerations)
     - [Client Implementation Considerations](#client-implementation-considerations)
+- [Fees](#fees)
+  - [Operator Fee](#operator-fee)
+    - [Configuring Parameters](#configuring-parameters)
+  - [Fee Vaults](#fee-vaults)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -76,3 +80,45 @@ an outbound withdrawal for a long period of time, the node may not have access t
 [`L2ToL1MessagePasser`][l2-to-l1-mp]. In this case, the client would be unable to keep consensus. However, most modern
 clients are able to at the very least reconstruct the account storage root at a given block on the fly if it does not
 directly store this information.
+
+[l2-to-l1-mp]: ../../protocol/predeploys.md#L2ToL1MessagePasser
+[output-root]: ../../glossary.md#l2-output-root
+
+## Fees
+
+New OP stack variants have different resource consumption patterns, and thus require a more flexible
+pricing model. To enable more customizable fee structures, Isthmus adds a new component to the fee
+calculation: the `operatorFee`, which is parameterized by two scalars: the `operatorFeeScalar`
+and the `operatorFeeConstant`.
+
+### Operator Fee
+
+The operator fee, is set as follows:
+
+`operatorFee = (gasUsed * operatorFeeScalar / 1e6) + operatorFeeConstant`
+
+Where:
+
+- `gasUsed` is amount of gas used by the transaction.
+- `operatorFeeScalar` is a `uint32` scalar set by the chain operator, scaled by `1e6`.
+- `operatorFeeConstant` is a `uint64` scalar set by the chain operator.
+
+#### Configuring Parameters
+
+`operatorFeeScalar` and `operatorFeeConstant` are loaded in a similar way to the `baseFeeScalar` and
+`blobBaseFeeScalar` used in the [`L1Fee`](../../protocol/exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da).
+calculation. In more detail, these paramters can be accessed in two interchangable ways.
+
+- read from the deposited L1 attributes (`operatorFeeScalar` and `operatorFeeConstant`) of the current L2 block
+- read from the L1 Block Info contract (`0x4200000000000000000000000000000000000015`)
+  - using the respective solidity getter functions (`operatorFeeScalar`, `operatorFeeConstant`)
+  - using direct storage-reads:
+    - Operator fee scalar as big-endian `uint32` in slot `8` at offset `0`.
+    - Operator fee constant as big-endian `uint64` in slot `8` at offset `4`.
+
+### Fee Vaults
+
+These collected fees are sent to a new vault for the `operatorFee`: the [`OperatorFeeVault`](predeploys.md#operatorfeevault).
+
+Like the existing vaults, this is a hardcoded address, pointing at a pre-deployed proxy contract.
+The proxy is backed by a vault contract deployment, based on `FeeVault`, to route vault funds to L1 securely.
