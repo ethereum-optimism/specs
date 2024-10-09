@@ -285,10 +285,11 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 ### `sendExpire` Invariants
 
-- The message MUST have not been successfully relayed
+- The message MUST have failed to be relayed and not have succeded in later attemps.
 - The `EXPIRY_WINDOW` MUST have elapsed since the message first failed to be relayed
 - The expired message MUST not have been previously sent back to source
 - The expired message MUST not be relayable after being sent back
+- The `returnedMessages` mapping MUST only contain messages that were sent back to their origin chain.
 
 ### `relayExpire` Invariants
 
@@ -379,7 +380,7 @@ flowchart LR
 ```
 
 When relaying a message through the `L2ToL2CrossDomainMessenger`, it is important to require that
-the `_destination` equal to `block.chainid` to ensure that the message is only valid on a single
+the `_destination` is equal to `block.chainid` to ensure that the message is only valid on a single
 chain. The hash of the message is used for replay protection.
 
 It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
@@ -407,6 +408,8 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
 
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
+
+    require(returnedMessages[messageHash] != 0);
 
     bool success = SafeCall.call(_target, msg.value, _message);
 
@@ -439,8 +442,8 @@ failed messages and to prevent malicious actors from performing a griefing attac
 by expiring messages upon arrival.
 
 Once the expired message is sent to the source chain, the message on the local chain is set
-as expired in the `successfulMessages` mapping to ensure non-replayability and deleted
-from `failedMessages`. An initiating message is then emitted to `relayExpire`.
+as expired in the `returnedMessages` mapping to ensure non-replayability and deleted from `failedMessages`. 
+An initiating message is then emitted to `relayExpire`.
 
 `sendExpire` sets the sender of the message as the `L2ToL2CrossDomainMessenger` to add a path
 for `relayExpire` to ensure that the message originated in `sendExpire`. There's should be no
@@ -456,7 +459,7 @@ function sendExpire(bytes32 _expiredHash) external nonReentrant {
     require(block.timestamp >= messageTimestamp + EXPIRY_WINDOW);
 
     delete failedMessages[_expiredHash];
-    successfulMessages[_expiredHash] = true;
+    returnedMessages[_expiredHash] = block.timestamp;
 
     uint256 destination = messageSource;
     address target;
