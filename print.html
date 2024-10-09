@@ -10292,6 +10292,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
+<li><a href="interop/predeploys.html#overview">Overview</a></li>
 <li><a href="interop/predeploys.html#crossl2inbox">CrossL2Inbox</a>
 <ul>
 <li><a href="interop/predeploys.html#functions">Functions</a>
@@ -10327,7 +10328,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#optimismsuperchainerc20factory">OptimismSuperchainERC20Factory</a>
 <ul>
 <li><a href="interop/predeploys.html#optimismsuperchainerc20">OptimismSuperchainERC20</a></li>
-<li><a href="interop/predeploys.html#overview">Overview</a>
+<li><a href="interop/predeploys.html#overview-1">Overview</a>
 <ul>
 <li><a href="interop/predeploys.html#proxy">Proxy</a></li>
 <li><a href="interop/predeploys.html#beacon-pattern">Beacon Pattern</a></li>
@@ -10349,7 +10350,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 </li>
 <li><a href="interop/predeploys.html#beaconcontract">BeaconContract</a>
 <ul>
-<li><a href="interop/predeploys.html#overview-1">Overview</a></li>
+<li><a href="interop/predeploys.html#overview-2">Overview</a></li>
 </ul>
 </li>
 <li><a href="interop/predeploys.html#l1block">L1Block</a>
@@ -10397,7 +10398,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 </li>
 <li><a href="interop/predeploys.html#superchainerc20bridge">SuperchainERC20Bridge</a>
 <ul>
-<li><a href="interop/predeploys.html#overview-2">Overview</a></li>
+<li><a href="interop/predeploys.html#overview-3">Overview</a></li>
 <li><a href="interop/predeploys.html#functions-3">Functions</a>
 <ul>
 <li><a href="interop/predeploys.html#senderc20"><code>sendERC20</code></a></li>
@@ -10417,6 +10418,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -10624,6 +10626,30 @@ it will be the <code>L2ToL2CrossDomainMessenger</code> and users will need to ca
 every call to <code>sendMessage</code>.</p>
 <p>Note that <code>sendMessage</code> is not <code>payable</code>.</p>
 <h4 id="relaying-messages"><a class="header" href="#relaying-messages">Relaying Messages</a></h4>
+<p>The following diagram shows the flow for sending a cross chain message using the <code>L2ToL2CrossDomainMessenger</code>.
+Each subsequent call is labeled with a number.</p>
+<pre class="mermaid">flowchart LR
+    user --&gt;|&quot;1#46; sendMessage&quot;| al2tol2
+    user --&gt; |&quot;2#46; relayMessage&quot;|bl2tol2
+    em{{SentMessage Event}}
+
+    direction TB
+    al2tol2 --&gt; em
+
+    bcl2[CrossL2Inbox]
+    al2tol2[L2ToL2CrossDomainMessenger]
+    bl2tol2[L2ToL2CrossDomainMessenger]
+
+    subgraph &quot;Chain A&quot;
+      al2tol2
+    end
+
+    subgraph &quot;Chain B&quot;
+      bl2tol2  --&gt; |&quot;3#46; validateMessage&quot;|bcl2
+      bcl2 --&gt; |&quot;4#46;&quot;| bl2tol2
+      bl2tol2 --&gt; |&quot;5#46;&quot;| Contract
+    end
+</pre>
 <p>When relaying a message through the <code>L2ToL2CrossDomainMessenger</code>, it is important to require that
 the <code>_destination</code> equal to <code>block.chainid</code> to ensure that the message is only valid on a single
 chain. The hash of the message is used for replay protection.</p>
@@ -10725,7 +10751,7 @@ and include a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-33"><a class="header" href="#overview-33">Overview</a></h3>
+<h3 id="overview-34"><a class="header" href="#overview-34">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -10792,7 +10818,7 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-34"><a class="header" href="#overview-34">Overview</a></h3>
+<h3 id="overview-35"><a class="header" href="#overview-35">Overview</a></h3>
 <p>The <code>BeaconContract</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -11000,7 +11026,7 @@ valid <code>OptimismSuperchainERC20</code> corresponding to the same remote toke
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-35"><a class="header" href="#overview-35">Overview</a></h3>
+<h3 id="overview-36"><a class="header" href="#overview-36">Overview</a></h3>
 <p>The <code>SuperchainERC20Bridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -11550,7 +11576,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
+<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainERC20Bridge</code>.
@@ -11897,7 +11923,7 @@ with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that suc
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
+<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
 <h3 id="deposit-context-1"><a class="header" href="#deposit-context-1">Deposit Context</a></h3>
 <p>Derivation is extended to create <strong>deposit contexts</strong>, which signifies the execution of a depositing transaction.
 A deposit context is scoped to a single block, commencing with the execution of the first deposited transaction
@@ -12226,7 +12252,7 @@ sure to account for future breaking changes to the ABI.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
+<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -12365,7 +12391,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
+<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
