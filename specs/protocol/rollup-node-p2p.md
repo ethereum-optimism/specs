@@ -269,7 +269,7 @@ Ecotone blocks are broadcast on `/optimism/<chainId>/2/blocks`.
 
 ### `blocksv4`
 
-Isthumus blocks are broadcast on `/optimism/<chainId>/3/blocks`.
+Isthmus blocks are broadcast on `/optimism/<chainId>/3/blocks`.
 
 ### Block encoding
 
@@ -417,7 +417,7 @@ Implementations may opt for a different limit, since this sync method is optiona
 - `1`: SSZ-encoded `ExecutionPayloadEnvelope` with Snappy framing compression,
   matching the `ExecutionPayloadEnvelope` SSZ definition of the L2 Ecotone version.
 - `2`: SSZ-encoded `ExecutionPayload` with Snappy framing compression,
-  matching the `ExecutionPayload` SSZ definition of the L2 Isthumus version.
+  matching the `ExecutionPayload` SSZ definition of the L2 Isthmus version.
 
 The request is by block-number, enabling parallel fetching of a chain across many peers.
 
