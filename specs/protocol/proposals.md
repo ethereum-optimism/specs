@@ -19,6 +19,7 @@
 
 [g-rollup-node]: ../glossary.md#rollup-node
 [g-mpt]: ../glossary.md#merkle-patricia-trie
+[header-withdrawals-root]: ../protocol/isthmus/exec-engine.md#l2tol1messagepasser-storage-root-in-header
 
 ## Overview
 
@@ -113,8 +114,8 @@ where:
    thus reducing the verification cost of withdrawals on L1.
 
    After the Isthumus hard fork, the `withdrawal_storage_root` is present in the
-  [block header as `withdrawalsRoot`](../protocol/isthmus/exec-engine.md#l2tol1messagepasser-storage-root-in-header)
-   and can be used directly, instead of computing the storage root of the L2toL1MessagePasser contract.
+   [block header as `withdrawalsRoot`][header-withdrawals-root] and can be used directly, instead of computing
+  the storage root of the L2toL1MessagePasser contract.
 
 ## L2 Output Oracle Smart Contract
 
