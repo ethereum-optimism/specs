@@ -200,6 +200,7 @@
 <ul>
 <li><a href="#extended-payloadattributesv3">Extended <code>PayloadAttributesV3</code></a>
 <ul>
+<li><a href="#payloadid-computation">PayloadID computation</a></li>
 <li><a href="#eip1559params-encoding"><code>eip1559Params</code> encoding</a></li>
 </ul>
 </li>
@@ -238,6 +239,9 @@ type is extended to:</p>
     eip1559Params: DATA (8 bytes)
 }
 </code></pre>
+<h4 id="payloadid-computation"><a class="header" href="#payloadid-computation">PayloadID computation</a></h4>
+<p>If <code>eip1559Params != null</code>, the <code>eip1559Params</code> is included in the <code>PayloadID</code> hasher directly after the <code>gasLimit</code>
+field.</p>
 <h4 id="eip1559params-encoding"><a class="header" href="#eip1559params-encoding"><code>eip1559Params</code> encoding</a></h4>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Byte Offset</th></tr></thead><tbody>
 <tr><td><code>denominator</code></td><td><code>u32 (big-endian)</code></td><td><code>[0, 4)</code></td></tr>
@@ -252,8 +256,9 @@ parent header's <code>nonce</code> field rather than the previous protocol const
 be considered invalid by the engine.</li>
 <li>At and after Holocene activation:
 <ul>
-<li>if <code>eip1559Parameters</code> in the <code>PayloadAttributesV3</code> is null, the attributes are to be considered invalid by the
+<li>if <code>eip1559Params</code> in the <code>PayloadAttributesV3</code> is null, the attributes are to be considered invalid by the
 engine.</li>
+<li>if <code>eip1559Params</code>' <code>denominator</code> is <code>0</code>, the attributes are to be considered invalid by the engine.</li>
 <li>if <code>parent_header.nonce</code> is zero, the <a href="../exec-engine.html#1559-parameters">canyon base fee parameter constants</a> are
 used for the block's base fee parameters.</li>
 <li>if <code>parent_header.nonce</code> is non-zero, the EIP-1559 parameters encoded within the parent header's <code>nonce</code> field are
