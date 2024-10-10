@@ -154,7 +154,7 @@ So the following changes are made to the [Bedrock Batch Queue](../derivation.md#
 future are now directly `drop`-ped. This effectively disallows gaps, instead of buffering future
 batches.
 - A new batch validity `past` is introduced. A batch has `past` validity if its timestamp is before
-or equal to the safe head's timestamp. This also applies to span
+or equal to the safe head's timestamp. This also applies to span batches.
 - The other rules stay the same, including empty batch generation when the sequencing window
 elapses.
 
