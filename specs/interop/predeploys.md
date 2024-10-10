@@ -446,7 +446,7 @@ as expired in the `returnedMessages` mapping to ensure non-replayability and del
 An initiating message is then emitted to `relayExpire`.
 
 `sendExpire` sets the sender of the message as the `L2ToL2CrossDomainMessenger` to add a path
-for `relayExpire` to ensure that the message originated in `sendExpire`. There's should be no
+for `relayExpire` to ensure that the message originated in `sendExpire`. There should be no
 other path where a message can have the `L2ToL2CrossDomainMessenger` as `origin` and `sender`.
 
 ```solidity
