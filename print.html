@@ -9149,7 +9149,7 @@ and next block timestamp.</p>
 <tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
 <tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
 <tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
-<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>(uint256(_denominator) &lt;&lt; 32) | _elasticity</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
 </tbody></table>
 </div>
 <h3 id="initialization"><a class="header" href="#initialization">Initialization</a></h3>
@@ -9175,11 +9175,11 @@ operator to modify the <code>BASE_FEE_MAX_CHANGE_DENOMINATOR</code> and the <cod
 It is possible for the chain operator to set EIP-1559 parameters that result in poor user experience.</p>
 <h5 id="eip1559elasticity"><a class="header" href="#eip1559elasticity"><code>eip1559Elasticity</code></a></h5>
 <p>This function returns the currently configured EIP-1559 elasticity.</p>
-<pre><code class="language-solidity">function eip1559Elasticity()(uint64)
+<pre><code class="language-solidity">function eip1559Elasticity()(uint32)
 </code></pre>
 <h5 id="eip1559denominator"><a class="header" href="#eip1559denominator"><code>eip1559Denominator</code></a></h5>
 <p>This function returns the currently configured EIP-1559 denominator.</p>
-<pre><code class="language-solidity">function eip1559Denominator()(uint64)
+<pre><code class="language-solidity">function eip1559Denominator()(uint32)
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="governance-token-1"><a class="header" href="#governance-token-1">Governance Token</a></h1>
