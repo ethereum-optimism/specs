@@ -158,6 +158,10 @@ or equal to the safe head's timestamp. This also applies to span
 - The other rules stay the same, including empty batch generation when the sequencing window
 elapses.
 
+Note that these changes to batch validity rules also activate by the L1 inclusion block timestamp of
+a batch, not with the batch timestamp. This is important to guarantee consistent validation rules
+for the first channel after Holocene activation.
+
 The `drop` and `past` batch validities cause the following new behavior:
 
 - If a batch is found to be invalid and is dropped, the remaining span batch it originated from, if
