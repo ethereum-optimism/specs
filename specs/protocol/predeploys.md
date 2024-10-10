@@ -37,7 +37,7 @@ Predeploys are used instead of precompiles to make it easier for multiclient
 implementations as well as allowing for more integration with hardhat/foundry
 network forking.
 
-Predeploy addresses exist in a prefixed namespace `0x420xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`.
+Predeploy addresses exist in a prefixed namespace `0x4200000000000000000000000000000000000xxx`.
 Proxies are set at the first 2048 addresses in the namespace, except for the addresses reserved for the
 `GovernanceToken` and `WETH` predeploys.
 
