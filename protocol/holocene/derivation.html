@@ -323,14 +323,16 @@ invalid.</li>
 <li>A failed parent check invalidates the span batch.</li>
 <li>If <code>span_start.timestamp &gt; next_timestamp</code>, the span batch is invalid, because we disallow gaps
 due to the new strict batch ordering rules.</li>
-<li>If <code>span_end.timestamp &lt; next_timestamp</code>, the span batch is invalid, as it doesn't contain any new
-batches (this would also happen if applying timestamp checks to each derived singular batch
-individually).</li>
+<li>If <code>span_end.timestamp &lt; next_timestamp</code>, the span batch is set to have <code>past</code> validity, as it
+doesn't contain any new batches (this would also happen if applying timestamp checks to each derived
+singular batch individually). See below in the [Batch Queue][#batch-queue] section about the new
+<code>past</code> validity.</li>
 <li>Note that we still allow span batches to overlap with the safe chain (<code>span_start.timestamp &lt; next_timestamp</code>).</li>
 </ul>
-<p>If any of the above checks invalidate the span batch, it is dropped and the remaining channel from
-which the span batch was derived, is also immediately dropped (see also
-<a href="#fast-channel-invalidation">Fast Channel Invalidation</a>).</p>
+<p>If any of the above checks invalidate the span batch, it is <code>drop</code>ped and the remaining channel from
+which the span batch was derived, is also immediately dropped (see also <a href="#fast-channel-invalidation">Fast Channel
+Invalidation</a>). However, a <code>past</code> span batch is only dropped, without
+dropping the remaining channel.</p>
 <h2 id="batch-queue"><a class="header" href="#batch-queue">Batch Queue</a></h2>
 <p>The batch queue is also simplified in that batches are required to arrive strictly ordered, and any
 batches that violate the ordering requirements are immediately dropped, instead of buffered.</p>
@@ -338,19 +340,30 @@ batches that violate the ordering requirements are immediately dropped, instead 
 <ul>
 <li>The reordering step is removed, so that later checks will drop batches that are not sequential.</li>
 <li>The <code>future</code> batch validity status is removed, and batches that were determined to be in the
-future are now directly <code>drop</code>-ped. This effectively disallows gaps, instead of buffering future batches.</li>
+future are now directly <code>drop</code>-ped. This effectively disallows gaps, instead of buffering future
+batches.</li>
+<li>A new batch validity <code>past</code> is introduced. A batch has <code>past</code> validity if its timestamp is before
+or equal to the safe head's timestamp. This also applies to span batches.</li>
 <li>The other rules stay the same, including empty batch generation when the sequencing window
 elapses.</li>
 </ul>
-<p>If a batch is found to be invalid and is dropped, the remaining span batch it originated from, if
-applicable, is also discarded.</p>
+<p>Note that these changes to batch validity rules also activate by the L1 inclusion block timestamp of
+a batch, not with the batch timestamp. This is important to guarantee consistent validation rules
+for the first channel after Holocene activation.</p>
+<p>The <code>drop</code> and <code>past</code> batch validities cause the following new behavior:</p>
+<ul>
+<li>If a batch is found to be invalid and is dropped, the remaining span batch it originated from, if
+applicable, is also discarded.</li>
+<li>If a batch is found to be from the <code>past</code>, it is silently dropped and the remaining span batch
+continues to be processed. This applies to both, span and singular batches.</li>
+</ul>
 <p>Note that when the L1 origin of the batch queue moves forward, it is guaranteed that it is empty,
-because future batches aren't buffered any more.</p>
+because future batches aren't buffered any more. Furthermore, because future batches are directly
+dropped, the batch queue effectively becomes a simpler <em>batch stage</em> that holds at most one span
+batch from which singular batches are read from, and doesn't buffer singular batches itself in a
+queue any more. A valid batch is directly forwarded to the next stage.</p>
 <h3 id="fast-channel-invalidation"><a class="header" href="#fast-channel-invalidation">Fast Channel Invalidation</a></h3>
 <p>Furthermore, upon finding an invalid batch, the remaining channel it got derived from is also discarded.</p>
-<p><em>TBD: I believe that the batch queue, similarly to the channel bank, now actually only holds at most
-one single staging batch, because we eagerly derive payloads from any valid singular batch. And the
-span batch stage before it would similarly only hold at most one staging span batch.</em></p>
 <h2 id="engine-queue"><a class="header" href="#engine-queue">Engine Queue</a></h2>
 <p>If the engine returns an <code>INVALID</code> status for a regularly derived payload, the payload is replaced
 by a payload with the same fields, except for the <code>transaction_list</code>, which is trimmed to include
