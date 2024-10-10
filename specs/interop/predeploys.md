@@ -287,8 +287,8 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 - The message MUST have failed to be relayed and not have succeded in later attemps.
 - The `EXPIRY_WINDOW` MUST have elapsed since the message first failed to be relayed
-- The expired message MUST not have been previously sent back to source
-- The expired message MUST not be relayable after being sent back
+- The expired message MUST NOT have been previously sent back to source
+- The expired message MUST NOT be relayable after being sent back to the origin chain
 - The `returnedMessages` mapping MUST only contain messages that were sent back to their origin chain.
 
 ### `relayExpire` Invariants
@@ -296,7 +296,7 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 - The message source MUST be `block.chainid`
 - The `Identifier.origin` and `sender` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `expiredMessages` mapping MUST only contain messages that originated in this chain and failed to be relayed on destination.
-- Already expired messages MUST NOT be relayed.
+- It MUST NOT accept previously-expired messages, that is, messages stored in the `expiredMessages` mapping.
 
 ### Message Versioning
 
@@ -409,7 +409,7 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
-    require(returnedMessages[messageHash] != 0);
+    require(returnedMessages[messageHash] == 0);
 
     bool success = SafeCall.call(_target, msg.value, _message);
 
