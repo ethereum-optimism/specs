@@ -511,10 +511,12 @@ the <code>_minGasLimit</code> is removed to prevent complexity around EVM gas in
 chain is included instead.</p>
 <h4 id="sending-messages"><a class="header" href="#sending-messages">Sending Messages</a></h4>
 <p>The following function is used for sending messages between domains:</p>
-<pre><code class="language-solidity">function sendMessage(uint256 _destination, address _target, bytes calldata _message) external;
+<pre><code class="language-solidity">function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
 </code></pre>
-<p>It emits a <code>SentMessage</code> event with the necessary metadata to execute when relayed on the destination chain.</p>
-<pre><code class="language-solidity">event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);``
+<p>It returns the hash of the message being sent,
+used to track whether the message has successfully been relayed.
+It emits a <code>SentMessage</code> event with the necessary metadata to execute when relayed on the destination chain.</p>
+<pre><code class="language-solidity">event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
 </code></pre>
 <p>An explicit <code>_destination</code> chain and <code>nonce</code> are used to ensure that the message can only be played on a single remote
 chain a single time. The <code>_destination</code> is enforced to not be the local chain to avoid edge cases.</p>
