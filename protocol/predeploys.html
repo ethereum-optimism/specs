@@ -223,9 +223,9 @@ directly in the EVM instead of running native code outside of the EVM.</p>
 <p>Predeploys are used instead of precompiles to make it easier for multiclient
 implementations as well as allowing for more integration with hardhat/foundry
 network forking.</p>
-<p>Predeploy addresses exist in 1 byte namespace <code>0x42000000000000000000000000000000000000xx</code>.
-Proxies are set at each possible predeploy address except for the
-<code>GovernanceToken</code> and the <code>ProxyAdmin</code>.</p>
+<p>Predeploy addresses exist in a prefixed namespace <code>0x4200000000000000000000000000000000000xxx</code>.
+Proxies are set at the first 2048 addresses in the namespace, except for the addresses reserved for the
+<code>GovernanceToken</code> and <code>WETH</code> predeploys.</p>
 <p>The <code>LegacyERC20ETH</code> predeploy lives at a special address <code>0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000</code>
 and there is no proxy deployed at that account.</p>
 <p>The following table includes each of the predeploys. The system version
