@@ -11791,9 +11791,8 @@ in destination and could never be successfully replayed.</p>
 <ul>
 <li><a href="interop/superchain-weth.html#deposit"><code>deposit</code></a></li>
 <li><a href="interop/superchain-weth.html#withdraw"><code>withdraw</code></a></li>
-<li><a href="interop/superchain-weth.html#senderc20"><code>sendERC20</code></a></li>
-<li><a href="interop/superchain-weth.html#senderc20to"><code>sendERC20To</code></a></li>
-<li><a href="interop/superchain-weth.html#relayerc20"><code>relayERC20</code></a></li>
+<li><a href="interop/superchain-weth.html#crosschainburn"><code>crosschainBurn</code></a></li>
+<li><a href="interop/superchain-weth.html#crosschainmint"><code>crosschainMint</code></a></li>
 </ul>
 </li>
 </ul>
@@ -11813,6 +11812,8 @@ in destination and could never be successfully replayed.</p>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <p>Superchain WETH is a version of the standard WETH contract that allows ETH to be interoperable across the Superchain.
 Superchain WETH treats ETH as an ERC-20 token for interoperability and avoids native ETH support.
+Superchain WETH integrates with the <a href="interop/./predeploys.html#superchainerc20bridge">SuperchainTokenBridge</a> as its entrypoint
+for interopable actions.
 Superchain WETH also introduces a liquidity contract used to provide liquidity for native ETH across chains.</p>
 <h2 id="motivation-and-constraints"><a class="header" href="#motivation-and-constraints">Motivation and Constraints</a></h2>
 <p>ETH is the native asset of Ethereum and has by extension also become the native asset of many Ethereum L2 blockchains.
@@ -11845,32 +11846,22 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <ul>
 <li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
 </ul>
-<h4 id="senderc20-1"><a class="header" href="#senderc20-1"><code>sendERC20</code></a></h4>
+<h4 id="crosschainburn-1"><a class="header" href="#crosschainburn-1"><code>crosschainBurn</code></a></h4>
 <ul>
+<li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
 <li>Reverts if attempting to send more than the sender's available balance.</li>
 <li>Reduce's the sender's balance by the sent amount.</li>
 <li>Emits a transfer event from sender to null address for the sent amount.</li>
-<li>Emits a <code>SendERC20</code> event.</li>
 <li>Burns liquidity by sending the sent amount of ETH into the <code>ETHLiquidity</code> contract if native token is ETH.
 <ul>
 <li>Must not revert.</li>
 </ul>
 </li>
-<li>Sends a message to <code>SuperchainWETH</code> on the recipient chain finalizing a send of WETH.
-<ul>
-<li>Must not revert.</li>
+<li>Emits a <code>CrosschainBurnt</code> event.</li>
 </ul>
-</li>
-</ul>
-<h4 id="senderc20to"><a class="header" href="#senderc20to"><code>sendERC20To</code></a></h4>
+<h4 id="crosschainmint-1"><a class="header" href="#crosschainmint-1"><code>crosschainMint</code></a></h4>
 <ul>
-<li>All invariants of <code>sendERC20</code>.</li>
-<li>Message sent to <code>SuperchainWETH</code> on recipient chain includes <code>to</code> address as recipient.</li>
-</ul>
-<h4 id="relayerc20-1"><a class="header" href="#relayerc20-1"><code>relayERC20</code></a></h4>
-<ul>
-<li>Reverts if called by any address other than the <code>L2ToL2CrossDomainMessenger</code>.</li>
-<li>Reverts if <code>crossDomainMessageSender</code> is not the <code>SuperchainWETH</code> contract.</li>
+<li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
 <li>Mints liquidity from the <code>ETHLiquidity</code> contract if native token is ETH.
 <ul>
 <li>Must not revert.</li>
@@ -11878,7 +11869,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </li>
 <li>Increases the recipient's balance by the sent amount.</li>
 <li>Emits a transfer event from null address to recipient for the sent amount.</li>
-<li>Emits a <code>RelayERC0</code> event.</li>
+<li>Emits a <code>CrosschainMinted</code> event.</li>
 </ul>
 <h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
 <h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
