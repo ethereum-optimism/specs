@@ -326,13 +326,15 @@ chain is included instead.
 The following function is used for sending messages between domains:
 
 ```solidity
-function sendMessage(uint256 _destination, address _target, bytes calldata _message) external;
+function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
 ```
 
+It returns the hash of the message being sent,
+used to track whether the message has successfully been relayed.
 It emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
 
 ```solidity
-event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);``
+event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
 ```
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
@@ -885,9 +887,9 @@ It SHOULD burn `_amount` tokens with address `_tokenAddress` and initialize a me
 in the target address `_to` at `_chainId` and emit the `SentERC20` event including the `msg.sender` as parameter.
 
 To burn the token, the `sendERC20` function
-calls `__crosschainBurn` in the token contract,
+calls `crosschainBurn` in the token contract,
 which is included as part of the the `ICrosschainERC20`
-[interface](./token-bridging.md#__crosschainburn)
+[interface](./token-bridging.md#crosschainburn)
 implemented by the `SuperchainERC20` standard.
 
 Returns the `msgHash_` crafted by the `L2ToL2CrossChainMessenger`.
@@ -906,9 +908,9 @@ and emit an event including the `_tokenAddress`, the `_from` and chain id from t
 `source` chain, where `_from` is the `msg.sender` of `sendERC20`.
 
 To mint the token, the `relayERC20` function
-calls `__crosschainMint` in the token contract,
+calls `crosschainMint` in the token contract,
 which is included as part of the the `ICrosschainERC20`
-[interface](./token-bridging.md#__crosschainmint)
+[interface](./token-bridging.md#crosschainmint)
 implemented by the `SuperchainERC20` standard.
 
 ```solidity
@@ -949,7 +951,7 @@ sequenceDiagram
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20(tokenAddr, to, amount, chainID)
-  L2SBA->>SuperERC20_A: __crosschainBurn(from, amount)
+  L2SBA->>SuperERC20_A: crosschainBurn(from, amount)
   SuperERC20_A-->SuperERC20_A: emit SuperchainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
   Messenger_A->>L2SBA: return msgHash_ 
@@ -957,7 +959,7 @@ sequenceDiagram
   L2SBA->>from: return msgHash_ 
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB->>SuperERC20_B: __crosschainMint(to, amount)
+  L2SBB->>SuperERC20_B: crosschainMint(to, amount)
   SuperERC20_B-->SuperERC20_B: emit SuperchainMinted(to, amount)
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
