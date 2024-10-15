@@ -509,7 +509,6 @@ transition. Nominally, the FPVM must raise an exception in at least the followin
 - Pre-image read at an offset larger than the size of the pre-image.
 - Delay slot contains branch/jump instruction types.
 - Invalid thread state:
-  - There are no threads - both thread stacks are empty.
   - The active thread stack is empty.
 
 VM implementations may raise an exception in other cases that is specific to the implementation.
