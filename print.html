@@ -8826,6 +8826,9 @@ upon the arrival of a first frame for a new channel.</li>
 correct frame for this channel, the frame and channel are dropped, including all future frames for
 the channel that might still be in the frame queue. Note that the equivalent rule was already
 present pre-Holocene.</li>
+<li>After adding a frame to the staging channel, the channel is dropped if its raw compressed size as
+defined in the Bedrock specification is larger than <code>MAX_RLP_BYTES_PER_CHANNEL</code>. This rule replaces
+the total limit of all channels' combined sizes by <code>MAX_CHANNEL_BANK_SIZE</code> before Holocene.</li>
 </ul>
 <h2 id="span-batches-1"><a class="header" href="#span-batches-1">Span Batches</a></h2>
 <p>Partial Span Batch Validity changes the atomic validity model of <a href="protocol/holocene/../delta/span-batches.html">Span Batches</a>.
