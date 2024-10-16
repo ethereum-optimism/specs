@@ -46,12 +46,8 @@ is greater than or equal to the activation timestamp.
 After Isthmus hardfork's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
 [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root _after_ the block has been executed, and _after_ the
 insertions and deletions have been applied to the trie. In other words, the storage root should be the same root
-that is returned by `eth_getProof` at the given block number -- it is the storage root of the post state,
-similar to how the state root of the post state is stored in the block header.
-
-For an accurate storage root to be determined, the block state has to be committed first and only then, the
-`withdrawalsRoot` can be set accurately. Hence the `withdrawalsRoot` attribute should be set right after setting
-the state root attribute in the header.
+that is returned by `eth_getProof` at the given block number -- it is the account store root from the world state
+identified by the stateRoot field in the block header.
 
 ### Header Validity Rules
 
@@ -95,16 +91,19 @@ available to the EVM/application layer.
 
 #### P2P
 
-During sync, the block body withdrawal hash is computed from the withdrawals list in the block body. If Isthmus is
-active at such a block's header, we expect that the computed withdrawal hash must match the hash of an empty list of
-withdrawals. The header `withdrawalsRoot` MPT hash can be any non-null value in this case. Verification is performed
-after a header is available so that the header's timestamp can be checked to see if Isthmus is active.
+During sync, the block body withdrawal hash is computed from the withdrawals list in the block body.
+When verifying the final block that is synced, if Isthmus is active at such a block's header,
+we expect that the computed withdrawal hash must match the hash of an empty list of withdrawals.
+The header `withdrawalsRoot` MPT hash can be any non-null value in this case. Verification of the
+final block is performed after a header is available so that the header's timestamp can be checked
+to see if Isthmus is active.
 
 #### Backwards Compatibility Considerations
 
-Beginning at Shanghai and prior to Isthmus activation, the `withdrawalsRoot` field is set to the MPT root
-of an empty withdrawals list. This is the same root as an empty storage root. The withdrawals are captured
-in the L2 state, however they are not reflected in the `withdrawalsRoot`. Hence, prior to Isthmus activation,
+Beginning at Canyon (which includes Shanghai hardfork support) and prior to Isthmus activation,
+the `withdrawalsRoot` field is set to the MPT root of an empty withdrawals list. This is the
+same root as an empty storage root. The withdrawals are captured in the L2 state, however
+they are not reflected in the `withdrawalsRoot`. Hence, prior to Isthmus activation,
 even if a `withdrawalsRoot` is present and a MPT root is present in the header, it should not be used.
 Any implementation that calculates output root should be careful not to use the header `withdrawalsRoot`.
 
@@ -127,11 +126,13 @@ directly store this information.
 
 ##### Transaction Simulation
 
-An empty withdrawals root should be included at the end of all applied simulated transactions, when the block is sealed.
+In response to RPC methods like `eth_simulateV1` that allow simulation of arbitrary transactions within one or more blocks,
+an empty withdrawals root should be included in the header of a block that consists of such simulated transactions. The same
+is applicable for scenarios where the actual withdrawals root value is not readily available.
 
 ## Block Body Withdrawals List
 
-withdrawals list in the block body is encoded as an empty RLP list.
+Withdrawals list in the block body is encoded as an empty RLP list.
 
 ## Engine API Updates
 

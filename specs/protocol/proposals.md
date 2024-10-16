@@ -113,9 +113,11 @@ where:
    then the withdrawal against that storage root), we can prove against the L2toL1MessagePasser's storage root directly,
    thus reducing the verification cost of withdrawals on L1.
 
-   After the Isthumus hard fork, the `withdrawal_storage_root` is present in the
+   After the Isthmus hard fork, the `withdrawal_storage_root` is present in the
    [block header as `withdrawalsRoot`][header-withdrawals-root] and can be used directly, instead of computing
-  the storage root of the L2toL1MessagePasser contract.
+   the storage root of the L2toL1MessagePasser contract.
+
+   If the Isthmus hard fork is active at the genesis block, the `withdrawalsRoot` is the empty withdrawals root.
 
 ## L2 Output Oracle Smart Contract
 
