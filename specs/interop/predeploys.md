@@ -285,18 +285,18 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 ### `sendExpire` Invariants
 
-- The message MUST have not been successfully relayed
+- The message MUST have failed to be relayed and not have succeded in later attemps.
 - The `EXPIRY_WINDOW` MUST have elapsed since the message first failed to be relayed
-- The expired message MUST not have been previously sent back to source
-- The expired message MUST not be relayable after being sent back
+- The expired message MUST NOT have been previously sent back to source
+- The expired message MUST NOT be relayable after being sent back to the origin chain
+- The `returnedMessages` mapping MUST only contain messages that were sent back to their origin chain.
 
 ### `relayExpire` Invariants
 
-- Only callable by the `CrossL2Inbox`
 - The message source MUST be `block.chainid`
-- The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
+- The `Identifier.origin` and `sender` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `expiredMessages` mapping MUST only contain messages that originated in this chain and failed to be relayed on destination.
-- Already expired messages MUST NOT be relayed.
+- It MUST NOT accept previously-expired messages, that is, messages stored in the `expiredMessages` mapping.
 
 ### Message Versioning
 
@@ -382,7 +382,7 @@ flowchart LR
 ```
 
 When relaying a message through the `L2ToL2CrossDomainMessenger`, it is important to require that
-the `_destination` equal to `block.chainid` to ensure that the message is only valid on a single
+the `_destination` is equal to `block.chainid` to ensure that the message is only valid on a single
 chain. The hash of the message is used for replay protection.
 
 It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
@@ -411,12 +411,17 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
+    require(returnedMessages[messageHash] == 0);
+
     bool success = SafeCall.call(_target, msg.value, _message);
 
     if (success) {
         successfulMessages[messageHash] = true;
         emit RelayedMessage(_source, _nonce, messageHash);
     } else {
+        if (failedMessages[messageHash].timestamp == 0) {
+          failedMessages[messageHash] = FailedMessage({timestamp: block.timestamp, sourceChain: _source});
+        }
         emit FailedRelayedMessage(_source, _nonce, messageHash);
     }
 }
@@ -439,25 +444,35 @@ failed messages and to prevent malicious actors from performing a griefing attac
 by expiring messages upon arrival.
 
 Once the expired message is sent to the source chain, the message on the local chain is set
-as successful in the `successfulMessages` mapping to ensure non-replayability and deleted
-from `failedMessages`. An initiating message is then emitted to `relayExpire`
+as expired in the `returnedMessages` mapping to ensure non-replayability and deleted from `failedMessages`. 
+An initiating message is then emitted to `relayExpire`.
+
+`sendExpire` sets the sender of the message as the `L2ToL2CrossDomainMessenger` to add a path
+for `relayExpire` to ensure that the message originated in `sendExpire`. There should be no
+other path where a message can have the `L2ToL2CrossDomainMessenger` as `origin` and `sender`.
 
 ```solidity
 function sendExpire(bytes32 _expiredHash) external nonReentrant {
-    if (successfulMessages[_expiredHash]) revert MessageAlreadyRelayed();
+    require(!successfulMessages[_expiredHash]);
+    require(failedMessages[_expiredHash].timestamp != 0);
 
     (uint256 messageTimestamp, uint256 messageSource) = failedMessages[_expiredHash];
 
-    if (block.timestamp <  messageTimestamp + EXPIRY_WINDOW) revert ExpiryWindowHasNotEnsued();
+    require(block.timestamp >= messageTimestamp + EXPIRY_WINDOW);
 
     delete failedMessages[_expiredHash];
-    successfulMessages[_expiredHash] = true;
+    returnedMessages[_expiredHash] = block.timestamp;
 
-    bytes memory data = abi.encodeCall(
-        L2ToL2CrossDomainMessenger.expired,
-        (_expiredHash, messageSource)
-    );
-    emit SentMessage(data);
+    uint256 destination = messageSource;
+    address target;
+    uint256 nonce = messageNonce();
+    address sender = Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER;
+
+    bytes memory message = abi.encode(_expiredHash);
+
+    emit SentMessage(destination, target, nonce, sender, message);
+
+    msgNonce++;
 }
 ```
 
@@ -465,28 +480,37 @@ function sendExpire(bytes32 _expiredHash) external nonReentrant {
 
 When relaying an expired message, only message hashes
 of actual failed messages should be stored, for this we must ensure the origin
-of the log, and caller are all expected contracts.
+of the log, and sender is the `L2_TO_L2_CROSS_DOMAIN_MESSENGER`.
 
 It's also important to ensure only the hashes of messages that were initiated
 in this chain are accepted.
 
-If all checks have been successful, the message has is stored in the
+If all checks have been successful, the message hash is stored in the
 `expiredMessages` mapping. This enables smart contracts to read from it and
 check whether a message expired or not, and handle this case accordingly.
 
-```solidity
-function relayExpire(bytes32 _expiredHash, uint256 _messageSource) external {
-    if (_messageSource != block.chainid) revert IncorrectMessageSource();
-    if (expiredMessages[_expiredHash] != 0) revert ExpiredMessageAlreadyRelayed();
-    if (msg.sender != Predeploys.CROSS_L2_INBOX) revert ExpiredMessageCallerNotCrossL2Inbox();
+An expiry message is relayed by providing the [identifier](./messaging.md#message-identifier)
+to a `SentMessage` event and its corresponding [message payload](./messaging.md#message-payload).
 
-    if (CrossL2Inbox(Predeploys.CROSS_L2_INBOX).origin() != Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER) {
-        revert CrossL2InboxOriginNotL2ToL2CrossDomainMessenger();
-    }
+```solidity
+function relayExpire(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external {
+    require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
+
+    CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
+
+    (uint256 destination, , , address sender, bytes memory message) =
+          _decodeSentMessagePayload(_sentMessage);
+
+    require(destination == block.chainId);
+    require(sender == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
+
+    bytes32 expiredHash = abi.decode(_sentMessage);
+
+    require(expiredMessages[expiredHash] == 0);
 
     expiredMessages[_expiredHash] = block.timestamp;
 
-    emit MessageHashExpired(_expiredHash);
+    emit MessageHashExpired(_expiredHash, block.timestamp);
 }
 ```
 
