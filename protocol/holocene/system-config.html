@@ -220,12 +220,14 @@
 <p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
 <tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
-<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
+<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>abi.encode(uint256(0), (uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar)</code></td><td>Modifies the fee scalars</td></tr>
 <tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
 <tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
-<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>(uint256(_denominator) &lt;&lt; 32) | _elasticity</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>abi.encode((uint256(_denominator) &lt;&lt; 32) | _elasticity)</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
 </tbody></table>
 </div>
+<p>Note that the above encoding is the format emitted by the SystemConfig event, which differs from the format in extraData
+from the block header.</p>
 <h3 id="initialization"><a class="header" href="#initialization">Initialization</a></h3>
 <p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
 <ul>
