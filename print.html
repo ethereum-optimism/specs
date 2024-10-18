@@ -11105,7 +11105,7 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
 
   from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
   L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
-  SuperERC20_A--&gt;SuperERC20_A: emit SuperchainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
   Messenger_A-&gt;&gt;L2SBA: return msgHash_ 
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
@@ -11113,7 +11113,7 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit SuperchainMinted(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h3 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h3>
@@ -11582,8 +11582,8 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 <ul>
 <li><a href="interop/token-bridging.html#crosschainmint"><code>crosschainMint</code></a></li>
 <li><a href="interop/token-bridging.html#crosschainburn"><code>crosschainBurn</code></a></li>
-<li><a href="interop/token-bridging.html#crosschainminted"><code>CrosschainMinted</code></a></li>
-<li><a href="interop/token-bridging.html#crosschainburnt"><code>CrosschainBurnt</code></a></li>
+<li><a href="interop/token-bridging.html#crosschainmint"><code>CrosschainMint</code></a></li>
+<li><a href="interop/token-bridging.html#crosschainburn"><code>CrosschainBurn</code></a></li>
 </ul>
 </li>
 </ul>
@@ -11639,13 +11639,13 @@ token standard, that includes two external functions and two events:</p>
 <p>Burns <code>_amount</code> of token from address <code>_account</code>.</p>
 <pre><code class="language-solidity">crosschainBurn(address _account, uint256 _amount)
 </code></pre>
-<h4 id="crosschainminted"><a class="header" href="#crosschainminted"><code>CrosschainMinted</code></a></h4>
+<h4 id="crosschainmint-1"><a class="header" href="#crosschainmint-1"><code>CrosschainMint</code></a></h4>
 <p>MUST trigger when <code>crosschainMint</code> is called</p>
-<pre><code class="language-solidity">event CrosschainMinted(address indexed _to, uint256 _amount)
+<pre><code class="language-solidity">event CrosschainMint(address indexed _to, uint256 _amount)
 </code></pre>
-<h4 id="crosschainburnt"><a class="header" href="#crosschainburnt"><code>CrosschainBurnt</code></a></h4>
+<h4 id="crosschainburn-1"><a class="header" href="#crosschainburn-1"><code>CrosschainBurn</code></a></h4>
 <p>MUST trigger when <code>crosschainBurn</code> is called</p>
-<pre><code class="language-solidity">event CrosschainBurnt(address indexed _from, uint256 _amount)
+<pre><code class="language-solidity">event CrosschainBurn(address indexed _from, uint256 _amount)
 </code></pre>
 <h2 id="superchainerc20bridge-1"><a class="header" href="#superchainerc20bridge-1"><code>SuperchainERC20Bridge</code></a></h2>
 <p>The <code>SuperchainERC20Bridge</code> is a predeploy that works as an abstraction
@@ -11678,7 +11678,7 @@ in the <a href="interop/./predeploys.html#superchainerc20bridge">predeploys spec
 
   from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
   L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
-  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurnt(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
   Messenger_A-&gt;&gt;L2SBA: return msgHash_ 
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
@@ -11686,7 +11686,7 @@ in the <a href="interop/./predeploys.html#superchainerc20bridge">predeploys spec
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMinted(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
@@ -11759,14 +11759,14 @@ i.e. bridge funds and then do X.</p>
   from-&gt;&gt;Intermediate_A: sendWithData(data)
   Intermediate_A-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
   L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
-  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurnt(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
   Intermediate_A-&gt;&gt;Messenger_A: sendMessage(chainId, to, data)
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMinted(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   Inbox-&gt;&gt;Messenger_B: relayMessage(): call
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B-&gt;&gt;to: call(data)
@@ -11849,7 +11849,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <ul>
 <li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
 </ul>
-<h4 id="crosschainburn-1"><a class="header" href="#crosschainburn-1"><code>crosschainBurn</code></a></h4>
+<h4 id="crosschainburn-2"><a class="header" href="#crosschainburn-2"><code>crosschainBurn</code></a></h4>
 <ul>
 <li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
 <li>Reverts if attempting to send more than the sender's available balance.</li>
@@ -11862,7 +11862,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </li>
 <li>Emits a <code>CrosschainBurnt</code> event.</li>
 </ul>
-<h4 id="crosschainmint-1"><a class="header" href="#crosschainmint-1"><code>crosschainMint</code></a></h4>
+<h4 id="crosschainmint-2"><a class="header" href="#crosschainmint-2"><code>crosschainMint</code></a></h4>
 <ul>
 <li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
 <li>Mints liquidity from the <code>ETHLiquidity</code> contract if native token is ETH.

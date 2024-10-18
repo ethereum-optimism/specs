@@ -986,7 +986,7 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
 
   from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
   L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
-  SuperERC20_A--&gt;SuperERC20_A: emit SuperchainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
   Messenger_A-&gt;&gt;L2SBA: return msgHash_ 
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
@@ -994,7 +994,7 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit SuperchainMinted(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
