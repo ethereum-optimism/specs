@@ -253,7 +253,7 @@ The extended validator emits one of the following validation signals:
 
 ## Gossip Topics
 
-There are three topics for distributing blocks to other nodes faster than proxying through L1 would. These are:
+Listed below are the topics for distributing blocks to other nodes faster than proxying through L1 would. These are:
 
 ### `blocksv1`
 

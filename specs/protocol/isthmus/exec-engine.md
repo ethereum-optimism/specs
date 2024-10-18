@@ -82,7 +82,7 @@ for users and protocol participants alike, allowing them to propose and verify o
 
 #### Genesis Block
 
-If isthmus is active at the genesis block, the withdrawals root is the empty withdrawals root, regardless of L2 state.
+If Isthmus is active at the genesis block, the withdrawals root is the empty withdrawals root, regardless of L2 state.
 
 #### State Processing
 
