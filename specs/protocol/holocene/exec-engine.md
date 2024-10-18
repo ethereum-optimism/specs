@@ -41,6 +41,7 @@ With the Holocene upgrade, the `extraData` header field of each block must have 
 | `elasticity`  | `u32 (big-endian)` | `[5, 9)`    |
 
 Additionally,
+
 - `version` must be 0
 - `denominator` must be non-zero
 - there is no additional data beyond these 9 bytes
@@ -72,7 +73,8 @@ PayloadAttributesV3: {
 
 #### Encoding
 
-At and after Holocene activation, `eip1559Parameters` in `PayloadAttributeV3` must be exactly 8 bytes with the following format:
+At and after Holocene activation, `eip1559Parameters` in `PayloadAttributeV3` must be exactly 8 bytes with the following
+format:
 
 | Name          | Type               | Byte Offset |
 | ------------- | ------------------ | ----------- |
@@ -92,9 +94,9 @@ Prior to Holocene activation, `eip1559Parameters` in `PayloadAttributesV3` must 
 invalid.
 
 At and after Holocene activation, any `ExecutionPayload` corresponding to some `PayloadAttributesV3` must contain
-`extraData` formatted as the [header value](#eip1559-parameters-in-header). The `denominator` and `elasticity` values
-within this `extraData` must correspond to those in `eip1559Parameters`, unless both are 0.  When both are 0, the [prior
-EIP-1559 constants](../exec-engine.md#1559-parameters) must be used to populate `extraData` instead.
+`extraData` formatted as the [header value](#eip-1559-parameters-in-block-header). The `denominator` and `elasticity`
+values within this `extraData` must correspond to those in `eip1559Parameters`, unless both are 0.  When both are 0, the
+[prior EIP-1559 constants](../exec-engine.md#1559-parameters) must be used to populate `extraData` instead.
 
 #### Base Fee Computation
 
@@ -102,6 +104,7 @@ Prior to the Holocene upgrade, the EIP-1559 denominator and elasticity parameter
 were [constants](../exec-engine.md#1559-parameters).
 
 With the Holocene upgrade, these parameters are instead determined as follows:
+
 - if Holocene is not active in `parent_header.timestamp`, the [prior EIP-1559
   constants](../exec-engine.md#1559-parameters) constants are used. While `parent_header.extraData` is typically empty
   prior to Holocene, there are some legacy cases where it may be set arbitrarily, so it must not be assumed to be empty.
