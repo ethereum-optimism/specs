@@ -4,6 +4,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Overview](#overview)
 - [CrossL2Inbox](#crossl2inbox)
   - [Functions](#functions)
     - [executeMessage](#executemessage)
@@ -26,7 +27,7 @@
     - [Relaying Expired Message Hashes](#relaying-expired-message-hashes)
 - [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
   - [OptimismSuperchainERC20](#optimismsuperchainerc20)
-  - [Overview](#overview)
+  - [Overview](#overview-1)
     - [Proxy](#proxy)
     - [Beacon Pattern](#beacon-pattern)
     - [Deployment history](#deployment-history)
@@ -36,7 +37,7 @@
     - [`OptimismSuperchainERC20Created`](#optimismsuperchainerc20created)
   - [Deployment Flow](#deployment-flow)
 - [BeaconContract](#beaconcontract)
-  - [Overview](#overview-1)
+  - [Overview](#overview-2)
 - [L1Block](#l1block)
   - [Static Configuration](#static-configuration)
   - [Dependency Set](#dependency-set)
@@ -60,7 +61,7 @@
   - [Invariants](#invariants)
   - [Conversion Flow](#conversion-flow)
 - [SuperchainERC20Bridge](#superchainerc20bridge)
-  - [Overview](#overview-2)
+  - [Overview](#overview-3)
   - [Functions](#functions-3)
     - [`sendERC20`](#senderc20)
     - [`relayERC20`](#relayerc20)
@@ -72,6 +73,8 @@
 - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Overview
 
 Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the `L1Block`, `OptimismMintableERC20Factory` and `L2StandardBridge` contracts with additional functionalities.
@@ -323,13 +326,15 @@ chain is included instead.
 The following function is used for sending messages between domains:
 
 ```solidity
-function sendMessage(uint256 _destination, address _target, bytes calldata _message) external;
+function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
 ```
 
+It returns the hash of the message being sent,
+used to track whether the message has successfully been relayed.
 It emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
 
 ```solidity
-event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);``
+event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
 ```
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
@@ -348,6 +353,33 @@ every call to `sendMessage`.
 Note that `sendMessage` is not `payable`.
 
 #### Relaying Messages
+
+The following diagram shows the flow for sending a cross chain message using the `L2ToL2CrossDomainMessenger`.
+Each subsequent call is labeled with a number.
+
+```mermaid
+flowchart LR
+    user -->|"1#46; sendMessage"| al2tol2
+    user --> |"2#46; relayMessage"|bl2tol2
+    em{{SentMessage Event}}
+
+    direction TB
+    al2tol2 --> em
+
+    bcl2[CrossL2Inbox]
+    al2tol2[L2ToL2CrossDomainMessenger]
+    bl2tol2[L2ToL2CrossDomainMessenger]
+
+    subgraph "Chain A"
+      al2tol2
+    end
+
+    subgraph "Chain B"
+      bl2tol2  --> |"3#46; validateMessage"|bcl2
+      bcl2 --> |"4#46;"| bl2tol2
+      bl2tol2 --> |"5#46;"| Contract
+    end
+```
 
 When relaying a message through the `L2ToL2CrossDomainMessenger`, it is important to require that
 the `_destination` equal to `block.chainid` to ensure that the message is only valid on a single
@@ -855,12 +887,15 @@ It SHOULD burn `_amount` tokens with address `_tokenAddress` and initialize a me
 in the target address `_to` at `_chainId` and emit the `SentERC20` event including the `msg.sender` as parameter.
 
 To burn the token, the `sendERC20` function
-calls `__superchainBurn` in the token contract,
-which is included as part of the the `SuperchainERC20`
-[standard](./token-bridging.md#__superchainburn).
+calls `crosschainBurn` in the token contract,
+which is included as part of the the `ICrosschainERC20`
+[interface](./token-bridging.md#crosschainburn)
+implemented by the `SuperchainERC20` standard.
+
+Returns the `msgHash_` crafted by the `L2ToL2CrossChainMessenger`.
 
 ```solidity
-sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId)
+sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
 ```
 
 #### `relayERC20`
@@ -873,9 +908,10 @@ and emit an event including the `_tokenAddress`, the `_from` and chain id from t
 `source` chain, where `_from` is the `msg.sender` of `sendERC20`.
 
 To mint the token, the `relayERC20` function
-calls `__superchainMint` in the token contract,
-which is included as part of the the `SuperchainERC20`
-[standard](./token-bridging.md#__superchainmint).
+calls `crosschainMint` in the token contract,
+which is included as part of the the `ICrosschainERC20`
+[interface](./token-bridging.md#crosschainmint)
+implemented by the `SuperchainERC20` standard.
 
 ```solidity
 relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
@@ -914,15 +950,17 @@ sequenceDiagram
   participant L2SBB as SuperchainERC20Bridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
-  from->>L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA->>SuperERC20_A: __superchainBurn(from, amount)
-  SuperERC20_A-->SuperERC20_A: emit SuperchainBurn(from, amount)
+  from->>L2SBA: sendERC20(tokenAddr, to, amount, chainID)
+  L2SBA->>SuperERC20_A: crosschainBurn(from, amount)
+  SuperERC20_A-->SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
+  Messenger_A->>L2SBA: return msgHash_ 
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
+  L2SBA->>from: return msgHash_ 
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB->>SuperERC20_B: __superchainMint(to, amount)
-  SuperERC20_B-->SuperERC20_B: emit SuperchainMinted(to, amount)
+  L2SBB->>SuperERC20_B: crosschainMint(to, amount)
+  SuperERC20_B-->SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB-->L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 ```
 

@@ -27,10 +27,13 @@ The following `ConfigUpdate` event is defined where the `CONFIG_VERSION` is `uin
 | Name | Value | Definition | Usage |
 | ---- | ----- | --- | -- |
 | `BATCHER` | `uint8(0)` | `abi.encode(address)` | Modifies the account that is authorized to progress the safe chain |
-| `FEE_SCALARS` | `uint8(1)` | `(uint256(0x01) << 248) \| (uint256(_blobbasefeeScalar) << 32) \| _basefeeScalar` | Modifies the fee scalars |
+| `FEE_SCALARS` | `uint8(1)` | `abi.encode(uint256(0), (uint256(0x01) << 248) \| (uint256(_blobbasefeeScalar) << 32) \| _basefeeScalar)` | Modifies the fee scalars |
 | `GAS_LIMIT` | `uint8(2)` | `abi.encode(uint64 _gasLimit)` | Modifies the L2 gas limit |
 | `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)` | Modifies the account that is authorized to progress the unsafe chain |
-| `EIP_1559_PARAMS` | `uint8(4)` | `uint256(uint64(uint32(_denominator))) << 32 \| uint64(uint32(_elasticity))` | Modifies the EIP-1559 denominator and elasticity |
+| `EIP_1559_PARAMS` | `uint8(4)` | `abi.encode((uint256(_denominator) << 32) \| _elasticity)` | Modifies the EIP-1559 denominator and elasticity |
+
+Note that the above encoding is the format emitted by the SystemConfig event, which differs from the format in extraData
+from the block header.
 
 ### Initialization
 
@@ -68,7 +71,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 This function returns the currently configured EIP-1559 elasticity.
 
 ```solidity
-function eip1559Elasticity()(uint64)
+function eip1559Elasticity()(uint32)
 ```
 
 ##### `eip1559Denominator`
@@ -76,5 +79,5 @@ function eip1559Elasticity()(uint64)
 This function returns the currently configured EIP-1559 denominator.
 
 ```solidity
-function eip1559Denominator()(uint64)
+function eip1559Denominator()(uint32)
 ```
