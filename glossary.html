@@ -510,7 +510,7 @@ query the rollup node for L2 block inputs.</p>
 <h2 id="batcher-transaction"><a class="header" href="#batcher-transaction">Batcher Transaction</a></h2>
 <p>A batcher transaction is a transaction submitted by a <a href="glossary.html#batcher">batcher</a> to a data availability provider, in order to make
 channels available. These transactions carry one or more full frames, which may belong to different channels. A
-channel's frame may be split between multiple batcher transactions.</p>
+channel's frames may be split between multiple batcher transactions.</p>
 <p>When submitted to Ethereum calldata, the batcher transaction's receiver must be the sequencer inbox address. The
 transaction must also be signed by a recognized batch submitter account. The recognized batch submitter account
 is stored in the <a href="glossary.html#system-configuration">System Configuration</a>.</p>
