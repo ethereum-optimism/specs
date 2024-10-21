@@ -1,19 +1,18 @@
+# Migrated Liquidity storage update
+
+**Disclaimer:** This content should be placed in the protocol upgrade folder when it becomes available.
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Migrated Liquidity storage update](#migrated-liquidity-storage-update)
-  - [Overview](#overview)
-  - [`OptimismMintableERC20Factory` predeploy](#optimismmintableerc20factory-predeploy)
-  - [Generate Hash Onion](#generate-hash-onion)
-  - [`superchain-ops` task](#superchain-ops-task)
-  - [Additional Notes](#additional-notes)
+- [Overview](#overview)
+- [`OptimismMintableERC20Factory` predeploy](#optimismmintableerc20factory-predeploy)
+- [Generate Hash Onion](#generate-hash-onion)
+- [`superchain-ops` task](#superchain-ops-task)
+- [Additional Notes](#additional-notes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Migrated Liquidity storage update
-
-**Disclaimer:** This content should be placed in the protocol upgrade folder when it becomes available.
 
 ## Overview
 
