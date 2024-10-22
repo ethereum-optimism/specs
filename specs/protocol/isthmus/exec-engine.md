@@ -53,7 +53,7 @@ Prior to isthmus activation, the L2 block header's `withdrawalsRoot` field must 
 - `nil` if Canyon has not been activated.
 - `keccak256(rlp(empty_string_code))` if Canyon has been activated.
 
-After isthmus activation, an L2 block header's `withdrawalsRoot` field is valid iff:
+After Isthmus activation, an L2 block header's `withdrawalsRoot` field is valid iff:
 
 1. It is exactly 32 bytes in length.
 1. The [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root, as committed to in the `storageRoot` within the block
