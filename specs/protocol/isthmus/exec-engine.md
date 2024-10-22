@@ -38,16 +38,13 @@ The storage root of the `L2ToL1MessagePasser` is included in the block header's
 
 Isthmus, like other network upgrades, is activated at a timestamp.
 Changes to the L2 Block execution rules are applied when the `L2 Timestamp >= activation time`.
-Changes to the L2 block header are applied when it is considering data from a L1 Block whose timestamp
-is greater than or equal to the activation timestamp.
 
 ## `L2ToL1MessagePasser` Storage Root in Header
 
 After Isthmus hardfork's activation, the L2 block header's `withdrawalsRoot` field will consist of the 32-byte
-[`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root _after_ the block has been executed, and _after_ the
-insertions and deletions have been applied to the trie. In other words, the storage root should be the same root
-that is returned by `eth_getProof` at the given block number -- it is the account store root from the world state
-identified by the stateRoot field in the block header.
+[`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root from the world state identified by the stateRoot
+field in the block header. The storage root should be the same root that is returned by `eth_getProof`
+at the given block number.
 
 ### Header Validity Rules
 
@@ -82,7 +79,8 @@ for users and protocol participants alike, allowing them to propose and verify o
 
 #### Genesis Block
 
-If Isthmus is active at the genesis block, the withdrawals root is the empty withdrawals root, regardless of L2 state.
+If Isthmus is active at genesis block, the `withdrawalsRoot` in the genesis block header is set to the
+[`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root.
 
 #### State Processing
 
@@ -91,12 +89,11 @@ available to the EVM/application layer.
 
 #### P2P
 
-During sync, the block body withdrawal hash is computed from the withdrawals list in the block body.
-When verifying the final block that is synced, if Isthmus is active at such a block's header,
-we expect that the computed withdrawal hash must match the hash of an empty list of withdrawals.
-The header `withdrawalsRoot` MPT hash can be any non-null value in this case. Verification of the
-final block is performed after a header is available so that the header's timestamp can be checked
-to see if Isthmus is active.
+During sync, we expect the withdrawals list in the block body to be empty (OP stack does not make
+use of the withdrawals list) and hence the hash of the withdrawals list to be the MPT root of an empty list.
+When verifying the header chain using the final header that is synced, the header timesetamp is used to
+determine whether Isthmus is active at the said block. If it is, we expect that the header `withdrawalsRoot`
+MPT hash can be any non-null value (since it is expected to contain the `L2ToL1MessagePasser`'s storage root).
 
 #### Backwards Compatibility Considerations
 
