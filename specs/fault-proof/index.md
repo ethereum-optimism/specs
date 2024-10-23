@@ -438,6 +438,18 @@ Requests the host to prepare the L2 Output at the l2 output root `<outputroot>`.
 The L2 Output is the preimage of a
 [computed output root](../protocol/proposals.md#l2-output-commitment-construction).
 
+#### `l2-execution-witness <blocknumber>`
+
+Requests the host to prepare all preimages used in the execution of the block at `<blocknumber>` height.
+
+#### `l2-account-proof <blocknumber_and_address>`
+
+Requests the host send account proof for a certain block number and address. `<blocknumber_and_address>` is hex
+encoded: 8-byte BE block number + 20-byte address.
+
+`l2-execution-witness` and `l2-account-proof` hints are preferred over the more granular `l2-code` and `l2-state-node`,
+and they should be sent before the more granular hints to ensure proper handling.
+
 ### Precompile Accelerators
 
 Precompiles that are too expensive to be executed in a fault-proof VM can be executed
