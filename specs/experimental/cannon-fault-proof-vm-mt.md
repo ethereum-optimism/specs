@@ -249,7 +249,7 @@ On failure, `sc` returns `0`.
 The FPVM is a state transition function that operates on a state object consisting of the following fields:
 
 1. `memRoot` - [`Hash`] A value representing the merkle root of VM memory.
-1. `preimageKey` - [`Hash`] value of the last requested pre-image key.
+1. `preimageKey` - [`Hash`] The value of the last requested pre-image key.
 1. `preimageOffset` - [`Word`] The value of the last requested pre-image offset.
 1. `heap` - [`Word`] The base address of the most recent memory allocation via mmap.
 1. `llReservationActive` - [`Boolean`] Indicates whether a memory reservation,
