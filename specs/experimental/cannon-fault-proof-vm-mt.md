@@ -433,6 +433,8 @@ and errno (`$a3`) registers.
 | 4140 | llseek             |
 | 4217 | mincore            |
 | 4266 | tgkill             |
+| 4076 | getrlimit          |
+| 4019 | lseek              |
 | 4104 | setitimer          |
 | 4257 | timer_create       |
 | 4258 | timer_settime      |
