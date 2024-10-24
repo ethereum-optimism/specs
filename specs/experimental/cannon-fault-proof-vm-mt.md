@@ -5,6 +5,9 @@
 **Table of Contents**
 
 - [Overview](#overview)
+  - [Definitions](#definitions)
+    - [Data types](#data-types)
+    - [Constants](#constants)
   - [New Features](#new-features)
     - [Multithreading](#multithreading)
     - [Robustness](#robustness)
@@ -59,6 +62,21 @@ single instruction encoded in the state to produce a new state $S_{post}$.
 $$f(S_{pre}) \rightarrow S_{post}$$
 
 Thus, the trace of a program executed by the FPVM is an ordered set of VM states.
+
+### Definitions
+
+#### Data types
+
+- `Boolean` - An 8-bit boolean value equal to 0 (false) or 1 (true).
+- `Byte` - An 8-bit value.
+- `Hash` - A 256-bit fixed-size value produced by the Keccak-256 cryptographic hash function.
+- `UInt64` - A 64-bit unsigned integer value.
+- `Word` - A 32-bit value.
+
+#### Constants
+
+- `MaxWord` - A `Word` with all bits set to 1: 0xFFFFFFFF.
+When interpreted as a signed value, this is equivalent to -1.
 
 ### New Features
 
@@ -140,7 +158,7 @@ Wakeup traversal proceeds as follows across multiple steps:
         left, then right so this is the end of the traversal).
       - The wakeup traversal completes [^traversal-completion].
 
-[^traversal-completion]: Wakeup traversal is completed by setting the FPVM state's `wakeup` field to `0xFFFFFFFF` (-1),
+[^traversal-completion]: Wakeup traversal is completed by setting the FPVM state's `wakeup` field to `MaxWord`,
 causing the FPVM to resume normal execution.
 
 ### Exited Threads
@@ -153,7 +171,7 @@ the VM state.
 Threads enter a waiting state when a futex wait syscall is successfully executed, setting the thread's
 `futexAddr`, `futexVal`, and `futexTimeoutStep` fields according to the futex syscall arguments.
 
-During normal execution, when the active thread is in a waiting state (its `futexAddr` is not `0xFFFFFFFF`), the VM
+During normal execution, when the active thread is in a waiting state (its `futexAddr` is not equal to `MaxWord`), the VM
 checks if it can be woken up.
 
 A waiting thread will be woken up if:
@@ -163,7 +181,7 @@ A waiting thread will be woken up if:
 
 The VM will wake such a thread by resetting its futex fields:
 
-- `futexAddr` = `0xFFFFFFFF`
+- `futexAddr` = `MaxWord`
 - `futexVal` = 0
 - `futexTimeoutStep` = 0
 
@@ -229,29 +247,29 @@ On failure, `sc` returns `0`.
 
 The FPVM is a state transition function that operates on a state object consisting of the following fields:
 
-1. `memRoot` - A `bytes32` value representing the merkle root of VM memory.
-1. `preimageKey` - `bytes32` value of the last requested pre-image key.
-1. `preimageOffset` - The 32-bit value of the last requested pre-image offset.
-1. `heap` - 32-bit base address of the most recent memory allocation via mmap.
-1. `llReservationActive` - 8-bit boolean indicator of whether a memory reservation,
+1. `memRoot` - [`Hash`] A value representing the merkle root of VM memory.
+1. `preimageKey` - [`Hash`] value of the last requested pre-image key.
+1. `preimageOffset` - [`Word`] The value of the last requested pre-image offset.
+1. `heap` - [`Word`] The base address of the most recent memory allocation via mmap.
+1. `llReservationActive` - [`Boolean`] Indicates whether a memory reservation,
    which is reserved via a Load Linked Word (`ll`) instruction, is active.
-1. `llAddress` - 32-bit address of the currently active memory reservation if one exists.
-1. `llOwnerThread` - 32-bit id of the thread that initiated the current memory reservation if one exists.
-1. `exitCode` - 8-bit exit code.
-1. `exited` - 8-bit boolean valuel indicating whether the VM has exited.
-1. `step` - 64-bit step counter.
-1. `stepsSinceLastContextSwitch` - 64-bit step counter that tracks the number of steps executed on the current
+1. `llAddress` - [`Word`] The address of the currently active memory reservation if one exists.
+1. `llOwnerThread` - [`Word`] The id of the thread that initiated the current memory reservation if one exists.
+1. `exitCode` - [`Byte`] The exit code value.
+1. `exited` - [`Boolean`] Indicates whether the VM has exited.
+1. `step` - [`UInt64`] A step counter.
+1. `stepsSinceLastContextSwitch` - [`UInt64`] A step counter that tracks the number of steps executed on the current
    thread since the last [preemption](#thread-preemption).
-1. `wakeup` - 32-bit address set via a futex syscall signaling that the VM has entered wakeup traversal or else
-    `0xFFFFFFFF` (-1) if there is no active wakeup signal. For details see ["Wakeup Traversal"](#wakeup-traversal).
-1. `traverseRight` - 8-bit boolean that indicates whether the currently active thread is on the left or right thread
+1. `wakeup` - [`Word`] The address set via a futex syscall signaling that the VM has entered wakeup traversal or else
+   `MaxWord` if there is no active wakeup signal. For details see ["Wakeup Traversal"](#wakeup-traversal).
+1. `traverseRight` - [`Boolean`] Indicates whether the currently active thread is on the left or right thread
     stack, as well as some details on thread traversal mechanics.
     See ["Thread Traversal Mechanics"](#thread-traversal-mechanics) for details.
-1. `leftThreadStack` - a `bytes32` hash of the contents of the left thread stack.
+1. `leftThreadStack` - [`Hash`] A hash of the contents of the left thread stack.
    For details, see the [“Thread Stack Hashing” section.](#thread-stack-hashing)
-1. `rightThreadStack` - a `bytes32` hash of the contents of the right thread stack.
+1. `rightThreadStack` - [`Hash`] A hash of the contents of the right thread stack.
    For details, see the [“Thread Stack Hashing” section.](#thread-stack-hashing)
-1. `nextThreadID` - 32-bit value defining the id to assign to the next thread that is created.
+1. `nextThreadID` - [`Word`] The value defining the id to assign to the next thread that is created.
 
 The state is represented by packing the above fields, in order, into a 172-byte buffer.
 
@@ -287,20 +305,20 @@ fn vm_status(exit_code: u8, exited: bool) -> u8 {
 
 The state of a single thread is tracked and represented by a thread state object consisting of the following fields:
 
-1. `threadID` - 32-bit unique thread identifier.
-1. `exitCode` - 8-bit exit code.
-1. `exited` - 8-bit boolean value indicating whether the thread has exited.
-1. `futexAddr` - 32-bit address set via a futex syscall indicating that this thread is waiting on a value change
+1. `threadID` - [`Word`] A unique thread identifier.
+1. `exitCode` - [`Byte`] The exit code value.
+1. `exited` - [`Boolean`] Indicates whether the thread has exited.
+1. `futexAddr` - [`Word`] An address set via a futex syscall indicating that this thread is waiting on a value change
     at this address.
-1. `futexVal` - 32-bit value representing the memory contents at `futexAddr` when this thread began waiting.
-1. `futexTimeoutStep` - 64-bit value representing the future `step` at which the futex wait will time out.  Set to the
-   max uint64 value (-1) if no timeout is active.
-1. `pc` - 32-bit program counter.
-1. `nextPC` - 32-bit next program counter. Note that this value may not always be $pc+4$
+1. `futexVal` - [`Word`] A value representing the memory contents at `futexAddr` when this thread began waiting.
+1. `futexTimeoutStep` - [`UInt64`] A value representing the future `step` at which the futex wait will time out.
+Set to `MaxWord` if no timeout is active.
+1. `pc` - [`Word`] The program counter.
+1. `nextPC` - [`Word`] The next program counter. Note that this value may not always be $pc+4$
    when executing a branch/jump delay slot.
-1. `lo` - 32-bit MIPS LO special register.
-1. `hi` - 32-bit MIPS HI special register.
-1. `registers` - General-purpose MIPS32 registers. Each register is a 32-bit value.
+1. `lo` - [`Word`] The MIPS LO special register.
+1. `hi` - [`Word`] The MIPS HI special register.
+1. `registers` - 32 general-purpose MIPS registers numbered 0 - 31. Each register contains a `Word` value.
 
 A thread is represented by packing the above fields, in order, into a 166-byte buffer.
 
@@ -373,7 +391,7 @@ However, the FPVM supports a subset of Linux/MIPS syscalls with slightly differe
 These syscalls have identical syscall numbers and ABIs as Linux/MIPS.
 
 For all of the following syscalls, an error is indicated by setting the return
-register (`$v0`) to `0xFFFFFFFF` (-1) and `errno` (`$a3`) is set accordingly.
+register (`$v0`) to `MaxWord` and `errno` (`$a3`) is set accordingly.
 The VM must not modify any register other than `$v0` and `$a3` during syscall handling.
 
 The following tables summarize supported syscalls and their behaviors.
