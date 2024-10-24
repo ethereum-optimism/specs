@@ -370,7 +370,7 @@ A channel is encoded by applying a streaming compression algorithm to a list of 
 ```text
 rlp_batches = []
 for batch in batches:
-    rlp_batches.append(batch)
+    rlp_batches.append(rlp_encode(batch))
 ```
 
 where:
