@@ -376,7 +376,8 @@ rlp_batches = rlp_encode(encoded_batches)
 
 where:
 
-- `batches` is the input, a sequence of batches each with a byte-encoder function `.encode()` as per the next section ("Batch Encoding")
+- `batches` is the input, a sequence of batches each with a byte-encoder
+function `.encode()` as per the next section ("Batch Encoding")
 - `encoded_batches` is a byte array: the concatenation of the encoded batches
 - `rlp_batches` is the rlp encoding of the concatenated encoded batches
 
