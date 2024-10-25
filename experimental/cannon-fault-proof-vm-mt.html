@@ -196,6 +196,12 @@
 <ul>
 <li><a href="#overview">Overview</a>
 <ul>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#data-types">Data types</a></li>
+<li><a href="#constants">Constants</a></li>
+</ul>
+</li>
 <li><a href="#new-features">New Features</a>
 <ul>
 <li><a href="#multithreading">Multithreading</a></li>
@@ -274,6 +280,21 @@ that executes a single instruction. We say the VM is a function <span class="kat
 single instruction encoded in the state to produce a new state <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span>.
 <span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">re</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></span></p>
 <p>Thus, the trace of a program executed by the FPVM is an ordered set of VM states.</p>
+<h3 id="definitions"><a class="header" href="#definitions">Definitions</a></h3>
+<h4 id="data-types"><a class="header" href="#data-types">Data types</a></h4>
+<ul>
+<li><code>Boolean</code> - An 8-bit boolean value equal to 0 (false) or 1 (true).</li>
+<li><code>Byte</code> - An 8-bit value.</li>
+<li><code>Hash</code> - A 256-bit fixed-size value produced by the Keccak-256 cryptographic hash function.</li>
+<li><code>UInt64</code> - A 64-bit unsigned integer value.</li>
+<li><code>Word</code> - A 32-bit value.</li>
+</ul>
+<h4 id="constants"><a class="header" href="#constants">Constants</a></h4>
+<ul>
+<li><code>MaxWord</code> - A <code>Word</code> with all bits set to 1: <code>0xFFFFFFFF</code>.
+When interpreted as a signed value, this is equivalent to -1.</li>
+<li><code>WordSize</code> - The number of bytes in a <code>Word</code> (4).</li>
+</ul>
 <h3 id="new-features"><a class="header" href="#new-features">New Features</a></h3>
 <h4 id="multithreading"><a class="header" href="#multithreading">Multithreading</a></h4>
 <p>MTCannon adds support for <a href="https://en.wikipedia.org/wiki/Thread_(computing)">multithreading</a>.
@@ -352,7 +373,7 @@ left, then right so this is the end of the traversal).</li>
 </li>
 </ul>
 <div class="footnote-definition" id="traversal-completion"><sup class="footnote-definition-label">1</sup>
-<p>Wakeup traversal is completed by setting the FPVM state's <code>wakeup</code> field to <code>0xFFFFFFFF</code> (-1),
+<p>Wakeup traversal is completed by setting the FPVM state's <code>wakeup</code> field to <code>MaxWord</code>,
 causing the FPVM to resume normal execution.</p>
 </div>
 <h3 id="exited-threads"><a class="header" href="#exited-threads">Exited Threads</a></h3>
@@ -361,7 +382,7 @@ the VM state.</p>
 <h3 id="waiting-threads"><a class="header" href="#waiting-threads">Waiting Threads</a></h3>
 <p>Threads enter a waiting state when a futex wait syscall is successfully executed, setting the thread's
 <code>futexAddr</code>, <code>futexVal</code>, and <code>futexTimeoutStep</code> fields according to the futex syscall arguments.</p>
-<p>During normal execution, when the active thread is in a waiting state (its <code>futexAddr</code> is not <code>0xFFFFFFFF</code>), the VM
+<p>During normal execution, when the active thread is in a waiting state (its <code>futexAddr</code> is not equal to <code>MaxWord</code>), the VM
 checks if it can be woken up.</p>
 <p>A waiting thread will be woken up if:</p>
 <ul>
@@ -370,7 +391,7 @@ checks if it can be woken up.</p>
 </ul>
 <p>The VM will wake such a thread by resetting its futex fields:</p>
 <ul>
-<li><code>futexAddr</code> = <code>0xFFFFFFFF</code></li>
+<li><code>futexAddr</code> = <code>MaxWord</code></li>
 <li><code>futexVal</code> = 0</li>
 <li><code>futexTimeoutStep</code> = 0</li>
 </ul>
@@ -425,29 +446,29 @@ On failure, <code>sc</code> returns <code>0</code>.</p>
 <h3 id="state"><a class="header" href="#state">State</a></h3>
 <p>The FPVM is a state transition function that operates on a state object consisting of the following fields:</p>
 <ol>
-<li><code>memRoot</code> - A <code>bytes32</code> value representing the merkle root of VM memory.</li>
-<li><code>preimageKey</code> - <code>bytes32</code> value of the last requested pre-image key.</li>
-<li><code>preimageOffset</code> - The 32-bit value of the last requested pre-image offset.</li>
-<li><code>heap</code> - 32-bit base address of the most recent memory allocation via mmap.</li>
-<li><code>llReservationActive</code> - 8-bit boolean indicator of whether a memory reservation,
+<li><code>memRoot</code> - [<code>Hash</code>] A value representing the merkle root of VM memory.</li>
+<li><code>preimageKey</code> - [<code>Hash</code>] The value of the last requested pre-image key.</li>
+<li><code>preimageOffset</code> - [<code>Word</code>] The value of the last requested pre-image offset.</li>
+<li><code>heap</code> - [<code>Word</code>] The base address of the most recent memory allocation via mmap.</li>
+<li><code>llReservationActive</code> - [<code>Boolean</code>] Indicates whether a memory reservation,
 which is reserved via a Load Linked Word (<code>ll</code>) instruction, is active.</li>
-<li><code>llAddress</code> - 32-bit address of the currently active memory reservation if one exists.</li>
-<li><code>llOwnerThread</code> - 32-bit id of the thread that initiated the current memory reservation if one exists.</li>
-<li><code>exitCode</code> - 8-bit exit code.</li>
-<li><code>exited</code> - 8-bit boolean valuel indicating whether the VM has exited.</li>
-<li><code>step</code> - 64-bit step counter.</li>
-<li><code>stepsSinceLastContextSwitch</code> - 64-bit step counter that tracks the number of steps executed on the current
+<li><code>llAddress</code> - [<code>Word</code>] The address of the currently active memory reservation if one exists.</li>
+<li><code>llOwnerThread</code> - [<code>Word</code>] The id of the thread that initiated the current memory reservation if one exists.</li>
+<li><code>exitCode</code> - [<code>Byte</code>] The exit code value.</li>
+<li><code>exited</code> - [<code>Boolean</code>] Indicates whether the VM has exited.</li>
+<li><code>step</code> - [<code>UInt64</code>] A step counter.</li>
+<li><code>stepsSinceLastContextSwitch</code> - [<code>UInt64</code>] A step counter that tracks the number of steps executed on the current
 thread since the last <a href="#thread-preemption">preemption</a>.</li>
-<li><code>wakeup</code> - 32-bit address set via a futex syscall signaling that the VM has entered wakeup traversal or else
-<code>0xFFFFFFFF</code> (-1) if there is no active wakeup signal. For details see <a href="#wakeup-traversal">"Wakeup Traversal"</a>.</li>
-<li><code>traverseRight</code> - 8-bit boolean that indicates whether the currently active thread is on the left or right thread
+<li><code>wakeup</code> - [<code>Word</code>] The address set via a futex syscall signaling that the VM has entered wakeup traversal or else
+<code>MaxWord</code> if there is no active wakeup signal. For details see <a href="#wakeup-traversal">"Wakeup Traversal"</a>.</li>
+<li><code>traverseRight</code> - [<code>Boolean</code>] Indicates whether the currently active thread is on the left or right thread
 stack, as well as some details on thread traversal mechanics.
 See <a href="#thread-traversal-mechanics">"Thread Traversal Mechanics"</a> for details.</li>
-<li><code>leftThreadStack</code> - a <code>bytes32</code> hash of the contents of the left thread stack.
+<li><code>leftThreadStack</code> - [<code>Hash</code>] A hash of the contents of the left thread stack.
 For details, see the <a href="#thread-stack-hashing">“Thread Stack Hashing” section.</a></li>
-<li><code>rightThreadStack</code> - a <code>bytes32</code> hash of the contents of the right thread stack.
+<li><code>rightThreadStack</code> - [<code>Hash</code>] A hash of the contents of the right thread stack.
 For details, see the <a href="#thread-stack-hashing">“Thread Stack Hashing” section.</a></li>
-<li><code>nextThreadID</code> - 32-bit value defining the id to assign to the next thread that is created.</li>
+<li><code>nextThreadID</code> - [<code>Word</code>] The value defining the id to assign to the next thread that is created.</li>
 </ol>
 <p>The state is represented by packing the above fields, in order, into a 172-byte buffer.</p>
 <h3 id="state-hash"><a class="header" href="#state-hash">State Hash</a></h3>
@@ -476,20 +497,20 @@ fn vm_status(exit_code: u8, exited: bool) -&gt; u8 {
 <h3 id="thread-state"><a class="header" href="#thread-state">Thread State</a></h3>
 <p>The state of a single thread is tracked and represented by a thread state object consisting of the following fields:</p>
 <ol>
-<li><code>threadID</code> - 32-bit unique thread identifier.</li>
-<li><code>exitCode</code> - 8-bit exit code.</li>
-<li><code>exited</code> - 8-bit boolean value indicating whether the thread has exited.</li>
-<li><code>futexAddr</code> - 32-bit address set via a futex syscall indicating that this thread is waiting on a value change
+<li><code>threadID</code> - [<code>Word</code>] A unique thread identifier.</li>
+<li><code>exitCode</code> - [<code>Byte</code>] The exit code value.</li>
+<li><code>exited</code> - [<code>Boolean</code>] Indicates whether the thread has exited.</li>
+<li><code>futexAddr</code> - [<code>Word</code>] An address set via a futex syscall indicating that this thread is waiting on a value change
 at this address.</li>
-<li><code>futexVal</code> - 32-bit value representing the memory contents at <code>futexAddr</code> when this thread began waiting.</li>
-<li><code>futexTimeoutStep</code> - 64-bit value representing the future <code>step</code> at which the futex wait will time out.  Set to the
-max uint64 value (-1) if no timeout is active.</li>
-<li><code>pc</code> - 32-bit program counter.</li>
-<li><code>nextPC</code> - 32-bit next program counter. Note that this value may not always be <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span>
+<li><code>futexVal</code> - [<code>Word</code>] A value representing the memory contents at <code>futexAddr</code> when this thread began waiting.</li>
+<li><code>futexTimeoutStep</code> - [<code>UInt64</code>] A value representing the future <code>step</code> at which the futex wait will time out.
+Set to <code>MaxWord</code> if no timeout is active.</li>
+<li><code>pc</code> - [<code>Word</code>] The program counter.</li>
+<li><code>nextPC</code> - [<code>Word</code>] The next program counter. Note that this value may not always be <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span>
 when executing a branch/jump delay slot.</li>
-<li><code>lo</code> - 32-bit MIPS LO special register.</li>
-<li><code>hi</code> - 32-bit MIPS HI special register.</li>
-<li><code>registers</code> - General-purpose MIPS32 registers. Each register is a 32-bit value.</li>
+<li><code>lo</code> - [<code>Word</code>] The MIPS LO special register.</li>
+<li><code>hi</code> - [<code>Word</code>] The MIPS HI special register.</li>
+<li><code>registers</code> - 32 general-purpose MIPS registers numbered 0 - 31. Each register contains a <code>Word</code> value.</li>
 </ol>
 <p>A thread is represented by packing the above fields, in order, into a 166-byte buffer.</p>
 <h3 id="thread-hash"><a class="header" href="#thread-hash">Thread Hash</a></h3>
@@ -534,7 +555,7 @@ commitment <code>c'</code> for the stack without <code>elTop</code> and verify:
 The tree has a fixed-depth of 27 levels, with leaf values of 32 bytes each.
 This spans the full 32-bit address space, where each leaf contains the memory at that part of the tree.
 The state <code>memRoot</code> represents the merkle root of the tree, reflecting the effects of memory writes.
-As a result of this memory representation, all memory operations are 4-byte aligned.
+As a result of this memory representation, all memory operations are <code>WordSize</code>-byte aligned.
 Memory access doesn't require any privileges. An instruction step can access any memory
 location as the entire address space is unprotected.</p>
 <h3 id="heap"><a class="header" href="#heap">Heap</a></h3>
@@ -563,7 +584,7 @@ syscall calling conventions and general syscall handling behavior.
 However, the FPVM supports a subset of Linux/MIPS syscalls with slightly different behaviors.
 These syscalls have identical syscall numbers and ABIs as Linux/MIPS.</p>
 <p>For all of the following syscalls, an error is indicated by setting the return
-register (<code>$v0</code>) to <code>0xFFFFFFFF</code> (-1) and <code>errno</code> (<code>$a3</code>) is set accordingly.
+register (<code>$v0</code>) to <code>MaxWord</code> and <code>errno</code> (<code>$a3</code>) is set accordingly.
 The VM must not modify any register other than <code>$v0</code> and <code>$a3</code> during syscall handling.</p>
 <p>The following tables summarize supported syscalls and their behaviors.
 If an unsupported syscall is encountered, the VM will raise an exception.</p>
@@ -582,7 +603,7 @@ If an unsupported syscall is encountered, the VM will raise an exception.</p>
 <tr><td>4238</td><td>futex</td><td>uint32 addr</td><td>uint32 futex_op</td><td>uint32 val</td><td>uint32 *timeout</td><td>Supports <code>futex_op</code>'s <code>FUTEX_WAIT_PRIVATE</code> (128) and <code>FUTEX_WAKE_PRIVATE</code> (129). Other operations set errno to <code>0x16</code>.</td></tr>
 <tr><td>4005</td><td>open</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Sets errno to <code>0x9</code>.</td></tr>
 <tr><td>4166</td><td>nanosleep</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Preempts the active thread and returns 0.</td></tr>
-<tr><td>4263</td><td>clock_gettime</td><td>uint32 clock_id</td><td>uint32 addr</td><td>🚫</td><td>🚫</td><td>Supports <code>clock_id</code>'s <code>REALTIME</code>(0) and <code>MONOTONIC</code>(1). For other <code>clock_id</code>'s, sets errno to <code>0x16</code>.  Calculates a deterministic time value based on the state's <code>step</code> field and a constant <code>HZ</code> (10,000,000) where <code>HZ</code> represents the approximate clock rate (steps / second) of the FPVM:<br/><br/><code>seconds = step/HZ</code><br/><code>nsecs = (step % HZ) * 10^9/HZ</code><br/><br/>Seconds are set at memory address <code>addr</code> and nsecs are set at <code>addr + 4</code>.</td></tr>
+<tr><td>4263</td><td>clock_gettime</td><td>uint32 clock_id</td><td>uint32 addr</td><td>🚫</td><td>🚫</td><td>Supports <code>clock_id</code>'s <code>REALTIME</code>(0) and <code>MONOTONIC</code>(1). For other <code>clock_id</code>'s, sets errno to <code>0x16</code>.  Calculates a deterministic time value based on the state's <code>step</code> field and a constant <code>HZ</code> (10,000,000) where <code>HZ</code> represents the approximate clock rate (steps / second) of the FPVM:<br/><br/><code>seconds = step/HZ</code><br/><code>nsecs = (step % HZ) * 10^9/HZ</code><br/><br/>Seconds are set at memory address <code>addr</code> and nsecs are set at <code>addr + WordSize</code>.</td></tr>
 <tr><td>4020</td><td>getpid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns 0.</td></tr>
 </tbody></table>
 </div>
@@ -617,6 +638,8 @@ and errno (<code>$a3</code>) registers.</p>
 <tr><td>4140</td><td>llseek</td></tr>
 <tr><td>4217</td><td>mincore</td></tr>
 <tr><td>4266</td><td>tgkill</td></tr>
+<tr><td>4076</td><td>getrlimit</td></tr>
+<tr><td>4019</td><td>lseek</td></tr>
 <tr><td>4104</td><td>setitimer</td></tr>
 <tr><td>4257</td><td>timer_create</td></tr>
 <tr><td>4258</td><td>timer_settime</td></tr>
@@ -638,9 +661,10 @@ and errno (<code>$a3</code>) registers.</p>
 <p>Syscalls referencing unknown file descriptors fail with an <code>EBADF</code> errno as done on Linux.</p>
 <p>Writing to and reading from standard output, input and error streams have no effect on the FPVM state.
 FPVM implementations may use them for debugging purposes as long as I/O is stateless.</p>
-<p>All I/O operations are restricted to a maximum of 4 bytes per operation.
-Any read or write syscall request exceeding this limit will be truncated to 4 bytes.
-Consequently, the return value of read/write syscalls is at most 4, indicating the actual number of bytes read/written.</p>
+<p>All I/O operations are restricted to a maximum of <code>WordSize</code> bytes per operation.
+Any read or write syscall request exceeding this limit will be truncated to <code>WordSize</code> bytes.
+Consequently, the return value of read/write syscalls is at most <code>WordSize</code> bytes,
+indicating the actual number of bytes read/written.</p>
 <h3 id="standard-streams"><a class="header" href="#standard-streams">Standard Streams</a></h3>
 <p>Writing to stderr/stdout standard stream always succeeds with the write count input returned,
 effectively continuing execution without writing work.
@@ -656,11 +680,11 @@ The <code>preimageKey</code> buffers the stream of bytes written to the pre-imag
 The <code>preimageKey</code> buffer is shifted to accommodate new bytes written to the end of it.
 A write also resets the <code>preimageOffset</code> to 0, indicating the intent to read a new pre-image.</p>
 <p>When handling pre-image reads, the <code>preimageKey</code> is used to lookup the pre-image data from an Oracle.
-A max 4-byte chunk of the pre-image at the <code>preimageOffset</code> is read to the specified address.
+A max <code>WordSize</code>-byte chunk of the pre-image at the <code>preimageOffset</code> is read to the specified address.
 Each read operation increases the <code>preimageOffset</code> by the number of bytes requested
-(truncated to 4 bytes and subject to alignment constraints).</p>
+(truncated to <code>WordSize</code> bytes and subject to alignment constraints).</p>
 <h4 id="pre-image-io-alignment"><a class="header" href="#pre-image-io-alignment">Pre-image I/O Alignment</a></h4>
-<p>As mentioned earlier in <a href="#memory">memory</a>, all memory operations are 4-byte aligned.
+<p>As mentioned earlier in <a href="#memory">memory</a>, all memory operations are <code>WordSize</code>-byte aligned.
 Since pre-image I/O occurs on memory, all pre-image I/O operations must strictly adhere to alignment boundaries.
 This means the start and end of a read/write operation must fall within the same alignment boundary.
 If an operation were to violate this, the input <code>count</code> of the read/write syscall must be
@@ -679,7 +703,6 @@ outside the general purpose registers).</li>
 <li>Delay slot contains branch/jump instruction types.</li>
 <li>Invalid thread state:
 <ul>
-<li>There are no threads - both thread stacks are empty.</li>
 <li>The active thread stack is empty.</li>
 </ul>
 </li>
