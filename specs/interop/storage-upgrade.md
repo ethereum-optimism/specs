@@ -38,7 +38,11 @@ and add the following functionality:
 bytes32 public hashOnion;
 
 function setHashOnion(bytes32 _hashOnion) external {
-    require(msg.sender == Predeploys.PROXY_ADMIN, "Unauthorized");
+    require(msg.sender == Predeploys.L2_CROSS_DOMAIN_MESSENGER, "Unauthorized");
+
+    require((Predeploys.L2_CROSS_DOMAIN_MESSENGER).xDomainMessageSender() ==
+        AddressAliasHelper.undoL1ToL2Alias((Predeploys.PROXY_ADMIN).owner()), "Unauthorized");
+
     require(hashOnion == 0, "Already initialized");
 
     hashOnion = _hashOnion;
