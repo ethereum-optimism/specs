@@ -509,14 +509,17 @@ channel. Any other value makes the frame invalid (it must be ignored by the roll
 </ul>
 <h3 id="channel-format"><a class="header" href="#channel-format">Channel Format</a></h3>
 <p>A channel is encoded by applying a streaming compression algorithm to a list of batches:</p>
-<pre><code class="language-text">rlp_batches = []
+<pre><code class="language-text">encoded_batches = []
 for batch in batches:
-    rlp_batches.append(batch)
+    encoded_batches ++ batch.encode()
+rlp_batches = rlp_encode(encoded_batches)
 </code></pre>
 <p>where:</p>
 <ul>
-<li><code>batches</code> is the input, a sequence of batches byte-encoded as per the next section ("Batch Encoding")</li>
-<li><code>rlp_batches</code> is the concatenation of the RLP-encoded batches</li>
+<li><code>batches</code> is the input, a sequence of batches each with a byte-encoder
+function <code>.encode()</code> as per the next section ("Batch Encoding")</li>
+<li><code>encoded_batches</code> is a byte array: the concatenation of the encoded batches</li>
+<li><code>rlp_batches</code> is the rlp encoding of the concatenated encoded batches</li>
 </ul>
 <pre><code class="language-text">channel_encoding = zlib_compress(rlp_batches)
 </code></pre>
