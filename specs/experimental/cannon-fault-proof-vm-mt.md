@@ -78,7 +78,7 @@ Thus, the trace of a program executed by the FPVM is an ordered set of VM states
 
 - `MaxWord` - A `Word` with all bits set to 1: `0xFFFFFFFF`.
 When interpreted as a signed value, this is equivalent to -1.
-- `WordSize` - The number of bytes in a `Word` (4).
+- `WordSize` - The number of bytes in a `Word` (8).
 
 ### New Features
 
