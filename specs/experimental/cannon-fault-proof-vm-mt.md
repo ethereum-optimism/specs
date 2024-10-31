@@ -10,6 +10,7 @@
     - [Constants](#constants)
   - [New Features](#new-features)
     - [Multithreading](#multithreading)
+    - [64-bit Architecture](#64-bit-architecture)
     - [Robustness](#robustness)
 - [Multithreading](#multithreading-1)
   - [Thread Management](#thread-management)
@@ -90,6 +91,11 @@ programs make thread-related requests to the OS kernel via [syscalls](https://en
 As such, this implementation includes a few new Linux-specific thread-related [syscalls](#syscalls).
 Additionally, the [FPVM state](#fpvm-state) has been modified in order to track the set of active threads
 and thread-related global state.
+
+#### 64-bit Architecture
+
+MTCannon emulates a MIPS64 machine whereas STCannon emulates a MIPS32 machine.  The transition from MIPS32 to MIPS64
+means the address space goes from 32-bit to 64-bit, greatly expanding addressable memory.
 
 #### Robustness
 
