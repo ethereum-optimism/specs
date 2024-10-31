@@ -417,21 +417,21 @@ If an unsupported syscall is encountered, the VM will raise an exception.
 
 | \$v0 | system call   | \$a0            | \$a1             | \$a2         | \$a3             | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 |------|---------------|-----------------|------------------|--------------|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4090 | mmap          | uint64 addr     | uint64 len       | 🚫           | 🚫               | Allocates a page from the heap. See [heap](#heap) for details.                                                                                                                                                                                                                                                                                                                                                                                            |
-| 4045 | brk           | 🚫              | 🚫               | 🚫           | 🚫               | Returns a fixed address for the program break at `0x40000000`                                                                                                                                                                                                                                                                                                                                                                                             |
-| 4246 | exit_group    | uint8 exit_code | 🚫               | 🚫           | 🚫               | Sets the exited and exitCode state fields to `true` and `$a0` respectively.                                                                                                                                                                                                                                                                                                                                                                               |
-| 4003 | read          | uint64 fd       | char \*buf       | uint64 count | 🚫               | Similar behavior as Linux/MIPS with support for unaligned reads. See [I/O](#io) for more details.                                                                                                                                                                                                                                                                                                                                                         |
-| 4004 | write         | uint64 fd       | char \*buf       | uint64 count | 🚫               | Similar behavior as Linux/MIPS with support for unaligned writes. See [I/O](#io) for more details.                                                                                                                                                                                                                                                                                                                                                        |
-| 4055 | fcntl         | uint64 fd       | int64 cmd        | 🚫           | 🚫               | Similar behavior as Linux/MIPS. Only the `F_GETFD`(1) and `F_GETFL` (3) cmds are supported. Sets errno to `0x16` for all other commands.                                                                                                                                                                                                                                                                                                                  |
-| 4120 | clone         | uint64 flags    | uint64 stack_ptr | 🚫           | 🚫               | Creates a new thread based on the currently active thread's state.  Supports a `flags` argument equal to `0x00050f00`, other values cause the VM to exit with exit_code `VmStatus.PANIC`.                                                                                                                                                                                                                                                                 |
-| 4001 | exit          | uint8 exit_code | 🚫               | 🚫           | 🚫               | Sets the active thread's exited and exitCode state fields to `true` and `$a0` respectively.                                                                                                                                                                                                                                                                                                                                                               |
-| 4162 | sched_yield   | 🚫              | 🚫               | 🚫           | 🚫               | Preempts the active thread and returns 0.                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 4222 | gettid        | 🚫              | 🚫               | 🚫           | 🚫               | Returns the active thread's threadID field.                                                                                                                                                                                                                                                                                                                                                                                                               |
-| 4238 | futex         | uint64 addr     | uint64 futex_op  | uint64 val   | uint64 \*timeout | Supports `futex_op`'s `FUTEX_WAIT_PRIVATE` (128) and `FUTEX_WAKE_PRIVATE` (129). Other operations set errno to `0x16`.                                                                                                                                                                                                                                                                                                                                    |
-| 4005 | open          | 🚫              | 🚫               | 🚫           | 🚫               | Sets errno to `0x9`.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 4166 | nanosleep     | 🚫              | 🚫               | 🚫           | 🚫               | Preempts the active thread and returns 0.                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 4263 | clock_gettime | uint64 clock_id | uint64 addr      | 🚫           | 🚫               | Supports `clock_id`'s `REALTIME`(0) and `MONOTONIC`(1). For other `clock_id`'s, sets errno to `0x16`.  Calculates a deterministic time value based on the state's `step` field and a constant `HZ` (10,000,000) where `HZ` represents the approximate clock rate (steps / second) of the FPVM:<br/><br/>`seconds = step/HZ`<br/>`nsecs = (step % HZ) * 10^9/HZ`<br/><br/>Seconds are set at memory address `addr` and nsecs are set at `addr + WordSize`. |
-| 4020 | getpid        | 🚫              | 🚫               | 🚫           | 🚫               | Returns 0.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 5009 | mmap          | uint64 addr     | uint64 len       | 🚫           | 🚫               | Allocates a page from the heap. See [heap](#heap) for details.                                                                                                                                                                                                                                                                                                                                                                                            |
+| 5012 | brk           | 🚫              | 🚫               | 🚫           | 🚫               | Returns a fixed address for the program break at `0x40000000`                                                                                                                                                                                                                                                                                                                                                                                             |
+| 5205 | exit_group    | uint8 exit_code | 🚫               | 🚫           | 🚫               | Sets the exited and exitCode state fields to `true` and `$a0` respectively.                                                                                                                                                                                                                                                                                                                                                                               |
+| 5000 | read          | uint64 fd       | char \*buf       | uint64 count | 🚫               | Similar behavior as Linux/MIPS with support for unaligned reads. See [I/O](#io) for more details.                                                                                                                                                                                                                                                                                                                                                         |
+| 5001 | write         | uint64 fd       | char \*buf       | uint64 count | 🚫               | Similar behavior as Linux/MIPS with support for unaligned writes. See [I/O](#io) for more details.                                                                                                                                                                                                                                                                                                                                                        |
+| 5070 | fcntl         | uint64 fd       | int64 cmd        | 🚫           | 🚫               | Similar behavior as Linux/MIPS. Only the `F_GETFD`(1) and `F_GETFL` (3) cmds are supported. Sets errno to `0x16` for all other commands.                                                                                                                                                                                                                                                                                                                  |
+| 5055 | clone         | uint64 flags    | uint64 stack_ptr | 🚫           | 🚫               | Creates a new thread based on the currently active thread's state.  Supports a `flags` argument equal to `0x00050f00`, other values cause the VM to exit with exit_code `VmStatus.PANIC`.                                                                                                                                                                                                                                                                 |
+| 5058 | exit          | uint8 exit_code | 🚫               | 🚫           | 🚫               | Sets the active thread's exited and exitCode state fields to `true` and `$a0` respectively.                                                                                                                                                                                                                                                                                                                                                               |
+| 5023 | sched_yield   | 🚫              | 🚫               | 🚫           | 🚫               | Preempts the active thread and returns 0.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 5178 | gettid        | 🚫              | 🚫               | 🚫           | 🚫               | Returns the active thread's threadID field.                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 5194 | futex         | uint64 addr     | uint64 futex_op  | uint64 val   | uint64 \*timeout | Supports `futex_op`'s `FUTEX_WAIT_PRIVATE` (128) and `FUTEX_WAKE_PRIVATE` (129). Other operations set errno to `0x16`.                                                                                                                                                                                                                                                                                                                                    |
+| 5002 | open          | 🚫              | 🚫               | 🚫           | 🚫               | Sets errno to `0x9`.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 5034 | nanosleep     | 🚫              | 🚫               | 🚫           | 🚫               | Preempts the active thread and returns 0.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 5222 | clock_gettime | uint64 clock_id | uint64 addr      | 🚫           | 🚫               | Supports `clock_id`'s `REALTIME`(0) and `MONOTONIC`(1). For other `clock_id`'s, sets errno to `0x16`.  Calculates a deterministic time value based on the state's `step` field and a constant `HZ` (10,000,000) where `HZ` represents the approximate clock rate (steps / second) of the FPVM:<br/><br/>`seconds = step/HZ`<br/>`nsecs = (step % HZ) * 10^9/HZ`<br/><br/>Seconds are set at memory address `addr` and nsecs are set at `addr + WordSize`. |
+| 5038 | getpid        | 🚫              | 🚫               | 🚫           | 🚫               | Returns 0.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ### Noop Syscalls
 
@@ -440,40 +440,37 @@ and errno (`$a3`) registers.
 
 | \$v0 | system call        |
 |------|--------------------|
-| 4091 | munmap             |
-| 4240 | sched_get_affinity |
-| 4218 | madvise            |
-| 4195 | rt_sigprocmask     |
-| 4206 | sigaltstack        |
-| 4194 | rt_sigaction       |
-| 4338 | prlimit64          |
-| 4006 | close              |
-| 4200 | pread64            |
-| 4106 | stat               |
-| 4108 | fstat              |
-| 4215 | fstat64            |
-| 4288 | openat             |
-| 4085 | readlink           |
-| 4298 | readlinkat         |
-| 4054 | ioctl              |
-| 4326 | epoll_create1      |
-| 4328 | pipe2              |
-| 4249 | epoll_ctl          |
-| 4313 | epoll_pwait        |
-| 4353 | getrandom          |
-| 4122 | uname              |
-| 4213 | stat64             |
-| 4024 | getuid             |
-| 4047 | getgid             |
-| 4140 | llseek             |
-| 4217 | mincore            |
-| 4266 | tgkill             |
-| 4076 | getrlimit          |
-| 4019 | lseek              |
-| 4104 | setitimer          |
-| 4257 | timer_create       |
-| 4258 | timer_settime      |
-| 4261 | timer_delete       |
+| 5011 | munmap             |
+| 5196 | sched_get_affinity |
+| 5027 | madvise            |
+| 5014 | rt_sigprocmask     |
+| 5129 | sigaltstack        |
+| 5013 | rt_sigaction       |
+| 5297 | prlimit64          |
+| 5003 | close              |
+| 5016 | pread64            |
+| 5004 | stat               |
+| 5005 | fstat              |
+| 5247 | openat             |
+| 5087 | readlink           |
+| 5257 | readlinkat         |
+| 5015 | ioctl              |
+| 5285 | epoll_create1      |
+| 5287 | pipe2              |
+| 5208 | epoll_ctl          |
+| 5272 | epoll_pwait        |
+| 5313 | getrandom          |
+| 5061 | uname              |
+| 5100 | getuid             |
+| 5102 | getgid             |
+| 5026 | mincore            |
+| 5225 | tgkill             |
+| 5095 | getrlimit          |
+| 5008 | lseek              |
+| 5036 | setitimer          |
+| 5216 | timer_create       |
+| 5217 | timer_settime      |
+| 5220 | timer_delete       |
 
 ## I/O
 
