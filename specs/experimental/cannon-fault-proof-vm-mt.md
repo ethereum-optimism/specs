@@ -287,11 +287,11 @@ The FPVM is a state transition function that operates on a state object consisti
    For details, see the [“Thread Stack Hashing” section.](#thread-stack-hashing)
 1. `nextThreadID` - [`Word`] The value defining the id to assign to the next thread that is created.
 
-The state is represented by packing the above fields, in order, into a 172-byte buffer.
+The state is represented by packing the above fields, in order, into a 196-byte buffer.
 
 ### State Hash
 
-The state hash is computed by hashing the 172-byte state buffer with the Keccak256 hash function
+The state hash is computed by hashing the 196-byte state buffer with the Keccak256 hash function
 and then setting the high-order byte to the respective VM status.
 
 The VM status can be derived from the state's `exited` and `exitCode` fields.
@@ -336,11 +336,11 @@ Set to `MaxWord` if no timeout is active.
 1. `hi` - [`Word`] The MIPS HI special register.
 1. `registers` - 32 general-purpose MIPS registers numbered 0 - 31. Each register contains a `Word` value.
 
-A thread is represented by packing the above fields, in order, into a 166-byte buffer.
+A thread is represented by packing the above fields, in order, into a 322-byte buffer.
 
 ### Thread Hash
 
-A thread hash is computed by hashing the 166-byte thread state buffer with the Keccak256 hash function.
+A thread hash is computed by hashing the 322-byte thread state buffer with the Keccak256 hash function.
 
 ### Thread Stack Hashing
 
