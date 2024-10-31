@@ -69,8 +69,8 @@ Thus, the trace of a program executed by the FPVM is an ordered set of VM states
 #### Data types
 
 - `Boolean` - An 8-bit boolean value equal to 0 (false) or 1 (true).
-- `Byte` - An 8-bit value.
 - `Hash` - A 256-bit fixed-size value produced by the Keccak-256 cryptographic hash function.
+- `UInt8` - An 8-bit unsigned integer value.
 - `UInt64` - A 64-bit unsigned integer value.
 - `Word` - A 64-bit value.
 
@@ -230,7 +230,7 @@ FPVM state to track memory reservations initiated by `ll` operations.
 
 When an `ll` instruction is executed:
 
-- `llReservationActive` is set to true.
+- `llReservationStatus` is set to `1`.
 - `llAddress` is set to the memory address specified by `ll`.
 - `llOwnerThread` is set to the `threadID` of the active thread.
 
@@ -241,12 +241,20 @@ a memory write touches a reserved `llAddress`.
 
 When an `sc` instruction is executed, the operation will only succeed if:
 
-- There exists an active reservation (`llReservationActive == true`).
+- There exists an active reservation (`llReservationStatus == 1`).
 - The active thread's `threadID` matches `llOwnerThread`.
 - The requested address matches `llAddress`.
 
-On success, `sc` stores a value at the target memory address, clears the memory reservation and returns `1`.
+On success, `sc` stores a value at the target memory address, clears the memory reservation by zeroing out
+`llReservationStatus`, `llOwnerThread`, and `llAddress` and returns `1`.
 On failure, `sc` returns `0`.
+
+With the transition to MIPS64, Load Linked Doubleword (`lld`), and Store Conditional Doubleword (`scd`) instructions
+are also now supported.
+These instructions are similar to `ll` and `sc`, but target an 8-byte rather than a 4-byte segment of memory.
+The `lld` instruction functions similarly to `ll`, but the `llReservationStatus` is set to `2`.
+The `scd` instruction functions similarly to `sc`, but the `llReservationStatus` must be equal to `2`
+for the operation to succeed.
 
 ## FPVM State
 
@@ -258,11 +266,12 @@ The FPVM is a state transition function that operates on a state object consisti
 1. `preimageKey` - [`Hash`] The value of the last requested pre-image key.
 1. `preimageOffset` - [`Word`] The value of the last requested pre-image offset.
 1. `heap` - [`Word`] The base address of the most recent memory allocation via mmap.
-1. `llReservationActive` - [`Boolean`] Indicates whether a memory reservation,
-   which is reserved via a Load Linked Word (`ll`) instruction, is active.
+1. `llReservationStatus` - [`UInt8`] The current memory reservation status where: `0` means there is no
+   current reservation, `1` means a 4-byte memory segment is reserved, and `2` means an 8-byte memory segment is reserved.
+   Memory is reserved via Load Linked Word (`ll`)  and Load Linked Doubleword (`lld`) instructions.
 1. `llAddress` - [`Word`] The address of the currently active memory reservation if one exists.
 1. `llOwnerThread` - [`Word`] The id of the thread that initiated the current memory reservation if one exists.
-1. `exitCode` - [`Byte`] The exit code value.
+1. `exitCode` - [`UInt8`] The exit code value.
 1. `exited` - [`Boolean`] Indicates whether the VM has exited.
 1. `step` - [`UInt64`] A step counter.
 1. `stepsSinceLastContextSwitch` - [`UInt64`] A step counter that tracks the number of steps executed on the current
@@ -313,7 +322,7 @@ fn vm_status(exit_code: u8, exited: bool) -> u8 {
 The state of a single thread is tracked and represented by a thread state object consisting of the following fields:
 
 1. `threadID` - [`Word`] A unique thread identifier.
-1. `exitCode` - [`Byte`] The exit code value.
+1. `exitCode` - [`UInt8`] The exit code value.
 1. `exited` - [`Boolean`] Indicates whether the thread has exited.
 1. `futexAddr` - [`Word`] An address set via a futex syscall indicating that this thread is waiting on a value change
     at this address.
