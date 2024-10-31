@@ -542,39 +542,39 @@ raise an exception if the supplied merkle proof does not match the pre-state `me
 
 ### Compiler Correctness
 
-Cannon is designed to prove the correctness of a particular state transition that emulates a MIPS64 machine.
-Cannon does not guarantee that the MIPS64 instructions correctly implement the program that the user intends to prove.
-As a result, Cannon's use as a Fault Proof system inherently depends to some extent on the correctness of the compiler
-used to generate the MIPS64 instructions over which Cannon operates.
+MTCannon is designed to prove the correctness of a particular state transition that emulates a MIPS64 machine.
+MTCannon does not guarantee that the MIPS64 instructions correctly implement the program that the user intends to prove.
+As a result, MTCannon's use as a Fault Proof system inherently depends to some extent on the correctness of the compiler
+used to generate the MIPS64 instructions over which MTCannon operates.
 
 To illustrate this concept, suppose that a user intends to prove simple program `input + 1 = output`.
 Suppose then that the user's compiler for this program contains a bug and errantly generates the MIPS instructions for a
-slightly different program `input + 2 = output`. Although Cannon would correctly prove the operation of this compiled program,
-the result proven would differ from the user's intent. Cannon proves the MIPS state transition but makes no assertion about
+slightly different program `input + 2 = output`. Although MTCannon would correctly prove the operation of this compiled program,
+the result proven would differ from the user's intent. MTCannon proves the MIPS state transition but makes no assertion about
 the correctness of the translation between the user's high-level code and the resulting MIPS program.
 
-As a consequence of the above, it is the responsibility of a program developer to develop tests that demonstrate that Cannon
+As a consequence of the above, it is the responsibility of a program developer to develop tests that demonstrate that MTCannon
 is capable of proving their intended program correctly over a large number of possible inputs. Such tests defend against
-bugs in the user's compiler as well as ways in which the compiler may inadvertently break one of Cannon's
+bugs in the user's compiler as well as ways in which the compiler may inadvertently break one of MTCannon's
 [Compiler Assumptions](#compiler-assumptions). Users of Fault Proof systems are strongly encouraged to utilize multiple
 proof systems and/or compilers to mitigate the impact of errant behavior in any one toolchain.
 
 ### Compiler Assumptions
 
-Cannon makes the simplifying assumption that users are utilizing compilers that do not rely on MIPS exception states for
-standard program behavior. In other words, Cannon generally assumes that the user's compiler generates spec-compliant
+MTCannon makes the simplifying assumption that users are utilizing compilers that do not rely on MIPS exception states for
+standard program behavior. In other words, MTCannon generally assumes that the user's compiler generates spec-compliant
 instructions that would not trigger an exception. Refer to [Exceptions](#exceptions) for a list of conditions that are
 explicitly handled.
 
 Certain cases that would typically be asserted by a strict implementation of the MIPS64 specification are not handled by
-Cannon as follows:
+MTCannon as follows:
 
 - `add`, `addi`, and `sub` do not trigger an exception on signed integer overflow.
 - Instruction encoding validation does not trigger an exception for fields that should be zero.
 - Memory instructions do not trigger an exception when addresses are not naturally aligned.
 
 Many compilers, including the Golang compiler, will not generate code that would trigger these conditions under bug-free
-operation. Given the inherent reliance on [Compiler Correctness](#compiler-correctness) in applications using Cannon, the
-tests and defense mechanisms that must necessarily be employed by Cannon users to protect their particular programs
-against compiler bugs should also suffice to surface bugs that would break these compiler assumptions. Stated simply, Cannon
+operation. Given the inherent reliance on [Compiler Correctness](#compiler-correctness) in applications using MTCannon, the
+tests and defense mechanisms that must necessarily be employed by MTCannon users to protect their particular programs
+against compiler bugs should also suffice to surface bugs that would break these compiler assumptions. Stated simply, MTCannon
 can rely on specific compiler behaviors because users inherently must employ safety nets to guard against compiler bugs.
