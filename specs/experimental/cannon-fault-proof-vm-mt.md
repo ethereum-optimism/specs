@@ -6,6 +6,8 @@
 
 - [Overview](#overview)
   - [Definitions](#definitions)
+    - [Concepts](#concepts)
+      - [Natural Alignment](#natural-alignment)
     - [Data types](#data-types)
     - [Constants](#constants)
   - [New Features](#new-features)
@@ -67,6 +69,20 @@ $$f(S_{pre}) \rightarrow S_{post}$$
 Thus, the trace of a program executed by the FPVM is an ordered set of VM states.
 
 ### Definitions
+
+#### Concepts
+
+##### Natural Alignment
+
+A memory address is said to be "naturally aligned" in the context of some data type
+if it is a multiple of that data type's byte size.
+For example, the address of a 32-bit (4-byte) value is naturally aligned if it is a multiple of 4 (e.g. `0x1000`, `0x1004`).
+Similarly, the address of a 64-bit (8-byte) value is naturally aligned if it is a multiple of 8 (e.g. `0x1000`, `0x1008`).
+
+A non-aligned address can be naturally aligned by dropping the least significant bits of the address:
+`aligned = unaligned & ^(byteSize - 1)`.
+For example, to align the address `0x1002` targeting a 32-bit value:
+`aligned = 0x1002 & ^(0x3) = 0x1000`.
 
 #### Data types
 
@@ -221,44 +237,47 @@ The Load Linked Word (`ll`) and Store Conditional Word (`sc`) instructions provi
 primitives used to implement atomic read-modify-write (RMW) operations.  A typical RMW sequence might play out as
 follows:
 
-- `ll` places a "reservation" on a particular virtual memory address.
-- Subsequent instructions take the value at this address and perform some operation on it:
-  - For example, maybe a counter variable is reserved and incremented.
-- `sc` is called and the modified value is stored at the reserved address only if the memory reservation is still
-intact.  This guarantees that the value has not been modified since the reservation was placed.
+- `ll` places a "reservation" targeting a 32-bit value in memory and returns the current value at this location.
+- Subsequent instructions take this value and perform some operation on it:
+  - For example, maybe a counter variable is loaded and then incremented.
+- `sc` is called and the modified value overwrites the original value in memory
+only if the memory reservation is still intact.
 
-This RMW sequence ensures that if another thread or process modifies a target memory address while
-an atomic update is being performed, the atomic update will fail.
+This RMW sequence ensures that if another thread or process modifies a reserved value while
+an atomic update is being performed, the reservation will be invalidated and the atomic update will fail.
 
-Prior to MTCannon, we could be assured that no intervening process would modify that target memory location because
+Prior to MTCannon, we could be assured that no intervening process would modify such a reserved value because
 STCannon is singlethreaded.  With the introduction of multithreading, additional fields need to be stored in the
 FPVM state to track memory reservations initiated by `ll` operations.
 
 When an `ll` instruction is executed:
 
 - `llReservationStatus` is set to `1`.
-- `llAddress` is set to the memory address specified by `ll`.
+- `llAddress` is set to the virtual memory address specified by `ll`.
 - `llOwnerThread` is set to the `threadID` of the active thread.
 
 Only a single memory reservation can be active at a given time - a new reservation will clear any previous reservation.
 
-When the VM writes any data to memory, these `ll`-related fields are checked and the memory reservation is cleared if
-a memory write touches a `Word` that contains `llAddress`.
+When the VM writes any data to memory, these `ll`-related fields are checked and any existing memory reservation
+is cleared if a memory write touches the naturally-aligned `Word` that contains `llAddress`.
 
 When an `sc` instruction is executed, the operation will only succeed if:
 
 - The `llReservationStatus` field is equal to `1`.
 - The active thread's `threadID` matches `llOwnerThread`.
-- The requested address matches `llAddress`.
+- The virtual address specified by `sc` matches `llAddress`.
 
-On success, `sc` stores a value at the target memory address, clears the memory reservation by zeroing out
-`llReservationStatus`, `llOwnerThread`, and `llAddress` and returns `1`.
+On success, `sc` stores a value to the specified address after it is naturally aligned,
+clears the memory reservation by zeroing out `llReservationStatus`, `llOwnerThread`, and `llAddress`
+and returns `1`.
+
 On failure, `sc` returns `0`.
 
 ### Load Linked / Store Conditional Doubleword
 
 With the transition to MIPS64, Load Linked Doubleword (`lld`), and Store Conditional Doubleword (`scd`) instructions
 are also now supported.
+These instructions are similar to `ll` and `sc`, but they operate on 64-bit rather than 32-bit values.
 
 The `lld` instruction functions similarly to `ll`, but the `llReservationStatus` is set to `2`.
 The `scd` instruction functions similarly to `sc`, but the `llReservationStatus` must be equal to `2`
@@ -279,8 +298,11 @@ The FPVM is a state transition function that operates on a state object consisti
    reservation, `1` means an `ll`/`sc`-compatible reservation is active,
    and `2` means an `lld`/`scd`-compatible reservation is active.
    Memory is reserved via Load Linked Word (`ll`)  and Load Linked Doubleword (`lld`) instructions.
-1. `llAddress` - [`Word`] The address of the currently active memory reservation if one exists.
-1. `llOwnerThread` - [`Word`] The id of the thread that initiated the current memory reservation if one exists.
+1. `llAddress` - [`Word`] If a memory reservation is active, the value of
+   the address specified by the last `ll` or `lld` instruction.
+   Otherwise, set to `0`.
+1. `llOwnerThread` - [`Word`] The id of the thread that initiated the current memory reservation
+   or `0` if there is no active reservation.
 1. `exitCode` - [`UInt8`] The exit code value.
 1. `exited` - [`Boolean`] Indicates whether the VM has exited.
 1. `step` - [`UInt64`] A step counter.
