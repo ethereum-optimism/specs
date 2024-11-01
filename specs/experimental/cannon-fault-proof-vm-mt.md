@@ -269,7 +269,7 @@ The FPVM is a state transition function that operates on a state object consisti
 1. `preimageOffset` - [`Word`] The value of the last requested pre-image offset.
 1. `heap` - [`Word`] The base address of the most recent memory allocation via mmap.
 1. `llReservationStatus` - [`UInt8`] The current memory reservation status where: `0` means there is no
-   current reservation, `1` means a 4-byte memory segment is reserved, and `2` means an 8-byte memory segment is reserved.
+   reservation, `1` means a 4-byte memory segment is reserved, and `2` means an 8-byte memory segment is reserved.
    Memory is reserved via Load Linked Word (`ll`)  and Load Linked Doubleword (`lld`) instructions.
 1. `llAddress` - [`Word`] The address of the currently active memory reservation if one exists.
 1. `llOwnerThread` - [`Word`] The id of the thread that initiated the current memory reservation if one exists.
