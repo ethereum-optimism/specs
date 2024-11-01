@@ -22,6 +22,8 @@
   - [Voluntary Preemption](#voluntary-preemption)
   - [Forced Preemption](#forced-preemption)
 - [Stateful Instructions](#stateful-instructions)
+  - [Load Linked / Store Conditional Word](#load-linked--store-conditional-word)
+  - [Load Linked / Store Conditional Doubleword](#load-linked--store-conditional-doubleword)
 - [FPVM State](#fpvm-state)
   - [State](#state)
   - [State Hash](#state-hash)
@@ -213,11 +215,13 @@ the FPVM preempts the active thread.
 
 ## Stateful Instructions
 
+### Load Linked / Store Conditional Word
+
 The Load Linked Word (`ll`) and Store Conditional Word (`sc`) instructions provide the low-level
 primitives used to implement atomic read-modify-write (RMW) operations.  A typical RMW sequence might play out as
 follows:
 
-- `ll` place a "reservation" on a particular memory address.
+- `ll` places a "reservation" on a particular memory address.
 - Subsequent instructions take the value at this address and perform some operation on it:
   - For example, maybe a counter variable is reserved and incremented.
 - `sc` is called and the modified value is stored at the reserved address only if it has not been modified since the
@@ -239,11 +243,11 @@ When an `ll` instruction is executed:
 Only a single memory reservation can be active at a given time - a new reservation will clear any previous reservation.
 
 When the VM writes any data to memory, these `ll`-related fields are checked and the memory reservation is cleared if
-a memory write touches a reserved `llAddress`.
+a memory write touches a `Word` that contains `llAddress`.
 
 When an `sc` instruction is executed, the operation will only succeed if:
 
-- There exists an active reservation (`llReservationStatus == 1`).
+- There exists an active 4-byte memory reservation (`llReservationStatus == 1`).
 - The active thread's `threadID` matches `llOwnerThread`.
 - The requested address matches `llAddress`.
 
@@ -251,12 +255,16 @@ On success, `sc` stores a value at the target memory address, clears the memory 
 `llReservationStatus`, `llOwnerThread`, and `llAddress` and returns `1`.
 On failure, `sc` returns `0`.
 
+### Load Linked / Store Conditional Doubleword
+
 With the transition to MIPS64, Load Linked Doubleword (`lld`), and Store Conditional Doubleword (`scd`) instructions
 are also now supported.
-These instructions are similar to `ll` and `sc`, but target an 8-byte rather than a 4-byte segment of memory.
+These instructions are similar to `ll` and `sc`, but target 8-byte rather than 4-byte memory segments.
+
 The `lld` instruction functions similarly to `ll`, but the `llReservationStatus` is set to `2`.
 The `scd` instruction functions similarly to `sc`, but the `llReservationStatus` must be equal to `2`
-for the operation to succeed.
+for the operation to succeed.  In other words, an `scd` instruction must be preceded by a matching `lld` instruction
+just as the `sc` instruction must be preceded by a matching `ll` instruction if the store operation is to succeed.
 
 ## FPVM State
 
