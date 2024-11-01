@@ -221,11 +221,11 @@ The Load Linked Word (`ll`) and Store Conditional Word (`sc`) instructions provi
 primitives used to implement atomic read-modify-write (RMW) operations.  A typical RMW sequence might play out as
 follows:
 
-- `ll` places a "reservation" on a particular memory address.
+- `ll` places a "reservation" on a particular virtual memory address.
 - Subsequent instructions take the value at this address and perform some operation on it:
   - For example, maybe a counter variable is reserved and incremented.
-- `sc` is called and the modified value is stored at the reserved address only if it has not been modified since the
-reservation was placed.
+- `sc` is called and the modified value is stored at the reserved address only if the memory reservation is still
+intact.  This guarantees that the value has not been modified since the reservation was placed.
 
 This RMW sequence ensures that if another thread or process modifies a target memory address while
 an atomic update is being performed, the atomic update will fail.
@@ -247,7 +247,7 @@ a memory write touches a `Word` that contains `llAddress`.
 
 When an `sc` instruction is executed, the operation will only succeed if:
 
-- There exists an active 4-byte memory reservation (`llReservationStatus == 1`).
+- The `llReservationStatus` field is equal to `1`.
 - The active thread's `threadID` matches `llOwnerThread`.
 - The requested address matches `llAddress`.
 
@@ -259,7 +259,6 @@ On failure, `sc` returns `0`.
 
 With the transition to MIPS64, Load Linked Doubleword (`lld`), and Store Conditional Doubleword (`scd`) instructions
 are also now supported.
-These instructions are similar to `ll` and `sc`, but target 8-byte rather than 4-byte memory segments.
 
 The `lld` instruction functions similarly to `ll`, but the `llReservationStatus` is set to `2`.
 The `scd` instruction functions similarly to `sc`, but the `llReservationStatus` must be equal to `2`
@@ -277,7 +276,8 @@ The FPVM is a state transition function that operates on a state object consisti
 1. `preimageOffset` - [`Word`] The value of the last requested pre-image offset.
 1. `heap` - [`Word`] The base address of the most recent memory allocation via mmap.
 1. `llReservationStatus` - [`UInt8`] The current memory reservation status where: `0` means there is no
-   reservation, `1` means a 4-byte memory segment is reserved, and `2` means an 8-byte memory segment is reserved.
+   reservation, `1` means an `ll`/`sc`-compatible reservation is active,
+   and `2` means an `lld`/`scd`-compatible reservation is active.
    Memory is reserved via Load Linked Word (`ll`)  and Load Linked Doubleword (`lld`) instructions.
 1. `llAddress` - [`Word`] The address of the currently active memory reservation if one exists.
 1. `llOwnerThread` - [`Word`] The id of the thread that initiated the current memory reservation if one exists.
