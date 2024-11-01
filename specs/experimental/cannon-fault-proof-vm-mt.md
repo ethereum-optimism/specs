@@ -79,7 +79,7 @@ Thus, the trace of a program executed by the FPVM is an ordered set of VM states
 #### Constants
 
 - `EBADF` - A Linux error number indicating a bad file descriptor: `0x9`.
-- `MaxWord` - A `Word` with all bits set to 1: `0xFFFFFFFF`.
+- `MaxWord` - A `Word` with all bits set to 1: `0xFFFFFFFFFFFFFFFF`.
 When interpreted as a signed value, this is equivalent to -1.
 - `ProgramBreakAddress` - The fixed memory address for the program break: `Word(0x0000_4000_0000_0000)`.
 - `WordSize` - The number of bytes in a `Word` (8).
