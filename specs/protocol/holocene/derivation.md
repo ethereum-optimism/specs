@@ -88,10 +88,12 @@ holds at most a single channel at a time.
 
 ### Pruning
 
-Pruning is vastly simplified as there's at most only one open channel in the channel bank. So the
+Pruning is vastly simplified as there is at most only one open channel in the channel bank. So the
 channel bank's queue becomes effectively a staging slot for a single channel, the _staging channel_.
-The `MAX_CHANNEL_BANK_SIZE` parameter becomes ineffective and the size of a channel is bounded, as
-before, during decompression to be at most of size `MAX_RLP_BYTES_PER_CHANNEL`.
+The `MAX_CHANNEL_BANK_SIZE` parameter is no longer used, and the compressed size of the staging 
+channel is required to be at most `MAX_RLP_BYTES_PER_CHANNEL` (else the channel is dropped). Note this
+a weaker condition than the existing one that the _uncompressed_ size of any given channel is
+at most `MAX_RLP_BYTES_PER_CHANNEL`.
 
 ### Timeout
 
