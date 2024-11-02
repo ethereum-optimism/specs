@@ -92,8 +92,8 @@ Pruning is vastly simplified as there is at most only one open channel in the ch
 channel bank's queue becomes effectively a staging slot for a single channel, the _staging channel_.
 The `MAX_CHANNEL_BANK_SIZE` parameter is no longer used, and the compressed size of the staging 
 channel is required to be at most `MAX_RLP_BYTES_PER_CHANNEL` (else the channel is dropped). Note this
-a weaker condition than the existing one that the _uncompressed_ size of any given channel is
-at most `MAX_RLP_BYTES_PER_CHANNEL`.
+latter rule is both a distinct condition and distinct effect, compared to the existing rule
+that that the _uncompressed_ size of any given channel is _clipped_ to `MAX_RLP_BYTES_PER_CHANNEL`.
 
 ### Timeout
 
