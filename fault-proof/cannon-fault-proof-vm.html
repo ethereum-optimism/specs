@@ -319,7 +319,7 @@ The following table list summarizes the supported syscalls and their behaviors.<
 <tr><td>4246</td><td>exit_group</td><td>uint8 exit_code</td><td>🚫</td><td>🚫</td><td>Sets the Exited and ExitCode states to <code>true</code> and <code>$a0</code> respectively.</td></tr>
 <tr><td>4003</td><td>read</td><td>uint32 fd</td><td>char *buf</td><td>uint32 count</td><td>Similar behavior as Linux/MIPS with support for unaligned reads. See <a href="#io">I/O</a> for more details.</td></tr>
 <tr><td>4004</td><td>write</td><td>uint32 fd</td><td>char *buf</td><td>uint32 count</td><td>Similar behavior as Linux/MIPS with support for unaligned writes. See <a href="#io">I/O</a> for more details.</td></tr>
-<tr><td>4055</td><td>fcntl</td><td>uint32 fd</td><td>int32 cmd</td><td>🚫</td><td>Similar behavior as Linux/MIPS. Only the <code>F_GETFL</code> (3) cmd is supported. Sets errno to <code>0x16</code> for all other commands</td></tr>
+<tr><td>4055</td><td>fcntl</td><td>uint32 fd</td><td>int32 cmd</td><td>🚫</td><td>Similar behavior as Linux/MIPS. Only the <code>F_GETFD</code>(1) and <code>F_GETFL</code> (3) cmds are supported. Sets errno to <code>0x16</code> for all other commands.</td></tr>
 </tbody></table>
 </div>
 <p>For all of the above syscalls, an error is indicated by setting the return
