@@ -198,6 +198,11 @@
 <ul>
 <li><a href="#definitions">Definitions</a>
 <ul>
+<li><a href="#concepts">Concepts</a>
+<ul>
+<li><a href="#natural-alignment">Natural Alignment</a></li>
+</ul>
+</li>
 <li><a href="#data-types">Data types</a></li>
 <li><a href="#constants">Constants</a></li>
 </ul>
@@ -205,6 +210,7 @@
 <li><a href="#new-features">New Features</a>
 <ul>
 <li><a href="#multithreading">Multithreading</a></li>
+<li><a href="#64-bit-architecture">64-bit Architecture</a></li>
 <li><a href="#robustness">Robustness</a></li>
 </ul>
 </li>
@@ -225,7 +231,12 @@
 <li><a href="#forced-preemption">Forced Preemption</a></li>
 </ul>
 </li>
-<li><a href="#stateful-instructions">Stateful Instructions</a></li>
+<li><a href="#stateful-instructions">Stateful Instructions</a>
+<ul>
+<li><a href="#load-linked--store-conditional-word">Load Linked / Store Conditional Word</a></li>
+<li><a href="#load-linked--store-conditional-doubleword">Load Linked / Store Conditional Doubleword</a></li>
+</ul>
+</li>
 <li><a href="#fpvm-state">FPVM State</a>
 <ul>
 <li><a href="#state">State</a></li>
@@ -272,7 +283,7 @@
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
 the original Cannon implementation can be referred to as Singlethreaded Cannon (STCannon) where necessary for clarity.</p>
-<p>The MTCannon FPVM emulates a minimal uniprocessor Linux-based system running on big-endian 32-bit MIPS32 architecture.
+<p>The MTCannon FPVM emulates a minimal uniprocessor Linux-based system running on big-endian 64-bit MIPS64 architecture.
 A lot of its behaviors are copied from Linux/MIPS with a few tweaks made for fault proofs.
 For the rest of this doc, we refer to the MTCannon FPVM as simply the FPVM.</p>
 <p>Operationally, the FPVM is a state transition function. This state transition is referred to as a <em>Step</em>,
@@ -281,19 +292,31 @@ single instruction encoded in the state to produce a new state <span class="kate
 <span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">re</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></span></p>
 <p>Thus, the trace of a program executed by the FPVM is an ordered set of VM states.</p>
 <h3 id="definitions"><a class="header" href="#definitions">Definitions</a></h3>
+<h4 id="concepts"><a class="header" href="#concepts">Concepts</a></h4>
+<h5 id="natural-alignment"><a class="header" href="#natural-alignment">Natural Alignment</a></h5>
+<p>A memory address is said to be "naturally aligned" in the context of some data type
+if it is a multiple of that data type's byte size.
+For example, the address of a 32-bit (4-byte) value is naturally aligned if it is a multiple of 4 (e.g. <code>0x1000</code>, <code>0x1004</code>).
+Similarly, the address of a 64-bit (8-byte) value is naturally aligned if it is a multiple of 8 (e.g. <code>0x1000</code>, <code>0x1008</code>).</p>
+<p>A non-aligned address can be naturally aligned by dropping the least significant bits of the address:
+<code>aligned = unaligned &amp; ^(byteSize - 1)</code>.
+For example, to align the address <code>0x1002</code> targeting a 32-bit value:
+<code>aligned = 0x1002 &amp; ^(0x3) = 0x1000</code>.</p>
 <h4 id="data-types"><a class="header" href="#data-types">Data types</a></h4>
 <ul>
 <li><code>Boolean</code> - An 8-bit boolean value equal to 0 (false) or 1 (true).</li>
-<li><code>Byte</code> - An 8-bit value.</li>
 <li><code>Hash</code> - A 256-bit fixed-size value produced by the Keccak-256 cryptographic hash function.</li>
+<li><code>UInt8</code> - An 8-bit unsigned integer value.</li>
 <li><code>UInt64</code> - A 64-bit unsigned integer value.</li>
-<li><code>Word</code> - A 32-bit value.</li>
+<li><code>Word</code> - A 64-bit value.</li>
 </ul>
 <h4 id="constants"><a class="header" href="#constants">Constants</a></h4>
 <ul>
-<li><code>MaxWord</code> - A <code>Word</code> with all bits set to 1: <code>0xFFFFFFFF</code>.
+<li><code>EBADF</code> - A Linux error number indicating a bad file descriptor: <code>0x9</code>.</li>
+<li><code>MaxWord</code> - A <code>Word</code> with all bits set to 1: <code>0xFFFFFFFFFFFFFFFF</code>.
 When interpreted as a signed value, this is equivalent to -1.</li>
-<li><code>WordSize</code> - The number of bytes in a <code>Word</code> (4).</li>
+<li><code>ProgramBreakAddress</code> - The fixed memory address for the program break: <code>Word(0x0000_4000_0000_0000)</code>.</li>
+<li><code>WordSize</code> - The number of bytes in a <code>Word</code> (8).</li>
 </ul>
 <h3 id="new-features"><a class="header" href="#new-features">New Features</a></h3>
 <h4 id="multithreading"><a class="header" href="#multithreading">Multithreading</a></h4>
@@ -304,6 +327,9 @@ programs make thread-related requests to the OS kernel via <a href="https://en.w
 As such, this implementation includes a few new Linux-specific thread-related <a href="#syscalls">syscalls</a>.
 Additionally, the <a href="#fpvm-state">FPVM state</a> has been modified in order to track the set of active threads
 and thread-related global state.</p>
+<h4 id="64-bit-architecture"><a class="header" href="#64-bit-architecture">64-bit Architecture</a></h4>
+<p>MTCannon emulates a MIPS64 machine whereas STCannon emulates a MIPS32 machine.  The transition from MIPS32 to MIPS64
+means the address space goes from 32-bit to 64-bit, greatly expanding addressable memory.</p>
 <h4 id="robustness"><a class="header" href="#robustness">Robustness</a></h4>
 <p>In the initial implementation of Cannon, unrecognized syscalls were treated as
 noops (see <a href="#noop-syscalls">"Noop Syscalls"</a>). To ensure no unexpected behaviors are triggered,
@@ -407,41 +433,52 @@ When a thread is preempted, <code>StepsSinceLastContextSwitch</code> is reset to
 If <code>StepsSinceLastContextSwitch</code> reaches a maximum value (<code>SchedQuantum</code> = 100_000),
 the FPVM preempts the active thread.</p>
 <h2 id="stateful-instructions"><a class="header" href="#stateful-instructions">Stateful Instructions</a></h2>
+<h3 id="load-linked--store-conditional-word"><a class="header" href="#load-linked--store-conditional-word">Load Linked / Store Conditional Word</a></h3>
 <p>The Load Linked Word (<code>ll</code>) and Store Conditional Word (<code>sc</code>) instructions provide the low-level
 primitives used to implement atomic read-modify-write (RMW) operations.  A typical RMW sequence might play out as
 follows:</p>
 <ul>
-<li><code>ll</code> place a "reservation" on a particular memory address.</li>
-<li>Subsequent instructions take the value at this address and perform some operation on it:
+<li><code>ll</code> places a "reservation" targeting a 32-bit value in memory and returns the current value at this location.</li>
+<li>Subsequent instructions take this value and perform some operation on it:
 <ul>
-<li>For example, maybe a counter variable is reserved and incremented.</li>
+<li>For example, maybe a counter variable is loaded and then incremented.</li>
 </ul>
 </li>
-<li><code>sc</code> is called and the modified value is stored at the reserved address only if it has not been modified since the
-reservation was placed.</li>
+<li><code>sc</code> is called and the modified value overwrites the original value in memory
+only if the memory reservation is still intact.</li>
 </ul>
-<p>This RMW sequence ensures that if another thread or process modifies a target memory address while
-an atomic update is being performed, the atomic update will fail.</p>
-<p>Prior to MTCannon, we could be assured that no intervening process would modify that target memory location because
+<p>This RMW sequence ensures that if another thread or process modifies a reserved value while
+an atomic update is being performed, the reservation will be invalidated and the atomic update will fail.</p>
+<p>Prior to MTCannon, we could be assured that no intervening process would modify such a reserved value because
 STCannon is singlethreaded.  With the introduction of multithreading, additional fields need to be stored in the
 FPVM state to track memory reservations initiated by <code>ll</code> operations.</p>
 <p>When an <code>ll</code> instruction is executed:</p>
 <ul>
-<li><code>llReservationActive</code> is set to true.</li>
-<li><code>llAddress</code> is set to the memory address specified by <code>ll</code>.</li>
+<li><code>llReservationStatus</code> is set to <code>1</code>.</li>
+<li><code>llAddress</code> is set to the virtual memory address specified by <code>ll</code>.</li>
 <li><code>llOwnerThread</code> is set to the <code>threadID</code> of the active thread.</li>
 </ul>
 <p>Only a single memory reservation can be active at a given time - a new reservation will clear any previous reservation.</p>
-<p>When the VM writes any data to memory, these <code>ll</code>-related fields are checked and the memory reservation is cleared if
-a memory write touches a reserved <code>llAddress</code>.</p>
+<p>When the VM writes any data to memory, these <code>ll</code>-related fields are checked and any existing memory reservation
+is cleared if a memory write touches the naturally-aligned <code>Word</code> that contains <code>llAddress</code>.</p>
 <p>When an <code>sc</code> instruction is executed, the operation will only succeed if:</p>
 <ul>
-<li>There exists an active reservation (<code>llReservationActive == true</code>).</li>
+<li>The <code>llReservationStatus</code> field is equal to <code>1</code>.</li>
 <li>The active thread's <code>threadID</code> matches <code>llOwnerThread</code>.</li>
-<li>The requested address matches <code>llAddress</code>.</li>
+<li>The virtual address specified by <code>sc</code> matches <code>llAddress</code>.</li>
 </ul>
-<p>On success, <code>sc</code> stores a value at the target memory address, clears the memory reservation and returns <code>1</code>.
-On failure, <code>sc</code> returns <code>0</code>.</p>
+<p>On success, <code>sc</code> stores a value to the specified address after it is naturally aligned,
+clears the memory reservation by zeroing out <code>llReservationStatus</code>, <code>llOwnerThread</code>, and <code>llAddress</code>
+and returns <code>1</code>.</p>
+<p>On failure, <code>sc</code> returns <code>0</code>.</p>
+<h3 id="load-linked--store-conditional-doubleword"><a class="header" href="#load-linked--store-conditional-doubleword">Load Linked / Store Conditional Doubleword</a></h3>
+<p>With the transition to MIPS64, Load Linked Doubleword (<code>lld</code>), and Store Conditional Doubleword (<code>scd</code>) instructions
+are also now supported.
+These instructions are similar to <code>ll</code> and <code>sc</code>, but they operate on 64-bit rather than 32-bit values.</p>
+<p>The <code>lld</code> instruction functions similarly to <code>ll</code>, but the <code>llReservationStatus</code> is set to <code>2</code>.
+The <code>scd</code> instruction functions similarly to <code>sc</code>, but the <code>llReservationStatus</code> must be equal to <code>2</code>
+for the operation to succeed.  In other words, an <code>scd</code> instruction must be preceded by a matching <code>lld</code> instruction
+just as the <code>sc</code> instruction must be preceded by a matching <code>ll</code> instruction if the store operation is to succeed.</p>
 <h2 id="fpvm-state"><a class="header" href="#fpvm-state">FPVM State</a></h2>
 <h3 id="state"><a class="header" href="#state">State</a></h3>
 <p>The FPVM is a state transition function that operates on a state object consisting of the following fields:</p>
@@ -450,11 +487,16 @@ On failure, <code>sc</code> returns <code>0</code>.</p>
 <li><code>preimageKey</code> - [<code>Hash</code>] The value of the last requested pre-image key.</li>
 <li><code>preimageOffset</code> - [<code>Word</code>] The value of the last requested pre-image offset.</li>
 <li><code>heap</code> - [<code>Word</code>] The base address of the most recent memory allocation via mmap.</li>
-<li><code>llReservationActive</code> - [<code>Boolean</code>] Indicates whether a memory reservation,
-which is reserved via a Load Linked Word (<code>ll</code>) instruction, is active.</li>
-<li><code>llAddress</code> - [<code>Word</code>] The address of the currently active memory reservation if one exists.</li>
-<li><code>llOwnerThread</code> - [<code>Word</code>] The id of the thread that initiated the current memory reservation if one exists.</li>
-<li><code>exitCode</code> - [<code>Byte</code>] The exit code value.</li>
+<li><code>llReservationStatus</code> - [<code>UInt8</code>] The current memory reservation status where: <code>0</code> means there is no
+reservation, <code>1</code> means an <code>ll</code>/<code>sc</code>-compatible reservation is active,
+and <code>2</code> means an <code>lld</code>/<code>scd</code>-compatible reservation is active.
+Memory is reserved via Load Linked Word (<code>ll</code>)  and Load Linked Doubleword (<code>lld</code>) instructions.</li>
+<li><code>llAddress</code> - [<code>Word</code>] If a memory reservation is active, the value of
+the address specified by the last <code>ll</code> or <code>lld</code> instruction.
+Otherwise, set to <code>0</code>.</li>
+<li><code>llOwnerThread</code> - [<code>Word</code>] The id of the thread that initiated the current memory reservation
+or <code>0</code> if there is no active reservation.</li>
+<li><code>exitCode</code> - [<code>UInt8</code>] The exit code value.</li>
 <li><code>exited</code> - [<code>Boolean</code>] Indicates whether the VM has exited.</li>
 <li><code>step</code> - [<code>UInt64</code>] A step counter.</li>
 <li><code>stepsSinceLastContextSwitch</code> - [<code>UInt64</code>] A step counter that tracks the number of steps executed on the current
@@ -470,9 +512,9 @@ For details, see the <a href="#thread-stack-hashing">“Thread Stack Hashing” 
 For details, see the <a href="#thread-stack-hashing">“Thread Stack Hashing” section.</a></li>
 <li><code>nextThreadID</code> - [<code>Word</code>] The value defining the id to assign to the next thread that is created.</li>
 </ol>
-<p>The state is represented by packing the above fields, in order, into a 172-byte buffer.</p>
+<p>The state is represented by packing the above fields, in order, into a 196-byte buffer.</p>
 <h3 id="state-hash"><a class="header" href="#state-hash">State Hash</a></h3>
-<p>The state hash is computed by hashing the 172-byte state buffer with the Keccak256 hash function
+<p>The state hash is computed by hashing the 196-byte state buffer with the Keccak256 hash function
 and then setting the high-order byte to the respective VM status.</p>
 <p>The VM status can be derived from the state's <code>exited</code> and <code>exitCode</code> fields.</p>
 <pre><code class="language-rs">enum VmStatus {
@@ -498,7 +540,7 @@ fn vm_status(exit_code: u8, exited: bool) -&gt; u8 {
 <p>The state of a single thread is tracked and represented by a thread state object consisting of the following fields:</p>
 <ol>
 <li><code>threadID</code> - [<code>Word</code>] A unique thread identifier.</li>
-<li><code>exitCode</code> - [<code>Byte</code>] The exit code value.</li>
+<li><code>exitCode</code> - [<code>UInt8</code>] The exit code value.</li>
 <li><code>exited</code> - [<code>Boolean</code>] Indicates whether the thread has exited.</li>
 <li><code>futexAddr</code> - [<code>Word</code>] An address set via a futex syscall indicating that this thread is waiting on a value change
 at this address.</li>
@@ -512,9 +554,9 @@ when executing a branch/jump delay slot.</li>
 <li><code>hi</code> - [<code>Word</code>] The MIPS HI special register.</li>
 <li><code>registers</code> - 32 general-purpose MIPS registers numbered 0 - 31. Each register contains a <code>Word</code> value.</li>
 </ol>
-<p>A thread is represented by packing the above fields, in order, into a 166-byte buffer.</p>
+<p>A thread is represented by packing the above fields, in order, into a 322-byte buffer.</p>
 <h3 id="thread-hash"><a class="header" href="#thread-hash">Thread Hash</a></h3>
-<p>A thread hash is computed by hashing the 166-byte thread state buffer with the Keccak256 hash function.</p>
+<p>A thread hash is computed by hashing the 322-byte thread state buffer with the Keccak256 hash function.</p>
 <h3 id="thread-stack-hashing"><a class="header" href="#thread-stack-hashing">Thread Stack Hashing</a></h3>
 <blockquote>
 <p><strong>Note:</strong> The <code>++</code> operation represents concatenation of 2 byte string arguments</p>
@@ -552,8 +594,8 @@ commitment <code>c'</code> for the stack without <code>elTop</code> and verify:
 </ul>
 <h2 id="memory"><a class="header" href="#memory">Memory</a></h2>
 <p>Memory is represented as a binary merkle tree.
-The tree has a fixed-depth of 27 levels, with leaf values of 32 bytes each.
-This spans the full 32-bit address space, where each leaf contains the memory at that part of the tree.
+The tree has a fixed-depth of 59 levels, with leaf values of 32 bytes each.
+This spans the full 64-bit address space, where each leaf contains the memory at that part of the tree.
 The state <code>memRoot</code> represents the merkle root of the tree, reflecting the effects of memory writes.
 As a result of this memory representation, all memory operations are <code>WordSize</code>-byte aligned.
 Memory access doesn't require any privileges. An instruction step can access any memory
@@ -563,7 +605,7 @@ location as the entire address space is unprotected.</p>
 Heap pages are bump allocated at the page boundary, per <code>mmap</code> syscall.
 mmap-ing is purely to satisfy program runtimes that need the memory-pointer
 result of the syscall to locate free memory. The page size is 4096.</p>
-<p>The FPVM has a fixed program break at <code>0x40000000</code>. However, the FPVM is permitted to extend the
+<p>The FPVM has a fixed program break at <code>ProgramBreakAddress</code>. However, the FPVM is permitted to extend the
 heap beyond this limit via mmap syscalls.
 For simplicity, there are no memory protections against "heap overruns" against other memory segments.
 Such VM steps are still considered valid state transitions.</p>
@@ -590,61 +632,58 @@ The VM must not modify any register other than <code>$v0</code> and <code>$a3</c
 If an unsupported syscall is encountered, the VM will raise an exception.</p>
 <h3 id="supported-syscalls"><a class="header" href="#supported-syscalls">Supported Syscalls</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th><th>$a0</th><th>$a1</th><th>$a2</th><th>$a3</th><th>Effect</th></tr></thead><tbody>
-<tr><td>4090</td><td>mmap</td><td>uint32 addr</td><td>uint32 len</td><td>🚫</td><td>🚫</td><td>Allocates a page from the heap. See <a href="#heap">heap</a> for details.</td></tr>
-<tr><td>4045</td><td>brk</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns a fixed address for the program break at <code>0x40000000</code></td></tr>
-<tr><td>4246</td><td>exit_group</td><td>uint8 exit_code</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Sets the exited and exitCode state fields to <code>true</code> and <code>$a0</code> respectively.</td></tr>
-<tr><td>4003</td><td>read</td><td>uint32 fd</td><td>char *buf</td><td>uint32 count</td><td>🚫</td><td>Similar behavior as Linux/MIPS with support for unaligned reads. See <a href="#io">I/O</a> for more details.</td></tr>
-<tr><td>4004</td><td>write</td><td>uint32 fd</td><td>char *buf</td><td>uint32 count</td><td>🚫</td><td>Similar behavior as Linux/MIPS with support for unaligned writes. See <a href="#io">I/O</a> for more details.</td></tr>
-<tr><td>4055</td><td>fcntl</td><td>uint32 fd</td><td>int32 cmd</td><td>🚫</td><td>🚫</td><td>Similar behavior as Linux/MIPS. Only the <code>F_GETFD</code>(1) and <code>F_GETFL</code> (3) cmds are supported. Sets errno to <code>0x16</code> for all other commands.</td></tr>
-<tr><td>4120</td><td>clone</td><td>uint32 flags</td><td>uint32 stack_ptr</td><td>🚫</td><td>🚫</td><td>Creates a new thread based on the currently active thread's state.  Supports a <code>flags</code> argument equal to <code>0x00050f00</code>, other values cause the VM to exit with exit_code <code>VmStatus.PANIC</code>.</td></tr>
-<tr><td>4001</td><td>exit</td><td>uint8 exit_code</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Sets the active thread's exited and exitCode state fields to <code>true</code> and <code>$a0</code> respectively.</td></tr>
-<tr><td>4162</td><td>sched_yield</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Preempts the active thread and returns 0.</td></tr>
-<tr><td>4222</td><td>gettid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns the active thread's threadID field.</td></tr>
-<tr><td>4238</td><td>futex</td><td>uint32 addr</td><td>uint32 futex_op</td><td>uint32 val</td><td>uint32 *timeout</td><td>Supports <code>futex_op</code>'s <code>FUTEX_WAIT_PRIVATE</code> (128) and <code>FUTEX_WAKE_PRIVATE</code> (129). Other operations set errno to <code>0x16</code>.</td></tr>
-<tr><td>4005</td><td>open</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Sets errno to <code>0x9</code>.</td></tr>
-<tr><td>4166</td><td>nanosleep</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Preempts the active thread and returns 0.</td></tr>
-<tr><td>4263</td><td>clock_gettime</td><td>uint32 clock_id</td><td>uint32 addr</td><td>🚫</td><td>🚫</td><td>Supports <code>clock_id</code>'s <code>REALTIME</code>(0) and <code>MONOTONIC</code>(1). For other <code>clock_id</code>'s, sets errno to <code>0x16</code>.  Calculates a deterministic time value based on the state's <code>step</code> field and a constant <code>HZ</code> (10,000,000) where <code>HZ</code> represents the approximate clock rate (steps / second) of the FPVM:<br/><br/><code>seconds = step/HZ</code><br/><code>nsecs = (step % HZ) * 10^9/HZ</code><br/><br/>Seconds are set at memory address <code>addr</code> and nsecs are set at <code>addr + WordSize</code>.</td></tr>
-<tr><td>4020</td><td>getpid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns 0.</td></tr>
+<tr><td>5009</td><td>mmap</td><td>uint64 addr</td><td>uint64 len</td><td>🚫</td><td>🚫</td><td>Allocates a page from the heap. See <a href="#heap">heap</a> for details.</td></tr>
+<tr><td>5012</td><td>brk</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns a fixed address for the program break at <code>ProgramBreakAddress</code></td></tr>
+<tr><td>5205</td><td>exit_group</td><td>uint8 exit_code</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Sets the exited and exitCode state fields to <code>true</code> and <code>$a0</code> respectively.</td></tr>
+<tr><td>5000</td><td>read</td><td>uint64 fd</td><td>char *buf</td><td>uint64 count</td><td>🚫</td><td>Similar behavior as Linux/MIPS with support for unaligned reads. See <a href="#io">I/O</a> for more details.</td></tr>
+<tr><td>5001</td><td>write</td><td>uint64 fd</td><td>char *buf</td><td>uint64 count</td><td>🚫</td><td>Similar behavior as Linux/MIPS with support for unaligned writes. See <a href="#io">I/O</a> for more details.</td></tr>
+<tr><td>5070</td><td>fcntl</td><td>uint64 fd</td><td>int64 cmd</td><td>🚫</td><td>🚫</td><td>Similar behavior as Linux/MIPS. Only the <code>F_GETFD</code>(1) and <code>F_GETFL</code> (3) cmds are supported. Sets errno to <code>0x16</code> for all other commands.</td></tr>
+<tr><td>5055</td><td>clone</td><td>uint64 flags</td><td>uint64 stack_ptr</td><td>🚫</td><td>🚫</td><td>Creates a new thread based on the currently active thread's state.  Supports a <code>flags</code> argument equal to <code>0x00050f00</code>, other values cause the VM to exit with exit_code <code>VmStatus.PANIC</code>.</td></tr>
+<tr><td>5058</td><td>exit</td><td>uint8 exit_code</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Sets the active thread's exited and exitCode state fields to <code>true</code> and <code>$a0</code> respectively.</td></tr>
+<tr><td>5023</td><td>sched_yield</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Preempts the active thread and returns 0.</td></tr>
+<tr><td>5178</td><td>gettid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns the active thread's threadID field.</td></tr>
+<tr><td>5194</td><td>futex</td><td>uint64 addr</td><td>uint64 futex_op</td><td>uint64 val</td><td>uint64 *timeout</td><td>Supports <code>futex_op</code>'s <code>FUTEX_WAIT_PRIVATE</code> (128) and <code>FUTEX_WAKE_PRIVATE</code> (129). Other operations set errno to <code>0x16</code>.</td></tr>
+<tr><td>5002</td><td>open</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Sets errno to <code>EBADF</code>.</td></tr>
+<tr><td>5034</td><td>nanosleep</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Preempts the active thread and returns 0.</td></tr>
+<tr><td>5222</td><td>clock_gettime</td><td>uint64 clock_id</td><td>uint64 addr</td><td>🚫</td><td>🚫</td><td>Supports <code>clock_id</code>'s <code>REALTIME</code>(0) and <code>MONOTONIC</code>(1). For other <code>clock_id</code>'s, sets errno to <code>0x16</code>.  Calculates a deterministic time value based on the state's <code>step</code> field and a constant <code>HZ</code> (10,000,000) where <code>HZ</code> represents the approximate clock rate (steps / second) of the FPVM:<br/><br/><code>seconds = step/HZ</code><br/><code>nsecs = (step % HZ) * 10^9/HZ</code><br/><br/>Seconds are set at memory address <code>addr</code> and nsecs are set at <code>addr + WordSize</code>.</td></tr>
+<tr><td>5038</td><td>getpid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns 0.</td></tr>
 </tbody></table>
 </div>
 <h3 id="noop-syscalls"><a class="header" href="#noop-syscalls">Noop Syscalls</a></h3>
 <p>For the following noop syscalls, the VM must do nothing except to zero out the syscall return (<code>$v0</code>)
 and errno (<code>$a3</code>) registers.</p>
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th></tr></thead><tbody>
-<tr><td>4091</td><td>munmap</td></tr>
-<tr><td>4240</td><td>sched_get_affinity</td></tr>
-<tr><td>4218</td><td>madvise</td></tr>
-<tr><td>4195</td><td>rt_sigprocmask</td></tr>
-<tr><td>4206</td><td>sigaltstack</td></tr>
-<tr><td>4194</td><td>rt_sigaction</td></tr>
-<tr><td>4338</td><td>prlimit64</td></tr>
-<tr><td>4006</td><td>close</td></tr>
-<tr><td>4200</td><td>pread64</td></tr>
-<tr><td>4106</td><td>stat</td></tr>
-<tr><td>4108</td><td>fstat</td></tr>
-<tr><td>4215</td><td>fstat64</td></tr>
-<tr><td>4288</td><td>openat</td></tr>
-<tr><td>4085</td><td>readlink</td></tr>
-<tr><td>4298</td><td>readlinkat</td></tr>
-<tr><td>4054</td><td>ioctl</td></tr>
-<tr><td>4326</td><td>epoll_create1</td></tr>
-<tr><td>4328</td><td>pipe2</td></tr>
-<tr><td>4249</td><td>epoll_ctl</td></tr>
-<tr><td>4313</td><td>epoll_pwait</td></tr>
-<tr><td>4353</td><td>getrandom</td></tr>
-<tr><td>4122</td><td>uname</td></tr>
-<tr><td>4213</td><td>stat64</td></tr>
-<tr><td>4024</td><td>getuid</td></tr>
-<tr><td>4047</td><td>getgid</td></tr>
-<tr><td>4140</td><td>llseek</td></tr>
-<tr><td>4217</td><td>mincore</td></tr>
-<tr><td>4266</td><td>tgkill</td></tr>
-<tr><td>4076</td><td>getrlimit</td></tr>
-<tr><td>4019</td><td>lseek</td></tr>
-<tr><td>4104</td><td>setitimer</td></tr>
-<tr><td>4257</td><td>timer_create</td></tr>
-<tr><td>4258</td><td>timer_settime</td></tr>
-<tr><td>4261</td><td>timer_delete</td></tr>
+<tr><td>5011</td><td>munmap</td></tr>
+<tr><td>5196</td><td>sched_get_affinity</td></tr>
+<tr><td>5027</td><td>madvise</td></tr>
+<tr><td>5014</td><td>rt_sigprocmask</td></tr>
+<tr><td>5129</td><td>sigaltstack</td></tr>
+<tr><td>5013</td><td>rt_sigaction</td></tr>
+<tr><td>5297</td><td>prlimit64</td></tr>
+<tr><td>5003</td><td>close</td></tr>
+<tr><td>5016</td><td>pread64</td></tr>
+<tr><td>5004</td><td>stat</td></tr>
+<tr><td>5005</td><td>fstat</td></tr>
+<tr><td>5247</td><td>openat</td></tr>
+<tr><td>5087</td><td>readlink</td></tr>
+<tr><td>5257</td><td>readlinkat</td></tr>
+<tr><td>5015</td><td>ioctl</td></tr>
+<tr><td>5285</td><td>epoll_create1</td></tr>
+<tr><td>5287</td><td>pipe2</td></tr>
+<tr><td>5208</td><td>epoll_ctl</td></tr>
+<tr><td>5272</td><td>epoll_pwait</td></tr>
+<tr><td>5313</td><td>getrandom</td></tr>
+<tr><td>5061</td><td>uname</td></tr>
+<tr><td>5100</td><td>getuid</td></tr>
+<tr><td>5102</td><td>getgid</td></tr>
+<tr><td>5026</td><td>mincore</td></tr>
+<tr><td>5225</td><td>tgkill</td></tr>
+<tr><td>5095</td><td>getrlimit</td></tr>
+<tr><td>5008</td><td>lseek</td></tr>
+<tr><td>5036</td><td>setitimer</td></tr>
+<tr><td>5216</td><td>timer_create</td></tr>
+<tr><td>5217</td><td>timer_settime</td></tr>
+<tr><td>5220</td><td>timer_delete</td></tr>
 </tbody></table>
 </div>
 <h2 id="io"><a class="header" href="#io">I/O</a></h2>
@@ -702,47 +741,43 @@ outside the general purpose registers).</li>
 <li>Unsupported syscall.</li>
 <li>Pre-image read at an offset larger than the size of the pre-image.</li>
 <li>Delay slot contains branch/jump instruction types.</li>
-<li>Invalid thread state:
-<ul>
-<li>The active thread stack is empty.</li>
-</ul>
-</li>
+<li>Invalid thread state: the active thread stack is empty.</li>
 </ul>
 <p>VM implementations may raise an exception in other cases that is specific to the implementation.
 For example, an on-chain FPVM that relies on pre-supplied merkle proofs for memory access may
 raise an exception if the supplied merkle proof does not match the pre-state <code>memRoot</code>.</p>
 <h2 id="security-model"><a class="header" href="#security-model">Security Model</a></h2>
 <h3 id="compiler-correctness"><a class="header" href="#compiler-correctness">Compiler Correctness</a></h3>
-<p>Cannon is designed to prove the correctness of a particular state transition that emulates a MIPS32 machine.
-Cannon does not guarantee that the MIPS32 instructions correctly implement the program that the user intends to prove.
-As a result, Cannon's use as a Fault Proof system inherently depends to some extent on the correctness of the compiler
-used to generate the MIPS32 instructions over which Cannon operates.</p>
+<p>MTCannon is designed to prove the correctness of a particular state transition that emulates a MIPS64 machine.
+MTCannon does not guarantee that the MIPS64 instructions correctly implement the program that the user intends to prove.
+As a result, MTCannon's use as a Fault Proof system inherently depends to some extent on the correctness of the compiler
+used to generate the MIPS64 instructions over which MTCannon operates.</p>
 <p>To illustrate this concept, suppose that a user intends to prove simple program <code>input + 1 = output</code>.
 Suppose then that the user's compiler for this program contains a bug and errantly generates the MIPS instructions for a
-slightly different program <code>input + 2 = output</code>. Although Cannon would correctly prove the operation of this compiled program,
-the result proven would differ from the user's intent. Cannon proves the MIPS state transition but makes no assertion about
+slightly different program <code>input + 2 = output</code>. Although MTCannon would correctly prove the operation of this compiled program,
+the result proven would differ from the user's intent. MTCannon proves the MIPS state transition but makes no assertion about
 the correctness of the translation between the user's high-level code and the resulting MIPS program.</p>
-<p>As a consequence of the above, it is the responsibility of a program developer to develop tests that demonstrate that Cannon
+<p>As a consequence of the above, it is the responsibility of a program developer to develop tests that demonstrate that MTCannon
 is capable of proving their intended program correctly over a large number of possible inputs. Such tests defend against
-bugs in the user's compiler as well as ways in which the compiler may inadvertently break one of Cannon's
+bugs in the user's compiler as well as ways in which the compiler may inadvertently break one of MTCannon's
 <a href="#compiler-assumptions">Compiler Assumptions</a>. Users of Fault Proof systems are strongly encouraged to utilize multiple
 proof systems and/or compilers to mitigate the impact of errant behavior in any one toolchain.</p>
 <h3 id="compiler-assumptions"><a class="header" href="#compiler-assumptions">Compiler Assumptions</a></h3>
-<p>Cannon makes the simplifying assumption that users are utilizing compilers that do not rely on MIPS exception states for
-standard program behavior. In other words, Cannon generally assumes that the user's compiler generates spec-compliant
+<p>MTCannon makes the simplifying assumption that users are utilizing compilers that do not rely on MIPS exception states for
+standard program behavior. In other words, MTCannon generally assumes that the user's compiler generates spec-compliant
 instructions that would not trigger an exception. Refer to <a href="#exceptions">Exceptions</a> for a list of conditions that are
 explicitly handled.</p>
-<p>Certain cases that would typically be asserted by a strict implementation of the MIPS32 specification are not handled by
-Cannon as follows:</p>
+<p>Certain cases that would typically be asserted by a strict implementation of the MIPS64 specification are not handled by
+MTCannon as follows:</p>
 <ul>
 <li><code>add</code>, <code>addi</code>, and <code>sub</code> do not trigger an exception on signed integer overflow.</li>
 <li>Instruction encoding validation does not trigger an exception for fields that should be zero.</li>
 <li>Memory instructions do not trigger an exception when addresses are not naturally aligned.</li>
 </ul>
 <p>Many compilers, including the Golang compiler, will not generate code that would trigger these conditions under bug-free
-operation. Given the inherent reliance on <a href="#compiler-correctness">Compiler Correctness</a> in applications using Cannon, the
-tests and defense mechanisms that must necessarily be employed by Cannon users to protect their particular programs
-against compiler bugs should also suffice to surface bugs that would break these compiler assumptions. Stated simply, Cannon
+operation. Given the inherent reliance on <a href="#compiler-correctness">Compiler Correctness</a> in applications using MTCannon, the
+tests and defense mechanisms that must necessarily be employed by MTCannon users to protect their particular programs
+against compiler bugs should also suffice to surface bugs that would break these compiler assumptions. Stated simply, MTCannon
 can rely on specific compiler behaviors because users inherently must employ safety nets to guard against compiler bugs.</p>
 
                     </main>
