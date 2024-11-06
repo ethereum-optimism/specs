@@ -90,7 +90,7 @@ holds at most a single channel at a time.
 
 Pruning is vastly simplified as there is at most only one open channel in the channel bank. So the
 channel bank's queue becomes effectively a staging slot for a single channel, the _staging channel_.
-The `MAX_CHANNEL_BANK_SIZE` parameter is no longer used, and the compressed size of the staging 
+The `MAX_CHANNEL_BANK_SIZE` parameter is no longer used, and the compressed size of the staging
 channel is required to be at most `MAX_RLP_BYTES_PER_CHANNEL` (else the channel is dropped). Note this
 latter rule is both a distinct condition and distinct effect, compared to the existing rule
 that that the _uncompressed_ size of any given channel is _clipped_ to `MAX_RLP_BYTES_PER_CHANNEL`.
