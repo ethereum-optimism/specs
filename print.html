@@ -11270,8 +11270,8 @@ as described in the <a href="interop/./token-bridging.html">token bridging spec<
 in the target address <code>_to</code> at <code>_chainId</code> and emit the <code>SentERC20</code> event including the <code>msg.sender</code> as parameter.</p>
 <p>To burn the token, the <code>sendERC20</code> function
 calls <code>crosschainBurn</code> in the token contract,
-which is included as part of the the <code>ICrosschainERC20</code>
-<a href="interop/./token-bridging.html#crosschainburn">interface</a>
+which is included as part of the the
+<a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
 implemented by the <code>SuperchainERC20</code> standard.</p>
 <p>Returns the <code>msgHash_</code> crafted by the <code>L2ToL2CrossChainMessenger</code>.</p>
 <pre><code class="language-solidity">sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
@@ -11285,8 +11285,8 @@ and emit an event including the <code>_tokenAddress</code>, the <code>_from</cod
 <code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
 <p>To mint the token, the <code>relayERC20</code> function
 calls <code>crosschainMint</code> in the token contract,
-which is included as part of the the <code>ICrosschainERC20</code>
-<a href="interop/./token-bridging.html#crosschainmint">interface</a>
+which is included as part of the the
+<a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
 implemented by the <code>SuperchainERC20</code> standard.</p>
 <pre><code class="language-solidity">relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
 </code></pre>
@@ -11786,7 +11786,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 <li><a href="interop/token-bridging.html#superchainerc20-standard"><code>SuperchainERC20</code> standard</a>
 <ul>
 <li><a href="interop/token-bridging.html#properties">Properties</a></li>
-<li><a href="interop/token-bridging.html#icrosschainerc20"><code>ICrosschainERC20</code></a>
+<li><a href="interop/token-bridging.html#ierc7802"><code>IERC7802</code></a>
 <ul>
 <li><a href="interop/token-bridging.html#crosschainmint"><code>crosschainMint</code></a></li>
 <li><a href="interop/token-bridging.html#crosschainburn"><code>crosschainBurn</code></a></li>
@@ -11814,7 +11814,8 @@ Superchain using the official <code>SuperchainERC20Bridge</code>.
 The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.</p>
 <h2 id="superchainerc20-standard"><a class="header" href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a></h2>
 <h3 id="properties"><a class="header" href="#properties">Properties</a></h3>
-<p>The standard will build on top of ERC20, implement the <a href="interop/token-bridging.html#icrosschainerc20"><code>ICrosschainERC20</code></a>
+<p>The standard will build on top of ERC20, implement the
+<a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code></a>
 interface and include the following properties:</p>
 <ol>
 <li>Only allow <code>SuperchainERC20Bridge</code> to call
@@ -11836,9 +11837,10 @@ predeploy that facilitates this process for L1 native tokens.</p>
 <p>Notice that ERC20s that do not implement the standard can still be fungible
 using interop message passing
 using a custom bridge or implementing <code>sendERC20</code> and <code>relayERC20</code> on their own contracts.</p>
-<h3 id="icrosschainerc20"><a class="header" href="#icrosschainerc20"><code>ICrosschainERC20</code></a></h3>
-<p>Implementations of the <code>SuperchainERC20</code> standard will need to implement the <code>ICrosschainERC20</code>
-token standard, that includes two external functions and two events:</p>
+<h3 id="ierc7802"><a class="header" href="#ierc7802"><code>IERC7802</code></a></h3>
+<p>Implementations of the <code>SuperchainERC20</code> standard will
+be required to implement the <code>IERC7802</code> interface,
+that includes two external functions and two events:</p>
 <h4 id="crosschainmint"><a class="header" href="#crosschainmint"><code>crosschainMint</code></a></h4>
 <p>Mints <code>_amount</code> of token to address <code>_account</code>.</p>
 <pre><code class="language-solidity">crosschainMint(address _account, uint256 _amount)
