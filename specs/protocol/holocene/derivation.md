@@ -93,7 +93,7 @@ channel bank's queue becomes effectively a staging slot for a single channel, th
 The `MAX_CHANNEL_BANK_SIZE` parameter is no longer used, and the compressed size of the staging
 channel is required to be at most `MAX_RLP_BYTES_PER_CHANNEL` (else the channel is dropped). Note this
 latter rule is both a distinct condition and distinct effect, compared to the existing rule
-that the _uncompressed_ size of any given channel is _clipped_ to `MAX_RLP_BYTES_PER_CHANNEL`.
+that the _uncompressed_ size of any given channel is _clipped_ to `MAX_RLP_BYTES_PER_CHANNEL` [during decompression](../derivation.md#channel-format).
 
 ### Timeout
 
