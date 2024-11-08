@@ -2,22 +2,24 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Overview](#overview)
-- [Moves](#moves)
-- [Subgame Resolution](#subgame-resolution)
-  - [Leftmost Claim Incentives](#leftmost-claim-incentives)
-- [Fault Proof Mainnet Incentives](#fault-proof-mainnet-incentives)
-  - [Authenticated Roles](#authenticated-roles)
-  - [Base Fee Assumption](#base-fee-assumption)
-  - [Bond Scaling](#bond-scaling)
-  - [Required Bond Formula](#required-bond-formula)
-  - [Other Incentives](#other-incentives)
-  - [DelayedWETH](#delayedweth)
-    - [Sub-Account Model](#sub-account-model)
-    - [Delay Period](#delay-period)
-    - [Integration](#integration)
+- [Bond Incentives](#bond-incentives)
+  - [Overview](#overview)
+  - [Moves](#moves)
+  - [Subgame Resolution](#subgame-resolution)
+    - [Leftmost Claim Incentives](#leftmost-claim-incentives)
+  - [Fault Proof Mainnet Incentives](#fault-proof-mainnet-incentives)
+    - [Authenticated Roles](#authenticated-roles)
+    - [Base Fee Assumption](#base-fee-assumption)
+    - [Bond Scaling](#bond-scaling)
+    - [Required Bond Formula](#required-bond-formula)
+    - [Other Incentives](#other-incentives)
+    - [DelayedWETH](#delayedweth)
+      - [Sub-Account Model](#sub-account-model)
+      - [Delay Period](#delay-period)
+      - [Integration](#integration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -76,9 +78,9 @@ proof system.
 
 ### Authenticated Roles
 
-| Name | Description |
-| ---- | ----------- |
-| Guardian | Role responsible for blacklisting dispute game contracts and changing the respected dispute game type |
+| Name         | Description                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| Guardian     | Role responsible for blacklisting dispute game contracts and changing the respected dispute game type |
 | System Owner | Role that owns the `ProxyAdmin` contract that in turn owns most `Proxy` contracts within the OP Stack |
 
 ### Base Fee Assumption
@@ -139,19 +141,18 @@ incorrectly distribute bonds.
 - `DelayedWETH` has an `owner()` address. We typically expect this to be set to the `System Owner` address.
 - `DelayedWETH` has a `delay()` function that returns a period of time that withdrawals will be delayed.
 - `DelayedWETH` has an `unlock(guy,wad)` function that modifies a mapping called `withdrawals` keyed as
-`withdrawals[msg.sender][guy] => WithdrawalRequest` where `WithdrawalRequest` is
-`struct Withdrawal Request { uint256 amount, uint256 timestamp }`. When `unlock` is called, the timestamp for
-`withdrawals[msg.sender][guy]` is set to the current timestamp and the amount is increased by the given amount.
-- `DelayedWETH` modifies the `WETH.withdraw` function such that an address *must* provide a "sub-account" to withdraw
-from. The function signature becomes `withdraw(guy,wad)`. The function retrieves `withdrawals[msg.sender][guy]` and
-checks that the current `block.timestamp` is greater than the timestamp on the withdrawal request plus the `delay()`
-seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
-request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
-`withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
-`withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`.
+  `withdrawals[msg.sender][guy] => WithdrawalRequest` where `WithdrawalRequest` is
+  `struct Withdrawal Request { uint256 amount, uint256 timestamp }`. When `unlock` is called, the timestamp for
+  `withdrawals[msg.sender][guy]` is set to the current timestamp and the amount is increased by the given amount.
+- `DelayedWETH` modifies the `WETH.withdraw` function such that an address _must_ provide a "sub-account" to withdraw
+  from. The function signature becomes `withdraw(guy,wad)`. The function retrieves `withdrawals[msg.sender][guy]` and
+  checks that the current `block.timestamp` is greater than the timestamp on the withdrawal request plus the `delay()`
+  seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
+  request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
+  `withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
+  `withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`.
 - `DelayedWETH` has a `hold()` function that allows the `owner()` address to give itself an allowance from any address.
-- `DelayedWETH` has a `recover()` function that allows the `owner()` address to recover any amount of ETH from the
-contract.
+- `DelayedWETH` has a `recover()` function that allows the `owner()` address to recover any amount of ETH from the contract.
 
 #### Sub-Account Model
 
