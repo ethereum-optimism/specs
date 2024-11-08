@@ -149,7 +149,10 @@ seconds and reverts if not. It also confirms that the amount being withdrawn is 
 request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
 `withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
 `withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`.
-- `DelayedWETH` has a `hold()` function that allows the `owner()` address to give itself an allowance from any address.
+- `DelayedWETH` has a `hold(guy,wad)` function that allows the `owner()` address to, for any holder, give itself an
+allowance and immediately `transferFrom` that allowance amount to itself.
+- `DelayedWETH` has a `hold(guy)` function that allows the `owner()` address to, for any holder, give itself a full
+allowance of the holder's balance and immediately `transferFrom` that amount to itself.
 - `DelayedWETH` has a `recover()` function that allows the `owner()` address to recover any amount of ETH from the
 contract.
 
