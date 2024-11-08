@@ -2,7 +2,6 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [Overview](#overview)
@@ -77,9 +76,9 @@ proof system.
 
 ### Authenticated Roles
 
-| Name         | Description                                                                                           |
-| ------------ | ----------------------------------------------------------------------------------------------------- |
-| Guardian     | Role responsible for blacklisting dispute game contracts and changing the respected dispute game type |
+| Name | Description |
+| ---- | ----------- |
+| Guardian | Role responsible for blacklisting dispute game contracts and changing the respected dispute game type |
 | System Owner | Role that owns the `ProxyAdmin` contract that in turn owns most `Proxy` contracts within the OP Stack |
 
 ### Base Fee Assumption
@@ -140,21 +139,21 @@ incorrectly distribute bonds.
 - `DelayedWETH` has an `owner()` address. We typically expect this to be set to the `System Owner` address.
 - `DelayedWETH` has a `delay()` function that returns a period of time that withdrawals will be delayed.
 - `DelayedWETH` has an `unlock(guy,wad)` function that modifies a mapping called `withdrawals` keyed as
-  `withdrawals[msg.sender][guy] => WithdrawalRequest` where `WithdrawalRequest` is
-  `struct Withdrawal Request { uint256 amount, uint256 timestamp }`. When `unlock` is called, the timestamp for
-  `withdrawals[msg.sender][guy]` is set to the current timestamp and the amount is increased by the given amount.
-- `DelayedWETH` modifies the `WETH.withdraw` function such that an address _must_ provide a "sub-account" to withdraw
-  from. The function signature becomes `withdraw(guy,wad)`. The function retrieves `withdrawals[msg.sender][guy]` and
-  checks that the current `block.timestamp` is greater than the timestamp on the withdrawal request plus the `delay()`
-  seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
-  request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
-  `withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
-  `withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`, or when `withdrawalsPaused` is `true`.
+`withdrawals[msg.sender][guy] => WithdrawalRequest` where `WithdrawalRequest` is
+`struct Withdrawal Request { uint256 amount, uint256 timestamp }`. When `unlock` is called, the timestamp for
+`withdrawals[msg.sender][guy]` is set to the current timestamp and the amount is increased by the given amount.
+- `DelayedWETH` modifies the `WETH.withdraw` function such that an address *must* provide a "sub-account" to withdraw
+from. The function signature becomes `withdraw(guy,wad)`. The function retrieves `withdrawals[msg.sender][guy]` and
+checks that the current `block.timestamp` is greater than the timestamp on the withdrawal request plus the `delay()`
+seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
+request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
+`withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
+`withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`, or when `withdrawalsPaused` is `true`.
 - `DelayedWETH` has a `setWithdrawalsPaused()` function that allows the `owner()` address to either pause or unpause withdrawals.
-- `DelayedWETH` has a `hold()` function that allows the `owner()` address to (for any address) give itself an allowance and
-  immediately `transferFrom` that allowance amount to itself.
+- `DelayedWETH` has a `hold()` function that allows the `owner()` address to, for any holder, give itself an allowance and
+immediately `transferFrom` that allowance amount to itself.
 - `DelayedWETH` has a `recover()` function that allows the `owner()` address to recover any amount of ETH from the
-  contract.
+contract.
 
 #### Sub-Account Model
 
