@@ -61,6 +61,7 @@
       - [L1 Attributes](./protocol/isthmus/l1-attributes.md)
       - [Predeploys](./protocol/isthmus/predeploys.md)
       - [Superchain Config](./protocol/isthmus/superchain-config.md)
+      - [System Config](./protocol/isthmus/system-config.md)
 - [Governance]()
   - [Governance Token](./governance/gov-token.md)
 - [Experimental]()
