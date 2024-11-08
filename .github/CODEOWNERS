@@ -25,3 +25,4 @@ stage-1.md  @mds1 @maurelian
 
 # Fault Proofs
 /specs/fault-proof @ajsutton @clabby @inphi @refcell @mbaxter
+/specs/experimental/cannon-fault-proof-vm-mt.md @ajsutton @inphi @mbaxter
