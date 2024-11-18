@@ -125,7 +125,7 @@ This function sets the `operatorFeeScalar` and `operatorFeeConstant`.
 This function MUST only be callable by the [`OperatorFeeManager`](../configurability.md#operator-fee-manager).
 
 ```solidity
-function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)()
+function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)
 ```
 
 #### Fee Vault Config

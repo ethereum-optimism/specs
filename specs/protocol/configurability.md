@@ -290,13 +290,16 @@ contracts deployed on layer 1.<br/>
 
 **Description:** Operator fee scalar -- used to calculate the operator fee<br/>
 **Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
-**Requirement:** Between 0 and 0.5 * (baseFee + priorityFee) <br/>
+**Requirement:** 0 <br/>
 
 ### [Operator Fee Constant](exec-engine.md#operator-fees)
 
 **Description:** Operator fee constant -- used to calculate the operator fee<br/>
 **Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
-**Requirement:** Between 0 and 600 Gwei <br/>
+**Requirement:** 0 <br/>
+
+Note that the operator fee scalar and constant are primarily used for non-standard configurations,
+like op-succinct, so their standard values are 0.
 
 [^chain-id-uniqueness]: The chain ID must be globally unique among all EVM chains.
 
