@@ -30,6 +30,8 @@
   - [Start block](#start-block)
   - [Superchain target](#superchain-target)
   - [Governance Token](#governance-token)
+  - [Operator Fee Scalar](#operator-fee-scalar)
+  - [Operator Fee Constant](#operator-fee-constant)
   - [Resource Config](#resource-config)
 - [Policy Parameters](#policy-parameters)
   - [Data Availability Type](#data-availability-type)
@@ -47,6 +49,7 @@
   - [Guardian address](#guardian-address)
   - [Proposer address](#proposer-address)
   - [Sequencer P2P / Unsafe head signer](#sequencer-p2p--unsafe-head-signer)
+  - [Operator Fee Manager](#operator-fee-manager)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -283,6 +286,18 @@ contracts deployed on layer 1.<br/>
 **Requirement:** Disabled<br/>
 **Notes:** Simple clear restriction.<br/>
 
+### [Operator Fee Scalar](exec-engine.md#operator-fees)
+
+**Description:** Operator fee scalar -- used to calculate the operator fee<br/>
+**Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
+**Requirement:** Between 0 and 0.5 * (baseFee + priorityFee) <br/>
+
+### [Operator Fee Constant](exec-engine.md#operator-fees)
+
+**Description:** Operator fee constant -- used to calculate the operator fee<br/>
+**Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
+**Requirement:** Between 0 and 600 Gwei <br/>
+
 [^chain-id-uniqueness]: The chain ID must be globally unique among all EVM chains.
 
 ### Resource Config
@@ -439,6 +454,13 @@ configuration of the permissioned dispute game.<br/>
 **Description:** Account which authenticates the unsafe/pre-submitted blocks for a chain at the P2P layer.<br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
 **Requirement:** No requirement<br/>
+**Notes:** <br/>
+
+### Operator Fee Manager
+
+**Description:** Account authorized to modify the operator fee scalar. <br/>
+**Administrator:** [System Config Owner](#admin-roles)<br/>
+**Requirement:** <br/>
 **Notes:** <br/>
 
 [^of-gnosis-safe-l1]: 5 of 7 GnosisSafe controlled by Optimism Foundation (OF). Mainnet and Sepolia addresses can be found at [privileged roles](https://docs.optimism.io/chain/security/privileged-roles).

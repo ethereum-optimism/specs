@@ -25,11 +25,6 @@
   - [Interface](#interface-1)
     - [`setConfig`](#setconfig)
     - [`upgrade`](#upgrade)
-- [Consensus Parameters](#consensus-parameters)
-  - [Operator Fee Scalar](#operator-fee-scalar)
-  - [Operator Fee Constant](#operator-fee-constant)
-- [Service Roles](#service-roles)
-  - [Operator Fee Manager](#operator-fee-manager)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -101,7 +96,7 @@ Since the `OperatorFeeVault` is new in Isthmus, the `setConfig(SET_OPERATOR_FEE_
 ### Modifying Operator Fee Parameters
 
 A new `SystemConfig` `UpdateType` is introduced that enables the modification of
-the `operatorFeeScalar` and `operatorFeeConstant` by the [`OperatorFeeManager`](#operator-fee-manager).
+the `operatorFeeScalar` and `operatorFeeConstant` by the [`OperatorFeeManager`](../configurability.md#operator-fee-manager).
 
 ### Interface
 
@@ -127,7 +122,7 @@ function operatorFeeConstant()(uint64)
 
 This function sets the `operatorFeeScalar` and `operatorFeeConstant`.
 
-This function MUST only be callable by the [`OperatorFeeManager`](#operator-fee-manager).
+This function MUST only be callable by the [`OperatorFeeManager`](../configurability.md#operator-fee-manager).
 
 ```solidity
 function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)()
@@ -216,28 +211,3 @@ The following fields are included:
 - `version` is `uint256(0)`
 - `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
    is `200_000`, `isCreation` is `false` and the `data` is the data passed into `upgrade`.
-
-## Consensus Parameters
-
-The operator fee scalar and constant are new consensus parameters, so we define standard values for them.
-
-### [Operator Fee Scalar](exec-engine.md#operator-fees)
-
-**Description:** Operator fee scalar -- used to calculate the operator fee<br/>
-**Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
-**Requirement:** Between 0 and 0.5 * (baseFee + priorityFee) <br/>
-
-### [Operator Fee Constant](exec-engine.md#operator-fees)
-
-**Description:** Operator fee constant -- used to calculate the operator fee<br/>
-**Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
-**Requirement:** Between 0 and 600 Gwei <br/>
-
-## Service Roles
-
-### Operator Fee Manager
-
-**Description:** Account authorized to modify the operator fee scalar. <br/>
-**Administrator:** [System Config Owner](../configurability.md#system-config)<br/>
-**Requirement:** <br/>
-**Notes:** <br/>

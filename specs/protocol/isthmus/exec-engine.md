@@ -169,7 +169,7 @@ Where:
 
 `operatorFeeScalar` and `operatorFeeConstant` are loaded in a similar way to the `baseFeeScalar` and
 `blobBaseFeeScalar` used in the [`L1Fee`](../../protocol/exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da).
-calculation. In more detail, these paramters can be accessed in two interchangable ways.
+calculation. In more detail, these parameters can be accessed in two interchangable ways.
 
 - read from the deposited L1 attributes (`operatorFeeScalar` and `operatorFeeConstant`) of the current L2 block
 - read from the L1 Block Info contract (`0x4200000000000000000000000000000000000015`)
