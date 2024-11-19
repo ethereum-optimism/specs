@@ -39,15 +39,17 @@
 
         <!-- Custom theme stylesheets -->
 
-    </head>
-    <body>
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "../";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -94,7 +96,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <!-- populated by js -->
-            <div class="sidebar-scrollbox"></div>
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
                 <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
@@ -102,8 +104,6 @@
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
-
-        <script async src="../toc.js"></script>
 
         <div id="page-wrapper" class="page-wrapper">
 
@@ -200,7 +200,6 @@ they need not be the same entity in practice.</p>
 <li><a href="./predeploys.html">Predeploys</a>: system contracts to interface with other chains.</li>
 <li><a href="./sequencer.html">Sequencer</a>: Sequencer Policy and block-building information.</li>
 <li><a href="./verifier.html">Verifier</a>: Verification of cross-L2 messaging.</li>
-<li><a href="./rollup-node-p2p.html">Rollup Node P2P</a>: modifications to the rollup-node P2P layer to support fast interop.</li>
 <li><a href="./fault-proof.html">Fault Proof</a>: modifications to prove interop functionality in the fault-proof.</li>
 <li><a href="./upgrade.html">Upgrade</a>: Superchain upgrade process to activate Interop.</li>
 <li><a href="./token-bridging.html">Token Bridging</a>: sending ERC20 tokens between chains</li>

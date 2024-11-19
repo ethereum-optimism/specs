@@ -40,15 +40,17 @@
 
         <!-- Custom theme stylesheets -->
 
-    </head>
-    <body>
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -95,7 +97,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <!-- populated by js -->
-            <div class="sidebar-scrollbox"></div>
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
                 <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
             </noscript>
@@ -103,8 +105,6 @@
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
-
-        <script async src="toc.js"></script>
 
         <div id="page-wrapper" class="page-wrapper">
 
@@ -10213,7 +10213,6 @@ they need not be the same entity in practice.</p>
 <li><a href="interop/./predeploys.html">Predeploys</a>: system contracts to interface with other chains.</li>
 <li><a href="interop/./sequencer.html">Sequencer</a>: Sequencer Policy and block-building information.</li>
 <li><a href="interop/./verifier.html">Verifier</a>: Verification of cross-L2 messaging.</li>
-<li><a href="interop/./rollup-node-p2p.html">Rollup Node P2P</a>: modifications to the rollup-node P2P layer to support fast interop.</li>
 <li><a href="interop/./fault-proof.html">Fault Proof</a>: modifications to prove interop functionality in the fault-proof.</li>
 <li><a href="interop/./upgrade.html">Upgrade</a>: Superchain upgrade process to activate Interop.</li>
 <li><a href="interop/./token-bridging.html">Token Bridging</a>: sending ERC20 tokens between chains</li>
@@ -11640,24 +11639,6 @@ needing to require increasingly large execution client databases.</p>
 <p>It is also possible to introduce a form of expiry on historical receipts by enforcing that the timestamp
 is recent enough in the <code>CrossL2Inbox</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="p2p-networking"><a class="header" href="#p2p-networking">P2P Networking</a></h1>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="interop/rollup-node-p2p.html#security-considerations">Security Considerations</a></li>
-</ul>
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>A node will optimistically accept a block as <code>unsafe</code> with only a signature by the sequencer.
-To promote this block to a higher level of safety, it must be sure that the initiating messages
-exist for all executing messages. A future release may add specific p2p networking components
-to decrease the latency of this process. This could look like the sequencer signing and gossiping
-sets of executing messages to nodes of remote chains so that they know exactly what initiating
-messages to look for. An optimization on this would involve working with commitments to this data
-so that less data is sent around via p2p.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
-<p>TODO</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -11677,7 +11658,7 @@ so that less data is sent around via p2p.</p>
 Thus deposits cannot reference each others events intra-block.</p>
 <p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
 The insight is that the fault proof program can be a superset of the state transition function.</p>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="interop-network-upgrade"><a class="header" href="#interop-network-upgrade">Interop Network Upgrade</a></h1>
@@ -11755,7 +11736,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </ul>
 <p>The <code>setL1BlockValuesIsthmus</code> input parameters are identical to <code>setL1BlockValuesEcotone</code> as described in
 <a href="interop/../protocol/ecotone/l1-attributes.html#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a>.</p>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
@@ -12182,7 +12163,7 @@ The one difference is the source-hash domain: <code>3</code> (instead of <code>1
 And <code>seqNumber = l2BlockNum - l2EpochStartBlockNum</code>,
 where <code>l2BlockNum</code> is the L2 block number of the inclusion of the deposit tx in L2,
 and <code>l2EpochStartBlockNum</code> is the L2 block number of the first L2 block in the epoch.</p>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
 <p>There must be sufficient gas available in the block to destroy deposit context.
 There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
@@ -12246,7 +12227,7 @@ and does not get stuck in the transaction pool.</p>
 should be maintained in the transaction pool.
 This leaves sufficient gas for the L1 attributes transaction (under 45,000 gas),
 the new deposit-context closing transaction (under 36,000 gas), and margin for error / change.</p>
-<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
 <h3 id="mempool-denial-of-service"><a class="header" href="#mempool-denial-of-service">Mempool Denial of Service</a></h3>
 <p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
@@ -12394,7 +12375,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-16"><a class="header" href="#security-considerations-16">Security Considerations</a></h2>
+<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
