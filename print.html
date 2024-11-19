@@ -10520,16 +10520,12 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
 <ul>
 <li><a href="interop/predeploys.html#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
-<li><a href="interop/predeploys.html#sendexpire-invariants"><code>sendExpire</code> Invariants</a></li>
-<li><a href="interop/predeploys.html#relayexpire-invariants"><code>relayExpire</code> Invariants</a></li>
 <li><a href="interop/predeploys.html#message-versioning">Message Versioning</a></li>
 <li><a href="interop/predeploys.html#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></li>
 <li><a href="interop/predeploys.html#interfaces">Interfaces</a>
 <ul>
 <li><a href="interop/predeploys.html#sending-messages">Sending Messages</a></li>
 <li><a href="interop/predeploys.html#relaying-messages">Relaying Messages</a></li>
-<li><a href="interop/predeploys.html#sending-expired-message-hashes">Sending Expired Message Hashes</a></li>
-<li><a href="interop/predeploys.html#relaying-expired-message-hashes">Relaying Expired Message Hashes</a></li>
 </ul>
 </li>
 </ul>
@@ -10656,7 +10652,7 @@ there is no protocol enforcement on what this value is.</p>
 In practice, the <code>_target</code> will be a contract that needs to know the schema of the <code>_msg</code> so that it can be decoded.
 It MAY call back to the <code>CrossL2Inbox</code> to authenticate
 properties about the <code>_msg</code> using the information in the <code>Identifier</code>.</p>
-<pre><code class="language-solidity">executeMessage(Identifier calldata _id, address _target, bytes memory _message)
+<pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes memory _message)
 </code></pre>
 <h4 id="validatemessage"><a class="header" href="#validatemessage">validateMessage</a></h4>
 <p>A helper to enable contracts to provide their own public entrypoints for cross chain interactions.
@@ -10667,7 +10663,7 @@ Emits the <code>ExecutingMessage</code> event to signal the transaction has a cr
 <tr><td><code>_msgHash</code></td><td><code>bytes32</code></td><td>The keccak256 hash of the message payload matching the initiating message.</td></tr>
 </tbody></table>
 </div>
-<pre><code class="language-solidity">validateMessage(Identifier calldata _id, bytes32 _msgHash)
+<pre><code class="language-solidity">function validateMessage(Identifier calldata _id, bytes32 _msgHash)
 </code></pre>
 <h3 id="interop-start-timestamp"><a class="header" href="#interop-start-timestamp">Interop Start Timestamp</a></h3>
 <p>The Interop Start Timestamp represents the earliest timestamp which an initiating message (identifier) can have to be
@@ -10774,7 +10770,6 @@ properties about the <code>_msg</code>.</p>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000023</code></td></tr>
 <tr><td><code>MESSAGE_VERSION</code></td><td><code>uint256(0)</code></td></tr>
-<tr><td><code>EXPIRY_WINDOW</code></td><td><code>uint256(7200)</code></td></tr>
 </tbody></table>
 </div>
 <p>The <code>L2ToL2CrossDomainMessenger</code> is a higher level abstraction on top of the <code>CrossL2Inbox</code> that
@@ -10785,21 +10780,6 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 <ul>
 <li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
 <li>The <code>_destination</code> chain id MUST be equal to the local chain id</li>
-</ul>
-<h3 id="sendexpire-invariants"><a class="header" href="#sendexpire-invariants"><code>sendExpire</code> Invariants</a></h3>
-<ul>
-<li>The message MUST have not been successfully relayed</li>
-<li>The <code>EXPIRY_WINDOW</code> MUST have elapsed since the message first failed to be relayed</li>
-<li>The expired message MUST not have been previously sent back to source</li>
-<li>The expired message MUST not be relayable after being sent back</li>
-</ul>
-<h3 id="relayexpire-invariants"><a class="header" href="#relayexpire-invariants"><code>relayExpire</code> Invariants</a></h3>
-<ul>
-<li>Only callable by the <code>CrossL2Inbox</code></li>
-<li>The message source MUST be <code>block.chainid</code></li>
-<li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
-<li>The <code>expiredMessages</code> mapping MUST only contain messages that originated in this chain and failed to be relayed on destination.</li>
-<li>Already expired messages MUST NOT be relayed.</li>
 </ul>
 <h3 id="message-versioning-1"><a class="header" href="#message-versioning-1">Message Versioning</a></h3>
 <p>Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
@@ -10866,10 +10846,6 @@ the <code>_destination</code> equal to <code>block.chainid</code> to ensure that
 chain. The hash of the message is used for replay protection.</p>
 <p>It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
 it is possible to send a message that is not playable.</p>
-<p>When a message fails to be relayed, only the timestamp at which it
-first failed along with its source chain id are stored. This is
-needed for calculation of the failed message's expiry. The source chain id
-is also required to simplify the function signature of <code>sendExpire</code>.</p>
 <p>A message is relayed by providing the <a href="interop/./messaging.html#message-identifier">identifier</a> to a <code>SentMessage</code>
 event and its corresponding <a href="interop/./messaging.html#message-payload">message payload</a>.</p>
 <pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable {
@@ -10887,69 +10863,14 @@ event and its corresponding <a href="interop/./messaging.html#message-payload">m
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
     bool success = SafeCall.call(_target, msg.value, _message);
-
-    if (success) {
-        successfulMessages[messageHash] = true;
-        emit RelayedMessage(_source, _nonce, messageHash);
-    } else {
-        emit FailedRelayedMessage(_source, _nonce, messageHash);
-    }
+    require(success);
+    successfulMessages[messageHash] = true;
+    emit RelayedMessage(_source, _nonce, messageHash);
 }
 </code></pre>
 <p>Note that the <code>relayMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
 <p>To enable cross chain authorization patterns, both the <code>_sender</code> and the <code>_source</code> MUST be exposed via <code>public</code>
 getters.</p>
-<h4 id="sending-expired-message-hashes"><a class="header" href="#sending-expired-message-hashes">Sending Expired Message Hashes</a></h4>
-<p>When expiring a message that failed to be relayed on the destination chain
-to the source chain, it's crucial to ensure the message can only be sent back
-to the <code>L2ToL2CrossDomainMessenger</code> contract in its source chain.</p>
-<p>This function has no auth, which allows anyone to expire a given message hash.
-The <code>EXPIRY_WINDOW</code> variable is added to give the users enough time to replay their
-failed messages and to prevent malicious actors from performing a griefing attack
-by expiring messages upon arrival.</p>
-<p>Once the expired message is sent to the source chain, the message on the local chain is set
-as successful in the <code>successfulMessages</code> mapping to ensure non-replayability and deleted
-from <code>failedMessages</code>. An initiating message is then emitted to <code>relayExpire</code></p>
-<pre><code class="language-solidity">function sendExpire(bytes32 _expiredHash) external nonReentrant {
-    if (successfulMessages[_expiredHash]) revert MessageAlreadyRelayed();
-
-    (uint256 messageTimestamp, uint256 messageSource) = failedMessages[_expiredHash];
-
-    if (block.timestamp &lt;  messageTimestamp + EXPIRY_WINDOW) revert ExpiryWindowHasNotEnsued();
-
-    delete failedMessages[_expiredHash];
-    successfulMessages[_expiredHash] = true;
-
-    bytes memory data = abi.encodeCall(
-        L2ToL2CrossDomainMessenger.expired,
-        (_expiredHash, messageSource)
-    );
-    emit SentMessage(data);
-}
-</code></pre>
-<h4 id="relaying-expired-message-hashes"><a class="header" href="#relaying-expired-message-hashes">Relaying Expired Message Hashes</a></h4>
-<p>When relaying an expired message, only message hashes
-of actual failed messages should be stored, for this we must ensure the origin
-of the log, and caller are all expected contracts.</p>
-<p>It's also important to ensure only the hashes of messages that were initiated
-in this chain are accepted.</p>
-<p>If all checks have been successful, the message has is stored in the
-<code>expiredMessages</code> mapping. This enables smart contracts to read from it and
-check whether a message expired or not, and handle this case accordingly.</p>
-<pre><code class="language-solidity">function relayExpire(bytes32 _expiredHash, uint256 _messageSource) external {
-    if (_messageSource != block.chainid) revert IncorrectMessageSource();
-    if (expiredMessages[_expiredHash] != 0) revert ExpiredMessageAlreadyRelayed();
-    if (msg.sender != Predeploys.CROSS_L2_INBOX) revert ExpiredMessageCallerNotCrossL2Inbox();
-
-    if (CrossL2Inbox(Predeploys.CROSS_L2_INBOX).origin() != Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER) {
-        revert CrossL2InboxOriginNotL2ToL2CrossDomainMessenger();
-    }
-
-    expiredMessages[_expiredHash] = block.timestamp;
-
-    emit MessageHashExpired(_expiredHash);
-}
-</code></pre>
 <h2 id="optimismsuperchainerc20factory"><a class="header" href="#optimismsuperchainerc20factory">OptimismSuperchainERC20Factory</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000026</code></td></tr>
@@ -10989,7 +10910,7 @@ For this method to work, the <code>OptimismSuperchainERC20Factory</code> MUST in
 <li><code>_symbol</code>: <code>OptimismSuperchainERC20</code> symbol</li>
 <li><code>_decimals</code>: <code>OptimismSuperchainERC20</code> decimals</li>
 </ul>
-<pre><code class="language-solidity">deploy(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
+<pre><code class="language-solidity">function deploy(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
 </code></pre>
 <p>It returns the address of the deployed <code>OptimismSuperchainERC20</code>.</p>
 <p>The function MUST use <code>CREATE3</code> to deploy its children.
@@ -11180,7 +11101,7 @@ corresponding <code>OptimismSuperchainERC20</code>.</p>
 <p>The <code>L2StandardBridge</code> SHOULD add a <code>convert</code> public function that
 converts <code>_amount</code> of <code>_from</code> token to <code>_amount</code> of <code>_to</code> token,
 if and only if the token addresses are valid (as defined below).</p>
-<pre><code class="language-solidity">convert(address _from, address _to, uint256 _amount)
+<pre><code class="language-solidity">function convert(address _from, address _to, uint256 _amount)
 </code></pre>
 <p>The function</p>
 <ol>
@@ -11254,7 +11175,7 @@ which is included as part of the the
 <a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
 implemented by the <code>SuperchainERC20</code> standard.</p>
 <p>Returns the <code>msgHash_</code> crafted by the <code>L2ToL2CrossChainMessenger</code>.</p>
-<pre><code class="language-solidity">sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
+<pre><code class="language-solidity">function sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
 </code></pre>
 <h4 id="relayerc20"><a class="header" href="#relayerc20"><code>relayERC20</code></a></h4>
 <p>Process incoming messages IF AND ONLY IF initiated
@@ -11268,7 +11189,7 @@ calls <code>crosschainMint</code> in the token contract,
 which is included as part of the the
 <a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
 implemented by the <code>SuperchainERC20</code> standard.</p>
-<pre><code class="language-solidity">relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
+<pre><code class="language-solidity">function relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
 </code></pre>
 <h3 id="events-2"><a class="header" href="#events-2">Events</a></h3>
 <h4 id="senterc20"><a class="header" href="#senterc20"><code>SentERC20</code></a></h4>
