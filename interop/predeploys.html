@@ -494,10 +494,11 @@ Each subsequent call is labeled with a number.</p>
 <pre class="mermaid">flowchart LR
     user --&gt;|&quot;1#46; sendMessage&quot;| al2tol2
     user --&gt; |&quot;2#46; relayMessage&quot;|bl2tol2
-    em{{SentMessage Event}}
+    im{{SentMessage Event}}
+    em{{ExecutingMessage Event}}
 
     direction TB
-    al2tol2 --&gt; em
+    al2tol2 --&gt; im
 
     bcl2[CrossL2Inbox]
     al2tol2[L2ToL2CrossDomainMessenger]
@@ -509,8 +510,8 @@ Each subsequent call is labeled with a number.</p>
 
     subgraph &quot;Chain B&quot;
       bl2tol2  --&gt; |&quot;3#46; validateMessage&quot;|bcl2
-      bcl2 --&gt; |&quot;4#46;&quot;| bl2tol2
-      bl2tol2 --&gt; |&quot;5#46;&quot;| Contract
+      bcl2 --&gt; em
+      bl2tol2 --&gt; |&quot;4#46;&quot;| Contract
     end
 </pre>
 <p>When relaying a message through the <code>L2ToL2CrossDomainMessenger</code>, it is important to require that
