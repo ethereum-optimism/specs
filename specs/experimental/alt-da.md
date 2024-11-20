@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
 - [Input Commitment Submission](#input-commitment-submission)
+  - [Example Commitments](#example-commitments)
 - [DA Server](#da-server)
 - [Data Availability Challenge Contract](#data-availability-challenge-contract)
   - [Parameters](#parameters)
