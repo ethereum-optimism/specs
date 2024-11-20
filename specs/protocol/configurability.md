@@ -463,7 +463,7 @@ configuration of the permissioned dispute game.<br/>
 
 **Description:** Account authorized to modify the operator fee scalar. <br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
-**Requirement:** <br/>
-**Notes:** <br/>
+**Requirement:** `address(0)`<br/>
+**Notes:** For standard configurations, the operator fee manager is not used, so it is set to the null address. <br/>
 
 [^of-gnosis-safe-l1]: 5 of 7 GnosisSafe controlled by Optimism Foundation (OF). Mainnet and Sepolia addresses can be found at [privileged roles](https://docs.optimism.io/chain/security/privileged-roles).
