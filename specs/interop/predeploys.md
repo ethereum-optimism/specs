@@ -323,22 +323,32 @@ chain is included instead.
 
 #### Sending Messages
 
-The following function is used for sending messages between domains:
+The following functions are used for sending messages between domains:
+
+__Permissionless:__ Can be relayed on the destination chain by any address.
 
 ```solidity
 function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
 ```
 
-It returns the hash of the message being sent,
-used to track whether the message has successfully been relayed.
-It emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
+__Using Entrypoint:__ Can be relayed on the destination chain only by the `_entrypoint` address.
 
 ```solidity
-event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
+function sendMessage(uint256 _destination, address _target, bytes calldata _message, address _entrypoint) external returns (bytes32);
+```
+
+Both functions return the hash of the message being sent,
+which is used to track whether the message has successfully been relayed.
+They emit a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
+
+```solidity
+event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message, address entrypoint);
 ```
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
 chain a single time. The `_destination` is enforced to not be the local chain to avoid edge cases.
+
+Note that when sending the message with the **permisionless** variant of `sendMessage`, `entrypoint` will default to `address(0)`.
 
 There is no need for address aliasing as the aliased address would need to commit to the source chain's chain id
 to create a unique alias that commits to a particular sender on a particular domain and it is far more simple
@@ -409,7 +419,8 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     require(_destination == block.chainid);
 
     // log data
-    (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
+    (address _sender, bytes memory _message, address _entrypoint) = 
+        abi.decode(_sentMessage[128:], (address,bytes,address));
 
     bool success = SafeCall.call(_target, msg.value, _message);
 
@@ -423,6 +434,8 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
 ```
 
 Note that the `relayMessage` function is `payable` to enable relayers to earn in the gas paying asset.
+
+Additionally, if the `_entrypoint` is not `address(0)` and the caller is not `_entrypoint`, the transaction MUST revert.
 
 To enable cross chain authorization patterns, both the `_sender` and the `_source` MUST be exposed via `public`
 getters.
