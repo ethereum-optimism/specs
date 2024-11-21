@@ -112,6 +112,36 @@ The following security properties must be upheld by the `DeputyGuardianModule`:
 1. The module must format calldata correctly such that the target it calls performs the expected
    action.
 
+## Deputy Guardian Safe
+
+### Deputy Pause Module
+
+The Deputy Guardian Safe (currently the Optimism Foundation Safe) utilizes the Deputy Pause Module
+to remove the need for brittle pre-signed pause transactions and to speed up the reaction speed of
+the Deputy Guardian Safe for the specific purpose of triggering the Superchain-wide pause action.
+
+#### Invariants
+
+1. Must correctly enforce access control so that only the hard-coded Deputy account can act.
+1. Must always allow the hard-coded Deputy account to act, even if the private key for the Deputy
+   account has been leaked.
+1. Must only allow the hard-coded Deputy account to carry out the singular action of causing the
+   Guardian account to trigger the Superchain-wide pause function on the `SuperchainConfig`
+   contract (and must not allow any other actions).
+
+#### Implementation
+
+1. Deputy Pause Module is not proxied and all values are hard-coded into the contract. Any changes
+   to these values must be implemented by re-deploying the contract, removing the old module, and
+   adding the new module.
+1. Pause action is gated and must come with a valid signature from the Deputy account. As the
+   Deputy account can only carry out a single action, the intended action behind any signature is
+   implied to be the pause action.
+1. Signatures must contain a nonce so that the signature can only be used a single time to carry
+   out the pause action. Pause action must verify that the provided nonce has not been used before.
+1. Any account can supply the signature as long as the recovered signer is the Deputy account. This
+   means that the Deputy account does not need to hold any ETH to act as the Deputy.
+
 ## Security Council Liveness Checking Extensions
 
 The Security Council Safe is extended by the Liveness Checking Module and Guard. These extensions
