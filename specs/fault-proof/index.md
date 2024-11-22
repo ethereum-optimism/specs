@@ -443,7 +443,7 @@ The L2 Output is the preimage of a
 #### `l2-payload-witness <payload_attributes>`
 
 Requests the host to prepare all preimages used in the building of the payload specified by `<payload_attributes>`.
-`<payload_attributes>` is a hex-encoded JSON with the fields `parentBlockHash` and `payloadAttributes`.
+`<payload_attributes>` is a JSON object with the fields `parentBlockHash` and `payloadAttributes`.
 
 #### `l2-account-proof <blockhash_and_address>`
 
