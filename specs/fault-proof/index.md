@@ -34,7 +34,7 @@
     - [`l2-code <codehash>`](#l2-code-codehash)
     - [`l2-state-node <nodehash>`](#l2-state-node-nodehash)
     - [`l2-output <outputroot>`](#l2-output-outputroot)
-    - [`l2-execution-witness <blocknumber>`](#l2-execution-witness-blocknumber)
+    - [`l2-payload-witness <payload_attributes>`](#l2-payload-witness-payload_attributes)
     - [`l2-account-proof <blockhash_and_address>`](#l2-account-proof-blockhash_and_address)
   - [Precompile Accelerators](#precompile-accelerators)
 - [Fault Proof VM](#fault-proof-vm)
