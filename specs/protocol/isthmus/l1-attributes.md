@@ -27,6 +27,9 @@ The L1 block attributes transaction is updated to include the operator fee param
 | operatorFeeScalar   | uint32  | 164-167      | 6       |
 | operatorFeeConstant | uint64  | 168-175      |         |
 
+Note that the first input argument, in the same pattern as previous versions of the L1 attributes transaction,
+is the function selector: the first four bytes of `keccak256("setL1BlockValuesIsthmus()")`.
+
 In the first L2 block after the Isthmus activation block, the Isthmus L1 attributes are first used.
 
 The pre-Isthmus values are migrated over 1:1.
