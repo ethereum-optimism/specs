@@ -150,14 +150,14 @@ request. Before completing the withdrawal, it reduces the amount contained withi
 `withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
 `withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`. Also, `withdraw(guy,wad)` is not callable
 when `delayedWethPaused` is `true`, unless the caller is the `owner()`.
-- `DelayedWETH` has a `setDelayedWethPaused(bool)` function that allows the `owner()` address to either pause or unpause 
-withdrawals and transfers.
-- `DelayedWETH` has a `hold()` function that allows the `owner()` address to, for any holder, give itself an allowance and
-immediately `transferFrom` that allowance amount to itself.
+- `DelayedWETH` has a `setDelayedWethPaused(bool)` function that allows the `SuperchainConfig.guardian()` address to either
+pause or unpause withdrawals and transfers.
+- `DelayedWETH` has a `hold(guy,wad)` function that allows the `owner()` address to, for any holder, give itself an allowance
+and immediately `transferFrom` that allowance amount to itself.
 - `DelayedWETH` has a `recover()` function that allows the `owner()` address to recover any amount of ETH from the
 contract.
-- `DelayedWETH` transfers are subject to the local `delayedWethPaused` pause; users other than the owner will not be able to 
-transfer any tokens within the contract.
+- `DelayedWETH` transfers are subject to the local `delayedWethPaused` pause; users other than the owner will not be able
+to transfer any tokens within the contract.
 
 #### Sub-Account Model
 
