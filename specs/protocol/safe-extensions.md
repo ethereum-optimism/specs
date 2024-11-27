@@ -119,15 +119,20 @@ The following security properties must be upheld by the `DeputyGuardianModule`:
 The Deputy Guardian Safe (currently the Optimism Foundation Safe) utilizes the Deputy Pause Module
 to remove the need for brittle pre-signed pause transactions and to speed up the reaction speed of
 the Deputy Guardian Safe for the specific purpose of triggering the Superchain-wide pause action.
+The Deputy Pause Module is explicitly designed to be used with an Externally Owned Account and is
+not designed to function with a smart contract deputy.
 
 #### Invariants
 
-1. Must correctly enforce access control so that only the hard-coded Deputy account can act.
-1. Must always allow the hard-coded Deputy account to act, even if the private key for the Deputy
-   account has been leaked.
-1. Must only allow the hard-coded Deputy account to carry out the singular action of causing the
-   Guardian account to trigger the Superchain-wide pause function on the `SuperchainConfig`
-   contract (and must not allow any other actions).
+1. Must enforce that the Deputy account is an Externally Owned Account under the assumption that
+   the account will not attempt to circumvent the available mechanisms for doing so.
+1. Must correctly enforce access control so that only the Deputy account can act.
+1. Must always allow the Deputy account to act even if the private key for this account is leaked.
+1. Must not allow the Deputy to create authentication signatures that are indefinitely valid.
+1. Must only allow the Deputy account to carry out the singular action of causing the Guardian to
+   trigger the Superchain-wide pause function on the `SuperchainConfig` contract via the Deputy
+   Guardian and the `DeputyGuardianModule`. Must not allow the Deputy account to authenticate any
+   other action.
 
 #### Implementation
 
@@ -137,8 +142,13 @@ the Deputy Guardian Safe for the specific purpose of triggering the Superchain-w
 1. Pause action is gated and must come with a valid signature from the Deputy account. As the
    Deputy account can only carry out a single action, the intended action behind any signature is
    implied to be the pause action.
-1. Signatures must contain a nonce so that the signature can only be used a single time to carry
-   out the pause action. Pause action must verify that the provided nonce has not been used before.
+1. Signed pause messages must contain a nonce so that the signature can only be used a single time
+   to carry out the pause action. Pause action must verify that the provided nonce has not been
+   used before.
+1. Signed pause messages must contain an expiry timestamp so that the message can only be used to
+   trigger the pause when the block timestamp is less than the signed expiry. Signed expiry
+   timestamp cannot be more than a fixed number of seconds in the future as defined by a
+   constructor parameter of the module itself.
 1. Any account can supply the signature as long as the recovered signer is the Deputy account. This
    means that the Deputy account does not need to hold any ETH to act as the Deputy.
 
