@@ -211,7 +211,7 @@
 <li><a href="#l2-code-codehash"><code>l2-code &lt;codehash&gt;</code></a></li>
 <li><a href="#l2-state-node-nodehash"><code>l2-state-node &lt;nodehash&gt;</code></a></li>
 <li><a href="#l2-output-outputroot"><code>l2-output &lt;outputroot&gt;</code></a></li>
-<li><a href="#l2-execution-witness-blocknumber"><code>l2-execution-witness &lt;blocknumber&gt;</code></a></li>
+<li><a href="#l2-payload-witness-payload_attributes"><code>l2-payload-witness &lt;payload_attributes&gt;</code></a></li>
 <li><a href="#l2-account-proof-blockhash_and_address"><code>l2-account-proof &lt;blockhash_and_address&gt;</code></a></li>
 </ul>
 </li>
@@ -535,12 +535,13 @@ prepare the RLP pre-images of each of them, including transactions-list MPT node
 <p>Requests the host to prepare the L2 Output at the l2 output root <code>&lt;outputroot&gt;</code>.
 The L2 Output is the preimage of a
 <a href="../protocol/proposals.html#l2-output-commitment-construction">computed output root</a>.</p>
-<h4 id="l2-execution-witness-blocknumber"><a class="header" href="#l2-execution-witness-blocknumber"><code>l2-execution-witness &lt;blocknumber&gt;</code></a></h4>
-<p>Requests the host to prepare all preimages used in the execution of the block at <code>&lt;blocknumber&gt;</code> height.</p>
+<h4 id="l2-payload-witness-payload_attributes"><a class="header" href="#l2-payload-witness-payload_attributes"><code>l2-payload-witness &lt;payload_attributes&gt;</code></a></h4>
+<p>Requests the host to prepare all preimages used in the building of the payload specified by <code>&lt;payload_attributes&gt;</code>.
+<code>&lt;payload_attributes&gt;</code> is a JSON object with the fields <code>parentBlockHash</code> and <code>payloadAttributes</code>.</p>
 <h4 id="l2-account-proof-blockhash_and_address"><a class="header" href="#l2-account-proof-blockhash_and_address"><code>l2-account-proof &lt;blockhash_and_address&gt;</code></a></h4>
 <p>Requests the host send account proof for a certain block hash and address. <code>&lt;blockhash_and_address&gt;</code> is hex
 encoded: 32-byte block hash + 20-byte address.</p>
-<p><code>l2-execution-witness</code> and <code>l2-account-proof</code> hints are preferred over the more granular <code>l2-code</code> and <code>l2-state-node</code>,
+<p><code>l2-payload-witness</code> and <code>l2-account-proof</code> hints are preferred over the more granular <code>l2-code</code> and <code>l2-state-node</code>,
 and they should be sent before the more granular hints to ensure proper handling.</p>
 <h3 id="precompile-accelerators"><a class="header" href="#precompile-accelerators">Precompile Accelerators</a></h3>
 <p>Precompiles that are too expensive to be executed in a fault-proof VM can be executed
