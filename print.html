@@ -11703,14 +11703,18 @@ The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messagi
 <a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code></a>
 interface and include the following properties:</p>
 <ol>
-<li>Only allow <code>SuperchainERC20Bridge</code> to call
+<li>Implement the <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> interface</li>
+<li>Implement the <a href="https://github.com/ethereum/ERCs/pull/692"><code>ERC7802</code></a> interface</li>
+<li>Allow <a href="interop/./predeploys.html#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a> to call
 <a href="interop/token-bridging.html#crosschainmint"><code>crosschainMint</code></a> and <a href="interop/token-bridging.html#crosschainburn"><code>crosschainBurn</code></a>.</li>
 <li>Be deployed at the same address on every chain in the Superchain.</li>
 </ol>
-<p>The first property will allow the <code>SuperchainERC20Bridge</code> to have a liquidity guarantee,
+<p>The third property will allow the <code>SuperchainERC20Bridge</code> to have a liquidity guarantee,
 which would not be possible in a model based on lock/unlock.
 Liquidity availability is fundamental to achieving fungibility.</p>
-<p>The second property removes the need for cross-chain access control lists.
+<p>SuperchainERC20Bridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>,
+other addresses may also be permitted to call these functions.</p>
+<p>The fourth property removes the need for cross-chain access control lists.
 Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens they mint on
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.</p>
@@ -11722,6 +11726,7 @@ predeploy that facilitates this process for L1 native tokens.</p>
 <p>Notice that ERC20s that do not implement the standard can still be fungible
 using interop message passing
 using a custom bridge or implementing <code>sendERC20</code> and <code>relayERC20</code> on their own contracts.</p>
+<p>An example implementation of the standard is available at <a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/SuperchainERC20.sol">SuperchainERC20.sol</a></p>
 <h3 id="ierc7802"><a class="header" href="#ierc7802"><code>IERC7802</code></a></h3>
 <p>Implementations of the <code>SuperchainERC20</code> standard will
 be required to implement the <code>IERC7802</code> interface,
@@ -11775,9 +11780,9 @@ in the <a href="interop/./predeploys.html#superchainerc20bridge">predeploys spec
   L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
   SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
-  Messenger_A-&gt;&gt;L2SBA: return msgHash_ 
+  Messenger_A-&gt;&gt;L2SBA: return msgHash_
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
-  L2SBA-&gt;&gt;from: return msgHash_ 
+  L2SBA-&gt;&gt;from: return msgHash_
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
@@ -11792,14 +11797,14 @@ in the <a href="interop/./predeploys.html#superchainerc20bridge">predeploys spec
   bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
 
   msgHash_ = L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
-  
+
   emit SentERC20(address(_token), msg.sender, _to, _amount, _chainId);
 }
 
 function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 _amount) external {
   require(msg.sender == address(L2ToL2CrossChainMessenger));
   require(L2ToL2CrossChainMessenger.crossDomainMessageSender() == address(this));
-  
+
   uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
 
   _token.crosschainMint(_to, _amount);
