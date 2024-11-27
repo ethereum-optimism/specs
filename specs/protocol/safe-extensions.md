@@ -7,6 +7,10 @@
 - [Guardian Safe](#guardian-safe)
   - [Deputy Guardian Module](#deputy-guardian-module)
   - [Deputy Guardian Module Security Properties](#deputy-guardian-module-security-properties)
+- [Deputy Guardian Safe](#deputy-guardian-safe)
+  - [Deputy Pause Module](#deputy-pause-module)
+    - [Invariants](#invariants)
+    - [Implementation](#implementation)
 - [Security Council Liveness Checking Extensions](#security-council-liveness-checking-extensions)
   - [The Liveness Guard](#the-liveness-guard)
   - [The Liveness Module](#the-liveness-module)
@@ -124,8 +128,7 @@ not designed to function with a smart contract deputy.
 
 #### Invariants
 
-1. Must enforce that the Deputy account is an Externally Owned Account under the assumption that
-   the account will not attempt to circumvent the available mechanisms for doing so.
+1. Must enforce that the Deputy account is an EOA.
 1. Must correctly enforce access control so that only the Deputy account can act.
 1. Must always allow the Deputy account to act even if the private key for this account is leaked.
 1. Must not allow the Deputy to create authentication signatures that are indefinitely valid.
@@ -139,16 +142,17 @@ not designed to function with a smart contract deputy.
 1. Deputy Pause Module is not proxied and all values are hard-coded into the contract. Any changes
    to these values must be implemented by re-deploying the contract, removing the old module, and
    adding the new module.
-1. Pause action is gated and must come with a valid signature from the Deputy account. As the
-   Deputy account can only carry out a single action, the intended action behind any signature is
-   implied to be the pause action.
-1. Signed pause messages must contain a nonce so that the signature can only be used a single time
-   to carry out the pause action. Pause action must verify that the provided nonce has not been
-   used before.
+1. Deputy Pause Module verifies a signature from the Deputy over a fixed string in the constructor
+   to confirm that the Deputy is an EOA that can generate valid signatures and that the creator at
+   least indirectly has access to the key.
+1. Pause action is gated and must come with a valid signature from the Deputy account.
 1. Signed pause messages must contain an expiry timestamp so that the message can only be used to
    trigger the pause when the block timestamp is less than the signed expiry. Signed expiry
    timestamp cannot be more than a fixed number of seconds in the future as defined by a
    constructor parameter of the module itself.
+1. Signed pause messages must contain a nonce so that the signature can only be used a single time
+   to carry out the pause action. Pause action must verify that the provided nonce has not been
+   used before.
 1. Any account can supply the signature as long as the recovered signer is the Deputy account. This
    means that the Deputy account does not need to hold any ETH to act as the Deputy.
 
