@@ -18,6 +18,7 @@ of governance approved [contract releases] can be found on the
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Deployment](#deployment)
@@ -39,29 +40,19 @@ of governance approved [contract releases] can be found on the
 
 ## Deployment
 
-The OP Contracts Manager is a proxied contract deployed at `0xTODO`. It can be deployed as follows:
-
-TODO.
+The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
+for each new release of the OP Stack contracts.
 
 ## Interface
 
-Version 1.0.0 of the OP Contracts Manager deploys the `op-contracts/v1.6.0`
-contracts release.
-
-### `Proxy.sol`
-
-The OP Contracts Manager is a proxied contract using the standard `Proxy.sol` contract that lives in
-the Optimism monorepo. Therefore the OP Contracts Manager will have the same interface as the
-`Proxy.sol`, in addition to other methods defined in this specification.
-
-The privileged methods of the OP Contracts Manager will be held by the L1 ProxyAdmin owner, as
-specified by the [standard configuration].
+Version 1.0.0 of the OP Contracts Manager deploys the `op-contracts/v1.6.0` contracts release,
+and is deployed at `0x9BC0A1eD534BFb31a6Be69e5b767Cba332f14347`. In the future this will
+be tracked in the `superchain-registry`.
 
 ### `deploy`
 
-The `deploy` method is the only non-view method in the contract. It is used to
-deploy the full set of L1 contracts required to setup a new OP Stack chain that
-complies with the [standard configuration]. It has the following interface:
+The `deploy` method is used to deploy the full set of L1 contracts required to setup a new OP Stack
+chain that complies with the [standard configuration]. It has the following interface:
 
 ```solidity
 struct Roles {
@@ -85,10 +76,10 @@ The `l2ChainId` has the following restrictions:
 
 - It must not be equal to 0.
 - It must not be equal to the chain ID of the chain the OP Contracts Manager is
-deployed on.
+  deployed on.
 - It must not be equal to a chain ID that is already present in the
-[ethereum-lists/chains] repository. This is not enforced onchain, but may matter
-for future versions of OP Contracts Manager that handle upgrades.
+  [ethereum-lists/chains] repository. This is not enforced onchain, but may matter
+  for future versions of OP Contracts Manager that handle upgrades.
 
 On success, the following event is emitted:
 
@@ -100,6 +91,37 @@ This method reverts on failure. This occurs when:
 
 - The input `l2ChainId` does not comply with the restrictions above.
 - The resulting configuration is not compliant with the [standard configuration].
+
+### `upgrade`
+
+The `upgrade` method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
+all chains that it controls.
+
+It has the following interface:
+
+```solidity
+function upgrade(ISystemConfig[] _systemConfigs, NewChainConfig[] _newConfigs) public;
+```
+
+For each chain successfully upgraded, the following event is emitted:
+
+```solidity
+event Upgraded(uint256 indexed l2ChainId, SystemConfig indexed systemConfig);
+```
+
+This method reverts if the upgrade is not successful for any of the chains.
+
+The high level logic of the upgrade method is as follows:
+
+1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method.
+2. For each `_systemConfig`, the list of addresses in the chain is retrieved.
+3. For each address, a two step upgrade is used where:
+   1. the first upgrade is to an `InitializerResetter` which resets the `initialized` value.
+   1. the implementation is updated to the final address and `upgrade()` is called on that address.
+
+This approach requires that all contracts have an `upgrade()` function which sets the `initialized`
+value to `true`. The `upgrade` function body should be empty unless it is used to set a new state
+variable added to that contract since the last upgrade.
 
 ### Getter Methods
 
@@ -153,13 +175,13 @@ This provides the following benefits:
 
 - Contract addresses for a chain can be derived as a function of chain ID without any RPC calls.
 - Chain ID uniqueness is enforced for free, as a deploy using the same chain ID
-will result in attempting to deploy to the same address, which is prohibited by
-the EVM.
+  will result in attempting to deploy to the same address, which is prohibited by
+  the EVM.
   - This property is contingent on the proxy and `AddressManager` code not
-  changing when OP Contracts Manager is upgraded. Both of these are not planned to
-  change.
+    changing when OP Contracts Manager is upgraded. Both of these are not planned to
+    change.
   - The OP Contracts Manager is not responsible for enforcing chain ID uniqueness, so it is acceptable
-  if this property is not preserved in future versions of the OP Contracts Manager.
+    if this property is not preserved in future versions of the OP Contracts Manager.
 
 ## Security Considerations
 
@@ -170,10 +192,10 @@ once per chain ID, because contract addresses are a function of chain ID. Howeve
 future versions of OP Contracts Manager may:
 
 - Change the Proxy code used, which would allow a duplicate chain ID to be deployed
-if there is only the implicit check.
+  if there is only the implicit check.
 - Manage upgrades, which will require "registering" existing pre-OP Contracts Manager
-chains in the OP Contracts Manager. Registration will be a privileged action, and the [superchain registry] will be
-used as the source of truth for registrations.
+  chains in the OP Contracts Manager. Registration will be a privileged action, and the [superchain registry] will be
+  used as the source of truth for registrations.
 
 This means, for example, if deploying a chain with a chain ID of 10—which is OP
 Mainnet's chain ID—deployment will execute successfully, but the entry in OP
@@ -206,11 +228,3 @@ maximize compatibility.
 The proxy admin owner is a very powerful role, as it allows upgrading protocol
 contracts. When choosing the initial proxy admin owner, a Safe is recommended
 to ensure admin privileges are sufficiently secured.
-
-### Upgradeability (ABI Changes)
-
-This contract is upgradeable, and breaking changes are expected, as upgrades
-are required to update the contracts release that is deployed. This is because
-the required inputs to the `deploy` method may change as new contract releases
-are supported. Therefore, if calling this contract from another contract, be
-sure to account for future breaking changes to the ABI.
