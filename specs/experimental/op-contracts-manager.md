@@ -115,15 +115,18 @@ struct Implementation {
 /// format `op-contracts/vX.Y.Z`.
 function latestRelease() external view returns (string memory);
 
-/// @notice Maps a release version to a contract name to its implementation data.
-function implementation(
-  string memory release,
-  string memory contractName
-) external view returns (Implementation memory);
+/// @notice Returns the implementation contract addresses.
+function implementations() public view returns (Implementations memory);
 
 /// @notice Maps an L2 Chain ID to the SystemConfig address for that chain.
 /// @notice All contracts for a chain can be found from its SystemConfig.
-function systemConfig(uint256 chainId) external view returns (SystemConfig);
+function systemConfigs(uint256 chainId) external view returns (SystemConfig);
+
+/// @notice Maps an L2 chain ID to an L1 batch inbox address as defined by the standard
+function chainIdToBatchInboxAddress(uint256 _l2ChainId) public pure returns (address);
+
+/// @notice Returns the blueprint contract addresses.
+function blueprints() public view returns (Blueprints memory);
 ```
 
 ### Implementation
