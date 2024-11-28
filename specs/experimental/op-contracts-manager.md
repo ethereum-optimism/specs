@@ -47,6 +47,37 @@ The OP Contracts Manager corresponding to each release can be used to:
 
 1. Deploy a new OP chain.
 2. Upgrade the contracts for an existing OP chain from the previous release to the new release.
+3. Orchestrate adding a new game type on a per-chain basis
+
+## Getter Methods
+
+The following interface defines the available getter methods:
+
+```solidity
+/// @notice The logic address and initializer selector for an implementation contract.
+struct Implementation {
+  address logic; // Address containing the deployed logic contract.
+  bytes4 initializer; // Function selector for the initializer.
+}
+
+/// @notice Returns the latest approved release of the OP Stack contracts.
+/// @notice Release strings follow semver and are named with the
+/// format `op-contracts/vX.Y.Z`.
+function latestRelease() external view returns (string memory);
+
+/// @notice Returns the implementation contract addresses.
+function implementations() public view returns (Implementations memory);
+
+/// @notice Maps an L2 Chain ID to the SystemConfig address for that chain.
+/// @notice All contracts for a chain can be found from its SystemConfig.
+function systemConfigs(uint256 chainId) external view returns (SystemConfig);
+
+/// @notice Maps an L2 chain ID to an L1 batch inbox address as defined by the standard
+function chainIdToBatchInboxAddress(uint256 _l2ChainId) public pure returns (address);
+
+/// @notice Returns the blueprint contract addresses.
+function blueprints() public view returns (Blueprints memory);
+```
 
 ## Deployment
 
@@ -98,36 +129,6 @@ This method reverts on failure. This occurs when:
 
 - The input `l2ChainId` does not comply with the restrictions above.
 - The resulting configuration is not compliant with the [standard configuration].
-
-#### Getter Methods
-
-The following interface defines the available getter methods:
-
-```solidity
-/// @notice The logic address and initializer selector for an implementation contract.
-struct Implementation {
-  address logic; // Address containing the deployed logic contract.
-  bytes4 initializer; // Function selector for the initializer.
-}
-
-/// @notice Returns the latest approved release of the OP Stack contracts.
-/// @notice Release strings follow semver and are named with the
-/// format `op-contracts/vX.Y.Z`.
-function latestRelease() external view returns (string memory);
-
-/// @notice Returns the implementation contract addresses.
-function implementations() public view returns (Implementations memory);
-
-/// @notice Maps an L2 Chain ID to the SystemConfig address for that chain.
-/// @notice All contracts for a chain can be found from its SystemConfig.
-function systemConfigs(uint256 chainId) external view returns (SystemConfig);
-
-/// @notice Maps an L2 chain ID to an L1 batch inbox address as defined by the standard
-function chainIdToBatchInboxAddress(uint256 _l2ChainId) public pure returns (address);
-
-/// @notice Returns the blueprint contract addresses.
-function blueprints() public view returns (Blueprints memory);
-```
 
 ### Implementation
 
@@ -216,6 +217,44 @@ than the bytecode of the implementation.
 Any contracts which do not meet this requirement will need to be deployed by the `upgrade()`
 function, increasing the cost and reducing the number of OP Chains which can be atomically upgraded.
 
+## Adding game types
+
+Because different OP Chains within a Superchain may use different dispute game types, and are
+expected to move from a permissioned to permissionless game over time, an `addGameType` method is
+provided to enable adding a new game type to multiple games at once.
+
+### Interface
+
+#### `addGameType`
+
+The `addGameType` method is used to orchestrate the actions required to add a new game type to one
+or more chains.
+
+```solidity
+struct NewGameConfig {
+  // fields will vary depending on the game type
+}
+
+function addGameType(ISystemConfig[] _systemConfigs, NewGameConfig[] _newGames) public;
+```
+
+### Implementation
+
+The high level logic of the `addGameType` method is as follows (for each chain):
+
+1. Deploys the new game Creator contract for that game type.
+2. Calls `setImplementation()` on the `DisputeGameFactory`
+3. Calls `setAnchorState()` on the `AnchorStateRegistry`
+
+Note that in [Standard Configuration chains](../protocol/superchain-configuration.md):
+
+- `DisputeGameFactory.setImplementation()` is authorized to the Upgrade Controller
+- `AnchorStateRegistry.setAnchorState()` is authorized to the Guardian
+
+Since the Guardian is its own Safe controlled by the Security Council, and the Upgrade Controller is
+a 2 of 2 jointly controlled by the Security Council and Optimism Foundation, this is not impossible
+to implement, but will be ugly and require new tooling and processes to do correctly.
+
 ## Security Considerations
 
 #### Chain ID Source of Truth
@@ -264,10 +303,10 @@ to ensure admin privileges are sufficiently secured.
 
 #### Safely using `DELEGATECALL`
 
-Because the Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method, it is
+Because a Safe will `DELEGATECALL` to the `upgrade()` and `addGameType()` methods, it is
 critical that no storage writes occur. This should be enforced in multiple ways, including:
 
-- By static analysis of the `upgrade()` method during the development process.
+- By static analysis of the `upgrade()` and `addGameType()` methods during the development process.
 - By simulating and verifying the state changes which occur in the Upgrade Controller Safe prior to execution.
 
 ### Atomicity of upgrades
