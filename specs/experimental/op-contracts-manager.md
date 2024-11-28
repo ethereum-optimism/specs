@@ -38,18 +38,25 @@ of governance approved [contract releases] can be found on the
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Deployment
+## Overview
 
 The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.
 
-## Interface
+The OP Contracts Manager corresponding to each release can be used to:
+
+1. Deploy a new OP chain.
+2. Upgrade the contracts for an existing OP chain from the previous release to the new release.
+
+## Deployment
+
+### Interface
 
 Version 1.0.0 of the OP Contracts Manager deploys the `op-contracts/v1.6.0` contracts release,
 and is deployed at `0x9BC0A1eD534BFb31a6Be69e5b767Cba332f14347`. In the future this will
 be tracked in the `superchain-registry`.
 
-### `deploy`
+#### `deploy`
 
 The `deploy` method is used to deploy the full set of L1 contracts required to setup a new OP Stack
 chain that complies with the [standard configuration]. It has the following interface:
@@ -92,38 +99,7 @@ This method reverts on failure. This occurs when:
 - The input `l2ChainId` does not comply with the restrictions above.
 - The resulting configuration is not compliant with the [standard configuration].
 
-### `upgrade`
-
-The `upgrade` method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
-all chains that it controls.
-
-It has the following interface:
-
-```solidity
-function upgrade(ISystemConfig[] _systemConfigs, NewChainConfig[] _newConfigs) public;
-```
-
-For each chain successfully upgraded, the following event is emitted:
-
-```solidity
-event Upgraded(uint256 indexed l2ChainId, SystemConfig indexed systemConfig);
-```
-
-This method reverts if the upgrade is not successful for any of the chains.
-
-The high level logic of the upgrade method is as follows:
-
-1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method.
-2. For each `_systemConfig`, the list of addresses in the chain is retrieved.
-3. For each address, a two step upgrade is used where:
-   1. the first upgrade is to an `InitializerResetter` which resets the `initialized` value.
-   1. the implementation is updated to the final address and `upgrade()` is called on that address.
-
-This approach requires that all contracts have an `upgrade()` function which sets the `initialized`
-value to `true`. The `upgrade` function body should be empty unless it is used to set a new state
-variable added to that contract since the last upgrade.
-
-### Getter Methods
+#### Getter Methods
 
 The following interface defines the available getter methods:
 
@@ -150,15 +126,15 @@ function implementation(
 function systemConfig(uint256 chainId) external view returns (SystemConfig);
 ```
 
-## Implementation
+### Implementation
 
-### Batch Inbox Address
+#### Batch Inbox Address
 
 The chain's [Batch Inbox] address is computed at deploy time using the recommend approach defined
 in the [standard configuration]. This improves UX by removing an input, and ensures uniqueness of
 the batch inbox addresses.
 
-### Contract Deployments
+#### Contract Deployments
 
 All contracts deployed by the OP Contracts Manager are deployed with CREATE2, with a
 salt equal to either:
@@ -183,9 +159,63 @@ This provides the following benefits:
   - The OP Contracts Manager is not responsible for enforcing chain ID uniqueness, so it is acceptable
     if this property is not preserved in future versions of the OP Contracts Manager.
 
+## Upgrading
+
+### Interface
+
+#### `upgrade`
+
+The `upgrade` method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
+all chains that it controls.
+
+It has the following interface:
+
+```solidity
+function upgrade(ISystemConfig[] _systemConfigs, NewChainConfig[] _newConfigs) public;
+```
+
+For each chain successfully upgraded, the following event is emitted:
+
+```solidity
+event Upgraded(uint256 indexed l2ChainId, SystemConfig indexed systemConfig);
+```
+
+This method reverts if the upgrade is not successful for any of the chains.
+
+### Implementation
+
+The high level logic of the upgrade method is as follows:
+
+1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method.
+2. For each `_systemConfig`, the list of addresses in the chain is retrieved.
+3. For each address, a two step upgrade is used where:
+   1. the first upgrade is to an `InitializerResetter` which resets the `initialized` value.
+   1. the implementation is updated to the final address and `upgrade()` is called on that address.
+
+This approach requires that all contracts have an `upgrade()` function which sets the `initialized`
+value to `true`. The `upgrade` function body should be empty unless it is used to set a new state
+variable added to that contract since the last upgrade.
+
+#### `NewChainConfig` struct
+
+This struct is used to pass the new chain configuration to the `upgrade` method, and so it will
+vary for each release of the OP Contracts Manager, based on what (if any) new parameters are added.
+
+In practice, this struct is likely to be have a unique name for each release of the OP Contracts
+Manager.
+
+#### Requirements on the OP Chain contracts
+
+In general, all contracts used in an OP Chain SHOULD be proxied with a single shared implementation.
+This means that all values which are not constant across OP Chains SHOULD be held in storage rather
+than the bytecode of the implementation.
+
+Any contracts which do not meet this requirement will need to be deployed by the `upgrade()`
+function, increasing the cost and reducing the number of OP Chains which can be atomically upgraded.
+
 ## Security Considerations
 
-### Chain ID Source of Truth
+#### Chain ID Source of Truth
 
 One of the implicit restrictions on chain ID is that `deploy` can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
@@ -204,7 +234,7 @@ uniqueness is not enforced by the OP Contracts Manager, and it is strongly
 recommended to only use chain IDs that are not already present in the
 [ethereum-lists/chains] repository.
 
-### Chain ID Frontrunning
+#### Chain ID Frontrunning
 
 Contract addresses for a chain are a function of chain ID, which implies you
 can counterfactually compute and use those chain addresses before the chain is
@@ -212,7 +242,7 @@ deployed. However, this property should not be relied upon—new chain deploymen
 are permissionless, so you cannot guarantee usage of a given chain ID, as deploy
 transactions can be frontrun.
 
-### Chain ID Value
+#### Chain ID Value
 
 While not specific to OP Contracts Manager, when choosing a chain ID is important
 to consider that not all chain IDs are well supported by tools. For example,
@@ -223,8 +253,27 @@ OP Contracts Manager does not consider factors such as these. The EVM supports
 256-bit chain IDs, so OP Contracts Manager sticks with the full 256-bit range to
 maximize compatibility.
 
-### Proxy Admin Owner
+#### Proxy Admin Owner
 
 The proxy admin owner is a very powerful role, as it allows upgrading protocol
 contracts. When choosing the initial proxy admin owner, a Safe is recommended
 to ensure admin privileges are sufficiently secured.
+
+#### Safely using `DELEGATECALL`
+
+Because the Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method, it is
+critical that no storage writes occur. This should be enforced in multiple ways, including:
+
+- By static analysis of the `upgrade()` method during the development process.
+- By simulating and verifying the state changes which occur in the Upgrade Controller Safe prior to execution.
+
+### Atomicity of upgrades
+
+Although atomicity of a superchain upgrade is not essential for many types of upgrade, it will
+at times be necessary. It is certainly always desirable for operational reasons.
+
+For this reason, efficiency should be kept in mind when designing the upgrade path. When the size of
+the superchain reaches a size that nears the block gas limit, upgrades may need to be broken up into
+stages, so that components which must be upgrade atomically can be. For example, all
+`OptimismPortal` contracts may need to be upgraded in one transaction, followed by another
+transaction which upgrades all `L1CrossDomainMessenger` contracts.
