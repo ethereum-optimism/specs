@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -36,15 +37,20 @@ The standard will build on top of ERC20, implement the
 [`IERC7802`](https://github.com/ethereum/ERCs/pull/692)
 interface and include the following properties:
 
-1. Only allow `SuperchainERC20Bridge` to call
+1. Implement the [ERC20](https://eips.ethereum.org/EIPS/eip-20) interface
+2. Implement the [`ERC7802`](https://github.com/ethereum/ERCs/pull/692) interface
+3. Allow [`SuperchainERC20Bridge`](./predeploys.md#superchainerc20bridge) to call
    [`crosschainMint`](#crosschainmint) and [`crosschainBurn`](#crosschainburn).
-2. Be deployed at the same address on every chain in the Superchain.
+4. Be deployed at the same address on every chain in the Superchain.
 
-The first property will allow the `SuperchainERC20Bridge` to have a liquidity guarantee,
+The third property will allow the `SuperchainERC20Bridge` to have a liquidity guarantee,
 which would not be possible in a model based on lock/unlock.
 Liquidity availability is fundamental to achieving fungibility.
 
-The second property removes the need for cross-chain access control lists.
+SuperchainERC20Bridge does not have to be the exclusive caller of `crosschainMint` and `crosschainBurn`,
+other addresses may also be permitted to call these functions.
+
+The fourth property removes the need for cross-chain access control lists.
 Otherwise, the `SuperchainERC20Bridge` would need a way to verify if the tokens they mint on
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.
@@ -58,6 +64,8 @@ predeploy that facilitates this process for L1 native tokens.
 Notice that ERC20s that do not implement the standard can still be fungible
 using interop message passing
 using a custom bridge or implementing `sendERC20` and `relayERC20` on their own contracts.
+
+An example implementation of the standard is available at [SuperchainERC20.sol](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/SuperchainERC20.sol)
 
 ### `IERC7802`
 
