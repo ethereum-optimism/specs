@@ -275,8 +275,16 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 ### `relayMessage` Invariants
 
+- It MUST NOT be possible to call the function more than once per execution
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chain id MUST be equal to the local chain id
+- Messages MUST NOT be relayed more than once
+- The `msg.sender` MUST be equal to the `entrypoint` address, if set
+
+### `sendMessage` Invariants
+
+- Sent Messages MUST be uniquely identifiable
+- It must emit the `SentMessage` event
 
 ### Message Versioning
 
