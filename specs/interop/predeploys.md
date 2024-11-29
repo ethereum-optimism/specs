@@ -277,6 +277,7 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chain id MUST be equal to the local chain id
+- The `msg.sender` MUST be equal to the `entrypoint` address, if set
 - If `entrypoint` is not set, anyone MUST be able to relay the message
 
 ### Message Versioning
