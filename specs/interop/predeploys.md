@@ -16,6 +16,7 @@
   - [`Identifier` Getters](#identifier-getters)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
+  - [`sendMessage` Invariants](#sendmessage-invariants)
   - [Message Versioning](#message-versioning)
   - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
   - [Interfaces](#interfaces)
