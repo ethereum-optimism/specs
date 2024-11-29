@@ -133,7 +133,7 @@ The `l2ChainId` has the following restrictions:
 On success, the following event is emitted:
 
 ```solidity
-event Deployed(uint256 indexed l2ChainId, SystemConfig indexed systemConfig);
+event Deployed(uint256 indexed outputVersion, uint256 indexed l2ChainId, address indexed deployer, bytes deployOutput);
 ```
 
 This method reverts on failure. This occurs when:
