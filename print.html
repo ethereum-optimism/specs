@@ -7118,6 +7118,16 @@ configuration of the permissioned dispute game.<br/></p>
 <li><a href="protocol/safe-extensions.html#deputy-guardian-module-security-properties">Deputy Guardian Module Security Properties</a></li>
 </ul>
 </li>
+<li><a href="protocol/safe-extensions.html#deputy-guardian-safe">Deputy Guardian Safe</a>
+<ul>
+<li><a href="protocol/safe-extensions.html#deputy-pause-module">Deputy Pause Module</a>
+<ul>
+<li><a href="protocol/safe-extensions.html#invariants">Invariants</a></li>
+<li><a href="protocol/safe-extensions.html#implementation">Implementation</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="protocol/safe-extensions.html#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a>
 <ul>
 <li><a href="protocol/safe-extensions.html#the-liveness-guard">The Liveness Guard</a></li>
@@ -7221,6 +7231,43 @@ is not authorized to make.</li>
 forward transactions.</li>
 <li>The module must format calldata correctly such that the target it calls performs the expected
 action.</li>
+</ol>
+<h2 id="deputy-guardian-safe"><a class="header" href="#deputy-guardian-safe">Deputy Guardian Safe</a></h2>
+<h3 id="deputy-pause-module"><a class="header" href="#deputy-pause-module">Deputy Pause Module</a></h3>
+<p>The Deputy Guardian Safe (currently the Optimism Foundation Safe) utilizes the Deputy Pause Module
+to remove the need for brittle pre-signed pause transactions and to speed up the reaction speed of
+the Deputy Guardian Safe for the specific purpose of triggering the Superchain-wide pause action.
+The Deputy Pause Module is explicitly designed to be used with an Externally Owned Account and is
+not designed to function with a smart contract deputy.</p>
+<h4 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h4>
+<ol>
+<li>Must enforce that the Deputy account is an EOA.</li>
+<li>Must correctly enforce access control so that only the Deputy account can act.</li>
+<li>Must always allow the Deputy account to act even if the private key for this account is leaked.</li>
+<li>Must not allow the Deputy to create authentication signatures that are indefinitely valid.</li>
+<li>Must only allow the Deputy account to carry out the singular action of causing the Guardian to
+trigger the Superchain-wide pause function on the <code>SuperchainConfig</code> contract via the Deputy
+Guardian and the <code>DeputyGuardianModule</code>. Must not allow the Deputy account to authenticate any
+other action.</li>
+</ol>
+<h4 id="implementation"><a class="header" href="#implementation">Implementation</a></h4>
+<ol>
+<li>Deputy Pause Module is not proxied and all values are hard-coded into the contract. Any changes
+to these values must be implemented by re-deploying the contract, removing the old module, and
+adding the new module.</li>
+<li>Deputy Pause Module verifies a signature from the Deputy over a fixed string in the constructor
+to confirm that the Deputy is an EOA that can generate valid signatures and that the creator at
+least indirectly has access to the key.</li>
+<li>Pause action is gated and must come with a valid signature from the Deputy account.</li>
+<li>Signed pause messages must contain an expiry timestamp so that the message can only be used to
+trigger the pause when the block timestamp is less than the signed expiry. Signed expiry
+timestamp cannot be more than a fixed number of seconds in the future as defined by a
+constructor parameter of the module itself.</li>
+<li>Signed pause messages must contain a nonce so that the signature can only be used a single time
+to carry out the pause action. Pause action must verify that the provided nonce has not been
+used before.</li>
+<li>Any account can supply the signature as long as the recovered signer is the Deputy account. This
+means that the Deputy account does not need to hold any ETH to act as the Deputy.</li>
 </ol>
 <h2 id="security-council-liveness-checking-extensions"><a class="header" href="#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a></h2>
 <p>The Security Council Safe is extended by the Liveness Checking Module and Guard. These extensions
@@ -11119,7 +11166,7 @@ with <code>convert</code>.</p>
 </code></pre>
 <p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
 <code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
-<h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
+<h3 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h3>
 <p>The <code>convert</code> function conserves the following invariants:</p>
 <ul>
 <li>Conservation of amount:
@@ -11227,7 +11274,7 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h3 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h3>
+<h3 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h3>
 <p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainERC20Bridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -11789,7 +11836,7 @@ in the <a href="interop/./predeploys.html#superchainerc20bridge">predeploys spec
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
+<h2 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h2>
 <p>An example implementation for the <code>sendERC20</code> and <code>relayERC20</code> functions is provided.</p>
 <pre><code class="language-solidity">function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) external returns (bytes32 msgHash_) {
   _token.crosschainBurn(msg.sender, _amount);
@@ -11940,7 +11987,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </tbody></table>
 </div>
 <h2 id="superchainweth"><a class="header" href="#superchainweth">SuperchainWETH</a></h2>
-<h3 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h3>
+<h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
 <h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
 <ul>
 <li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
@@ -11975,7 +12022,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <li>Emits a <code>CrosschainMinted</code> event.</li>
 </ul>
 <h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
-<h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
+<h3 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h3>
 <h4 id="global-invariants"><a class="header" href="#global-invariants">Global Invariants</a></h4>
 <ul>
 <li>Initial balance must be set to <code>type(uint248).max</code> (wei). Purpose for using <code>type(uint248).max</code> is to guarantees that
@@ -12272,7 +12319,7 @@ function implementation(
 /// @notice All contracts for a chain can be found from its SystemConfig.
 function systemConfig(uint256 chainId) external view returns (SystemConfig);
 </code></pre>
-<h2 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h2>
+<h2 id="implementation-2"><a class="header" href="#implementation-2">Implementation</a></h2>
 <h3 id="batch-inbox-address-1"><a class="header" href="#batch-inbox-address-1">Batch Inbox Address</a></h3>
 <p>The chain's <a href="experimental/../protocol/configurability.html#consensus-parameters">Batch Inbox</a> address is computed at deploy time using the recommend approach defined
 in the <a href="experimental/../protocol/configurability.html">standard configuration</a>. This improves UX by removing an input, and ensures uniqueness of

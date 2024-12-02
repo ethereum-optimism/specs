@@ -179,6 +179,16 @@
 <li><a href="#deputy-guardian-module-security-properties">Deputy Guardian Module Security Properties</a></li>
 </ul>
 </li>
+<li><a href="#deputy-guardian-safe">Deputy Guardian Safe</a>
+<ul>
+<li><a href="#deputy-pause-module">Deputy Pause Module</a>
+<ul>
+<li><a href="#invariants">Invariants</a></li>
+<li><a href="#implementation">Implementation</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a>
 <ul>
 <li><a href="#the-liveness-guard">The Liveness Guard</a></li>
@@ -282,6 +292,43 @@ is not authorized to make.</li>
 forward transactions.</li>
 <li>The module must format calldata correctly such that the target it calls performs the expected
 action.</li>
+</ol>
+<h2 id="deputy-guardian-safe"><a class="header" href="#deputy-guardian-safe">Deputy Guardian Safe</a></h2>
+<h3 id="deputy-pause-module"><a class="header" href="#deputy-pause-module">Deputy Pause Module</a></h3>
+<p>The Deputy Guardian Safe (currently the Optimism Foundation Safe) utilizes the Deputy Pause Module
+to remove the need for brittle pre-signed pause transactions and to speed up the reaction speed of
+the Deputy Guardian Safe for the specific purpose of triggering the Superchain-wide pause action.
+The Deputy Pause Module is explicitly designed to be used with an Externally Owned Account and is
+not designed to function with a smart contract deputy.</p>
+<h4 id="invariants"><a class="header" href="#invariants">Invariants</a></h4>
+<ol>
+<li>Must enforce that the Deputy account is an EOA.</li>
+<li>Must correctly enforce access control so that only the Deputy account can act.</li>
+<li>Must always allow the Deputy account to act even if the private key for this account is leaked.</li>
+<li>Must not allow the Deputy to create authentication signatures that are indefinitely valid.</li>
+<li>Must only allow the Deputy account to carry out the singular action of causing the Guardian to
+trigger the Superchain-wide pause function on the <code>SuperchainConfig</code> contract via the Deputy
+Guardian and the <code>DeputyGuardianModule</code>. Must not allow the Deputy account to authenticate any
+other action.</li>
+</ol>
+<h4 id="implementation"><a class="header" href="#implementation">Implementation</a></h4>
+<ol>
+<li>Deputy Pause Module is not proxied and all values are hard-coded into the contract. Any changes
+to these values must be implemented by re-deploying the contract, removing the old module, and
+adding the new module.</li>
+<li>Deputy Pause Module verifies a signature from the Deputy over a fixed string in the constructor
+to confirm that the Deputy is an EOA that can generate valid signatures and that the creator at
+least indirectly has access to the key.</li>
+<li>Pause action is gated and must come with a valid signature from the Deputy account.</li>
+<li>Signed pause messages must contain an expiry timestamp so that the message can only be used to
+trigger the pause when the block timestamp is less than the signed expiry. Signed expiry
+timestamp cannot be more than a fixed number of seconds in the future as defined by a
+constructor parameter of the module itself.</li>
+<li>Signed pause messages must contain a nonce so that the signature can only be used a single time
+to carry out the pause action. Pause action must verify that the provided nonce has not been
+used before.</li>
+<li>Any account can supply the signature as long as the recovered signer is the Deputy account. This
+means that the Deputy account does not need to hold any ETH to act as the Deputy.</li>
 </ol>
 <h2 id="security-council-liveness-checking-extensions"><a class="header" href="#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a></h2>
 <p>The Security Council Safe is extended by the Liveness Checking Module and Guard. These extensions
