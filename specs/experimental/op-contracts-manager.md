@@ -18,7 +18,6 @@ of governance approved [contract releases] can be found on the
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [Overview](#overview)
@@ -268,7 +267,7 @@ to implement, but will be ugly and require new tooling and processes to do corre
 
 ## Security Considerations
 
-#### Chain ID Source of Truth
+### Chain ID Source of Truth
 
 One of the implicit restrictions on chain ID is that `deploy` can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
@@ -287,7 +286,7 @@ uniqueness is not enforced by the OP Contracts Manager, and it is strongly
 recommended to only use chain IDs that are not already present in the
 [ethereum-lists/chains] repository.
 
-#### Chain ID Frontrunning
+### Chain ID Frontrunning
 
 Contract addresses for a chain are a function of chain ID, which implies you
 can counterfactually compute and use those chain addresses before the chain is
@@ -295,7 +294,7 @@ deployed. However, this property should not be relied upon—new chain deploymen
 are permissionless, so you cannot guarantee usage of a given chain ID, as deploy
 transactions can be frontrun.
 
-#### Chain ID Value
+### Chain ID Value
 
 While not specific to OP Contracts Manager, when choosing a chain ID is important
 to consider that not all chain IDs are well supported by tools. For example,
@@ -306,13 +305,13 @@ OP Contracts Manager does not consider factors such as these. The EVM supports
 256-bit chain IDs, so OP Contracts Manager sticks with the full 256-bit range to
 maximize compatibility.
 
-#### Proxy Admin Owner
+### Proxy Admin Owner
 
 The proxy admin owner is a very powerful role, as it allows upgrading protocol
 contracts. When choosing the initial proxy admin owner, a Safe is recommended
 to ensure admin privileges are sufficiently secured.
 
-#### Safely using `DELEGATECALL`
+### Safely using `DELEGATECALL`
 
 Because a Safe will `DELEGATECALL` to the `upgrade()` and `addGameType()` methods, it is
 critical that no storage writes occur. This should be enforced in multiple ways, including:
