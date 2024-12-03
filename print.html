@@ -10574,6 +10574,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
 <ul>
 <li><a href="interop/predeploys.html#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
+<li><a href="interop/predeploys.html#sendmessage-invariants"><code>sendMessage</code> Invariants</a></li>
 <li><a href="interop/predeploys.html#message-versioning">Message Versioning</a></li>
 <li><a href="interop/predeploys.html#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></li>
 <li><a href="interop/predeploys.html#interfaces">Interfaces</a>
@@ -10834,6 +10835,12 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 <ul>
 <li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
 <li>The <code>_destination</code> chain id MUST be equal to the local chain id</li>
+<li>Messages MUST NOT be relayed more than once</li>
+</ul>
+<h3 id="sendmessage-invariants"><a class="header" href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></h3>
+<ul>
+<li>Sent Messages MUST be uniquely identifiable</li>
+<li>It must emit the <code>SentMessage</code> event</li>
 </ul>
 <h3 id="message-versioning-1"><a class="header" href="#message-versioning-1">Message Versioning</a></h3>
 <p>Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
