@@ -3142,6 +3142,12 @@ epoch</a> of the L2 block</li>
 </ul>
 <p>The Delta upgrade introduced an additional batch type, <a href="protocol/./delta/span-batches.html">span batches</a>.</p>
 <p>Unknown versions make the batch invalid (it must be ignored by the rollup node), as do malformed contents.</p>
+<blockquote>
+<p><strong>Note</strong> if the batch version and contents can be RLP decoded correctly but extra content exists beyond the batch,
+the additional data may be ignored during parsing. Data <em>between</em> RLP encoded batches may not be ignored
+(as they are seen as malformed batches), but if a batch can be fully described by the RLP decoding,
+extra content does not invalidate the decoded batch.</p>
+</blockquote>
 <p>The <code>epoch_number</code> and the <code>timestamp</code> must also respect the constraints listed in the <a href="protocol/derivation.html#batch-queue">Batch Queue</a>
 section, otherwise the batch is considered invalid and will be ignored.</p>
 <hr />
