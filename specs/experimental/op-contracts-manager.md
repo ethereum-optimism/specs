@@ -18,6 +18,7 @@ of governance approved [contract releases] can be found on the
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -230,7 +231,7 @@ function, increasing the cost and reducing the number of OP Chains which can be 
 ## Adding game types
 
 Because different OP Chains within a Superchain may use different dispute game types, and are
-expected to move from a permissioned to permissionless game over time, an `addGameType` method is
+expected to move from a permissioned to permissionless game over time, an `addGameType()` method is
 provided to enable adding a new game type to multiple games at once.
 
 ### Interface
@@ -252,18 +253,11 @@ function addGameType(ISystemConfig[] _systemConfigs, NewGameConfig[] _newGames) 
 
 The high level logic of the `addGameType` method is as follows (for each chain):
 
-1. Deploys the new game Creator contract for that game type.
-2. Calls `setImplementation()` on the `DisputeGameFactory`
-3. Calls `setAnchorState()` on the `AnchorStateRegistry`
-
-Note that in [Standard Configuration chains](../protocol/superchain-configuration.md):
-
-- `DisputeGameFactory.setImplementation()` is authorized to the Upgrade Controller
-- `AnchorStateRegistry.setAnchorState()` is authorized to the Guardian
-
-Since the Guardian is its own Safe controlled by the Security Council, and the Upgrade Controller is
-a 2 of 2 jointly controlled by the Security Council and Optimism Foundation, this is not impossible
-to implement, but will be ugly and require new tooling and processes to do correctly.
+1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method.
+1. A new Proxy contract will be deployed, with the implementation set to the `Creator` contract for that game type.
+1. Calls `setImplementation()` on the `DisputeGameFactory`
+1. Calls `upgrade()` on the `AnchorStateRegistry` to set the new game type to add a new entry to the `anchors` mapping.
+   The `upgrade()` method should revert if it would overwrite an existing entry.
 
 ## Security Considerations
 
