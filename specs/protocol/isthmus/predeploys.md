@@ -243,6 +243,12 @@ is read directly from storage. If `isIsthmus` is false, then this function MUST 
 function getOperatorFee(uint256 gasUsed)(uint256)
 ```
 
+##### `getL1Fee`
+
+This function will be updated to include the operator fee, for post-Isthmus chains. The API will
+remain the same. Since the operator fee is 0 by default, most chains who are not using the operator
+fee will not be affected by this change.
+
 ### OptimismMintableERC721Factory
 
 The chain id is no longer read from storage but instead is read from the `L1Block` contract by calling
