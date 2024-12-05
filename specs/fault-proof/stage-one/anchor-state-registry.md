@@ -1,5 +1,8 @@
+# Anchor State Registry
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Anchor State Registry](#anchor-state-registry)
@@ -41,11 +44,9 @@
     - [`isGameInvalid`](#isgameinvalid-1)
     - [`isGameValid`](#isgamevalid-1)
     - [`disputeGameFinalityDelaySeconds`](#disputegamefinalitydelayseconds)
-    - [`disputeGameFactory`](#disputegamefactory)
+    - [`disputeGameFactory`](#disputegamefactory-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Anchor State Registry
 
 ## Overview
 
@@ -57,9 +58,11 @@ Multiple contracts in the fault proof system have critical dependencies on thing
 - A new dispute game needs to initialize with the **latest valid anchor state**.
 - An existing dispute game needs to know whether it is **invalid**, so it can refund its bonds.
 
-The AnchorStateRegistry is these contracts' source of truth, managing and exposing dispute game and anchor state validity to moderate dispute games and withdrawals.
+The AnchorStateRegistry is these contracts' source of truth, managing and exposing dispute game and anchor state
+validity to moderate dispute games and withdrawals.
 
-Furthermore, the AnchorStateRegistry is a crucial player in incident response. It can invalidate dispute games, thereby invalidating withdrawals and dispute games founded on an incorrect root claim.
+Furthermore, the AnchorStateRegistry is a crucial player in incident response. It can invalidate dispute games, thereby
+invalidating withdrawals and dispute games founded on an incorrect root claim.
 
 ## Definitions
 
@@ -70,7 +73,8 @@ Furthermore, the AnchorStateRegistry is a crucial player in incident response. I
 - **Blacklisted game**
   - A dispute game is blacklisted if it is set as blacklisted via **authorized input**.
 - **Validity timestamp**
-  - The validity timestamp is a timestamp internal to the contract that partly determines game validity and can only be adjusted via **authorized input**.
+  - The validity timestamp is a timestamp internal to the contract that partly determines game validity and can only be
+    adjusted via **authorized input**.
 - **Invalid game**
   - A dispute game is invalid if any of the following are true:
     - Game was not created by the dispute game factory.
@@ -88,31 +92,40 @@ Furthermore, the AnchorStateRegistry is a crucial player in incident response. I
 - **Valid game**
   - A game is a **Valid game** if it is not an **Invalid game**, and is a **Finalized game**.
 - **Latest valid game**
-  - The latest valid game is a game whose anchor state is used to initialize new Fault Dispute Games. It was known to be a **valid game** when set. It will continue to be the latest valid game until updated with a more recent valid game, or blacklisted.
+  - The latest valid game is a game whose anchor state is used to initialize new Fault Dispute Games. It was known to be
+    a **valid game** when set. It will continue to be the latest valid game until updated with a more recent valid game,
+    or blacklisted.
 - **Latest valid anchor state**
   - The latest valid anchor state is the output root of the latest valid game.
 - **Dispute game finality delay**
-  - The dispute game finality delay is an **authorized input** representing the period of time between a dispute game resolving and a dispute game becoming finalized or valid.
+  - The dispute game finality delay is an **authorized input** representing the period of time between a dispute game
+    resolving and a dispute game becoming finalized or valid.
   - Also known as "air gap."
 
 ## Top-Level Invariants
 
 - The contract will only assert **valid games** are valid.
 - The latest valid anchor state must never serve the output root of a blacklisted game.
-- The latest valid anchor state must be recent enough so that the game doesn't break (run out of memory) in op-challenger.
+- The latest valid anchor state must be recent enough so that the game doesn't break (run out of memory) in
+  op-challenger.
 - The validity timestamp must start at zero.
 
 ### Contract Dependents
 
-This contract manages and exposes dispute game validity so that other contracts can do things like correctly initialize dispute games and validate withdrawals.
+This contract manages and exposes dispute game validity so that other contracts can do things like correctly initialize
+dispute games and validate withdrawals.
 
 #### FaultDisputeGame
 
-A [FaultDisputeGame](fault-dispute-game.md) depends on this contract for a **latest valid anchor state** against which to resolve a claim and assumes its correct. Additionally, becauase proposers must gather L1 data for the window between the anchor state and the claimed state, FaultDisputeGames depend on this contract to keep a **latest valid anchor state** that's recent, so that proposer software is not overburdened (i.e. runs out of memory).
+A [FaultDisputeGame](fault-dispute-game.md) depends on this contract for a **latest valid anchor state** against which
+to resolve a claim and assumes its correct. Additionally, becauase proposers must gather L1 data for the window between
+the anchor state and the claimed state, FaultDisputeGames depend on this contract to keep a **latest valid anchor
+state** that's recent, so that proposer software is not overburdened (i.e. runs out of memory).
 
 #### OptimismPortal
 
-OptimismPortal depends on this contract to correctly report game validity as the basis for proving and finalizing withdrawals.
+OptimismPortal depends on this contract to correctly report game validity as the basis for proving and finalizing
+withdrawals.
 
 - Can this dispute game can be used to prove a withdrawal? (Is the dispute game a **maybe valid game**?)
 - Can this dispute game can be used to finalize a withdrawal? (Is the dispute game a **valid game**?)
@@ -154,7 +167,9 @@ Depends on SuperchainConfig to correctly report:
 Gets **latest valid game**.
 
 - Throws an error if the game is not valid.
-  - Depends on the condition that `update latest valid game` is the only method to update the “latest valid game” state variable and that it will only update the state variable with a **valid game**. Still, it is possible for the once valid game to become invalid (via blacklisting or `update validity timestamp`).
+  - Depends on the condition that `update latest valid game` is the only method to update the “latest valid game” state
+    variable and that it will only update the state variable with a **valid game**. Still, it is possible for the once
+    valid game to become invalid (via blacklisting or `update validity timestamp`).
 
 ### `updateLatestValidGame`
 
@@ -210,7 +225,8 @@ Returns whether the game is a **blacklisted game**.
 
 ### `invalidateAllExistingGames`
 
-Invalidates all games that exist. Note: until updated, the **latest valid game** (now invalidated) will still provide the **latest valid anchor state**.
+Invalidates all games that exist. Note: until updated, the **latest valid game** (now invalidated) will still provide
+the **latest valid anchor state**.
 
 - Must be **authorized** by _some role_.
 
