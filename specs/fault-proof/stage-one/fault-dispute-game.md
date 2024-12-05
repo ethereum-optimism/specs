@@ -11,7 +11,6 @@
   - [Execution Trace](#execution-trace)
   - [Claims](#claims)
   - [Anchor State](#anchor-state)
-  - [Anchor State Registry](#anchor-state-registry)
   - [DAG](#dag)
   - [Subgame](#subgame)
   - [Game Tree](#game-tree)
@@ -92,20 +91,7 @@ claims, committing to different output roots and FPVM states in the FDG.
 An anchor state, or anchor output root, is a previous output root that is assumed to be valid. An
 FDG is always initialized with an anchor state and execution is carried out between this anchor
 state and the [claimed output root](#claims). FDG contracts pull their anchor state from the
-[Anchor State Registry](#anchor-state-registry) contract. The initial anchor state for a FDG is the
-genesis state of the L2.
-
-Clients must currently gather L1 data for the window between the anchor state and the claimed
-state. In order to reduce this L1 data requirement, [claims](#claims) about the state of the L2
-become new anchor states when dispute games resolve in their favor. FDG contracts set their anchor
-states at initialization time so that these updates do not impact active games.
-
-### Anchor State Registry
-
-The Anchor State Registry is a registry that maps FDG types to their current [anchor states](#anchor-state).
-The Anchor State Registry is specific to Fault Dispute Game contracts and may not be applicable to
-other types of dispute game contracts that do not have the same concept of state that progresses
-over time.
+[Anchor State Registry](anchor-state-registry.md) contract.
 
 ### DAG
 

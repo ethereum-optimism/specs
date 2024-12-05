@@ -1,6 +1,5 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [Anchor State Registry](#anchor-state-registry)
@@ -9,28 +8,32 @@
   - [Definitions](#definitions)
   - [Top-Level Invariants](#top-level-invariants)
     - [Contract Dependents](#contract-dependents)
-    - [Contract Dependencies](#contract-dependencies)
       - [FaultDisputeGame](#faultdisputegame)
+      - [OptimismPortal](#optimismportal)
+    - [Contract Dependencies](#contract-dependencies)
+      - [FaultDisputeGame](#faultdisputegame-1)
+      - [DisputeGameFactory](#disputegamefactory)
+      - [SuperchainConfig](#superchainconfig)
   - [Function-Level Invariants](#function-level-invariants)
     - [`initialize`](#initialize)
     - [`getLatestValidGame`](#getlatestvalidgame)
     - [`updateLatestValidGame`](#updatelatestvalidgame)
     - [`getLatestAnchorState`](#getlatestanchorstate)
-    - [`registerGameResult`](#registergameresult)
+    - [`registerMaybeValidGame`](#registermaybevalidgame)
     - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame)
     - [`isGameInvalid`](#isgameinvalid)
     - [`isGameFinalized`](#isgamefinalized)
     - [`isGameValid`](#isgamevalid)
     - [`isGameBlacklisted`](#isgameblacklisted)
     - [`setRespectedGameType`](#setrespectedgametype)
-    - [`updateValidityTimestamp`](#updatevaliditytimestamp)
+    - [`invalidateAllExistingGames`](#invalidateallexistinggames)
     - [`setGameBlacklisted`](#setgameblacklisted)
     - [`getGameFinalityDelay`](#getgamefinalitydelay)
   - [Implementation](#implementation)
     - [`constructor`](#constructor)
     - [`initialize`](#initialize-1)
     - [`anchors` / `getLatestAnchorState`](#anchors--getlatestanchorstate)
-    - [`registerMaybeValidGame`](#registermaybevalidgame)
+    - [`registerMaybeValidGame`](#registermaybevalidgame-1)
     - [`updateLatestValidGame`](#updatelatestvalidgame-1)
     - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame-1)
     - [`setGameBlacklisted`](#setgameblacklisted-1)
@@ -48,15 +51,15 @@
 
 ### Perspective
 
-Multiple contracts in the fault proof system have hard dependencies on things outside them:
+Multiple contracts in the fault proof system have critical dependencies on things outside them:
 
 - The Portal needs to know whether a withdrawal's proof is based on a **valid** dispute game.
-- A new dispute game needs to initialize with a **valid** anchor state.
+- A new dispute game needs to initialize with the **latest valid anchor state**.
 - An existing dispute game needs to know whether it is **invalid**, so it can refund its bonds.
 
 The AnchorStateRegistry is these contracts' source of truth, managing and exposing dispute game and anchor state validity to moderate dispute games and withdrawals.
 
-Furthermore, the AnchorStateRegistry is a crucial player in incident response. It can invalidate dispute games and withdrawals, effectively mitigating consequences from dispute games that resolve incorrectly.
+Furthermore, the AnchorStateRegistry is a crucial player in incident response. It can invalidate dispute games, thereby invalidating withdrawals and dispute games founded on an incorrect root claim.
 
 ## Definitions
 
@@ -67,7 +70,7 @@ Furthermore, the AnchorStateRegistry is a crucial player in incident response. I
 - **Blacklisted game**
   - A dispute game is blacklisted if it is set as blacklisted via **authorized input**.
 - **Validity timestamp**
-  - The validity timestamp is an **authorized input** that partly determines game validity.
+  - The validity timestamp is a timestamp internal to the contract that partly determines game validity and can only be adjusted via **authorized input**.
 - **Invalid game**
   - A dispute game is invalid if any of the following are true:
     - Game was not created by the dispute game factory.
@@ -80,12 +83,17 @@ Furthermore, the AnchorStateRegistry is a crucial player in incident response. I
     - Game status is `CHALLENGER_WINS` or `DEFENDER_WINS`.
     - Game `resolvedAt` timestamp is not zero.
     - Game `resolvedAt` timestamp is more than `dispute game finality delay` seconds ago.
+- **Maybe valid game**
+  - A dispute game that is not an **invalid game** (but not yet a **finalized game**).
 - **Valid game**
   - A game is a **Valid game** if it is not an **Invalid game**, and is a **Finalized game**.
 - **Latest valid game**
   - The latest valid game is a game whose anchor state is used to initialize new Fault Dispute Games. It was known to be a **valid game** when set. It will continue to be the latest valid game until updated with a more recent valid game, or blacklisted.
 - **Latest valid anchor state**
   - The latest valid anchor state is the output root of the latest valid game.
+- **Dispute game finality delay**
+  - The dispute game finality delay is an **authorized input** representing the period of time between a dispute game resolving and a dispute game becoming finalized or valid.
+  - Also known as "air gap."
 
 ## Top-Level Invariants
 
@@ -96,23 +104,41 @@ Furthermore, the AnchorStateRegistry is a crucial player in incident response. I
 
 ### Contract Dependents
 
-This contract manages and exposes dispute game validity so that other contracts can do things like validate withdrawals and initialize dispute games correctly.
+This contract manages and exposes dispute game validity so that other contracts can do things like correctly initialize dispute games and validate withdrawals.
 
-- This contract is the source of truth for the validity of an **anchor state**.
-  - [FaultDisputeGame](fault-dispute-game.md) and PermissionedDisputeGame depend on this contract for a **latest valid anchor state** against which to resolve a claim. These contracts assume the state is valid.
-- Optimism Portal depends on this contract for accurate fault dispute game results.
-  - Can this dispute game can be used to prove a withdrawal? (Is the dispute game not an **invalid game**?)
-  - Can this dispute game can be used to finalize a withdrawal? (Is the dispute game a **valid game**?)
+#### FaultDisputeGame
+
+A [FaultDisputeGame](fault-dispute-game.md) depends on this contract for a **latest valid anchor state** against which to resolve a claim and assumes its correct. Additionally, becauase proposers must gather L1 data for the window between the anchor state and the claimed state, FaultDisputeGames depend on this contract to keep a **latest valid anchor state** that's recent, so that proposer software is not overburdened (i.e. runs out of memory).
+
+#### OptimismPortal
+
+OptimismPortal depends on this contract to correctly report game validity as the basis for proving and finalizing withdrawals.
+
+- Can this dispute game can be used to prove a withdrawal? (Is the dispute game a **maybe valid game**?)
+- Can this dispute game can be used to finalize a withdrawal? (Is the dispute game a **valid game**?)
 
 ### Contract Dependencies
 
 #### FaultDisputeGame
 
-- Only sets that special boolean if it actually is the respected game type.
-- And the boolean never changes after it’s been set.
-- Reports its game type correctly.
-- Reports its l2BlockNumber correctly.
-- Reports its createdAt timestamp correctly.
+Depends on FaultDisputeGame to correctly report:
+
+- whether its game type was the respected game type when created (and that it never changes once set).
+- its game type.
+- its l2BlockNumber.
+- its createdAt timestamp.
+
+#### DisputeGameFactory
+
+Depends on DisputeGameFactory to correctly report:
+
+- whether a game was created by the DisputeGameFactory (is "factory-registered").
+
+#### SuperchainConfig
+
+Depends on SuperchainConfig to correctly report:
+
+- its guardian address.
 
 ## Function-Level Invariants
 
@@ -132,9 +158,9 @@ Gets **latest valid game**.
 
 ### `updateLatestValidGame`
 
-- Game must be **valid**.
-- Block number for latest valid game must be higher than current latest valid game.
-- This function is the ONLY way to update the latest valid game (after initialization).
+- Game must be a **valid game**.
+- Block number for candidate **valid game** must be higher than current **latest valid game**.
+- This function is the ONLY way to update the **latest valid game** (after initialization).
 
 ### `getLatestAnchorState`
 
@@ -143,17 +169,17 @@ Gets **latest valid game**.
 - Must maintain the property that the timestamp of the game is not too old.
   - TODO: How old is too old?
 
-### `registerGameResult`
+### `registerMaybeValidGame`
 
-Stores the address of a not invalid dispute game in an array as a candidate for `latestValidGame`.
+Stores the address of a **maybe valid game** in an array as a candidate for `latestValidGame`.
 
-- Callable only by a not invalid game.
-- Calling game must only register itself.
-- TODO:
+- Callable only by a **maybe valid game**.
+- Calling game must only register itself (and not some other game).
+  - TODO: determine any invariants around registry ordering.
 
 ### `tryUpdateLatestValidGame`
 
-Try update latest valid game based on previous game results.
+Try to update **latest valid game** using registry of **maybe valid games**.
 
 - Callable by anyone.
 - Find the latest (comparing on l2BlockNumber) valid game you can find in the register within a fixed amount of gas.
@@ -180,23 +206,23 @@ Returns whether the game is a **blacklisted game**.
 
 ### `setRespectedGameType`
 
-- Must be **authorized** by <some role>.
+- Must be **authorized** by _some role_.
 
-### `updateValidityTimestamp`
+### `invalidateAllExistingGames`
 
-- Must be **authorized** by <some role>.
-- Must be greater than previous validity timestamp.
-- Cannot be greater than current block timestamp.
+Invalidates all games that exist. Note: until updated, the **latest valid game** (now invalidated) will still provide the **latest valid anchor state**.
+
+- Must be **authorized** by _some role_.
 
 ### `setGameBlacklisted`
 
 Blacklists a game.
 
-- Must be **authorized** by <some role>.
+- Must be **authorized** by _some role_.
 
 ### `getGameFinalityDelay`
 
-Returns **authorized** finality delay duration in seconds. No external dependent; public getter for convenience.
+Returns **authorized** finality delay duration in seconds. No external dependents; public getter for convenience.
 
 ## Implementation
 

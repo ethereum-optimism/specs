@@ -305,5 +305,9 @@ interface IDisputeGame is IInitializable {
     /// @return rootClaim_ The root claim of the DisputeGame.
     /// @return extraData_ Any extra data supplied to the dispute game contract by the creator.
     function gameData() external view returns (GameType gameType_, Claim rootClaim_, bytes memory extraData_);
+
+    /// @notice Returns whether this game's game type was the `respectedGameType` when created.
+    /// @return isRespectedGameType_ Whether this game's game type was the `respectedGameType` when created.
+    function isRespectedGameTypeWhenCreated() external view returns (bool isRespectedGameType_);
 }
 ```
