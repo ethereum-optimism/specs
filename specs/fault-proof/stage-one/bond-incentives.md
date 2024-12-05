@@ -2,24 +2,22 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
-- [Bond Incentives](#bond-incentives)
-  - [Overview](#overview)
-  - [Moves](#moves)
-  - [Subgame Resolution](#subgame-resolution)
-    - [Leftmost Claim Incentives](#leftmost-claim-incentives)
-  - [Fault Proof Mainnet Incentives](#fault-proof-mainnet-incentives)
-    - [Authenticated Roles](#authenticated-roles)
-    - [Base Fee Assumption](#base-fee-assumption)
-    - [Bond Scaling](#bond-scaling)
-    - [Required Bond Formula](#required-bond-formula)
-    - [Other Incentives](#other-incentives)
-    - [DelayedWETH](#delayedweth)
-      - [Sub-Account Model](#sub-account-model)
-      - [Delay Period](#delay-period)
-      - [Integration](#integration)
+- [Overview](#overview)
+- [Moves](#moves)
+- [Subgame Resolution](#subgame-resolution)
+  - [Leftmost Claim Incentives](#leftmost-claim-incentives)
+- [Fault Proof Mainnet Incentives](#fault-proof-mainnet-incentives)
+  - [Authenticated Roles](#authenticated-roles)
+  - [Base Fee Assumption](#base-fee-assumption)
+  - [Bond Scaling](#bond-scaling)
+  - [Required Bond Formula](#required-bond-formula)
+  - [Other Incentives](#other-incentives)
+  - [DelayedWETH](#delayedweth)
+    - [Sub-Account Model](#sub-account-model)
+    - [Delay Period](#delay-period)
+    - [Integration](#integration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

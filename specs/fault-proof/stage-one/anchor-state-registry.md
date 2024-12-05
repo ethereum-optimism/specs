@@ -1,16 +1,52 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Table of Contents**
+
+- [Anchor State Registry](#anchor-state-registry)
+  - [Overview](#overview)
+    - [Perspective](#perspective)
+  - [Definitions](#definitions)
+  - [Top-Level Invariants](#top-level-invariants)
+    - [Contract Dependents](#contract-dependents)
+    - [Contract Dependencies](#contract-dependencies)
+      - [FaultDisputeGame](#faultdisputegame)
+  - [Function-Level Invariants](#function-level-invariants)
+    - [Initialize](#initialize)
+    - [Get **latest valid game**](#get-latest-valid-game)
+    - [Update **latest valid game**](#update-latest-valid-game)
+    - [Get latest anchor state](#get-latest-anchor-state)
+    - [Register game result](#register-game-result)
+    - [Try update latest valid game based on previous game results](#try-update-latest-valid-game-based-on-previous-game-results)
+    - [Is this game invalid?](#is-this-game-invalid)
+    - [Is this game finalized?](#is-this-game-finalized)
+    - [Is this game valid?](#is-this-game-valid)
+    - [Is this game blacklisted?](#is-this-game-blacklisted)
+    - [Set respected game type](#set-respected-game-type)
+    - [Update validity timestamp](#update-validity-timestamp)
+    - [Blacklist game](#blacklist-game)
+    - [Get dispute game finality delay](#get-dispute-game-finality-delay)
+  - [Implementation](#implementation)
+    - [`constructor`](#constructor)
+    - [`initialize`](#initialize-1)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Anchor State Registry
 
-## Overview (What this contract is actually supposed to do)
+## Overview
 
-This contract manages and communicates properties of dispute game validity to other contracts in order to facilitate withdrawals and future dispute games.
+### Perspective
 
-- This contract is the source of truth for the validity of an **anchor state**.
-  - [FaultDisputeGame](fault-dispute-game.md) and PermissionedDisputeGame depend on this contract for a valid **anchor state** against which to resolve a claim. These contracts assume the state is valid.
-    - The valid anchor state needs to be recent enough so that the game doesn't break (run out of memory) in op-challenger.
-- This contract is the source of truth for the validity of a particular fault dispute game result.
-  - This property is used by the [OptimismPortal](optimism-portal.md). The Portal asks two things of the Registry:
-    - Can this dispute game can be used to prove a withdrawal?
-    - Can this dispute game can be used to finalize a withdrawal?
+Multiple contracts in the fault proof system have hard dependencies on things outside them:
+
+- The Portal needs to know whether a withdrawal's proof is based on a **valid** dispute game.
+- A new dispute game needs to initialize with a **valid** anchor state.
+- An existing dispute game needs to know whether it is **invalid**, so it can refund its bonds.
+
+The AnchorStateRegistry is these contracts' source of truth, managing and exposing dispute game and anchor state validity to moderate dispute games and withdrawals.
+
+Furthermore, the AnchorStateRegistry is a crucial player in incident response. It can invalidate dispute games and withdrawals, effectively mitigating consequences from dispute games that resolve incorrectly.
 
 ## Definitions
 
@@ -18,117 +54,139 @@ This contract manages and communicates properties of dispute game validity to ot
   - See [Fault Dispute Game -> Anchor State](fault-dispute-game.md#anchor-state).
 - **Authorized input**
   - An input for which there is social consensus, i.e. coming from governance.
+- **Blacklisted game**
+  - A dispute game is blacklisted if it is set as blacklisted via **authorized input**.
+- **Validity timestamp**
+  - The validity timestamp is an **authorized input** that partly determines game validity.
 - **Invalid game**
   - A dispute game is invalid if any of the following are true:
     - Game was not created by the dispute game factory.
     - Game was not created while it was the respected game type.
-    - Game is blacklisted.
-    - Game was created before the validity timestamp.
+    - Game is **blacklisted**.
+    - Game was created before the **validity timestamp**.
     - Game status is `CHALLENGER_WINS`.
 - **Finalized game**
   - A dispute game is finalized if all of the following are true:
     - Game status is `CHALLENGER_WINS` or `DEFENDER_WINS`.
     - Game `resolvedAt` timestamp is not zero.
-    - Game `resolvedAt` timestamp is more than `dispute game finality seconds` seconds ago.
+    - Game `resolvedAt` timestamp is more than `dispute game finality delay` seconds ago.
 - **Valid game**
   - A game is a **Valid game** if it is not an **Invalid game**, and is a **Finalized game**.
 - **Latest valid game**
-  - The latest valid game is a **valid game** whose anchor state will be used to initialize new FaultDisputeGames and PermissionedDisputeGames. It represents the most recent valid representation of L2 state.
+  - The latest valid game is a game whose anchor state is used to initialize new Fault Dispute Games. It was known to be a **valid game** when set. It will continue to be the latest valid game until updated with a more recent valid game, or blacklisted.
+- **Latest valid anchor state**
+  - The latest valid anchor state is the output root of the latest valid game.
 
 ## Top-Level Invariants
 
-- The Validity timestamp starts at zero.
+- The contract will only assert **valid games** are valid.
+- The latest valid anchor state must never serve the output root of a blacklisted game.
+- The latest valid anchor state must be recent enough so that the game doesn't break (run out of memory) in op-challenger.
+- The validity timestamp must start at zero.
+
+### Contract Dependents
+
+This contract manages and exposes dispute game validity so that other contracts can do things like validate withdrawals and initialize dispute games correctly.
+
+- This contract is the source of truth for the validity of an **anchor state**.
+  - [FaultDisputeGame](fault-dispute-game.md) and PermissionedDisputeGame depend on this contract for a **latest valid anchor state** against which to resolve a claim. These contracts assume the state is valid.
+- Optimism Portal depends on this contract for accurate fault dispute game results.
+  - Can this dispute game can be used to prove a withdrawal? (Is the dispute game not an **invalid game**?)
+  - Can this dispute game can be used to finalize a withdrawal? (Is the dispute game a **valid game**?)
+
+### Contract Dependencies
+
+#### FaultDisputeGame
+
+- Only sets that special boolean if it actually is the respected game type.
+- And the boolean never changes after it’s been set.
+- Reports its game type correctly.
+- Reports its l2BlockNumber correctly.
+- Reports its createdAt timestamp correctly.
 
 ## Function-Level Invariants
 
-### `initialize`
+### Initialize
 
-Initialize the thing somehow.
+- Initial anchor state must be an **authorized input**.
+- Dispute game factory must be an **authorized input**.
+- `dispute game finality delay` must be an **authorized input**.
+- Superchain config must be an **authorized input**.
 
-- Initial anchor state is **authorized**.
-- Need an **authorized** reference to the dispute game factory.
-- Need **authorized** input for `dispute game finality seconds`.
-- Need **authorized** reference to superchain config.
+### Get **latest valid game**
 
-### `getLatestValidGame`
-
-Get latest **valid game**.
+Gets **latest valid game**.
 
 - Throws an error if the game is not valid.
-  - Depends on the condition that `update latest valid game` is the only method to update the “latest valid game” state variable and that it will only update the state variable with a **valid game**. Still, it is possible for the once valid game to become invalid.
+  - Depends on the condition that `update latest valid game` is the only method to update the “latest valid game” state variable and that it will only update the state variable with a **valid game**. Still, it is possible for the once valid game to become invalid (via blacklisting or `update validity timestamp`).
 
-### Update latest **valid game**
+### Update **latest valid game**
 
-- Game must be **valid**
-- Block number for latest valid game must be higher than current latest valid game
-- This function is the ONLY way to update the latest valid game (after initialization)
+- Game must be **valid**.
+- Block number for latest valid game must be higher than current latest valid game.
+- This function is the ONLY way to update the latest valid game (after initialization).
 
-### Get latest valid root claim
+### Get latest anchor state
 
-- Returns the root claim of the result of `get latest valid game` or an **authorized** anchor state if no such game exists
-
-### Get anchor state
-
-- Returns the root claim of the result of `get latest valid game` or an **authorized** anchor state if no such game exists
-- Must maintain the property that the timestamp of the game is not too old
+- If the **latest valid game** is not blacklisted, return its root claim and l2 block number.
+- If the **latest valid game** is blacklisted, throw an error.
+- Must maintain the property that the timestamp of the game is not too old.
+  - TODO: How old is too old?
 
 ### Register game result
 
-- Callable only by a game itself
-- Game must not be invalid
-- If game is not invalid, stores the address of the game in some array
+Stores the address of a not invalid dispute game in an array as a candidate for `latestValidGame`.
+
+- Callable only by a not invalid game.
+- Calling game must only register itself.
+- TODO:
 
 ### Try update latest valid game based on previous game results
 
-- Callable by anyone
-- Find the latest (comparing on l2BlockNumber) valid game you can find in the register within a fixed amount of gas
-- Use this as input to `update latest valid game`
-- Make sure this doesn’t get more expensive as time goes on
+- Callable by anyone.
+- Find the latest (comparing on l2BlockNumber) valid game you can find in the register within a fixed amount of gas.
+  - Fixed gas amount ensures that this function does not get more expensive to call as time goes on.
+- Use this as input to `update latest valid game`.
 
 ### Is this game invalid?
 
+Returns whether the game is an **invalid game**.
+
 ### Is this game finalized?
+
+Returns whether the game is a **finalized game**.
 
 ### Is this game valid?
 
-- `return !isGameInvalid(game) && isGameFinalized(game)`
-- Definition of **valid** is this condition passing
+`return !isGameInvalid(game) && isGameFinalized(game)`
+
+- Definition of **valid** is this condition passing.
+
+### Is this game blacklisted?
+
+Returns whether the game is a **blacklisted game**.
 
 ### Set respected game type
 
-- Can only be set by <some role>
+- Must be **authorized** by <some role>.
 
 ### Update validity timestamp
 
-- Can only be set by <some role>
-- Must be greater than previous validity timestamp
-- Cannot be greater than current block timestamp
+- Must be **authorized** by <some role>.
+- Must be greater than previous validity timestamp.
+- Cannot be greater than current block timestamp.
 
 ### Blacklist game
 
-- Can only be set by <some role>
-
----
-
-- Definition of valid is NOT invalid AND finalized
-- Airgap is a condition of finalization
-- Therefore airgap is a condition of validity
-- Games can be blacklisted after they are valid
-
----
-
-- Change respected game type
-- Observe that change to respected game type is finalized
-- Then change the validation timestamp
-- Or just do both but make sure that respected game type change doesn’t get reorged to be after the timestamp change
+- Must be **authorized** by <some role>.
 
 ### Get dispute game finality delay
 
-- Returns **authorized** finality delay duration.
+- Returns **authorized** finality delay duration in seconds.
+- No external dependent; public getter for convenience.
 
-# FaultDisputeGame
+## Implementation
 
-- Only sets that special boolean if it actually is the respected game type
-- And the boolean never changes after it’s been set
-- Reports its game type correctly
-- Reports its l2BlockNumber correctly
+### `constructor`
+
+### `initialize`
