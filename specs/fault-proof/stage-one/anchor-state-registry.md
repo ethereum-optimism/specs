@@ -12,23 +12,33 @@
     - [Contract Dependencies](#contract-dependencies)
       - [FaultDisputeGame](#faultdisputegame)
   - [Function-Level Invariants](#function-level-invariants)
-    - [Initialize](#initialize)
-    - [Get **latest valid game**](#get-latest-valid-game)
-    - [Update **latest valid game**](#update-latest-valid-game)
-    - [Get latest anchor state](#get-latest-anchor-state)
-    - [Register game result](#register-game-result)
-    - [Try update latest valid game based on previous game results](#try-update-latest-valid-game-based-on-previous-game-results)
-    - [Is this game invalid?](#is-this-game-invalid)
-    - [Is this game finalized?](#is-this-game-finalized)
-    - [Is this game valid?](#is-this-game-valid)
-    - [Is this game blacklisted?](#is-this-game-blacklisted)
-    - [Set respected game type](#set-respected-game-type)
-    - [Update validity timestamp](#update-validity-timestamp)
-    - [Blacklist game](#blacklist-game)
-    - [Get dispute game finality delay](#get-dispute-game-finality-delay)
+    - [`initialize`](#initialize)
+    - [`getLatestValidGame`](#getlatestvalidgame)
+    - [`updateLatestValidGame`](#updatelatestvalidgame)
+    - [`getLatestAnchorState`](#getlatestanchorstate)
+    - [`registerGameResult`](#registergameresult)
+    - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame)
+    - [`isGameInvalid`](#isgameinvalid)
+    - [`isGameFinalized`](#isgamefinalized)
+    - [`isGameValid`](#isgamevalid)
+    - [`isGameBlacklisted`](#isgameblacklisted)
+    - [`setRespectedGameType`](#setrespectedgametype)
+    - [`updateValidityTimestamp`](#updatevaliditytimestamp)
+    - [`setGameBlacklisted`](#setgameblacklisted)
+    - [`getGameFinalityDelay`](#getgamefinalitydelay)
   - [Implementation](#implementation)
     - [`constructor`](#constructor)
     - [`initialize`](#initialize-1)
+    - [`anchors` / `getLatestAnchorState`](#anchors--getlatestanchorstate)
+    - [`registerMaybeValidGame`](#registermaybevalidgame)
+    - [`updateLatestValidGame`](#updatelatestvalidgame-1)
+    - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame-1)
+    - [`setGameBlacklisted`](#setgameblacklisted-1)
+    - [`setRespectedGameType`](#setrespectedgametype-1)
+    - [`isGameInvalid`](#isgameinvalid-1)
+    - [`isGameValid`](#isgamevalid-1)
+    - [`disputeGameFinalityDelaySeconds`](#disputegamefinalitydelayseconds)
+    - [`disputeGameFactory`](#disputegamefactory)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -106,34 +116,34 @@ This contract manages and exposes dispute game validity so that other contracts 
 
 ## Function-Level Invariants
 
-### Initialize
+### `initialize`
 
 - Initial anchor state must be an **authorized input**.
 - Dispute game factory must be an **authorized input**.
 - `dispute game finality delay` must be an **authorized input**.
 - Superchain config must be an **authorized input**.
 
-### Get **latest valid game**
+### `getLatestValidGame`
 
 Gets **latest valid game**.
 
 - Throws an error if the game is not valid.
   - Depends on the condition that `update latest valid game` is the only method to update the “latest valid game” state variable and that it will only update the state variable with a **valid game**. Still, it is possible for the once valid game to become invalid (via blacklisting or `update validity timestamp`).
 
-### Update **latest valid game**
+### `updateLatestValidGame`
 
 - Game must be **valid**.
 - Block number for latest valid game must be higher than current latest valid game.
 - This function is the ONLY way to update the latest valid game (after initialization).
 
-### Get latest anchor state
+### `getLatestAnchorState`
 
 - If the **latest valid game** is not blacklisted, return its root claim and l2 block number.
 - If the **latest valid game** is blacklisted, throw an error.
 - Must maintain the property that the timestamp of the game is not too old.
   - TODO: How old is too old?
 
-### Register game result
+### `registerGameResult`
 
 Stores the address of a not invalid dispute game in an array as a candidate for `latestValidGame`.
 
@@ -141,52 +151,75 @@ Stores the address of a not invalid dispute game in an array as a candidate for 
 - Calling game must only register itself.
 - TODO:
 
-### Try update latest valid game based on previous game results
+### `tryUpdateLatestValidGame`
+
+Try update latest valid game based on previous game results.
 
 - Callable by anyone.
 - Find the latest (comparing on l2BlockNumber) valid game you can find in the register within a fixed amount of gas.
   - Fixed gas amount ensures that this function does not get more expensive to call as time goes on.
 - Use this as input to `update latest valid game`.
 
-### Is this game invalid?
+### `isGameInvalid`
 
 Returns whether the game is an **invalid game**.
 
-### Is this game finalized?
+### `isGameFinalized`
 
 Returns whether the game is a **finalized game**.
 
-### Is this game valid?
+### `isGameValid`
 
 `return !isGameInvalid(game) && isGameFinalized(game)`
 
-- Definition of **valid** is this condition passing.
+Definition of **valid** is this condition passing.
 
-### Is this game blacklisted?
+### `isGameBlacklisted`
 
 Returns whether the game is a **blacklisted game**.
 
-### Set respected game type
+### `setRespectedGameType`
 
 - Must be **authorized** by <some role>.
 
-### Update validity timestamp
+### `updateValidityTimestamp`
 
 - Must be **authorized** by <some role>.
 - Must be greater than previous validity timestamp.
 - Cannot be greater than current block timestamp.
 
-### Blacklist game
+### `setGameBlacklisted`
+
+Blacklists a game.
 
 - Must be **authorized** by <some role>.
 
-### Get dispute game finality delay
+### `getGameFinalityDelay`
 
-- Returns **authorized** finality delay duration in seconds.
-- No external dependent; public getter for convenience.
+Returns **authorized** finality delay duration in seconds. No external dependent; public getter for convenience.
 
 ## Implementation
 
 ### `constructor`
 
 ### `initialize`
+
+### `anchors` / `getLatestAnchorState`
+
+### `registerMaybeValidGame`
+
+### `updateLatestValidGame`
+
+### `tryUpdateLatestValidGame`
+
+### `setGameBlacklisted`
+
+### `setRespectedGameType`
+
+### `isGameInvalid`
+
+### `isGameValid`
+
+### `disputeGameFinalityDelaySeconds`
+
+### `disputeGameFactory`
