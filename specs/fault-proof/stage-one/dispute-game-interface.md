@@ -308,6 +308,6 @@ interface IDisputeGame is IInitializable {
 
     /// @notice Returns whether this game's game type was the `respectedGameType` when created.
     /// @return isRespectedGameType_ Whether this game's game type was the `respectedGameType` when created.
-    function isRespectedGameTypeWhenCreated() external view returns (bool isRespectedGameType_);
+    function wasRespectedGameTypeWhenCreated() external view returns (bool wasRespectedGameType_);
 }
 ```

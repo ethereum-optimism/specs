@@ -2,10 +2,8 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
-- [Optimism Portal](#optimism-portal)
   - [Overview](#overview)
     - [Perspective](#perspective)
     - [Contract Dependencies](#contract-dependencies)
@@ -51,17 +49,20 @@ TODO
 
 - **Authorized input**
   - An input for which there is social consensus, i.e. coming from governance.
+
 - **Proven withdrawal**
+  -
+
 - **Finalized withdrawal**
 
 ## Top-Level Invariants
 
-- A withdrawal transaction must be **proven** against a game that is not `invalid`.
-- A withdrawal transaction may only be finalized against a game that is `valid`.
+- A withdrawal transaction must be **proven** against a game that is **maybe valid**.
+- A withdrawal transaction may only be finalized against a game that is **valid**.
   - Implicit in this is that a withdrawal transaction may only be finalized after the proof maturity delay has passed.
 - A withdrawal transaction may only be finalized if it has already been **proven**.
-- A withdrawal transaction must be used only once to finalize a withdrawal.
-- A withdrawal transaction that is finalized must attempt execution.
+- A withdrawal transaction must be used only once to **finalize** a withdrawal.
+- A withdrawal transaction that is **finalized** must attempt execution.
 
 # Function-Level Invariants
 
@@ -77,13 +78,13 @@ TODO
 
 Proves a withdrawal transaction.
 
-- Withdrawal game must not be an **invalid game**.
+- Withdrawal game must not be a **maybe valid game**.
 - Withdrawal transaction's target must not be the OptimismPortal address.
 - Withdrawal game's root claim must be equal to the hashed outputRootProof input.
 - Must verify that the hash of this withdrawal is stored in the L2toL1MessagePasser contract on L2.
-- A withdrawal can only be proven once unless the dispute game it proved against resolves against the favor of the root
-  claim.
-- Must add proof submitter to the list of proof submitters for this withdrawal hash.
+- A withdrawal cannot be reproved by the same proof submitter unless both of the following are true:
+  - the dispute game previously used to prove the withdrawal is now an invalid game.
+  - the withdrawal was never finalized.
 
 ## `finalizeWithdrawalTransaction`
 
@@ -92,10 +93,9 @@ Finalizes a withdrawal transaction that has already been proven.
 - Withdrawal transaction must have already been proven.
 - The proof maturity delay duration must have elapsed between the time the withdrawal was proven and this call for its
   finalization.
-- The time the withdrawal was proven must be greater than the time at which the withdrawal's game was created.
+- The time the withdrawal was proven must be greater or equal to the time at which the withdrawal's game was created.
 - Withdrawal transaction must not have been finalized before.
 - The game upon which the withdrawal proof is based must be a **valid game**.
-- Function must register the withdrawal as finalized.
 - Function must revert when system is paused.
 - TODO: withdrawal tx invariants (can't call token contract, exact balance must be transferred, estimator should revert
   for gas estimation)

@@ -5,46 +5,45 @@
 
 **Table of Contents**
 
-- [Anchor State Registry](#anchor-state-registry)
-  - [Overview](#overview)
-    - [Perspective](#perspective)
-  - [Definitions](#definitions)
-  - [Top-Level Invariants](#top-level-invariants)
-    - [Contract Dependents](#contract-dependents)
-      - [FaultDisputeGame](#faultdisputegame)
-      - [OptimismPortal](#optimismportal)
-    - [Contract Dependencies](#contract-dependencies)
-      - [FaultDisputeGame](#faultdisputegame-1)
-      - [DisputeGameFactory](#disputegamefactory)
-      - [SuperchainConfig](#superchainconfig)
-  - [Function-Level Invariants](#function-level-invariants)
-    - [`initialize`](#initialize)
-    - [`getLatestValidGame`](#getlatestvalidgame)
-    - [`updateLatestValidGame`](#updatelatestvalidgame)
-    - [`getLatestAnchorState`](#getlatestanchorstate)
-    - [`registerMaybeValidGame`](#registermaybevalidgame)
-    - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame)
-    - [`isGameInvalid`](#isgameinvalid)
-    - [`isGameFinalized`](#isgamefinalized)
-    - [`isGameValid`](#isgamevalid)
-    - [`isGameBlacklisted`](#isgameblacklisted)
-    - [`setRespectedGameType`](#setrespectedgametype)
-    - [`invalidateAllExistingGames`](#invalidateallexistinggames)
-    - [`setGameBlacklisted`](#setgameblacklisted)
-    - [`getGameFinalityDelay`](#getgamefinalitydelay)
-  - [Implementation](#implementation)
-    - [`constructor`](#constructor)
-    - [`initialize`](#initialize-1)
-    - [`anchors` / `getLatestAnchorState`](#anchors--getlatestanchorstate)
-    - [`registerMaybeValidGame`](#registermaybevalidgame-1)
-    - [`updateLatestValidGame`](#updatelatestvalidgame-1)
-    - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame-1)
-    - [`setGameBlacklisted`](#setgameblacklisted-1)
-    - [`setRespectedGameType`](#setrespectedgametype-1)
-    - [`isGameInvalid`](#isgameinvalid-1)
-    - [`isGameValid`](#isgamevalid-1)
-    - [`disputeGameFinalityDelaySeconds`](#disputegamefinalitydelayseconds)
-    - [`disputeGameFactory`](#disputegamefactory-1)
+- [Overview](#overview)
+  - [Perspective](#perspective)
+- [Definitions](#definitions)
+- [Top-Level Invariants](#top-level-invariants)
+  - [Contract Dependents](#contract-dependents)
+    - [FaultDisputeGame](#faultdisputegame)
+    - [OptimismPortal](#optimismportal)
+  - [Contract Dependencies](#contract-dependencies)
+    - [FaultDisputeGame](#faultdisputegame-1)
+    - [DisputeGameFactory](#disputegamefactory)
+    - [SuperchainConfig](#superchainconfig)
+- [Function-Level Invariants](#function-level-invariants)
+  - [`initialize`](#initialize)
+  - [`getLatestValidGame`](#getlatestvalidgame)
+  - [`updateLatestAnchorGame`](#updatelatestanchorgame)
+  - [`getLatestAnchorGame`](#getlatestanchorgame)
+  - [`registerMaybeValidGame`](#registermaybevalidgame)
+  - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame)
+  - [`isGameInvalid`](#isgameinvalid)
+  - [`isGameFinalized`](#isgamefinalized)
+  - [`isGameValid`](#isgamevalid)
+  - [`isGameBlacklisted`](#isgameblacklisted)
+  - [`setRespectedGameType`](#setrespectedgametype)
+  - [`invalidateAllExistingGames`](#invalidateallexistinggames)
+  - [`setGameBlacklisted`](#setgameblacklisted)
+  - [`getGameFinalityDelay`](#getgamefinalitydelay)
+- [Implementation](#implementation)
+  - [`constructor`](#constructor)
+  - [`initialize`](#initialize-1)
+  - [`anchors` / `getLatestAnchorState`](#anchors--getlatestanchorstate)
+  - [`registerMaybeValidGame`](#registermaybevalidgame-1)
+  - [`updateLatestValidGame`](#updatelatestvalidgame)
+  - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame-1)
+  - [`setGameBlacklisted`](#setgameblacklisted-1)
+  - [`setRespectedGameType`](#setrespectedgametype-1)
+  - [`isGameInvalid`](#isgameinvalid-1)
+  - [`isGameValid`](#isgamevalid-1)
+  - [`disputeGameFinalityDelaySeconds`](#disputegamefinalitydelayseconds)
+  - [`disputeGameFactory`](#disputegamefactory)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -90,13 +89,11 @@ invalidating withdrawals and dispute games founded on an incorrect root claim.
 - **Maybe valid game**
   - A dispute game that is not an **invalid game** (but not yet a **finalized game**).
 - **Valid game**
-  - A game is a **Valid game** if it is not an **Invalid game**, and is a **Finalized game**.
+  - A game is a **valid game** if it is a **maybe valid game**, and is a **finalized game**.
+- **Latest anchor game**
+  - A game is a **latest anchor game** if it had the highest l2BlockNumber from the set of valid games known by this contract. It must be a valid game at the time it it set, but can be an invalid game in one specific case.
 - **Latest valid game**
-  - The latest valid game is a game whose anchor state is used to initialize new Fault Dispute Games. It was known to be
-    a **valid game** when set. It will continue to be the latest valid game until updated with a more recent valid game,
-    or blacklisted.
-- **Latest valid anchor state**
-  - The latest valid anchor state is the output root of the latest valid game.
+  - If the **latest anchor game** is a **valid game**, it is the **latest valid game**. Otherwise, there is no **latest valid game**.
 - **Dispute game finality delay**
   - The dispute game finality delay is an **authorized input** representing the period of time between a dispute game
     resolving and a dispute game becoming finalized or valid.
@@ -105,9 +102,8 @@ invalidating withdrawals and dispute games founded on an incorrect root claim.
 ## Top-Level Invariants
 
 - The contract will only assert **valid games** are valid.
-- The latest valid anchor state must never serve the output root of a blacklisted game.
-- The latest valid anchor state must be recent enough so that the game doesn't break (run out of memory) in
-  op-challenger.
+- The latest anchor game must never serve the output root of a blacklisted game.
+- The latest anchor game must be recent enough so that the game doesn't break (run out of memory) in op-challenger.
 - The validity timestamp must start at zero.
 
 ### Contract Dependents
@@ -140,6 +136,7 @@ Depends on FaultDisputeGame to correctly report:
 - its game type.
 - its l2BlockNumber.
 - its createdAt timestamp.
+- its resolvedAt timestamp.
 
 #### DisputeGameFactory
 
@@ -164,23 +161,19 @@ Depends on SuperchainConfig to correctly report:
 
 ### `getLatestValidGame`
 
-Gets **latest valid game**.
+Returns **latest valid game**, or reverts if there is no **latest valid game**.
 
-- Throws an error if the game is not valid.
-  - Depends on the condition that `update latest valid game` is the only method to update the “latest valid game” state
-    variable and that it will only update the state variable with a **valid game**. Still, it is possible for the once
-    valid game to become invalid (via blacklisting or `update validity timestamp`).
-
-### `updateLatestValidGame`
+### `updateLatestAnchorGame`
 
 - Game must be a **valid game**.
-- Block number for candidate **valid game** must be higher than current **latest valid game**.
-- This function is the ONLY way to update the **latest valid game** (after initialization).
+- Game's block number must be higher than current **latest anchor game**.
+- This function is the ONLY way to update the **latest anchor game** (after initialization).
 
-### `getLatestAnchorState`
+### `getLatestAnchorGame`
 
-- If the **latest valid game** is not blacklisted, return its root claim and l2 block number.
-- If the **latest valid game** is blacklisted, throw an error.
+Returns the **latest anchor game**.
+
+- Must revert if the **latest anchor game** is blacklisted.
 - Must maintain the property that the timestamp of the game is not too old.
   - TODO: How old is too old?
 
@@ -221,20 +214,19 @@ Returns whether the game is a **blacklisted game**.
 
 ### `setRespectedGameType`
 
-- Must be **authorized** by _some role_.
+- Must be **authorized** by guardian role.
 
 ### `invalidateAllExistingGames`
 
-Invalidates all games that exist. Note: until updated, the **latest valid game** (now invalidated) will still provide
-the **latest valid anchor state**.
+Invalidates all games that exist.
 
-- Must be **authorized** by _some role_.
+- Must be **authorized** by guardian role.
 
 ### `setGameBlacklisted`
 
 Blacklists a game.
 
-- Must be **authorized** by _some role_.
+- Must be **authorized** by guardian role.
 
 ### `getGameFinalityDelay`
 
