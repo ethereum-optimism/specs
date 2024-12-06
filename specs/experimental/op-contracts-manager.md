@@ -253,7 +253,7 @@ function addGameType(ISystemConfig[] _systemConfigs, NewGameConfig[] _newGames) 
 
 The high level logic of the `addGameType` method is as follows (for each chain):
 
-1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method.
+1. The Upgrade Controller Safe will `DELEGATECALL` to the `addGameType` method.
 1. A new Proxy contract will be deployed, with the implementation set to the `Creator` contract for that game type.
 1. Calls `setImplementation()` on the `DisputeGameFactory`
 1. Calls `upgrade()` on the `AnchorStateRegistry` to set the new game type to add a new entry to the `anchors` mapping.
