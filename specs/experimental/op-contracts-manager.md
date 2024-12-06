@@ -65,16 +65,29 @@ The OP Contracts Manager corresponding to each release can be used to:
 The following interface defines the available getter methods:
 
 ```solidity
-/// @notice The logic address and initializer selector for an implementation contract.
-struct Implementation {
-  address logic; // Address containing the deployed logic contract.
-  bytes4 initializer; // Function selector for the initializer.
-}
-
 /// @notice Returns the latest approved release of the OP Stack contracts.
 /// @notice Release strings follow semver and are named with the
 /// format `op-contracts/vX.Y.Z`.
 function latestRelease() external view returns (string memory);
+
+    /// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
+    function OUTPUT_VERSION() external view returns (uint256);
+    /// @notice Addresses of the Blueprint contracts.
+    function blueprints() external view returns (Blueprints memory);
+    /// @notice Maps an L2 chain ID to an L1 batch inbox address
+    function chainIdToBatchInboxAddress(uint256 _l2ChainId) external pure returns (address);
+    /// @notice Addresses of the latest implementation contracts.
+    function implementations() external view returns (Implementations memory);
+    /// @notice L1 smart contracts release deployed by this version of OPCM.
+    function l1ContractsRelease() external view returns (string memory);
+    /// @notice Address of the ProtocolVersions contract shared by all chains.
+    function protocolVersions() external view returns (address);
+    /// @notice Address of the SuperchainConfig contract shared by all chains.
+    function superchainConfig() external view returns (address);
+    /// @notice Maps an L2 Chain ID to the SystemConfig for that chain.
+    function systemConfigs(uint256) external view returns (address);
+    /// @notice Semver version specific to the OPContractsManager
+    function version() external view returns (string memory);
 
 /// @notice Returns the implementation contract addresses.
 function implementations() public view returns (Implementations memory);
@@ -104,21 +117,10 @@ The `deploy` method is used to deploy the full set of L1 contracts required to s
 chain that complies with the [standard configuration]. It has the following interface:
 
 ```solidity
-struct Roles {
-  address proxyAdminOwner;
-  address systemConfigOwner;
-  address batcher;
-  address unsafeBlockSigner;
-  address proposer;
-  address challenger;
-}
-
-function deploy(
-  uint256 l2ChainId,
-  uint32 basefeeScalar,
-  uint32 blobBasefeeScalar,
-  Roles roles
-) external returns (SystemConfig)
+/// @notice Deploys a new OP Chain
+/// @param _input DeployInput containing chain specific config information.
+/// @return DeployOutput containing the new addresses.
+function deploy(DeployInput calldata _input) external returns (DeployOutput memory)
 ```
 
 The `l2ChainId` has the following restrictions:
@@ -152,15 +154,17 @@ the batch inbox addresses.
 #### Contract Deployments
 
 All contracts deployed by the OP Contracts Manager are deployed with CREATE2, with a
-salt equal to either:
+salt equal to either of the following:
 
-- The L2 chain ID, or
-- `keccak256(bytes.concat(bytes32(uint256(l2ChainId)), contractName))`.
+- `keccak256(abi.encode(l2ChainId, saltMixer))`
+- `keccak256(bytes.concat(bytes32(uint256(l2ChainId)), saltMixer, contractName))`.
 
 The former is used when only a single instance of a given contract is deployed for a chain.
 The latter is used when deploying multiple instances of a given contract for a chain,
 which is the case of all `Proxy` contracts. For these, the `contractName`
 is the name of the implementation contract that will be used with the proxy.
+
+The `saltMixer` value is provided as a field in the `DeployInput` struct.
 
 This provides the following benefits:
 
@@ -253,7 +257,7 @@ function addGameType(ISystemConfig[] _systemConfigs, NewGameConfig[] _newGames) 
 
 The high level logic of the `addGameType` method is as follows (for each chain):
 
-1. The Upgrade Controller Safe will `DELEGATECALL` to the `addGameType` method.
+1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.addGameType()` method.
 1. A new Proxy contract will be deployed, with the implementation set to the `Creator` contract for that game type.
 1. Calls `setImplementation()` on the `DisputeGameFactory`
 1. Calls `upgrade()` on the `AnchorStateRegistry` to set the new game type to add a new entry to the `anchors` mapping.
