@@ -190,13 +190,13 @@ all chains that it controls.
 It has the following interface:
 
 ```solidity
-function upgrade(ISystemConfig[] _systemConfigs, NewChainConfig[] _newConfigs) public;
+function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, NewChainConfig[] _newConfigs) public;
 ```
 
 For each chain successfully upgraded, the following event is emitted:
 
 ```solidity
-event Upgraded(uint256 indexed l2ChainId, SystemConfig indexed systemConfig);
+event Upgraded(uint256 indexed l2ChainId, SystemConfig indexed systemConfig, address indexed upgrader);
 ```
 
 This method reverts if the upgrade is not successful for any of the chains.
