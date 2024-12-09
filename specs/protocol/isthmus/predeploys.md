@@ -239,15 +239,9 @@ It uses the following values:
 `operatorFeeScalar` and `operatorFeeConstant` are read from the `L1Block` contract, and `isIsthmus`
 is read directly from storage. If `isIsthmus` is false, then this function MUST return `0`.
 
-```function
+```solidity
 function getOperatorFee(uint256 gasUsed)(uint256)
 ```
-
-##### `getL1Fee`
-
-This function will be updated to include the operator fee, for post-Isthmus chains. The API will
-remain the same. Since the operator fee is 0 by default, most chains who are not using the operator
-fee will not be affected by this change.
 
 ### OptimismMintableERC721Factory
 
