@@ -262,22 +262,38 @@ The `addGameType` method is used to orchestrate the actions required to add a ne
 or more chains.
 
 ```solidity
-struct NewGameConfig {
-  // fields will vary depending on the game type
+struct PermissionlessGameConfig {
+  bytes32 absolutePrestate;
 }
 
-function addGameType(ISystemConfig[] _systemConfigs, NewGameConfig[] _newGames) public;
+function addGameType(ISystemConfig[] _systemConfigs, PermissionlessGameConfig[] _newGames) public;
 ```
 
 ### Implementation
 
 The high level logic of the `addGameType` method is as follows (for each chain):
 
-1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.addGameType()` method.
-1. A new Proxy contract will be deployed, with the implementation set to the `Creator` contract for that game type.
-1. Calls `setImplementation()` on the `DisputeGameFactory`
-1. Calls `upgrade()` on the `AnchorStateRegistry` to set the new game type to add a new entry to the `anchors` mapping.
-   The `upgrade()` method should revert if it would overwrite an existing entry.
+1. Deploy and initialize new `DelayedWethProxy` for the new game type, reusing the existing implementation
+1. Deploy a new `FaultDisputeGame` contract. The source of the constructor args is indicated below this list,
+   the value which is not available onchain is the `absolutePrestate`.
+1. Calls `upgrade()` on the `AnchorStateRegistry` to set the new game type to
+   add a new entry to the `anchors` mapping. The `upgrade()` method should
+   revert if it would overwrite an existing entry.
+1. Read the `DisputeGameFactory` address from the `SystemConfig`.
+1. Call `DisputeGameFactory.setImplementation()` to register the new game.
+
+```solidity
+uint32 gameType; // constant value of 1
+bytes32 absolutePrestate; // Input as PermissionlessGameConfig.absolutePrestate
+uint256 maxGameDepth; // Read from existing PermissionedGame
+uint256 splitDepth; // Read from existing PermissionedGame
+uint64 clockExtension; // Read from existing PermissionedGame
+uint64 maxClockDuration; // Read from existing PermissionedGame
+address vm; // Read from existing PermissionedGame
+address weth; // Use address of newly deployed DelayedWeth contract
+address anchorStateRegistry; // Read from existing PermissionedGame
+uint256 l2ChainId; // Read from existing PermissionedGame
+```
 
 ## Security Considerations
 
