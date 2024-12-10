@@ -64,42 +64,25 @@ The OP Contracts Manager corresponding to each release can be used to:
 The following interface defines the available getter methods:
 
 ```solidity
-/// @notice Returns the latest approved release of the OP Stack contracts.
-/// @notice Release strings follow semver and are named with the
-/// format `op-contracts/vX.Y.Z`.
-function latestRelease() external view returns (string memory);
-
-    /// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
-    function OUTPUT_VERSION() external view returns (uint256);
-    /// @notice Addresses of the Blueprint contracts.
-    function blueprints() external view returns (Blueprints memory);
-    /// @notice Maps an L2 chain ID to an L1 batch inbox address
-    function chainIdToBatchInboxAddress(uint256 _l2ChainId) external pure returns (address);
-    /// @notice Addresses of the latest implementation contracts.
-    function implementations() external view returns (Implementations memory);
-    /// @notice L1 smart contracts release deployed by this version of OPCM.
-    function l1ContractsRelease() external view returns (string memory);
-    /// @notice Address of the ProtocolVersions contract shared by all chains.
-    function protocolVersions() external view returns (address);
-    /// @notice Address of the SuperchainConfig contract shared by all chains.
-    function superchainConfig() external view returns (address);
-    /// @notice Maps an L2 Chain ID to the SystemConfig for that chain.
-    function systemConfigs(uint256) external view returns (address);
-    /// @notice Semver version specific to the OPContractsManager
-    function version() external view returns (string memory);
-
-/// @notice Returns the implementation contract addresses.
-function implementations() public view returns (Implementations memory);
-
-/// @notice Maps an L2 Chain ID to the SystemConfig address for that chain.
-/// @notice All contracts for a chain can be found from its SystemConfig.
-function systemConfigs(uint256 chainId) external view returns (SystemConfig);
-
-/// @notice Maps an L2 chain ID to an L1 batch inbox address as defined by the standard
-function chainIdToBatchInboxAddress(uint256 _l2ChainId) public pure returns (address);
-
-/// @notice Returns the blueprint contract addresses.
-function blueprints() public view returns (Blueprints memory);
+/// @notice Returns the latest approved release of the OP Stack contracts are named with the
+///         format `op-contracts/vX.Y.Z`.
+function l1ContractsRelease() external view returns (string memory);
+/// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
+function OUTPUT_VERSION() external view returns (uint256);
+/// @notice Addresses of the Blueprint contracts.
+function blueprints() external view returns (Blueprints memory);
+/// @notice Maps an L2 chain ID to an L1 batch inbox address
+function chainIdToBatchInboxAddress(uint256 _l2ChainId) external pure returns (address);
+/// @notice Addresses of the latest implementation contracts.
+function implementations() external view returns (Implementations memory);
+/// @notice Address of the ProtocolVersions contract shared by all chains.
+function protocolVersions() external view returns (address);
+/// @notice Address of the SuperchainConfig contract shared by all chains.
+function superchainConfig() external view returns (address);
+/// @notice Maps an L2 Chain ID to the SystemConfig for that chain.
+function systemConfigs(uint256 _l2ChainId) external view returns (address);
+/// @notice Semver version specific to the OPContractsManager
+function version() external view returns (string memory);
 ```
 
 ## Deployment
