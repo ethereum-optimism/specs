@@ -18,6 +18,7 @@ of governance approved [contract releases] can be found on the
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -171,6 +172,27 @@ all chains that it controls.
 It has the following interface:
 
 ```solidity
+/// @notice The full set of inputs to deploy a new OP Stack chain.
+struct DeployInput {
+    Roles roles;
+    uint32 basefeeScalar;
+    uint32 blobBasefeeScalar;
+    uint256 l2ChainId;
+    // The correct type is AnchorStateRegistry.StartingAnchorRoot[] memory,
+    // but OP Deployer does not yet support structs.
+    bytes startingAnchorRoots;
+    // The salt mixer is used as part of making the resulting salt unique.
+    string saltMixer;
+    uint64 gasLimit;
+    // Configurable dispute game parameters.
+    GameType disputeGameType;
+    Claim disputeAbsolutePrestate;
+    uint256 disputeMaxGameDepth;
+    uint256 disputeSplitDepth;
+    Duration disputeClockExtension;
+    Duration disputeMaxClockDuration;
+}
+
 function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, NewChainConfig[] _newConfigs) public;
 ```
 
@@ -203,6 +225,15 @@ vary for each release of the OP Contracts Manager, based on what (if any) new pa
 
 In practice, this struct is likely to be have a unique name for each release of the OP Contracts
 Manager.
+
+By way of example, if an upgrade is adding a new variable `address foo` to the `SystemConfig` contract, for
+an upgrade named `Example`, the struct could have the following definition:
+
+```solidity
+struct NewChainConfigForExampleUpgrade {
+  address systemConfigFoo;
+}
+```
 
 #### Requirements on the OP Chain contracts
 
