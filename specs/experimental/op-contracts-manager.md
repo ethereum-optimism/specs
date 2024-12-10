@@ -131,16 +131,19 @@ the batch inbox addresses.
 
 #### Contract Deployments
 
-All contracts deployed by the OP Contracts Manager are deployed with CREATE2, with a
-salt equal to either of the following:
+All contracts deployed by the OP Contracts Manager are deployed with CREATE2.
 
-- `keccak256(abi.encode(l2ChainId, saltMixer))`
-- `keccak256(bytes.concat(bytes32(uint256(l2ChainId)), saltMixer, contractName))`.
+For singletons the following salt is used:
 
-The former is used when only a single instance of a given contract is deployed for a chain.
-The latter is used when deploying multiple instances of a given contract for a chain,
-which is the case of all `Proxy` contracts. For these, the `contractName`
-is the name of the implementation contract that will be used with the proxy.
+```
+keccak256(abi.encode(l2ChainId, saltMixer))
+```
+
+For `Proxy` contracts, the following salt is used:
+
+```
+keccak256(bytes.concat(bytes32(uint256(l2ChainId)), saltMixer, contractName))
+```
 
 The `saltMixer` value is provided as a field in the `DeployInput` struct.
 
