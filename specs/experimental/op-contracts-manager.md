@@ -106,10 +106,6 @@ function blueprints() public view returns (Blueprints memory);
 
 ### Interface
 
-Version 1.0.0 of the OP Contracts Manager deploys the `op-contracts/v1.6.0` contracts release,
-and is deployed at `0x9BC0A1eD534BFb31a6Be69e5b767Cba332f14347`. In the future this will
-be tracked in the `superchain-registry`.
-
 #### `deploy`
 
 The `deploy` method is used to deploy the full set of L1 contracts required to setup a new OP Stack
