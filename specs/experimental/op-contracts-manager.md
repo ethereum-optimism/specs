@@ -172,25 +172,29 @@ all chains that it controls.
 It has the following interface:
 
 ```solidity
-/// @notice The full set of inputs to deploy a new OP Stack chain.
+struct Roles {
+    address opChainProxyAdminOwner;
+    address systemConfigOwner;
+    address batcher;
+    address unsafeBlockSigner;
+    address proposer;
+    address challenger;
+}
+
 struct DeployInput {
     Roles roles;
     uint32 basefeeScalar;
     uint32 blobBasefeeScalar;
     uint256 l2ChainId;
-    // The correct type is AnchorStateRegistry.StartingAnchorRoot[] memory,
-    // but OP Deployer does not yet support structs.
     bytes startingAnchorRoots;
-    // The salt mixer is used as part of making the resulting salt unique.
     string saltMixer;
     uint64 gasLimit;
-    // Configurable dispute game parameters.
-    GameType disputeGameType;
-    Claim disputeAbsolutePrestate;
+    uint32 disputeGameType;
+    bytes32 disputeAbsolutePrestate;
     uint256 disputeMaxGameDepth;
     uint256 disputeSplitDepth;
-    Duration disputeClockExtension;
-    Duration disputeMaxClockDuration;
+    uint64 disputeClockExtension;
+    uint64 disputeMaxClockDuration;
 }
 
 function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, NewChainConfig[] _newConfigs) public;
