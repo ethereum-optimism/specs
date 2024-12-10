@@ -135,13 +135,13 @@ All contracts deployed by the OP Contracts Manager are deployed with CREATE2.
 
 For singletons the following salt is used:
 
-```
+```solidity
 keccak256(abi.encode(l2ChainId, saltMixer))
 ```
 
 For `Proxy` contracts, the following salt is used:
 
-```
+```solidity
 keccak256(bytes.concat(bytes32(uint256(l2ChainId)), saltMixer, contractName))
 ```
 
