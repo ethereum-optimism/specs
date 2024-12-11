@@ -17,12 +17,17 @@
   - [FeeVault](#feevault)
     - [Interface](#interface-1)
       - [`config`](#config)
+  - [OperatorFeeVault](#operatorfeevault)
   - [L2CrossDomainMessenger](#l2crossdomainmessenger)
     - [Interface](#interface-2)
   - [L2ERC721Bridge](#l2erc721bridge)
     - [Interface](#interface-3)
   - [L2StandardBridge](#l2standardbridge)
     - [Interface](#interface-4)
+  - [GasPriceOracle](#gaspriceoracle)
+    - [Interface](#interface-5)
+      - [`setIsthmus`](#setisthmus-1)
+      - [`getOperatorFee`](#getoperatorfee)
   - [OptimismMintableERC721Factory](#optimismmintableerc721factory)
 - [Security Considerations](#security-considerations)
   - [GovernanceToken](#governancetoken)
@@ -46,6 +51,7 @@ of the `SystemConfig`.
 | `BASE_FEE_VAULT_CONFIG` | `bytes32(uint256(keccak256("opstack.basefeevaultconfig")) - 1)` | The Fee Vault Config for the `BaseFeeVault` |
 | `L1_FEE_VAULT_CONFIG` | `bytes32(uint256(keccak256("opstack.l1feevaultconfig")) - 1)` | The Fee Vault Config for the `L1FeeVault` |
 | `SEQUENCER_FEE_VAULT_CONFIG` | `bytes32(uint256(keccak256("opstack.sequencerfeevaultconfig")) - 1)` | The Fee Vault Config for the `SequencerFeeVault` |
+| `OPERATOR_FEE_VAULT_CONFIG` | `bytes32(uint256(keccak256("opstack.operatorfeevaultconfig")) - 1)` | The Fee Vault Config for the `OperatorFeeVault` |
 | `L1_CROSS_DOMAIN_MESSENGER_ADDRESS` | `bytes32(uint256(keccak256("opstack.l1crossdomainmessengeraddress")) - 1)` | `abi.encode(address(L1CrossDomainMessengerProxy))` |
 | `L1_ERC_721_BRIDGE_ADDRESS` | `bytes32(uint256(keccak256("opstack.l1erc721bridgeaddress")) - 1)` | `abi.encode(address(L1ERC721BridgeProxy))` |
 | `L1_STANDARD_BRIDGE_ADDRESS` | `bytes32(uint256(keccak256("opstack.l1standardbridgeaddress")) - 1)` | `abi.encode(address(L1StandardBridgeProxy))` |
@@ -67,6 +73,7 @@ graph LR
   BaseFeeVault -- "getConfig(ConfigType.GAS_PAYING_TOKEN)(address,uint256,uint8)" --> L1Block
   SequencerFeeVault -- "getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)(address,uint256,uint8)" --> L1Block
   L1FeeVault -- "getConfig(ConfigType.L1_FEE_VAULT_CONFIG)(address,uint256,uint8)" --> L1Block
+  OperatorFeeVault -- "getConfig(ConfigType.OPERATOR_FEE_VAULT_CONFIG)(address,uint256,uint8)" --> L1Block
   L2CrossDomainMessenger -- "getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)(address)" --> L1Block
   L2StandardBridge -- "getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)(address)" --> L1Block
   L2ERC721Bridge -- "getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)(address)" --> L1Block
@@ -98,6 +105,7 @@ The following storage slots are defined:
 - `BASE_FEE_VAULT_CONFIG`
 - `L1_FEE_VAULT_CONFIG`
 - `SEQUENCER_FEE_VAULT_CONFIG`
+- `OPERATOR_FEE_VAULT_CONFIG`
 - `L1_CROSS_DOMAIN_MESSENGER_ADDRESS`
 - `L1_ERC_721_BRIDGE_ADDRESS`
 - `L1_STANDARD_BRIDGE_ADDRESS`
@@ -140,7 +148,8 @@ The caller needs to ABI decode the data into the desired type.
 
 ### FeeVault
 
-The following changes apply to each of the `BaseFeeVault`, the `L1FeeVault` and the `SequencerFeeVault`.
+The following changes apply to each of the `BaseFeeVault`, the `L1FeeVault` the `SequencerFeeVault`, and the new
+`OperatorFeeVault`.
 
 #### Interface
 
@@ -156,6 +165,7 @@ The following functions are updated to read from the `L1Block` contract:
 | `BaseFeeVault` | `L1Block.getConfig(ConfigType.BASE_FEE_VAULT_CONFIG)` |
 | `SequencerFeeVault` | `L1Block.getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)` |
 | `L1FeeVault` | `L1Block.getConfig(ConfigType.L1_FEE_VAULT_CONFIG)` |
+| `OperatorFeeVault` | `L1Block.getConfig(ConfigType.OPERATOR_FEE_VAULT_CONFIG)` |
 
 ##### `config`
 
@@ -164,6 +174,13 @@ A new function is added to fetch the full Fee Vault Config.
 ```solidity
 function config()(address,uint256,WithdrawalNetwork)
 ```
+
+### OperatorFeeVault
+
+This vault implements `FeeVault`, like `BaseFeeVault`, `SequencerFeeVault`, and `L1FeeVault`. No special logic is
+needed in order to insert or withdraw funds.
+
+Its address will be `0x420000000000000000000000000000000000001b`.
 
 ### L2CrossDomainMessenger
 
@@ -191,6 +208,40 @@ The following functions are updated to read from the `L1Block` contract by calli
 
 - `otherBridge()(address)`
 - `OTHER_BRIDGE()(address)`
+
+### GasPriceOracle
+
+In order to maintain accurate offchain fee estimation, the `GasPriceOracle` must be updated to allow users
+to estimate the operator fee. We also add a new boolean `isIsthmus` to help with evaluating the operator fee.
+
+#### Interface
+
+##### `setIsthmus`
+
+This function is meant to be called once on the activation block of the isthmus network upgrade.
+It MUST only be callable by the `DEPOSITOR_ACCOUNT` once. When it is called, it MUST call
+call each getter for the network specific config and set the returndata into storage.
+
+```solidity
+function setIsthmus() external;
+```
+
+##### `getOperatorFee`
+
+This function calculates the operator fee based on the expected amount of gas used for a certain transaction.
+
+It uses the following values:
+
+- `operatorFeeScalar`
+- `operatorFeeConstant`
+- `isIsthmus`
+
+`operatorFeeScalar` and `operatorFeeConstant` are read from the `L1Block` contract, and `isIsthmus`
+is read directly from storage. If `isIsthmus` is false, then this function MUST return `0`.
+
+```solidity
+function getOperatorFee(uint256 gasUsed)(uint256)
+```
 
 ### OptimismMintableERC721Factory
 
