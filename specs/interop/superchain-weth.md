@@ -68,7 +68,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 | `ETHLiquidity` Address   | `0x4200000000000000000000000000000000000025` |
 
 ## SuperchainWETH
-
+<!-- TODO (https://github.com/ethereum-optimism/specs/issues/479) re-write invariants to use imperative form -->
 ### Invariants
 
 #### `deposit`
