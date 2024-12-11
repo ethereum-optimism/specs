@@ -132,18 +132,10 @@ the batch inbox addresses.
 
 #### Contract Deployments
 
-All contracts deployed by the OP Contracts Manager are deployed with CREATE2.
-
-For singletons the following salt is used:
+All contracts deployed by the OP Contracts Manager are deployed with `CREATE2`, using the following salt:
 
 ```solidity
-keccak256(abi.encode(l2ChainId, saltMixer))
-```
-
-For `Proxy` contracts, the following salt is used:
-
-```solidity
-keccak256(bytes.concat(bytes32(uint256(l2ChainId)), saltMixer, contractName))
+keccak256(abi.encode(_l2ChainId, _saltMixer, _contractName));
 ```
 
 The `saltMixer` value is provided as a field in the `DeployInput` struct.
