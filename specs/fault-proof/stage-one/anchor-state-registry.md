@@ -2,45 +2,73 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [Overview](#overview)
   - [Perspective](#perspective)
 - [Definitions](#definitions)
+  - [Dispute game](#dispute-game)
+  - [Likely valid game](#likely-valid-game)
+  - [Finalized game](#finalized-game)
+  - [Dispute game finality delay](#dispute-game-finality-delay)
+  - [Valid game](#valid-game)
+  - [Blacklisted game](#blacklisted-game)
+  - [Retired valid game](#retired-valid-game)
+  - [Validity timestamp](#validity-timestamp)
+  - [Anchor state](#anchor-state)
+  - [Anchor game](#anchor-game)
+  - [Withdrawal](#withdrawal)
+  - [Authorized input](#authorized-input)
+- [Assumptions](#assumptions)
+  - [aFDG-001: Fault dispute games correctly report their properties](#afdg-001-fault-dispute-games-correctly-report-their-properties)
+    - [Mitigations](#mitigations)
+  - [aFDG-002: Fault dispute games with correct claims resolve correctly at some regular rate](#afdg-002-fault-dispute-games-with-correct-claims-resolve-correctly-at-some-regular-rate)
+    - [Mitigations](#mitigations-1)
+  - [aDGF-001: Dispute game factory correctly identifies the games it created](#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
+  - [Mitigations](#mitigations-2)
+  - [aDGF-002: Games created by the DisputeGameFactory will be monitored](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
+    - [Mitigations](#mitigations-3)
+  - [aASR-001: Incorrectly resolving games will be blacklisted within the dispute game finality delay period](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
+    - [Mitigations](#mitigations-4)
+  - [aASR-002: Larger bugs in dispute game mechanics will be expired within the dispute game finality delay period](#aasr-002-larger-bugs-in-dispute-game-mechanics-will-be-expired-within-the-dispute-game-finality-delay-period)
+    - [Mitigations](#mitigations-5)
+  - [aASR-003: The AnchorStateRegistry will be correctly initialized at deployment](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
+    - [Mitigations](#mitigations-6)
+  - [aSC-001: SuperchainConfig correctly reports its guardian address](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
+    - [Mitigations](#mitigations-7)
 - [Top-Level Invariants](#top-level-invariants)
-  - [Contract Dependents](#contract-dependents)
-    - [FaultDisputeGame](#faultdisputegame)
-    - [OptimismPortal](#optimismportal)
-  - [Contract Dependencies](#contract-dependencies)
-    - [FaultDisputeGame](#faultdisputegame-1)
-    - [DisputeGameFactory](#disputegamefactory)
-    - [SuperchainConfig](#superchainconfig)
+- [System Invariants](#system-invariants)
+  - [iASR-001: Claims about L2 state are validated before they're used by dependents.](#iasr-001-claims-about-l2-state-are-validated-before-theyre-used-by-dependents)
+- [Component Invariants](#component-invariants)
+  - [iASR-000: Only "truly" **valid games** will be represented as **valid games**.](#iasr-000-only-truly-valid-games-will-be-represented-as-valid-games)
+    - [Impact](#impact)
+    - [Dependencies](#dependencies)
 - [Function-Level Invariants](#function-level-invariants)
+  - [`constructor`](#constructor)
   - [`initialize`](#initialize)
   - [`getLatestValidGame`](#getlatestvalidgame)
-  - [`updateLatestAnchorGame`](#updatelatestanchorgame)
-  - [`getLatestAnchorGame`](#getlatestanchorgame)
-  - [`registerMaybeValidGame`](#registermaybevalidgame)
-  - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame)
-  - [`isGameInvalid`](#isgameinvalid)
+  - [`updateAnchorGame`](#updateanchorgame)
+  - [`getAnchorGame`](#getanchorgame)
+  - [`registerLikelyValidGame`](#registerlikelyvalidgame)
+  - [`tryUpdateAnchorGame`](#tryupdateanchorgame)
+  - [`isGameBlacklisted`](#isgameblacklisted)
+  - [`isGameLikelyValid`](#isgamelikelyvalid)
   - [`isGameFinalized`](#isgamefinalized)
   - [`isGameValid`](#isgamevalid)
-  - [`isGameBlacklisted`](#isgameblacklisted)
   - [`setRespectedGameType`](#setrespectedgametype)
-  - [`invalidateAllExistingGames`](#invalidateallexistinggames)
+  - [`retireAllExistingGames`](#retireallexistinggames)
   - [`setGameBlacklisted`](#setgameblacklisted)
   - [`getGameFinalityDelay`](#getgamefinalitydelay)
 - [Implementation](#implementation)
-  - [`constructor`](#constructor)
+  - [`constructor`](#constructor-1)
   - [`initialize`](#initialize-1)
   - [`anchors` / `getLatestAnchorState`](#anchors--getlatestanchorstate)
-  - [`registerMaybeValidGame`](#registermaybevalidgame-1)
+  - [`registerMaybeValidGame`](#registermaybevalidgame)
   - [`updateLatestValidGame`](#updatelatestvalidgame)
-  - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame-1)
+  - [`tryUpdateLatestValidGame`](#tryupdatelatestvalidgame)
   - [`setGameBlacklisted`](#setgameblacklisted-1)
   - [`setRespectedGameType`](#setrespectedgametype-1)
-  - [`isGameInvalid`](#isgameinvalid-1)
+  - [`isGameInvalid`](#isgameinvalid)
   - [`isGameValid`](#isgamevalid-1)
   - [`disputeGameFinalityDelaySeconds`](#disputegamefinalitydelayseconds)
   - [`disputeGameFactory`](#disputegamefactory)
@@ -50,6 +78,31 @@
 ## Overview
 
 ### Perspective
+
+The whole point of the fault proof system is to create correctly resolving games whose claims we can depend on to
+finalize withdrawals (or other L2-to-L1 dependents). Indeed, everything about the system, from the contract mechanics to
+bond incentives, is engineered to provide complete confidence that the outcome of a resolved game is correct. Yet, there
+are corner cases where the resolved game rebukes its platonic, game-theoretic ideal, resolving incorrectly. The anchor
+state registry appreciates this and affords games and their dependents probabalistic validity by enforcing a game
+finality delay, and adding additional dependencies like blacklisting and game retirement. These concessions improve the
+confidence in resolved games, and calcify the assumptions upon which withdrawals and other dependents rest.
+
+<!--
+The anchor state registry supports the fault proof system in two critical ways:
+- It manages the gap between the ideal, game theoretic claim
+- It gives new dispute games a starting point.
+
+The motivation for the fault proof system is to enable the operation of things on L1 that depend on state in L2, and a perfect fault proof system arrives at truth via dispute games.
+
+The fault proof system exists to facilitate the arrival at truth of l2 state claims. With true claims, we can enable the operation of things that depend on true claims.
+
+The fault proof system exists to ensure the validity of L2 state claims, which enables the operation of components dependent on true claims.
+
+The Anchor State Registry (ASR) is the central authority within the fault proof system for managing and exposing the validity of dispute games and anchor states. It serves multiple critical roles:
+
+- Facilitating withdrawals via valid state proofs.
+- Providing the latest valid anchor states for initializing or resolving dispute games.
+- Acting as a safeguard in incident response by invalidating or expiring games.
 
 Multiple contracts in the fault proof system have critical dependencies on things outside them:
 
@@ -61,96 +114,211 @@ The AnchorStateRegistry is these contracts' source of truth, managing and exposi
 validity to moderate dispute games and withdrawals.
 
 Furthermore, the AnchorStateRegistry is a crucial player in incident response. It can invalidate dispute games, thereby
-invalidating withdrawals and dispute games founded on an incorrect root claim.
+invalidating withdrawals and dispute games founded on an incorrect root claim. -->
 
 ## Definitions
 
-- **Anchor state**
-  - See [Fault Dispute Game -> Anchor State](fault-dispute-game.md#anchor-state).
-- **Authorized input**
-  - An input for which there is social consensus, i.e. coming from governance.
-- **Blacklisted game**
-  - A dispute game is blacklisted if it is set as blacklisted via **authorized input**.
-- **Validity timestamp**
-  - The validity timestamp is a timestamp internal to the contract that partly determines game validity and can only be
-    adjusted via **authorized input**.
-- **Invalid game**
-  - A dispute game is invalid if any of the following are true:
-    - Game was not created by the dispute game factory.
-    - Game was not created while it was the respected game type.
-    - Game is **blacklisted**.
-    - Game was created before the **validity timestamp**.
-    - Game status is `CHALLENGER_WINS`.
-- **Finalized game**
-  - A dispute game is finalized if all of the following are true:
-    - Game status is `CHALLENGER_WINS` or `DEFENDER_WINS`.
-    - Game `resolvedAt` timestamp is not zero.
-    - Game `resolvedAt` timestamp is more than `dispute game finality delay` seconds ago.
-- **Maybe valid game**
-  - A dispute game that is not an **invalid game** (but not yet a **finalized game**).
-- **Valid game**
-  - A game is a **valid game** if it is a **maybe valid game**, and is a **finalized game**.
-- **Latest anchor game**
-  - A game is a **latest anchor game** if it had the highest l2BlockNumber from the set of valid games known by this contract. It must be a valid game at the time it it set, but can be an invalid game in one specific case.
-- **Latest valid game**
-  - If the **latest anchor game** is a **valid game**, it is the **latest valid game**. Otherwise, there is no **latest valid game**.
-- **Dispute game finality delay**
-  - The dispute game finality delay is an **authorized input** representing the period of time between a dispute game
-    resolving and a dispute game becoming finalized or valid.
-  - Also known as "air gap."
+### Dispute game
+
+> See [Fault Dispute Game](fault-dispute-game.md)
+
+A dispute game is a contract that resolves an L2 state claim.
+
+### Likely valid game
+
+A **likely valid game** is a dispute game that correctly resolved in favor of the defender. However, the system concedes
+a possibility that it's not correct, and so it's not yet ready to be used as a **valid game** by dependents. A likely
+valid game meets the following conditions:
+
+- Game was created by the dispute game factory.
+- Game is not **blacklisted**.
+- Game was created while it was the respected game type.
+- Game status is not `CHALLENGER_WINS`.
+- Game was created after the **validity timestamp**.
+
+### Finalized game
+
+A finalized dispute game is a game that has been resolved in favor of either the challenger or defender. Furthermore, it
+has passed the **dispute game finality delay** and can be used by dependents. A finalized game meets the following
+conditions:
+
+- Game status is `CHALLENGER_WINS` or `DEFENDER_WINS`.
+- Game `resolvedAt` timestamp is not zero.
+- Game `resolvedAt` timestamp is more than `dispute game finality delay` seconds ago.
+
+### Dispute game finality delay
+
+> Also known as "air gap."
+
+The dispute game finality delay is the period of time between a dispute game
+resolving and a dispute game becoming finalized. It's set via **authorized input**.
+
+### Valid game
+
+A game is a **valid game** if it, among other qualitifcations, has resolved in favor of the defender and has also matured past
+the finality delay. In other words, it meets the conditions of both a **likely valid game** and a **finalized game**.
+
+### Blacklisted game
+
+A blacklisted game is a game that has been set as blacklisted via **authorized action**. It must not be considered
+valid, and must not be used for finalizing withdrawals or any other dependent L2-to-L1 action.
+
+### Retired valid game
+
+A retired valid game is a dispute game whose `createdAt` timestamp is older than the **validity timestamp**.
+
+### Validity timestamp
+
+The validity timestamp is a timestamp internal to the contract that partly determines game validity and can only be
+adjusted via **authorized input**.
+
+### Anchor state
+
+> See [Fault Dispute Game -> Anchor State](fault-dispute-game.md#anchor-state).
+
+An anchor state is a state root from L2.
+
+### Anchor game
+
+An **anchor game** is a game upon which other games should build. It was a **valid game** when it was set, but may have
+since been retired.
+
+### Withdrawal
+
+> See [Withdrawals](../../protocol/withdrawals.md).
+
+A withdrawal is a cross-chain transaction initiated on L2, and finalized on L1.
+
+### Authorized input
+
+An authorized input is an input for which there is social consensus, i.e. coming from governance.
+
+## Assumptions
+
+> **NOTE:** Assumptions are utilized by specific invariants and do not apply globally. Invariants typically only rely on
+> a subset of the following assumptions. Different invariants may rely on different assumptions. Refer to individual
+> invariants for their dependencies.
+
+### aFDG-001: Fault dispute games correctly report their properties
+
+We assume that a fault dispute game will correctly report the following properties:
+
+- its game type.
+- whether its game type was the respected game type when created (also assumes this is set once and never changes).
+- the l2BlockNumber of its root claim.
+- its `createdAt` timestamp.
+- its `resolvedAt` timestamp.
+
+#### Mitigations
+
+- Existing audit on `FaultDisputeGame`. Note: Existing audit does not yet cover the second property above (that a game correctly reports whether its game type was the respected game type when created).
+- Integration testing.
+
+### aFDG-002: Fault dispute games with correct claims resolve correctly at some regular rate
+
+We assume that fault dispute games will regularly resolve in favor of the defender correctly. While the system
+can handle games that resolve in favor of the challenger, as well as incorrect resolutions, there must be other games that resolve correctly to maintain the system's integrity.
+
+#### Mitigations
+
+- Existing incentives in fault proof system design.
+
+### aDGF-001: Dispute game factory correctly identifies the games it created
+
+We assume that DisputeGameFactory will correctly identify whether it created a game (i.e. whether the game is "factory-registered").
+
+### Mitigations
+
+- Existing audit on the `DisputeGameFactory`.
+- Integration testing.
+
+### aDGF-002: Games created by the DisputeGameFactory will be monitored
+
+We assume that games created by the DisputeGameFactory will be monitored for incorrect resolution.
+
+#### Mitigations
+
+- Stakeholder incentives.
+
+### aASR-001: Incorrectly resolving games will be blacklisted within the dispute game finality delay period
+
+We assume that games that resolve incorrectly will be blacklisted via **authorized action** within the dispute game finality delay period. This further depends on [aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored).
+
+#### Mitigations
+
+- Stakeholder incentives / processes.
+
+### aASR-002: Larger bugs in dispute game mechanics will be expired within the dispute game finality delay period
+
+We assume that a larger bug affecting many games will be noticed via monitoring ([aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)) and will be expired within the dispute game finality delay period.
+
+#### Mitigations
+
+- Stakeholder incentives / processes.
+
+### aASR-003: The AnchorStateRegistry will be correctly initialized at deployment
+
+We assume that the AnchorStateRegistry will be correctly initialized at deployment, including:
+
+- Address of initial anchor game.
+- Address of `DisputeGameFactory`.
+- An appropriate `DISPUTE_GAME_FINALITY_DELAY`.
+- Address of `SuperchainConfig`.
+
+#### Mitigations
+
+- Verify the configured values in the deployment script.
+
+### aSC-001: SuperchainConfig correctly reports its guardian address
+
+We assume the SuperchainConfig contract correctly returns its guardian address.
+
+#### Mitigations
+
+- Existing audit on the `SuperchainConfig`.
+- Integration testing.
 
 ## Top-Level Invariants
 
-- The contract will only assert **valid games** are valid.
+- When asked for a **valid game**, the contract will only serve games that truly resolved correctly to its dependents.
 - The latest anchor game must never serve the output root of a blacklisted game.
 - The latest anchor game must be recent enough so that the game doesn't break (run out of memory) in op-challenger.
 - The validity timestamp must start at zero.
 
-### Contract Dependents
+## System Invariants
 
-This contract manages and exposes dispute game validity so that other contracts can do things like correctly initialize
-dispute games and validate withdrawals.
+### iASR-001: Claims about L2 state are validated before they're used by dependents.
 
-#### FaultDisputeGame
+## Component Invariants
 
-A [FaultDisputeGame](fault-dispute-game.md) depends on this contract for a **latest valid anchor state** against which
-to resolve a claim and assumes its correct. Additionally, becauase proposers must gather L1 data for the window between
-the anchor state and the claimed state, FaultDisputeGames depend on this contract to keep a **latest valid anchor
-state** that's recent, so that proposer software is not overburdened (i.e. runs out of memory).
+### iASR-000: Only "truly" **valid games** will be represented as **valid games**.
 
-#### OptimismPortal
+When asked for a **valid game** by its dependents, the contract will only serve **valid games** that "truly" resolved in
+favor of defender.
 
-OptimismPortal depends on this contract to correctly report game validity as the basis for proving and finalizing
-withdrawals.
+#### Impact
 
-- Can this dispute game can be used to prove a withdrawal? (Is the dispute game a **maybe valid game**?)
+**Severity: High**
+
+If this invariant is broken, an L2 state that's different from what dependents can be tricked into finalizing withdrawals based on incorrect state roots.
+
+#### Dependencies
+
+[FaultDisputeGame](./fault-dispute-game.md) depends on this contract for an **anchor game** against which to
+resolve its claim. The contract assumes this **anchor game**'s state root is correct, and that it's recent enough that
+proposer software doesn't run out of memory.
+
+[OptimismPortal](./optimism-portal.md) depends on this contract to correctly report game validity as the basis for
+proving and finalizing withdrawals.
+
+- Can this dispute game can be used to prove a withdrawal? (Is the dispute game a **likely valid game**?)
 - Can this dispute game can be used to finalize a withdrawal? (Is the dispute game a **valid game**?)
 
-### Contract Dependencies
-
-#### FaultDisputeGame
-
-Depends on FaultDisputeGame to correctly report:
-
-- whether its game type was the respected game type when created (and that it never changes once set).
-- its game type.
-- its l2BlockNumber.
-- its createdAt timestamp.
-- its resolvedAt timestamp.
-
-#### DisputeGameFactory
-
-Depends on DisputeGameFactory to correctly report:
-
-- whether a game was created by the DisputeGameFactory (is "factory-registered").
-
-#### SuperchainConfig
-
-Depends on SuperchainConfig to correctly report:
-
-- its guardian address.
-
 ## Function-Level Invariants
+
+### `constructor`
+
+The constructor must disable the initializer on the implementation contract.
 
 ### `initialize`
 
@@ -163,13 +331,13 @@ Depends on SuperchainConfig to correctly report:
 
 Returns **latest valid game**, or reverts if there is no **latest valid game**.
 
-### `updateLatestAnchorGame`
+### `updateAnchorGame`
 
 - Game must be a **valid game**.
 - Game's block number must be higher than current **latest anchor game**.
 - This function is the ONLY way to update the **latest anchor game** (after initialization).
 
-### `getLatestAnchorGame`
+### `getAnchorGame`
 
 Returns the **latest anchor game**.
 
@@ -177,7 +345,7 @@ Returns the **latest anchor game**.
 - Must maintain the property that the timestamp of the game is not too old.
   - TODO: How old is too old?
 
-### `registerMaybeValidGame`
+### `registerLikelyValidGame`
 
 Stores the address of a **maybe valid game** in an array as a candidate for `latestValidGame`.
 
@@ -185,7 +353,7 @@ Stores the address of a **maybe valid game** in an array as a candidate for `lat
 - Calling game must only register itself (and not some other game).
   - TODO: determine any invariants around registry ordering.
 
-### `tryUpdateLatestValidGame`
+### `tryUpdateAnchorGame`
 
 Try to update **latest valid game** using registry of **maybe valid games**.
 
@@ -194,9 +362,13 @@ Try to update **latest valid game** using registry of **maybe valid games**.
   - Fixed gas amount ensures that this function does not get more expensive to call as time goes on.
 - Use this as input to `update latest valid game`.
 
-### `isGameInvalid`
+### `isGameBlacklisted`
 
-Returns whether the game is an **invalid game**.
+Returns whether the game is a **blacklisted game**.
+
+### `isGameLikelyValid`
+
+Returns whether the game is a **likely valid game**.
 
 ### `isGameFinalized`
 
@@ -204,21 +376,17 @@ Returns whether the game is a **finalized game**.
 
 ### `isGameValid`
 
-`return !isGameInvalid(game) && isGameFinalized(game)`
+Returns whether the game is a **valid game**.
 
-Definition of **valid** is this condition passing.
-
-### `isGameBlacklisted`
-
-Returns whether the game is a **blacklisted game**.
+Assumes
 
 ### `setRespectedGameType`
 
 - Must be **authorized** by guardian role.
 
-### `invalidateAllExistingGames`
+### `retireAllExistingGames`
 
-Invalidates all games that exist.
+Retires all games that exist.
 
 - Must be **authorized** by guardian role.
 
