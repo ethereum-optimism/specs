@@ -11956,6 +11956,8 @@ in destination and could never be successfully replayed.</p>
 <li><a href="interop/superchain-weth.html#withdraw"><code>withdraw</code></a></li>
 <li><a href="interop/superchain-weth.html#crosschainburn"><code>crosschainBurn</code></a></li>
 <li><a href="interop/superchain-weth.html#crosschainmint"><code>crosschainMint</code></a></li>
+<li><a href="interop/superchain-weth.html#sendeth"><code>sendETH</code></a></li>
+<li><a href="interop/superchain-weth.html#relayeth"><code>relayETH</code></a></li>
 </ul>
 </li>
 </ul>
@@ -11973,11 +11975,20 @@ in destination and could never be successfully replayed.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>Superchain WETH is a version of the standard WETH contract that allows ETH to be interoperable across the Superchain.
-Superchain WETH treats ETH as an ERC-20 token for interoperability and avoids native ETH support.
-Superchain WETH integrates with the <a href="interop/./predeploys.html#superchainerc20bridge">SuperchainTokenBridge</a> as its entrypoint
-for interopable actions.
-Superchain WETH also introduces a liquidity contract used to provide liquidity for native ETH across chains.</p>
+<p>Superchain WETH is an enhanced version of the standard WETH contract, enabling ETH interoperability across the
+Superchain. The Superchain WETH contract serves two primary functions:</p>
+<ol>
+<li><strong>Native ETH Transfers</strong>: It provides the <code>sendETH</code> and <code>relayETH</code> functions to transfer <strong>native ETH</strong> directly
+between interoperable chains that both use ETH as their native token. If the destination chain does not use ETH as
+its native asset, the transferred ETH is converted into the <strong>SuperchainWETH</strong> ERC20 token on the destination chain
+instead.</li>
+<li><strong>ERC20 Token</strong>: It extends the <strong>ERC20</strong> contract, allowing ETH to be wrapped into the <strong>SuperchainWETH</strong> ERC20
+token. This wrapped token can be transferred across interoperable chains via the
+<a href="interop/./predeploys.html#superchainerc20bridge">SuperchainTokenBridge</a>, serving as the entry point for ERC20 token
+interoperability.</li>
+</ol>
+<p>Superchain WETH integrates with the <code>ETHLiquidity</code> contract to manage native ETH liquidity across chains, ensuring
+seamless cross-chain transfers of ETH in both its native and ERC20 forms.</p>
 <h2 id="motivation-and-constraints"><a class="header" href="#motivation-and-constraints">Motivation and Constraints</a></h2>
 <p>ETH is the native asset of Ethereum and has by extension also become the native asset of many Ethereum L2 blockchains.
 In its role as a native asset, ETH can be used to pay for transaction fees and can be transferred from account to
@@ -12000,6 +12011,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </tbody></table>
 </div>
 <h2 id="superchainweth"><a class="header" href="#superchainweth">SuperchainWETH</a></h2>
+<!-- TODO (https://github.com/ethereum-optimism/specs/issues/479) re-write invariants to use imperative form -->
 <h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
 <h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
 <ul>
@@ -12013,14 +12025,14 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <ul>
 <li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
 <li>Reverts if attempting to send more than the sender's available balance.</li>
-<li>Reduce's the sender's balance by the sent amount.</li>
+<li>Reduces the sender's balance by the sent amount.</li>
 <li>Emits a transfer event from sender to null address for the sent amount.</li>
 <li>Burns liquidity by sending the sent amount of ETH into the <code>ETHLiquidity</code> contract if native token is ETH.
 <ul>
 <li>Must not revert.</li>
 </ul>
 </li>
-<li>Emits a <code>CrosschainBurnt</code> event.</li>
+<li>Emits a <code>CrosschainBurn</code> event.</li>
 </ul>
 <h4 id="crosschainmint-2"><a class="header" href="#crosschainmint-2"><code>crosschainMint</code></a></h4>
 <ul>
@@ -12032,7 +12044,32 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </li>
 <li>Increases the recipient's balance by the sent amount.</li>
 <li>Emits a transfer event from null address to recipient for the sent amount.</li>
-<li>Emits a <code>CrosschainMinted</code> event.</li>
+<li>Emits a <code>CrosschainMint</code> event.</li>
+</ul>
+<h4 id="sendeth"><a class="header" href="#sendeth"><code>sendETH</code></a></h4>
+<ul>
+<li>Reverts if the <code>msg.sender</code>'s balance is less than the <code>msg.value</code> being sent.</li>
+<li>Reverts if the <code>to</code> address is the zero address.</li>
+<li>Reverts if the native token on the source chain is not ETH.</li>
+<li>Transfers <code>msg.value</code> of ETH from the <code>msg.sender</code> to the <code>ETHLiquidity</code> contract.</li>
+<li>Sends a cross-chain message to the destination chain to call <code>relayETH</code>.</li>
+<li>Emits a <code>SendETH</code> event with details about the sender, recipient, amount, and destination chain.</li>
+</ul>
+<h4 id="relayeth"><a class="header" href="#relayeth"><code>relayETH</code></a></h4>
+<ul>
+<li>Reverts if called by any address other than the <code>L2ToL2CrossDomainMessenger</code>.</li>
+<li>Reverts if the cross-domain sender is not <code>SuperchainWETH</code> on the source chain.</li>
+<li>If the destination chain uses ETH as its native token:
+<ul>
+<li>Transfers the relayed ETH to the recipient.</li>
+</ul>
+</li>
+<li>If the destination chain uses a custom gas token:
+<ul>
+<li>Mints <strong>SuperchainWETH</strong> ERC-20 tokens to the recipient.</li>
+</ul>
+</li>
+<li>Emits a <code>RelayETH</code> event with details about the sender, recipient, amount, and source chain.</li>
 </ul>
 <h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
 <h3 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h3>
