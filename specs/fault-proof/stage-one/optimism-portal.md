@@ -2,10 +2,8 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
-- [Optimism Portal](#optimism-portal)
   - [Overview](#overview)
     - [Perspective](#perspective)
   - [Definitions](#definitions)
@@ -35,7 +33,13 @@
 
 ### Perspective
 
-The whole point of the fault proof system is to create correctly resolving games whose claims we can depend on to finalize withdrawals (or other L2-to-L1 dependents). This contract is responsible for moderating L2-to-L1 [withdrawals](../../protocol/withdrawals.md). Because of the probabilistic validity of games as discussed in [AnchorStateRegistry](./anchor-state-registry.md), we can't immediately finalize withdrawals. Instead, we must wait for both a [dispute game finality delay](./anchor-state-registry.md#dispute-game-finality-delay) and a **proof maturity delay** to pass before we can finalize a withdrawal. Meanwhile, our assumptions about the fault proof system do work such that by the time the withdrawal is finalized, we're confident the withdrawal is correct.
+The whole point of the fault proof system is to create correctly resolving games whose claims we can depend on to
+finalize withdrawals (or other L2-to-L1 dependents). This contract is responsible for moderating L2-to-L1
+[withdrawals](../../protocol/withdrawals.md). Because of the probabilistic validity of games as discussed in
+[AnchorStateRegistry](./anchor-state-registry.md), we can't immediately finalize withdrawals. Instead, we must wait for
+both a [dispute game finality delay](./anchor-state-registry.md#dispute-game-finality-delay) and a **proof maturity
+delay** to pass before we can finalize a withdrawal. Meanwhile, our assumptions about the fault proof system do work
+such that by the time the withdrawal is finalized, we're confident the withdrawal is correct.
 
 ## Definitions
 
@@ -61,13 +65,16 @@ The **proof maturity delay** is time that must elapse between a withdrawal being
 
 ### aASR-001: AnchorStateRegistry correctly distinguishes likely valid games
 
-We assume that the AnchorStateRegistry correctly reports whether a game is a [**likely valid game**](./anchor-state-registry.md#likely-valid-game).
+We assume that the AnchorStateRegistry correctly reports whether a game is a [**likely valid
+game**](./anchor-state-registry.md#likely-valid-game).
 
 #### Impact
 
 **Severity: Medium**
 
-If a game is reported as likely valid when it is not, an attacker can prove a withdrawal that is invalid. If [aASR-002](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games) holds, this may not result in severe consequences, but would negatively impact system hygiene.
+If a game is reported as likely valid when it is not, an attacker can prove a withdrawal that is invalid. If
+[aASR-002](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games) holds, this may not result in severe
+consequences, but would negatively impact system hygiene.
 
 #### Mitigations
 
@@ -76,13 +83,15 @@ If a game is reported as likely valid when it is not, an attacker can prove a wi
 
 ### aASR-002: AnchorStateRegistry correctly distinguishes valid games
 
-We assume that the AnchorStateRegistry correctly reports whether a game is a [**valid game**](./anchor-state-registry.md#valid-game).
+We assume that the AnchorStateRegistry correctly reports whether a game is a [**valid
+game**](./anchor-state-registry.md#valid-game).
 
 #### Impact
 
 **Severity: Critical**
 
-If a game is reported as valid when it is not, we may finalize a withdrawal that is invalid. This would result to a loss of funds and a loss of confidence in the system.
+If a game is reported as valid when it is not, we may finalize a withdrawal that is invalid. This would result to a loss
+of funds and a loss of confidence in the system.
 
 #### Mitigations
 
@@ -97,7 +106,8 @@ We assume SuperchainConfig correctly returns system pause status.
 
 **Severity: Critical**
 
-If SuperchainConfig incorrectly reports system pause status, we may prove / finalize a withdrawal when the system is paused. This would create bad system hygiene, and could lead to a loss of funds or a loss of confidence in the system.
+If SuperchainConfig incorrectly reports system pause status, we may prove / finalize a withdrawal when the system is
+paused. This would create bad system hygiene, and could lead to a loss of funds or a loss of confidence in the system.
 
 #### Mitigations
 
