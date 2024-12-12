@@ -2,19 +2,27 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
+- [Optimism Portal](#optimism-portal)
   - [Overview](#overview)
     - [Perspective](#perspective)
-    - [Contract Dependencies](#contract-dependencies)
-      - [AnchorStateRegistry](#anchorstateregistry)
-      - [SuperchainConfig](#superchainconfig)
-    - [Contract Dependents](#contract-dependents)
   - [Definitions](#definitions)
     - [Authorized input](#authorized-input)
     - [Proven withdrawal](#proven-withdrawal)
     - [Finalized withdrawal](#finalized-withdrawal)
     - [Proof maturity delay](#proof-maturity-delay)
+  - [Assumptions](#assumptions)
+    - [aASR-001: AnchorStateRegistry correctly distinguishes likely valid games](#aasr-001-anchorstateregistry-correctly-distinguishes-likely-valid-games)
+      - [Impact](#impact)
+      - [Mitigations](#mitigations)
+    - [aASR-002: AnchorStateRegistry correctly distinguishes valid games](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games)
+      - [Impact](#impact-1)
+      - [Mitigations](#mitigations-1)
+    - [aSC-001: SuperchainConfig correctly reports system pause status](#asc-001-superchainconfig-correctly-reports-system-pause-status)
+      - [Impact](#impact-2)
+      - [Mitigations](#mitigations-2)
   - [Top-Level Invariants](#top-level-invariants)
 - [Function-Level Invariants](#function-level-invariants)
   - [`initialize`](#initialize)
@@ -27,27 +35,7 @@
 
 ### Perspective
 
-This contract is responsible for moderating L2-to-L1 [withdrawals](../../protocol/withdrawals.md).
-
-### Contract Dependencies
-
-#### AnchorStateRegistry
-
-Depends on AnchorStateRegistry to correctly report:
-
-- Whether a game is an **invalid game**.
-- Whether a game is a **valid game**.
-
-#### SuperchainConfig
-
-Depends on SuperchainConfig to correctly report:
-
-- System pause status.
-- Guardian address.
-
-### Contract Dependents
-
-TODO
+The whole point of the fault proof system is to create correctly resolving games whose claims we can depend on to finalize withdrawals (or other L2-to-L1 dependents). This contract is responsible for moderating L2-to-L1 [withdrawals](../../protocol/withdrawals.md). Because of the probabilistic validity of games as discussed in [AnchorStateRegistry](./anchor-state-registry.md), we can't immediately finalize withdrawals. Instead, we must wait for both a [dispute game finality delay](./anchor-state-registry.md#dispute-game-finality-delay) and a **proof maturity delay** to pass before we can finalize a withdrawal. Meanwhile, our assumptions about the fault proof system do work such that by the time the withdrawal is finalized, we're confident the withdrawal is correct.
 
 ## Definitions
 
@@ -57,15 +45,63 @@ An input for which there is social consensus, i.e. coming from governance.
 
 ### Proven withdrawal
 
-A **proven withdrawal** is a withdrawal that is likely valid, because it's been proven using a **likely valid game**. However, because we don't have full confidence in the game's validity, we can't yet finalize the withdrawal.
+A **proven withdrawal** is a withdrawal that is likely valid, because it's been proven using a **likely valid game**.
+However, because we don't have full confidence in the game's validity, we can't yet finalize the withdrawal.
 
 ### Finalized withdrawal
 
-A **finalized withdrawal** is a withdrawal transaction that has been proven against a game that we now know is **valid**, and has waited the **proof maturity delay**.
+A **finalized withdrawal** is a withdrawal transaction that has been proven against a game that we now know is
+**valid**, and has waited the **proof maturity delay**.
 
 ### Proof maturity delay
 
 The **proof maturity delay** is time that must elapse between a withdrawal being proven and it being finalized.
+
+## Assumptions
+
+### aASR-001: AnchorStateRegistry correctly distinguishes likely valid games
+
+We assume that the AnchorStateRegistry correctly reports whether a game is a [**likely valid game**](./anchor-state-registry.md#likely-valid-game).
+
+#### Impact
+
+**Severity: Medium**
+
+If a game is reported as likely valid when it is not, an attacker can prove a withdrawal that is invalid. If [aASR-002](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games) holds, this may not result in severe consequences, but would negatively impact system hygiene.
+
+#### Mitigations
+
+- Pending audit of `AnchorStateRegistry`
+- Integration testing
+
+### aASR-002: AnchorStateRegistry correctly distinguishes valid games
+
+We assume that the AnchorStateRegistry correctly reports whether a game is a [**valid game**](./anchor-state-registry.md#valid-game).
+
+#### Impact
+
+**Severity: Critical**
+
+If a game is reported as valid when it is not, we may finalize a withdrawal that is invalid. This would result to a loss of funds and a loss of confidence in the system.
+
+#### Mitigations
+
+- Pending audit of `AnchorStateRegistry`
+- Integration testing
+
+### aSC-001: SuperchainConfig correctly reports system pause status
+
+We assume SuperchainConfig correctly returns system pause status.
+
+#### Impact
+
+**Severity: Critical**
+
+If SuperchainConfig incorrectly reports system pause status, we may prove / finalize a withdrawal when the system is paused. This would create bad system hygiene, and could lead to a loss of funds or a loss of confidence in the system.
+
+#### Mitigations
+
+- Existing audit of `SuperchainConfig`
 
 ## Top-Level Invariants
 
@@ -97,6 +133,7 @@ Proves a withdrawal transaction.
 - A withdrawal cannot be reproved by the same proof submitter unless both of the following are true:
   - the dispute game previously used to prove the withdrawal is now an invalid game.
   - the withdrawal was never finalized.
+- System must not be paused.
 
 ## `finalizeWithdrawalTransaction`
 
@@ -112,3 +149,4 @@ Finalizes a withdrawal transaction that has already been proven.
 - TODO: withdrawal tx invariants (can't call token contract, exact balance must be transferred, estimator should revert
   for gas estimation)
 - If these invariants are met, function must attempt execution of the withdrawal transaction.
+- System must not be paused.
