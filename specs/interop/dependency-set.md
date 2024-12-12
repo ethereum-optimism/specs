@@ -21,9 +21,8 @@ social consensus MUST be used to determine the chain that represents the canonic
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
 of executing messages.
 
-The dependency set is configured on a per chain basis and is a unidirectional relationship. This means
-that it is possible to depend on a chain without it depending back. This means that it is possible
-to send assets to a chain where they cannot be sent back.
+Dependency is a bidirectional relationship.
+If two chains use the same `op-supervisor`, they should be able to pass messages between them.
 
 The chain id of the local chain MUST be considered as part of its own dependency set. This allows a chain
 to consume logs that it has produced much more cheaply than providing a block hash proof.
