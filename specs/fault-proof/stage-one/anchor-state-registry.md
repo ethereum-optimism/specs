@@ -33,7 +33,7 @@
       - [Mitigations](#mitigations-3)
     - [aASR-001: Incorrectly resolving games will be blacklisted within the dispute game finality delay period](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
       - [Mitigations](#mitigations-4)
-    - [aASR-002: Larger bugs in dispute game mechanics will be expired within the dispute game finality delay period](#aasr-002-larger-bugs-in-dispute-game-mechanics-will-be-expired-within-the-dispute-game-finality-delay-period)
+    - [aASR-002: If a larger dispute game bug is found, all games will be retired before the first incorrect game's dispute game finality delay period has passed](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
       - [Mitigations](#mitigations-5)
     - [aASR-003: The AnchorStateRegistry will be correctly initialized at deployment](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
       - [Mitigations](#mitigations-6)
@@ -231,7 +231,7 @@ TODO: is this true?
 
 - Stakeholder incentives / processes.
 
-### aASR-002: Larger bugs in dispute game mechanics will be expired within the dispute game finality delay period
+### aASR-002: If a larger dispute game bug is found, all games will be retired before the first incorrect game's dispute game finality delay period has passed
 
 We assume that a larger bug affecting many games will be noticed via monitoring
 ([aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)) and will be expired within the dispute
