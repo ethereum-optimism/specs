@@ -26,7 +26,7 @@
   - [aFDG-002: Fault dispute games with correct claims resolve correctly at some regular rate](#afdg-002-fault-dispute-games-with-correct-claims-resolve-correctly-at-some-regular-rate)
     - [Mitigations](#mitigations-1)
   - [aDGF-001: Dispute game factory correctly identifies the games it created](#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
-  - [Mitigations](#mitigations-2)
+    - [Mitigations](#mitigations-2)
   - [aDGF-002: Games created by the DisputeGameFactory will be monitored](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
     - [Mitigations](#mitigations-3)
   - [aASR-001: Incorrectly resolving games will be blacklisted within the dispute game finality delay period](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
@@ -201,17 +201,17 @@ resolve correctly to maintain the system's integrity.
 
 ### aDGF-001: Dispute game factory correctly identifies the games it created
 
-We assume that DisputeGameFactory will correctly identify whether it created a game (i.e. whether the game is
+We assume that `DisputeGameFactory` will correctly identify whether it created a game (i.e. whether the game is
 "factory-registered").
 
-### Mitigations
+#### Mitigations
 
 - Existing audit on the `DisputeGameFactory`.
 - Integration testing.
 
 ### aDGF-002: Games created by the DisputeGameFactory will be monitored
 
-We assume that games created by the DisputeGameFactory will be monitored for incorrect resolution.
+We assume that games created by the `DisputeGameFactory` will be monitored for incorrect resolution.
 
 #### Mitigations
 
