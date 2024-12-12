@@ -2,77 +2,75 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
-- [Anchor State Registry](#anchor-state-registry)
-  - [Overview](#overview)
-    - [Perspective](#perspective)
-  - [Definitions](#definitions)
-    - [Dispute game](#dispute-game)
-    - [Likely valid game](#likely-valid-game)
-    - [Finalized game](#finalized-game)
-    - [Dispute game finality delay](#dispute-game-finality-delay)
-    - [Valid game](#valid-game)
-    - [Blacklisted game](#blacklisted-game)
-    - [Invalid game](#invalid-game)
-    - [Retired game](#retired-game)
-    - [Game retirement timestamp](#game-retirement-timestamp)
-    - [Anchor state](#anchor-state)
-    - [Anchor game](#anchor-game)
-    - [Withdrawal](#withdrawal)
-    - [Authorized input](#authorized-input)
-  - [Assumptions](#assumptions)
-    - [aFDG-001: Fault dispute games correctly report certain properties](#afdg-001-fault-dispute-games-correctly-report-certain-properties)
-      - [Mitigations](#mitigations)
-    - [aFDG-002: Fault dispute games with correct claims resolve correctly at some regular rate](#afdg-002-fault-dispute-games-with-correct-claims-resolve-correctly-at-some-regular-rate)
-      - [Mitigations](#mitigations-1)
-    - [aDGF-001: Dispute game factory correctly identifies the games it created](#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
-    - [Mitigations](#mitigations-2)
-    - [aDGF-002: Games created by the DisputeGameFactory will be monitored](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
-      - [Mitigations](#mitigations-3)
-    - [aASR-001: Incorrectly resolving games will be blacklisted within the dispute game finality delay period](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
-      - [Mitigations](#mitigations-4)
-    - [aASR-002: If a larger dispute game bug is found, all games will be retired before the first incorrect game's dispute game finality delay period has passed](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
-      - [Mitigations](#mitigations-5)
-    - [aASR-003: The AnchorStateRegistry will be correctly initialized at deployment](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
-      - [Mitigations](#mitigations-6)
-    - [aSC-001: SuperchainConfig correctly reports its guardian address](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
-      - [Mitigations](#mitigations-7)
-  - [System Invariants](#system-invariants)
-    - [iASR-001: Games that make correct claims about L2 state can be distinguished from games that do not.](#iasr-001-games-that-make-correct-claims-about-l2-state-can-be-distinguished-from-games-that-do-not)
-      - [Impact](#impact)
-      - [Dependencies](#dependencies)
-    - [iASR-002: Valid withdrawals can be finalized within some bounded amount of time](#iasr-002-valid-withdrawals-can-be-finalized-within-some-bounded-amount-of-time)
-      - [Impact](#impact-1)
-      - [Dependencies](#dependencies-1)
-  - [Component Invariants](#component-invariants)
-    - [iASR-003: Only "truly" **valid games** will be represented as **valid games**.](#iasr-003-only-truly-valid-games-will-be-represented-as-valid-games)
-      - [Impact](#impact-2)
-      - [Dependencies](#dependencies-2)
-    - [iASR-004: The anchor game was created recently, within some bounded time period.](#iasr-004-the-anchor-game-was-created-recently-within-some-bounded-time-period)
-      - [Impact](#impact-3)
-      - [Dependencies](#dependencies-3)
-    - [iASR-005: The anchor game is a game whose claim is correct.](#iasr-005-the-anchor-game-is-a-game-whose-claim-is-correct)
-      - [Impact](#impact-4)
-      - [Dependencies](#dependencies-4)
-  - [Function-Level Invariants](#function-level-invariants)
-  - [Implementation Spec](#implementation-spec)
-    - [`constructor`](#constructor)
-    - [`initialize`](#initialize)
-    - [`getRecentValidGame`](#getrecentvalidgame)
-    - [`updateAnchorGame`](#updateanchorgame)
-    - [`getAnchorGame`](#getanchorgame)
-    - [`registerLikelyValidGame`](#registerlikelyvalidgame)
-    - [`tryUpdateAnchorGame`](#tryupdateanchorgame)
-    - [`isGameBlacklisted`](#isgameblacklisted)
-    - [`isGameLikelyValid`](#isgamelikelyvalid)
-    - [`isGameFinalized`](#isgamefinalized)
-    - [`isGameValid`](#isgamevalid)
-    - [`setRespectedGameType`](#setrespectedgametype)
-    - [`retireAllExistingGames`](#retireallexistinggames)
-    - [`setGameBlacklisted`](#setgameblacklisted)
-    - [`getGameFinalityDelay`](#getgamefinalitydelay)
+- [Overview](#overview)
+  - [Perspective](#perspective)
+- [Definitions](#definitions)
+  - [Dispute game](#dispute-game)
+  - [Likely valid game](#likely-valid-game)
+  - [Finalized game](#finalized-game)
+  - [Dispute game finality delay](#dispute-game-finality-delay)
+  - [Valid game](#valid-game)
+  - [Blacklisted game](#blacklisted-game)
+  - [Invalid game](#invalid-game)
+  - [Retired game](#retired-game)
+  - [Game retirement timestamp](#game-retirement-timestamp)
+  - [Anchor state](#anchor-state)
+  - [Anchor game](#anchor-game)
+  - [Withdrawal](#withdrawal)
+  - [Authorized input](#authorized-input)
+- [Assumptions](#assumptions)
+  - [aFDG-001: Fault dispute games correctly report certain properties](#afdg-001-fault-dispute-games-correctly-report-certain-properties)
+    - [Mitigations](#mitigations)
+  - [aFDG-002: Fault dispute games with correct claims resolve correctly at some regular rate](#afdg-002-fault-dispute-games-with-correct-claims-resolve-correctly-at-some-regular-rate)
+    - [Mitigations](#mitigations-1)
+  - [aDGF-001: Dispute game factory correctly identifies the games it created](#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
+  - [Mitigations](#mitigations-2)
+  - [aDGF-002: Games created by the DisputeGameFactory will be monitored](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
+    - [Mitigations](#mitigations-3)
+  - [aASR-001: Incorrectly resolving games will be blacklisted within the dispute game finality delay period](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
+    - [Mitigations](#mitigations-4)
+  - [aASR-002: If a larger dispute game bug is found, all games will be retired before the first incorrect game's dispute game finality delay period has passed](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
+    - [Mitigations](#mitigations-5)
+  - [aASR-003: The AnchorStateRegistry will be correctly initialized at deployment](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
+    - [Mitigations](#mitigations-6)
+  - [aSC-001: SuperchainConfig correctly reports its guardian address](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
+    - [Mitigations](#mitigations-7)
+- [System Invariants](#system-invariants)
+  - [iASR-001: Games that make correct claims about L2 state can be distinguished from games that do not.](#iasr-001-games-that-make-correct-claims-about-l2-state-can-be-distinguished-from-games-that-do-not)
+    - [Impact](#impact)
+    - [Dependencies](#dependencies)
+  - [iASR-002: Valid withdrawals can be finalized within some bounded amount of time](#iasr-002-valid-withdrawals-can-be-finalized-within-some-bounded-amount-of-time)
+    - [Impact](#impact-1)
+    - [Dependencies](#dependencies-1)
+- [Component Invariants](#component-invariants)
+  - [iASR-003: Only "truly" **valid games** will be represented as **valid games**.](#iasr-003-only-truly-valid-games-will-be-represented-as-valid-games)
+    - [Impact](#impact-2)
+    - [Dependencies](#dependencies-2)
+  - [iASR-004: The anchor game was created recently, within some bounded time period.](#iasr-004-the-anchor-game-was-created-recently-within-some-bounded-time-period)
+    - [Impact](#impact-3)
+    - [Dependencies](#dependencies-3)
+  - [iASR-005: The anchor game is a game whose claim is correct.](#iasr-005-the-anchor-game-is-a-game-whose-claim-is-correct)
+    - [Impact](#impact-4)
+    - [Dependencies](#dependencies-4)
+- [Function-Level Invariants](#function-level-invariants)
+- [Implementation Spec](#implementation-spec)
+  - [`constructor`](#constructor)
+  - [`initialize`](#initialize)
+  - [`getRecentValidGame`](#getrecentvalidgame)
+  - [`updateAnchorGame`](#updateanchorgame)
+  - [`getAnchorGame`](#getanchorgame)
+  - [`registerLikelyValidGame`](#registerlikelyvalidgame)
+  - [`tryUpdateAnchorGame`](#tryupdateanchorgame)
+  - [`isGameBlacklisted`](#isgameblacklisted)
+  - [`isGameLikelyValid`](#isgamelikelyvalid)
+  - [`isGameFinalized`](#isgamefinalized)
+  - [`isGameValid`](#isgamevalid)
+  - [`setRespectedGameType`](#setrespectedgametype)
+  - [`retireAllExistingGames`](#retireallexistinggames)
+  - [`setGameBlacklisted`](#setgameblacklisted)
+  - [`getGameFinalityDelay`](#getgamefinalitydelay)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -234,7 +232,7 @@ TODO: is this true?
 ### aASR-002: If a larger dispute game bug is found, all games will be retired before the first incorrect game's dispute game finality delay period has passed
 
 We assume that a larger bug affecting many games will be noticed via monitoring
-([aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)) and will be expired within the dispute
+([aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)) and will be retired within the dispute
 game finality delay period.
 
 TODO: is this true?
@@ -281,11 +279,11 @@ implying lost funds and lost confidence.
 
 #### Dependencies
 
-- [aFDG-001](#afdg-001-fault-dispute-games-correctly-report-their-properties)
+- [aFDG-001](#afdg-001-fault-dispute-games-correctly-report-certain-properties)
 - [aDGF-001](#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
 - [aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
 - [aASR-001](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
-- [aASR-002](#aasr-002-larger-bugs-in-dispute-game-mechanics-will-be-expired-within-the-dispute-game-finality-delay-period)
+- [aASR-002](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
 - [aASR-003](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
 - [aSC-001](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
 
@@ -299,11 +297,11 @@ If this invariant is broken, withdrawals can be frozen for a long period of time
 
 #### Dependencies
 
-- [aFDG-001](#afdg-001-fault-dispute-games-correctly-report-their-properties)
+- [aFDG-001](#afdg-001-fault-dispute-games-correctly-report-certain-properties)
 - [aDGF-001](#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
 - [aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
 - [aASR-001](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
-- [aASR-002](#aasr-002-larger-bugs-in-dispute-game-mechanics-will-be-expired-within-the-dispute-game-finality-delay-period)
+- [aASR-002](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
 - [aASR-003](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
 - [aSC-001](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
 - [iASR-001](#iasr-001-games-that-make-correct-claims-about-l2-state-can-be-distinguished-from-games-that-do-not)
@@ -312,19 +310,22 @@ If this invariant is broken, withdrawals can be frozen for a long period of time
 
 ### iASR-003: Only "truly" **valid games** will be represented as **valid games**.
 
-When asked for a **valid game** by its dependents, the contract will only serve **valid games** that "truly" resolved in
-favor of defender.
+When asked for a **valid game** by its dependents, the AnchorStateRegistry will only serve **valid games** representing correct L2 state claims.
 
 #### Impact
 
 **Severity: High**
 
-If this invariant is broken, an L2 state that's different from what dependents can be tricked into finalizing
-withdrawals based on incorrect state roots, causing loss of funds.
+If this invariant is broken, the L1 will have an inaccurate view of L2 state. The OptimismPortal can be tricked into finalizing
+withdrawals based on incorrect state roots, causing loss of funds. Other dependents would also be affected.
 
 #### Dependencies
 
-- TODO
+- [iASR-001](#iasr-001-games-that-make-correct-claims-about-l2-state-can-be-distinguished-from-games-that-do-not)
+- [aASR-001](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
+- [aASR-002](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
+- [aASR-003](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
+- [aSC-001](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
 
 ### iASR-004: The anchor game was created recently, within some bounded time period.
 
@@ -340,7 +341,8 @@ and incorrect game resolution.
 
 #### Dependencies
 
-- TODO
+- [aASR-003](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
+- [aFDG-002](#afdg-002-fault-dispute-games-with-correct-claims-resolve-correctly-at-some-regular-rate)
 
 ### iASR-005: The anchor game is a game whose claim is correct.
 
