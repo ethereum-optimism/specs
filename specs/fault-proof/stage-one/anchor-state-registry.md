@@ -15,6 +15,7 @@
   - [Blacklisted game](#blacklisted-game)
   - [Invalid game](#invalid-game)
   - [Retired game](#retired-game)
+  - [Acceptable invalid anchor game](#acceptable-invalid-anchor-game)
   - [Game retirement timestamp](#game-retirement-timestamp)
   - [Anchor state](#anchor-state)
   - [Anchor game](#anchor-game)
@@ -104,6 +105,7 @@ valid game meets the following conditions:
 - Game is not **blacklisted**.
 - Game was created while it was the respected game type.
 - Game status is not `CHALLENGER_WINS`.
+- Game `createdAt` timestamp is less than the **game retirement timestamp**.
 
 ### Finalized game
 
@@ -139,8 +141,14 @@ An **invalid game** is a game whose claim was false, or does not meet some other
 
 ### Retired game
 
-A **retired game** is a game whose `createdAt` timestamp is older than the **game retirement timestamp**. It may be
-valid, likely valid, or invalid.
+A **retired game** is a game whose `createdAt` timestamp is older than the **game retirement timestamp**. A game that
+gets retired is no longer considered valid.
+
+### Acceptable invalid anchor game
+
+An **acceptable invalid anchor game** is an **anchor game** that was a **valid game** when set and has been made
+**invalid** via **game retirement**. It meets every other condition of validity and is still acceptable to use as the
+**anchor game**. This is a special case that allows the system to continue functioning even if all games are retired.
 
 ### Game retirement timestamp
 
@@ -154,8 +162,8 @@ An anchor state is a state root from L2.
 
 ### Anchor game
 
-An **anchor game** is a **valid game** that can be used by dependents as a starting point for new dispute games. It may
-be a **retired game**.
+An **anchor game** is a **valid game** or an **acceptable invalid anchor game** that can be used by dependents as a
+starting point for new dispute games.
 
 ### Withdrawal
 
@@ -228,6 +236,7 @@ TODO: is this true?
 #### Mitigations
 
 - Stakeholder incentives / processes.
+- Incident response plan.
 
 ### aASR-002: If a larger dispute game bug is found, all games will be retired before the first incorrect game's dispute game finality delay period has passed
 
@@ -240,6 +249,7 @@ TODO: is this true?
 #### Mitigations
 
 - Stakeholder incentives / processes.
+- Incident response plan.
 
 ### aASR-003: The AnchorStateRegistry will be correctly initialized at deployment
 
@@ -310,14 +320,15 @@ If this invariant is broken, withdrawals can be frozen for a long period of time
 
 ### iASR-003: Only "truly" **valid games** will be represented as **valid games**.
 
-When asked for a **valid game** by its dependents, the AnchorStateRegistry will only serve **valid games** representing correct L2 state claims.
+When asked for a **valid game** by its dependents, the AnchorStateRegistry will only serve **valid games** representing
+correct L2 state claims.
 
 #### Impact
 
 **Severity: High**
 
-If this invariant is broken, the L1 will have an inaccurate view of L2 state. The OptimismPortal can be tricked into finalizing
-withdrawals based on incorrect state roots, causing loss of funds. Other dependents would also be affected.
+If this invariant is broken, the L1 will have an inaccurate view of L2 state. The OptimismPortal can be tricked into
+finalizing withdrawals based on incorrect state roots, causing loss of funds. Other dependents would also be affected.
 
 #### Dependencies
 
@@ -397,7 +408,7 @@ Returns the **anchor game**.
 
 ### `registerLikelyValidGame`
 
-Stores the address of a **likely valid game** in an array as a candidate for **anchor game**.
+Register the address of a **likely valid game** as a candidate for **anchor game**.
 
 - Callable only by a **likely valid game**.
 - Calling game must only register itself (and not some other game).

@@ -11,6 +11,10 @@
       - [SuperchainConfig](#superchainconfig)
     - [Contract Dependents](#contract-dependents)
   - [Definitions](#definitions)
+    - [Authorized input](#authorized-input)
+    - [Proven withdrawal](#proven-withdrawal)
+    - [Finalized withdrawal](#finalized-withdrawal)
+    - [Proof maturity delay](#proof-maturity-delay)
   - [Top-Level Invariants](#top-level-invariants)
 - [Function-Level Invariants](#function-level-invariants)
   - [`initialize`](#initialize)
@@ -23,7 +27,7 @@
 
 ### Perspective
 
-This contract is responsible for moderating [withdrawals](../../protocol/withdrawals.md).
+This contract is responsible for moderating L2-to-L1 [withdrawals](../../protocol/withdrawals.md).
 
 ### Contract Dependencies
 
@@ -47,17 +51,25 @@ TODO
 
 ## Definitions
 
-- **Authorized input**
-  - An input for which there is social consensus, i.e. coming from governance.
+### Authorized input
 
-- **Proven withdrawal**
-  -
+An input for which there is social consensus, i.e. coming from governance.
 
-- **Finalized withdrawal**
+### Proven withdrawal
+
+A **proven withdrawal** is a withdrawal that is likely valid, because it's been proven using a **likely valid game**. However, because we don't have full confidence in the game's validity, we can't yet finalize the withdrawal.
+
+### Finalized withdrawal
+
+A **finalized withdrawal** is a withdrawal transaction that has been proven against a game that we now know is **valid**, and has waited the **proof maturity delay**.
+
+### Proof maturity delay
+
+The **proof maturity delay** is time that must elapse between a withdrawal being proven and it being finalized.
 
 ## Top-Level Invariants
 
-- A withdrawal transaction must be **proven** against a game that is **maybe valid**.
+- A withdrawal transaction must be **proven** against a game that is **likely valid**.
 - A withdrawal transaction may only be finalized against a game that is **valid**.
   - Implicit in this is that a withdrawal transaction may only be finalized after the proof maturity delay has passed.
 - A withdrawal transaction may only be finalized if it has already been **proven**.
