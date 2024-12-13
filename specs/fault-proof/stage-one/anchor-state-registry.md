@@ -39,9 +39,6 @@
   - [aSC-001: SuperchainConfig correctly reports its guardian address](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
     - [Mitigations](#mitigations-7)
 - [System Invariants](#system-invariants)
-  - [iASR-001: Games that make correct claims about L2 state can be distinguished from games that do not.](#iasr-001-games-that-make-correct-claims-about-l2-state-can-be-distinguished-from-games-that-do-not)
-    - [Impact](#impact)
-    - [Dependencies](#dependencies)
   - [iASR-002: Valid withdrawals can be finalized within some bounded amount of time](#iasr-002-valid-withdrawals-can-be-finalized-within-some-bounded-amount-of-time)
     - [Impact](#impact-1)
     - [Dependencies](#dependencies-1)
@@ -275,28 +272,6 @@ We assume the SuperchainConfig contract correctly returns its guardian address.
 
 ## System Invariants
 
-### iASR-001: Games that make correct claims about L2 state can be distinguished from games that do not.
-
-System components that depend on accurate L2 state must be able to trust the ASR to validate games correctly.
-
-#### Impact
-
-**Severity: Critical**
-
-If this invariant is broken, the system will not be able to distinguish between games that make correct claims about L2
-state and games that do not. This could lead to incorrect withdrawals and other problems with L2-to-L1 dependents,
-implying lost funds and lost confidence.
-
-#### Dependencies
-
-- [aFDG-001](#afdg-001-fault-dispute-games-correctly-report-certain-properties)
-- [aDGF-001](#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
-- [aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
-- [aASR-001](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
-- [aASR-002](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
-- [aASR-003](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
-- [aSC-001](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
-
 ### iASR-002: Valid withdrawals can be finalized within some bounded amount of time
 
 #### Impact
@@ -314,7 +289,6 @@ If this invariant is broken, withdrawals can be frozen for a long period of time
 - [aASR-002](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
 - [aASR-003](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
 - [aSC-001](#asc-001-superchainconfig-correctly-reports-its-guardian-address)
-- [iASR-001](#iasr-001-games-that-make-correct-claims-about-l2-state-can-be-distinguished-from-games-that-do-not)
 
 ## Component Invariants
 
@@ -332,7 +306,6 @@ finalizing withdrawals based on incorrect state roots, causing loss of funds. Ot
 
 #### Dependencies
 
-- [iASR-001](#iasr-001-games-that-make-correct-claims-about-l2-state-can-be-distinguished-from-games-that-do-not)
 - [aASR-001](#aasr-001-incorrectly-resolving-games-will-be-blacklisted-within-the-dispute-game-finality-delay-period)
 - [aASR-002](#aasr-002-if-a-larger-dispute-game-bug-is-found-all-games-will-be-retired-before-the-first-incorrect-games-dispute-game-finality-delay-period-has-passed)
 - [aASR-003](#aasr-003-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
