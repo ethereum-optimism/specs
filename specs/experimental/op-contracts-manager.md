@@ -69,7 +69,7 @@ The following interface defines the available getter methods:
 ///         format `op-contracts/vX.Y.Z`.
 function l1ContractsRelease() external view returns (string memory);
 /// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
-function OUTPUT_VERSION() external view returns (uint256);
+function outputVersion() external view returns (uint256);
 /// @notice Addresses of the Blueprint contracts.
 function blueprints() external view returns (Blueprints memory);
 /// @notice Maps an L2 chain ID to an L1 batch inbox address
