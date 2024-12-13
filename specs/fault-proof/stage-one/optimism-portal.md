@@ -116,9 +116,10 @@ paused. This would create bad system hygiene, and could lead to a loss of funds 
 ## Top-Level Invariants
 
 - A withdrawal transaction must be **proven** against a game that is **maybe valid**.
-- A withdrawal transaction may only be finalized against a game that is **valid**.
-  - Implicit in this is that a withdrawal transaction may only be finalized after the proof maturity delay has passed.
-- A withdrawal transaction may only be finalized if it has already been **proven**.
+- A withdrawal transaction may only be **finalized** against a game that is **valid**.
+  - Implicit in this is that a withdrawal transaction may only be **finalized** after the **proof maturity delay** has
+    passed.
+- A withdrawal transaction may only be **finalized** if it has already been **proven**.
 - A withdrawal transaction must be used only once to **finalize** a withdrawal.
 - A withdrawal transaction that is **finalized** must attempt execution.
 
@@ -136,12 +137,13 @@ paused. This would create bad system hygiene, and could lead to a loss of funds 
 
 Proves a withdrawal transaction.
 
-- Withdrawal game must be a **maybe valid game**.
-- Withdrawal transaction's target must not be the OptimismPortal address.
-- Withdrawal game's root claim must be equal to the hashed outputRootProof input.
-- Must verify that the hash of this withdrawal is stored in the L2toL1MessagePasser contract on L2.
+- Withdrawal game must be a [**maybe valid game**](./anchor-state-registry.md#maybe-valid-game).
+- Withdrawal transaction's target must not be the `OptimismPortal` address.
+- Withdrawal game's root claim must be equal to the hashed `outputRootProof` input.
+- Must verify that the hash of this withdrawal is stored in the `L2toL1MessagePasser` contract on L2.
 - A withdrawal cannot be reproved by the same proof submitter unless both of the following are true:
-  - the dispute game previously used to prove the withdrawal is now an invalid game.
+  - the dispute game previously used to prove the withdrawal is now an [**invalid
+    game**](./anchor-state-registry.md#invalid-game).
   - the withdrawal was never finalized.
 - System must not be paused.
 
@@ -154,9 +156,13 @@ Finalizes a withdrawal transaction that has already been proven.
   finalization.
 - The time the withdrawal was proven must be greater or equal to the time at which the withdrawal's game was created.
 - Withdrawal transaction must not have been finalized before.
-- The game upon which the withdrawal proof is based must be a **valid game**.
+- The game upon which the withdrawal proof is based must be a [**valid game**](./anchor-state-registry.md#valid-game).
 - Function must revert when system is paused.
-- TODO: withdrawal tx invariants (can't call token contract, exact balance must be transferred, estimator should revert
-  for gas estimation)
-- If these invariants are met, function must attempt execution of the withdrawal transaction.
+- If the gas-paying token is not ether:
+  - Withdrawal transaction's target must not be the OP token address.
+  - If the withdrawal transaction transfers value:
+    - The call to `transfer` must revert on fail.
+    - The input amount must equal the balance delta of this contract after transfer.
 - System must not be paused.
+- If these invariants are met, function must attempt execution of the withdrawal transaction.
+- If the transaction wasn't successful and the `tx.origin` is the `ESTIMATION_ADDRESS`, revert with `GasEstimation()`.
