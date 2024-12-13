@@ -2,8 +2,10 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
+- [Optimism Portal](#optimism-portal)
   - [Overview](#overview)
     - [Perspective](#perspective)
   - [Definitions](#definitions)
@@ -12,7 +14,7 @@
     - [Finalized withdrawal](#finalized-withdrawal)
     - [Proof maturity delay](#proof-maturity-delay)
   - [Assumptions](#assumptions)
-    - [aASR-001: AnchorStateRegistry correctly distinguishes likely valid games](#aasr-001-anchorstateregistry-correctly-distinguishes-likely-valid-games)
+    - [aASR-001: AnchorStateRegistry correctly distinguishes maybe valid games](#aasr-001-anchorstateregistry-correctly-distinguishes-maybe-valid-games)
       - [Impact](#impact)
       - [Mitigations](#mitigations)
     - [aASR-002: AnchorStateRegistry correctly distinguishes valid games](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games)
@@ -49,7 +51,7 @@ An input for which there is social consensus, i.e. coming from governance.
 
 ### Proven withdrawal
 
-A **proven withdrawal** is a withdrawal that is likely valid, because it's been proven using a **likely valid game**.
+A **proven withdrawal** is a withdrawal that is maybe valid, because it's been proven using a **maybe valid game**.
 However, because we don't have full confidence in the game's validity, we can't yet finalize the withdrawal.
 
 ### Finalized withdrawal
@@ -63,16 +65,16 @@ The **proof maturity delay** is time that must elapse between a withdrawal being
 
 ## Assumptions
 
-### aASR-001: AnchorStateRegistry correctly distinguishes likely valid games
+### aASR-001: AnchorStateRegistry correctly distinguishes maybe valid games
 
-We assume that the AnchorStateRegistry correctly reports whether a game is a [**likely valid
-game**](./anchor-state-registry.md#likely-valid-game).
+We assume that the AnchorStateRegistry correctly reports whether a game is a [**maybe valid
+game**](./anchor-state-registry.md#maybe-valid-game).
 
 #### Impact
 
 **Severity: Medium**
 
-If a game is reported as likely valid when it is not, an attacker can prove a withdrawal that is invalid. If
+If a game is reported as maybe valid when it is not, an attacker can prove a withdrawal that is invalid. If
 [aASR-002](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games) holds, this may not result in severe
 consequences, but would negatively impact system hygiene.
 
@@ -115,7 +117,7 @@ paused. This would create bad system hygiene, and could lead to a loss of funds 
 
 ## Top-Level Invariants
 
-- A withdrawal transaction must be **proven** against a game that is **likely valid**.
+- A withdrawal transaction must be **proven** against a game that is **maybe valid**.
 - A withdrawal transaction may only be finalized against a game that is **valid**.
   - Implicit in this is that a withdrawal transaction may only be finalized after the proof maturity delay has passed.
 - A withdrawal transaction may only be finalized if it has already been **proven**.
@@ -136,7 +138,7 @@ paused. This would create bad system hygiene, and could lead to a loss of funds 
 
 Proves a withdrawal transaction.
 
-- Withdrawal game must not be a **maybe valid game**.
+- Withdrawal game must be a **maybe valid game**.
 - Withdrawal transaction's target must not be the OptimismPortal address.
 - Withdrawal game's root claim must be equal to the hashed outputRootProof input.
 - Must verify that the hash of this withdrawal is stored in the L2toL1MessagePasser contract on L2.
