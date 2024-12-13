@@ -920,7 +920,7 @@ upgrade.</p>
         uint256 _value,
         uint256 _minGasLimit,
         bytes memory _message
-    ) external payable;
+    ) external payable returns (bytes memory returnData_);
     function sendMessage(address _target, bytes memory _message, uint32 _minGasLimit) external payable;
     function successfulMessages(bytes32) external view returns (bool);
     function xDomainMessageSender() external view returns (address);
@@ -10910,7 +10910,7 @@ chain. The hash of the message is used for replay protection.</p>
 it is possible to send a message that is not playable.</p>
 <p>A message is relayed by providing the <a href="interop/./messaging.html#message-identifier">identifier</a> to a <code>SentMessage</code>
 event and its corresponding <a href="interop/./messaging.html#message-payload">message payload</a>.</p>
-<pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable {
+<pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
     CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
 
@@ -10924,7 +10924,8 @@ event and its corresponding <a href="interop/./messaging.html#message-payload">m
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
-    bool success = SafeCall.call(_target, msg.value, _message);
+    bool success;
+    (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
     emit RelayedMessage(_source, _nonce, messageHash);
