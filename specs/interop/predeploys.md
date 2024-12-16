@@ -16,6 +16,7 @@
   - [`Identifier` Getters](#identifier-getters)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
+  - [`sendMessage` Invariants](#sendmessage-invariants)
   - [Message Versioning](#message-versioning)
   - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
   - [Interfaces](#interfaces)
@@ -95,7 +96,7 @@ To ensure safety of the protocol, the [Message Invariants](./messaging.md#messag
 
 Executes a cross chain message and performs a `CALL` with the payload to the provided target address, allowing
 introspection of the data.
-Signals the transaction has a cross chain message to validate by emitting the `ExecuteMessage` event.
+Signals the transaction has a cross chain message to validate by emitting the `ExecutingMessage` event.
 
 The following fields are required for executing a cross chain message:
 
@@ -277,8 +278,14 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chain id MUST be equal to the local chain id
+- Messages MUST NOT be relayed more than once
 - The `msg.sender` MUST be equal to the `entrypoint` address, if set
 - If `entrypoint` is not set, anyone MUST be able to relay the message
+
+### `sendMessage` Invariants
+
+- Sent Messages MUST be uniquely identifiable
+- It must emit the `SentMessage` event
 
 ### Message Versioning
 
