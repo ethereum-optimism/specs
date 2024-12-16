@@ -316,7 +316,7 @@ function sendMessage(uint256 _destination, address _target, bytes calldata _mess
 __Using Entrypoint:__ Can be relayed on the destination chain only by the `_entrypoint` address.
 
 ```solidity
-function sendMessage(uint256 _destination, address _target, bytes calldata _message, address _entrypoint) external returns (bytes32);
+function sendMessage(uint256 _destination, address _target, address _entrypoint, bytes calldata _message) external returns (bytes32);
 ```
 
 Both functions return the hash of the message being sent,
@@ -324,7 +324,7 @@ which is used to track whether the message has successfully been relayed.
 They emit a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
 
 ```solidity
-event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message, address entrypoint);
+event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, address entrypoint, bytes message);
 ```
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
@@ -397,8 +397,8 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     require(_destination == block.chainid);
 
     // log data
-    (address _sender, bytes memory _message, address _entrypoint) = 
-        abi.decode(_sentMessage[128:], (address,bytes,address));
+    (address _sender, address _entrypoint, bytes memory _message) = 
+        abi.decode(_sentMessage[128:], (address,address,bytes));
 
     bool success = SafeCall.call(_target, msg.value, _message);
     require(success);
