@@ -257,7 +257,8 @@ affect safety and can therefore be managed the Foundation Upgrades Safe.</p>
 <li>
 <p><strong>The Foundation Operations Safe:</strong> This Safe acts as the Deputy Guardian, meaning that (via the
 Guardian Safe's <code>DeputyGuardianModule</code>) it can call any functions in the system which impacts
-liveness.</p>
+liveness. It is extended with the <code>DeputyPauseModule</code> to allow a signing key to execute the
+Superchain-wide pause function quickly.</p>
 </li>
 </ol>
 <h2 id="ownership-model-diagram"><a class="header" href="#ownership-model-diagram">Ownership model diagram</a></h2>
@@ -288,10 +289,13 @@ liveness.</p>
    end
 
    subgraph GuardianSystem[Guardian System]
-      FndOps[Foundation Ops Safe]
       subgraph GuardianSafe[Guardian Safe]
          GS[Guardian Safe]
          DGM[Deputy Guardian Module]
+      end
+      subgraph FndOpsSafe[Foundation Ops Safe]
+         FndOps[Foundation Ops Safe]
+         DPM[Deputy Pause Module]
       end
    end
 
@@ -300,6 +304,7 @@ liveness.</p>
     Council --&gt; POA
     Council --&gt; GS
     FndOps --&gt;|pause\nunpause\nsetRespectedGameType\nblackListDisputeGame| DGM
+    DPM --&gt;|execTransactionFromModule| FndOps
     FndUp --&gt;|set versions|PV
     LM --&gt;|execTransactionFromModule| Council
     DGM --&gt;|execTransactionFromModule| GS
