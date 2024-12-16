@@ -9,7 +9,6 @@
 - [Definitions](#definitions)
   - [Dispute game](#dispute-game)
   - [Maybe valid game](#maybe-valid-game)
-  - [Finalized game](#finalized-game)
   - [Dispute game finality delay](#dispute-game-finality-delay)
   - [Valid game](#valid-game)
   - [Blacklisted game](#blacklisted-game)
@@ -66,7 +65,6 @@
   - [`isGameBlacklisted`](#isgameblacklisted)
   - [`isGameRetired`](#isgameretired)
   - [`isGameMaybeValid`](#isgamemaybevalid)
-  - [`isGameFinalized`](#isgamefinalized)
   - [`isGameValid`](#isgamevalid)
   - [`setRespectedGameType`](#setrespectedgametype)
   - [`retireAllExistingGames`](#retireallexistinggames)
@@ -97,25 +95,15 @@ A dispute game is a contract that resolves an L2 state claim.
 
 ### Maybe valid game
 
-A **maybe valid game** is a dispute game that correctly resolved in favor of the defender. However, the system concedes
-a possibility that it's not correct, and so it's not yet ready to be used as a **valid game** by dependents. A maybe
-valid game meets the following conditions:
+A **maybe valid game** is a dispute game whose validity is questionable. However, the game does meet certain properties
+that make it a candidate for eventual **valid game** status, and can be useful to dependents in its limited state. A
+maybe valid game meets the following conditions:
 
 - Game was created by the dispute game factory.
 - Game is not **blacklisted**.
 - Game was created while it was the respected game type.
 - Game status is not `CHALLENGER_WINS`.
 - Game `createdAt` timestamp is less than the **game retirement timestamp**.
-
-### Finalized game
-
-A finalized dispute game is a game that has been resolved in favor of either the challenger or defender. Furthermore, it
-has passed the **dispute game finality delay** and can be used by dependents. A finalized game meets the following
-conditions:
-
-- Game status is `CHALLENGER_WINS` or `DEFENDER_WINS`.
-- Game `resolvedAt` timestamp is not zero.
-- Game `resolvedAt` timestamp is more than `dispute game finality delay` seconds ago.
 
 ### Dispute game finality delay
 
@@ -127,8 +115,15 @@ finalized. It's set via **authorized input**.
 ### Valid game
 
 A game is a **valid game** if it, among other qualifications, has resolved in favor of the defender and has also matured
-past the finality delay. In other words, it meets the conditions of both a **maybe valid game** and a **finalized
-game**.
+past the finality delay. It meets the following conditions:
+
+- Game `resolvedAt` timestamp is not zero.
+- Game `resolvedAt` timestamp is more than `dispute game finality delay` seconds ago.
+- Game was created by the dispute game factory.
+- Game is not **blacklisted**.
+- Game was created while it was the respected game type.
+- Game status is not `CHALLENGER_WINS`.
+- Game `createdAt` timestamp is less than the **game retirement timestamp**.
 
 ### Blacklisted game
 
@@ -156,8 +151,10 @@ An anchor state is the state root from a correct L2 claim that is used as a star
 
 ### Anchor game
 
-The **anchor game** is the game whose state root is used as the **anchor state**. In the overwhelming majority of cases,
-it is a **valid game**, and in any case, its claim is correct.
+A game can be marked as the **"anchor game"** if that game is currently a **valid game** and corresponds to a claim
+about an L2 block number greater than the L2 block number of the current **anchor game**. A game remains the anchor game
+until replaced by another anchor game. An anchor game that becomes blacklisted is no longer considered a usable anchor
+game. An anchor game that becomes retired is still considered a usable anchor game.
 
 ### Withdrawal
 
@@ -193,7 +190,7 @@ We assume that a fault dispute game will correctly report the following properti
 
 ### aFDG-002: Fault dispute games with correct claims resolve correctly at some regular rate
 
-We assume that fault dispute games will regularly resolve in favor of the defender correctly. While the system can
+We assume that fault dispute games will regularly correctly resolve in favor of the defender. While the system can
 handle games that resolve in favor of the challenger, as well as incorrect resolutions, there must be other games that
 resolve correctly to maintain the system's integrity.
 
@@ -230,8 +227,8 @@ We assume that games created by the `DisputeGameFactory` will be monitored for i
 
 ### aASR-001: Incorrectly resolving games will be invalidated within the dispute game finality delay period
 
-We assume that games that resolve incorrectly will be blacklisted or retired via **authorized action** within the dispute game
-finality delay period. This further depends on
+We assume that games that resolve incorrectly will be blacklisted or retired via **authorized action** within the
+dispute game finality delay period. This further depends on
 [aDGF-002](#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored).
 
 #### Mitigations
@@ -417,10 +414,6 @@ Returns whether the game is a **retired game**.
 ### `isGameMaybeValid`
 
 Returns whether the game is a **maybe valid game**.
-
-### `isGameFinalized`
-
-Returns whether the game is a **finalized game**.
 
 ### `isGameValid`
 
