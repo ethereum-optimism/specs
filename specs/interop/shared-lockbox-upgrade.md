@@ -5,7 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
-  - [Add the chain to the op-governed dependency set](#add-the-chain-to-the-op-governed-dependency-set)
+  - [Add the chain to the op-governed dependency set in `SuperchainConfig`](#add-the-chain-to-the-op-governed-dependency-set-in-superchainconfig)
   - [Migrate ETH liquidity from `OptimismPortal` to `SharedLockbox`](#migrate-eth-liquidity-from-optimismportal-to-sharedlockbox)
     - [`LiquidityMigrator`](#liquiditymigrator)
   - [`OptimismPortal` code upgrade](#optimismportal-code-upgrade)
@@ -17,13 +17,12 @@
 
 ## Overview
 
-Based on the assumption that a chain joining the dependency set is an irreversible process,
-the on-chain chains list is simplified by assuming that joining the Shared Lockbox is
-equivalent to joining the op-governed dependency set.
+Based on the assumption that a chain joining the op-governed dependency set is an irreversible process,
+it is assumed that joining the Shared Lockbox is equivalent to it.
 
 The upgrade process consists of three main points:
 
-- Add the chain to the op-governed dependency set
+- Add the chain to the op-governed dependency set in `SuperchainConfig`
 - Move ETH liquidity from `OptimismPortal` to `SharedLockbox`
 - Upgrade the code of `OptimismPortal` to include the `SharedLockbox` integration
 
@@ -33,17 +32,17 @@ This process also requires that:
 - `SuperchainConfig` is upgraded to manage the dependency set
 - `SystemConfig` is upgraded to the interop contract version
 
-### Add the chain to the op-governed dependency set
+### Add the chain to the op-governed dependency set in `SuperchainConfig`
 
 The `SuperchainConfig` contract will be responsible for storing and managing the dependency set.
 Its `addChain` function will be used to add the chain to the dependency set and call the `SystemConfig` of each chain
 to keep them in sync.
 It will also allowlist the corresponding `OptimismPortal`, enabling it to lock and unlock ETH from the `SharedLockbox`.
-Once this process is complete, the system will be ready to process deposits and withdrawals.
+Once `addChain` is called, the system will be ready to process deposits and withdrawals.
 
 ### Migrate ETH liquidity from `OptimismPortal` to `SharedLockbox`
 
-The ETH will be transferred from the `OptimismPortal` to the `SharedLockbox` using an intermediate contract.
+The ETH will be transferred from the `OptimismPortal` to the `SharedLockbox` using the `LiquidityMigrator` contract.
 This contract functions similarly to upgrades using the `StorageSetter`, being updated immediately before to the real implementation.
 Its sole purpose is to transfer the ETH balance.
 This approach eliminates the need for adding code to move the liquidity to the lockbox that won't be used again.
@@ -60,11 +59,15 @@ This approach avoids adding extra code to the `initialize` function, which could
 
 Transfers the entire ETH balance from the `OptimismPortal` to the `SharedLockbox`.
 
-- It MUST transfer the whole ETH balance to the `SharedLockbox` when called.
-
 ```solidity
 function migrateETH() external;
 ```
+
+**Invariants**
+
+- It MUST migrate the whole `OptimismPortal` ETH balance to the `SharedLockbox`
+
+- It MUST emit `ETHMigrated` when migrating the balance
 
 ### `OptimismPortal` code upgrade
 
@@ -72,9 +75,6 @@ The `OptimismPortal` will start locking and unlocking ETH through the `SharedLoc
 It will continue to handle deposits and withdrawals but won't directly hold the ETH liquidity.
 To set this up, the upgrade function will be called via `ProxyAdmin` to implement the new code,
 which includes the necessary `SharedLockbox` integration.
-The `SharedLockbox` address will be set during the `initialize` function. After this step,
-the `OptimismPortal` will not be able to process deposits and withdrawals until the chain is registered
-in `SuperchainConfig`.
 
 ## Batch transaction process
 
@@ -109,6 +109,7 @@ sequenceDiagram
 
     %% Step 1: Add chain to SuperchainConfig
     L1PAO->>SuperchainConfig: addChain(chainId, SystemConfig address)
+    SuperchainConfig->>SharedLockbox: authorizePortal(OptimismPortal address)
 
     %% Step 2: Upgrade OptimismPortal to intermediate implementation that transfers ETH
     L1PAO->>ProxyAdmin: upgradeAndCall()

@@ -5,41 +5,49 @@
 **Table of Contents**
 
 - [Overview](#overview)
-  - [Interface and properties](#interface-and-properties)
   - [Integrating `SharedLockbox`](#integrating-sharedlockbox)
+    - [`depositTransaction`](#deposittransaction)
+    - [`finalizeWithdrawalTransactionExternalProof`](#finalizewithdrawaltransactionexternalproof)
+  - [Invariants](#invariants)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
 
 The `OptimismPortal` contract is upgraded to integrate the `SharedLockbox` and start using the shared ETH liquidity.
+This liquidity consists of every ETH balance migrated from each `OptimismPortal`
+when joining the op-governed dependency set.
 
-### Interface and properties
-
-The `OptimismPortal` contract will add the following storage layout and modified functions:
-
-**`SHARED_LOCKBOX`**
-
-- An immutable address pointing to the `SharedLockbox` contract.
-- This address MUST be immutable because all `OptimismPortals` will point to the same `SharedLockbox`,
-  and this address SHOULD not change.
+It is possible to upgrade to this version without being part of the op-governed dependency set. In this case,
+the corresponding chain would need to deploy and manage its own `SharedLockbox` and `SuperchainConfig`.
 
 ### Integrating `SharedLockbox`
 
-The integration with the `SharedLockbox` involves adding extra steps when executing deposit transactions
-or finalizing withdrawal transactions.
-These steps include locking and unlocking ETH without altering other aspects of the current `OptimismPortal` implementation.
+The integration with the `SharedLockbox` involves locking ETH when executing deposit transactions and unlocking ETH
+when finalizing withdrawal transactions, without altering other aspects of the current `OptimismPortal` implementation.
+
 To implement this solution, the following changes are needed:
 
-**`depositTransaction`**
+#### `depositTransaction`
 
 Calls `lockETH` on the `SharedLockbox` with the `msg.value`.
 
-- The function MUST call `lockETH` on the `SharedLockbox` if:
+- The function MUST call `lockETH` with `msg.value` on the `SharedLockbox` if:
   - The token is `ETHER`.
   - `msg.value` is greater than zero.
 
-**`finalizeWithdrawalTransactionExternalProof`**
+```mermaid
+sequenceDiagram
+    participant User
+    participant OptimismPortal
+    participant SharedLockbox
+
+    User->>OptimismPortal: depositTransaction(...)
+    OptimismPortal->>SharedLockbox: lockETH()
+    OptimismPortal->>OptimismPortal: emit TransactionDeposited()
+```
+
+#### `finalizeWithdrawalTransactionExternalProof`
 
 Calls `unlockETH` on the `SharedLockbox` with the `tx.value`.
 
@@ -47,3 +55,23 @@ Calls `unlockETH` on the `SharedLockbox` with the `tx.value`.
   - The token is `ETHER`.
   - `tx.value` is greater than zero.
 - The ETH is received by the `OptimismPortal` and then sent with the withdrawal transaction
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant OptimismPortal
+    participant SharedLockbox
+
+    User->>OptimismPortal: finalizeWithdrawalTransactionExternalProof(...)
+    OptimismPortal->>SharedLockbox: unlockETH(uint256 value)
+    SharedLockbox->>OptimismPortal: donateETH()
+    OptimismPortal->>OptimismPortal: emit WithdrawalFinalized()
+```
+
+### Invariants
+
+- It MUST lock the ETH amount on the `SharedLockbox` when on a deposit transaction with value greater than zero
+
+- It MUST unlock the ETH amount being withdrawn from the `SharedLockbox` if it is greater than zero
+
+- It MUST NOT hold any ETH balance from any deposit transaction.
