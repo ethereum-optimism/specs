@@ -39,7 +39,7 @@ the specification.
 Scaling Ethereum means increasing the number of useful transactions the Ethereum network can process. Ethereum's
 limited resources, specifically bandwidth, computation, and storage, constrain the number of transactions which can be
 processed on the network. Of the three resources, computation and storage are currently the most significant
-bottlenecks. These bottlenecks limit the supply of transactions, leading to extremely high fees. Scaling ethereum and
+bottlenecks. These bottlenecks limit the supply of transactions, leading to extremely high fees. Scaling Ethereum and
 reducing fees can be achieved by better utilizing bandwidth, computation and storage.
 
 ### Optimistic Rollups
@@ -48,7 +48,7 @@ An [Optimistic Rollup](https://vitalik.eth.limo/general/2021/01/05/rollup.html) 
 increases the computation & storage capacity of Ethereum while aiming to minimize sacrifices to scalability or
 decentralization. In a nutshell, an Optimistic Rollup utilizes Ethereum (or some other data availability layer) to host
 transaction data. Layer 2 nodes then execute a state transition function over this data. Users can propose the result of
-this off-chain execution to a smart contract on L1. A "fault proving" process can then demonstrate that a user's proposal
+this off-chain execution to a smart contract on L1. A "fault-proofing" process can then demonstrate that a user's proposal
 is (or is not) valid.
 
 ### EVM Equivalence
