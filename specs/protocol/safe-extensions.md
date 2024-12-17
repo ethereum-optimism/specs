@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Guardian Safe](#guardian-safe)
@@ -49,7 +50,7 @@ The Guardian Safe is extended by the Deputy Guardian Module.
 ### Deputy Guardian Module
 
 As the sole owner of the Guardian Safe, the Security Council acts as the Guardian, which is
-authorized to activate the [Superchain Pause](../protocol/superchain-configuration.md#pausability)
+authorized to activate the [Superchain Pause](../protocol/superchain-config.md#pausability)
 functionality.
 
 However the Security Council cannot be expected to react quickly in an emergency situation.
