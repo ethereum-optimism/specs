@@ -66,7 +66,7 @@ The following interface defines the available getter methods:
 ```solidity
 /// @notice Returns the latest approved release of the OP Stack contracts are named with the
 ///         format `op-contracts/vX.Y.Z`.
-function l1ContractsRelease() external view returns (string memory);
+function release() external view returns (string memory);
 /// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
 function outputVersion() external view returns (uint256);
 /// @notice Addresses of the Blueprint contracts.
