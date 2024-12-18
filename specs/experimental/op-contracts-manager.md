@@ -18,6 +18,7 @@ of governance approved [contract releases] can be found on the
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -58,6 +59,8 @@ The OP Contracts Manager corresponding to each release can be used to:
 1. Deploy a new OP chain.
 2. Upgrade the contracts for an existing OP chain from the previous release to the new release.
 3. Orchestrate adding a new game type on a per-chain basis
+
+Upgrades must be performed by the [Upgrade Controller](../protocol/stage-1.md#roles-for-stage-1) Safe for a chain.
 
 ## Getter Methods
 
