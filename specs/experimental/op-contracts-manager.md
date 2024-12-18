@@ -216,7 +216,7 @@ This approach requires that all contracts have an `upgrade()` function which set
 value to `true`. The `upgrade` function body should be empty unless it is used to set a new state
 variable added to that contract since the last upgrade.
 
-#### `NewChainConfig` struct
+#### `IsthmusConfig` struct
 
 This struct is used to pass the new chain configuration to the `upgrade` method, and so it will
 vary for each release of the OP Contracts Manager, based on what (if any) new parameters are added.
@@ -228,8 +228,9 @@ By way of example, if an upgrade is adding a new variable `address foo` to the `
 an upgrade named `Example`, the struct could have the following definition:
 
 ```solidity
-struct NewChainConfigForExampleUpgrade {
-  address systemConfigFoo;
+struct IsthmusConfig {
+    uint32 public operatorFeeScalar;
+    uint64 public operatorFeeConstant;
 }
 ```
 
@@ -276,18 +277,18 @@ The high level logic of the `addGameType` method is as follows (for each chain):
 1. Read the `DisputeGameFactory` address from the `SystemConfig`.
 1. Call `DisputeGameFactory.setImplementation()` to register the new game.
 
-```solidity
-uint32 gameType; // constant value of 1
-bytes32 absolutePrestate; // Input as PermissionlessGameConfig.absolutePrestate
-uint256 maxGameDepth; // Read from existing PermissionedGame
-uint256 splitDepth; // Read from existing PermissionedGame
-uint64 clockExtension; // Read from existing PermissionedGame
-uint64 maxClockDuration; // Read from existing PermissionedGame
-address vm; // Read from existing PermissionedGame
-address weth; // Use address of newly deployed DelayedWeth contract
-address anchorStateRegistry; // Read from existing PermissionedGame
-uint256 l2ChainId; // Read from existing PermissionedGame
-```
+| Name                | Type    | Description                                        | Source                                     |
+| ------------------- | ------- | -------------------------------------------------- | ------------------------------------------ |
+| gameType            | uint32  | Constant value of 1 indicating the game type       | Hardcoded constant                         |
+| absolutePrestate    | bytes32 | Initial state of the game                          | Input in `PermissionlessGameConfig` struct |
+| maxGameDepth        | uint256 | Maximum depth of the game tree                     | Copied from existing `PermissionedGame`    |
+| splitDepth          | uint256 | Depth at which the game tree splits                | Copied from existing `PermissionedGame`    |
+| clockExtension      | uint64  | Time extension granted for moves                   | Copied from existing `PermissionedGame`    |
+| maxClockDuration    | uint64  | Maximum duration of the game clock                 | Copied from existing `PermissionedGame`    |
+| vm                  | address | Virtual machine contract address                   | Copied from existing `PermissionedGame`    |
+| weth                | address | Address of the newly deployed DelayedWeth contract | Newly deployed contract                    |
+| anchorStateRegistry | address | Registry contract address                          | Copied from existing `PermissionedGame`    |
+| l2ChainId           | uint256 | Chain ID of the L2 network                         | Copied from existing `PermissionedGame`    |
 
 ## Security Considerations
 
