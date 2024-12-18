@@ -6,6 +6,7 @@
 
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
+  - [Invariants](#invariants)
 - [Security Considerations](#security-considerations)
   - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 
@@ -47,16 +48,17 @@ It is a known issue that not all software in the Ethereum can handle 32 byte cha
 
 ## Updating the Dependency Set
 
-The `SystemConfig` is updated to manage a new role, `dependencyManager`.
-It can only updated by the `ProxyAdmin` during an contract upgrade.
-The sole holder of this role is the only address
-permissioned to update (remove/add to) the dependency set of that chain.
+The `SystemConfig` is updated to have the `SuperchainConfig` address and to manage the dependency set.
 
-The `SystemConfig` is also updated to manage the dependency set.
-The address with the `dependency manager` role can add or remove
-chains from the dependency set through the `SystemConfig`.
+The `SuperchainConfig` can add or remove chains from the dependency set through the `SystemConfig`.
 
 The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
+
+### Invariants
+
+- Only the `SuperchainConfig` contract MUST be able to add a new dependency
+
+- Only the `SuperchainConfig` contract MUST be able to remove a dependency
 
 ## Security Considerations
 
