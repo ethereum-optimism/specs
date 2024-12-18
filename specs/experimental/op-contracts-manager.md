@@ -18,7 +18,6 @@ of governance approved [contract releases] can be found on the
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [Overview](#overview)
@@ -33,7 +32,7 @@ of governance approved [contract releases] can be found on the
   - [Interface](#interface-1)
     - [`upgrade`](#upgrade)
   - [Implementation](#implementation-1)
-    - [`NewChainConfig` struct](#newchainconfig-struct)
+    - [`IsthmusConfig` struct](#isthmusconfig-struct)
     - [Requirements on the OP Chain contracts](#requirements-on-the-op-chain-contracts)
 - [Adding game types](#adding-game-types)
   - [Interface](#interface-2)
