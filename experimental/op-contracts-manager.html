@@ -180,12 +180,13 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#deployment">Deployment</a></li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#getter-methods">Getter Methods</a></li>
+<li><a href="#deployment">Deployment</a>
+<ul>
 <li><a href="#interface">Interface</a>
 <ul>
-<li><a href="#proxysol"><code>Proxy.sol</code></a></li>
 <li><a href="#deploy"><code>deploy</code></a></li>
-<li><a href="#getter-methods">Getter Methods</a></li>
 </ul>
 </li>
 <li><a href="#implementation">Implementation</a>
@@ -194,48 +195,86 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 <li><a href="#contract-deployments">Contract Deployments</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li><a href="#upgrading">Upgrading</a>
+<ul>
+<li><a href="#interface-1">Interface</a>
+<ul>
+<li><a href="#upgrade"><code>upgrade</code></a></li>
+</ul>
+</li>
+<li><a href="#implementation-1">Implementation</a>
+<ul>
+<li><a href="#isthmusconfig-struct"><code>IsthmusConfig</code> struct</a></li>
+<li><a href="#requirements-on-the-op-chain-contracts">Requirements on the OP Chain contracts</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#adding-game-types">Adding game types</a>
+<ul>
+<li><a href="#interface-2">Interface</a>
+<ul>
+<li><a href="#addgametype"><code>addGameType</code></a></li>
+</ul>
+</li>
+<li><a href="#implementation-2">Implementation</a></li>
+</ul>
+</li>
 <li><a href="#security-considerations">Security Considerations</a>
 <ul>
 <li><a href="#chain-id-source-of-truth">Chain ID Source of Truth</a></li>
 <li><a href="#chain-id-frontrunning">Chain ID Frontrunning</a></li>
 <li><a href="#chain-id-value">Chain ID Value</a></li>
 <li><a href="#proxy-admin-owner">Proxy Admin Owner</a></li>
-<li><a href="#upgradeability-abi-changes">Upgradeability (ABI Changes)</a></li>
+<li><a href="#safely-using-delegatecall">Safely using <code>DELEGATECALL</code></a></li>
+<li><a href="#atomicity-of-upgrades">Atomicity of upgrades</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
+for each new release of the OP Stack contracts.</p>
+<p>The OP Contracts Manager corresponding to each release can be used to:</p>
+<ol>
+<li>Deploy a new OP chain.</li>
+<li>Upgrade the contracts for an existing OP chain from the previous release to the new release.</li>
+<li>Orchestrate adding a new game type on a per-chain basis</li>
+</ol>
+<p>Upgrades must be performed by the <a href="../protocol/stage-1.html#roles-for-stage-1">Upgrade Controller</a> Safe for a chain.</p>
+<h2 id="getter-methods"><a class="header" href="#getter-methods">Getter Methods</a></h2>
+<p>The following interface defines the available getter methods:</p>
+<pre><code class="language-solidity">/// @notice Returns the latest approved release of the OP Stack contracts are named with the
+///         format `op-contracts/vX.Y.Z`.
+function release() external view returns (string memory);
+/// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
+function outputVersion() external view returns (uint256);
+/// @notice Addresses of the Blueprint contracts.
+function blueprints() external view returns (Blueprints memory);
+/// @notice Maps an L2 chain ID to an L1 batch inbox address
+function chainIdToBatchInboxAddress(uint256 _l2ChainId) external pure returns (address);
+/// @notice Addresses of the latest implementation contracts.
+function implementations() external view returns (Implementations memory);
+/// @notice Address of the ProtocolVersions contract shared by all chains.
+function protocolVersions() external view returns (address);
+/// @notice Address of the SuperchainConfig contract shared by all chains.
+function superchainConfig() external view returns (address);
+/// @notice Maps an L2 Chain ID to the SystemConfig for that chain.
+function systemConfigs(uint256 _l2ChainId) external view returns (address);
+/// @notice Semver version specific to the OPContractsManager
+function version() external view returns (string memory);
+</code></pre>
 <h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
-<p>The OP Contracts Manager is a proxied contract deployed at <code>0xTODO</code>. It can be deployed as follows:</p>
-<p>TODO.</p>
-<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
-<p>Version 1.0.0 of the OP Contracts Manager deploys the <code>op-contracts/v1.6.0</code>
-contracts release.</p>
-<h3 id="proxysol"><a class="header" href="#proxysol"><code>Proxy.sol</code></a></h3>
-<p>The OP Contracts Manager is a proxied contract using the standard <code>Proxy.sol</code> contract that lives in
-the Optimism monorepo. Therefore the OP Contracts Manager will have the same interface as the
-<code>Proxy.sol</code>, in addition to other methods defined in this specification.</p>
-<p>The privileged methods of the OP Contracts Manager will be held by the L1 ProxyAdmin owner, as
-specified by the <a href="../protocol/configurability.html">standard configuration</a>.</p>
-<h3 id="deploy"><a class="header" href="#deploy"><code>deploy</code></a></h3>
-<p>The <code>deploy</code> method is the only non-view method in the contract. It is used to
-deploy the full set of L1 contracts required to setup a new OP Stack chain that
-complies with the <a href="../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
-<pre><code class="language-solidity">struct Roles {
-  address proxyAdminOwner;
-  address systemConfigOwner;
-  address batcher;
-  address unsafeBlockSigner;
-  address proposer;
-  address challenger;
-}
-
-function deploy(
-  uint256 l2ChainId,
-  uint32 basefeeScalar,
-  uint32 blobBasefeeScalar,
-  Roles roles
-) external returns (SystemConfig)
+<h3 id="interface"><a class="header" href="#interface">Interface</a></h3>
+<h4 id="deploy"><a class="header" href="#deploy"><code>deploy</code></a></h4>
+<p>The <code>deploy</code> method is used to deploy the full set of L1 contracts required to setup a new OP Stack
+chain that complies with the <a href="../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
+<pre><code class="language-solidity">/// @notice Deploys a new OP Chain
+/// @param _input DeployInput containing chain specific config information.
+/// @return DeployOutput containing the new addresses.
+function deploy(DeployInput calldata _input) external returns (DeployOutput memory)
 </code></pre>
 <p>The <code>l2ChainId</code> has the following restrictions:</p>
 <ul>
@@ -247,52 +286,23 @@ deployed on.</li>
 for future versions of OP Contracts Manager that handle upgrades.</li>
 </ul>
 <p>On success, the following event is emitted:</p>
-<pre><code class="language-solidity">event Deployed(uint256 indexed l2ChainId, SystemConfig indexed systemConfig);
+<pre><code class="language-solidity">event Deployed(uint256 indexed outputVersion, uint256 indexed l2ChainId, address indexed deployer, bytes deployOutput);
 </code></pre>
 <p>This method reverts on failure. This occurs when:</p>
 <ul>
 <li>The input <code>l2ChainId</code> does not comply with the restrictions above.</li>
 <li>The resulting configuration is not compliant with the <a href="../protocol/configurability.html">standard configuration</a>.</li>
 </ul>
-<h3 id="getter-methods"><a class="header" href="#getter-methods">Getter Methods</a></h3>
-<p>The following interface defines the available getter methods:</p>
-<pre><code class="language-solidity">/// @notice The logic address and initializer selector for an implementation contract.
-struct Implementation {
-  address logic; // Address containing the deployed logic contract.
-  bytes4 initializer; // Function selector for the initializer.
-}
-
-/// @notice Returns the latest approved release of the OP Stack contracts.
-/// @notice Release strings follow semver and are named with the
-/// format `op-contracts/vX.Y.Z`.
-function latestRelease() external view returns (string memory);
-
-/// @notice Maps a release version to a contract name to its implementation data.
-function implementation(
-  string memory release,
-  string memory contractName
-) external view returns (Implementation memory);
-
-/// @notice Maps an L2 Chain ID to the SystemConfig address for that chain.
-/// @notice All contracts for a chain can be found from its SystemConfig.
-function systemConfig(uint256 chainId) external view returns (SystemConfig);
-</code></pre>
-<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
-<h3 id="batch-inbox-address"><a class="header" href="#batch-inbox-address">Batch Inbox Address</a></h3>
+<h3 id="implementation"><a class="header" href="#implementation">Implementation</a></h3>
+<h4 id="batch-inbox-address"><a class="header" href="#batch-inbox-address">Batch Inbox Address</a></h4>
 <p>The chain's <a href="../protocol/configurability.html#consensus-parameters">Batch Inbox</a> address is computed at deploy time using the recommend approach defined
 in the <a href="../protocol/configurability.html">standard configuration</a>. This improves UX by removing an input, and ensures uniqueness of
 the batch inbox addresses.</p>
-<h3 id="contract-deployments"><a class="header" href="#contract-deployments">Contract Deployments</a></h3>
-<p>All contracts deployed by the OP Contracts Manager are deployed with CREATE2, with a
-salt equal to either:</p>
-<ul>
-<li>The L2 chain ID, or</li>
-<li><code>keccak256(bytes.concat(bytes32(uint256(l2ChainId)), contractName))</code>.</li>
-</ul>
-<p>The former is used when only a single instance of a given contract is deployed for a chain.
-The latter is used when deploying multiple instances of a given contract for a chain,
-which is the case of all <code>Proxy</code> contracts. For these, the <code>contractName</code>
-is the name of the implementation contract that will be used with the proxy.</p>
+<h4 id="contract-deployments"><a class="header" href="#contract-deployments">Contract Deployments</a></h4>
+<p>All contracts deployed by the OP Contracts Manager are deployed with <code>CREATE2</code>, using the following salt:</p>
+<pre><code class="language-solidity">keccak256(abi.encode(_l2ChainId, _saltMixer, _contractName));
+</code></pre>
+<p>The <code>saltMixer</code> value is provided as a field in the <code>DeployInput</code> struct.</p>
 <p>This provides the following benefits:</p>
 <ul>
 <li>Contract addresses for a chain can be derived as a function of chain ID without any RPC calls.</li>
@@ -308,6 +318,115 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </ul>
 </li>
 </ul>
+<h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
+<h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
+<h4 id="upgrade"><a class="header" href="#upgrade"><code>upgrade</code></a></h4>
+<p>The <code>upgrade</code> method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
+all chains that it controls.</p>
+<p>It has the following interface:</p>
+<pre><code class="language-solidity">struct Roles {
+    address opChainProxyAdminOwner;
+    address systemConfigOwner;
+    address batcher;
+    address unsafeBlockSigner;
+    address proposer;
+    address challenger;
+}
+
+struct DeployInput {
+    Roles roles;
+    uint32 basefeeScalar;
+    uint32 blobBasefeeScalar;
+    uint256 l2ChainId;
+    bytes startingAnchorRoots;
+    string saltMixer;
+    uint64 gasLimit;
+    uint32 disputeGameType;
+    bytes32 disputeAbsolutePrestate;
+    uint256 disputeMaxGameDepth;
+    uint256 disputeSplitDepth;
+    uint64 disputeClockExtension;
+    uint64 disputeMaxClockDuration;
+}
+
+function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, NewChainConfig[] _newConfigs) public;
+</code></pre>
+<p>For each chain successfully upgraded, the following event is emitted:</p>
+<pre><code class="language-solidity">event Upgraded(uint256 indexed l2ChainId, SystemConfig indexed systemConfig, address indexed upgrader);
+</code></pre>
+<p>This method reverts if the upgrade is not successful for any of the chains.</p>
+<h3 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h3>
+<p>The high level logic of the upgrade method is as follows:</p>
+<ol>
+<li>The Upgrade Controller Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
+<li>For each <code>_systemConfig</code>, the list of addresses in the chain is retrieved.</li>
+<li>For each address, a two step upgrade is used where:
+<ol>
+<li>the first upgrade is to an <code>InitializerResetter</code> which resets the <code>initialized</code> value.</li>
+<li>the implementation is updated to the final address and <code>upgrade()</code> is called on that address.</li>
+</ol>
+</li>
+</ol>
+<p>This approach requires that all contracts have an <code>upgrade()</code> function which sets the <code>initialized</code>
+value to <code>true</code>. The <code>upgrade</code> function body should be empty unless it is used to set a new state
+variable added to that contract since the last upgrade.</p>
+<h4 id="isthmusconfig-struct"><a class="header" href="#isthmusconfig-struct"><code>IsthmusConfig</code> struct</a></h4>
+<p>This struct is used to pass the new chain configuration to the <code>upgrade</code> method, and so it will
+vary for each release of the OP Contracts Manager, based on what (if any) new parameters are added.</p>
+<p>In practice, this struct is likely to be have a unique name for each release of the OP Contracts
+Manager.</p>
+<p>By way of example, if an upgrade is adding a new variable <code>address foo</code> to the <code>SystemConfig</code> contract, for
+an upgrade named <code>Example</code>, the struct could have the following definition:</p>
+<pre><code class="language-solidity">struct IsthmusConfig {
+    uint32 public operatorFeeScalar;
+    uint64 public operatorFeeConstant;
+}
+</code></pre>
+<h4 id="requirements-on-the-op-chain-contracts"><a class="header" href="#requirements-on-the-op-chain-contracts">Requirements on the OP Chain contracts</a></h4>
+<p>In general, all contracts used in an OP Chain SHOULD be proxied with a single shared implementation.
+This means that all values which are not constant across OP Chains SHOULD be held in storage rather
+than the bytecode of the implementation.</p>
+<p>Any contracts which do not meet this requirement will need to be deployed by the <code>upgrade()</code>
+function, increasing the cost and reducing the number of OP Chains which can be atomically upgraded.</p>
+<h2 id="adding-game-types"><a class="header" href="#adding-game-types">Adding game types</a></h2>
+<p>Because different OP Chains within a Superchain may use different dispute game types, and are
+expected to move from a permissioned to permissionless game over time, an <code>addGameType()</code> method is
+provided to enable adding a new game type to multiple games at once.</p>
+<h3 id="interface-2"><a class="header" href="#interface-2">Interface</a></h3>
+<h4 id="addgametype"><a class="header" href="#addgametype"><code>addGameType</code></a></h4>
+<p>The <code>addGameType</code> method is used to orchestrate the actions required to add a new game type to one
+or more chains.</p>
+<pre><code class="language-solidity">struct PermissionlessGameConfig {
+  bytes32 absolutePrestate;
+}
+
+function addGameType(ISystemConfig[] _systemConfigs, PermissionlessGameConfig[] _newGames) public;
+</code></pre>
+<h3 id="implementation-2"><a class="header" href="#implementation-2">Implementation</a></h3>
+<p>The high level logic of the <code>addGameType</code> method is as follows (for each chain):</p>
+<ol>
+<li>Deploy and initialize new <code>DelayedWethProxy</code> for the new game type, reusing the existing implementation</li>
+<li>Deploy a new <code>FaultDisputeGame</code> contract. The source of the constructor args is indicated below this list,
+the value which is not available onchain is the <code>absolutePrestate</code>.</li>
+<li>Calls <code>upgrade()</code> on the <code>AnchorStateRegistry</code> to set the new game type to
+add a new entry to the <code>anchors</code> mapping. The <code>upgrade()</code> method should
+revert if it would overwrite an existing entry.</li>
+<li>Read the <code>DisputeGameFactory</code> address from the <code>SystemConfig</code>.</li>
+<li>Call <code>DisputeGameFactory.setImplementation()</code> to register the new game.</li>
+</ol>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th><th>Source</th></tr></thead><tbody>
+<tr><td>gameType</td><td>uint32</td><td>Constant value of 1 indicating the game type</td><td>Hardcoded constant</td></tr>
+<tr><td>absolutePrestate</td><td>bytes32</td><td>Initial state of the game</td><td>Input in <code>PermissionlessGameConfig</code> struct</td></tr>
+<tr><td>maxGameDepth</td><td>uint256</td><td>Maximum depth of the game tree</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>splitDepth</td><td>uint256</td><td>Depth at which the game tree splits</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>clockExtension</td><td>uint64</td><td>Time extension granted for moves</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>maxClockDuration</td><td>uint64</td><td>Maximum duration of the game clock</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>vm</td><td>address</td><td>Virtual machine contract address</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>weth</td><td>address</td><td>Address of the newly deployed DelayedWeth contract</td><td>Newly deployed contract</td></tr>
+<tr><td>anchorStateRegistry</td><td>address</td><td>Registry contract address</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>l2ChainId</td><td>uint256</td><td>Chain ID of the L2 network</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+</tbody></table>
+</div>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
@@ -344,12 +463,21 @@ maximize compatibility.</p>
 <p>The proxy admin owner is a very powerful role, as it allows upgrading protocol
 contracts. When choosing the initial proxy admin owner, a Safe is recommended
 to ensure admin privileges are sufficiently secured.</p>
-<h3 id="upgradeability-abi-changes"><a class="header" href="#upgradeability-abi-changes">Upgradeability (ABI Changes)</a></h3>
-<p>This contract is upgradeable, and breaking changes are expected, as upgrades
-are required to update the contracts release that is deployed. This is because
-the required inputs to the <code>deploy</code> method may change as new contract releases
-are supported. Therefore, if calling this contract from another contract, be
-sure to account for future breaking changes to the ABI.</p>
+<h3 id="safely-using-delegatecall"><a class="header" href="#safely-using-delegatecall">Safely using <code>DELEGATECALL</code></a></h3>
+<p>Because a Safe will <code>DELEGATECALL</code> to the <code>upgrade()</code> and <code>addGameType()</code> methods, it is
+critical that no storage writes occur. This should be enforced in multiple ways, including:</p>
+<ul>
+<li>By static analysis of the <code>upgrade()</code> and <code>addGameType()</code> methods during the development process.</li>
+<li>By simulating and verifying the state changes which occur in the Upgrade Controller Safe prior to execution.</li>
+</ul>
+<h3 id="atomicity-of-upgrades"><a class="header" href="#atomicity-of-upgrades">Atomicity of upgrades</a></h3>
+<p>Although atomicity of a superchain upgrade is not essential for many types of upgrade, it will
+at times be necessary. It is certainly always desirable for operational reasons.</p>
+<p>For this reason, efficiency should be kept in mind when designing the upgrade path. When the size of
+the superchain reaches a size that nears the block gas limit, upgrades may need to be broken up into
+stages, so that components which must be upgrade atomically can be. For example, all
+<code>OptimismPortal</code> contracts may need to be upgraded in one transaction, followed by another
+transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p>
 
                     </main>
 

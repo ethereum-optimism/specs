@@ -262,7 +262,7 @@ see <a href="../glossary.html#batcher-transaction">Batcher Transaction</a>).<br/
 <strong>Requirement:</strong> Current convention is
 <code>versionByte || keccak256(bytes32(chainId))[:19]</code>, where <code>||</code> denotes
 concatenation, <code>versionByte</code> is <code>0x00</code>, and <code>chainId</code> is a <code>uint256</code>.<br/>
-<strong>Notes:</strong>  It is recommended, but not required, to follow this convention.</p>
+<strong>Notes:</strong> It is recommended, but not required, to follow this convention.</p>
 <h3 id="batcher-hash"><a class="header" href="#batcher-hash"><a href="./system-config.html#batcherhash-bytes32">Batcher Hash</a></a></h3>
 <p><strong>Description:</strong> A versioned hash of the current authorized batcher sender(s).<br/>
 <strong>Administrator:</strong> <a href="#admin-roles">System Config Owner</a><br/>
@@ -473,7 +473,7 @@ from the latest <code>op-contracts/vX.Y.X</code> release of source code in
 <a href="https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.3.0/packages/contracts-bedrock/src/universal/ProxyAdmin.sol">ProxyAdmin.sol</a>
 from the latest <code>op-contracts/vX.Y.X</code> release of source code
 in <a href="https://github.com/ethereum-optimism/optimism">Optimism repository</a>. Predeploy
-address:  <a href="https://docs.optimism.io/chain/addresses#op-mainnet-l2">0x4200000000000000000000000000000000000018</a>.<br/>
+address: <a href="https://docs.optimism.io/chain/addresses#op-mainnet-l2">0x4200000000000000000000000000000000000018</a>.<br/>
 <strong>Notes:</strong> Governance-controlled, high security.<br/></p>
 <h3 id="l2-proxyadmin-owner"><a class="header" href="#l2-proxyadmin-owner">L2 ProxyAdmin owner</a></h3>
 <p><strong>Description:</strong> Account authorized to upgrade protocol contracts via calls to the <code>ProxyAdmin</code>. This is the aliased L1
@@ -488,7 +488,7 @@ Address:
 <h3 id="system-config-owner"><a class="header" href="#system-config-owner"><a href="https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L14C26-L14C44">System Config Owner</a></a></h3>
 <p><strong>Description:</strong> Account authorized to change values in the SystemConfig contract. All configuration is stored on L1 and
 picked up by L2 as part of the <a href="./derivation.html">derivation</a> of the L2 chain.<br/>
-<strong>Administrator:</strong> <br/>
+<strong>Administrator:</strong> <a href="#admin-roles">L1 Proxy Admin</a><br/>
 <strong>Administers:</strong> <a href="#service-roles">Batch submitter address</a>, <a href="#service-roles">Sequencer P2P / Unsafe head signer</a>,
 <a href="#consensus-parameters">Fee Margin</a>, <a href="#consensus-parameters">Gas limit</a>, <a href="#admin-roles">System Config Owner</a><br/>
 <strong>Requirement:</strong> Chain Governor or Servicer<br/>
