@@ -314,13 +314,13 @@ chain is included instead.
 
 The following functions are used for sending messages between domains:
 
-__Permissionless:__ Can be relayed on the destination chain by any address.
+**Permissionless:** Can be relayed on the destination chain by any address.
 
 ```solidity
 function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
 ```
 
-__Using Entrypoint:__ Can be relayed on the destination chain only by the `_entrypoint` address.
+**Using Entrypoint:** Can be relayed on the destination chain only by the `_entrypoint` address.
 
 ```solidity
 function sendMessage(uint256 _destination, address _target, address _entrypoint, bytes calldata _message) external returns (bytes32);
