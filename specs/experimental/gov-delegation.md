@@ -159,6 +159,9 @@ The function MUST then sort the new delegatee set in descending order, and store
 in the [Delegation Validation](#delegation-validation) section. Additionally, the function MUST emit a
 `DelegateVotesChanged` event for each change in delegatee voting power.
 
+To support redelegation and subdelegation logic, there is a boolean flag when set to true sums the voting power it holds in addition to the amount it
+receives in the `Delegation` struct. The function MUST revert if this amount exceeds the `maxRedelegation` value.
+
 ### Getters
 
 For backwards compatibility, the `GovernanceDelegation` contract MUST implement all public getter functions of the
@@ -268,14 +271,18 @@ struct Delegation {
   AllowanceType allowanceType;
   address delegatee;
   uint256 amount;
+  bool isRedelegation;
+  uint256 maxRedelegation;
 }
 ```
 
-| Name                     | Type            | Description                                                             |
-|--------------------------|-----------------|-------------------------------------------------------------------------|
-| `allowanceType`          | `AllowanceType` | Type of allowance (e.g., absolute or relative).                         |
-| `delegatee`              | `address`       | The address of the delegatee receiving the voting power.                |
-| `amount`                 | `uint256`       | Amount of votes delegated, denomination depending on `allowanceType`.   |
+| Name                     | Type            | Description                                                                                  |
+|--------------------------|-----------------|----------------------------------------------------------------------------------------------|
+| `allowanceType`          | `AllowanceType` | Type of allowance (e.g., absolute or relative).                                              |
+| `delegatee`              | `address`       | The address of the delegatee receiving the voting power.                                     |
+| `amount`                 | `uint256`       | Amount of votes delegated, denomination depending on `allowanceType`.                        |
+| `isRedelegation`         | `bool`          | The value is true if the voting power is being redelegated.                                  |
+| `maxRedelegation`        | `uint256`       | The maximum amount of voting power that can be redelegated to a given delegatee.             |
 
 ### `AllowanceType`
 
