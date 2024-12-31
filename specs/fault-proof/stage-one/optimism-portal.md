@@ -2,8 +2,10 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
+- [Optimism Portal](#optimism-portal)
   - [Overview](#overview)
     - [Perspective](#perspective)
   - [Definitions](#definitions)
@@ -12,20 +14,23 @@
     - [Finalized withdrawal](#finalized-withdrawal)
     - [Proof maturity delay](#proof-maturity-delay)
   - [Assumptions](#assumptions)
-    - [aASR-001: AnchorStateRegistry correctly distinguishes maybe valid games](#aasr-001-anchorstateregistry-correctly-distinguishes-maybe-valid-games)
+    - [aOP-001: We assume that the merkle trie proof has bugs with some small non-trivial percent chance](#aop-001-we-assume-that-the-merkle-trie-proof-has-bugs-with-some-small-non-trivial-percent-chance)
+    - [aOP-002: We must provide a mechanism by which an invalid merkle trie proof can be rejected](#aop-002-we-must-provide-a-mechanism-by-which-an-invalid-merkle-trie-proof-can-be-rejected)
+    - [aSC-001: SuperchainConfig correctly reports system pause status](#asc-001-superchainconfig-correctly-reports-system-pause-status)
       - [Impact](#impact)
       - [Mitigations](#mitigations)
-    - [aASR-002: AnchorStateRegistry correctly distinguishes valid games](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games)
+  - [System Invariants](#system-invariants)
+    - [iSYS-001: Invalid withdrawals can never be finalized](#isys-001-invalid-withdrawals-can-never-be-finalized)
       - [Impact](#impact-1)
-      - [Mitigations](#mitigations-1)
-    - [aSC-001: SuperchainConfig correctly reports system pause status](#asc-001-superchainconfig-correctly-reports-system-pause-status)
+      - [Dependencies](#dependencies)
+    - [iSYS-002: Valid withdrawals can be finalized within some bounded amount of time](#isys-002-valid-withdrawals-can-be-finalized-within-some-bounded-amount-of-time)
       - [Impact](#impact-2)
-      - [Mitigations](#mitigations-2)
-  - [Top-Level Invariants](#top-level-invariants)
-- [Function-Level Invariants](#function-level-invariants)
-  - [`initialize`](#initialize)
-  - [`proveWithdrawalTransaction`](#provewithdrawaltransaction)
-  - [`finalizeWithdrawalTransaction`](#finalizewithdrawaltransaction)
+      - [Dependencies](#dependencies-1)
+  - [Component-Level Invariants](#component-level-invariants)
+  - [Implementation Spec](#implementation-spec)
+    - [`initialize`](#initialize)
+    - [`proveWithdrawalTransaction`](#provewithdrawaltransaction)
+    - [`finalizeWithdrawalTransaction`](#finalizewithdrawaltransaction)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -63,40 +68,9 @@ The **proof maturity delay** is time that must elapse between a withdrawal being
 
 ## Assumptions
 
-### aASR-001: AnchorStateRegistry correctly distinguishes maybe valid games
+### aOP-001: We assume that the merkle trie proof has bugs with some small non-trivial percent chance
 
-We assume that the AnchorStateRegistry correctly reports whether a game is a [**maybe valid
-game**](./anchor-state-registry.md#maybe-valid-game).
-
-#### Impact
-
-**Severity: Medium**
-
-If a game is reported as maybe valid when it is not, an attacker can prove a withdrawal that is invalid. If
-[aASR-002](#aasr-002-anchorstateregistry-correctly-distinguishes-valid-games) holds, this may not result in severe
-consequences, but would negatively impact system hygiene.
-
-#### Mitigations
-
-- Pending audit of `AnchorStateRegistry`
-- Integration testing
-
-### aASR-002: AnchorStateRegistry correctly distinguishes valid games
-
-We assume that the AnchorStateRegistry correctly reports whether a game is a [**valid
-game**](./anchor-state-registry.md#valid-game).
-
-#### Impact
-
-**Severity: Critical**
-
-If a game is reported as valid when it is not, we may finalize a withdrawal that is invalid. This would result to a loss
-of funds and a loss of confidence in the system.
-
-#### Mitigations
-
-- Pending audit of `AnchorStateRegistry`
-- Integration testing
+### aOP-002: We must provide a mechanism by which an invalid merkle trie proof can be rejected
 
 ### aSC-001: SuperchainConfig correctly reports system pause status
 
@@ -113,19 +87,59 @@ paused. This would create bad system hygiene, and could lead to a loss of funds 
 
 - Existing audit of `SuperchainConfig`
 
-## Top-Level Invariants
+## System Invariants
 
-- A withdrawal transaction must be **proven** against a game that is **maybe valid**.
-- A withdrawal transaction may only be **finalized** against a game that is **valid**.
+### iSYS-001: Invalid withdrawals can never be finalized
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is broken, the system can finalize an invalid withdrawal, causing a loss of funds and a loss of
+confidence.
+
+#### Dependencies
+
+- [aOP-001](#aop-001-we-assume-that-the-merkle-trie-proof-has-bugs-with-some-small-non-trivial-percent-chance)
+- [aOP-002](#aop-002-we-must-provide-a-mechanism-by-which-an-invalid-merkle-trie-proof-can-be-rejected)
+- [aASR-001](./anchor-state-registry.md#aasr-001-incorrectly-resolving-games-will-be-invalidated-within-the-dispute-game-finality-delay-period)
+- [aASR-002](./anchor-state-registry.md#aasr-002-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
+- [aSC-001](./anchor-state-registry.md#asc-001-superchainconfig-correctly-reports-its-guardian-address)
+- [aFDG-001](./anchor-state-registry.md#afdg-001-fault-dispute-games-correctly-report-certain-properties)
+- [aFDG-002](./anchor-state-registry.md#afdg-002-fault-dispute-games-with-correct-claims-resolve-correctly-at-some-regular-rate)
+- [aDGF-001](./anchor-state-registry.md#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
+- [aDGF-002](./anchor-state-registry.md#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
+
+### iSYS-002: Valid withdrawals can be finalized within some bounded amount of time
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is broken, withdrawals can be frozen for a long period of time, causing a critical liveness failure.
+
+#### Dependencies
+
+- [aFDG-001](./anchor-state-registry.md#afdg-001-fault-dispute-games-correctly-report-certain-properties)
+- [aDGF-001](./anchor-state-registry.md#adgf-001-dispute-game-factory-correctly-identifies-the-games-it-created)
+- [aDGF-002](./anchor-state-registry.md#adgf-002-games-created-by-the-disputegamefactory-will-be-monitored)
+- [aASR-001](./anchor-state-registry.md#aasr-001-incorrectly-resolving-games-will-be-invalidated-within-the-dispute-game-finality-delay-period)
+- [aASR-002](./anchor-state-registry.md#aasr-002-the-anchorstateregistry-will-be-correctly-initialized-at-deployment)
+- [aSC-001](./anchor-state-registry.md#asc-001-superchainconfig-correctly-reports-its-guardian-address)
+
+## Component-Level Invariants
+
+- iOP-001: A withdrawal transaction must be **proven** against a game that is **maybe valid**.
+- iOP-002: A withdrawal transaction may only be **finalized** against a game that is **valid**.
   - Implicit in this is that a withdrawal transaction may only be **finalized** after the **proof maturity delay** has
     passed.
-- A withdrawal transaction may only be **finalized** if it has already been **proven**.
-- A withdrawal transaction must be used only once to **finalize** a withdrawal.
-- A withdrawal transaction that is **finalized** must attempt execution.
+- iOP-003: A withdrawal transaction may only be **finalized** if it has already been **proven**.
+- iOP-004: A withdrawal transaction must be used only once to **finalize** a withdrawal.
+- iOP-005: A withdrawal transaction that is **finalized** must attempt execution.
 
-# Function-Level Invariants
+## Implementation Spec
 
-## `initialize`
+### `initialize`
 
 - Proof maturity delay seconds must be an **authorized input**.
 - Anchor state registry must be an **authorized input**.
@@ -133,7 +147,7 @@ paused. This would create bad system hygiene, and could lead to a loss of funds 
 - Superchain config must be an **authorized input**.
 - System config must be an **authorized input**.
 
-## `proveWithdrawalTransaction`
+### `proveWithdrawalTransaction`
 
 Proves a withdrawal transaction.
 
@@ -147,7 +161,7 @@ Proves a withdrawal transaction.
   - the withdrawal was never finalized.
 - System must not be paused.
 
-## `finalizeWithdrawalTransaction`
+### `finalizeWithdrawalTransaction`
 
 Finalizes a withdrawal transaction that has already been proven.
 
