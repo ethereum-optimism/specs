@@ -40,7 +40,6 @@
   - [Overview](#overview-2)
 - [L1Block](#l1block)
   - [Static Configuration](#static-configuration)
-  - [Dependency Set](#dependency-set)
   - [Deposit Context](#deposit-context)
   - [`isDeposit()`](#isdeposit)
     - [`depositsComplete()`](#depositscomplete)
@@ -128,10 +127,10 @@ Emits the `ExecutingMessage` event to signal the transaction has a cross chain m
 
 The following fields are required for validating a cross chain message:
 
-| Name     | Type       | Description                                                                |
-| -------- | ---------- | -------------------------------------------------------------------------- |
-| `_id`      | Identifier | A [`Identifier`] pointing to the initiating message.                         |
-| `_msgHash` | `bytes32`    | The keccak256 hash of the message payload matching the initiating message. |
+| Name       | Type       | Description                                                                |
+| ---------- | ---------- | -------------------------------------------------------------------------- |
+| `_id`      | Identifier | A [`Identifier`] pointing to the initiating message.                       |
+| `_msgHash` | `bytes32`  | The keccak256 hash of the message payload matching the initiating message. |
 
 ```solidity
 validateMessage(Identifier calldata _id, bytes32 _msgHash)
@@ -656,22 +655,6 @@ where
 
 Calls to `setConfig` MUST originate from `SystemConfig` and are forwarded to `L1Block` by `OptimismPortal`.
 
-### Dependency Set
-
-`L1Block` is updated to include the set of allowed chains. These chains are added and removed through `setConfig` calls
-with `ADD_DEPENDENCY` or `REMOVE_DEPENDENCY`, respectively. The maximum size of the dependency set is `type(uint8).max`,
-and adding a chain id when the dependency set size is at its maximum MUST revert. If a chain id already in the
-dependency set, such as the chain's chain id, is attempted to be added, the call MUST revert. If a chain id that is not
-in the dependency set is attempted to be removed, the call MUST revert. If the chain's chain id is attempted to be
-removed, the call also MUST revert.
-
-`L1Block` MUST provide a public getter to check if a particular chain is in the dependency set called
-`isInDependencySet(uint256)`. This function MUST return true when a chain id in the dependency set, or the chain's chain
-id, is passed in as an argument, and false otherwise. Additionally, `L1Block` MUST provide a public getter to return the
-dependency set called `dependencySet()`. This function MUST return the array of chain ids that are in the dependency set.
-`L1Block` MUST also provide a public getter to get the dependency set size called `dependencySetSize()`. This function
-MUST return the length of the dependency set array.
-
 ### Deposit Context
 
 New methods will be added on the `L1Block` contract to interact with [deposit contexts](./derivation.md#deposit-context).
@@ -954,9 +937,9 @@ sequenceDiagram
   L2SBA->>SuperERC20_A: crosschainBurn(from, amount)
   SuperERC20_A-->SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
-  Messenger_A->>L2SBA: return msgHash_ 
+  Messenger_A->>L2SBA: return msgHash_
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
-  L2SBA->>from: return msgHash_ 
+  L2SBA->>from: return msgHash_
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB->>SuperERC20_B: crosschainMint(to, amount)
@@ -987,7 +970,7 @@ The bridging of `SuperchainERC20` using the `SuperchainERC20Bridge` will require
   to the same address on the target chain.
   Similarly, the `relayERC20()` function should only process messages originating from the same address.
   - Note: The [`Create2Deployer` preinstall](../protocol/preinstalls.md#create2deployer)
-  and the custom Factory will ensure same address deployment.
+    and the custom Factory will ensure same address deployment.
 - Locally initiated: The bridging action should be initialized
   from the chain where funds are located only.
   - This is because the same address might correspond to different users cross-chain.

@@ -6,7 +6,6 @@
 
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
-  - [Invariants](#invariants)
 - [Security Considerations](#security-considerations)
   - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 
@@ -48,17 +47,8 @@ It is a known issue that not all software in the Ethereum can handle 32 byte cha
 
 ## Updating the Dependency Set
 
-The `SystemConfig` is updated to have the `SuperchainConfig` address and to manage the dependency set.
-
-The `SuperchainConfig` can add or remove chains from the dependency set through the `SystemConfig`.
-
-The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
-
-### Invariants
-
-- Only the `SuperchainConfig` contract MUST be able to add a new dependency
-
-- Only the `SuperchainConfig` contract MUST be able to remove a dependency
+The `SuperchainConfig` is updated to manage the dependency set.
+More details can be found on the [dependency manager section](./../protocol/superchain-configuration.md#dependency-manager).
 
 ## Security Considerations
 

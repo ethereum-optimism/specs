@@ -13,12 +13,11 @@
 - [Dependency manager](#dependency-manager)
   - [Interface and properties](#interface-and-properties)
     - [`SHARED_LOCKBOX`](#shared_lockbox)
-    - [`upgrader`](#upgrader)
-    - [`systemConfigs`](#systemconfigs)
+    - [`dependencyManager`](#dependencymanager)
     - [`dependencySet`](#dependencyset)
-    - [`addChain`](#addchain)
+    - [`addDependency`](#adddependency)
   - [Events](#events)
-    - [`ChainAdded`](#chainadded)
+    - [`DependencyAdded`](#dependencyadded)
   - [Invariants](#invariants)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -36,7 +35,7 @@ The `SuperchainConfig` contract manages the following configuration values:
 
 - `PAUSED_SLOT`: A boolean value indicating whether the Superchain is paused.
 - `GUARDIAN_SLOT`: The address of the guardian, which can pause and unpause the system.
-- `UPGRADER_SLOT`: The address of the upgrader, which can add a chain to the depenceny set.
+- `DEPENDENCY_MANAGER_SLOT`: The address of the dependency manager, which can add a chain to the depenceny set.
 
 ## Configuration data flow
 
@@ -83,10 +82,9 @@ When the Pause is activated, the following methods are disabled:
 
 The `SuperchainConfig` contract will manage and keep track of the dependency graph.
 It will be queried as the source of truth to get which chains are part of the Superchain.
-It will also allow to add a chain to the op-governed cluster and update each chain’s dependency set.
 
-The `SuperchainConfig` contract is updated with a new `UPGRADER` role that has the ability
-to add a chain to the dependency set.
+The `SuperchainConfig` contract is updated with a new `DEPENDENCY_MANAGER` role that has the ability
+to add a dependency to the dependency set.
 
 ### Interface and properties
 
@@ -97,62 +95,51 @@ The contract will add the following storage layout and function:
 - An immutable address pointing to the `SharedLockbox` contract.
 - This address MUST be immutable because there's only one `SharedLockbox` for each cluster.
 
-#### `upgrader`
+#### `dependencyManager`
 
-- An address with the ability to add a chain to the dependency set.
-- The `upgrader` can only be set during initialization.
-
-#### `systemConfigs`
-
-- A mapping that associates chain IDs with their respective SystemConfig addresses.
-- It will be used when updating dependencies along each chain.
+- An address with the ability to add a dependency to the dependency set.
+- The `dependencyManager` can only be set during initialization.
 
 #### `dependencySet`
 
 - Stores the current list of chain IDs in the op-governed dependency set.
 - It MUST contain all the chain IDs of the chains that integrate the corresponding Superchain network.
 
-#### `addChain`
+#### `addDependency`
 
-The `addChain` function adds a new chain to the op-governed cluster.
+The `addDependency` function adds a new chain to the op-governed cluster.
 
-It can only be called by the `UPGRADER` role in the `SuperchainConfig` and ensures that the chain ID
+It can only be called by the `DEPENDENCY_MANAGER` role in the `SuperchainConfig` and ensures that the chain ID
 is not already included in the dependency set.
 
-Before proceeding, it verifies that the new chain's dependency set size is zero.
-The function updates all chain dependencies by executing deposit transactions to form a complete mesh graph,
-stores the provided `SystemConfig` address in the `systemConfigs` mapping, and allowlists the
-new chain's `OptimismPortal` in the `SharedLockbox`.
+Before proceeding, it verifies that the dependency set is not full (`type(uint8).max`).
+This function allowlists the new chain's `OptimismPortal` in the `SharedLockbox`.
 
-Finally, it emits the `ChainAdded` event with the `chainId`, its corresponding `SystemConfig`, and `OptimismPortal`.
+Finally, it emits the `DependencyAdded` event with the `chainId`, its corresponding `SystemConfig`, and `OptimismPortal`.
 
 ```solidity
-function addChain(uint256 _chainId, address _systemConfig) external;
+function addDependency(uint256 _chainId, address _systemConfig) external;
 ```
 
 ### Events
 
-#### `ChainAdded`
+#### `DependencyAdded`
 
-MUST be triggered when `addChain` is called
+MUST be triggered when `addDependency` is called
 
 ```solidity
-event ChainAdded(uint256 indexed chainId, address indexed systemConfig, address indexed portal);
+event DependencyAdded(uint256 indexed chainId, address indexed systemConfig, address indexed portal);
 ```
 
 ### Invariants
 
-- Only the `UPGRADER` role MUST be able to add a new chain to the dependency set
+- Only the `DEPENDENCY_MANAGER` role MUST be able to add a new dependency to the dependency set
 
-- The chain being added MUST NOT have any other dependencies before joining a cluster
+- A new chain CAN NOT be added to the dependency set once the maximum size is reached.
+
+- The chain ID MUST be different from the current `block.chainid`
 
 - The same chain MUST NOT be added more than once
-
-- It MUST add the new chain as a dependency on each chain of the cluster
-
-- It MUST add the whole cluster as dependency set for the new chain
-
-- It MUST NOT add the new chain to its own dependency set
 
 - It MUST authorize the new chain’s `OptimismPortal` to interact with the `SharedLockbox` of the cluster
 
