@@ -47,16 +47,8 @@ It is a known issue that not all software in the Ethereum can handle 32 byte cha
 
 ## Updating the Dependency Set
 
-The `SystemConfig` is updated to manage a new role, `dependencyManager`.
-It can only updated by the `ProxyAdmin` during an contract upgrade.
-The sole holder of this role is the only address
-permissioned to update (remove/add to) the dependency set of that chain.
-
-The `SystemConfig` is also updated to manage the dependency set.
-The address with the `dependency manager` role can add or remove
-chains from the dependency set through the `SystemConfig`.
-
-The `SystemConfig` MUST enforce that the maximum size of the dependency set is `type(uint8).max` or 255.
+The `SuperchainConfig` is updated to manage the dependency set.
+More details can be found on the [dependency manager section](./../protocol/superchain-configuration.md#dependency-manager).
 
 ## Security Considerations
 
