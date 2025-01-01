@@ -271,7 +271,51 @@ function version() external view returns (string memory);
 <h4 id="deploy"><a class="header" href="#deploy"><code>deploy</code></a></h4>
 <p>The <code>deploy</code> method is used to deploy the full set of L1 contracts required to setup a new OP Stack
 chain that complies with the <a href="../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
-<pre><code class="language-solidity">/// @notice Deploys a new OP Chain
+<pre><code class="language-solidity">struct Roles {
+    address opChainProxyAdminOwner;
+    address systemConfigOwner;
+    address batcher;
+    address unsafeBlockSigner;
+    address proposer;
+    address challenger;
+}
+
+struct DeployInput {
+    Roles roles;
+    uint32 basefeeScalar;
+    uint32 blobBasefeeScalar;
+    uint256 l2ChainId;
+    bytes startingAnchorRoots;
+    string saltMixer;
+    uint64 gasLimit;
+    uint32 disputeGameType;
+    bytes32 disputeAbsolutePrestate;
+    uint256 disputeMaxGameDepth;
+    uint256 disputeSplitDepth;
+    uint64 disputeClockExtension;
+    uint64 disputeMaxClockDuration;
+}
+
+struct DeployOutput {
+      IProxyAdmin opChainProxyAdmin;
+      IAddressManager addressManager;
+      IL1ERC721Bridge l1ERC721BridgeProxy;
+      ISystemConfig systemConfigProxy;
+      IOptimismMintableERC20Factory optimismMintableERC20FactoryProxy;
+      IL1StandardBridge l1StandardBridgeProxy;
+      IL1CrossDomainMessenger l1CrossDomainMessengerProxy;
+      // Fault proof contracts below.
+      IOptimismPortal2 optimismPortalProxy;
+      IDisputeGameFactory disputeGameFactoryProxy;
+      IAnchorStateRegistry anchorStateRegistryProxy;
+      IAnchorStateRegistry anchorStateRegistryImpl;
+      IFaultDisputeGame faultDisputeGame;
+      IPermissionedDisputeGame permissionedDisputeGame;
+      IDelayedWETH delayedWETHPermissionedGameProxy;
+      IDelayedWETH delayedWETHPermissionlessGameProxy;
+  }
+
+/// @notice Deploys a new OP Chain
 /// @param _input DeployInput containing chain specific config information.
 /// @return DeployOutput containing the new addresses.
 function deploy(DeployInput calldata _input) external returns (DeployOutput memory)
@@ -319,40 +363,22 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </li>
 </ul>
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
+<p>This section is written specifically for the Isthmus upgrade path, which is the first upgrade which will
+be performed by the OP Contracts Manager.</p>
 <h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
 <h4 id="upgrade"><a class="header" href="#upgrade"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
 <p>It has the following interface:</p>
-<pre><code class="language-solidity">struct Roles {
-    address opChainProxyAdminOwner;
-    address systemConfigOwner;
-    address batcher;
-    address unsafeBlockSigner;
-    address proposer;
-    address challenger;
+<pre><code class="language-solidity">struct IsthmusConfig {
+    uint32 public operatorFeeScalar;
+    uint64 public operatorFeeConstant;
 }
 
-struct DeployInput {
-    Roles roles;
-    uint32 basefeeScalar;
-    uint32 blobBasefeeScalar;
-    uint256 l2ChainId;
-    bytes startingAnchorRoots;
-    string saltMixer;
-    uint64 gasLimit;
-    uint32 disputeGameType;
-    bytes32 disputeAbsolutePrestate;
-    uint256 disputeMaxGameDepth;
-    uint256 disputeSplitDepth;
-    uint64 disputeClockExtension;
-    uint64 disputeMaxClockDuration;
-}
-
-function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, NewChainConfig[] _newConfigs) public;
+function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, IsthmusConfig[] _isthmusConfigs) public;
 </code></pre>
 <p>For each chain successfully upgraded, the following event is emitted:</p>
-<pre><code class="language-solidity">event Upgraded(uint256 indexed l2ChainId, SystemConfig indexed systemConfig, address indexed upgrader);
+<pre><code class="language-solidity">event Upgraded(uint256 indexed l2ChainId, ISystemConfig indexed systemConfig, address indexed upgrader);
 </code></pre>
 <p>This method reverts if the upgrade is not successful for any of the chains.</p>
 <h3 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h3>
@@ -371,17 +397,9 @@ function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, New
 value to <code>true</code>. The <code>upgrade</code> function body should be empty unless it is used to set a new state
 variable added to that contract since the last upgrade.</p>
 <h4 id="isthmusconfig-struct"><a class="header" href="#isthmusconfig-struct"><code>IsthmusConfig</code> struct</a></h4>
-<p>This struct is used to pass the new chain configuration to the <code>upgrade</code> method, and so it will
-vary for each release of the OP Contracts Manager, based on what (if any) new parameters are added.</p>
-<p>In practice, this struct is likely to be have a unique name for each release of the OP Contracts
-Manager.</p>
-<p>By way of example, if an upgrade is adding a new variable <code>address foo</code> to the <code>SystemConfig</code> contract, for
-an upgrade named <code>Example</code>, the struct could have the following definition:</p>
-<pre><code class="language-solidity">struct IsthmusConfig {
-    uint32 public operatorFeeScalar;
-    uint64 public operatorFeeConstant;
-}
-</code></pre>
+<p>This struct is used to pass the new chain configuration to the <code>upgrade</code> method. It's name and
+field will vary for each release of the OP Contracts Manager, based on what (if any) new parameters
+are being added.</p>
 <h4 id="requirements-on-the-op-chain-contracts"><a class="header" href="#requirements-on-the-op-chain-contracts">Requirements on the OP Chain contracts</a></h4>
 <p>In general, all contracts used in an OP Chain SHOULD be proxied with a single shared implementation.
 This means that all values which are not constant across OP Chains SHOULD be held in storage rather
