@@ -12437,16 +12437,23 @@ function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, Ist
 <ol>
 <li>The Upgrade Controller Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
 <li>For each <code>_systemConfig</code>, the list of addresses in the chain is retrieved.</li>
-<li>For each address, a two step upgrade is used where:
+<li>For each address:
 <ol>
-<li>the first upgrade is to an <code>InitializerResetter</code> which resets the <code>initialized</code> value.</li>
-<li>the implementation is updated to the final address and <code>upgrade()</code> is called on that address.</li>
+<li>If it is receiving new state variables (only the SystemConfig for Isthmus), a call is made to:
+<code>ProxyAdmin.upgradeAndCall()</code> with data corresponding to the new value being set.</li>
+<li>Otherwise, <code>ProxyAdmin.upgrade()</code> is called on that address.</li>
 </ol>
 </li>
 </ol>
-<p>This approach requires that all contracts have an <code>upgrade()</code> function which sets the <code>initialized</code>
-value to <code>true</code>. The <code>upgrade</code> function body should be empty unless it is used to set a new state
-variable added to that contract since the last upgrade.</p>
+<p>This approach requires that any contracts which are receiving new state variables
+have an upgrade function which:</p>
+<ol>
+<li>Writes the new state variables</li>
+<li>MUST only be callable once</li>
+</ol>
+<p>Thus for Isthmus, the System config will receive the following new function.</p>
+<pre><code class="language-solidity">function upgradeIsthmus(IsthmusConfig _isthmusConfig) external;
+</code></pre>
 <h4 id="isthmusconfig-struct"><a class="header" href="#isthmusconfig-struct"><code>IsthmusConfig</code> struct</a></h4>
 <p>This struct is used to pass the new chain configuration to the <code>upgrade</code> method. It's name and
 field will vary for each release of the OP Contracts Manager, based on what (if any) new parameters
