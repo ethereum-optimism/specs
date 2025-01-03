@@ -510,7 +510,7 @@ sequenceDiagram
   BeaconProxy->>Implementation: initialize()
 ```
 
-## BeaconContract
+## OptimismSuperchainERC20Beacon
 
 | Constant | Value                                        |
 | -------- | -------------------------------------------- |
@@ -518,7 +518,7 @@ sequenceDiagram
 
 ### Overview
 
-The `BeaconContract` predeploy gets called by the `OptimismSuperchainERC20`
+The `OptimismSuperchainERC20Beacon` predeploy gets called by the `OptimismSuperchainERC20`
 BeaconProxies deployed by the
 [`SuperchainERC20Factory`](#optimismsuperchainerc20factory)
 
@@ -780,7 +780,7 @@ sequenceDiagram
   L2StandardBridge-->L2StandardBridge: emit Converted(from, to, Alice, amount)
 ```
 
-## SuperchainERC20Bridge
+## SuperchainTokenBridge
 
 | Constant | Value                                        |
 | -------- | -------------------------------------------- |
@@ -788,7 +788,7 @@ sequenceDiagram
 
 ### Overview
 
-The `SuperchainERC20Bridge` is an abstraction on top of the `L2toL2CrossDomainMessenger`
+The `SuperchainTokenBridge` is an abstraction on top of the `L2toL2CrossDomainMessenger`
 that facilitates token bridging using interop.
 It has mint and burn rights over `SuperchainERC20` tokens
 as described in the [token bridging spec](./token-bridging.md).
@@ -859,12 +859,12 @@ The following diagram depicts a cross-chain transfer.
 ```mermaid
 sequenceDiagram
   participant from
-  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant L2SBA as SuperchainTokenBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant L2SBB as SuperchainTokenBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20(tokenAddr, to, amount, chainID)
@@ -883,7 +883,7 @@ sequenceDiagram
 
 ### Invariants
 
-The bridging of `SuperchainERC20` using the `SuperchainERC20Bridge` will require the following invariants:
+The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require the following invariants:
 
 - Conservation of bridged `amount`: The minted `amount` in `relayERC20()` should match the `amount`
   that was burnt in `sendERC20()`, as long as target chain has the initiating chain in the dependency set.
