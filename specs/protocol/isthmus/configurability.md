@@ -48,7 +48,18 @@ The `ConfigType` enum represents configuration that can be modified.
 
 ### `ConfigUpdate`
 
-The following `ConfigUpdate` event is defined where the `CONFIG_VERSION` is `uint256(0)`:
+Config updates MUST emit a `ConfigUpdate` event. The `version` argument CAN now
+include a `nonce`, and has been renamed `nonceAndVersion`.
+
+```solidity
+event ConfigUpdate(uint256 indexed nonceAndVersion, UpdateType indexed updateType, bytes data);
+```
+
+The `nonceAndVersion` value can either be `uint256(0)`, or
+`uint256(nonce << 128 | version)`, where `version` is `1` and `nonce` increments
+by `1` for each `ConfigUpdate` event emitted.
+
+The following `UpdateType`s are valid:
 
 | Name | Value | Definition | Usage |
 | ---- | ----- | --- | -- |
@@ -124,16 +135,18 @@ function setConfig(ConfigType,bytes)
 This function emits a `TransactionDeposited` event.
 
 ```solidity
-event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
+event TransactionDeposited(address indexed from, address indexed to, uint256 indexed nonceAndVersion, bytes opaqueData);
 ```
 
 The following fields are included:
 
 - `from` is the `DEPOSITOR_ACCOUNT`
 - `to` is `Predeploys.L1Block`
-- `version` is `uint256(0)`
+- `nonceAndVersion` is `uint256(0)`, or
+  `uint256(nonce << 128 | version)`, where `version` is `1` and `nonce` increments
+  by `1` for each `TransactionDeposited` event emitted
 - `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
-   is `200_000`, `isCreation` is `false` and the `data` is `abi.encodeCall(L1Block.setConfig, (_type, _value))`
+  is `200_000`, `isCreation` is `false` and the `data` is `abi.encodeCall(L1Block.setConfig, (_type, _value))`
 
 #### `upgrade`
 
@@ -147,13 +160,15 @@ function upgrade(bytes memory _data) external
 This function emits a `TransactionDeposited` event.
 
 ```solidity
-event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
+event TransactionDeposited(address indexed from, address indexed to, uint256 indexed nonceAndVersion, bytes opaqueData);
 ```
 
 The following fields are included:
 
 - `from` is the `DEPOSITOR_ACCOUNT`
 - `to` is `Predeploys.ProxyAdmin`
-- `version` is `uint256(0)`
+- `nonceAndVersion` is `uint256(0)`, or
+  `uint256(nonce << 128 | version)`, where `version` is `1` and `nonce` increments
+  by `1` for each `TransactionDeposited` event emitted
 - `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
-   is `200_000`, `isCreation` is `false` and the `data` is the data passed into `upgrade`.
+  is `200_000`, `isCreation` is `false` and the `data` is the data passed into `upgrade`.
