@@ -128,38 +128,6 @@ This function MUST only be callable by the [`OperatorFeeManager`](../configurabi
 function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)
 ```
 
-#### Fee Vault Config
-
-For each `FeeVault`, there is a setter for its config. The arguments to the setter include
-the `RECIPIENT`, the `MIN_WITHDRAWAL_AMOUNT` and the `WithdrawalNetwork`.
-Each of these functions should be `public` and only callable by the chain governor.
-
-Each function calls `OptimismPortal.setConfig(ConfigType,bytes)` with its corresponding `ConfigType`.
-
-##### `setBaseFeeVaultConfig`
-
-```solidity
-function setBaseFeeVaultConfig(address,uint256,WithdrawalNetwork)
-```
-
-##### `setL1FeeVaultConfig`
-
-```solidity
-function setL1FeeVaultConfig(address,uint256,WithdrawalNetwork)
-```
-
-##### `setSequencerFeeVaultConfig`
-
-```solidity
-function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
-```
-
-##### `setOperatorFeeVaultConfig`
-
-```solidity
-function setOperatorFeeVaultConfig(address,uint256,WithdrawalNetwork)
-```
-
 ## `OptimismPortal`
 
 The `OptimismPortal` is updated to emit a special system `TransactionDeposited` event.
