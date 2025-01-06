@@ -90,7 +90,7 @@ see [Batcher Transaction](../glossary.md#batcher-transaction)).<br/>
 **Requirement:** Current convention is
 <code>versionByte &vert;&vert; keccak256(bytes32(chainId))\[:19\]</code>, where <code>&vert;&vert;</code> denotes
 concatenation, `versionByte` is `0x00`, and `chainId` is a `uint256`.<br/>
-**Notes:**  It is recommended, but not required, to follow this convention.
+**Notes:** It is recommended, but not required, to follow this convention.
 
 ### [Batcher Hash](./system-config.md#batcherhash-bytes32)
 
@@ -133,7 +133,7 @@ to finalize withdrawals.<br/>
 **Requirement:** [`CANNON` (
 `0`)](https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L28)<br/>
 **Notes:** The game type may be changed to [`PERMISSIONED_CANNON` (
-`1`)](<https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31>)
+`1`)](https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/lib/Types.sol#L31)
 as a fallback to permissioned proposals, in the event of a failure in the Fault Proof system.<br/>
 
 ### Fault Game Max Depth
@@ -306,7 +306,7 @@ like op-succinct, so their standard values are 0.
 ### Resource Config
 
 | Config Property             | Standard Config Requirement |
-|-----------------------------|-----------------------------|
+| --------------------------- | --------------------------- |
 | maxResourceLimit            | $2*10^7$                    |
 | elasticityMultiplier        | $10$                        |
 | baseFeeMaxChangeDenominator | $8$                         |
@@ -378,7 +378,7 @@ from the latest `op-contracts/vX.Y.X` release of source code in
 [ProxyAdmin.sol](https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.3.0/packages/contracts-bedrock/src/universal/ProxyAdmin.sol)
 from the latest `op-contracts/vX.Y.X` release of source code
 in [Optimism repository](https://github.com/ethereum-optimism/optimism). Predeploy
-address:  [0x4200000000000000000000000000000000000018](https://docs.optimism.io/chain/addresses#op-mainnet-l2).<br/>
+address: [0x4200000000000000000000000000000000000018](https://docs.optimism.io/chain/addresses#op-mainnet-l2).<br/>
 **Notes:** Governance-controlled, high security.<br/>
 
 ### L2 ProxyAdmin owner
@@ -397,7 +397,7 @@ Address:
 
 **Description:** Account authorized to change values in the SystemConfig contract. All configuration is stored on L1 and
 picked up by L2 as part of the [derivation](./derivation.md) of the L2 chain.<br/>
-**Administrator:** <br/>
+**Administrator:** [L1 Proxy Admin](#admin-roles)<br/>
 **Administers:** [Batch submitter address](#service-roles), [Sequencer P2P / Unsafe head signer](#service-roles),
 [Fee Margin](#consensus-parameters), [Gas limit](#consensus-parameters), [System Config Owner](#admin-roles)<br/>
 **Requirement:** Chain Governor or Servicer<br/>

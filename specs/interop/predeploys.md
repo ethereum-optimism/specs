@@ -16,6 +16,7 @@
   - [`Identifier` Getters](#identifier-getters)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
+  - [`sendMessage` Invariants](#sendmessage-invariants)
   - [Message Versioning](#message-versioning)
   - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
   - [Interfaces](#interfaces)
@@ -95,7 +96,7 @@ To ensure safety of the protocol, the [Message Invariants](./messaging.md#messag
 
 Executes a cross chain message and performs a `CALL` with the payload to the provided target address, allowing
 introspection of the data.
-Signals the transaction has a cross chain message to validate by emitting the `ExecuteMessage` event.
+Signals the transaction has a cross chain message to validate by emitting the `ExecutingMessage` event.
 
 The following fields are required for executing a cross chain message:
 
@@ -277,6 +278,12 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chain id MUST be equal to the local chain id
+- Messages MUST NOT be relayed more than once
+
+### `sendMessage` Invariants
+
+- Sent Messages MUST be uniquely identifiable
+- It must emit the `SentMessage` event
 
 ### Message Versioning
 
@@ -373,7 +380,7 @@ A message is relayed by providing the [identifier](./messaging.md#message-identi
 event and its corresponding [message payload](./messaging.md#message-payload).
 
 ```solidity
-function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable {
+function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
     CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
 
@@ -387,7 +394,8 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
-    bool success = SafeCall.call(_target, msg.value, _message);
+    bool success;
+    (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
     emit RelayedMessage(_source, _nonce, messageHash);
