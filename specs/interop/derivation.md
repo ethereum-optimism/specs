@@ -123,14 +123,14 @@ An [L1 attributes deposited transaction][g-l1-attr-deposit] is a deposit transac
 
 This transaction MUST have the following values:
 
-1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0001` (the address of the
+1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002` (the address of the
    [L1 Attributes depositor account][depositor-account])
 2. `to` is `0x0000000000000000000000000000000000000000` (the zero address as no EVM code execution is expected).
 3. `mint` is `0`
 4. `value` is `0`
 5. `gasLimit` is set `36000` gas, to cover intrinsic costs, processing costs, and margin for change.
 6. `isSystemTx` is set to `false`.
-7. `data` is the concatenation of the version byte `0x00` and the preimage of the [L2 output root](l2-output-root)
+7. `data` is the preimage of the [L2 output root](l2-output-root)
    of the replaced block. i.e. `version_byte || payload` without applying the `keccak256` hashing.
 
 This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
