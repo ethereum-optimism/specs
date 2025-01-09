@@ -175,29 +175,30 @@
 <ul>
 <li><a href="#chain-id">Chain ID</a></li>
 <li><a href="#updating-the-dependency-set">Updating the Dependency Set</a></li>
-<li><a href="#security-considerations">Security Considerations</a>
+<li><a href="#future-considerations">Future Considerations</a>
 <ul>
 <li><a href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#dependency-set-size">Dependency Set Size</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <p>The dependency set defines the set of chains that destination chains allow as source chains. Another way of
-saying it is that the dependency set defines the set of initiating messages that are valid for an executing
-message to be included. An executing message MUST have an initiating message that is included in a chain
+saying it is that the dependency set defines the set of initiating messages that are valid to be used
+as part of an executing message. An executing message MUST have an initiating message that is created by a chain
 in the dependency set.</p>
 <p>The dependency set is defined by a set of chain ids. Since it is impossible to enforce uniqueness of chain ids,
 social consensus MUST be used to determine the chain that represents the canonical chain id. This
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
 of executing messages.</p>
-<p>The dependency set is configured on a per chain basis and is a unidirectional relationship. This means
-that it is possible to depend on a chain without it depending back. This means that it is possible
-to send assets to a chain where they cannot be sent back.</p>
+<p>The dependency set is configured on a per cluster basis. All chains that are in the dependency set
+can accept initiating messages from any other chain in the dependency set, resulting in a mesh.</p>
 <p>The chain id of the local chain MUST be considered as part of its own dependency set. This allows a chain
 to consume logs that it has produced much more cheaply than providing a block hash proof.</p>
-<p>While the dependency set explicitly defines the set of chains that are depended on for incoming messages,
-the full set of transitive dependencies must be known to allow for the progression of safety.
-This means that the <code>op-node</code> needs to be aware of all transitive dependencies.</p>
 <h2 id="chain-id"><a class="header" href="#chain-id">Chain ID</a></h2>
 <p>The concept of a chain id was introduced in <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> to prevent
 replay attacks between chains. This EIP does not specify the max size of a chain id, although
@@ -206,24 +207,19 @@ stagnant, all representations of chain ids MUST be the <code>uint256</code> type
 <p>In the future, OP Stack chains reserve the right to use up to 32 bytes to represent a chain id. The
 configuration of the chain should deterministically map to a chain id and with careful architecture
 changes, all possible OP Stack chains in the superchain will be able to exist counterfactually.</p>
-<p>It is a known issue that not all software in the Ethereum can handle 32 byte chain ids.</p>
+<p>It is a known issue that not all software in the Ethereum ecosystem can handle 32 byte chain ids.</p>
 <h2 id="updating-the-dependency-set"><a class="header" href="#updating-the-dependency-set">Updating the Dependency Set</a></h2>
-<p>The <code>SystemConfig</code> is updated to manage a new role, <code>dependencyManager</code>.
-It can only updated by the <code>ProxyAdmin</code> during an contract upgrade.
-The sole holder of this role is the only address
-permissioned to update (remove/add to) the dependency set of that chain.</p>
-<p>The <code>SystemConfig</code> is also updated to manage the dependency set.
-The address with the <code>dependency manager</code> role can add or remove
-chains from the dependency set through the <code>SystemConfig</code>.</p>
-<p>The <code>SystemConfig</code> MUST enforce that the maximum size of the dependency set is <code>type(uint8).max</code> or 255.</p>
-<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<p>The dependency set is managed in the client software. Adding a chain to the dependency set is
+considered an upgrade to the network. It is not possible to remove chains from the dependency set.</p>
+<h2 id="future-considerations"><a class="header" href="#future-considerations">Future Considerations</a></h2>
 <h3 id="layer-1-as-part-of-the-dependency-set"><a class="header" href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></h3>
-<p>The layer one MAY be part of the dependency set if the fault proof implementation is set up
-to support it. It is known that it is possible but it is not known if this is going to be
-a feature of the first release. This section should be clarified when the decision is made.</p>
-<p>If layer one is part of the dependency set, then it means that any event on L1 can be pulled
-into any L2. This is a very powerful abstraction as a minimal amount of execution can happen
-on L1 which triggers additional execution across all L2s in the OP Stack.</p>
+<p>The layer one MAY be part of the dependency set in the future. This means that any event
+created on layer one is consumable on layer two.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="dependency-set-size"><a class="header" href="#dependency-set-size">Dependency Set Size</a></h3>
+<p>It becomes increasingly expensive to fully validate the full cluster as the size of the dependency
+set grows. The proof system requires validating all of the chains so the size of the dependency
+set is limited by the performance of the proof.</p>
 
                     </main>
 
