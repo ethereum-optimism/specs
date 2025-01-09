@@ -491,7 +491,7 @@ Smart contracts that are considered "peripheral" and not core to the operation o
         L1ERC721Bridge(&lt;a href=&quot;./bridges.html&quot;&gt;L1ERC721Bridge&lt;/a&gt;)
         L1CrossDomainMessenger(&lt;a href=&quot;./messengers.html&quot;&gt;L1CrossDomainMessenger&lt;/a&gt;)
         OptimismPortal(&lt;a href=&quot;./withdrawals.html#the-optimism-portal-contract&quot;&gt;OptimismPortal&lt;/a&gt;)
-        SuperchainConfig(&lt;a href=&quot;./superchain-configuration.html&quot;&gt;SuperchainConfig&lt;/a&gt;)
+        SuperchainConfig(&lt;a href=&quot;./superchain-config.html&quot;&gt;SuperchainConfig&lt;/a&gt;)
         SystemConfig(&lt;a href=&quot;./system-config.html&quot;&gt;SystemConfig&lt;/a&gt;)
         DisputeGameFactory(&lt;a href=&quot;../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface&quot;&gt;DisputeGameFactory&lt;/a&gt;)
         FaultDisputeGame(&lt;a href=&quot;../fault-proof/stage-one/fault-dispute-game.html&quot;&gt;FaultDisputeGame&lt;/a&gt;)
@@ -6302,14 +6302,14 @@ which is explicitly not <code>EntryPoint</code> itself.</p>
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="protocol/superchain-configuration.html#overview">Overview</a></li>
-<li><a href="protocol/superchain-configuration.html#configurable-values">Configurable values</a></li>
-<li><a href="protocol/superchain-configuration.html#configuration-data-flow">Configuration data flow</a>
+<li><a href="protocol/superchain-config.html#overview">Overview</a></li>
+<li><a href="protocol/superchain-config.html#configurable-values">Configurable values</a></li>
+<li><a href="protocol/superchain-config.html#configuration-data-flow">Configuration data flow</a>
 <ul>
-<li><a href="protocol/superchain-configuration.html#pausability">Pausability</a>
+<li><a href="protocol/superchain-config.html#pausability">Pausability</a>
 <ul>
-<li><a href="protocol/superchain-configuration.html#paused-identifiers">Paused identifiers</a></li>
-<li><a href="protocol/superchain-configuration.html#scope-of-pausability">Scope of pausability</a></li>
+<li><a href="protocol/superchain-config.html#paused-identifiers">Paused identifiers</a></li>
+<li><a href="protocol/superchain-config.html#scope-of-pausability">Scope of pausability</a></li>
 </ul>
 </li>
 </ul>
@@ -7172,7 +7172,7 @@ auth conditions internally.</li>
 <p>The Guardian Safe is extended by the Deputy Guardian Module.</p>
 <h3 id="deputy-guardian-module"><a class="header" href="#deputy-guardian-module">Deputy Guardian Module</a></h3>
 <p>As the sole owner of the Guardian Safe, the Security Council acts as the Guardian, which is
-authorized to activate the <a href="protocol/../protocol/superchain-configuration.html#pausability">Superchain Pause</a>
+authorized to activate the <a href="protocol/../protocol/superchain-config.html#pausability">Superchain Pause</a>
 functionality.</p>
 <p>However the Security Council cannot be expected to react quickly in an emergency situation.
 Therefore the Deputy Guardian module enables the Security Council to share this authorization with
