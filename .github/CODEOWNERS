@@ -16,7 +16,7 @@ rollup-node-p2p.md @sebastianst @protolambda @axelKingsley
 rollup-node.md @sebastianst @protolambda @axelKingsley
 safe-liveness-checking.md @maurelian @mds1
 span-batches.md @sebastianst @axelKingsley
-superchain-configuration.md @protolambda @tynes
+superchain-config.md @protolambda @tynes
 superchain-upgrades.md @protolambda @tynes @axelKingsley @sebastianst
 system-config.md @sebastianst @protolambda @tynes
 withdrawals.md @tynes @maurelian @clabby
