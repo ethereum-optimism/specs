@@ -178,7 +178,6 @@
 <ul>
 <li><a href="#functions">Functions</a>
 <ul>
-<li><a href="#executemessage">executeMessage</a></li>
 <li><a href="#validatemessage">validateMessage</a></li>
 </ul>
 </li>
@@ -308,25 +307,6 @@ an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code>
 of cross chain messages, on behalf of any user.</p>
 <p>To ensure safety of the protocol, the <a href="./messaging.html#messaging-invariants">Message Invariants</a> must be enforced.</p>
 <h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
-<h4 id="executemessage"><a class="header" href="#executemessage">executeMessage</a></h4>
-<p>Executes a cross chain message and performs a <code>CALL</code> with the payload to the provided target address, allowing
-introspection of the data.
-Signals the transaction has a cross chain message to validate by emitting the <code>ExecutingMessage</code> event.</p>
-<p>The following fields are required for executing a cross chain message:</p>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>_msg</code></td><td><code>bytes</code></td><td>The <a href="./messaging.html#message-payload">message payload</a>, matching the initiating message.</td></tr>
-<tr><td><code>_id</code></td><td><code>Identifier</code></td><td>A <a href="./messaging.html#message-identifier"><code>Identifier</code></a> pointing to the initiating message.</td></tr>
-<tr><td><code>_target</code></td><td><code>address</code></td><td>Account that is called with <code>_msg</code>.</td></tr>
-</tbody></table>
-</div>
-<p>Messages are broadcast, not directed. Upon execution the caller can specify which <code>address</code> to target:
-there is no protocol enforcement on what this value is.</p>
-<p>The <code>_target</code> is called with the <code>_msg</code> as input.
-In practice, the <code>_target</code> will be a contract that needs to know the schema of the <code>_msg</code> so that it can be decoded.
-It MAY call back to the <code>CrossL2Inbox</code> to authenticate
-properties about the <code>_msg</code> using the information in the <code>Identifier</code>.</p>
-<pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes memory _message)
-</code></pre>
 <h4 id="validatemessage"><a class="header" href="#validatemessage">validateMessage</a></h4>
 <p>A helper to enable contracts to provide their own public entrypoints for cross chain interactions.
 Emits the <code>ExecutingMessage</code> event to signal the transaction has a cross chain message to validate.</p>
@@ -348,7 +328,7 @@ to be the block.timestamp of the network upgrade block. Chains deployed after th
 that timestamp into the pre-determined storage slot.</p>
 <h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
 <p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
-to <code>executeMessage</code> and <code>validateMessage</code>.</p>
+to <code>validateMessage</code>.</p>
 <pre><code class="language-solidity">event ExecutingMessage(bytes32 indexed msgHash, Identifier identifier);
 </code></pre>
 <p>The data encoded in the event contains the keccak hash of the <code>msg</code> and the <code>Identifier</code>.
@@ -360,48 +340,12 @@ Identifier identifier = abi.decode(log.data, (Identifier));
 message in its entirety. Equality with the initiating message can be handled off-chain through
 hash comparison.</p>
 <h3 id="reference-implementation"><a class="header" href="#reference-implementation">Reference implementation</a></h3>
-<p>A simple implementation of the <code>executeMessage</code> function is included below.</p>
-<pre><code class="language-solidity">function executeMessage(Identifier calldata _id, address _target, bytes calldata _msg) public payable {
-    require(_id.timestamp &lt;= block.timestamp);
-    require(L1Block.isInDependencySet(_id.chainid));
-    require(_id.timestamp &gt; interopStart());
+<p>A simple implementation of the <code>validateMessage</code> function is included below.</p>
+<pre><code class="language-solidity">    function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
+        // We need to know if this is being called on a depositTx
+        if (IL1BlockInterop(Predeploys.L1_BLOCK_ATTRIBUTES).isDeposit()) revert NoExecutingDeposits();
 
-    assembly {
-      tstore(ORIGIN_SLOT, _id.origin)
-      tstore(BLOCKNUMBER_SLOT, _id.blocknumber)
-      tstore(LOG_INDEX_SLOT, _id.logIndex)
-      tstore(TIMESTAMP_SLOT, _id.timestamp)
-      tstore(CHAINID_SLOT, _id.chainid)
-    }
-
-    bool success = SafeCall.call({
-      _target: _target,
-      _value: msg.value,
-      _calldata: _msg
-    });
-
-    require(success);
-
-    emit ExecutingMessage(keccak256(_msg), _id);
-}
-</code></pre>
-<p>Note that the <code>executeMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
-<p>An example of encoding a cross chain call directly in an event. However realize the
-<a href="#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a> predeploy provides a cleaner and user
-friendly abstraction for cross chain calls.</p>
-<pre><code class="language-solidity">contract MyCrossChainApp {
-    function sendMessage() external {
-        bytes memory data = abi.encodeCall(MyCrossChainApp.relayMessage, (1, address(0x20)));
-
-        // Encoded payload matches the required calldata by omission of an event topic
-        assembly {
-          log0(add(data, 0x20), mload(data))
-        }
-    }
-
-    function relayMessage(uint256 value, address recipient) external {
-        // Assert that this is only executed directly from the inbox
-        require(msg.sender == Predeploys.CrossL2Inbox);
+        emit ExecutingMessage(_msgHash, _id);
     }
 }
 </code></pre>

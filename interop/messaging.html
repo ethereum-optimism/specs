@@ -263,10 +263,10 @@ such that it can be distinguished from other duplicate messages within the same 
 <p>An initiating message may be executed many times: no replay-protection is enshrined in the protocol.</p>
 <h3 id="executing-messages"><a class="header" href="#executing-messages">Executing Messages</a></h3>
 <p>An executing message is represented by the <a href="./predeploys.html#executingmessage-event">ExecutingMessage event</a> that is emitted by
-the <code>CrossL2Inbox</code> predeploy. If the cross chain message is directly executed via <a href="./predeploys.html#executemessage">executeMessage</a>,
-the event is coupled to a <code>CALL</code> with the payload that is emitted within the event to the target
-address, allowing introspection of the data. Contracts can also introduce their own public
+the <code>CrossL2Inbox</code> predeploy. Contracts can introduce their own public
 entrypoints and solely trigger validation of the cross chain message with <a href="./predeploys.html#validatemessage">validateMessage</a>.</p>
+<p>We highly encourage the use of the <a href="./predeploys.html#l2tol2crossdomainmessenger"><code>L2toL2CrossDomainMessenger</code></a>
+over a custom messsage-executor contract.</p>
 <p>All of the information required to satisfy the invariants MUST be included in this event.</p>
 <p>Both the block builder and the verifier use this information to ensure that all system invariants are held.</p>
 <p>The executing message is verified by checking if there is an existing initiating-message
