@@ -86,7 +86,6 @@ of cross chain messages, on behalf of any user.
 
 To ensure safety of the protocol, the [Message Invariants](./messaging.md#messaging-invariants) must be enforced.
 
-[message payload]: ./messaging.md#message-payload
 [`Identifier`]: ./messaging.md#message-identifier
 
 ### Functions
