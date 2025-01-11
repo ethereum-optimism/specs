@@ -2,7 +2,7 @@
 
 ## 1. Governance threshold check
 
-- As you first step, you will need to look into governance threshold to know will your feature pass and understand the all the governance needs for your proposal.
+- As your first step, you will need to look into governance threshold your feature will pass and understand all the governance needs for your proposal.
     
     *Good reads on the topic can be found: [OPerating manual](https://github.com/ethereum-optimism/OPerating-manual/tree/main?tab=readme-ov-file), [Optimism Agora](https://vote.optimism.io/)*
     
@@ -16,7 +16,7 @@ The threshold for which changes require a governance vote is based on the User P
 
 ## 2. Call everything done on the development side
 
-- Pass all check on the engineering criteria - in order to call something done on the development side, you need to go over the listed steps:
+- Pass all checks on the engineering criteria - in order to call something done on the development side, you need to go over the listed steps:
   - Code you have is implementation-complete 🏁
   - Code has automated tests, that are well explained
   - Code is behind a feature-flag 🚩
@@ -24,14 +24,14 @@ The threshold for which changes require a governance vote is based on the User P
   - Code has run on your internal-devnet for as long as necessary for you to test all features
   - Code has run on Goerli or Sepolia for a week and didn’t experience and bugs/performance/stability issues
 
-    ## 3. Hardfork preparation (optional)
+    ## 3. Hard fork preparation (optional)
 
-- Hardfork is prepared *[If needed - hardforks are needed if we are adding major/protocol-level changes to our stack]*
-   - Named hardfork is created
+- Hard fork is prepared *[If needed - hardforks are needed if we are adding major/protocol-level changes to our stack]*
+   - Named hard fork is created
    - Code has been configured to activate with the named hardfork
    - Upgrades of Fault Proof systems are prepared
 
-    ## 4. Security standards and criteria check are done
+    ## 4. Security standards and criteria checks are done
 
 -   Security criteria passed
     - The TL responsible for the launch needs to write a [Failure Mode Analyses (FMAs)](https://www.notion.so/Failure-Mode-Analyses-FMAs-1fb9f65a13e542e5b48af6c850763494?pvs=21) (FMA) describing failure modes and recovery paths for the launch.
@@ -39,7 +39,7 @@ The threshold for which changes require a governance vote is based on the User P
     - [If Required] Audits are completed and issues fixed
     - [If Required] Security monitoring and block history integrity checks updated to support the new feature.
 
-## 5. Governance standards and criteria check are done if
+## 5. Governance standards and criteria checks are done if
 
 -   [If Vote Required] Governance criteria passed
     - Governance proposal is created and shared [here](https://gov.optimism.io/c/other-proposals/protocol-upgrade/58)
@@ -113,7 +113,7 @@ Using this framework, we can define the following rough upgrade types and whethe
 
 - **Changes Affecting Transaction Inclusion/Ordering**
     
-    **Vote required:** **Optional** - you proposal should be shared with other teams and presented on a relevant sync call
+    **Vote required:** **Optional** - your proposal should be shared with other teams and presented on a relevant sync call
     
     Even though the mempool is technically not part of consensus, it affects the way in which transactions get included into the chain and can negatively effect user experience. As a result, unilateral changes that affect transaction ordering violate protection two above and therefore need a vote. If the community detects that nonstandard ordering software is being run, it is grounds for removal from the sequencer allowlist.
     Examples:
@@ -165,10 +165,10 @@ If the changes do not pass the governance threshold, you can stop here and ship 
 
 To make the upgrade process easier, we will batch changes together in a named hardfork. An example of this was the Regolith hardfork, where we batched together fixes for receipt handling and deposit gas.
 
-If a named hardfork doesn’t exist, we’ll need to create one. This involves making some changes to the chain config in `op-geth` and the rollup config in the `op-node`. Then, the hardfork changes need to be configured to activate at the hardfork’s activation time.
+If a named hard fork doesn’t exist, we’ll need to create one. This involves making some changes to the chain config in `op-geth` and the rollup config in the `op-node`. Then, the hard fork changes need to be configured to activate at the hardfork’s activation time.
 
-- [ ]  Hardfork is prepared
-    - [ ]  Named hardfork is created or you used the existing name  - check the list of names under this link: https://github.com/ethereum-optimism/specs/tree/main/specs/protocol
+- [ ]  Hard fork is prepared
+    - [ ]  Named hard fork is created or you used the existing name  - check the list of names under this link: https://github.com/ethereum-optimism/specs/tree/main/specs/protocol
     - [ ]  Code has been configured to activate with the named hardfork
 
 ## 4. Pass Security Criteria
@@ -200,7 +200,7 @@ Note that governance proposals are *all-or-nothing:* if one aspect of the propos
 
 - [ ]  Create a governance proposal using the template below
     - Upgrade proposals need to point at some feature-complete, frozen body of code — can be a git tag, specific commit, etc
-- [ ]  Post the proposal on the Governance forums as a draft under the your name
+- [ ]  Post the proposal on the Governance forums as a draft under your name
 - [ ]  FND will seek out the 4 delegates to approve the proposal for a vote
 
 ### Governance Proposal Template
@@ -215,7 +215,7 @@ Some useful tips for writing your governance post:
 - In the Security Considerations section, use the FMA and the [audit framework](https://gov.optimism.io/t/op-labs-audit-framework-when-to-get-external-security-review-and-how-to-prepare-for-it/6864) to describe why we do or do not need an audit, and how we secured the system.
 - In the Action Plan section make sure to describe activation times, software versions, and which testnets the changes are deployed to.
 - In the Action Plan section make sure to link out to the monorepo commit hash being deployed.
-- If relevant, link out to the specifications that you use fro your development, in order to showcase a full picture of your path to mainnet.
+- If relevant, link out to the specifications that you use for your development, in order to showcase a full picture of your path to mainnet.
 - Include any relevant data to show the impact of the proposal.
 
 ### Upcoming Change: Blockspace Charters
@@ -233,5 +233,5 @@ Once Blockspace Charters are introduced, **all upgrade proposals will need to sp
 
 ## 6. Implement the Vote for your release (if coordination with the governance orgs for the OP stack)
 
-- [ ]  Add the Hardfork activation time
+- [ ]  Add the Hard fork activation time
 - [ ]  Schedule contract deployments
