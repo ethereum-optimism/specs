@@ -207,7 +207,7 @@ Note that governance proposals are *all-or-nothing:* if one aspect of the propos
 
 Format and share your governance post using the official [Standard Proposal Template](https://gov.optimism.io/t/standard-proposal-template-optimism-token-house/5443). 
 
-Use the the [Canyon](https://gov.optimism.io/t/final-upgrade-proposal-2-canyon-network-upgrade/7088) / [Delta](https://gov.optimism.io/t/final-upgrade-proposal-3-delta-network-upgrade/7310)  or [Ecotone](https://gov.optimism.io/t/upgrade-proposal-5-ecotone-network-upgrade/7669) governance posts as guides for what to say.
+Use the [Canyon](https://gov.optimism.io/t/final-upgrade-proposal-2-canyon-network-upgrade/7088) / [Delta](https://gov.optimism.io/t/final-upgrade-proposal-3-delta-network-upgrade/7310)  or [Ecotone](https://gov.optimism.io/t/upgrade-proposal-5-ecotone-network-upgrade/7669) governance posts as guides for what to say.
 
 Some useful tips for writing your governance post:
 
