@@ -9934,7 +9934,11 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="experimental/alt-da.html#overview">Overview</a></li>
-<li><a href="experimental/alt-da.html#input-commitment-submission">Input Commitment Submission</a></li>
+<li><a href="experimental/alt-da.html#input-commitment-submission">Input Commitment Submission</a>
+<ul>
+<li><a href="experimental/alt-da.html#example-commitments">Example Commitments</a></li>
+</ul>
+</li>
 <li><a href="experimental/alt-da.html#da-server">DA Server</a></li>
 <li><a href="experimental/alt-da.html#data-availability-challenge-contract">Data Availability Challenge Contract</a>
 <ul>
@@ -9999,6 +10003,16 @@ In addition, a DA provider storage service SHOULD return an error response if it
 store the request payload so as to signal to the batcher to retry.
 Input commitments submitted onchain without proper storage on the DA provider service are subject to
 challenges if the input cannot be retrieved during the challenge window, as detailed in the following section.</p>
+<h3 id="example-commitments"><a class="header" href="#example-commitments">Example Commitments</a></h3>
+<div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>commitment_type</code></th><th><code>da_layer_byte</code></th><th><code>payload</code></th></tr></thead><tbody>
+<tr><td>0</td><td></td><td></td><td>frames</td></tr>
+<tr><td>1</td><td>0</td><td></td><td>keccak_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>0</td><td>eigenda_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>0x0a</td><td>avail_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>0x0c</td><td>celestia_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>...</td><td>altda_commitment</td></tr>
+</tbody></table>
+</div>
 <h2 id="da-server"><a class="header" href="#da-server">DA Server</a></h2>
 <p>Input data is uploaded to the storage layer via plain HTTP calls to the DA server.</p>
 <p>This service is responsible to interacting with the Data Availability Layer (DA layer).
