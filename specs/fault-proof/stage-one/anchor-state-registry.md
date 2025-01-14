@@ -58,6 +58,13 @@ A Dispute Game is a smart contract that makes a determination about the validity
 the context of the OP Stack, the claim is generally assumed to be a claim about the value of an
 output root at a given L2 block height.
 
+### Respected Game Type
+
+The `OptimismPortal` contract defines a "respected game type" which is the Dispute Game type that
+the portal allows to be used for the purpose of proving and finalizing withdrawals. This mechanism
+allows the system to use multiple game types simultaneously while still ensuring that the
+`OptimismPortal` contract only trusts respected games specifically.
+
 ### Registered Game
 
 A Dispute Game is considered to be a **Registered Game** if the game contract was created by the
@@ -66,7 +73,9 @@ system's `DisputeGameFactory` contract.
 ### Respected Game
 
 A Dispute Game is considered to be a **Respected Game** if the game contract's game type is
-currently the respected game type defined by the `OptimismPortal` contract.
+currently the `respectedGameType` defined by the `OptimismPortal` contract. Games that are not
+Respected Games cannot be used as an Anchor Game. See [Respected Game Type](#respected-game-type)
+for more information.
 
 ### Blacklisted Game
 
