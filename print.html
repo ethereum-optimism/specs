@@ -10575,7 +10575,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#deployment-flow">Deployment Flow</a></li>
 </ul>
 </li>
-<li><a href="interop/predeploys.html#beaconcontract">BeaconContract</a>
+<li><a href="interop/predeploys.html#optimismsuperchainerc20beacon">OptimismSuperchainERC20Beacon</a>
 <ul>
 <li><a href="interop/predeploys.html#overview-2">Overview</a></li>
 </ul>
@@ -10623,7 +10623,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#conversion-flow">Conversion Flow</a></li>
 </ul>
 </li>
-<li><a href="interop/predeploys.html#superchainerc20bridge">SuperchainERC20Bridge</a>
+<li><a href="interop/predeploys.html#superchaintokenbridge">SuperchainTokenBridge</a>
 <ul>
 <li><a href="interop/predeploys.html#overview-3">Overview</a></li>
 <li><a href="interop/predeploys.html#functions-3">Functions</a>
@@ -10920,13 +10920,13 @@ and deployer<code>is the</code>msg.sender`.</p>
   BeaconProxy-&gt;&gt;Implementation: delegatecall()
   BeaconProxy-&gt;&gt;Implementation: initialize()
 </pre>
-<h2 id="beaconcontract"><a class="header" href="#beaconcontract">BeaconContract</a></h2>
+<h2 id="optimismsuperchainerc20beacon"><a class="header" href="#optimismsuperchainerc20beacon">OptimismSuperchainERC20Beacon</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
 <h3 id="overview-37"><a class="header" href="#overview-37">Overview</a></h3>
-<p>The <code>BeaconContract</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
+<p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
 <p>The Beacon Contract implements the interface defined
@@ -11128,13 +11128,13 @@ valid <code>OptimismSuperchainERC20</code> corresponding to the same remote toke
   L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
   L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
 </pre>
-<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge">SuperchainERC20Bridge</a></h2>
+<h2 id="superchaintokenbridge"><a class="header" href="#superchaintokenbridge">SuperchainTokenBridge</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
 <h3 id="overview-38"><a class="header" href="#overview-38">Overview</a></h3>
-<p>The <code>SuperchainERC20Bridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
+<p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
 as described in the <a href="interop/./token-bridging.html">token bridging spec</a>.</p>
@@ -11179,12 +11179,12 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
 <p>The following diagram depicts a cross-chain transfer.</p>
 <pre class="mermaid">sequenceDiagram
   participant from
-  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant L2SBA as SuperchainTokenBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant L2SBB as SuperchainTokenBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
@@ -11201,7 +11201,7 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h3 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h3>
-<p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainERC20Bridge</code> will require the following invariants:</p>
+<p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
 that was burnt in <code>sendERC20()</code>, as long as target chain has the initiating chain in the dependency set.
@@ -11720,7 +11720,7 @@ that includes two external functions and two events:</p>
 <p>MUST trigger when <code>crosschainBurn</code> is called</p>
 <pre><code class="language-solidity">event CrosschainBurn(address indexed _from, uint256 _amount, address indexed _sender)
 </code></pre>
-<h2 id="superchainerc20bridge-1"><a class="header" href="#superchainerc20bridge-1"><code>SuperchainERC20Bridge</code></a></h2>
+<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></h2>
 <p>The <code>SuperchainERC20Bridge</code> is a predeploy that works as an abstraction
 on top of the <a href="interop/./predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
 for token bridging.
