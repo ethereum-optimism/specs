@@ -66,7 +66,8 @@ system's `DisputeGameFactory` contract.
 ### Respected Game
 
 A Dispute Game is considered to be a **Respected Game** if the game contract's game type is
-currently the respected game type defined by the `OptimismPortal` contract.
+currently the `respectedGameType` defined by the `OptimismPortal` contract. Games that are not
+Respected Games cannot be used as an Anchor Game.
 
 ### Blacklisted Game
 
