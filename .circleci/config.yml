@@ -93,6 +93,8 @@ workflows:
   publish:
     jobs:
       - publish-pages:
+          context: 
+            - circleci-repo-specs
           filters: 
             branches:
               only: main
