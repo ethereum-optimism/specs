@@ -12113,7 +12113,8 @@ may be filled by the other deposit transactions. As a consequence, a deposit con
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/tx-pool.html#message-validation">Message validation</a></li>
+<li><a href="interop/tx-pool.html#overview">Overview</a></li>
+<li><a href="interop/tx-pool.html#transaction-validation">Transaction validation</a></li>
 <li><a href="interop/tx-pool.html#system-deposits-transaction-margin">System deposits transaction margin</a></li>
 <li><a href="interop/tx-pool.html#security-considerations">Security Considerations</a>
 <ul>
@@ -12122,36 +12123,25 @@ may be filled by the other deposit transactions. As a consequence, a deposit con
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>The transaction-pool is part of the execution-engine,
-and generally replicated by the sequencer and its surrounding infrastructure.</p>
-<p>Not all messages may be included by the sequencer during <a href="interop/./sequencer.html#block-building">block building</a>,
-additional transaction-pool validation is thus required to prevent non-includable
-transactions from overwhelming the network.</p>
-<p>Transactions with cross-chain messages are subject to the same transaction-pool
-validation rules as regular transactions:
-nonce, balance and fee changes need to be applied to validation so the cross-chain transaction
-is possible to include in a block in the first place.</p>
-<p>However, additional validation rules are applied to demote messages that cannot be included in a block.</p>
-<h2 id="message-validation"><a class="header" href="#message-validation">Message validation</a></h2>
-<p>Through <a href="interop/./sequencer.html#static-analysis">static-analysis</a> as performed in block building,
-the <code>Identifier</code> of the message is read, and used for further validation. Static analysis is
-not always possible, therefore the mempool SHOULD delegate execution to another service that can
-horizontally scale validation of executing messages.</p>
-<p>The <a href="interop/./messaging.html#messaging-invariants">messaging invariants</a> should be enforced in the transaction pool,
-with dependency validation adapted for guarantees of the in-flight transactions:
-the executing message is not included in the chain yet,
-but the validity of the message and its initiating source is tracked.</p>
-<p>A Message with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.</p>
-<p>Irreversible invalidation conditions:</p>
-<ul>
-<li>The block at the initiating message source is finalized and does not pass the initiating-message checks.</li>
-<li>The message is expired.</li>
-</ul>
-<p>The sequencer MAY choose to demote messages which are invalid but can still technically become valid:</p>
-<ul>
-<li>The block at the initiating message source is known, but another conflicting unsafe block is canonical.</li>
-<li>The block at the initiating message has invalidated message dependencies.</li>
-</ul>
+<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
+before being included in a block. When a user submits a transaction to a node, it is validated
+and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
+<p>Since there is little cost to sending invalid transactions over the p2p network maliciously,
+Ethereum opts to ensure that the transactions can be validated as cheaply as possible. This validation
+consists of a nonce and balance (fee payment) check which can be done with solely state lookups and
+the chain tips block header. Features that make this validation more costly have been rejected from L1
+Ethereum due to the desire to ensure <a href="https://hackmd.io/@kevaundray/S1hUQuV4Jx">commodity hardware</a> can
+easily participate in consensus.</p>
+<p>Layer twos can make more aggressive tradeoffs and raise the minimum hardware requirements of the network.
+With interop, it requires full EVM execution of the transaction to fully validate it.</p>
+<h2 id="transaction-validation"><a class="header" href="#transaction-validation">Transaction validation</a></h2>
+<p>In addition to the nonce and balance checks, the <a href="interop/./messaging.html#messaging-invariants">messaging invariants</a>
+SHOULD be enforced before entry into the transaction pool.</p>
+<p>After each new block, each transaction in the transaction pool is checked for validity again.
+A transaction with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.</p>
+<p>It is possible that a transaction that was valid becomes invalid or vice versa. The sequencer MAY choose
+to demote messages which are invalid but can still technically become valid.</p>
 <p>Transactions with invalid message-dependencies MUST NOT be included in block-building,
 and should thus be dropped from the transaction-pool.</p>
 <h2 id="system-deposits-transaction-margin"><a class="header" href="#system-deposits-transaction-margin">System deposits transaction margin</a></h2>
@@ -12239,7 +12229,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -12529,7 +12519,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
+<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -12685,7 +12675,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
+<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
