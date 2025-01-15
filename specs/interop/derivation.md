@@ -130,7 +130,7 @@ This transaction MUST have the following values:
 4. `value` is `0`
 5. `gasLimit` is set `36000` gas, to cover intrinsic costs, processing costs, and margin for change.
 6. `isSystemTx` is set to `false`.
-7. `data` is the preimage of the [L2 output root](l2-output-root)
+7. `data` is the preimage of the [L2 output root](../../glossary.md#l2-output-root-proposals)
    of the replaced block. i.e. `version_byte || payload` without applying the `keccak256` hashing.
 
 This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
