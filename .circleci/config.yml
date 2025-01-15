@@ -7,7 +7,7 @@ orbs:
 executors:
   base:
     machine:
-      image: ubuntu-2204:2022.07.1
+      image: ubuntu-2404:current
   builder:
     docker:
       - image: us-docker.pkg.dev/oplabs-tools-artifacts/images/ci-builder-rust:22ebfb824d959a27a372cca10fe39aeb0b610343
@@ -16,6 +16,8 @@ commands:
   install-dependencies:
     description: Install dependencies
     steps:
+      # We enable corepack, a nodejs package manager manager
+      # that is reponsible for automatically determining the correct version of pnpm to use
       - run:
           name: Enable corepack
           command: corepack enable
@@ -37,19 +39,15 @@ commands:
 
 jobs:
   lint-specs:
-    executor: builder
+    executor: base
     steps:
       - checkout
-      - install-dependencies
       - run:
           name: markdown lint
           command: just lint-specs-md-check
       - run:
           name: markdown toc
           command: just lint-specs-toc-check
-      - run:
-          name: build book
-          command: just build
 
   lint-links:
     executor: base
@@ -61,7 +59,7 @@ jobs:
       - notify-failures-on-develop:
           channel: C055R639XT9 #notify-link-check
 
-  build-pages:
+  build-book:
     executor: builder
     steps:
       - checkout
@@ -77,18 +75,15 @@ jobs:
           paths:
             - html
 
-  publish-pages:
+  publish-book:
     executor: base
     steps:
+      - checkout
       - attach_workspace:
           at: /tmp/book
-      - run:
-          name: List
-          command: ls -al /tmp/book
       - utils/get-github-access-token
       - utils/github-pages-deploy:
           src-pages-dir: /tmp/book/html
-          pages-branch: gh-pages-test
 
 workflows:
   specs-check:
@@ -97,6 +92,7 @@ workflows:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - lint-specs
+      - build-book
   scheduled-links-check:
     when:
       equal: [build_daily, <<pipeline.schedule.name>>]
@@ -106,10 +102,10 @@ workflows:
 
   publish:
     jobs:
-      - build-pages
-      - publish-pages:
+      - build-book
+      - publish-book:
           requires:
-            - build-pages
+            - build-book
           context: 
             - circleci-repo-specs
           # filters: 
