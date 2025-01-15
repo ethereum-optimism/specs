@@ -5,12 +5,15 @@
 **Table of Contents**
 
 - [Overview](#overview)
+  - [Invariants](#invariants)
   - [Deposit Context](#deposit-context)
     - [Opening the deposit context](#opening-the-deposit-context)
     - [Closing the deposit context](#closing-the-deposit-context)
       - [Deposits-complete Source-hash](#deposits-complete-source-hash)
 - [Security Considerations](#security-considerations)
   - [Gas Considerations](#gas-considerations)
+  - [Depositing an Executing Message](#depositing-an-executing-message)
+  - [Reliance on History](#reliance-on-history)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

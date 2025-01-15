@@ -4,8 +4,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Derivation Pipeline](#derivation-pipeline)
-  - [Depositing an Executing Message](#depositing-an-executing-message)
+- [Driver](#driver)
   - [Safety](#safety)
     - [`unsafe` Inputs](#unsafe-inputs)
     - [`cross-unsafe` Inputs](#cross-unsafe-inputs)
@@ -13,9 +12,6 @@
     - [`finalized` Inputs](#finalized-inputs)
   - [Honest Verifier](#honest-verifier)
 - [Security Considerations](#security-considerations)
-  - [Forced Inclusion of Cross Chain Messages](#forced-inclusion-of-cross-chain-messages)
-    - [What if Safety isn't Enough?](#what-if-safety-isnt-enough)
-  - [Reliance on History](#reliance-on-history)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
