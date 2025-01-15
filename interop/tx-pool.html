@@ -1,0 +1,289 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Transaction Pool - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/tx-pool.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="transaction-pool"><a class="header" href="#transaction-pool">Transaction pool</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#message-validation">Message validation</a></li>
+<li><a href="#system-deposits-transaction-margin">System deposits transaction margin</a></li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#mempool-denial-of-service">Mempool Denial of Service</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>The transaction-pool is part of the execution-engine,
+and generally replicated by the sequencer and its surrounding infrastructure.</p>
+<p>Not all messages may be included by the sequencer during <a href="./sequencer.html#block-building">block building</a>,
+additional transaction-pool validation is thus required to prevent non-includable
+transactions from overwhelming the network.</p>
+<p>Transactions with cross-chain messages are subject to the same transaction-pool
+validation rules as regular transactions:
+nonce, balance and fee changes need to be applied to validation so the cross-chain transaction
+is possible to include in a block in the first place.</p>
+<p>However, additional validation rules are applied to demote messages that cannot be included in a block.</p>
+<h2 id="message-validation"><a class="header" href="#message-validation">Message validation</a></h2>
+<p>Through <a href="./sequencer.html#static-analysis">static-analysis</a> as performed in block building,
+the <code>Identifier</code> of the message is read, and used for further validation. Static analysis is
+not always possible, therefore the mempool SHOULD delegate execution to another service that can
+horizontally scale validation of executing messages.</p>
+<p>The <a href="./messaging.html#messaging-invariants">messaging invariants</a> should be enforced in the transaction pool,
+with dependency validation adapted for guarantees of the in-flight transactions:
+the executing message is not included in the chain yet,
+but the validity of the message and its initiating source is tracked.</p>
+<p>A Message with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.</p>
+<p>Irreversible invalidation conditions:</p>
+<ul>
+<li>The block at the initiating message source is finalized and does not pass the initiating-message checks.</li>
+<li>The message is expired.</li>
+</ul>
+<p>The sequencer MAY choose to demote messages which are invalid but can still technically become valid:</p>
+<ul>
+<li>The block at the initiating message source is known, but another conflicting unsafe block is canonical.</li>
+<li>The block at the initiating message has invalidated message dependencies.</li>
+</ul>
+<p>Transactions with invalid message-dependencies MUST NOT be included in block-building,
+and should thus be dropped from the transaction-pool.</p>
+<h2 id="system-deposits-transaction-margin"><a class="header" href="#system-deposits-transaction-margin">System deposits transaction margin</a></h2>
+<p>The <a href="./derivation.html#closing-the-deposit-context">Deposit context closing transaction</a> requires
+a small margin of additional EVM gas to be available for system operations.</p>
+<p>The transaction-pool should filter out L2 transactions that spend more than the
+gas limit, minus the gas spent on system transactions.
+This ensures that the transaction can be included in a valid L2 block,
+and does not get stuck in the transaction pool.</p>
+<p>A notion of an "effective gas limit", that subtracts 100,000 gas from the regular gas limit,
+should be maintained in the transaction pool.
+This leaves sufficient gas for the L1 attributes transaction (under 45,000 gas),
+the new deposit-context closing transaction (under 36,000 gas), and margin for error / change.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="mempool-denial-of-service"><a class="header" href="#mempool-denial-of-service">Mempool Denial of Service</a></h3>
+<p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
+service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
+The mempool SHOULD perform low-cost checks before any sort of network access is performed.
+The results of the check SHOULD be cached such that another request does not need to be performed
+when building the block although consistency is not guaranteed.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../experimental/op-contracts-manager.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../experimental/op-contracts-manager.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Preinstalls - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/preinstalls.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="preinstalls"><a class="header" href="#preinstalls">Preinstalls</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#safe">Safe</a></li>
+<li><a href="#safel2">SafeL2</a></li>
+<li><a href="#multisend">MultiSend</a></li>
+<li><a href="#multisendcallonly">MultiSendCallOnly</a></li>
+<li><a href="#safesingletonfactory">SafeSingletonFactory</a></li>
+<li><a href="#multicall3">Multicall3</a></li>
+<li><a href="#create2deployer">Create2Deployer</a></li>
+<li><a href="#createx">CreateX</a></li>
+<li><a href="#arachnids-deterministic-deployment-proxy">Arachnid's Deterministic Deployment Proxy</a></li>
+<li><a href="#permit2">Permit2</a></li>
+<li><a href="#erc-4337-v060-entrypoint">ERC-4337 v0.6.0 EntryPoint</a></li>
+<li><a href="#erc-4337-v060-sendercreator">ERC-4337 v0.6.0 SenderCreator</a></li>
+<li><a href="#erc-4337-v070-entrypoint">ERC-4337 v0.7.0 EntryPoint</a></li>
+<li><a href="#erc-4337-v070-sendercreator">ERC-4337 v0.7.0 SenderCreator</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p><a href="../glossary.html#preinstalled-contract-preinstall">Preinstalled smart contracts</a> exist on Optimism
+at predetermined addresses in the genesis state. They are similar to precompiles but instead run
+directly in the EVM instead of running native code outside of the EVM and are developed by third
+parties unaffiliated with the Optimism Collective.</p>
+<p>These preinstalls are commonly deployed smart contracts that are being placed at genesis for convenience.
+It's important to note that these contracts do not have the same security guarantees
+as <a href="../glossary.html#predeployed-contract-predeploy">Predeployed smart contracts</a>.</p>
+<p>The following table includes each of the preinstalls.</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Address</th></tr></thead><tbody>
+<tr><td>Safe</td><td>0x69f4D1788e39c87893C980c06EdF4b7f686e2938</td></tr>
+<tr><td>SafeL2</td><td>0xfb1bffC9d739B8D520DaF37dF666da4C687191EA</td></tr>
+<tr><td>MultiSend</td><td>0x998739BFdAAdde7C933B942a68053933098f9EDa</td></tr>
+<tr><td>MultiSendCallOnly</td><td>0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B</td></tr>
+<tr><td>SafeSingletonFactory</td><td>0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7</td></tr>
+<tr><td>Multicall3</td><td>0xcA11bde05977b3631167028862bE2a173976CA11</td></tr>
+<tr><td>Create2Deployer</td><td>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</td></tr>
+<tr><td>CreateX</td><td>0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed</td></tr>
+<tr><td>Arachnid's Deterministic Deployment Proxy</td><td>0x4e59b44847b379578588920cA78FbF26c0B4956C</td></tr>
+<tr><td>Permit2</td><td>0x000000000022D473030F116dDEE9F6B43aC78BA3</td></tr>
+<tr><td>ERC-4337 v0.6.0 EntryPoint</td><td>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789</td></tr>
+<tr><td>ERC-4337 v0.6.0 SenderCreator</td><td>0x7fc98430eaedbb6070b35b39d798725049088348</td></tr>
+<tr><td>ERC-4337 v0.7.0 EntryPoint</td><td>0x0000000071727De22E5E9d8BAf0edAc6f37da032</td></tr>
+<tr><td>ERC-4337 v0.7.0 SenderCreator</td><td>0xEFC2c1444eBCC4Db75e7613d20C6a62fF67A167C</td></tr>
+</tbody></table>
+</div>
+<h2 id="safe"><a class="header" href="#safe">Safe</a></h2>
+<p><a href="https://github.com/safe-global/safe-contracts/blob/v1.3.0/contracts/GnosisSafe.sol">Implementation</a></p>
+<p>Address: <code>0x69f4D1788e39c87893C980c06EdF4b7f686e2938</code></p>
+<p>A multisignature wallet with support for confirmations using signed messages based on ERC191.
+Differs from <a href="#safel2">SafeL2</a> by not emitting events to save gas.</p>
+<h2 id="safel2"><a class="header" href="#safel2">SafeL2</a></h2>
+<p><a href="https://github.com/safe-global/safe-contracts/blob/v1.3.0/contracts/GnosisSafeL2.sol">Implementation</a></p>
+<p>Address: <code>0xfb1bffC9d739B8D520DaF37dF666da4C687191EA</code></p>
+<p>A multisignature wallet with support for confirmations using signed messages based on ERC191.
+Differs from <a href="#safe">Safe</a> by emitting events.</p>
+<h2 id="multisend"><a class="header" href="#multisend">MultiSend</a></h2>
+<p><a href="https://github.com/safe-global/safe-contracts/blob/v1.3.0/contracts/libraries/MultiSend.sol">Implementation</a></p>
+<p>Address: <code>0x998739BFdAAdde7C933B942a68053933098f9EDa</code></p>
+<p>Allows to batch multiple transactions into one.</p>
+<h2 id="multisendcallonly"><a class="header" href="#multisendcallonly">MultiSendCallOnly</a></h2>
+<p><a href="https://github.com/safe-global/safe-contracts/blob/v1.3.0/contracts/libraries/MultiSendCallOnly.sol">Implementation</a></p>
+<p>Address: <code>0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B</code></p>
+<p>Allows to batch multiple transactions into one, but only calls.</p>
+<h2 id="safesingletonfactory"><a class="header" href="#safesingletonfactory">SafeSingletonFactory</a></h2>
+<p><a href="https://github.com/safe-global/safe-singleton-factory/blob/v1.0.17/source/deterministic-deployment-proxy.yul">Implementation</a></p>
+<p>Address: <code>0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7</code></p>
+<p>Singleton factory used by Safe-related contracts based on
+<a href="#arachnids-deterministic-deployment-proxy">Arachnid's Deterministic Deployment Proxy</a>.</p>
+<p>The original library used a pre-signed transaction without a chain ID to allow deployment on different chains.
+Some chains do not allow such transactions to be submitted; therefore, this contract will provide the same factory
+that can be deployed via a pre-signed transaction that includes the chain ID. The key that is used to sign is
+controlled by the Safe team.</p>
+<h2 id="multicall3"><a class="header" href="#multicall3">Multicall3</a></h2>
+<p><a href="https://github.com/mds1/multicall/blob/v3.1.0/src/Multicall3.sol">Implementation</a></p>
+<p>Address: <code>0xcA11bde05977b3631167028862bE2a173976CA11</code></p>
+<p><code>Multicall3</code> has two main use cases:</p>
+<ul>
+<li>Aggregate results from multiple contract reads into a single JSON-RPC request.</li>
+<li>Execute multiple state-changing calls in a single transaction.</li>
+</ul>
+<h2 id="create2deployer"><a class="header" href="#create2deployer">Create2Deployer</a></h2>
+<p><a href="https://github.com/mdehoog/create2deployer/blob/69b9a8e112b15f9257ce8c62b70a09914e7be29c/contracts/Create2Deployer.sol">Implementation</a></p>
+<p>The <code>create2Deployer</code> is a nice Solidity wrapper around the CREATE2 opcode. It provides the following ABI.</p>
+<pre><code class="language-solidity">    /**
+     * @dev Deploys a contract using `CREATE2`. The address where the
+     * contract will be deployed can be known in advance via {computeAddress}.
+     *
+     * The bytecode for a contract can be obtained from Solidity with
+     * `type(contractName).creationCode`.
+     *
+     * Requirements:
+     * - `bytecode` must not be empty.
+     * - `salt` must have not been used for `bytecode` already.
+     * - the factory must have a balance of at least `value`.
+     * - if `value` is non-zero, `bytecode` must have a `payable` constructor.
+     */
+    function deploy(uint256 value, bytes32 salt, bytes memory code) public;
+    /**
+     * @dev Deployment of the {ERC1820Implementer}.
+     * Further information: https://eips.ethereum.org/EIPS/eip-1820
+     */
+    function deployERC1820Implementer(uint256 value, bytes32 salt);
+    /**
+     * @dev Returns the address where a contract will be stored if deployed via {deploy}.
+     * Any change in the `bytecodeHash` or `salt` will result in a new destination address.
+     */
+    function computeAddress(bytes32 salt, bytes32 codeHash) public view returns (address);
+    /**
+     * @dev Returns the address where a contract will be stored if deployed via {deploy} from a
+     * contract located at `deployer`. If `deployer` is this contract's address, returns the
+     * same value as {computeAddress}.
+     */
+    function computeAddressWithDeployer(
+        bytes32 salt,
+        bytes32 codeHash,
+        address deployer
+    ) public pure returns (address);
+</code></pre>
+<p>Address: <code>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</code></p>
+<p>When Canyon activates, the contract code at <code>0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2</code> is set to
+<code>0x6080604052600436106100435760003560e01c8063076c37b21461004f578063481286e61461007157806356299481146100ba57806366cfa057146100da57600080fd5b3661004a57005b600080fd5b34801561005b57600080fd5b5061006f61006a366004610327565b6100fa565b005b34801561007d57600080fd5b5061009161008c366004610327565b61014a565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b3480156100c657600080fd5b506100916100d5366004610349565b61015d565b3480156100e657600080fd5b5061006f6100f53660046103ca565b610172565b61014582826040518060200161010f9061031a565b7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe082820381018352601f90910116604052610183565b505050565b600061015683836102e7565b9392505050565b600061016a8484846102f0565b949350505050565b61017d838383610183565b50505050565b6000834710156101f4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f437265617465323a20696e73756666696369656e742062616c616e636500000060448201526064015b60405180910390fd5b815160000361025f576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f437265617465323a2062797465636f6465206c656e677468206973207a65726f60448201526064016101eb565b8282516020840186f5905073ffffffffffffffffffffffffffffffffffffffff8116610156576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601960248201527f437265617465323a204661696c6564206f6e206465706c6f790000000000000060448201526064016101eb565b60006101568383305b6000604051836040820152846020820152828152600b8101905060ff815360559020949350505050565b61014e806104ad83390190565b6000806040838503121561033a57600080fd5b50508035926020909101359150565b60008060006060848603121561035e57600080fd5b8335925060208401359150604084013573ffffffffffffffffffffffffffffffffffffffff8116811461039057600080fd5b809150509250925092565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6000806000606084860312156103df57600080fd5b8335925060208401359150604084013567ffffffffffffffff8082111561040557600080fd5b818601915086601f83011261041957600080fd5b81358181111561042b5761042b61039b565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156104715761047161039b565b8160405282815289602084870101111561048a57600080fd5b826020860160208301376000602084830101528095505050505050925092509256fe608060405234801561001057600080fd5b5061012e806100206000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063249cb3fa14602d575b600080fd5b603c603836600460b1565b604e565b60405190815260200160405180910390f35b60008281526020818152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915281205460ff16608857600060aa565b7fa2ef4600d742022d532d4747cb3547474667d6f13804902513b2ec01c848f4b45b9392505050565b6000806040838503121560c357600080fd5b82359150602083013573ffffffffffffffffffffffffffffffffffffffff8116811460ed57600080fd5b80915050925092905056fea26469706673582212205ffd4e6cede7d06a5daf93d48d0541fc68189eeb16608c1999a82063b666eb1164736f6c63430008130033a2646970667358221220fdc4a0fe96e3b21c108ca155438d37c9143fb01278a3c1d274948bad89c564ba64736f6c63430008130033</code>.</p>
+<h2 id="createx"><a class="header" href="#createx">CreateX</a></h2>
+<p><a href="https://github.com/pcaversaccio/createx/blob/main/src/CreateX.sol">Implementation</a></p>
+<p>Address: <code>0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed</code></p>
+<p>CreateX introduces additional logic for deploying contracts using <code>CREATE</code>, <code>CREATE2</code> and <code>CREATE3</code>.
+It adds <a href="https://github.com/pcaversaccio/createx#special-features">salt protection</a> for sender and chainID
+and includes a set of helper functions.</p>
+<p>The <code>keccak256</code> of the CreateX bytecode is <code>0xbd8a7ea8cfca7b4e5f5041d7d4b17bc317c5ce42cfbc42066a00cf26b43eb53f</code>.</p>
+<h2 id="arachnids-deterministic-deployment-proxy"><a class="header" href="#arachnids-deterministic-deployment-proxy">Arachnid's Deterministic Deployment Proxy</a></h2>
+<p><a href="https://github.com/Arachnid/deterministic-deployment-proxy/blob/v1.0.0/source/deterministic-deployment-proxy.yul">Implementation</a></p>
+<p>Address: <code>0x4e59b44847b379578588920cA78FbF26c0B4956C</code></p>
+<p>This contract can deploy other contracts with a deterministic address on any chain using <code>CREATE2</code>. The <code>CREATE2</code>
+call will deploy a contract (like <code>CREATE</code> opcode) but instead of the address being
+<code>keccak256(rlp([deployer_address, nonce]))</code> it instead uses the hash of the contract's bytecode and a salt.
+This means that a given deployer address will deploy the
+same code to the same address no matter when or where they issue the deployment. The deployer is deployed
+with a one-time-use account, so no matter what chain the deployer is on, its address will always be the same. This
+means the only variables in determining the address of your contract are its bytecode hash and the provided salt.</p>
+<p>Between the use of <code>CREATE2</code> opcode and the one-time-use account for the deployer, this contracts ensures
+that a given contract will exist at the exact same address on every chain, but without having to use the
+same gas pricing or limits every time.</p>
+<h2 id="permit2"><a class="header" href="#permit2">Permit2</a></h2>
+<p><a href="https://github.com/Uniswap/permit2/blob/0x000000000022D473030F116dDEE9F6B43aC78BA3/src/Permit2.sol">Implementation</a></p>
+<p>Address: <code>0x000000000022D473030F116dDEE9F6B43aC78BA3</code></p>
+<p>Permit2 introduces a low-overhead, next-generation token approval/meta-tx system to make token approvals easier,
+more secure, and more consistent across applications.</p>
+<h2 id="erc-4337-v060-entrypoint"><a class="header" href="#erc-4337-v060-entrypoint">ERC-4337 v0.6.0 EntryPoint</a></h2>
+<p><a href="https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/core/EntryPoint.sol">Implementation</a></p>
+<p>Address: <code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789</code></p>
+<p>This contract verifies and executes the bundles of ERC-4337 v0.6.0
+<a href="https://www.erc4337.io/docs/understanding-ERC-4337/user-operation">UserOperations</a> sent to it.</p>
+<h2 id="erc-4337-v060-sendercreator"><a class="header" href="#erc-4337-v060-sendercreator">ERC-4337 v0.6.0 SenderCreator</a></h2>
+<p><a href="https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/core/SenderCreator.sol">Implementation</a></p>
+<p>Address: <code>0x7fc98430eaedbb6070b35b39d798725049088348</code></p>
+<p>Helper contract for <a href="#erc-4337-v060-entrypoint">EntryPoint</a> v0.6.0, to call <code>userOp.initCode</code> from a "neutral" address,
+which is explicitly not <code>EntryPoint</code> itself.</p>
+<h2 id="erc-4337-v070-entrypoint"><a class="header" href="#erc-4337-v070-entrypoint">ERC-4337 v0.7.0 EntryPoint</a></h2>
+<p><a href="https://github.com/eth-infinitism/account-abstraction/blob/v0.7.0/contracts/core/EntryPoint.sol">Implementation</a></p>
+<p>Address: <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032</code></p>
+<p>This contract verifies and executes the bundles of ERC-4337 v0.7.0
+<a href="https://www.erc4337.io/docs/understanding-ERC-4337/user-operation">UserOperations</a> sent to it.</p>
+<h2 id="erc-4337-v070-sendercreator"><a class="header" href="#erc-4337-v070-sendercreator">ERC-4337 v0.7.0 SenderCreator</a></h2>
+<p><a href="https://github.com/eth-infinitism/account-abstraction/blob/v0.7.0/contracts/core/SenderCreator.sol">Implementation</a></p>
+<p>Address: <code>0xEFC2c1444eBCC4Db75e7613d20C6a62fF67A167C</code></p>
+<p>Helper contract for <a href="#erc-4337-v070-entrypoint">EntryPoint</a> v0.7.0, to call <code>userOp.initCode</code> from a "neutral" address,
+which is explicitly not <code>EntryPoint</code> itself.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/predeploys.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/superchain-config.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/predeploys.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/superchain-config.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

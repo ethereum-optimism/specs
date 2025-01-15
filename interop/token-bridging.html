@@ -1,0 +1,438 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Token Bridging - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/token-bridging.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a>
+<ul>
+<li><a href="#properties">Properties</a></li>
+<li><a href="#ierc7802"><code>IERC7802</code></a>
+<ul>
+<li><a href="#crosschainmint"><code>crosschainMint</code></a></li>
+<li><a href="#crosschainburn"><code>crosschainBurn</code></a></li>
+<li><a href="#crosschainmint"><code>CrosschainMint</code></a></li>
+<li><a href="#crosschainburn"><code>CrosschainBurn</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></li>
+<li><a href="#diagram">Diagram</a></li>
+<li><a href="#implementation">Implementation</a></li>
+<li><a href="#future-considerations">Future Considerations</a>
+<ul>
+<li><a href="#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></li>
+<li><a href="#concatenated-action">Concatenated Action</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Without a standardized security model, bridged assets may not be fungible with each other.
+The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
+Superchain using the official <code>SuperchainERC20Bridge</code>.
+The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.</p>
+<h2 id="superchainerc20-standard"><a class="header" href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a></h2>
+<h3 id="properties"><a class="header" href="#properties">Properties</a></h3>
+<p>The standard will build on top of ERC20, implement the
+<a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code></a>
+interface and include the following properties:</p>
+<ol>
+<li>Implement the <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> interface</li>
+<li>Implement the <a href="https://github.com/ethereum/ERCs/pull/692"><code>ERC7802</code></a> interface</li>
+<li>Allow <a href="./predeploys.html#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a> to call
+<a href="#crosschainmint"><code>crosschainMint</code></a> and <a href="#crosschainburn"><code>crosschainBurn</code></a>.</li>
+<li>Be deployed at the same address on every chain in the Superchain.</li>
+</ol>
+<p>The third property will allow the <code>SuperchainERC20Bridge</code> to have a liquidity guarantee,
+which would not be possible in a model based on lock/unlock.
+Liquidity availability is fundamental to achieving fungibility.</p>
+<p>SuperchainERC20Bridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>,
+other addresses may also be permitted to call these functions.</p>
+<p>The fourth property removes the need for cross-chain access control lists.
+Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens they mint on
+destination correspond to the tokens that were burned on source.
+Same address abstracts away cross-chain validation.</p>
+<p>One way to guarantee the same address across the Superchain, and also bind it to the same <code>init_code</code>
+and constructor arguments is to use the
+<a href="../protocol/preinstalls.html#create2deployer"><code>Create2Deployer</code> preinstall</a>.
+There is also the <a href="predeploys.html#optimismmintableerc20factory"><code>OptimismSuperchainERC20Factory</code></a>
+predeploy that facilitates this process for L1 native tokens.</p>
+<p>Notice that ERC20s that do not implement the standard can still be fungible
+using interop message passing
+using a custom bridge or implementing <code>sendERC20</code> and <code>relayERC20</code> on their own contracts.</p>
+<p>An example implementation of the standard is available at <a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/SuperchainERC20.sol">SuperchainERC20.sol</a></p>
+<h3 id="ierc7802"><a class="header" href="#ierc7802"><code>IERC7802</code></a></h3>
+<p>Implementations of the <code>SuperchainERC20</code> standard will
+be required to implement the <code>IERC7802</code> interface,
+that includes two external functions and two events:</p>
+<h4 id="crosschainmint"><a class="header" href="#crosschainmint"><code>crosschainMint</code></a></h4>
+<p>Mints <code>_amount</code> of token to address <code>_account</code>.</p>
+<pre><code class="language-solidity">crosschainMint(address _account, uint256 _amount)
+</code></pre>
+<h4 id="crosschainburn"><a class="header" href="#crosschainburn"><code>crosschainBurn</code></a></h4>
+<p>Burns <code>_amount</code> of token from address <code>_account</code>.</p>
+<pre><code class="language-solidity">crosschainBurn(address _account, uint256 _amount)
+</code></pre>
+<h4 id="crosschainmint-1"><a class="header" href="#crosschainmint-1"><code>CrosschainMint</code></a></h4>
+<p>MUST trigger when <code>crosschainMint</code> is called</p>
+<pre><code class="language-solidity">event CrosschainMint(address indexed _to, uint256 _amount, address indexed _sender)
+</code></pre>
+<h4 id="crosschainburn-1"><a class="header" href="#crosschainburn-1"><code>CrosschainBurn</code></a></h4>
+<p>MUST trigger when <code>crosschainBurn</code> is called</p>
+<pre><code class="language-solidity">event CrosschainBurn(address indexed _from, uint256 _amount, address indexed _sender)
+</code></pre>
+<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></h2>
+<p>The <code>SuperchainERC20Bridge</code> is a predeploy that works as an abstraction
+on top of the <a href="./predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
+for token bridging.
+The <code>L2ToL2CrossDomainMessenger</code> is used for replay protection,
+domain binding and access to additional message information.
+The <code>SuperchainERC20Bridge</code> includes two functions for bridging:</p>
+<ul>
+<li><code>sendERC20</code>: initializes a cross-chain transfer of a <code>SuperchainERC20</code>
+by burning the tokens locally and sending a message to the <code>SuperchainERC20Bridge</code>
+on the target chain using the <code>L2toL2CrossDomainMessenger</code>.
+Additionaly, it returns the <code>msgHash_</code> crafted by the <code>L2toL2CrossDomainMessenger</code>.</li>
+<li><code>relayERC20</code>: process incoming messages from the <code>L2toL2CrossDomainMessenger</code>
+and mints the corresponding amount of the <code>SuperchainERC20</code></li>
+</ul>
+<p>The full specifications and invariants are detailed
+in the <a href="./predeploys.html#superchainerc20bridge">predeploys spec</a>.</p>
+<h2 id="diagram"><a class="header" href="#diagram">Diagram</a></h2>
+<p>The following diagram depicts a cross-chain transfer.</p>
+<pre class="mermaid">sequenceDiagram
+  participant from
+  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant SuperERC20_A as SuperchainERC20 (Chain A)
+  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
+  participant Inbox as CrossL2Inbox
+  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant SuperERC20_B as SuperchainERC20 (Chain B)
+
+  from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
+  L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount, sender)
+  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  Messenger_A-&gt;&gt;L2SBA: return msgHash_
+  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
+  L2SBA-&gt;&gt;from: return msgHash_
+  Inbox-&gt;&gt;Messenger_B: relayMessage()
+  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount, sender)
+  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
+</pre>
+<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
+<p>An example implementation for the <code>sendERC20</code> and <code>relayERC20</code> functions is provided.</p>
+<pre><code class="language-solidity">function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) external returns (bytes32 msgHash_) {
+  _token.crosschainBurn(msg.sender, _amount);
+
+  bytes memory _message = abi.encodeCall(this.relayERC20, (_token, msg.sender, _to, _amount));
+
+  msgHash_ = L2ToL2CrossDomainMessenger.sendMessage(_chainId, address(this), _message);
+
+  emit SentERC20(address(_token), msg.sender, _to, _amount, _chainId);
+}
+
+function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 _amount) external {
+  require(msg.sender == address(L2ToL2CrossChainMessenger));
+  require(L2ToL2CrossChainMessenger.crossDomainMessageSender() == address(this));
+
+  uint256 _source = L2ToL2CrossChainMessenger.crossDomainMessageSource();
+
+  _token.crosschainMint(_to, _amount);
+
+  emit RelayedERC20(address(_token), _from, _to, _amount, _source);
+}
+</code></pre>
+<h2 id="future-considerations"><a class="header" href="#future-considerations">Future Considerations</a></h2>
+<h3 id="cross-chain-transferfrom"><a class="header" href="#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></h3>
+<p>In addition to standard locally initialized bridging,
+it is possible to allow contracts to be cross-chain interoperable.
+For example, a contract in chain A could send pre-approved funds
+from a user in chain B to a contract in chain C.</p>
+<p>For the moment, the standard will not include any specific functionality
+to facilitate such an action and rely on the usage of <code>Permit2</code> like this:</p>
+<pre class="mermaid">sequenceDiagram
+  participant from
+  participant Intermediate_A as Initiator
+  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
+  participant Inbox as CrossL2Inbox
+  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant Permit2
+  participant SuperERC20_B as SuperchainERC20 (Chain B)
+  participant Recipient as to
+
+  from-&gt;&gt;Intermediate_A: remoteTransferFrom(..., token, to, chainId, msg, signature)
+  Intermediate_A-&gt;&gt;Messenger_A: permit: sendMessage(chainId, message)
+  Inbox-&gt;&gt;Messenger_B: permit: relayMessage()
+  Messenger_B-&gt;&gt;Permit2: permitTransferFrom(msg, sig)
+  Permit2-&gt;&gt;SuperERC20_B: transferFrom(from, to, amount)
+
+</pre>
+<p>If, at some point in the future, these actions were to be included in the standard,
+a possible design could introduce a <code>remoteTransferFrom()</code> function.</p>
+<h3 id="concatenated-action"><a class="header" href="#concatenated-action">Concatenated Action</a></h3>
+<p>It is possible to have an additional input <code>bytes _data</code> in both <code>sendERC20()</code> and <code>relayERC20()</code> that would make an
+additional call to the <code>_to</code> address.
+This feature could be used for cross-chain concatenated actions,
+i.e. bridge funds and then do X.</p>
+<p>This vertical has much potential but can also be achieved outside the standard in the following way:</p>
+<pre class="mermaid">sequenceDiagram
+  participant from
+  participant Intermediate_A as intermediate A
+  participant L2SBA as L2StandardBridge (Chain A)
+  participant SuperERC20_A as SuperchainERC20 (Chain A)
+  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
+  participant Inbox as CrossL2Inbox
+  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as L2StandardBridge (Chain B)
+  participant SuperERC20_B as SuperchainERC20 (Chain B)
+
+  from-&gt;&gt;Intermediate_A: sendWithData(data)
+  Intermediate_A-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
+  L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount, sender)
+  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
+  Intermediate_A-&gt;&gt;Messenger_A: sendMessage(chainId, to, data)
+  Inbox-&gt;&gt;Messenger_B: relayMessage()
+  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount, sender)
+  Inbox-&gt;&gt;Messenger_B: relayMessage(): call
+  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
+  Messenger_B-&gt;&gt;to: call(data)
+</pre>
+<p>Adding the call to the standard would remove the dependence on the sequencer regarding the proper tx ordering
+at the sequencer level, but would also introduce more risk for cross-chain fund transferring,
+as an incorrectly formatted call would burn funds in the initiating chain but would revert
+in destination and could never be successfully replayed.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/upgrade.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/superchain-weth.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/upgrade.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/superchain-weth.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

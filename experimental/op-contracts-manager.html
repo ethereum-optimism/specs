@@ -1,0 +1,560 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>OP Contracts Manager - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/op-contracts-manager.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="op-contracts-manager"><a class="header" href="#op-contracts-manager">OP Contracts Manager</a></h1>
+<p>The OP Contracts Manager is a contract that deploys the L1 contracts for an OP Stack chain in a single
+transaction. It provides a minimal set of user-configurable parameters to ensure that the resulting
+chain meets the <a href="../protocol/configurability.html">standard configuration</a> requirements.</p>
+<p>The version deployed is always a governance-approved contract release. The set
+of governance approved <a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/VERSIONING.md">contract releases</a> can be found on the
+<a href="https://github.com/ethereum-optimism/optimism/releases">Optimism Monorepo releases</a> page, and is the set of releases named
+<code>op-contracts/vX.Y.Z</code>.</p>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#getter-methods">Getter Methods</a></li>
+<li><a href="#deployment">Deployment</a>
+<ul>
+<li><a href="#interface">Interface</a>
+<ul>
+<li><a href="#deploy"><code>deploy</code></a></li>
+</ul>
+</li>
+<li><a href="#implementation">Implementation</a>
+<ul>
+<li><a href="#batch-inbox-address">Batch Inbox Address</a></li>
+<li><a href="#contract-deployments">Contract Deployments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#upgrading">Upgrading</a>
+<ul>
+<li><a href="#interface-1">Interface</a>
+<ul>
+<li><a href="#upgrade"><code>upgrade</code></a></li>
+</ul>
+</li>
+<li><a href="#implementation-1">Implementation</a>
+<ul>
+<li><a href="#isthmusconfig-struct"><code>IsthmusConfig</code> struct</a></li>
+<li><a href="#requirements-on-the-op-chain-contracts">Requirements on the OP Chain contracts</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#adding-game-types">Adding game types</a>
+<ul>
+<li><a href="#interface-2">Interface</a>
+<ul>
+<li><a href="#addgametype"><code>addGameType</code></a></li>
+</ul>
+</li>
+<li><a href="#implementation-2">Implementation</a></li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#chain-id-source-of-truth">Chain ID Source of Truth</a></li>
+<li><a href="#chain-id-frontrunning">Chain ID Frontrunning</a></li>
+<li><a href="#chain-id-value">Chain ID Value</a></li>
+<li><a href="#proxy-admin-owner">Proxy Admin Owner</a></li>
+<li><a href="#safely-using-delegatecall">Safely using <code>DELEGATECALL</code></a></li>
+<li><a href="#atomicity-of-upgrades">Atomicity of upgrades</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
+for each new release of the OP Stack contracts.</p>
+<p>The OP Contracts Manager corresponding to each release can be used to:</p>
+<ol>
+<li>Deploy a new OP chain.</li>
+<li>Upgrade the contracts for an existing OP chain from the previous release to the new release.</li>
+<li>Orchestrate adding a new game type on a per-chain basis</li>
+</ol>
+<p>Upgrades must be performed by the <a href="../protocol/stage-1.html#roles-for-stage-1">Upgrade Controller</a> Safe for a chain.</p>
+<h2 id="getter-methods"><a class="header" href="#getter-methods">Getter Methods</a></h2>
+<p>The following interface defines the available getter methods:</p>
+<pre><code class="language-solidity">/// @notice Returns the latest approved release of the OP Stack contracts are named with the
+///         format `op-contracts/vX.Y.Z`.
+function release() external view returns (string memory);
+/// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
+function outputVersion() external view returns (uint256);
+/// @notice Addresses of the Blueprint contracts.
+function blueprints() external view returns (Blueprints memory);
+/// @notice Maps an L2 chain ID to an L1 batch inbox address
+function chainIdToBatchInboxAddress(uint256 _l2ChainId) external pure returns (address);
+/// @notice Addresses of the latest implementation contracts.
+function implementations() external view returns (Implementations memory);
+/// @notice Address of the ProtocolVersions contract shared by all chains.
+function protocolVersions() external view returns (address);
+/// @notice Address of the SuperchainConfig contract shared by all chains.
+function superchainConfig() external view returns (address);
+/// @notice Maps an L2 Chain ID to the SystemConfig for that chain.
+function systemConfigs(uint256 _l2ChainId) external view returns (address);
+/// @notice Semver version specific to the OPContractsManager
+function version() external view returns (string memory);
+</code></pre>
+<h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
+<h3 id="interface"><a class="header" href="#interface">Interface</a></h3>
+<h4 id="deploy"><a class="header" href="#deploy"><code>deploy</code></a></h4>
+<p>The <code>deploy</code> method is used to deploy the full set of L1 contracts required to setup a new OP Stack
+chain that complies with the <a href="../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
+<pre><code class="language-solidity">struct Roles {
+    address opChainProxyAdminOwner;
+    address systemConfigOwner;
+    address batcher;
+    address unsafeBlockSigner;
+    address proposer;
+    address challenger;
+}
+
+struct DeployInput {
+    Roles roles;
+    uint32 basefeeScalar;
+    uint32 blobBasefeeScalar;
+    uint256 l2ChainId;
+    bytes startingAnchorRoots;
+    string saltMixer;
+    uint64 gasLimit;
+    uint32 disputeGameType;
+    bytes32 disputeAbsolutePrestate;
+    uint256 disputeMaxGameDepth;
+    uint256 disputeSplitDepth;
+    uint64 disputeClockExtension;
+    uint64 disputeMaxClockDuration;
+}
+
+struct DeployOutput {
+      IProxyAdmin opChainProxyAdmin;
+      IAddressManager addressManager;
+      IL1ERC721Bridge l1ERC721BridgeProxy;
+      ISystemConfig systemConfigProxy;
+      IOptimismMintableERC20Factory optimismMintableERC20FactoryProxy;
+      IL1StandardBridge l1StandardBridgeProxy;
+      IL1CrossDomainMessenger l1CrossDomainMessengerProxy;
+      // Fault proof contracts below.
+      IOptimismPortal2 optimismPortalProxy;
+      IDisputeGameFactory disputeGameFactoryProxy;
+      IAnchorStateRegistry anchorStateRegistryProxy;
+      IAnchorStateRegistry anchorStateRegistryImpl;
+      IFaultDisputeGame faultDisputeGame;
+      IPermissionedDisputeGame permissionedDisputeGame;
+      IDelayedWETH delayedWETHPermissionedGameProxy;
+      IDelayedWETH delayedWETHPermissionlessGameProxy;
+  }
+
+/// @notice Deploys a new OP Chain
+/// @param _input DeployInput containing chain specific config information.
+/// @return DeployOutput containing the new addresses.
+function deploy(DeployInput calldata _input) external returns (DeployOutput memory)
+</code></pre>
+<p>The <code>l2ChainId</code> has the following restrictions:</p>
+<ul>
+<li>It must not be equal to 0.</li>
+<li>It must not be equal to the chain ID of the chain the OP Contracts Manager is
+deployed on.</li>
+<li>It must not be equal to a chain ID that is already present in the
+<a href="https://github.com/ethereum-lists/chains">ethereum-lists/chains</a> repository. This is not enforced onchain, but may matter
+for future versions of OP Contracts Manager that handle upgrades.</li>
+</ul>
+<p>On success, the following event is emitted:</p>
+<pre><code class="language-solidity">event Deployed(uint256 indexed outputVersion, uint256 indexed l2ChainId, address indexed deployer, bytes deployOutput);
+</code></pre>
+<p>This method reverts on failure. This occurs when:</p>
+<ul>
+<li>The input <code>l2ChainId</code> does not comply with the restrictions above.</li>
+<li>The resulting configuration is not compliant with the <a href="../protocol/configurability.html">standard configuration</a>.</li>
+</ul>
+<h3 id="implementation"><a class="header" href="#implementation">Implementation</a></h3>
+<h4 id="batch-inbox-address"><a class="header" href="#batch-inbox-address">Batch Inbox Address</a></h4>
+<p>The chain's <a href="../protocol/configurability.html#consensus-parameters">Batch Inbox</a> address is computed at deploy time using the recommend approach defined
+in the <a href="../protocol/configurability.html">standard configuration</a>. This improves UX by removing an input, and ensures uniqueness of
+the batch inbox addresses.</p>
+<h4 id="contract-deployments"><a class="header" href="#contract-deployments">Contract Deployments</a></h4>
+<p>All contracts deployed by the OP Contracts Manager are deployed with <code>CREATE2</code>, using the following salt:</p>
+<pre><code class="language-solidity">keccak256(abi.encode(_l2ChainId, _saltMixer, _contractName));
+</code></pre>
+<p>The <code>saltMixer</code> value is provided as a field in the <code>DeployInput</code> struct.</p>
+<p>This provides the following benefits:</p>
+<ul>
+<li>Contract addresses for a chain can be derived as a function of chain ID without any RPC calls.</li>
+<li>Chain ID uniqueness is enforced for free, as a deploy using the same chain ID
+will result in attempting to deploy to the same address, which is prohibited by
+the EVM.
+<ul>
+<li>This property is contingent on the proxy and <code>AddressManager</code> code not
+changing when OP Contracts Manager is upgraded. Both of these are not planned to
+change.</li>
+<li>The OP Contracts Manager is not responsible for enforcing chain ID uniqueness, so it is acceptable
+if this property is not preserved in future versions of the OP Contracts Manager.</li>
+</ul>
+</li>
+</ul>
+<h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
+<p>This section is written specifically for the Isthmus upgrade path, which is the first upgrade which will
+be performed by the OP Contracts Manager.</p>
+<h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
+<h4 id="upgrade"><a class="header" href="#upgrade"><code>upgrade</code></a></h4>
+<p>The <code>upgrade</code> method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
+all chains that it controls.</p>
+<p>It has the following interface:</p>
+<pre><code class="language-solidity">struct IsthmusConfig {
+    uint32 public operatorFeeScalar;
+    uint64 public operatorFeeConstant;
+}
+
+function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, IsthmusConfig[] _isthmusConfigs) public;
+</code></pre>
+<p>For each chain successfully upgraded, the following event is emitted:</p>
+<pre><code class="language-solidity">event Upgraded(uint256 indexed l2ChainId, ISystemConfig indexed systemConfig, address indexed upgrader);
+</code></pre>
+<p>This method reverts if the upgrade is not successful for any of the chains.</p>
+<h3 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h3>
+<p>The high level logic of the upgrade method is as follows:</p>
+<ol>
+<li>The Upgrade Controller Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
+<li>For each <code>_systemConfig</code>, the list of addresses in the chain is retrieved.</li>
+<li>For each address:
+<ol>
+<li>If it is receiving new state variables (only the SystemConfig for Isthmus), a call is made to:
+<code>ProxyAdmin.upgradeAndCall()</code> with data corresponding to the new value being set.</li>
+<li>Otherwise, <code>ProxyAdmin.upgrade()</code> is called on that address.</li>
+</ol>
+</li>
+</ol>
+<p>This approach requires that any contracts which are receiving new state variables
+have an upgrade function which:</p>
+<ol>
+<li>Writes the new state variables</li>
+<li>MUST only be callable once</li>
+</ol>
+<p>Thus for Isthmus, the System config will receive the following new function.</p>
+<pre><code class="language-solidity">function upgradeIsthmus(IsthmusConfig _isthmusConfig) external;
+</code></pre>
+<h4 id="isthmusconfig-struct"><a class="header" href="#isthmusconfig-struct"><code>IsthmusConfig</code> struct</a></h4>
+<p>This struct is used to pass the new chain configuration to the <code>upgrade</code> method. It's name and
+field will vary for each release of the OP Contracts Manager, based on what (if any) new parameters
+are being added.</p>
+<h4 id="requirements-on-the-op-chain-contracts"><a class="header" href="#requirements-on-the-op-chain-contracts">Requirements on the OP Chain contracts</a></h4>
+<p>In general, all contracts used in an OP Chain SHOULD be proxied with a single shared implementation.
+This means that all values which are not constant across OP Chains SHOULD be held in storage rather
+than the bytecode of the implementation.</p>
+<p>Any contracts which do not meet this requirement will need to be deployed by the <code>upgrade()</code>
+function, increasing the cost and reducing the number of OP Chains which can be atomically upgraded.</p>
+<h2 id="adding-game-types"><a class="header" href="#adding-game-types">Adding game types</a></h2>
+<p>Because different OP Chains within a Superchain may use different dispute game types, and are
+expected to move from a permissioned to permissionless game over time, an <code>addGameType()</code> method is
+provided to enable adding a new game type to multiple games at once.</p>
+<h3 id="interface-2"><a class="header" href="#interface-2">Interface</a></h3>
+<h4 id="addgametype"><a class="header" href="#addgametype"><code>addGameType</code></a></h4>
+<p>The <code>addGameType</code> method is used to orchestrate the actions required to add a new game type to one
+or more chains.</p>
+<pre><code class="language-solidity">struct PermissionlessGameConfig {
+  bytes32 absolutePrestate;
+}
+
+function addGameType(ISystemConfig[] _systemConfigs, PermissionlessGameConfig[] _newGames) public;
+</code></pre>
+<h3 id="implementation-2"><a class="header" href="#implementation-2">Implementation</a></h3>
+<p>The high level logic of the <code>addGameType</code> method is as follows (for each chain):</p>
+<ol>
+<li>Deploy and initialize new <code>DelayedWethProxy</code> for the new game type, reusing the existing implementation</li>
+<li>Deploy a new <code>FaultDisputeGame</code> contract. The source of the constructor args is indicated below this list,
+the value which is not available onchain is the <code>absolutePrestate</code>.</li>
+<li>Calls <code>upgrade()</code> on the <code>AnchorStateRegistry</code> to set the new game type to
+add a new entry to the <code>anchors</code> mapping. The <code>upgrade()</code> method should
+revert if it would overwrite an existing entry.</li>
+<li>Read the <code>DisputeGameFactory</code> address from the <code>SystemConfig</code>.</li>
+<li>Call <code>DisputeGameFactory.setImplementation()</code> to register the new game.</li>
+</ol>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th><th>Source</th></tr></thead><tbody>
+<tr><td>gameType</td><td>uint32</td><td>Constant value of 1 indicating the game type</td><td>Hardcoded constant</td></tr>
+<tr><td>absolutePrestate</td><td>bytes32</td><td>Initial state of the game</td><td>Input in <code>PermissionlessGameConfig</code> struct</td></tr>
+<tr><td>maxGameDepth</td><td>uint256</td><td>Maximum depth of the game tree</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>splitDepth</td><td>uint256</td><td>Depth at which the game tree splits</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>clockExtension</td><td>uint64</td><td>Time extension granted for moves</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>maxClockDuration</td><td>uint64</td><td>Maximum duration of the game clock</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>vm</td><td>address</td><td>Virtual machine contract address</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>weth</td><td>address</td><td>Address of the newly deployed DelayedWeth contract</td><td>Newly deployed contract</td></tr>
+<tr><td>anchorStateRegistry</td><td>address</td><td>Registry contract address</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+<tr><td>l2ChainId</td><td>uint256</td><td>Chain ID of the L2 network</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
+<p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
+once per chain ID, because contract addresses are a function of chain ID. However,
+future versions of OP Contracts Manager may:</p>
+<ul>
+<li>Change the Proxy code used, which would allow a duplicate chain ID to be deployed
+if there is only the implicit check.</li>
+<li>Manage upgrades, which will require "registering" existing pre-OP Contracts Manager
+chains in the OP Contracts Manager. Registration will be a privileged action, and the <a href="https://github.com/ethereum-optimism/superchain-registry">superchain registry</a> will be
+used as the source of truth for registrations.</li>
+</ul>
+<p>This means, for example, if deploying a chain with a chain ID of 10—which is OP
+Mainnet's chain ID—deployment will execute successfully, but the entry in OP
+Contracts Manager may be overwritten in a future upgrade. Therefore, chain ID
+uniqueness is not enforced by the OP Contracts Manager, and it is strongly
+recommended to only use chain IDs that are not already present in the
+<a href="https://github.com/ethereum-lists/chains">ethereum-lists/chains</a> repository.</p>
+<h3 id="chain-id-frontrunning"><a class="header" href="#chain-id-frontrunning">Chain ID Frontrunning</a></h3>
+<p>Contract addresses for a chain are a function of chain ID, which implies you
+can counterfactually compute and use those chain addresses before the chain is
+deployed. However, this property should not be relied upon—new chain deployments
+are permissionless, so you cannot guarantee usage of a given chain ID, as deploy
+transactions can be frontrun.</p>
+<h3 id="chain-id-value"><a class="header" href="#chain-id-value">Chain ID Value</a></h3>
+<p>While not specific to OP Contracts Manager, when choosing a chain ID is important
+to consider that not all chain IDs are well supported by tools. For example,
+MetaMask <a href="https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553">only supports</a>
+chain IDs up to <code>4503599627370476</code>, well below the max allowable 256-bit value.</p>
+<p>OP Contracts Manager does not consider factors such as these. The EVM supports
+256-bit chain IDs, so OP Contracts Manager sticks with the full 256-bit range to
+maximize compatibility.</p>
+<h3 id="proxy-admin-owner"><a class="header" href="#proxy-admin-owner">Proxy Admin Owner</a></h3>
+<p>The proxy admin owner is a very powerful role, as it allows upgrading protocol
+contracts. When choosing the initial proxy admin owner, a Safe is recommended
+to ensure admin privileges are sufficiently secured.</p>
+<h3 id="safely-using-delegatecall"><a class="header" href="#safely-using-delegatecall">Safely using <code>DELEGATECALL</code></a></h3>
+<p>Because a Safe will <code>DELEGATECALL</code> to the <code>upgrade()</code> and <code>addGameType()</code> methods, it is
+critical that no storage writes occur. This should be enforced in multiple ways, including:</p>
+<ul>
+<li>By static analysis of the <code>upgrade()</code> and <code>addGameType()</code> methods during the development process.</li>
+<li>By simulating and verifying the state changes which occur in the Upgrade Controller Safe prior to execution.</li>
+</ul>
+<h3 id="atomicity-of-upgrades"><a class="header" href="#atomicity-of-upgrades">Atomicity of upgrades</a></h3>
+<p>Although atomicity of a superchain upgrade is not essential for many types of upgrade, it will
+at times be necessary. It is certainly always desirable for operational reasons.</p>
+<p>For this reason, efficiency should be kept in mind when designing the upgrade path. When the size of
+the superchain reaches a size that nears the block gas limit, upgrades may need to be broken up into
+stages, so that components which must be upgrade atomically can be. For example, all
+<code>OptimismPortal</code> contracts may need to be upgraded in one transaction, followed by another
+transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/tx-pool.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../experimental/gov-token.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/tx-pool.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../experimental/gov-token.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

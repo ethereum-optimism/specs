@@ -1,0 +1,396 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>SuperchainWETH - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/superchain-weth.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="superchain-weth"><a class="header" href="#superchain-weth">Superchain WETH</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#motivation-and-constraints">Motivation and Constraints</a>
+<ul>
+<li><a href="#handling-native-assets-other-than-eth">Handling native assets other than ETH</a></li>
+<li><a href="#minimizing-protocol-complexity">Minimizing protocol complexity</a></li>
+</ul>
+</li>
+<li><a href="#constants">Constants</a></li>
+<li><a href="#superchainweth">SuperchainWETH</a>
+<ul>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#deposit"><code>deposit</code></a></li>
+<li><a href="#withdraw"><code>withdraw</code></a></li>
+<li><a href="#crosschainburn"><code>crosschainBurn</code></a></li>
+<li><a href="#crosschainmint"><code>crosschainMint</code></a></li>
+<li><a href="#sendeth"><code>sendETH</code></a></li>
+<li><a href="#relayeth"><code>relayETH</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ethliquidity">ETHLiquidity</a>
+<ul>
+<li><a href="#invariants-1">Invariants</a>
+<ul>
+<li><a href="#global-invariants">Global Invariants</a></li>
+<li><a href="#burn"><code>burn</code></a></li>
+<li><a href="#mint"><code>mint</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>Superchain WETH is an enhanced version of the standard WETH contract, enabling ETH interoperability across the
+Superchain. The Superchain WETH contract serves two primary functions:</p>
+<ol>
+<li><strong>Native ETH Transfers</strong>: It provides the <code>sendETH</code> and <code>relayETH</code> functions to transfer <strong>native ETH</strong> directly
+between interoperable chains that both use ETH as their native token. If the destination chain does not use ETH as
+its native asset, the transferred ETH is converted into the <strong>SuperchainWETH</strong> ERC20 token on the destination chain
+instead.</li>
+<li><strong>ERC20 Token</strong>: It extends the <strong>ERC20</strong> contract, allowing ETH to be wrapped into the <strong>SuperchainWETH</strong> ERC20
+token. This wrapped token can be transferred across interoperable chains via the
+<a href="./predeploys.html#superchainerc20bridge">SuperchainTokenBridge</a>, serving as the entry point for ERC20 token
+interoperability.</li>
+</ol>
+<p>Superchain WETH integrates with the <code>ETHLiquidity</code> contract to manage native ETH liquidity across chains, ensuring
+seamless cross-chain transfers of ETH in both its native and ERC20 forms.</p>
+<h2 id="motivation-and-constraints"><a class="header" href="#motivation-and-constraints">Motivation and Constraints</a></h2>
+<p>ETH is the native asset of Ethereum and has by extension also become the native asset of many Ethereum L2 blockchains.
+In its role as a native asset, ETH can be used to pay for transaction fees and can be transferred from account to
+account via calls with attached value. ETH plays a significant role in the economics of most L2s and any protocol that
+enables interoperability between chains must be able to account for ETH.</p>
+<h3 id="handling-native-assets-other-than-eth"><a class="header" href="#handling-native-assets-other-than-eth">Handling native assets other than ETH</a></h3>
+<p>Not all chains using the OP Stack use ETH as the native asset. We would like these chains to be able to interoperate
+with chains that <em>do</em> use ETH as a native asset. Certain solutions that might work when all chains use ETH as a native
+asset begin to break down when alternative native assets are introduced. For example, a protocol that burns the native
+asset on one chain and mints it on another will work if both chains use the same native asset but will obviously fail if
+either chain uses a different native asset.</p>
+<h3 id="minimizing-protocol-complexity"><a class="header" href="#minimizing-protocol-complexity">Minimizing protocol complexity</a></h3>
+<p>Support for native ETH opens the door to unnecessary complexity. Any solution to this problem should aim to minimize the
+amount of protocol code required to support native ETH. This generally points towards an app-layer solution if possible
+but does not preclude a protocol-layer solution as long as we minimize implementation size.</p>
+<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>SuperchainWETH</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
+<tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="superchainweth"><a class="header" href="#superchainweth">SuperchainWETH</a></h2>
+<!-- TODO (https://github.com/ethereum-optimism/specs/issues/479) re-write invariants to use imperative form -->
+<h3 id="invariants"><a class="header" href="#invariants">Invariants</a></h3>
+<h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
+<ul>
+<li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
+</ul>
+<h4 id="withdraw"><a class="header" href="#withdraw"><code>withdraw</code></a></h4>
+<ul>
+<li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
+</ul>
+<h4 id="crosschainburn"><a class="header" href="#crosschainburn"><code>crosschainBurn</code></a></h4>
+<ul>
+<li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
+<li>Reverts if attempting to send more than the sender's available balance.</li>
+<li>Reduces the sender's balance by the sent amount.</li>
+<li>Emits a transfer event from sender to null address for the sent amount.</li>
+<li>Burns liquidity by sending the sent amount of ETH into the <code>ETHLiquidity</code> contract if native token is ETH.
+<ul>
+<li>Must not revert.</li>
+</ul>
+</li>
+<li>Emits a <code>CrosschainBurn</code> event.</li>
+</ul>
+<h4 id="crosschainmint"><a class="header" href="#crosschainmint"><code>crosschainMint</code></a></h4>
+<ul>
+<li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
+<li>Mints liquidity from the <code>ETHLiquidity</code> contract if native token is ETH.
+<ul>
+<li>Must not revert.</li>
+</ul>
+</li>
+<li>Increases the recipient's balance by the sent amount.</li>
+<li>Emits a transfer event from null address to recipient for the sent amount.</li>
+<li>Emits a <code>CrosschainMint</code> event.</li>
+</ul>
+<h4 id="sendeth"><a class="header" href="#sendeth"><code>sendETH</code></a></h4>
+<ul>
+<li>Reverts if the <code>msg.sender</code>'s balance is less than the <code>msg.value</code> being sent.</li>
+<li>Reverts if the <code>to</code> address is the zero address.</li>
+<li>Reverts if the native token on the source chain is not ETH.</li>
+<li>Transfers <code>msg.value</code> of ETH from the <code>msg.sender</code> to the <code>ETHLiquidity</code> contract.</li>
+<li>Sends a cross-chain message to the destination chain to call <code>relayETH</code>.</li>
+<li>Emits a <code>SendETH</code> event with details about the sender, recipient, amount, and destination chain.</li>
+</ul>
+<h4 id="relayeth"><a class="header" href="#relayeth"><code>relayETH</code></a></h4>
+<ul>
+<li>Reverts if called by any address other than the <code>L2ToL2CrossDomainMessenger</code>.</li>
+<li>Reverts if the cross-domain sender is not <code>SuperchainWETH</code> on the source chain.</li>
+<li>If the destination chain uses ETH as its native token:
+<ul>
+<li>Transfers the relayed ETH to the recipient.</li>
+</ul>
+</li>
+<li>If the destination chain uses a custom gas token:
+<ul>
+<li>Mints <strong>SuperchainWETH</strong> ERC-20 tokens to the recipient.</li>
+</ul>
+</li>
+<li>Emits a <code>RelayETH</code> event with details about the sender, recipient, amount, and source chain.</li>
+</ul>
+<h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
+<h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
+<h4 id="global-invariants"><a class="header" href="#global-invariants">Global Invariants</a></h4>
+<ul>
+<li>Initial balance must be set to <code>type(uint248).max</code> (wei). Purpose for using <code>type(uint248).max</code> is to guarantees that
+the balance will be sufficient to credit all use within the <code>SuperchainWETH</code> contract but will never overflow on calls
+to <code>burn</code> because there is not ETH in the total ETH supply to cause such an overflow. Invariant that avoids overflow is
+maintained by  <code>SuperchainWETH</code> but could theoretically be broken by some future contract that is allowed to integrate
+with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that such future contracts do not break this invariant.</li>
+</ul>
+<h4 id="burn"><a class="header" href="#burn"><code>burn</code></a></h4>
+<ul>
+<li>Must never be callable such that balance would increase beyond <code>type(uint256).max</code>.
+<ul>
+<li>This is an invariant and NOT a revert.</li>
+<li>Maintained by considering total available ETH supply and the initial balance of <code>ETHLiquidity</code>.</li>
+</ul>
+</li>
+<li>Reverts if called by any address other than <code>SuperchainWETH</code>.</li>
+<li>Reverts if called on a chain that does not use ETH as a native token.</li>
+<li>Accepts ETH value.</li>
+<li>Emits an event including address that triggered the burn and the burned ETH value.</li>
+</ul>
+<h4 id="mint"><a class="header" href="#mint"><code>mint</code></a></h4>
+<ul>
+<li>Must never be callable such that balance would decrease below <code>0</code>.
+<ul>
+<li>This is an invariant and NOT a revert.</li>
+<li>Maintained by considering total available ETH supply and the initial balance of <code>ETHLiquidity</code>.</li>
+</ul>
+</li>
+<li>Reverts if called by any address other than <code>SuperchainWETH</code>.</li>
+<li>Reverts if called on a chain that does not use ETH as a native token.</li>
+<li>Transfers requested ETH value to the sending address.</li>
+<li>Emits an event including address that triggered the mint and the minted ETH value.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/token-bridging.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/derivation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/token-bridging.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/derivation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

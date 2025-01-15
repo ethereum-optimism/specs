@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Verifier - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/verifier.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="verifier"><a class="header" href="#verifier">Verifier</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#derivation-pipeline">Derivation Pipeline</a>
+<ul>
+<li><a href="#depositing-an-executing-message">Depositing an Executing Message</a></li>
+<li><a href="#safety">Safety</a>
+<ul>
+<li><a href="#unsafe-inputs"><code>unsafe</code> Inputs</a></li>
+<li><a href="#cross-unsafe-inputs"><code>cross-unsafe</code> Inputs</a></li>
+<li><a href="#safe-inputs"><code>safe</code> Inputs</a></li>
+<li><a href="#finalized-inputs"><code>finalized</code> Inputs</a></li>
+</ul>
+</li>
+<li><a href="#honest-verifier">Honest Verifier</a></li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#forced-inclusion-of-cross-chain-messages">Forced Inclusion of Cross Chain Messages</a>
+<ul>
+<li><a href="#what-if-safety-isnt-enough">What if Safety isn't Enough?</a></li>
+</ul>
+</li>
+<li><a href="#reliance-on-history">Reliance on History</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="derivation-pipeline"><a class="header" href="#derivation-pipeline">Derivation Pipeline</a></h2>
+<p>The derivation pipeline enforces invariants on safe blocks that include executing messages.</p>
+<ul>
+<li>The executing message MUST have a corresponding initiating message</li>
+<li>The initiating message that corresponds to an executing message MUST come from a chain in its dependency set</li>
+<li>A block MUST be considered invalid if it is built with any invalid executing messages</li>
+</ul>
+<p>Blocks that contain transactions that relay cross domain messages to the destination chain where the
+initiating transaction does not exist MUST be considered invalid and MUST not be allowed by the
+derivation pipeline to be considered safe.</p>
+<p>There is no concept of replay protection at the lowest level of abstractions within the protocol because
+there is no replay protection mechanism that fits well for all applications. Users MAY submit an
+arbitrary number of executing messages per initiating message. Applications MUST build their own replay
+protection mechanisms if they are interacting with the lowest level abstractions.</p>
+<p>Blocks that contain invalid executing messages are considered invalid by the protocol. The derivation
+pipeline will never promote them from being <code>unsafe</code>. A block that contains invalid executing messages
+MUST be replaced by a deposits only block at the same block number.</p>
+<h3 id="depositing-an-executing-message"><a class="header" href="#depositing-an-executing-message">Depositing an Executing Message</a></h3>
+<p>Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
+The derivation pipeline must gracefully handle the case in which a user uses a deposit transaction to
+relay a cross chain message. To not couple preconfirmation security to consensus, deposit transactions
+that execute cross chain messages MUST have an initiating message that is considered <a href="#safety">safe</a> by the remote
+chain's derivation pipeline. This relaxes a strict synchrony assumption on the sequencer
+that it MUST have all unsafe blocks of destination chains as fast as possible to ensure that it is building
+correct blocks.</p>
+<p>If a deposit transaction references an initiating transaction that is not yet safe or does not exist,
+it MUST be dropped by the derivation pipeline.</p>
+<p>This inclusion property prevents a class of attacks where the user can trick the derivation pipeline
+into reorganizing the sequencer.</p>
+<h3 id="safety"><a class="header" href="#safety">Safety</a></h3>
+<p>Safety is an abstraction that is useful for reasoning about security. It should be thought about
+as a spectrum from <code>unsafe</code> to <code>finalized</code>. Users can choose to operate on information based on its
+level of safety depending on their risk profile and personal preferences.</p>
+<p>The following labels are used to describe both inputs and outputs:</p>
+<ul>
+<li><code>unsafe</code></li>
+<li><code>cross-unsafe</code></li>
+<li><code>safe</code></li>
+<li><code>finalized</code></li>
+</ul>
+<p>Inputs correspond to the inputs to the state transition function while outputs correspond to the side
+effects of the state transition function.</p>
+<p>Anything before <code>safe</code> technically uses a "preconfirmation" based security model which is not part
+of consensus. While useful to have definitions of the default meanings of these terms, they are
+technically policy and may be changed in the future.</p>
+<p>The <code>unsafe</code> label has the lowest latency while the <code>finalized</code> label has the highest latency.
+A set of invariants must be held true before an input or an output can be promoted to the next
+label, starting at <code>unsafe</code>.</p>
+<p>The initiating messages for all dependent executing messages MUST be resolved as safe before an L2 block can transition
+from being unsafe to safe. Users MAY optimistically accept unsafe blocks without any verification of the
+executing messages. They SHOULD optimistically verify the initiating messages exist in destination unsafe blocks
+to more quickly reorganize out invalid blocks.</p>
+<h4 id="unsafe-inputs"><a class="header" href="#unsafe-inputs"><code>unsafe</code> Inputs</a></h4>
+<ul>
+<li>MUST be signed by the p2p sequencer key</li>
+<li>MAY be reorganized</li>
+<li>MUST be promoted to a higher level of safety or reorganized out to ensure liveness</li>
+</ul>
+<p><code>unsafe</code> inputs are currently gossiped around the p2p network. To prevent denial of service, they MUST
+be signed by the sequencer. This signature represents the sequencer's claim that it
+built a block that conforms to the protocol. <code>unsafe</code> blocks exist to give low latency access to the
+latest information. To keep the latency as low as possible, cross chain messages are assumed valid
+at this stage. This means that the remote unsafe inputs are trusted solely because they were
+included in a block by the sequencer.</p>
+<p>An alternative approach to <code>unsafe</code> inputs would be to include an SGX proof that the sequencer ran
+particular software when building the block.</p>
+<h4 id="cross-unsafe-inputs"><a class="header" href="#cross-unsafe-inputs"><code>cross-unsafe</code> Inputs</a></h4>
+<ul>
+<li>MUST have valid cross chain messages</li>
+</ul>
+<p><code>cross-unsafe</code> represents the <code>unsafe</code> blocks that had their cross chain messages fully verified.
+The network can be represented as a graph where each block across all chains are represented as
+a node and then a directed edge between two blocks represents the source block of the initiating
+message and the block that included the executing message.</p>
+<p>An input can be promoted from <code>unsafe</code> to <code>cross-unsafe</code> when the full dependency graph is resolved
+such that all cross chain messages are verified to be valid and at least one message in the dependency
+graph is still <code>unsafe</code>.</p>
+<p>Note that the <code>cross-unsafe</code> is not meant to be exposed to the end user via the RPC label. It is
+meant for internal usage. All <code>cross-unsafe</code> inputs are still considered <code>unsafe</code> by the execution
+layer RPC.</p>
+<h4 id="safe-inputs"><a class="header" href="#safe-inputs"><code>safe</code> Inputs</a></h4>
+<ul>
+<li>MUST be available</li>
+<li>MAY be reorganized</li>
+<li>Safe block MUST be invalidated if a reorg occurs</li>
+</ul>
+<p><code>safe</code> represents the state in which the <code>cross-unsafe</code> dependency graph has been fully resolved
+in a way where all of the data has been published to the data availability layer.</p>
+<h4 id="finalized-inputs"><a class="header" href="#finalized-inputs"><code>finalized</code> Inputs</a></h4>
+<ul>
+<li>MUST NOT be reorganized based on Ethereum economic security</li>
+</ul>
+<p><code>finalized</code> represents full Proof of Stake economic security on top of the data. This means that
+if the data is reorganized, then validators will be slashed.</p>
+<h3 id="honest-verifier"><a class="header" href="#honest-verifier">Honest Verifier</a></h3>
+<p>The honest verifier follows a naive verification algorithm. That is similar
+to the block building code that the <a href="./sequencer.html#direct-dependency-confirmation">sequencer</a>
+follows. The main difference is that the validity of included executing
+messages is verified instead of verifying possible executing messages before
+inclusion.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="forced-inclusion-of-cross-chain-messages"><a class="header" href="#forced-inclusion-of-cross-chain-messages">Forced Inclusion of Cross Chain Messages</a></h3>
+<p>The design is particular to not introduce any sort of "forced inclusion" between L2s. This design space introduces
+risky synchrony assumptions and forces the introduction of a message queue to prevent denial of service attacks where
+all chains in the network decide to send cross chain messages to the same chain at the same time.</p>
+<p>"Forced inclusion" transactions are good for censorship resistance. In the worst case of censoring sequencers, it will
+take at most 2 sequencing windows for the cross chain message to be processed. The initiating transaction can be sent
+via a deposit which MUST be included in the source chain or the sequencer will be reorganized at the end of the
+sequencing window that includes the deposit transaction. If the executing transaction is censored, it will take
+another sequencing window of time to force the inclusion of the executing message per the
+<a href="#depositing-an-executing-message">spec</a>.</p>
+<h4 id="what-if-safety-isnt-enough"><a class="header" href="#what-if-safety-isnt-enough">What if Safety isn't Enough?</a></h4>
+<p>It is possible that small latency differences may impact the allowance of deposited executing messages
+if the rule is that the initiating message is safe. A more strict invariant may be introduced:</p>
+<pre><code class="language-text">identifier.timestamp + sequencer_window &lt;= block.timestamp
+</code></pre>
+<p>This says that a sequencer window must elapse before the initiating message can be referenced
+in an executing message.</p>
+<h3 id="reliance-on-history"><a class="header" href="#reliance-on-history">Reliance on History</a></h3>
+<p>When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
+<a href="https://eips.ethereum.org/EIPS/eip-4444">EIP-4444</a> will eventually provide a solution for making historical receipts available without
+needing to require increasingly large execution client databases.</p>
+<p>It is also possible to introduce a form of expiry on historical receipts by enforcing that the timestamp
+is recent enough in the <code>CrossL2Inbox</code>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/sequencer.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/fault-proof.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/sequencer.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/fault-proof.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

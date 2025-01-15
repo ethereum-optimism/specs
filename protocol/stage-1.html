@@ -1,0 +1,375 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Stage 1 Roles and Requirements - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/stage-1.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="stage-1-roles-and-requirements"><a class="header" href="#stage-1-roles-and-requirements">Stage 1 Roles and Requirements</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#permissionless-fault-proofs">Permissionless Fault Proofs</a></li>
+<li><a href="#roles-for-stage-1">Roles for Stage 1</a></li>
+<li><a href="#configuration-of-safes">Configuration of Safes</a></li>
+<li><a href="#ownership-model-diagram">Ownership model diagram</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This document outlines configuration requirements (including roles and other parameters)
+for an implementation of the OP Stack to satisfy the Stage 1 decentralization requirements as defined
+by
+L2 Beat [<a href="https://medium.com/l2beat/introducing-stages-a-framework-to-evaluate-rollups-maturity-d290bb22befe">1</a>, <a href="https://medium.com/l2beat/stages-update-security-council-requirements-4c79cea8ef52">2</a>].</p>
+<h2 id="permissionless-fault-proofs"><a class="header" href="#permissionless-fault-proofs">Permissionless Fault Proofs</a></h2>
+<p>Stage 1 requires a chain to be operating with Fault Proofs.</p>
+<h2 id="roles-for-stage-1"><a class="header" href="#roles-for-stage-1">Roles for Stage 1</a></h2>
+<p>Within the context of an OP Stack, the following roles are required for Stage 1:</p>
+<ol>
+<li>
+<p><strong>Upgrade Controller:</strong> Although named for its ability to perform an upgrade, more generally this
+account MUST control any action which has an impact on the determination of a valid L2 state,
+or the custody and settlement of bridged assets.</p>
+<p>This includes upgrading L1 contracts, modifying the implementation of the dispute game, and
+any other safety-critical functions.</p>
+</li>
+<li>
+<p><strong>Guardian:</strong> This account MUST control any action which may delay a users ability to
+exit the system to L1. Such delays may result from anything that impacts the finalization of
+L2 states and the resulting settlement on L1.</p>
+<p>This includes but is not limited to pausing code paths related to withdrawals.</p>
+</li>
+</ol>
+<p>There may be additional <a href="./configurability.html#admin-roles">roles</a> in the system, however they MUST
+not be able to perform any actions which have an impact on either the validity of L2 states, or the
+users ability to exit the system.</p>
+<h2 id="configuration-of-safes"><a class="header" href="#configuration-of-safes">Configuration of Safes</a></h2>
+<p>This list outlines the various Safes, their extensions, and other configuration details necessary to
+achieve Stage 1.</p>
+<ol>
+<li>
+<p><strong>The L1 ProxyAdmin Owner Safe:</strong> This Safe acts as the Upgrade Controller. Accordingly, it is
+authorized to call the following functions:</p>
+<ul>
+<li>All <code>ProxyAdmin</code> <code>onlyOwner</code> functions.</li>
+<li>All <code>DisputeGameFactory</code> <code>onlyOwner</code> functions.</li>
+<li>All <code>DelayedWETH</code> <code>onlyOwner</code> functions.</li>
+</ul>
+<p>This safe has a threshold of 2, and is owned by two other Safes:</p>
+<ol>
+<li>The Security Council Safe.</li>
+<li>The Optimism Foundation Upgrades Safe.</li>
+</ol>
+<p>In general, the threshold and number of owners MUST be configured such that an upgrade
+or other safety-critical action can NOT be performed without the cooperation of the Security Council.</p>
+</li>
+<li>
+<p><strong>The Guardian Safe:</strong> This Safe controls any code paths which impact a users ability to
+exit the system. It is extended with the
+<a href="./safe-extensions.html#deputy-guardian-module">Deputy Guardian Module</a>.</p>
+<p>Accordingly, this Safe is authorized to call the following functions:</p>
+<ul>
+<li><code>SuperchainConfig.pause()</code></li>
+<li><code>SuperchainConfig.unpause()</code></li>
+<li><code>OptimismPortal2.setRespectedGameType()</code></li>
+<li><code>OptimismPortal2.blacklistDisputeGame()</code></li>
+<li><code>AnchorStateRegistry.setAnchorState()</code></li>
+</ul>
+<p>This Safe has a threshold of 1 and is owned by the Security Council Safe.</p>
+</li>
+<li>
+<p><strong>The Security Council Safe:</strong> This Safe is one of the two owners of the <code>ProxyAdminOwner</code> Safe.
+It is extended with the <a href="./safe-extensions.html#liveness-checking-system">Liveness Checking system</a>,
+although Liveness Checking is not required for Stage 1, it is an additional safety feature used
+to prevent any loss of liveness on the Security Council Safe.</p>
+<p>The threshold and owner set on the Safe MUST meet L2Beat's Stage 1 requirements.</p>
+</li>
+<li>
+<p><strong>The Foundation Upgrades Safe:</strong> This Safe is one of the two owners of the <code>ProxyAdminOwner</code> Safe.
+It is also able to update the recommended and required versions on the <code>ProtocolVersions</code>
+contract. Given that observing the state of this contract is optional, this is not considered to
+affect safety and can therefore be managed the Foundation Upgrades Safe.</p>
+</li>
+<li>
+<p><strong>The Foundation Operations Safe:</strong> This Safe acts as the Deputy Guardian, meaning that (via the
+Guardian Safe's <code>DeputyGuardianModule</code>) it can call any functions in the system which impacts
+liveness. It is extended with the <code>DeputyPauseModule</code> to allow a signing key to execute the
+Superchain-wide pause function quickly.</p>
+</li>
+</ol>
+<h2 id="ownership-model-diagram"><a class="header" href="#ownership-model-diagram">Ownership model diagram</a></h2>
+<p>The following diagram outlines the control relationships between the contracts in the system.</p>
+<pre class="mermaid">flowchart LR
+   subgraph SuperchainSystem[Superchain System]
+      subgraph Exit[User Exit Controls]
+         Pausability
+         OtherExit[Other Exit Controls]
+      end
+      subgraph Safety
+         ContractUpgrades
+         DisputeGame
+         OtherSafety[Other Safety]
+      end
+      subgraph NonProtocol[Out of Protocol]
+         PV[ProtocolVersions]
+      end
+   end
+
+   subgraph UpgradeSystem[Upgrade System]
+      FndUp[Foundation Upgrade Safe]
+      POA[ProxyAdminOwner Safe]
+      subgraph Security Council Safe
+         Council[Security Council Safe\n+ LivenessGuard]
+         LM[Liveness Module]
+      end
+   end
+
+   subgraph GuardianSystem[Guardian System]
+      subgraph GuardianSafe[Guardian Safe]
+         GS[Guardian Safe]
+         DGM[Deputy Guardian Module]
+      end
+      subgraph FndOpsSafe[Foundation Ops Safe]
+         FndOps[Foundation Ops Safe]
+         DPM[Deputy Pause Module]
+      end
+   end
+
+    POA --&gt;|controls| Safety
+    FndUp --&gt; POA
+    Council --&gt; POA
+    Council --&gt; GS
+    FndOps --&gt;|pause\nunpause\nsetRespectedGameType\nblackListDisputeGame| DGM
+    DPM --&gt;|execTransactionFromModule| FndOps
+    FndUp --&gt;|set versions|PV
+    LM --&gt;|execTransactionFromModule| Council
+    DGM --&gt;|execTransactionFromModule| GS
+    GS --&gt;|controls| Exit
+
+   %% Declare a class to make the outer boxes somewhat transparent to provide some contrast
+   classDef outer fill:#ffffff44
+   class SuperchainSystem,GuardianSystem,UpgradeSystem outer
+</pre>
+<p>Note: in the diagram above, the <a href="../protocol/superchain-upgrades.html#protocolversions-l1-contract"><code>ProtocolVersions</code>
+contract</a> is listed as "Out of
+Protocol", because the decision to follow the version signals in the contract is optional. It is
+included here for completeness, but is not considered as either Safety or Liveness affecting.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/safe-extensions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/regolith/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/safe-extensions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/regolith/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

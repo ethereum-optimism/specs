@@ -1,0 +1,549 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Derivation - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/holocene/derivation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="holocene-l2-chain-derivation-changes"><a class="header" href="#holocene-l2-chain-derivation-changes">Holocene L2 Chain Derivation Changes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#holocene-derivation">Holocene Derivation</a>
+<ul>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#frame-queue">Frame Queue</a></li>
+<li><a href="#channel-bank">Channel Bank</a>
+<ul>
+<li><a href="#pruning">Pruning</a></li>
+<li><a href="#timeout">Timeout</a></li>
+<li><a href="#reading--frame-loading">Reading &amp; Frame Loading</a></li>
+</ul>
+</li>
+<li><a href="#span-batches">Span Batches</a></li>
+<li><a href="#batch-queue">Batch Queue</a>
+<ul>
+<li><a href="#fast-channel-invalidation">Fast Channel Invalidation</a></li>
+</ul>
+</li>
+<li><a href="#engine-queue">Engine Queue</a></li>
+<li><a href="#attributes-builder">Attributes Builder</a></li>
+<li><a href="#activation">Activation</a></li>
+</ul>
+</li>
+<li><a href="#rationale">Rationale</a>
+<ul>
+<li><a href="#strict-frame-and-batch-ordering">Strict Frame and Batch Ordering</a></li>
+<li><a href="#partial-span-batch-validity">Partial Span Batch Validity</a></li>
+<li><a href="#fast-channel-invalidation-1">Fast Channel Invalidation</a></li>
+<li><a href="#steady-block-derivation">Steady Block Derivation</a></li>
+<li><a href="#less-defensive-protocol">Less Defensive Protocol</a></li>
+</ul>
+</li>
+<li><a href="#security-and-implementation-considerations">Security and Implementation Considerations</a>
+<ul>
+<li><a href="#reorgs">Reorgs</a></li>
+<li><a href="#batcher-hardening">Batcher Hardening</a></li>
+<li><a href="#sync-start">Sync Start</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h1 id="holocene-derivation"><a class="header" href="#holocene-derivation">Holocene Derivation</a></h1>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>The Holocene hardfork introduces several changes to block derivation rules that render the
+derivation pipeline mostly stricter and simpler, improve worst-case scenarios for Fault Proofs and
+Interop. The changes are:</p>
+<ul>
+<li><em>Strict Batch Ordering</em> required batches within and across channels to be strictly ordered.</li>
+<li><em>Partial Span Batch Validity</em> determines the validity of singular batches from a span batch
+individually, only invalidating the remaining span batch upon the first invalid singular batch.</li>
+<li><em>Fast Channel Invalidation</em>, similarly to Partial Span Batch Validity applied to the channel
+layer, forward-invalidates a channel upon finding an invalid batch.</li>
+<li><em>Steady Block Derivation</em> derives invalid payload attributes immediately as deposit-only
+blocks.</li>
+</ul>
+<p>The combined effect of these changes is that the impact of an invalid batch is contained to the
+block number at hand, instead of propagating forwards or backwards in the safe chain, while also
+containing invalid payloads at the engine stage to the engine, not propagating backwards in the
+derivation pipeline.</p>
+<p>Holocene derivation comprises the following changes to the derivation pipeline to achieve the above.</p>
+<h2 id="frame-queue"><a class="header" href="#frame-queue">Frame Queue</a></h2>
+<p>The frame queue retains its function and queues all frames of the last batcher transaction(s) that
+weren't assembled into a channel yet. Holocene still allows multiple frames per batcher transaction,
+possibly from different channels. As before, this allows for optionally filling up the remaining
+space of a batcher transaction with a starting frame of the next channel.</p>
+<p>However, Strict Batch Ordering leads to the following additional checks and rules to the frame
+queue:</p>
+<ul>
+<li>If a <em>non-first frame</em> (i.e., a frame with index &gt;0) decoded from a batcher transaction is <em>out of
+order</em>, it is <strong>immediately dropped</strong>, where the frame is called <em>out of order</em> if
+<ul>
+<li>its frame number is not the previous frame's plus one, if it has the same channel ID, or</li>
+<li>the previous frame already closed the channel with the same ID, or</li>
+<li>the non-first frame has a different channel ID than the previous frame in the frame queue.</li>
+</ul>
+</li>
+<li>If a <em>first frame</em> is decoded while the previous frame isn't a <em>last frame</em> (i.e., <code>is_last</code> is
+<code>false</code>), all previous frames for the same channel are dropped and this new first frame remains in
+the queue.</li>
+</ul>
+<p>These rules guarantee that the frame queue always holds frames whose indices are ordered,
+contiguous and include the first frame, per channel. Plus, a first frame of a channel is either the
+first frame in the queue, or is preceded by a closing frame of a previous channel.</p>
+<p>Note that these rules are in contrast to pre-Holocene rules, where out of order frames were
+buffered. Pre-Holocene, frame validity checks were only done at the Channel Bank stage. Performing
+these checks already at the Frame Queue stage leads to faster discarding of invalid frames, keeping
+the memory consumption of any implementation leaner.</p>
+<h2 id="channel-bank"><a class="header" href="#channel-bank">Channel Bank</a></h2>
+<p>Because channel frames have to arrive in order, the Channel Bank becomes much simpler and only
+holds at most a single channel at a time.</p>
+<h3 id="pruning"><a class="header" href="#pruning">Pruning</a></h3>
+<p>Pruning is vastly simplified as there is at most only one open channel in the channel bank. So the
+channel bank's queue becomes effectively a staging slot for a single channel, the <em>staging channel</em>.
+The <code>MAX_CHANNEL_BANK_SIZE</code> parameter is no longer used, and the compressed size of the staging
+channel is required to be at most <code>MAX_RLP_BYTES_PER_CHANNEL</code> (else the channel is dropped). Note this
+latter rule is both a distinct condition and distinct effect, compared to the existing rule
+that the <em>uncompressed</em> size of any given channel is <em>clipped</em> to <code>MAX_RLP_BYTES_PER_CHANNEL</code> <a href="../derivation.html#channel-format">during decompression</a>.</p>
+<h3 id="timeout"><a class="header" href="#timeout">Timeout</a></h3>
+<p>The timeout is applied as before, just only to the single staging channel.</p>
+<h3 id="reading--frame-loading"><a class="header" href="#reading--frame-loading">Reading &amp; Frame Loading</a></h3>
+<p>The frame queue is guaranteed to hold ordered and contiguous frames, per channel. So reading and
+frame loading becomes simpler in the channel bank:</p>
+<ul>
+<li>A first frame for a new channel starts a new channel as the staging channel.
+<ul>
+<li>If there already is an open, non-completed staging channel, it is dropped and replaced by this
+new channel. This is consistent with how the frame queue drops all frames of a non-closed channel
+upon the arrival of a first frame for a new channel.</li>
+</ul>
+</li>
+<li>If the current channel is timed-out, but not yet pruned, and the incoming frame would be the next
+correct frame for this channel, the frame and channel are dropped, including all future frames for
+the channel that might still be in the frame queue. Note that the equivalent rule was already
+present pre-Holocene.</li>
+<li>After adding a frame to the staging channel, the channel is dropped if its raw compressed size as
+defined in the Bedrock specification is larger than <code>MAX_RLP_BYTES_PER_CHANNEL</code>. This rule replaces
+the total limit of all channels' combined sizes by <code>MAX_CHANNEL_BANK_SIZE</code> before Holocene.</li>
+</ul>
+<h2 id="span-batches"><a class="header" href="#span-batches">Span Batches</a></h2>
+<p>Partial Span Batch Validity changes the atomic validity model of <a href="../delta/span-batches.html">Span Batches</a>.
+In Holocene, a span batch is treated as an optional stage in the derivation pipeline that sits
+before the batch queue, so that the batch queue pulls singular batches from this previous Span Batch
+stage. When encountering an invalid singular batch, it is dropped, as is the remaining span batch
+for consistency reasons. We call this <em>forwards-invalidation</em>. However, we don't
+<em>backwards-invalidate</em> previous valid batches that came from the same span batch, as pre-Holocene.</p>
+<p>When a batch derived from the current staging channel is a singular batch, it is directly forwarded
+to the batch queue. Otherwise, it is set as the current span batch in the span batch stage. The
+following span batch validity checks are done, before singular batches are derived from it.
+Definitions are borrowed from the <a href="../delta/span-batches.html">original Span Batch specs</a>.</p>
+<ul>
+<li>If the span batch <em>L1 origin check</em> is not part of the canonical L1 chain, the span batch is
+invalid.</li>
+<li>A failed parent check invalidates the span batch.</li>
+<li>If <code>span_start.timestamp &gt; next_timestamp</code>, the span batch is invalid, because we disallow gaps
+due to the new strict batch ordering rules.</li>
+<li>If <code>span_end.timestamp &lt; next_timestamp</code>, the span batch is set to have <code>past</code> validity, as it
+doesn't contain any new batches (this would also happen if applying timestamp checks to each derived
+singular batch individually). See below in the <a href="#batch-queue">Batch Queue</a> section about the new
+<code>past</code> validity.</li>
+<li>Note that we still allow span batches to overlap with the safe chain (<code>span_start.timestamp &lt; next_timestamp</code>).</li>
+</ul>
+<p>If any of the above checks invalidate the span batch, it is <code>drop</code>ped and the remaining channel from
+which the span batch was derived, is also immediately dropped (see also <a href="#fast-channel-invalidation">Fast Channel
+Invalidation</a>). However, a <code>past</code> span batch is only dropped, without
+dropping the remaining channel.</p>
+<h2 id="batch-queue"><a class="header" href="#batch-queue">Batch Queue</a></h2>
+<p>The batch queue is also simplified in that batches are required to arrive strictly ordered, and any
+batches that violate the ordering requirements are immediately dropped, instead of buffered.</p>
+<p>So the following changes are made to the <a href="../derivation.html#batch-queue">Bedrock Batch Queue</a>:</p>
+<ul>
+<li>The reordering step is removed, so that later checks will drop batches that are not sequential.</li>
+<li>The <code>future</code> batch validity status is removed, and batches that were determined to be in the
+future are now directly <code>drop</code>-ped. This effectively disallows gaps, instead of buffering future
+batches.</li>
+<li>A new batch validity <code>past</code> is introduced. A batch has <code>past</code> validity if its timestamp is before
+or equal to the safe head's timestamp. This also applies to span batches.</li>
+<li>The other rules stay the same, including empty batch generation when the sequencing window
+elapses.</li>
+</ul>
+<p>Note that these changes to batch validity rules also activate by the L1 inclusion block timestamp of
+a batch, not with the batch timestamp. This is important to guarantee consistent validation rules
+for the first channel after Holocene activation.</p>
+<p>The <code>drop</code> and <code>past</code> batch validities cause the following new behavior:</p>
+<ul>
+<li>If a batch is found to be invalid and is dropped, the remaining span batch it originated from, if
+applicable, is also discarded.</li>
+<li>If a batch is found to be from the <code>past</code>, it is silently dropped and the remaining span batch
+continues to be processed. This applies to both, span and singular batches.</li>
+</ul>
+<p>Note that when the L1 origin of the batch queue moves forward, it is guaranteed that it is empty,
+because future batches aren't buffered any more. Furthermore, because future batches are directly
+dropped, the batch queue effectively becomes a simpler <em>batch stage</em> that holds at most one span
+batch from which singular batches are read from, and doesn't buffer singular batches itself in a
+queue any more. A valid batch is directly forwarded to the next stage.</p>
+<h3 id="fast-channel-invalidation"><a class="header" href="#fast-channel-invalidation">Fast Channel Invalidation</a></h3>
+<p>Furthermore, upon finding an invalid batch, the remaining channel it got derived from is also discarded.</p>
+<h2 id="engine-queue"><a class="header" href="#engine-queue">Engine Queue</a></h2>
+<p>If the engine returns an <code>INVALID</code> status for a regularly derived payload, the payload is replaced
+by a payload with the same fields, except for the <code>transaction_list</code>, which is trimmed to include
+only its deposit transactions.</p>
+<p>As before, a failure to then process the deposit-only attributes is a critical error.</p>
+<p>If an invalid payload is replaced by a deposit-only payload, for consistency reasons, the remaining
+span batch, if applicable, and channel it originated from are dropped as well.</p>
+<h2 id="attributes-builder"><a class="header" href="#attributes-builder">Attributes Builder</a></h2>
+<p>Starting after the fork activation block, the <code>PayloadAttributes</code> produced by the attributes builder will include
+the <code>eip1559Params</code> field described in the <a href="./exec-engine.html#eip1559params-encoding">execution engine specs</a>. This
+value exists within the <code>SystemConfig</code>.</p>
+<p>On the fork activation block, the attributes builder will include a 0'd out <code>eip1559Params</code>, as to instruct
+the engine to use the <a href="../exec-engine.html#1559-parameters">canyon base fee parameter constants</a>. This
+is to prime the pipeline's view of the <code>SystemConfig</code> with the default EIP-1559 parameter values. After the first
+Holocene payload has been processed, future payloads should use the <code>SystemConfig</code>'s EIP-1559 denominator and elasticity
+parameter as the <code>eip1559Params</code> field's value. When the pipeline encounters a <code>UpdateType.EIP_1559_PARAMS</code>,
+<code>ConfigUpdate</code> event, the pipeline's system config will be synchronized with the <code>SystemConfig</code> contract's.</p>
+<h2 id="activation"><a class="header" href="#activation">Activation</a></h2>
+<p>The new batch rules activate when the <em>L1 inclusion block timestamp</em> is greater or equal to the
+Holocene activation timestamp. Note that this is in contrast to how span batches activated in
+<a href="../delta/overview.html">Delta</a>, namely via the span batch L1 origin timestamp.</p>
+<p>When the L1 traversal stage of the derivation pipeline moves its origin to the L1 block whose
+timestamp is the first to be greater or equal to the Holocene activation timestamp, the derivation
+pipeline's state is mostly reset by <strong>discarding</strong></p>
+<ul>
+<li>all frames in the frame queue,</li>
+<li>channels in the channel bank, and</li>
+<li>all batches in the batch queue.</li>
+</ul>
+<p>The three stages are then replaced by the new Holocene frame queue, channel bank and batch queue
+(and, depending on the implementation, the optional span batch stage is added).</p>
+<p>Note that batcher implementations must be aware of this activation behavior, so any frames of a
+partially submitted channel that were included pre-Holocene must be sent again. This is a very
+unlikely scenario since production batchers are usually configured to submit a channel in a single
+transaction.</p>
+<h1 id="rationale"><a class="header" href="#rationale">Rationale</a></h1>
+<h2 id="strict-frame-and-batch-ordering"><a class="header" href="#strict-frame-and-batch-ordering">Strict Frame and Batch Ordering</a></h2>
+<p>Strict Frame and Batch Ordering simplifies implementations of the derivation pipeline, and leads to
+better worst-case cached data usage.</p>
+<ul>
+<li>The frame queue only ever holds frames from a single batcher transaction.</li>
+<li>The channel bank only ever holds a single staging channel, that is either being built up by
+incoming frames, or is is being processed by later stages.</li>
+<li>The batch queue only ever holds at most a single span batch (that is being processed) and a single singular
+batch (from the span batch, or the staging channel directly)</li>
+<li>The sync start greatly simplifies in the average production case.</li>
+</ul>
+<p>This has advantages for Fault Proof program implementations.</p>
+<h2 id="partial-span-batch-validity"><a class="header" href="#partial-span-batch-validity">Partial Span Batch Validity</a></h2>
+<p>Partial Span Batch Validity guarantees that a valid singular batch derived from a span batch can
+immediately be processed as valid and advance the safe chain, instead of being in an undecided state
+until the full span batch is converted into singular batches. This leads to swifter derivation and
+gives strong worst-case guarantees for Fault Proofs because the vailidty of a block doesn't depend
+on the validity of any future blocks any more. Note that before Holocene, to verify the first block
+of a span batch required validating the full span batch.</p>
+<h2 id="fast-channel-invalidation-1"><a class="header" href="#fast-channel-invalidation-1">Fast Channel Invalidation</a></h2>
+<p>The new Fast Channel Invalidation rule is a consistency implication of the Strict Ordering Rules.
+Because batches inside channels must be ordered and contiguous, assuming that all batches inside a
+channel are self-consistent (i.e., parent L2 hashes point to the block resulting from the previous
+batch), an invalid batch also forward-invalidates all remaining batches of the same channel.</p>
+<h2 id="steady-block-derivation"><a class="header" href="#steady-block-derivation">Steady Block Derivation</a></h2>
+<p>Steady Block Derivation changes the derivation rules for invalid payload attributes, replacing an
+invalid payload by a deposit-only/empty payload. Crucially, this means that the effect of an invalid
+payload doesn't propagate backwards in the derivation pipeline. This has benefits for Fault Proofs
+and Interop, because it guarantees that batch validity is not influenced by future stages and the
+block derived from a valid batch will be determined by the engine stage before it pulls new payload
+attributes from the previous stage. This avoids larger derivation pipeline resets.</p>
+<h2 id="less-defensive-protocol"><a class="header" href="#less-defensive-protocol">Less Defensive Protocol</a></h2>
+<p>The stricter derivation rules lead to a less defensive protocol. The old protocol rules allowed for
+second chances for invalid payloads and submitting frames and batches within channels out of order.
+Experiences from running OP Stack chains for over one and a half years have shown that these relaxed
+derivation rules are (almost) never needed, so stricter rules that improve worst-case scenarios for
+Fault Proofs and Interop are favorable.</p>
+<p>Furthermore, the more relaxed rules created a lot more corner cases and complex interactions, which
+made it harder to reason about and test the protocol, increasing the risk of chain splits between
+different implementations.</p>
+<h1 id="security-and-implementation-considerations"><a class="header" href="#security-and-implementation-considerations">Security and Implementation Considerations</a></h1>
+<h2 id="reorgs"><a class="header" href="#reorgs">Reorgs</a></h2>
+<p>Before Steady Block Derivation, invalid payloads got second chances to be replaced by valid future
+payloads. Because they will now be immediately replaced by as deposit-only payloads, there is a
+theoretical heightened risk for unsafe chain reorgs. To the best of our knowledge, we haven't
+experienced this on OP Mainnet or other mainnet OP Stack chains yet.</p>
+<p>The only conceivable scenarios in which a <em>valid</em> batch leads to an <em>invalid</em> payload are</p>
+<ul>
+<li>a buggy or malicious sequencer+batcher</li>
+<li>in the future, that an previously valid Interop dependency referenced in that payload is later
+invalidated, while the block that contained the Interop dependency got already batched.</li>
+</ul>
+<p>It is this latter case that inspired the Steady Block Derivation rule. It guarantees that the
+secondary effects of an invalid Interop dependency are contained to a single block only, which
+avoids a cascade of cross-L2 Interop reorgs that revisit L2 chains more than once.</p>
+<h2 id="batcher-hardening"><a class="header" href="#batcher-hardening">Batcher Hardening</a></h2>
+<p>In a sense, Holocene shifts some complexity from derivation to the batching phase. Simpler and
+stricter derivation rules need to be met by a more complex batcher implementation.</p>
+<p>The batcher must be hardened to guarantee the strict ordering requirements. They are already mostly
+met in practice by the current Go implementation, but more by accident than by design. There are
+edge cases in which the batcher might violate the strict ordering rules. For example, if a channel
+fails to submit within a set period, the blocks are requeued and some out of order batching might
+occur. A batcher implementation also needs to take extra care that dynamic blobs/calldata switching
+doesn't lead to out of order or gaps of batches in scenarios where blocks are requeued, while future
+channels are already waiting in the mempool for inclusion.</p>
+<p>Batcher implementations are suggested to follow a fixed nonce to block-range assignment, once the
+first batcher transaction (which is almost always the only batcher transaction for a channel for
+current production batcher configurations) starts being submitted. This should avoid out-of-order or
+gaps of batches. It might require to implement some form of persistence in the transaction
+management, since it isn't possible to reliably recover all globally pending batcher transactions in
+the L1 network.</p>
+<p>Furthermore, batcher implementations need to be made aware of the Steady Block Derivation rules,
+namely that invalid payloads will be derived as deposit-only blocks. So in case of an unsafe reorg,
+the batcher should wait on the sequencer until it has derived all blocks from L1 in order to only
+start batching new blocks on top of the possibly deposit-only derived reorg'd chain segment. The
+sync-status should repeatedly be queried and matched against the expected safe chain. In case of any
+discrepancy, the batcher should then stop batching and wait for the sequencer to fully derive up
+until the latest L1 batcher transactions, and only then continue batching.</p>
+<h2 id="sync-start"><a class="header" href="#sync-start">Sync Start</a></h2>
+<p>Thanks to the new strict frame and batch ordering rules, the sync start algorithm can be simplified
+in the average case. The rules guarantee that</p>
+<ul>
+<li>an incoming first frame for a new channel leads to discarding previous incomplete frames for a
+non-closed previous channel in the frame queue and channel bank, and</li>
+<li>when the derivation pipeline L1 origin progresses, the batch queue is empty.</li>
+</ul>
+<p>So the sync start algorithm can optimistically select the last L2 unsafe, safe and finalized heads
+from the engine and if the L2 safe head's L1 origin is <em>plausible</em> (see the
+<a href="../derivation.html#finding-the-sync-starting-point">original sync start description</a> for details),
+start deriving from this L1 origin.</p>
+<ul>
+<li>If the first frame we find is a <em>first frame</em> for a channel that includes the safe head (TBD: or
+even just the following L2 block with the current safe head as parent), we can
+safely continue derivation from this channel because no previous derivation pipeline state could
+have influenced the L2 safe head.</li>
+<li>If the first frame we find is a non-first frame, then we need to walk back a full channel
+timeout window to see if we find the start of that channel.
+<ul>
+<li>If we find the starting frame, we can continue derivation from it.</li>
+<li>If we don't find the starting frame, we need to go back a full channel timeout window before the
+finalized L2 head's L1 origin.</li>
+</ul>
+</li>
+</ul>
+<p>Note regarding the last case that if we don't find a starting frame within a channel timeout window,
+the channel we did find a frame from must be timed out and would be discarded. The safe block we're
+looking for can't be in any channel that timed out before its L1 origin so we wouldn't need to
+search any further back, so we go back a channel timeout before the finalized L2 head.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/holocene/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/holocene/exec-engine.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/holocene/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/holocene/exec-engine.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

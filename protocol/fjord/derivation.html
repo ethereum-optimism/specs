@@ -1,0 +1,434 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Derivation - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/fjord/derivation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="fjord-l2-chain-derivation-changes"><a class="header" href="#fjord-l2-chain-derivation-changes">Fjord L2 Chain Derivation Changes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#protocol-parameter-changes">Protocol Parameter Changes</a>
+<ul>
+<li><a href="#timestamp-activation">Timestamp Activation</a></li>
+<li><a href="#constant-maximum-sequencer-drift">Constant Maximum Sequencer Drift</a>
+<ul>
+<li><a href="#rationale">Rationale</a></li>
+<li><a href="#security-considerations">Security Considerations</a></li>
+</ul>
+</li>
+<li><a href="#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size">Increasing <code>MAX_RLP_BYTES_PER_CHANNEL</code> and <code>MAX_CHANNEL_BANK_SIZE</code></a>
+<ul>
+<li><a href="#rationale-1">Rationale</a></li>
+<li><a href="#security-considerations-1">Security Considerations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#brotli-channel-compression">Brotli Channel Compression</a></li>
+<li><a href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
+<ul>
+<li><a href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></li>
+<li><a href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="#gaspriceoracle-enable-fjord">GasPriceOracle Enable Fjord</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h1 id="protocol-parameter-changes"><a class="header" href="#protocol-parameter-changes">Protocol Parameter Changes</a></h1>
+<p>The following table gives an overview of the changes in parameters.</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Pre-Fjord (default) value</th><th>Fjord value</th><th>Notes</th></tr></thead><tbody>
+<tr><td><code>max_sequencer_drift</code></td><td>600</td><td>1800</td><td>Was a protocol parameter since Bedrock. Now becomes a constant.</td></tr>
+<tr><td><code>MAX_RLP_BYTES_PER_CHANNEL</code></td><td>10,000,000</td><td>100,000,000</td><td>Protocol Constant is increasing.</td></tr>
+<tr><td><code>MAX_CHANNEL_BANK_SIZE</code></td><td>100,000,000</td><td>1,000,000,000</td><td>Protocol Constant is increasing.</td></tr>
+</tbody></table>
+</div>
+<h2 id="timestamp-activation"><a class="header" href="#timestamp-activation">Timestamp Activation</a></h2>
+<p>Fjord, like other network upgrades, is activated at a timestamp.
+Changes to the L2 Block execution rules are applied when the <code>L2 Timestamp &gt;= activation time</code>.
+Changes to derivation are applied when it is considering data from a L1 Block whose timestamp
+is greater than or equal to the activation timestamp.
+The change of the <code>max_sequencer_drift</code> parameter activates with the L1 origin block timestamp.</p>
+<p>If Fjord is not activated at genesis, it must be activated at least one block after the Ecotone
+activation block. This ensures that the network upgrade transactions don't conflict.</p>
+<h2 id="constant-maximum-sequencer-drift"><a class="header" href="#constant-maximum-sequencer-drift">Constant Maximum Sequencer Drift</a></h2>
+<p>With Fjord, the <code>max_sequencer_drift</code> parameter becomes a constant of value <code>1800</code> <em>seconds</em>,
+translating to a fixed maximum sequencer drift of 30 minutes.</p>
+<p>Before Fjord, this was a chain parameter that was set once at chain creation, with a default
+value of <code>600</code> seconds, i.e., 10 minutes. Most chains use this value currently.</p>
+<h3 id="rationale"><a class="header" href="#rationale">Rationale</a></h3>
+<p>Discussions amongst chain operators came to the unilateral conclusion that a larger value than the
+current default would be easier to work with. If a sequencer's L1 connection breaks, this drift
+value determines how long it can still produce blocks without violating the timestamp drift
+derivation rules.</p>
+<p>It was furthermore agreed that configurability after this increase is not important. So it is being
+made a constant. An alternative idea that is being considered for a future hardfork is to make this
+an L1-configurable protocol parameter via the <code>SystemConfig</code> update mechanism.</p>
+<h3 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h3>
+<p>The rules around the activation time are deliberately being kept simple, so no other logic needs to
+be applied other than to change the parameter to a constant. The first Fjord block would in theory
+accept older L1-origin timestamps than its predecessor. However, since the L1 origin timestamp must
+also increase, the only noteworthy scenario that can happen is that the first few Fjord blocks will
+be in the same epoch as the last pre-Fjord blocks, even if these blocks would not be allowed to
+have these L1-origin timestamps according to pre-Fjord rules. So the same L1 timestamp would be
+shared within a pre- and post-Fjord mixed epoch. This is considered a feature and is not considered
+a security issue.</p>
+<h2 id="increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size"><a class="header" href="#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size">Increasing <code>MAX_RLP_BYTES_PER_CHANNEL</code> and <code>MAX_CHANNEL_BANK_SIZE</code></a></h2>
+<p>With Fjord, <code>MAX_RLP_BYTES_PER_CHANNEL</code> will be increased from 10,000,000 bytes to 100,000,000 bytes,
+and <code>MAX_CHANNEL_BANK_SIZE</code> will be increased from 100,000,000 bytes to 1,000,000,000 bytes.</p>
+<p>The usage of <code>MAX_RLP_BYTES_PER_CHANNEL</code> is defined in <a href="../derivation.html#channel-format">Channel Format</a>.
+The usage of <code>MAX_CHANNEL_BANK_SIZE</code> is defined in <a href="../derivation.html#pruning">Channel Bank Pruning</a>.</p>
+<p>Span Batches previously had a limit <code>MAX_SPAN_BATCH_SIZE</code> which was equal to <code>MAX_RLP_BYTES_PER_CHANNEL</code>.
+Fjord creates a new constant <code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> for the element count limit &amp; removes
+<code>MAX_SPAN_BATCH_SIZE</code>. The size of the channel is still checked with <code>MAX_RLP_BYTES_PER_CHANNEL</code>.</p>
+<p>The new value will be used when the timestamp of the L1 origin of the derivation pipeline &gt;= the Fjord activation
+timestamp.</p>
+<h3 id="rationale-1"><a class="header" href="#rationale-1">Rationale</a></h3>
+<p>A block with a gas limit of 30 Million gas has a maximum theoretical size of 7.5 Megabytes by being filled up
+with transactions have only zeroes. Currently, a byte with the value <code>0</code> consumes 4 gas.
+If the block gas limit is raised above 40 Million gas, it is possible to create a block that is large than
+<code>MAX_RLP_BYTES_PER_CHANNEL</code>.
+L2 blocks cannot be split across channels which means that a block that is larger than <code>MAX_RLP_BYTES_PER_CHANNEL</code>
+cannot be batch submitted.
+By raising this limit to 100,000,000 bytes, we can batch submit blocks with a gas limit of up to 400 Million Gas.
+In addition, we are able to improve compression ratios by increasing the amount of data that can be inserted into a
+single channel.
+With 33% compression ratio over 6 blobs, we are currently submitting 2.2 MB of compressed data &amp; 0.77 MB of uncompressed
+data per channel.
+This will allow use to use up to approximately 275 blobs per channel.</p>
+<p>Raising <code>MAX_CHANNEL_BANK_SIZE</code> is helpful to ensure that we are able to process these larger channels. We retain the
+same ratio of 10 between <code>MAX_RLP_BYTES_PER_CHANNEL</code> and <code>MAX_CHANNEL_BANK_SIZE</code>.</p>
+<h3 id="security-considerations-1"><a class="header" href="#security-considerations-1">Security Considerations</a></h3>
+<p>Raising the these limits increases the amount of resources a rollup node would require.
+Specifically nodes may have to allocate large chunks of memory for a channel and will have to potentially allocate more
+memory to the channel bank.
+<code>MAX_RLP_BYTES_PER_CHANNEL</code> was originally added to avoid zip bomb attacks.
+The system is still exposed to these attacks, but these limits are straightforward to handle in a node.</p>
+<p>The Fault Proof environment is more constrained than a typical node and increasing these limits will require more
+resources than are currently required.
+The change in <code>MAX_CHANNEL_BANK_SIZE</code> is not relevant to the first implementation of Fault Proofs because this limit
+only tells the node when to start pruning &amp; once memory is allocated in the FPVM, it is not garbage collected.
+This means that increasing <code>MAX_CHANNEL_BANK_SIZE</code> does not increase the maximum resource usage of the FPP.</p>
+<p>Increasing <code>MAX_RLP_BYTES_PER_CHANNEL</code> could cause more resource usage in FPVM; however, we consider this
+increase reasonable because this increase is in the amount of data handled at once rather than the total
+amount of data handled in the program. Instead of using a single channel, the batcher could submit 10 channels
+prior to this change which would cause the Fault Proof Program to consume a very similar amount of resources.</p>
+<h1 id="brotli-channel-compression"><a class="header" href="#brotli-channel-compression">Brotli Channel Compression</a></h1>
+<p>Fjord introduces a new versioned channel encoding format to support alternate compression
+algorithms, with the <a href="../derivation.html#channel-format">legacy channel format</a> remaining supported. The
+versioned format is as follows:</p>
+<pre><code class="language-text">channel_encoding = channel_version_byte ++ compress(rlp_batches)
+</code></pre>
+<p>The <code>channel_version_byte</code> must never have its 4 lower order bits set to <code>0b1000 = 8</code> or <code>0b1111 = 15</code>, which are reserved for usage by the header byte of zlib encoded data (see page 5 of
+<a href="https://www.rfc-editor.org/rfc/rfc1950.html">RFC-1950</a>). This allows a channel decoder to determine if a channel encoding is legacy or
+versioned format by testing for these bit values. If the channel encoding is determined to be
+versioned format, the only valid <code>channel_version_byte</code> is <code>1</code>, which indicates <code>compress()</code> is the
+Brotli compression algorithm (as specified in <a href="https://datatracker.ietf.org/doc/html/rfc7932">RFC-7932</a>) with no custom dictionary.</p>
+<h1 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h1>
+<p>The Fjord hardfork activation block contains the following transactions, in this order:</p>
+<ul>
+<li>L1 Attributes Transaction</li>
+<li>User deposits from L1</li>
+<li>Network Upgrade Transactions
+<ul>
+<li>GasPriceOracle deployment</li>
+<li>Update GasPriceOracle Proxy ERC-1967 Implementation Slot</li>
+<li>GasPriceOracle Enable Fjord</li>
+</ul>
+</li>
+</ul>
+<p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
+transactions by setting <code>noTxPool: true</code>.</p>
+<h2 id="gaspriceoracle-deployment"><a class="header" href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></h2>
+<p>The <code>GasPriceOracle</code> contract is upgraded to support the new Fjord L1 data fee computation. Post fork this contract
+will use FastLZ to compute the L1 data fee.</p>
+<p>To perform this upgrade, a deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000002</code></li>
+<li><code>to</code>: <code>null</code>,</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1,450,000</code></li>
+<li><code>data</code>: <code>0x60806040523...</code> (<a href="../../static/bytecode/fjord-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x86122c533fdcb89b16d8713174625e44578a89751d96c098ec19ab40a51a8ea3</code>
+computed with the "Upgrade-deposited" type, with `intent = "Fjord: Gas Price Oracle Deployment"</li>
+</ul>
+<p>This results in the Fjord GasPriceOracle contract being deployed to <code>0xa919894851548179A0750865e7974DA599C0Fac7</code>,
+to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000002
+Computed Address: 0xa919894851548179A0750865e7974DA599C0Fac7
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Fjord: Gas Price Oracle Deployment"))
+# 0x86122c533fdcb89b16d8713174625e44578a89751d96c098ec19ab40a51a8ea3
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout 52abfb507342191ae1f960b443ae8aec7598755c
+pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0xa88fa50a2745b15e6794247614b5298483070661adacb8d32d716434ed24c6b2</code>.</p>
+<h2 id="gaspriceoracle-proxy-update"><a class="header" href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></h2>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe6000000000000000000000000a919894851548179a0750865e7974da599c0fac7</code></li>
+<li><code>sourceHash</code>: <code>0x1e6bb0c28bfab3dc9b36ffb0f721f00d6937f33577606325692db0965a7d58c6</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Fjord: Gas Price Oracle Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xa919894851548179A0750865e7974DA599C0Fac7)
+# 0x3659cfe6000000000000000000000000a919894851548179a0750865e7974da599c0fac7
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Fjord: Gas Price Oracle Proxy Update"))
+# 0x1e6bb0c28bfab3dc9b36ffb0f721f00d6937f33577606325692db0965a7d58c6
+</code></pre>
+<h2 id="gaspriceoracle-enable-fjord"><a class="header" href="#gaspriceoracle-enable-fjord">GasPriceOracle Enable Fjord</a></h2>
+<p>This transaction informs the GasPriceOracle to start using the Fjord gas calculation formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>90,000</code></li>
+<li><code>data</code>: <code>0x8e98b106</code></li>
+<li><code>sourceHash</code>: <code>0xbac7bb0d5961cad209a345408b0280a0d4686b1b20665e1b0f9cdafd73b19b6b</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Fjord: Gas Price Oracle Set Fjord"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig "setFjord()"
+0x8e98b106
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Fjord: Gas Price Oracle Set Fjord"))
+# 0xbac7bb0d5961cad209a345408b0280a0d4686b1b20665e1b0f9cdafd73b19b6b
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/fjord/exec-engine.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/fjord/predeploys.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/fjord/exec-engine.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/fjord/predeploys.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

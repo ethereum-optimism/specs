@@ -1,0 +1,311 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Derivation - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/derivation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="derivation"><a class="header" href="#derivation">Derivation</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a>
+<ul>
+<li><a href="#deposit-context">Deposit Context</a>
+<ul>
+<li><a href="#opening-the-deposit-context">Opening the deposit context</a></li>
+<li><a href="#closing-the-deposit-context">Closing the deposit context</a>
+<ul>
+<li><a href="#deposits-complete-source-hash">Deposits-complete Source-hash</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#gas-considerations">Gas Considerations</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<h3 id="deposit-context"><a class="header" href="#deposit-context">Deposit Context</a></h3>
+<p>Derivation is extended to create <strong>deposit contexts</strong>, which signifies the execution of a depositing transaction.
+A deposit context is scoped to a single block, commencing with the execution of the first deposited transaction
+and concluding immediately after the execution of the final deposited transaction within that block.
+As such, there is exactly one deposit context per block.</p>
+<p>The order of deposit transactions occurs as follows:</p>
+<ol>
+<li>L1 attributes transaction, <a href="#opening-the-deposit-context">opening the deposit context</a>.</li>
+<li>User deposits (if any).</li>
+<li>L1 attributes transaction, <a href="#closing-the-deposit-context">closing the deposit context</a>.</li>
+<li>During upgrades, additional deposits, inserted by derivation, may follow after the above.
+See <a href="./upgrade.html">upgrade specification</a>.</li>
+</ol>
+<p>The L1 attributes operations wrap user deposits,
+such that <code>isDeposit = true</code> occurs during the first L1 attributes transaction
+and <code>isDeposit = false</code> occurs immediately after the last user deposit,
+if any exists, or after the first L1 attributes transaction if there are no user deposits.</p>
+<h4 id="opening-the-deposit-context"><a class="header" href="#opening-the-deposit-context">Opening the deposit context</a></h4>
+<p>A new <code>L1Block</code> predeploy function is introduced to set the L1 attributes: <code>setL1BlockValuesIsthmus()</code>.</p>
+<p>The block-attributes contents are unchanged from the previous fork.
+See <a href="../protocol/ecotone/l1-attributes.html">Ecotone L1 attributes specifications</a>,
+and <a href="../protocol/holocene/overview.html">Holocene specifications</a>.</p>
+<p>In addition to the setting L1 block attributes, the <code>setL1BlockValuesIsthmus</code> function
+now sets <code>isDeposit = true</code> on the <code>L1Block</code> predeploy contract.</p>
+<p>This instantiates a deposit context for the current block.</p>
+<h4 id="closing-the-deposit-context"><a class="header" href="#closing-the-deposit-context">Closing the deposit context</a></h4>
+<p>A new <code>L1Block</code> predeploy function is introduced to close the deposit context: <code>depositsComplete()</code>.</p>
+<p>This sets <code>isDeposit = false</code> in the <code>L1Block</code> predeploy contract.</p>
+<p>This function is called by a new L1 block system transaction.
+This transaction MUST have the following values:</p>
+<ol>
+<li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0001</code>, the address of the
+<a href="../protocol/deposits.html#l1-attributes-depositor-account">L1 Attributes depositor account</a>.</li>
+<li><code>to</code> is <code>0x4200000000000000000000000000000000000015</code>, the address of the
+<a href="../protocol/deposits.html#l1-attributes-predeployed-contract">L1 attributes predeployed contract</a>.</li>
+<li><code>mint</code> is <code>0</code>.</li>
+<li><code>value</code> is <code>0</code>.</li>
+<li><code>gasLimit</code> is set <code>36000</code> gas, to cover intrinsic costs, processing costs, and margin for change.</li>
+<li><code>isSystemTx</code> is <code>false</code>.</li>
+<li><code>data</code> is set to <code>0xe32d20bb</code>, the 4-byte selector of <code>depositsComplete()</code>.
+This closes the existing deposit context.</li>
+<li><code>sourceHash</code> is computed with a new deposit source-hash domain, see below.</li>
+</ol>
+<h5 id="deposits-complete-source-hash"><a class="header" href="#deposits-complete-source-hash">Deposits-complete Source-hash</a></h5>
+<p>The source hash is <a href="../protocol/deposits.html#source-hash-computation">computed</a> alike to that
+of the "L1 attributes deposited" deposit that opens the deposit context.
+The one difference is the source-hash domain: <code>3</code> (instead of <code>1</code>).</p>
+<p>The source-hash is thus computed as:
+<code>keccak256(bytes32(uint256(3)), keccak256(l1BlockHash, bytes32(uint256(seqNumber))))</code>.</p>
+<p>Where <code>l1BlockHash</code> refers to the L1 block hash of which the info attributes are deposited.
+And <code>seqNumber = l2BlockNum - l2EpochStartBlockNum</code>,
+where <code>l2BlockNum</code> is the L2 block number of the inclusion of the deposit tx in L2,
+and <code>l2EpochStartBlockNum</code> is the L2 block number of the first L2 block in the epoch.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
+<p>There must be sufficient gas available in the block to destroy deposit context.
+There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
+may be filled by the other deposit transactions. As a consequence, a deposit context may spill into multiple blocks.</p>
+<p>This will be fixed in the future.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/superchain-weth.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/tx-pool.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/superchain-weth.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/tx-pool.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

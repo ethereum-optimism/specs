@@ -1,0 +1,956 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Predeploys - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/predeploys.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#crossl2inbox">CrossL2Inbox</a>
+<ul>
+<li><a href="#functions">Functions</a>
+<ul>
+<li><a href="#validatemessage">validateMessage</a></li>
+</ul>
+</li>
+<li><a href="#interop-start-timestamp">Interop Start Timestamp</a></li>
+<li><a href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></li>
+<li><a href="#reference-implementation">Reference implementation</a></li>
+<li><a href="#deposit-handling">Deposit Handling</a></li>
+<li><a href="#identifier-getters"><code>Identifier</code> Getters</a></li>
+</ul>
+</li>
+<li><a href="#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
+<ul>
+<li><a href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
+<li><a href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></li>
+<li><a href="#message-versioning">Message Versioning</a></li>
+<li><a href="#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></li>
+<li><a href="#interfaces">Interfaces</a>
+<ul>
+<li><a href="#sending-messages">Sending Messages</a></li>
+<li><a href="#relaying-messages">Relaying Messages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#optimismsuperchainerc20factory">OptimismSuperchainERC20Factory</a>
+<ul>
+<li><a href="#optimismsuperchainerc20">OptimismSuperchainERC20</a></li>
+<li><a href="#overview-1">Overview</a>
+<ul>
+<li><a href="#proxy">Proxy</a></li>
+<li><a href="#beacon-pattern">Beacon Pattern</a></li>
+<li><a href="#deployment-history">Deployment history</a></li>
+</ul>
+</li>
+<li><a href="#functions-1">Functions</a>
+<ul>
+<li><a href="#deploy"><code>deploy</code></a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#optimismsuperchainerc20created"><code>OptimismSuperchainERC20Created</code></a></li>
+</ul>
+</li>
+<li><a href="#deployment-flow">Deployment Flow</a></li>
+</ul>
+</li>
+<li><a href="#beaconcontract">BeaconContract</a>
+<ul>
+<li><a href="#overview-2">Overview</a></li>
+</ul>
+</li>
+<li><a href="#l1block">L1Block</a>
+<ul>
+<li><a href="#static-configuration">Static Configuration</a></li>
+<li><a href="#dependency-set">Dependency Set</a></li>
+<li><a href="#deposit-context">Deposit Context</a></li>
+<li><a href="#isdeposit"><code>isDeposit()</code></a>
+<ul>
+<li><a href="#depositscomplete"><code>depositsComplete()</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a>
+<ul>
+<li><a href="#optimismmintableerc20">OptimismMintableERC20</a></li>
+<li><a href="#updates">Updates</a></li>
+<li><a href="#functions-2">Functions</a>
+<ul>
+<li><a href="#createoptimismmintableerc20withdecimals"><code>createOptimismMintableERC20WithDecimals</code></a></li>
+<li><a href="#createoptimismmintableerc20"><code>createOptimismMintableERC20</code></a></li>
+<li><a href="#createstandardl2token"><code>createStandardL2Token</code></a></li>
+</ul>
+</li>
+<li><a href="#events-1">Events</a>
+<ul>
+<li><a href="#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></li>
+<li><a href="#standardl2tokencreated"><code>StandardL2TokenCreated</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#l2standardbridge">L2StandardBridge</a>
+<ul>
+<li><a href="#updates-1">Updates</a>
+<ul>
+<li><a href="#convert">convert</a></li>
+<li><a href="#converted"><code>Converted</code></a></li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a></li>
+<li><a href="#conversion-flow">Conversion Flow</a></li>
+</ul>
+</li>
+<li><a href="#superchainerc20bridge">SuperchainERC20Bridge</a>
+<ul>
+<li><a href="#overview-3">Overview</a></li>
+<li><a href="#functions-3">Functions</a>
+<ul>
+<li><a href="#senderc20"><code>sendERC20</code></a></li>
+<li><a href="#relayerc20"><code>relayERC20</code></a></li>
+</ul>
+</li>
+<li><a href="#events-2">Events</a>
+<ul>
+<li><a href="#senterc20"><code>SentERC20</code></a></li>
+<li><a href="#relayederc20"><code>RelayedERC20</code></a></li>
+</ul>
+</li>
+<li><a href="#diagram">Diagram</a></li>
+<li><a href="#invariants-1">Invariants</a></li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
+an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
+<h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000022</code></td></tr>
+</tbody></table>
+</div>
+<p>The <code>CrossL2Inbox</code> is the system predeploy for cross chain messaging. Anyone can trigger the execution or validation
+of cross chain messages, on behalf of any user.</p>
+<p>To ensure safety of the protocol, the <a href="./messaging.html#messaging-invariants">Message Invariants</a> must be enforced.</p>
+<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<h4 id="validatemessage"><a class="header" href="#validatemessage">validateMessage</a></h4>
+<p>A helper to enable contracts to provide their own public entrypoints for cross chain interactions.
+Emits the <code>ExecutingMessage</code> event to signal the transaction has a cross chain message to validate.</p>
+<p>The following fields are required for validating a cross chain message:</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_id</code></td><td>Identifier</td><td>A <a href="./messaging.html#message-identifier"><code>Identifier</code></a> pointing to the initiating message.</td></tr>
+<tr><td><code>_msgHash</code></td><td><code>bytes32</code></td><td>The keccak256 hash of the message payload matching the initiating message.</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-solidity">function validateMessage(Identifier calldata _id, bytes32 _msgHash)
+</code></pre>
+<h3 id="interop-start-timestamp"><a class="header" href="#interop-start-timestamp">Interop Start Timestamp</a></h3>
+<p>The Interop Start Timestamp represents the earliest timestamp which an initiating message (identifier) can have to be
+considered valid. This is important because OP Mainnet migrated from a legacy system that is not provable. We cannot
+allow for interop messages to come from unproven parts of the chain history, since interop is secured by fault proofs.</p>
+<p>Interop Start Timestamp is stored in the storage of the CrossL2Inbox predeploy. During the Interop Network Upgrade,
+each chain sets variable via a call to <code>setInteropStart()</code> by the <code>DEPOSITOR_ACCOUNT</code> which sets Interop Start Timestamp
+to be the block.timestamp of the network upgrade block. Chains deployed after the network upgrade will have to enshrine
+that timestamp into the pre-determined storage slot.</p>
+<h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
+<p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
+to <code>validateMessage</code>.</p>
+<pre><code class="language-solidity">event ExecutingMessage(bytes32 indexed msgHash, Identifier identifier);
+</code></pre>
+<p>The data encoded in the event contains the keccak hash of the <code>msg</code> and the <code>Identifier</code>.
+The following pseudocode shows the deserialization:</p>
+<pre><code class="language-solidity">bytes32 msgHash = log.topics[1];
+Identifier identifier = abi.decode(log.data, (Identifier));
+</code></pre>
+<p>Emitting the hash of the message is more efficient than emitting the
+message in its entirety. Equality with the initiating message can be handled off-chain through
+hash comparison.</p>
+<h3 id="reference-implementation"><a class="header" href="#reference-implementation">Reference implementation</a></h3>
+<p>A simple implementation of the <code>validateMessage</code> function is included below.</p>
+<pre><code class="language-solidity">    function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
+        // We need to know if this is being called on a depositTx
+        if (IL1BlockInterop(Predeploys.L1_BLOCK_ATTRIBUTES).isDeposit()) revert NoExecutingDeposits();
+
+        emit ExecutingMessage(_msgHash, _id);
+    }
+}
+</code></pre>
+<p>An example of a custom entrypoint utilizing <code>validateMessage</code> to consume a known
+event. Note that in this example, the contract is consuming its own event
+from another chain, however <strong>any</strong> event emitted from <strong>any</strong> contract is consumable!</p>
+<pre><code class="language-solidity">contract MyCrossChainApp {
+    event MyCrossChainEvent();
+
+    function sendMessage() external {
+        emit MyCrossChainEvent();
+    }
+
+    function relayMessage(Identifier calldata _id, bytes calldata _msg) external {
+        // Example app-level validation
+        //  - Expected event via the selector (first topic)
+        //  - Assertion on the expected emitter of the event
+        require(MyCrossChainEvent.selector == _msg[:32]);
+        require(_id.origin == address(this));
+
+        // Authenticate this cross chain message
+        CrossL2Inbox.validateMessage(_id, keccak256(_msg));
+
+        // ABI decode the event message &amp; perform actions.
+        // ...
+    }
+}
+</code></pre>
+<h3 id="deposit-handling"><a class="header" href="#deposit-handling">Deposit Handling</a></h3>
+<p>Any call to the <code>CrossL2Inbox</code> that would emit an <code>ExecutingMessage</code> event will reverts
+if the call is made in a <a href="./derivation.html#deposit-context">deposit context</a>.
+The deposit context status can be determined by calling <code>isDeposit</code> on the <code>L1Block</code> contract.</p>
+<p>In the future, deposit handling will be modified to be more permissive.
+It will revert only in specific cases where interop dependency resolution is not feasible.</p>
+<h3 id="identifier-getters"><a class="header" href="#identifier-getters"><code>Identifier</code> Getters</a></h3>
+<p>The <code>Identifier</code> MUST be exposed via <code>public</code> getters so that contracts can call back to authenticate
+properties about the <code>_msg</code>.</p>
+<h2 id="l2tol2crossdomainmessenger"><a class="header" href="#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000023</code></td></tr>
+<tr><td><code>MESSAGE_VERSION</code></td><td><code>uint256(0)</code></td></tr>
+</tbody></table>
+</div>
+<p>The <code>L2ToL2CrossDomainMessenger</code> is a higher level abstraction on top of the <code>CrossL2Inbox</code> that
+provides general message passing, utilized for secure transfers ERC20 tokens between L2 chains.
+Messages sent through the <code>L2ToL2CrossDomainMessenger</code> on the source chain receive both replay protection
+as well as domain binding, ie the executing transaction can only be valid on a single chain.</p>
+<h3 id="relaymessage-invariants"><a class="header" href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></h3>
+<ul>
+<li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
+<li>The <code>_destination</code> chain id MUST be equal to the local chain id</li>
+<li>Messages MUST NOT be relayed more than once</li>
+</ul>
+<h3 id="sendmessage-invariants"><a class="header" href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></h3>
+<ul>
+<li>Sent Messages MUST be uniquely identifiable</li>
+<li>It must emit the <code>SentMessage</code> event</li>
+</ul>
+<h3 id="message-versioning"><a class="header" href="#message-versioning">Message Versioning</a></h3>
+<p>Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
+the <code>CrossDomainMessenger</code>.</p>
+<pre><code class="language-solidity">function messageNonce() public view returns (uint256) {
+    return Encoding.encodeVersionedNonce(nonce, MESSAGE_VERSION);
+}
+</code></pre>
+<h3 id="no-native-support-for-cross-chain-ether-sends"><a class="header" href="#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></h3>
+<p>To enable interoperability between chains that use a custom gas token, there is no native support for
+sending <code>ether</code> between chains. <code>ether</code> must first be wrapped into WETH before sending between chains.
+See <a href="./superchain-weth.html">SuperchainWETH</a> for more information.</p>
+<h3 id="interfaces"><a class="header" href="#interfaces">Interfaces</a></h3>
+<p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code> but
+the <code>_minGasLimit</code> is removed to prevent complexity around EVM gas introspection and the <code>_destination</code>
+chain is included instead.</p>
+<h4 id="sending-messages"><a class="header" href="#sending-messages">Sending Messages</a></h4>
+<p>The following function is used for sending messages between domains:</p>
+<pre><code class="language-solidity">function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
+</code></pre>
+<p>It returns the hash of the message being sent,
+used to track whether the message has successfully been relayed.
+It emits a <code>SentMessage</code> event with the necessary metadata to execute when relayed on the destination chain.</p>
+<pre><code class="language-solidity">event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
+</code></pre>
+<p>An explicit <code>_destination</code> chain and <code>nonce</code> are used to ensure that the message can only be played on a single remote
+chain a single time. The <code>_destination</code> is enforced to not be the local chain to avoid edge cases.</p>
+<p>There is no need for address aliasing as the aliased address would need to commit to the source chain's chain id
+to create a unique alias that commits to a particular sender on a particular domain and it is far more simple
+to assert on both the address and the source chain's chain id rather than assert on an unaliased address.
+In both cases, the source chain's chain id is required for security. Executing messages will never be able to
+assume the identity of an account because <code>msg.sender</code> will never be the identity that initiated the message,
+it will be the <code>L2ToL2CrossDomainMessenger</code> and users will need to callback to get the initiator of the message.</p>
+<p>The <code>_destination</code> MUST NOT be the chainid of the local chain and a locally defined <code>nonce</code> MUST increment on
+every call to <code>sendMessage</code>.</p>
+<p>Note that <code>sendMessage</code> is not <code>payable</code>.</p>
+<h4 id="relaying-messages"><a class="header" href="#relaying-messages">Relaying Messages</a></h4>
+<p>The following diagram shows the flow for sending a cross chain message using the <code>L2ToL2CrossDomainMessenger</code>.
+Each subsequent call is labeled with a number.</p>
+<pre class="mermaid">flowchart LR
+    user --&gt;|&quot;1#46; sendMessage&quot;| al2tol2
+    user --&gt; |&quot;2#46; relayMessage&quot;|bl2tol2
+    im{{SentMessage Event}}
+    em{{ExecutingMessage Event}}
+
+    direction TB
+    al2tol2 --&gt; im
+
+    bcl2[CrossL2Inbox]
+    al2tol2[L2ToL2CrossDomainMessenger]
+    bl2tol2[L2ToL2CrossDomainMessenger]
+
+    subgraph &quot;Chain A&quot;
+      al2tol2
+    end
+
+    subgraph &quot;Chain B&quot;
+      bl2tol2  --&gt; |&quot;3#46; validateMessage&quot;|bcl2
+      bcl2 --&gt; em
+      bl2tol2 --&gt; |&quot;4#46;&quot;| Contract
+    end
+</pre>
+<p>When relaying a message through the <code>L2ToL2CrossDomainMessenger</code>, it is important to require that
+the <code>_destination</code> equal to <code>block.chainid</code> to ensure that the message is only valid on a single
+chain. The hash of the message is used for replay protection.</p>
+<p>It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
+it is possible to send a message that is not playable.</p>
+<p>A message is relayed by providing the <a href="./messaging.html#message-identifier">identifier</a> to a <code>SentMessage</code>
+event and its corresponding <a href="./messaging.html#message-payload">message payload</a>.</p>
+<pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
+    require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
+    CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
+
+    // log topics
+    (bytes32 selector, uint256 _destination, address _target, uint256 _nonce) =
+        abi.decode(_sentMessage[:128], (bytes32,uint256,address,uint256));
+
+    require(selector == SentMessage.selector);
+    require(_destination == block.chainid);
+
+    // log data
+    (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
+
+    bool success;
+    (success, returnData_) = _target.call(_target, msg.value, _message);
+    require(success);
+    successfulMessages[messageHash] = true;
+    emit RelayedMessage(_source, _nonce, messageHash);
+}
+</code></pre>
+<p>Note that the <code>relayMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
+<p>To enable cross chain authorization patterns, both the <code>_sender</code> and the <code>_source</code> MUST be exposed via <code>public</code>
+getters.</p>
+<h2 id="optimismsuperchainerc20factory"><a class="header" href="#optimismsuperchainerc20factory">OptimismSuperchainERC20Factory</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000026</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="optimismsuperchainerc20"><a class="header" href="#optimismsuperchainerc20">OptimismSuperchainERC20</a></h3>
+<p>The <code>OptimismSuperchainERC20Factory</code> creates ERC20 contracts that implements the <code>SuperchainERC20</code> <a href="token-bridging.html">standard</a>,
+grants mint-burn rights to the <code>L2StandardBridge</code> (<code>OptimismSuperchainERC20</code>)
+and include a <code>remoteToken</code> variable.
+These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
+The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
+of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
+<h3 id="overview-1"><a class="header" href="#overview-1">Overview</a></h3>
+<p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
+<h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
+<p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
+It follows the
+<a href="https://github.com/ethereum-optimism/optimism/blob/v1.1.4/packages/contracts-bedrock/src/universal/Proxy.sol"><code>Proxy.sol</code> implementation</a>
+and <code>delegatecall()</code> to the factory implementation address.</p>
+<h4 id="beacon-pattern"><a class="header" href="#beacon-pattern">Beacon Pattern</a></h4>
+<p>It MUST deploy <code>OptimismSuperchainERC20</code> as
+<a href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/beacon/BeaconProxy.sol">BeaconProxies</a>,
+as this is the easiest way to upgrade multiple contracts simultaneously.
+Each BeaconProxy delegatecalls to the implementation address provided by the Beacon Contract.</p>
+<p>The implementation MUST include an <code>initialize</code> function that
+receives <code>(address _remoteToken, string _name, string _symbol, uint8 _decimals)</code> and stores these in the BeaconProxy storage.</p>
+<h4 id="deployment-history"><a class="header" href="#deployment-history">Deployment history</a></h4>
+<p>The <code>L2StandardBridge</code> includes a <code>convert()</code> function that allows anyone to convert
+between any <code>OptimismMintableERC20</code> and its corresponding <code>OptimismSuperchainERC20</code>.
+For this method to work, the <code>OptimismSuperchainERC20Factory</code> MUST include a deployment history.</p>
+<h3 id="functions-1"><a class="header" href="#functions-1">Functions</a></h3>
+<h4 id="deploy"><a class="header" href="#deploy"><code>deploy</code></a></h4>
+<p>Creates an instance of the <code>OptimismSuperchainERC20</code> contract with a set of metadata defined by:</p>
+<ul>
+<li><code>_remoteToken</code>: address of the underlying token in its native chain.</li>
+<li><code>_name</code>: <code>OptimismSuperchainERC20</code> name</li>
+<li><code>_symbol</code>: <code>OptimismSuperchainERC20</code> symbol</li>
+<li><code>_decimals</code>: <code>OptimismSuperchainERC20</code> decimals</li>
+</ul>
+<pre><code class="language-solidity">function deploy(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
+</code></pre>
+<p>It returns the address of the deployed <code>OptimismSuperchainERC20</code>.</p>
+<p>The function MUST use <code>CREATE3</code> to deploy its children.
+This ensures the same address deployment across different chains,
+which is necessary for the <a href="token-bridging.html">standard</a> implementation.</p>
+<p>The salt used for deployment MUST be computed by applying <code>keccak256</code> to the <code>abi.encode</code>
+of the input parameters (<code>_remoteToken</code>, <code>_name</code>, <code>_symbol</code>, and <code>_decimals</code>).
+This implies that the same L1 token can have multiple <code>OptimismSuperchainERC20</code> representations as long as the metadata changes.</p>
+<p>The function MUST store the <code>_remoteToken</code> address for each deployed <code>OptimismSuperchainERC20</code> in a <code>deployments</code> mapping.</p>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h4 id="optimismsuperchainerc20created"><a class="header" href="#optimismsuperchainerc20created"><code>OptimismSuperchainERC20Created</code></a></h4>
+<p>It MUST trigger when <code>deploy</code> is called.</p>
+<pre><code class="language-solidity">event OptimismSuperchainERC20Created(address indexed superchainToken, address indexed remoteToken, address deployer);
+</code></pre>
+<p>where <code>superchainToken</code> is the address of the newly deployed <code>OptimismSuperchainERC20</code>,
+<code>remoteToken</code> is the address of the corresponding token in L1,
+and deployer<code>is the</code>msg.sender`.</p>
+<h3 id="deployment-flow"><a class="header" href="#deployment-flow">Deployment Flow</a></h3>
+<pre class="mermaid">sequenceDiagram
+  participant Alice
+  participant FactoryProxy
+  participant FactoryImpl
+  participant BeaconProxy as OptimismSuperchainERC20 BeaconProxy
+  participant Beacon Contract
+  participant Implementation
+  Alice-&gt;&gt;FactoryProxy: deploy(remoteToken, name, symbol, decimals)
+  FactoryProxy-&gt;&gt;FactoryImpl: delegatecall()
+  FactoryProxy-&gt;&gt;BeaconProxy: deploy with CREATE3
+  FactoryProxy--&gt;FactoryProxy: deployments[superchainToken]=remoteToken
+  FactoryProxy--&gt;FactoryProxy: emit OptimismSuperchainERC20Created(superchainToken, remoteToken, Alice)
+  BeaconProxy--&gt;Beacon Contract: reads implementation()
+  BeaconProxy-&gt;&gt;Implementation: delegatecall()
+  BeaconProxy-&gt;&gt;Implementation: initialize()
+</pre>
+<h2 id="beaconcontract"><a class="header" href="#beaconcontract">BeaconContract</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="overview-2"><a class="header" href="#overview-2">Overview</a></h3>
+<p>The <code>BeaconContract</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
+BeaconProxies deployed by the
+<a href="#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
+<p>The Beacon Contract implements the interface defined
+in <a href="https://eips.ethereum.org/EIPS/eip-1967">EIP-1967</a>.</p>
+<p>The implementation address gets deduced similarly to the <code>GasPriceOracle</code> address in Ecotone and Fjord updates.</p>
+<h2 id="l1block"><a class="header" href="#l1block">L1Block</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000015</code></td></tr>
+<tr><td><code>DEPOSITOR_ACCOUNT</code></td><td><code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="static-configuration"><a class="header" href="#static-configuration">Static Configuration</a></h3>
+<p>The <code>L1Block</code> contract MUST include method <code>setConfig(ConfigType, bytes)</code> for setting the system's static values, which
+are defined as values that only change based on the chain operator's input. This function serves to reduce the size of
+the L1 Attributes transaction, as well as to reduce the need to add specific one off functions. It can only be called by
+<code>DEPOSITOR_ACCOUNT</code>.</p>
+<p>The <code>ConfigType</code> enum is defined as follows:</p>
+<pre><code class="language-solidity">enum ConfigType {
+    SET_GAS_PAYING_TOKEN,
+    ADD_DEPENDENCY,
+    REMOVE_DEPENDENCY
+}
+</code></pre>
+<p>The second argument to <code>setConfig</code> is a <code>bytes</code> value that is ABI encoded with the necessary values for the <code>ConfigType</code>.</p>
+<div class="table-wrapper"><table><thead><tr><th>ConfigType</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>SET_GAS_PAYING_TOKEN</code></td><td><code>abi.encode(token, decimals, name, symbol)</code></td></tr>
+<tr><td><code>ADD_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
+<tr><td><code>REMOVE_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
+</tbody></table>
+</div>
+<p>where</p>
+<ul>
+<li>
+<p><code>token</code> is the gas paying token's address (type <code>address</code>)</p>
+</li>
+<li>
+<p><code>decimals</code> is the gas paying token's decimals (type <code>uint8</code>)</p>
+</li>
+<li>
+<p><code>name</code> is the gas paying token's name (type <code>bytes32</code>)</p>
+</li>
+<li>
+<p><code>symbol</code> is the gas paying token's symbol (type <code>bytes32</code>)</p>
+</li>
+<li>
+<p><code>chainId</code> is the chain id intended to be added or removed from the dependency set (type <code>uint256</code>)</p>
+</li>
+</ul>
+<p>Calls to <code>setConfig</code> MUST originate from <code>SystemConfig</code> and are forwarded to <code>L1Block</code> by <code>OptimismPortal</code>.</p>
+<h3 id="dependency-set"><a class="header" href="#dependency-set">Dependency Set</a></h3>
+<p><code>L1Block</code> is updated to include the set of allowed chains. These chains are added and removed through <code>setConfig</code> calls
+with <code>ADD_DEPENDENCY</code> or <code>REMOVE_DEPENDENCY</code>, respectively. The maximum size of the dependency set is <code>type(uint8).max</code>,
+and adding a chain id when the dependency set size is at its maximum MUST revert. If a chain id already in the
+dependency set, such as the chain's chain id, is attempted to be added, the call MUST revert. If a chain id that is not
+in the dependency set is attempted to be removed, the call MUST revert. If the chain's chain id is attempted to be
+removed, the call also MUST revert.</p>
+<p><code>L1Block</code> MUST provide a public getter to check if a particular chain is in the dependency set called
+<code>isInDependencySet(uint256)</code>. This function MUST return true when a chain id in the dependency set, or the chain's chain
+id, is passed in as an argument, and false otherwise. Additionally, <code>L1Block</code> MUST provide a public getter to return the
+dependency set called <code>dependencySet()</code>. This function MUST return the array of chain ids that are in the dependency set.
+<code>L1Block</code> MUST also provide a public getter to get the dependency set size called <code>dependencySetSize()</code>. This function
+MUST return the length of the dependency set array.</p>
+<h3 id="deposit-context"><a class="header" href="#deposit-context">Deposit Context</a></h3>
+<p>New methods will be added on the <code>L1Block</code> contract to interact with <a href="./derivation.html#deposit-context">deposit contexts</a>.</p>
+<pre><code class="language-solidity">function isDeposit() public view returns (bool);
+function depositsComplete() public;
+</code></pre>
+<h3 id="isdeposit"><a class="header" href="#isdeposit"><code>isDeposit()</code></a></h3>
+<p>Returns true if the current execution occurs in a <a href="./derivation.html#deposit-context">deposit context</a>.</p>
+<p>Only the <code>CrossL2Inbox</code> is authorized to call <code>isDeposit</code>.
+This is done to prevent apps from easily detecting and censoring deposits.</p>
+<h4 id="depositscomplete"><a class="header" href="#depositscomplete"><code>depositsComplete()</code></a></h4>
+<p>Called after processing the first L1 Attributes transaction and user deposits to destroy the deposit context.</p>
+<p>Only the <code>DEPOSITOR_ACCOUNT</code> is authorized to call <code>depositsComplete()</code>.</p>
+<h2 id="optimismmintableerc20factory"><a class="header" href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000012</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="optimismmintableerc20"><a class="header" href="#optimismmintableerc20">OptimismMintableERC20</a></h3>
+<p>The <code>OptimismMintableERC20Factory</code> creates ERC20 contracts on L2 that can be used to deposit
+native L1 tokens into (<code>OptimismMintableERC20</code>). Anyone can deploy <code>OptimismMintableERC20</code> contracts.</p>
+<p>Each <code>OptimismMintableERC20</code> contract created by the <code>OptimismMintableERC20Factory</code>
+allows for the <code>L2StandardBridge</code> to mint
+and burn tokens, depending on whether the user is
+depositing from L1 to L2 or withdrawing from L2 to L1.</p>
+<h3 id="updates"><a class="header" href="#updates">Updates</a></h3>
+<p>The <code>OptimismMintableERC20Factory</code> is updated to include a <code>deployments</code> mapping
+that stores the <code>remoteToken</code> address for each deployed <code>OptimismMintableERC20</code>.
+This is essential for the liquidity migration process defined in the liquidity migration spec.</p>
+<h3 id="functions-2"><a class="header" href="#functions-2">Functions</a></h3>
+<h4 id="createoptimismmintableerc20withdecimals"><a class="header" href="#createoptimismmintableerc20withdecimals"><code>createOptimismMintableERC20WithDecimals</code></a></h4>
+<p>Creates an instance of the <code>OptimismMintableERC20</code> contract with a set of metadata defined by:</p>
+<ul>
+<li><code>_remoteToken</code>: address of the underlying token in its native chain.</li>
+<li><code>_name</code>: <code>OptimismMintableERC20</code> name</li>
+<li><code>_symbol</code>: <code>OptimismMintableERC20</code> symbol</li>
+<li><code>_decimals</code>: <code>OptimismMintableERC20</code> decimals</li>
+</ul>
+<pre><code class="language-solidity">createOptimismMintableERC20WithDecimals(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
+</code></pre>
+<p><strong>Invariants</strong></p>
+<ul>
+<li>The function MUST use <code>CREATE2</code> to deploy new contracts.</li>
+<li>The salt MUST be computed by applying <code>keccak256</code> to the <code>abi.encode</code>
+of the four input parameters (<code>_remoteToken</code>, <code>_name</code>, <code>_symbol</code>, and <code>_decimals</code>).
+This ensures a unique <code>OptimismMintableERC20</code> for each set of ERC20 metadata.</li>
+<li>The function MUST store the <code>_remoteToken</code> address for each deployed <code>OptimismMintableERC20</code> in a <code>deployments</code> mapping.</li>
+</ul>
+<h4 id="createoptimismmintableerc20"><a class="header" href="#createoptimismmintableerc20"><code>createOptimismMintableERC20</code></a></h4>
+<p>Creates an instance of the <code>OptimismMintableERC20</code> contract with a set of metadata defined
+by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fixed <code>decimals</code> to the standard value 18.</p>
+<pre><code class="language-solidity">createOptimismMintableERC20(address _remoteToken, string memory _name, string memory _symbol) returns (address)
+</code></pre>
+<h4 id="createstandardl2token"><a class="header" href="#createstandardl2token"><code>createStandardL2Token</code></a></h4>
+<p>Creates an instance of the <code>OptimismMintableERC20</code> contract with a set of metadata defined
+by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fixed <code>decimals</code> to the standard value 18.</p>
+<pre><code class="language-solidity">createStandardL2Token(address _remoteToken, string memory _name, string memory _symbol) returns (address)
+</code></pre>
+<p>This function exists for backwards compatibility with the legacy version.</p>
+<h3 id="events-1"><a class="header" href="#events-1">Events</a></h3>
+<h4 id="optimismmintableerc20created"><a class="header" href="#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></h4>
+<p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.</p>
+<pre><code class="language-solidity">event OptimismMintableERC20Created(address indexed localToken, address indexed remoteToken, address deployer);
+</code></pre>
+<h4 id="standardl2tokencreated"><a class="header" href="#standardl2tokencreated"><code>StandardL2TokenCreated</code></a></h4>
+<p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.
+This event exists for backward compatibility with legacy version.</p>
+<pre><code class="language-solidity">event StandardL2TokenCreated(address indexed remoteToken, address indexed localToken);
+</code></pre>
+<h2 id="l2standardbridge"><a class="header" href="#l2standardbridge">L2StandardBridge</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000010</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="updates-1"><a class="header" href="#updates-1">Updates</a></h3>
+<p>The <code>OptimismMintableERC20</code> and <code>L2StandardToken</code> tokens (<em>legacy tokens</em>),
+which correspond to locked liquidity in L1, are incompatible with interop.
+Legacy token owners must convert into a <code>OptimismSuperchainERC20</code> representation that implements the <a href="token-bridging.html">standard</a>,
+to move across the Superchain.</p>
+<p>The conversion method uses the <code>L2StandardBridge</code> mint/burn rights
+over the legacy tokens to allow easy migration to and from the
+corresponding <code>OptimismSuperchainERC20</code>.</p>
+<h4 id="convert"><a class="header" href="#convert">convert</a></h4>
+<p>The <code>L2StandardBridge</code> SHOULD add a <code>convert</code> public function that
+converts <code>_amount</code> of <code>_from</code> token to <code>_amount</code> of <code>_to</code> token,
+if and only if the token addresses are valid (as defined below).</p>
+<pre><code class="language-solidity">function convert(address _from, address _to, uint256 _amount)
+</code></pre>
+<p>The function</p>
+<ol>
+<li>Checks that <code>_from</code> and <code>_to</code> addresses are valid, paired and have the same amount of decimals.</li>
+<li>Burns <code>_amount</code> of <code>_from</code> from <code>msg.sender</code>.</li>
+<li>Mints <code>_amount</code> of <code>_to</code> to <code>msg.sender</code>.</li>
+</ol>
+<h4 id="converted"><a class="header" href="#converted"><code>Converted</code></a></h4>
+<p>The <code>L2StandardBridge</code> SHOULD include a <code>Converted</code> event
+that MUST trigger when anyone converts tokens
+with <code>convert</code>.</p>
+<pre><code class="language-solidity">event Converted(address indexed from, address indexed to, address indexed caller, uint256 amount);
+</code></pre>
+<p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
+<code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
+<h3 id="invariants"><a class="header" href="#invariants">Invariants</a></h3>
+<p>The <code>convert</code> function conserves the following invariants:</p>
+<ul>
+<li>Conservation of amount:
+The burnt amount should match the minted amount.</li>
+<li>Revert for non valid or non paired: <code>convert</code> SHOULD revert when called with:
+<ul>
+<li>Tokens with different decimals.</li>
+<li>Legacy tokens that are not in the <code>deployments</code> mapping from the <code>OptimismMintableERC20Factory</code>.</li>
+<li><code>OptimismSuperchainERC20</code> that are not in the <code>deployments</code> mapping from the <code>OptimismSuperchainERC20Factory</code>.</li>
+<li>Legacy tokens and <code>OptimismSuperchainERC20s</code>s
+corresponding to different
+remote token addresses.</li>
+</ul>
+</li>
+<li>Freedom of conversion for valid and paired tokens:
+anyone can convert between allowed legacy representations and
+valid <code>OptimismSuperchainERC20</code> corresponding to the same remote token.</li>
+</ul>
+<h3 id="conversion-flow"><a class="header" href="#conversion-flow">Conversion Flow</a></h3>
+<pre class="mermaid">sequenceDiagram
+  participant Alice
+  participant L2StandardBridge
+  participant factory as OptimismMintableERC20Factory
+  participant superfactory as OptimismSuperchainERC20Factory
+  participant legacy as from Token
+  participant SuperERC20 as to Token
+
+  Alice-&gt;&gt;L2StandardBridge: convert(from, to, amount)
+  L2StandardBridge--&gt;factory: check legacy token is allowed
+  L2StandardBridge--&gt;superfactory: check super token is allowed
+  L2StandardBridge--&gt;L2StandardBridge: checks matching remote and decimals
+  L2StandardBridge-&gt;&gt;legacy: IERC20(from).burn(Alice, amount)
+  L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
+  L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
+</pre>
+<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge">SuperchainERC20Bridge</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="overview-3"><a class="header" href="#overview-3">Overview</a></h3>
+<p>The <code>SuperchainERC20Bridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
+that facilitates token bridging using interop.
+It has mint and burn rights over <code>SuperchainERC20</code> tokens
+as described in the <a href="./token-bridging.html">token bridging spec</a>.</p>
+<h3 id="functions-3"><a class="header" href="#functions-3">Functions</a></h3>
+<h4 id="senderc20"><a class="header" href="#senderc20"><code>sendERC20</code></a></h4>
+<p>Initializes a transfer of <code>_amount</code> amount of tokens with address <code>_tokenAddress</code> to target address <code>_to</code> in chain <code>_chainId</code>.</p>
+<p>It SHOULD burn <code>_amount</code> tokens with address <code>_tokenAddress</code> and initialize a message to the
+<code>L2ToL2CrossChainMessenger</code> to mint the <code>_amount</code> of the same token
+in the target address <code>_to</code> at <code>_chainId</code> and emit the <code>SentERC20</code> event including the <code>msg.sender</code> as parameter.</p>
+<p>To burn the token, the <code>sendERC20</code> function
+calls <code>crosschainBurn</code> in the token contract,
+which is included as part of the the
+<a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
+implemented by the <code>SuperchainERC20</code> standard.</p>
+<p>Returns the <code>msgHash_</code> crafted by the <code>L2ToL2CrossChainMessenger</code>.</p>
+<pre><code class="language-solidity">function sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
+</code></pre>
+<h4 id="relayerc20"><a class="header" href="#relayerc20"><code>relayERC20</code></a></h4>
+<p>Process incoming messages IF AND ONLY IF initiated
+by the same contract (bridge) address on a different chain
+and relayed from the <code>L2ToL2CrossChainMessenger</code> in the local chain.
+It SHOULD mint <code>_amount</code> of tokens with address <code>_tokenAddress</code> to address <code>_to</code>, as defined in <code>sendERC20</code>
+and emit an event including the <code>_tokenAddress</code>, the <code>_from</code> and chain id from the
+<code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
+<p>To mint the token, the <code>relayERC20</code> function
+calls <code>crosschainMint</code> in the token contract,
+which is included as part of the the
+<a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
+implemented by the <code>SuperchainERC20</code> standard.</p>
+<pre><code class="language-solidity">function relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
+</code></pre>
+<h3 id="events-2"><a class="header" href="#events-2">Events</a></h3>
+<h4 id="senterc20"><a class="header" href="#senterc20"><code>SentERC20</code></a></h4>
+<p>MUST trigger when a cross-chain transfer is initiated using <code>sendERC20</code>.</p>
+<pre><code class="language-solidity">event SentERC20(address indexed tokenAddress, address indexed from, address indexed to, uint256 amount, uint256 destination)
+</code></pre>
+<h4 id="relayederc20"><a class="header" href="#relayederc20"><code>RelayedERC20</code></a></h4>
+<p>MUST trigger when a cross-chain transfer is finalized using <code>relayERC20</code>.</p>
+<pre><code class="language-solidity">event RelayedERC20(address indexed tokenAddress, address indexed from, address indexed to, uint256 amount, uint256 source);
+</code></pre>
+<h3 id="diagram"><a class="header" href="#diagram">Diagram</a></h3>
+<p>The following diagram depicts a cross-chain transfer.</p>
+<pre class="mermaid">sequenceDiagram
+  participant from
+  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant SuperERC20_A as SuperchainERC20 (Chain A)
+  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
+  participant Inbox as CrossL2Inbox
+  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant SuperERC20_B as SuperchainERC20 (Chain B)
+
+  from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
+  L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
+  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount)
+  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  Messenger_A-&gt;&gt;L2SBA: return msgHash_ 
+  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
+  L2SBA-&gt;&gt;from: return msgHash_ 
+  Inbox-&gt;&gt;Messenger_B: relayMessage()
+  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
+  L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
+  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
+  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
+</pre>
+<h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
+<p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainERC20Bridge</code> will require the following invariants:</p>
+<ul>
+<li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
+that was burnt in <code>sendERC20()</code>, as long as target chain has the initiating chain in the dependency set.
+<ul>
+<li>Corollary 1: Finalized cross-chain transactions will conserve the sum of <code>totalSupply</code>
+and each user's balance for each chain in the Superchain.</li>
+<li>Corollary 2: Each initiated but not finalized message (included in initiating chain but not yet in target chain)
+will decrease the <code>totalSupply</code> and the initiating user balance precisely by the burnt <code>amount</code>.</li>
+<li>Corollary 3: <code>SuperchainERC20s</code> should not charge a token fee or increase the balance when moving cross-chain.</li>
+<li>Note: if the target chain is not in the initiating chain dependency set,
+funds will be locked, similar to sending funds to the wrong address.
+If the target chain includes it later, these could be unlocked.</li>
+</ul>
+</li>
+<li>Freedom of movement: Users should be able to send and receive tokens in any target
+chain with the initiating chain in its dependency set
+using <code>sendERC20()</code> and <code>relayERC20()</code>, respectively.</li>
+<li>Unique Messenger: The <code>sendERC20()</code> function must exclusively use the <code>L2toL2CrossDomainMessenger</code> for messaging.
+Similarly, the <code>relayERC20()</code> function should only process messages originating from the <code>L2toL2CrossDomainMessenger</code>.</li>
+<li>Unique Address: The <code>sendERC20()</code> function must exclusively send a message
+to the same address on the target chain.
+Similarly, the <code>relayERC20()</code> function should only process messages originating from the same address.
+<ul>
+<li>Note: The <a href="../protocol/preinstalls.html#create2deployer"><code>Create2Deployer</code> preinstall</a>
+and the custom Factory will ensure same address deployment.</li>
+</ul>
+</li>
+<li>Locally initiated: The bridging action should be initialized
+from the chain where funds are located only.
+<ul>
+<li>This is because the same address might correspond to different users cross-chain.
+For example, two SAFEs with the same address in two chains might have different owners.
+With the prospects of a smart wallet future, it is impossible to assume
+there will be a way to distinguish EOAs from smart wallets.</li>
+<li>A way to allow for remotely initiated bridging is to include remote approval,
+i.e. approve a certain address in a certain chainId to spend local funds.</li>
+</ul>
+</li>
+<li>Bridge Events:
+<ul>
+<li><code>sendERC20()</code> should emit a <code>SentERC20</code> event. `</li>
+<li><code>relayERC20()</code> should emit a <code>RelayedERC20</code> event.</li>
+</ul>
+</li>
+</ul>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<p>TODO</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/messaging.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/sequencer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/messaging.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/sequencer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

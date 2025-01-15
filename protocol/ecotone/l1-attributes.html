@@ -1,0 +1,336 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>L1 attributes - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/ecotone/l1-attributes.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="ecotone-l1-attributes"><a class="header" href="#ecotone-l1-attributes">Ecotone L1 Attributes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a>
+<ul>
+<li><a href="#ecotone-l1block-upgrade">Ecotone L1Block upgrade</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>On the Ecotone activation block, and if Ecotone is not activated at Genesis,
+the L1 Attributes Transaction includes a call to <code>setL1BlockValues()</code>
+because the L1 Attributes transaction precedes the <a href="derivation.html#network-upgrade-automation-transactions">Ecotone Upgrade Transactions</a>,
+meaning that <code>setL1BlockValuesEcotone</code> is not guaranteed to exist yet.</p>
+<p>Every subsequent L1 Attributes transaction should include a call to the <code>setL1BlockValuesEcotone()</code> function.
+The input args are no longer ABI encoded function parameters,
+but are instead packed into 5 32-byte aligned segments (starting after the function selector).
+Each unsigned integer argument is encoded as big-endian using a number of bytes corresponding to the underlying type.
+The overall calldata layout is as follows:</p>
+<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
+<tr><td>{0x440a5e20}</td><td></td><td>0-3</td><td>n/a</td></tr>
+<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
+<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
+<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
+<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
+<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
+<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
+<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
+<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
+<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
+</tbody></table>
+</div>
+<p>Total calldata length MUST be exactly 164 bytes, implying the sixth and final segment is only
+partially filled. This helps to slow database growth as every L2 block includes a L1 Attributes
+deposit transaction.</p>
+<p>In the first L2 block after the Ecotone activation block, the Ecotone L1 attributes are first used.</p>
+<p>The pre-Ecotone values are migrated over 1:1.
+Blocks after the Ecotone activation block contain all pre-Ecotone values 1:1,
+and also set the following new attributes:</p>
+<ul>
+<li>The <code>baseFeeScalar</code> is set to the pre-Ecotone <code>scalar</code> value.</li>
+<li>The <code>blobBaseFeeScalar</code> is set to <code>0</code>.</li>
+<li>The pre-Ecotone <code>overhead</code> attribute is dropped.</li>
+<li>The <code>blobBaseFee</code> is set to the L1 blob base fee of the L1 origin block.
+Or <code>1</code> if the L1 block does not support blobs.
+The <code>1</code> value is derived from the EIP-4844 <code>MIN_BLOB_GASPRICE</code>.</li>
+</ul>
+<h2 id="l1-attributes-predeployed-contract"><a class="header" href="#l1-attributes-predeployed-contract">L1 Attributes Predeployed Contract</a></h2>
+<p>The L1 Attributes predeploy stores the following values:</p>
+<ul>
+<li>L1 block attributes:
+<ul>
+<li><code>number</code> (<code>uint64</code>)</li>
+<li><code>timestamp</code> (<code>uint64</code>)</li>
+<li><code>basefee</code> (<code>uint256</code>)</li>
+<li><code>hash</code> (<code>bytes32</code>)</li>
+<li><code>blobBaseFee</code> (<code>uint256</code>)</li>
+</ul>
+</li>
+<li><code>sequenceNumber</code> (<code>uint64</code>): This equals the L2 block number relative to the start of the epoch,
+i.e. the L2 block distance to the L2 block height that the L1 attributes last changed,
+and reset to 0 at the start of a new epoch.</li>
+<li>System configurables tied to the L1 block, see <a href="../system-config.html">System configuration specification</a>:
+<ul>
+<li><code>batcherHash</code> (<code>bytes32</code>): A versioned commitment to the batch-submitter(s) currently operating.</li>
+<li><code>baseFeeScalar</code> (<code>uint32</code>): system configurable to scale the <code>basefee</code> in the Ecotone l1 cost computation</li>
+<li><code>blobBasefeeScalar</code> (<code>uint32</code>): system configurable to scale the <code>blobBaseFee</code> in the Ecotone l1 cost computation</li>
+</ul>
+</li>
+</ul>
+<p>The <code>overhead</code> and <code>scalar</code> values can continue to be accessed after the Ecotone activation block,
+but no longer have any effect on system operation. These fields were also known as the <code>l1FeeOverhead</code>
+and the <code>l1FeeScalar</code>.</p>
+<p>After running <code>pnpm build</code> in the <code>packages/contracts-bedrock</code> directory, the bytecode to add to
+the genesis file will be located in the <code>deployedBytecode</code> field of the build artifacts file at
+<code>/packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json</code>.</p>
+<h3 id="ecotone-l1block-upgrade"><a class="header" href="#ecotone-l1block-upgrade">Ecotone L1Block upgrade</a></h3>
+<p>The L1 Attributes Predeployed contract, <code>L1Block.sol</code>, is upgraded as part of the Ecotone upgrade.
+The version is incremented to <code>1.2.0</code>, one new storage slot is introduced, and one existing slot
+begins to store additional data:</p>
+<ul>
+<li><code>blobBaseFee</code> (<code>uint256</code>): The L1 blob base fee.</li>
+<li><code>blobBaseFeeScalar</code> (<code>uint32</code>): The scalar value applied to the L1 blob base fee portion of the L1 cost.</li>
+<li><code>baseFeeScalar</code> (<code>uint32</code>): The scalar value applied to the L1 base fee portion of the L1 cost.</li>
+</ul>
+<p>The function called by the L1 attributes transaction depends on the network upgrade:</p>
+<ul>
+<li>Before the Ecotone activation:
+<ul>
+<li><code>setL1BlockValues</code> is called, following the pre-Ecotone L1 attributes rules.</li>
+</ul>
+</li>
+<li>At the Ecotone activation block:
+<ul>
+<li><code>setL1BlockValues</code> function MUST be called, except if activated at genesis.
+The contract is upgraded later in this block, to support <code>setL1BlockValuesEcotone</code>.</li>
+</ul>
+</li>
+<li>After the Ecotone activation:
+<ul>
+<li><code>setL1BlockValues</code> function is deprecated and MUST never be called.</li>
+<li><code>setL1BlockValuesEcotone</code> MUST be called with the new Ecotone attributes.</li>
+</ul>
+</li>
+</ul>
+<p><code>setL1BlockValuesEcotone</code> uses a tightly packed encoding for its parameters, which is described in
+<a href="../deposits.html#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/ecotone/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/fjord/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/ecotone/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/fjord/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
