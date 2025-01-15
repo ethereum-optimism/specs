@@ -10,9 +10,18 @@ executors:
       image: ubuntu-2204:2022.07.1
   builder:
     docker:
-      - image: us-docker.pkg.dev/oplabs-tools-artifacts/images/ci-builder-rust:v0.35.0
+      - image: us-docker.pkg.dev/oplabs-tools-artifacts/images/ci-builder-rust:22ebfb824d959a27a372cca10fe39aeb0b610343
 
 commands:
+  install-dependencies:
+    description: Install dependencies
+    steps:
+      - run:
+          name: Enable corepack
+          command: corepack enable
+      - run:
+          name: Install dependencies
+          command: just deps
   notify-failures-on-develop:
     description: "Notify Slack"
     parameters:
@@ -31,9 +40,7 @@ jobs:
     executor: builder
     steps:
       - checkout
-      - run:
-          name: Install deps
-          command: just deps
+      - install-dependencies
       - run:
           name: markdown lint
           command: just lint-specs-md-check
@@ -58,9 +65,7 @@ jobs:
     executor: builder
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: just deps
+      - install-dependencies
       - run:
           name: Build
           command: just build
