@@ -61,7 +61,7 @@ jobs:
       - notify-failures-on-develop:
           channel: C055R639XT9 #notify-link-check
 
-  publish-pages:
+  build-pages:
     executor: builder
     steps:
       - checkout
@@ -72,9 +72,22 @@ jobs:
       - run:
           name: Add CNAME file
           command: echo "specs.optimism.io" > ./book/html/CNAME
+      - persist_to_workspace:
+          root: ./book
+          paths:
+            - html
+
+  publish-pages:
+    executor: base
+    steps:
+      - attach_workspace:
+          at: /tmp/book
+      - run:
+          name: List
+          command: ls -al /tmp/book
       - utils/get-github-access-token
       - utils/github-pages-deploy:
-          src-pages-dir: ./book/html
+          src-pages-dir: /tmp/book/html
           pages-branch: gh-pages-test
 
 workflows:
@@ -93,7 +106,10 @@ workflows:
 
   publish:
     jobs:
+      - build-pages
       - publish-pages:
+          requires:
+            - build-pages
           context: 
             - circleci-repo-specs
           # filters: 
