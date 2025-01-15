@@ -17,6 +17,23 @@ Please chat with us on the [discussion board](https://github.com/ethereum-optimi
 
 We welcome your contributions. Read through [CONTRIBUTING.md](./CONTRIBUTING.md) for a general overview of the contributing process for this repository.
 
+### How to Think about Specs
+
+The specs process is a schelling point for where core developers go to modify the OP Stack. A spec serves multiple purposes:
+- Ensures that we know what we are building before we build it
+- Helps code reviewers and auditors understand what the behavior is supposed to be
+- Enables multiple implementations
+
+Some guidelines for writing a good spec:
+- Thoroughly describe the interfaces that other projects may interact with
+- Include a light description of the problem that is being solved and the rationale but the majority of this should be recorded during the design doc phase
+- Describe things in terms of state machines and invariants
+- It should be clear that it solves the problem at hand
+
+What is the difference between the specs and the [design docs](https://github.com/ethereum-optimism/design-docs)?
+- The design docs describe why and the specs describe how.
+- The design doc phase should be complete before the specs process is complete
+
 ### Dependencies
 
 **Rust Toolchain**
