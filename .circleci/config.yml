@@ -39,7 +39,7 @@ commands:
 
 jobs:
   lint-specs:
-    executor: base
+    executor: builder
     steps:
       - checkout
       - run:
@@ -50,7 +50,7 @@ jobs:
           command: just lint-specs-toc-check
 
   lint-links:
-    executor: base
+    executor: builder
     steps:
       - checkout
       - run:
