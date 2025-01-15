@@ -84,7 +84,6 @@ jobs:
       - utils/get-github-access-token
       - utils/github-pages-deploy:
           src-pages-dir: /tmp/book/html
-          pages-branch: gh-pages-test
 
 workflows:
   specs-check:
@@ -109,6 +108,6 @@ workflows:
             - build-book
           context: 
             - circleci-repo-specs
-          # filters: 
-          #   branches:
-          #     only: main
+          filters: 
+            branches:
+              only: main
