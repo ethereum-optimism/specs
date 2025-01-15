@@ -18,6 +18,8 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
+- [EIP-7702](./eip7702.md)
+
 ## Smart Contracts
 
 - [SuperchainConfig](./superchain-config.md)
