@@ -14,6 +14,8 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
+- [Pectra](https://eips.ethereum.org/EIPS/eip-7600) (Execution Layer):
+  - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
 - [L2ToL1MessagePasser Storage Root in Header](./exec-engine.md##l2tol1messagepasser-storage-root-in-header)
 
 ## Consensus Layer
