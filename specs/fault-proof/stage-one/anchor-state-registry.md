@@ -80,7 +80,8 @@ direction.
 
 A Dispute Game is a smart contract that makes a determination about the validity of some claim. In
 the context of the OP Stack, the claim is generally assumed to be a claim about the value of an
-output root at a given L2 block height.
+output root at a given L2 block height. We assume that all Dispute Game contracts using the same
+AnchorStateRegistry contract are arguing over the same underlying state/claim structure.
 
 ### Respected Game Type
 
@@ -117,13 +118,21 @@ as blacklisted inside of the `OptimismPortal` contract.
 A Dispute Game is considered to be a **Retired Game** if the game contract was created with a
 timestamp less than or equal to the retirement timestamp (`respectedGameTypeUpdatedAt`) defined in
 the `OptimismPortal` contract. The retirement timestamp has the effect of retiring all games
-created before the timestamp was set.
+created before the specific transaction in which the retirement timestamp was set. This includes
+all games created in the same block as the transaction that set the retirement timestamp. We
+acknowledge the edge-case that games created in the same block *after* the retirement timestamp
+was set will be considered Retired Games even though they were technically created after the
+retirement timestamp was set.
 
 ### Proper Game
 
 A Dispute Game is considered to be a **Proper Game** if it has not been invalidated through any of
-the mechanisms defined by the `OptimismPortal` contract. Specifically, a game is considered to be a
-Proper Game if all of the following are true:
+the mechanisms defined by the `OptimismPortal` contract. A Proper Game is, in a sense, a "clean"
+game that exists in the set of games that are playing out correctly in a bug-free manner. A Dispute
+Game can be a Proper Game even if it has not yet resolved or resolves in favor of the Challenger.
+A Game that was previously a Proper Game can no longer be a Proper Game if it is later invalidated.
+
+Specifically, a game is considered to be a Proper Game if all of the following are true:
 
 - The game is a Registered Game
 - The game is not a Blacklisted Game
@@ -186,6 +195,10 @@ Game instances. The value of the Anchor Root is the Starting Anchor State if no 
 been set. Otherwise, the value of the Anchor Root is the root and L2 block height of the current
 Anchor Game.
 
+If the Anchor Game exists and is blacklisted, the AnchorStateRegistry will have no Anchor Root,
+will not allow new Dispute Games to be created using the Anchor Root, and will not allow the Anchor
+Root to be updated except through manual intervention.
+
 ## Assumptions
 
 > **NOTE:** Assumptions are utilized by specific invariants and do not apply globally. Invariants
@@ -200,10 +213,14 @@ faithfully report the following properties:
 - Game type
 - L2 block number
 - Root claim value
+- Game extra data
 - Creation timestamp
 - Resolution timestamp
 - Resolution result
 - Whether the game was the respected game type at creation
+
+We also specifically assume that the game creation timestamp and the resolution timestamp are not
+set to values in the future.
 
 #### Mitigations
 
