@@ -20,10 +20,11 @@
   - [Truly Valid Claim](#truly-valid-claim)
   - [Starting Anchor State](#starting-anchor-state)
   - [Anchor Game](#anchor-game)
+  - [Anchor Root](#anchor-root)
 - [Assumptions](#assumptions)
   - [aASR-001: Dispute Game contracts properly report important properties](#aasr-001-dispute-game-contracts-properly-report-important-properties)
     - [Mitigations](#mitigations)
-  - [aASR-002: Dispute Game Factory properly reports its created games](#aasr-002-dispute-game-factory-properly-reports-its-created-games)
+  - [aASR-002: DisputeGameFactory properly reports its created games](#aasr-002-disputegamefactory-properly-reports-its-created-games)
     - [Mitigations](#mitigations-1)
   - [aASR-003: OptimismPortal properly reports respected game type, blacklist, and retirement time](#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time)
     - [Mitigations](#mitigations-2)
@@ -39,6 +40,9 @@
   - [iASR-003: The Anchor Game is a Truly Valid Claim](#iasr-003-the-anchor-game-is-a-truly-valid-claim)
     - [Impact](#impact-2)
     - [Dependencies](#dependencies-2)
+  - [iASR-004: Invalidation functions operate correctly](#iasr-004-invalidation-functions-operate-correctly)
+    - [Impact](#impact-3)
+    - [Dependencies](#dependencies-3)
 - [Function Specification](#function-specification)
   - [isGameRegistered](#isgameregistered)
   - [isGameRespected](#isgamerespected)
@@ -48,6 +52,7 @@
   - [isGameResolved](#isgameresolved)
   - [isGameAirgapped](#isgameairgapped)
   - [isGameFinalized](#isgamefinalized)
+  - [isGameClaimValid](#isgameclaimvalid)
   - [getAnchorRoot](#getanchorroot)
   - [anchors](#anchors)
   - [setAnchorState](#setanchorstate)
@@ -84,6 +89,12 @@ the portal allows to be used for the purpose of proving and finalizing withdrawa
 allows the system to use multiple game types simultaneously while still ensuring that the
 `OptimismPortal` contract only trusts respected games specifically.
 
+The `OptimismPortal` contract defines a "respected game type" which is the type of Dispute Game
+that it believes to be correct for the purpose of proving and finalizing withdrawals. This
+mechanism allows the system to use multiple game types simultaneously while still ensuring that the
+`OptimismPortal` contract only trusts respected games specifically. If the respected game type is
+updated, any games created when their game type was respected are still considered Respected Games.
+
 ### Registered Game
 
 A Dispute Game is considered to be a **Registered Game** if the game contract was created by the
@@ -103,17 +114,20 @@ as blacklisted inside of the `OptimismPortal` contract.
 
 ### Retired Game
 
-A Dispute Game is considered to be a **Retired Game** if the game contract was created before the
-retirement timestamp (`respectedGameTypeUpdatedAt`) defined in the `OptimismPortal` contract.
+A Dispute Game is considered to be a **Retired Game** if the game contract was created with a
+timestamp less than or equal to the retirement timestamp (`respectedGameTypeUpdatedAt`) defined in
+the `OptimismPortal` contract. The retirement timestamp has the effect of retiring all games
+created before the timestamp was set.
 
 ### Proper Game
 
-A Dispute Game is considered to be a **Proper Game** if all of the following are true:
+A Dispute Game is considered to be a **Proper Game** if it has not been invalidated through any of
+the mechanisms defined by the `OptimismPortal` contract. Specifically, a game is considered to be a
+Proper Game if all of the following are true:
 
-- Game is a Registered Game
-- Game is a Respected Game
-- Game is not a Blacklisted Game
-- Game is not a Retired Game
+- The game is a Registered Game
+- The game is not a Blacklisted Game
+- The game is not a Retired Game
 
 ### Resolved Game
 
@@ -138,7 +152,9 @@ A Dispute Game is considered to be a **Finalized Game** if all of the following 
 A Dispute Game is considered to have a **Valid Claim** if all of the following are true:
 
 - The game is a Proper Game
+- The game is a Respected Game
 - The game is a Finalized Game
+- The game resolved in favor of the root claim (i.e., in favor of the Defender)
 
 ### Truly Valid Claim
 
@@ -163,6 +179,13 @@ After a Game becomes the Anchor Game, it will remain the Anchor Game until it is
 other Game. A Game that is retired after becoming the Anchor Game will remain the Anchor Game. A
 Game that is blacklisted after becoming the Anchor Game must not be used as the Anchor Game.
 
+### Anchor Root
+
+The Anchor Root is the root and L2 block height that is used as the starting state for new Dispute
+Game instances. The value of the Anchor Root is the Starting Anchor State if no Anchor Game has
+been set. Otherwise, the value of the Anchor Root is the root and L2 block height of the current
+Anchor Game.
+
 ## Assumptions
 
 > **NOTE:** Assumptions are utilized by specific invariants and do not apply globally. Invariants
@@ -179,13 +202,15 @@ faithfully report the following properties:
 - Root claim value
 - Creation timestamp
 - Resolution timestamp
+- Resolution result
+- Whether the game was the respected game type at creation
 
 #### Mitigations
 
 - Existing audit on the `FaultDisputeGame` contract
 - Integration testing
 
-### aASR-002: Dispute Game Factory properly reports its created games
+### aASR-002: DisputeGameFactory properly reports its created games
 
 We assume that the `DisputeGameFactory` contract properly and faithfully reports the games it has
 created.
@@ -235,7 +260,7 @@ bond refunding mode.
 #### Dependencies
 
 - [aASR-001](#aasr-001-dispute-game-contracts-properly-report-important-properties)
-- [aASR-002](#aasr-002-dispute-game-factory-properly-reports-its-created-games)
+- [aASR-002](#aasr-002-disputegamefactory-properly-reports-its-created-games)
 - [aASR-003](#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time)
 
 ### iASR-002: All Valid Claims are Truly Valid Claims
@@ -265,7 +290,7 @@ being used correctly.
 #### Dependencies
 
 - [aASR-001](#aasr-001-dispute-game-contracts-properly-report-important-properties)
-- [aASR-002](#aasr-002-dispute-game-factory-properly-reports-its-created-games)
+- [aASR-002](#aasr-002-disputegamefactory-properly-reports-its-created-games)
 - [aASR-003](#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time)
 - [aASR-004](#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
 
@@ -291,9 +316,30 @@ Dispute Game instances. This would lead games to resolve incorrectly.
 #### Dependencies
 
 - [aASR-001](#aasr-001-dispute-game-contracts-properly-report-important-properties)
-- [aASR-002](#aasr-002-dispute-game-factory-properly-reports-its-created-games)
+- [aASR-002](#aasr-002-disputegamefactory-properly-reports-its-created-games)
 - [aASR-003](#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time)
 - [aASR-004](#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
+
+### iASR-004: Invalidation functions operate correctly
+
+We require that the blacklisting and retirement functions operate correctly. Games that are
+blacklisted must not be used as the Anchor Game, must not be considered Valid Games, and must not
+be usable to prove or finalize withdrawals. Any game created before a transaction that updates the
+retirement timestamp must not be set as the Anchor Game, must not be considered Valid Games, and
+must not be usable to prove or finalize withdrawals.
+
+#### Impact
+
+**Severity: High/Critical**
+
+If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
+future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
+incorrectly and would be considered a High Severity issue. Issues that would allow users to
+finalize withdrawals with invalidated games would be considered Critical Severity.
+
+#### Dependencies
+
+- [aASR-003](#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time)
 
 ## Function Specification
 
@@ -307,8 +353,9 @@ Determines if a game is a Registered Game.
 
 Determines if a game is a Respected Game.
 
-- MUST return `true` if and only if the game's game type is the respected game type defined by the
-  `OptimismPortal` contract as per a call to `OptimismPortal.respectedGameType()`.
+- MUST return `true` if and only if the game's game type was the respected game type defined by the
+  `OptimismPortal` contract at the time of the game's creation as per a call to
+  `OptimismPortal.respectedGameType()`.
 
 ### isGameBlacklisted
 
@@ -329,8 +376,8 @@ Determines if a game is a Retired Game.
 
 Determines if a game is a Proper Game.
 
-- MUST return `true` if and only if `isGameRegistered(game)` and `isGameRespected(game)` are both
-  `true` and `isGameBlacklisted(game)` and `isGameRetired(game)` are both `false`.
+- MUST return `true` if and only if `isGameRegistered(game)` is `true` and
+  `isGameBlacklisted(game)` and `isGameRetired(game)` are both `false`.
 
 ### isGameResolved
 
@@ -354,6 +401,14 @@ Determines if a game is a Finalized Game.
 - MUST return `true` if and only if `isGameResolved(game)` and `isGameAirgapped(game)` are both
   `true`.
 
+### isGameClaimValid
+
+Determines if a game has a Valid Claim.
+
+- MUST return `true` if and only if `isGameProper(game)` is `true`, `isGameRespected(game)` is
+  `true`, `isGameFinalized(game)` is `true`, and the game resolved in favor of the root claim
+  (i.e., in favor of the Defender).
+
 ### getAnchorRoot
 
 Retrieves the current anchor root.
@@ -370,8 +425,7 @@ Legacy function. Accepts a game type as a parameter but does not use it.
 
 Allows any address to attempt to update the Anchor Game with a new Game as input.
 
-- MUST revert if the provided game is not a Proper Game for any reason.
-- MUST revert if the provided game is not a Finalized Game for any reason.
-- MUST not update the anchor state if the game corresponds to an L2 block height that is less than
-  or equal to the current anchor state's L2 block height.
+- MUST revert if the provided game does not have a Valid Claim for any reason.
+- MUST revert if the provided game corresponds to an L2 block height that is less than or equal
+  to the current anchor state's L2 block height.
 - MUST otherwise update the anchor state to match the game's result.
