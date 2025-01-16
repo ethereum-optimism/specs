@@ -499,6 +499,9 @@ transaction is one with the following properties:
 
 - The [`to`] field is equal to the configured batcher inbox address.
 
+- The transaction type is one of `0`, `1`, `2`, `3`, or `0x7e` (L2 [Deposited transaction type][g-deposit-tx-type], to
+  support force-inclusion of batcher transactions on nested OP Stack chains).
+
 - The sender, as recovered from the transaction signature (`v`, `r`, and `s`), is the batcher
   address loaded from the system config matching the L1 block of the data.
 
@@ -1013,6 +1016,12 @@ Refer to the [**deposit contract specification**][deposit-contract-spec] for det
 entries.
 
 [deposit-contract-spec]: deposits.md#deposit-contract
+
+Logs for all transaction types are parsed for deposits, also from possibly unknown transactions types like those that
+are considered invalid batcher transaction types, see [L1 Retrieval][#l1-retrieval]. However, they are parsed as if they
+were receipts for one of the known transactions types `0`, `1`, `2`, `3`, `4` and `0x7e`. If they fail this best-effort
+decoding process, they are dropped and considered invalid.
+The intention of this best-effort decoding is to future-proof the protocol for new L1 transaction types.
 
 ### Network upgrade automation transactions
 
