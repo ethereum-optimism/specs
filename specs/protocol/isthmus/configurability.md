@@ -10,11 +10,12 @@
 - [`SystemConfig`](#systemconfig)
   - [`ConfigUpdate`](#configupdate)
   - [Initialization](#initialization)
+  - [Modifying Operator Fee Parameters](#modifying-operator-fee-parameters)
   - [Interface](#interface)
-    - [Fee Vault Config](#fee-vault-config)
-      - [`setBaseFeeVaultConfig`](#setbasefeevaultconfig)
-      - [`setL1FeeVaultConfig`](#setl1feevaultconfig)
-      - [`setSequencerFeeVaultConfig`](#setsequencerfeevaultconfig)
+    - [Operator fee parameters](#operator-fee-parameters)
+      - [`operatorFeeScalar`](#operatorfeescalar)
+      - [`operatorFeeConstant`](#operatorfeeconstant)
+      - [`setOperatorFeeScalars`](#setoperatorfeescalars)
 - [`OptimismPortal`](#optimismportal)
   - [Interface](#interface-1)
     - [`setConfig`](#setconfig)
@@ -25,7 +26,7 @@
 ## Overview
 
 The `SystemConfig` and `OptimismPortal` are updated with a new flow for chain
-configurability.
+configurability. A new service role `OperatorFeeManager` is added to manage the operator fee collection.
 
 ## Constants
 
@@ -39,10 +40,11 @@ The `ConfigType` enum represents configuration that can be modified.
 | `BASE_FEE_VAULT_CONFIG` | `uint8(1)` | Sets the Fee Vault Config for the `BaseFeeVault` |
 | `L1_FEE_VAULT_CONFIG` | `uint8(2)` | Sets the Fee Vault Config for the `L1FeeVault` |
 | `SEQUENCER_FEE_VAULT_CONFIG` | `uint8(3)` | Sets the Fee Vault Config for the `SequencerFeeVault` |
-| `L1_CROSS_DOMAIN_MESSENGER_ADDRESS` | `uint8(4)` | Sets the `L1CrossDomainMessenger` address |
-| `L1_ERC_721_BRIDGE_ADDRESS` | `uint8(5)` | Sets the `L1ERC721Bridge` address |
-| `L1_STANDARD_BRIDGE_ADDRESS` | `uint8(6)` | Sets the `L1StandardBridge` address |
-| `REMOTE_CHAIN_ID` | `uint8(7)` | Sets the chain id of the base chain |
+| `OPERATOR_FEE_VAULT_CONFIG` | `uint8(4)` | Sets the Fee Vault Config for the `OperatorFeeVault` |
+| `L1_CROSS_DOMAIN_MESSENGER_ADDRESS` | `uint8(5)` | Sets the `L1CrossDomainMessenger` address |
+| `L1_ERC_721_BRIDGE_ADDRESS` | `uint8(6)` | Sets the `L1ERC721Bridge` address |
+| `L1_STANDARD_BRIDGE_ADDRESS` | `uint8(7)` | Sets the `L1StandardBridge` address |
+| `REMOTE_CHAIN_ID` | `uint8(8)` | Sets the chain id of the base chain |
 
 ## `SystemConfig`
 
@@ -57,6 +59,7 @@ The following `ConfigUpdate` event is defined where the `CONFIG_VERSION` is `uin
 | `GAS_LIMIT` | `uint8(2)` | `abi.encode(uint64 _gasLimit)` | Modifies the L2 gas limit |
 | `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)` | Modifies the account that is authorized to progress the unsafe chain |
 | `EIP_1559_PARAMS` | `uint8(4)` | `uint256(uint64(uint32(_denominator))) << 32 \| uint64(uint32(_elasticity))` | Modifies the EIP-1559 denominator and elasticity |
+| `OPERATOR_FEE_PARAMS` | `uint8(5)` | `uint256(_operatorFeeScalar) << 64 \| _operatorFeeConstant` | Modifies the operator fee parameters |
 
 ### Initialization
 
@@ -67,10 +70,12 @@ The following actions should happen during the initialization of the `SystemConf
 - `emit ConfigUpdate.GAS_LIMIT`
 - `emit ConfigUpdate.UNSAFE_BLOCK_SIGNER`
 - `emit ConfigUpdate.EIP_1559_PARAMS`
+- `emit ConfigUpdate.OPERATOR_FEE_PARAMS`
 - `setConfig(SET_GAS_PAYING_TOKEN)`
 - `setConfig(SET_BASE_FEE_VAULT_CONFIG)`
 - `setConfig(SET_L1_FEE_VAULT_CONFIG)`
 - `setConfig(SET_SEQUENCER_FEE_VAULT_CONFIG)`
+- `setConfig(SET_OPERATOR_FEE_VAULT_CONFIG)`
 - `setConfig(SET_L1_CROSS_DOMAIN_MESSENGER_ADDRESS)`
 - `setConfig(SET_L1_ERC_721_BRIDGE_ADDRESS)`
 - `setConfig(SET_L1_STANDARD_BRIDGE_ADDRESS)`
@@ -78,32 +83,44 @@ The following actions should happen during the initialization of the `SystemConf
 
 These actions MAY only be triggered if there is a diff to the value.
 
+Since the `OperatorFeeVault` is new in Isthmus, the `setConfig(SET_OPERATOR_FEE_VAULT_CONFIG)` MUST be emitted.
+
+`ConfigUpdate.OPERATOR_FEE_PARAMS` MAY be emitted. If it is not emitted, the `operatorFeeScalar` and
+`operatorFeeConstant` are set to 0 by default.
+
+### Modifying Operator Fee Parameters
+
+A new `SystemConfig` `UpdateType` is introduced that enables the modification of
+the `operatorFeeScalar` and `operatorFeeConstant` by the [`OperatorFeeManager`](../configurability.md#operator-fee-manager).
+
 ### Interface
 
-#### Fee Vault Config
+#### Operator fee parameters
 
-For each `FeeVault`, there is a setter for its config. The arguments to the setter include
-the `RECIPIENT`, the `MIN_WITHDRAWAL_AMOUNT` and the `WithdrawalNetwork`.
-Each of these functions should be `public` and only callable by the chain governor.
+##### `operatorFeeScalar`
 
-Each function calls `OptimismPortal.setConfig(ConfigType,bytes)` with its corresponding `ConfigType`.
-
-##### `setBaseFeeVaultConfig`
+This function returns the currently configured operator fee scalar.
 
 ```solidity
-function setBaseFeeVaultConfig(address,uint256,WithdrawalNetwork)
+function operatorFeeScalar()(uint32)
 ```
 
-##### `setL1FeeVaultConfig`
+##### `operatorFeeConstant`
+
+This function returns the currently configured operator fee constant.
 
 ```solidity
-function setL1FeeVaultConfig(address,uint256,WithdrawalNetwork)
+function operatorFeeConstant()(uint64)
 ```
 
-##### `setSequencerFeeVaultConfig`
+##### `setOperatorFeeScalars`
+
+This function sets the `operatorFeeScalar` and `operatorFeeConstant`.
+
+This function MUST only be callable by the [`OperatorFeeManager`](../configurability.md#operator-fee-manager).
 
 ```solidity
-function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
+function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)
 ```
 
 ## `OptimismPortal`
