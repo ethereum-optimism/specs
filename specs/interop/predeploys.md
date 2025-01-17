@@ -248,8 +248,8 @@ function sendMessage(uint256 _destination, address _target, bytes calldata _mess
 ```
 
 It returns the hash of the message being sent,
-used to track whether the message has successfully been relayed.
-It emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
+which isused to track whether the message has successfully been relayed.
+It also emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
 
 ```solidity
 event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
