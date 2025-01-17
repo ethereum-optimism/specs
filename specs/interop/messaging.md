@@ -209,7 +209,6 @@ may have dependencies on one another.
 
 To determine cross-chain safety, the graph is inspected for valid graph components that have no invalid dependencies,
 while applying the respective safety-view on the blocks in the graph.
-
 I.e., the graph must not have any inward edges towards invalid blocks within the safety-view.
 
 A safety-view is the subset of canonical blocks of all chains with the specified safety label or a higher safety label.
