@@ -12,6 +12,7 @@
   - [Claims](#claims)
   - [Anchor State](#anchor-state)
   - [Anchor State Registry](#anchor-state-registry)
+  - [Respected Game Type](#respected-game-type)
   - [DAG](#dag)
   - [Subgame](#subgame)
   - [Game Tree](#game-tree)
@@ -107,6 +108,10 @@ determines if the game is [finalized](anchor-state-registry.md#finalized-game) a
 ["proper"](anchor-state-registry.md#proper-game) for purposes of [Bond
 Distribution](./bond-incentives.md#game-finalization). See [Anchor State Registry](anchor-state-registry.md) for more
 details.
+
+### Respected Game Type
+
+A Fault Dispute Game must record whether its game type is respected at the time of its creation. See [Respected Game Type](./anchor-state-registry.md#respected-game-type) for more details.
 
 ### DAG
 
