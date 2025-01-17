@@ -102,10 +102,11 @@ states at initialization time so that these updates do not impact active games.
 
 ### Anchor State Registry
 
-The Anchor State Registry is a registry that maps FDG types to their current [anchor states](#anchor-state).
-The Anchor State Registry is specific to Fault Dispute Game contracts and may not be applicable to
-other types of dispute game contracts that do not have the same concept of state that progresses
-over time.
+The Anchor State Registry is a registry that the FDG uses to determine its [anchor state](#anchor-state). It also
+determines if the game is [finalized](anchor-state-registry.md#finalized-game) and
+["proper"](anchor-state-registry.md#proper-game) for purposes of [Bond
+Distribution](./bond-incentives.md#game-finalization). See [Anchor State Registry](anchor-state-registry.md) for more
+details.
 
 ### DAG
 
