@@ -256,6 +256,7 @@
 </ul>
 </li>
 <li><a href="#building-individual-payload-attributes">Building Individual Payload Attributes</a></li>
+<li><a href="#on-future-proof-transaction-log-derivation">On Future-Proof Transaction Log Derivation</a></li>
 </ul>
 </li>
 </ul>
@@ -589,6 +590,10 @@ transaction is one with the following properties:</p>
 <ul>
 <li>
 <p>The <a href="https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/frontier/fork_types.py#L52C31-L52C31"><code>to</code></a> field is equal to the configured batcher inbox address.</p>
+</li>
+<li>
+<p>The transaction type is one of <code>0</code>, <code>1</code>, <code>2</code>, <code>3</code>, or <code>0x7e</code> (L2 <a href="../glossary.html#deposited-transaction-type">Deposited transaction type</a>, to
+support force-inclusion of batcher transactions on nested OP Stack chains).</p>
 </li>
 <li>
 <p>The sender, as recovered from the transaction signature (<code>v</code>, <code>r</code>, and <code>s</code>), is the batcher
@@ -1087,6 +1092,8 @@ sequencer batch.</li>
 <p>The L1 attributes are read from the L1 block header, while deposits are read from the L1 block's <a href="../glossary.html#receipt">receipts</a>.
 Refer to the <a href="deposits.html#deposit-contract"><strong>deposit contract specification</strong></a> for details on how deposits are encoded as log
 entries.</p>
+<p>Logs are derived from transactions following the future-proof best-effort process described in
+[On Future-Proof Transaction Log Derivation][#on-future-proof-transaction-log-derivation]</p>
 <h3 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h3>
 <p>Some network upgrades require automated contract changes or deployments at specific blocks.
 To automate these, without adding persistent changes to the execution-layer,
@@ -1283,6 +1290,29 @@ encoded with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</li
 <li><code>gasLimit</code> is set to the current <code>gasLimit</code> value in the <a href="../glossary.html#system-configuration">system configuration</a> of this payload.</li>
 <li><code>withdrawals</code> is set to nil prior to Canyon and an empty array after Canyon</li>
 </ul>
+<h2 id="on-future-proof-transaction-log-derivation"><a class="header" href="#on-future-proof-transaction-log-derivation">On Future-Proof Transaction Log Derivation</a></h2>
+<p>As described in [L1 Retrieval][#l1-retrieval], batcher transactions' types are required to be from a fixed allow-list.</p>
+<p>However, we want to allow deposit transactions and <code>SystemConfig</code> update events to get derived even from receipts of
+future transaction types, as long as the receipts can be decoded following a best-effort process:</p>
+<p>As long as a future transaction type follows the [EIP-2718][https://eips.ethereum.org/EIPS/eip-2718] specification, the
+type can be decoded from the first byte of the transaction's (or its receipt's) binary encoding. We can then proceed as
+follows to get the logs of such a future transaction, or discard the transaction's receipt as invalid.</p>
+<ul>
+<li>If it's a known transaction type, that is, legacy (first byte of the encoding is in the range <code>[0xc0, 0xfe]</code>) or its
+first byte is in the range <code>[0, 4]</code> or <code>0x7e</code> (<em>deposited</em>), then it's not a <em>future transaction</em> and we know how to
+decode the receipt and this process is irrelevant.</li>
+<li>If a transaction's first byte is in the range <code>[0x05, 0x7d]</code>, it is expected to be a <em>future</em> EIP-2718 transaction, so
+we can proceed to the receipt. Note that we excluded <code>0x7e</code> because that's the deposit transaction type, which is known.</li>
+<li>The <em>future</em> receipt encoding's first byte must be the same byte as the transaction encoding's first byte, or it is
+discarded as invalid, because we require it to be an EIP-2718-encoded receipt to continue.</li>
+<li>The receipt payload is decoded as if it is encoded as <code>rlp([status, cumulative_transaction_gas_used, logs_bloom, logs])</code>, which is the encoding of the known non-legacy transaction types.
+<ul>
+<li>If this decoding fails, the transaction's receipt is discarded as invalid.</li>
+<li>If this decoding succeeds, the <code>logs</code> have been obtained and can be processed as those of known transaction types.</li>
+</ul>
+</li>
+</ul>
+<p>The intention of this best-effort decoding process is to future-proof the protocol for new L1 transaction types.</p>
 
                     </main>
 

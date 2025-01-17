@@ -302,6 +302,8 @@ retrieved from the L1 block info transaction. Otherwise, <code>batcherHash</code
 </ul>
 <p>After preparing the initial system configuration for the given L1 starting input,
 the system configuration is updated by processing all receipts from each new L1 block.</p>
+<p>Logs are derived from transactions following the future-proof best-effort process described in
+[On Future-Proof Transaction Log Derivation][derivation.md#on-future-proof-transaction-log-derivation]</p>
 <p>The contained log events are filtered and processed as follows:</p>
 <ul>
 <li>the log event contract address must match the rollup <code>SystemConfig</code> deployment</li>
