@@ -40,6 +40,7 @@ jobs:
     executor: default
     steps:
       - checkout
+      - install-dependencies
       - run:
           name: markdown lint
           command: just lint-specs-md-check
@@ -51,6 +52,7 @@ jobs:
     executor: default
     steps:
       - checkout
+      - install-dependencies
       - run:
           name: Lint check
           command: just lint-links
