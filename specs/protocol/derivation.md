@@ -1017,11 +1017,8 @@ entries.
 
 [deposit-contract-spec]: deposits.md#deposit-contract
 
-Logs for all transaction types are parsed for deposits, also from possibly unknown transactions types like those that
-are considered invalid batcher transaction types, see [L1 Retrieval][#l1-retrieval]. However, they are parsed as if they
-were receipts for one of the known transactions types `0`, `1`, `2`, `3`, `4` and `0x7e`. If they fail this best-effort
-decoding process, they are dropped and considered invalid.
-The intention of this best-effort decoding is to future-proof the protocol for new L1 transaction types.
+Logs are derived from transactions following the future-proof best-effort process described in
+[On Future-Proof Transaction Log Derivation][#on-future-proof-transaction-log-derivation]
 
 ### Network upgrade automation transactions
 
@@ -1287,3 +1284,29 @@ follows:
 
 [extended-attributes]: exec-engine.md#extended-payloadattributesv1
 [Fee Vaults]: exec-engine.md#fee-vaults
+
+## On Future-Proof Transaction Log Derivation
+
+As described in [L1 Retrieval][#l1-retrieval], batcher transactions' types are required to be from a fixed allow-list.
+
+However, we want to allow deposit transactions and `SystemConfig` update events to get derived even from receipts of
+future transaction types, as long as the receipts can be decoded following a best-effort process:
+
+As long as a future transaction type follows the [EIP-2718][https://eips.ethereum.org/EIPS/eip-2718] specification,
+the type can be decoded as the first byte of an encoded transaction or receipt (excluding legacy transactions, which are
+not _future_ transactions). We can then proceed as follows to get the logs of such a future transaction, or discard the
+transaction's receipt as invalid.
+
+- If it's a known transaction type, that is, legacy (first byte of the encoding is in the range `[0xc0, 0xfe]`) or its
+first byte is in the range `[0, 4]`, then it's not a _future transaction_ and we know how to decode the receipt and this
+process is irrelevant.
+- If a transaction's first byte is in the range `[5, 0x7f]`, it is expected to be a _future_ EIP-2718 transaction, so we can
+proceed to the receipt.
+- The receipt encoding's first byte must be the same byte as the transaction encoding's first byte, or it is discarded
+as invalid.
+- The receipt payload is decoded as if it is encoded as `rlp([status, cumulative_transaction_gas_used, logs_bloom, logs])`,
+which is the encoding of the known non-legacy transaction types.
+  - If this decoding fails, the transaction's receipt is discarded as invalid.
+  - If this decoding succeeds, the `logs` have been obtained and can be processed as those of known transaction types.
+
+The intention of this best-effort decoding process is to future-proof the protocol for new L1 transaction types.

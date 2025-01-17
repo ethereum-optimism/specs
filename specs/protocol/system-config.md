@@ -144,6 +144,9 @@ A rollup node initializes its derivation process by finding a starting point bas
 After preparing the initial system configuration for the given L1 starting input,
 the system configuration is updated by processing all receipts from each new L1 block.
 
+Logs are derived from transactions following the future-proof best-effort process described in
+[On Future-Proof Transaction Log Derivation][derivation.md#on-future-proof-transaction-log-derivation]
+
 The contained log events are filtered and processed as follows:
 
 - the log event contract address must match the rollup `SystemConfig` deployment
@@ -163,9 +166,3 @@ The contained log events are filtered and processed as follows:
 Note that individual derivation stages may be processing different L1 blocks,
 and should thus maintain individual system configuration copies,
 and apply the event-based changes as the stage traverses to the next L1 block.
-
-Logs for all transaction types are parsed for `SystemConfig` events, also from possibly unknown transactions types like
-those that are considered invalid batcher transaction types, see [L1 Retrieval][derivation.md#l1-retrieval]. However,
-they are parsed as if they were receipts for one of the known transactions types `0`, `1`, `2`, `3`, `4` and `0x7e`. If
-they fail this best-effort decoding process, they are dropped and considered invalid.
-The intention of this best-effort decoding is to future-proof the protocol for new L1 transaction types.
