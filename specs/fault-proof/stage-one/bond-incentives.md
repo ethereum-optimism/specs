@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Bond Incentives](#bond-incentives)
@@ -83,9 +84,9 @@ proof system.
 
 ### Authenticated Roles
 
-| Name | Description |
-| ---- | ----------- |
-| Guardian | Role responsible for blacklisting dispute game contracts and changing the respected dispute game type |
+| Name         | Description                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| Guardian     | Role responsible for blacklisting dispute game contracts and changing the respected dispute game type |
 | System Owner | Role that owns the `ProxyAdmin` contract that in turn owns most `Proxy` contracts within the OP Stack |
 
 ### Base Fee Assumption
@@ -150,7 +151,7 @@ In refund mode, the FDG will refund the bonds to the original depositor.
 
 ### Game Closure
 
-The `FaultDisputeGame` contract can be closed after finalization via the `closeGame()` function, or if the game is not yet closed, can be closed via `claimCredit`.
+The `FaultDisputeGame` contract can be closed after finalization via the `closeGame()` function.
 
 `closeGame` must do the following:
 
@@ -162,6 +163,15 @@ The `FaultDisputeGame` contract can be closed after finalization via the `closeG
 ### Claiming Credit
 
 After the game is closed and the bond distribution mode is determined, there is a 2-step process to claim credit. First, `claimCredit(address claimant)` should be called to unlock the credit from the [DelayedWETH](#delayedweth) contract. After DelayedWETH's [delay period](#delay-period) has passed, `claimCredit` should be called again to withdraw the credit.
+
+The `claimCredit(address claimant)` function must do the following:
+
+- Call `closeGame()` to determine the distribution mode if not already closed.
+  - In NORMAL mode: Distribute credit from the standard `normalModeCredit` mapping.
+  - In REFUND mode: Distribute credit from the `refundModeCredit` mapping.
+- If the claimant has not yet unlocked their credit, unlock it by calling `DelayedWETH.unlock(claimant, credit)`.
+  - Claimant must not be able to unlock this credit again.
+- If the claimant has already unlocked their credit, call `DelayedWETH.withdraw(claimant, credit)` (implying a [delay period](#delay-period)) to withdraw the credit, and set claimant's `credit` balances to 0.
 
 ### DelayedWETH
 
@@ -177,19 +187,22 @@ incorrectly distribute bonds.
 - `DelayedWETH` has an `owner()` address. We typically expect this to be set to the `System Owner` address.
 - `DelayedWETH` has a `delay()` function that returns a period of time that withdrawals will be delayed.
 - `DelayedWETH` has an `unlock(guy,wad)` function that modifies a mapping called `withdrawals` keyed as
-`withdrawals[msg.sender][guy] => WithdrawalRequest` where `WithdrawalRequest` is
-`struct Withdrawal Request { uint256 amount, uint256 timestamp }`. When `unlock` is called, the timestamp for
-`withdrawals[msg.sender][guy]` is set to the current timestamp and the amount is increased by the given amount.
-- `DelayedWETH` modifies the `WETH.withdraw` function such that an address *must* provide a "sub-account" to withdraw
-from. The function signature becomes `withdraw(guy,wad)`. The function retrieves `withdrawals[msg.sender][guy]` and
-checks that the current `block.timestamp` is greater than the timestamp on the withdrawal request plus the `delay()`
-seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
-request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
-`withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
-`withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`.
-- `DelayedWETH` has a `hold()` function that allows the `owner()` address to give itself an allowance from any address.
+  `withdrawals[msg.sender][guy] => WithdrawalRequest` where `WithdrawalRequest` is
+  `struct Withdrawal Request { uint256 amount, uint256 timestamp }`. When `unlock` is called, the timestamp for
+  `withdrawals[msg.sender][guy]` is set to the current timestamp and the amount is increased by the given amount.
+- `DelayedWETH` modifies the `WETH.withdraw` function such that an address _must_ provide a "sub-account" to withdraw
+  from. The function signature becomes `withdraw(guy,wad)`. The function retrieves `withdrawals[msg.sender][guy]` and
+  checks that the current `block.timestamp` is greater than the timestamp on the withdrawal request plus the `delay()`
+  seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
+  request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
+  `withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
+  `withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`.
+- `DelayedWETH` has a `hold(guy,wad)` function that allows the `owner()` address to, for any holder, give itself an
+  allowance and immediately `transferFrom` that allowance amount to itself.
+- `DelayedWETH` has a `hold(guy)` function that allows the `owner()` address to, for any holder, give itself a full
+  allowance of the holder's balance and immediately `transferFrom` that amount to itself.
 - `DelayedWETH` has a `recover()` function that allows the `owner()` address to recover any amount of ETH from the
-contract.
+  contract.
 
 #### Sub-Account Model
 
@@ -236,9 +249,13 @@ sequenceDiagram
         FDG->>FDG: Add to claimant credit
     end
 
-    loop claimCredit by Users
+  loop Initial claimCredit call by Users
         U->>FDG: claimCredit()
         FDG->>DW: unlock(recipient, bond)
+    end
+
+    loop Subsequent claimCredit call by Users
+        U->>FDG: claimCredit()
         FDG->>DW: withdraw(recipient, credit)
         Note over DW: Checks timer/amount for recipient
         DW->>FDG: Transfer claim to FDG
