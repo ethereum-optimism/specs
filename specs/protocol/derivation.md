@@ -50,6 +50,7 @@
         - [GasPriceOracle Enable Ecotone](#gaspriceoracle-enable-ecotone)
         - [Beacon block roots contract deployment (EIP-4788)](#beacon-block-roots-contract-deployment-eip-4788)
   - [Building Individual Payload Attributes](#building-individual-payload-attributes)
+  - [On Future-Proof Transaction Log Derivation](#on-future-proof-transaction-log-derivation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
