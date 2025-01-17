@@ -93,6 +93,7 @@ workflows:
     jobs:
       - lint-specs
       - build-book
+  
   scheduled-links-check:
     when:
       equal: [build_daily, <<pipeline.schedule.name>>]
