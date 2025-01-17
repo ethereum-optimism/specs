@@ -5,25 +5,23 @@ orbs:
   utils: ethereum-optimism/circleci-utils@0.0.12
 
 executors:
-  base:
+  default:
     machine:
-      image: ubuntu-2404:current
-  builder:
-    docker:
-      - image: us-docker.pkg.dev/oplabs-tools-artifacts/images/ci-builder-rust:22ebfb824d959a27a372cca10fe39aeb0b610343
+      image: ubuntu-2204:2024.08.1
 
 commands:
   install-dependencies:
-    description: Install dependencies
     steps:
-      # We enable corepack, a nodejs package manager manager
-      # that is reponsible for automatically determining the correct version of pnpm to use
       - run:
-          name: Enable corepack
-          command: corepack enable
+          name: Install mise
+          command: curl https://mise.run | MISE_INSTALL_PATH=/home/circleci/bin/mise sh
       - run:
-          name: Install dependencies
-          command: just deps
+          name: Activate mise
+          command: echo 'eval "$(mise activate bash)"' >> $BASH_ENV
+      - run:
+          name: Install mise dependencies
+          command: mise install
+
   notify-failures-on-develop:
     description: "Notify Slack"
     parameters:
@@ -39,7 +37,7 @@ commands:
 
 jobs:
   lint-specs:
-    executor: builder
+    executor: default
     steps:
       - checkout
       - run:
@@ -50,7 +48,7 @@ jobs:
           command: just lint-specs-toc-check
 
   lint-links:
-    executor: builder
+    executor: default
     steps:
       - checkout
       - run:
@@ -60,7 +58,7 @@ jobs:
           channel: C055R639XT9 #notify-link-check
 
   build-book:
-    executor: builder
+    executor: default
     steps:
       - checkout
       - install-dependencies
@@ -76,7 +74,7 @@ jobs:
             - html
 
   publish-book:
-    executor: base
+    executor: default
     steps:
       - checkout
       - attach_workspace:
