@@ -2,37 +2,39 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Overview](#overview)
-- [Definitions](#definitions)
-  - [Virtual Machine (VM)](#virtual-machine-vm)
-  - [PreimageOracle](#preimageoracle)
-  - [Execution Trace](#execution-trace)
-  - [Claims](#claims)
-  - [Anchor State](#anchor-state)
-  - [Anchor State Registry](#anchor-state-registry)
-  - [DAG](#dag)
-  - [Subgame](#subgame)
-  - [Game Tree](#game-tree)
-  - [Position](#position)
-  - [MAX_CLOCK_DURATION](#max_clock_duration)
-  - [CLOCK_EXTENSION](#clock_extension)
-  - [Freeloader Claims](#freeloader-claims)
-- [Core Game Mechanics](#core-game-mechanics)
-  - [Actors](#actors)
-  - [Moves](#moves)
-    - [Attack](#attack)
-    - [Defend](#defend)
-  - [L2 Block Number Challenge](#l2-block-number-challenge)
-  - [Step](#step)
-  - [Step Types](#step-types)
-  - [PreimageOracle Interaction](#preimageoracle-interaction)
-  - [Team Dynamics](#team-dynamics)
-  - [Game Clock](#game-clock)
-  - [Resolution](#resolution)
-    - [Resolving the L2 Block Number Challenge](#resolving-the-l2-block-number-challenge)
-  - [Finalization](#finalization)
+- [Fault Dispute Game](#fault-dispute-game)
+  - [Overview](#overview)
+  - [Definitions](#definitions)
+    - [Virtual Machine (VM)](#virtual-machine-vm)
+    - [PreimageOracle](#preimageoracle)
+    - [Execution Trace](#execution-trace)
+    - [Claims](#claims)
+    - [Anchor State](#anchor-state)
+    - [Anchor State Registry](#anchor-state-registry)
+    - [DAG](#dag)
+    - [Subgame](#subgame)
+    - [Game Tree](#game-tree)
+    - [Position](#position)
+    - [MAX_CLOCK_DURATION](#max_clock_duration)
+    - [CLOCK_EXTENSION](#clock_extension)
+    - [Freeloader Claims](#freeloader-claims)
+  - [Core Game Mechanics](#core-game-mechanics)
+    - [Actors](#actors)
+    - [Moves](#moves)
+      - [Attack](#attack)
+      - [Defend](#defend)
+    - [L2 Block Number Challenge](#l2-block-number-challenge)
+    - [Step](#step)
+    - [Step Types](#step-types)
+    - [PreimageOracle Interaction](#preimageoracle-interaction)
+    - [Team Dynamics](#team-dynamics)
+    - [Game Clock](#game-clock)
+    - [Resolution](#resolution)
+      - [Resolving the L2 Block Number Challenge](#resolving-the-l2-block-number-challenge)
+    - [Finalization](#finalization)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -552,14 +554,4 @@ Thus, no moves against the root, including uncontested ones, can win a root subg
 
 ### Finalization
 
-Once the game is resolved, if the claim is shown to be valid, the FDG reports its state to the
-Anchor State Registry. The Anchor State Registry verifies that the request to update an anchor
-state comes from a FDG contract created by the Dispute Game Factory contract, confirms that the
-game resolved in favor of the defender, and confirms that the updated state would be newer than
-the current anchor state (based on the result of `FaultDisputeGame.l2BlockNumber()`). If these
-conditions are true, the Anchor State Registry updates the anchor state for the given game type.
-
-Note that the dependency of the Anchor State Registry on the `l2BlockNumber()` function means that
-the registry may not be applicable to dispute game types that do not have a similar sense of
-progressing state over time. Currently, the Anchor State Registry is therefore assumed to be
-specific to the Fault Dispute Game contract and not to other dispute game types.
+Once the game is resolved, it must wait for the `disputeGameFinalityDelaySeconds` on the `OptimismPortal` to pass before it can be finalized, after which bonds can be distributed via the process outlined in [Bond Incentives: Game Finalization](bond-incentives.md#game-finalization).

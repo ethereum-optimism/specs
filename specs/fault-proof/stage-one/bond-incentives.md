@@ -4,20 +4,27 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Overview](#overview)
-- [Moves](#moves)
-- [Subgame Resolution](#subgame-resolution)
-  - [Leftmost Claim Incentives](#leftmost-claim-incentives)
-- [Fault Proof Mainnet Incentives](#fault-proof-mainnet-incentives)
-  - [Authenticated Roles](#authenticated-roles)
-  - [Base Fee Assumption](#base-fee-assumption)
-  - [Bond Scaling](#bond-scaling)
-  - [Required Bond Formula](#required-bond-formula)
-  - [Other Incentives](#other-incentives)
-  - [DelayedWETH](#delayedweth)
-    - [Sub-Account Model](#sub-account-model)
-    - [Delay Period](#delay-period)
-    - [Integration](#integration)
+- [Bond Incentives](#bond-incentives)
+  - [Overview](#overview)
+  - [Moves](#moves)
+  - [Subgame Resolution](#subgame-resolution)
+    - [Leftmost Claim Incentives](#leftmost-claim-incentives)
+  - [Fault Proof Mainnet Incentives](#fault-proof-mainnet-incentives)
+    - [Authenticated Roles](#authenticated-roles)
+    - [Base Fee Assumption](#base-fee-assumption)
+    - [Bond Scaling](#bond-scaling)
+    - [Required Bond Formula](#required-bond-formula)
+    - [Other Incentives](#other-incentives)
+  - [Game Finalization](#game-finalization)
+    - [Bond Distribution Mode](#bond-distribution-mode)
+      - [Normal Mode](#normal-mode)
+      - [Refund Mode](#refund-mode)
+    - [Game Closure](#game-closure)
+    - [Claiming Credit](#claiming-credit)
+    - [DelayedWETH](#delayedweth)
+      - [Sub-Account Model](#sub-account-model)
+      - [Delay Period](#delay-period)
+      - [Integration](#integration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -125,9 +132,40 @@ opportunity cost of locking up capital in the dispute game. While we do not expl
 these costs, we assume that the current bond rewards, based on this specification, are enough as a whole to cover
 all other costs of participation.
 
+## Game Finalization
+
+After the game is resolved, claimants must wait for the [AnchorStateRegistry's `isGameFinalized()`](anchor-state-registry.md#isgamefinalized) to return `true` before they can claim their bonds. This implies a wait period of at least the `disputeGameFinalityDelaySeconds` variable from the `OptimismPortal` contract. After the game is finalized, bonds can be distributed.
+
+### Bond Distribution Mode
+
+The FDG will in most cases distribute bonds to the winners of the game after it is resolved and finalized, but in special cases will refund the bonds to the original depositor.
+
+#### Normal Mode
+
+In normal mode, the FDG will distribute bonds to the winners of the game after it is resolved and finalized.
+
+#### Refund Mode
+
+In refund mode, the FDG will refund the bonds to the original depositor.
+
+### Game Closure
+
+The `FaultDisputeGame` contract can be closed after finalization via the `closeGame()` function, or if the game is not yet closed, can be closed via `claimCredit`.
+
+`closeGame` must do the following:
+
+1. Verify the game is resolved and finalized according to the Anchor State Registry
+2. Attempt to set this game as the new anchor game .
+3. Determine the bond distribution mode based on whether the [AnchorStateRegistry's `isGameProper()`](anchor-state-registry.md#isgameproper) returns `true`.
+4. Emit a `GameClosed` event with the chosen distribution mode.
+
+### Claiming Credit
+
+After the game is closed and the bond distribution mode is determined, there is a 2-step process to claim credit. First, `claimCredit(address claimant)` should be called to unlock the credit from the [DelayedWETH](#delayedweth) contract. After DelayedWETH's [delay period](#delay-period) has passed, `claimCredit` should be called again to withdraw the credit.
+
 ### DelayedWETH
 
-FPM introduces a contract `DelayedWETH` designed to hold the bonded ETH for each
+`DelayedWETH` is designed to hold the bonded ETH for each
 [Fault Dispute Game](fault-dispute-game.md).
 `DelayedWETH` is an extended version of the standard `WETH` contract that introduces a delayed unwrap mechanism that
 allows an owner address to function as a backstop in the case that a Fault Dispute Game would
@@ -174,8 +212,8 @@ over multiple timezones.
 
 - When `FaultDisputeGame.initialize` is triggered, `DelayedWETH.deposit{value: msg.value}()` is called.
 - When `FaultDisputeGame.move` is triggered, `DelayedWETH.deposit{value: msg.value}()` is called.
-- When `FaultDisputeGame.resolveClaim` is triggered, `DelayedWETH.unlock(recipient, bond)` is called.
-- When `FaultDisputeGame.claimCredit` is triggered, `DelayedWETH.withdraw(recipient, claim)` is called.
+- When `FaultDisputeGame.resolveClaim` is triggered, the game will add to the claimant's internal credit balance.
+- When `FaultDisputeGame.claimCredit` is triggered, `DelayedWETH.withdraw(recipient, credit)` is called.
 
 ```mermaid
 sequenceDiagram
@@ -195,13 +233,13 @@ sequenceDiagram
 
     loop resolveClaim by Users
         U->>FDG: resolveClaim()
-        FDG->>DW: unlock(recipient, bond)
-        Note over DW: Starts timer for recipient
+        FDG->>FDG: Add to claimant credit
     end
 
     loop claimCredit by Users
         U->>FDG: claimCredit()
-        FDG->>DW: withdraw(recipient, claim)
+        FDG->>DW: unlock(recipient, bond)
+        FDG->>DW: withdraw(recipient, credit)
         Note over DW: Checks timer/amount for recipient
         DW->>FDG: Transfer claim to FDG
         FDG->>U: Transfer claim to User
