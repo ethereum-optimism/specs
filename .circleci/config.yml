@@ -102,12 +102,12 @@ workflows:
 
   publish:
     jobs:
-      - build-book
+      - build-book:
+          filters: 
+            branches:
+              only: main
       - publish-book:
           requires:
             - build-book
           context: 
             - circleci-repo-specs
-          filters: 
-            branches:
-              only: main
