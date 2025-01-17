@@ -1300,12 +1300,12 @@ transaction's receipt as invalid.
 - If it's a known transaction type, that is, legacy (first byte of the encoding is in the range `[0xc0, 0xfe]`) or its
 first byte is in the range `[0, 4]` or `0x7e` (_deposited_), then it's not a _future transaction_ and we know how to
 decode the receipt and this process is irrelevant.
-- If a transaction's first byte is in the range `[5, 0x7d]`, it is expected to be a _future_ EIP-2718 transaction, so we can
-proceed to the receipt. Note that we excluded `0x7e` because that's the deposit transaction type, which is known.
-- The _future_ receipt encoding's first byte must be the same byte as the transaction encoding's first byte, or it is discarded
-as invalid, because we require it to be an EIP-2718-encoded receipt to continue.
-- The receipt payload is decoded as if it is encoded as `rlp([status, cumulative_transaction_gas_used, logs_bloom, logs])`,
-which is the encoding of the known non-legacy transaction types.
+- If a transaction's first byte is in the range `[5, 0x7d]`, it is expected to be a _future_ EIP-2718 transaction, so we
+can proceed to the receipt. Note that we excluded `0x7e` because that's the deposit transaction type, which is known.
+- The _future_ receipt encoding's first byte must be the same byte as the transaction encoding's first byte, or it is
+discarded as invalid, because we require it to be an EIP-2718-encoded receipt to continue.
+- The receipt payload is decoded as if it is encoded as `rlp([status, cumulative_transaction_gas_used, logs_bloom,
+logs])`, which is the encoding of the known non-legacy transaction types.
   - If this decoding fails, the transaction's receipt is discarded as invalid.
   - If this decoding succeeds, the `logs` have been obtained and can be processed as those of known transaction types.
 
