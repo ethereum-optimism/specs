@@ -232,8 +232,7 @@
 </li>
 <li><a href="#l1block">L1Block</a>
 <ul>
-<li><a href="#static-configuration">Static Configuration</a></li>
-<li><a href="#dependency-set">Dependency Set</a></li>
+<li><a href="#l1-atributes-transaction">L1 Atributes Transaction</a></li>
 <li><a href="#deposit-context">Deposit Context</a></li>
 <li><a href="#isdeposit"><code>isDeposit()</code></a>
 <ul>
@@ -588,57 +587,24 @@ in <a href="https://eips.ethereum.org/EIPS/eip-1967">EIP-1967</a>.</p>
 <tr><td><code>DEPOSITOR_ACCOUNT</code></td><td><code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="static-configuration"><a class="header" href="#static-configuration">Static Configuration</a></h3>
-<p>The <code>L1Block</code> contract MUST include method <code>setConfig(ConfigType, bytes)</code> for setting the system's static values, which
-are defined as values that only change based on the chain operator's input. This function serves to reduce the size of
-the L1 Attributes transaction, as well as to reduce the need to add specific one off functions. It can only be called by
-<code>DEPOSITOR_ACCOUNT</code>.</p>
-<p>The <code>ConfigType</code> enum is defined as follows:</p>
-<pre><code class="language-solidity">enum ConfigType {
-    SET_GAS_PAYING_TOKEN,
-    ADD_DEPENDENCY,
-    REMOVE_DEPENDENCY
-}
+<h3 id="l1-atributes-transaction"><a class="header" href="#l1-atributes-transaction">L1 Atributes Transaction</a></h3>
+<p>A new entrypoint on the <code>L1Block</code> contract is added that is used to open the <a href="./derivation.html#deposit-context">deposit context</a>.</p>
+<pre><code class="language-solidity">function setL1AttributesInterop() external;
 </code></pre>
-<p>The second argument to <code>setConfig</code> is a <code>bytes</code> value that is ABI encoded with the necessary values for the <code>ConfigType</code>.</p>
-<div class="table-wrapper"><table><thead><tr><th>ConfigType</th><th>Value</th></tr></thead><tbody>
-<tr><td><code>SET_GAS_PAYING_TOKEN</code></td><td><code>abi.encode(token, decimals, name, symbol)</code></td></tr>
-<tr><td><code>ADD_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
-<tr><td><code>REMOVE_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
+<p>WARNING: the function name is subject to change depending on the name of the network upgrade.</p>
+<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
+<tr><td>{0xfe8f4eaf}</td><td></td><td>0-3</td><td>n/a</td></tr>
+<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
+<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
+<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
+<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
+<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
+<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
+<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
+<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
+<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
 </tbody></table>
 </div>
-<p>where</p>
-<ul>
-<li>
-<p><code>token</code> is the gas paying token's address (type <code>address</code>)</p>
-</li>
-<li>
-<p><code>decimals</code> is the gas paying token's decimals (type <code>uint8</code>)</p>
-</li>
-<li>
-<p><code>name</code> is the gas paying token's name (type <code>bytes32</code>)</p>
-</li>
-<li>
-<p><code>symbol</code> is the gas paying token's symbol (type <code>bytes32</code>)</p>
-</li>
-<li>
-<p><code>chainId</code> is the chain id intended to be added or removed from the dependency set (type <code>uint256</code>)</p>
-</li>
-</ul>
-<p>Calls to <code>setConfig</code> MUST originate from <code>SystemConfig</code> and are forwarded to <code>L1Block</code> by <code>OptimismPortal</code>.</p>
-<h3 id="dependency-set"><a class="header" href="#dependency-set">Dependency Set</a></h3>
-<p><code>L1Block</code> is updated to include the set of allowed chains. These chains are added and removed through <code>setConfig</code> calls
-with <code>ADD_DEPENDENCY</code> or <code>REMOVE_DEPENDENCY</code>, respectively. The maximum size of the dependency set is <code>type(uint8).max</code>,
-and adding a chain id when the dependency set size is at its maximum MUST revert. If a chain id already in the
-dependency set, such as the chain's chain id, is attempted to be added, the call MUST revert. If a chain id that is not
-in the dependency set is attempted to be removed, the call MUST revert. If the chain's chain id is attempted to be
-removed, the call also MUST revert.</p>
-<p><code>L1Block</code> MUST provide a public getter to check if a particular chain is in the dependency set called
-<code>isInDependencySet(uint256)</code>. This function MUST return true when a chain id in the dependency set, or the chain's chain
-id, is passed in as an argument, and false otherwise. Additionally, <code>L1Block</code> MUST provide a public getter to return the
-dependency set called <code>dependencySet()</code>. This function MUST return the array of chain ids that are in the dependency set.
-<code>L1Block</code> MUST also provide a public getter to get the dependency set size called <code>dependencySetSize()</code>. This function
-MUST return the length of the dependency set array.</p>
 <h3 id="deposit-context"><a class="header" href="#deposit-context">Deposit Context</a></h3>
 <p>New methods will be added on the <code>L1Block</code> contract to interact with <a href="./derivation.html#deposit-context">deposit contexts</a>.</p>
 <pre><code class="language-solidity">function isDeposit() public view returns (bool);

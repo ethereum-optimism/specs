@@ -173,9 +173,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#overview">Overview</a>
-<ul>
+<li><a href="#overview">Overview</a></li>
 <li><a href="#invariants">Invariants</a></li>
+<li><a href="#l1-attributes-transaction">L1 Attributes Transaction</a>
+<ul>
 <li><a href="#deposit-context">Deposit Context</a>
 <ul>
 <li><a href="#opening-the-deposit-context">Opening the deposit context</a></li>
@@ -206,7 +207,7 @@
 <p>New derivation rules are added to guaranteee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
-<h3 id="invariants"><a class="header" href="#invariants">Invariants</a></h3>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
 <ul>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
@@ -217,11 +218,14 @@ They MAY optimistically exist as unsafe blocks for some period of time. An L2 bl
 because it includes invalid executing messages MUST be replaced by a deposits only block at the same
 block height. This guarantees progression of the chain, ensuring that an infinite loop of processing
 the same block in the proof system is not possible.</p>
+<h2 id="l1-attributes-transaction"><a class="header" href="#l1-attributes-transaction">L1 Attributes Transaction</a></h2>
+<p>The L1 attributes transaction is updated to a new entrypoint on the <code>L1Block</code> contract.</p>
 <h3 id="deposit-context"><a class="header" href="#deposit-context">Deposit Context</a></h3>
-<p>Derivation is extended to create <strong>deposit contexts</strong>, which signifies the execution of a depositing transaction.
-A deposit context is scoped to a single block, commencing with the execution of the first deposited transaction
-and concluding immediately after the execution of the final deposited transaction within that block.
-As such, there is exactly one deposit context per block.</p>
+<p>Derivation is extended to create <strong>deposit contexts</strong>, which signify the execution of a depositing transaction.
+A deposit context is scoped to a single block, opening with the first deposited transaction and closing after
+the execution of the final deposited transaction. As such, there is exactly one deposit context per block.
+The deposit context exists to give legibility within the EVM that execution is happening in the context of
+a deposit transaction. See <a href="./predeploys.html#isdeposit"><code>isDeposit()</code></a> for more information.</p>
 <p>The order of deposit transactions occurs as follows:</p>
 <ol>
 <li>L1 attributes transaction, <a href="#opening-the-deposit-context">opening the deposit context</a>.</li>
