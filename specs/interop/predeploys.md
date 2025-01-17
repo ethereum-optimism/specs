@@ -203,7 +203,7 @@ properties about the `_msg`.
 The `L2ToL2CrossDomainMessenger` is a higher level abstraction on top of the `CrossL2Inbox` that
 provides general message passing, utilized for secure transfers ERC20 tokens between L2 chains.
 Messages sent through the `L2ToL2CrossDomainMessenger` on the source chain receive both replay protection
-as well as domain binding, ie the executing transaction can only be valid on a single chain.
+as well as domain binding, i.e. the executing transaction can only be valid on a single chain.
 
 ### `relayMessage` Invariants
 
