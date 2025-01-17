@@ -235,7 +235,7 @@ See [SuperchainWETH](./superchain-weth.md) for more information.
 
 ### Interfaces
 
-The `L2ToL2CrossDomainMessenger` uses a similar interface to the `L2CrossDomainMessenger` but
+The `L2ToL2CrossDomainMessenger` uses a similar interface to the `L2CrossDomainMessenger`, but
 the `_minGasLimit` is removed to prevent complexity around EVM gas introspection and the `_destination`
 chain is included instead.
 
