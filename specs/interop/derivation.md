@@ -117,7 +117,7 @@ When the [cross chain dependency resolution](./messaging.md#resolving-cross-chai
 that a block contains an [invalid message](./messaging.md#invalid-messages), the block is replaced
 by a block with the same inputs, except for the transactions included. The transactions from the
 original block are trimmed to include only deposit transactions plus an
-[optimistic block info deposit transaction](#optimistic-block-deposited-transaction) which is appended
+[optimistic block info deposit transaction](#optimistic-block-deposited-transaction), which is appended
 to the trimmed transaction list.
 
 ### Optimistic Block Deposited Transaction
