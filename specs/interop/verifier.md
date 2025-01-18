@@ -24,7 +24,7 @@ to safe. A series of invariants are enforced before promotion.
 
 Safety is an abstraction that is useful for reasoning about the security of L2 blocks.
 It is a spectrum from `unsafe` to `finalized`. Users can choose to operate on L2 data
-based on its level of safety taking into account their risk profile and personal preferences.
+based on its level of safety, taking into account their risk profile and personal preferences.
 
 The following labels are used to describe both inputs and outputs:
 
