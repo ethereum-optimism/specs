@@ -99,10 +99,10 @@ if the data is reorganized, then validators will be slashed.
 
 ### Honest Verifier
 
-The honest verifier follows a naive verification algorithm. That is similar
+The honest verifier follows a naive verification algorithm that is similar
 to the block building code that the [sequencer](./sequencer.md#direct-dependency-confirmation)
 follows. The main difference is that the validity of included executing
-messages is verified instead of verifying possible executing messages before
+messages is verified, instead of verifying possible executing messages before
 inclusion.
 
 ## Security Considerations
