@@ -33,7 +33,7 @@ The following labels are used to describe both inputs and outputs:
 - `safe`
 - `finalized`
 
-Inputs correspond to the inputs to the state transition function while outputs correspond to the side
+Inputs correspond to the inputs to the state transition function while, outputs correspond to the side
 effects of the state transition function.
 
 Anything before `safe` technically uses a "preconfirmation" based security model which is not part
