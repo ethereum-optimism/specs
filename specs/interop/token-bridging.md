@@ -116,9 +116,9 @@ The `SuperchainERC20Bridge` includes two functions for bridging:
 - `sendERC20`: initializes a cross-chain transfer of a `SuperchainERC20`
   by burning the tokens locally and sending a message to the `SuperchainERC20Bridge`
   on the target chain using the `L2toL2CrossDomainMessenger`.
-  Additionaly, it returns the `msgHash_` crafted by the `L2toL2CrossDomainMessenger`.
-- `relayERC20`: process incoming messages from the `L2toL2CrossDomainMessenger`
-  and mints the corresponding amount of the `SuperchainERC20`
+  Additionally, it returns the `msgHash_` crafted by the `L2toL2CrossDomainMessenger`.
+- `relayERC20`: processes incoming messages from the `L2toL2CrossDomainMessenger`
+  and mints the corresponding amount of the `SuperchainERC20`.
 
 The full specifications and invariants are detailed
 in the [predeploys spec](./predeploys.md#superchainerc20bridge).
