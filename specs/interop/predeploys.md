@@ -580,7 +580,7 @@ This function exists for backwards compatibility with the legacy version.
 #### `OptimismMintableERC20Created`
 
 It MUST trigger when `createOptimismMintableERC20WithDecimals`,
-`createOptimismMintableERC20` or `createStandardL2Token` are called.
+`createOptimismMintableERC20` or `createStandardL2Token` is called.
 
 ```solidity
 event OptimismMintableERC20Created(address indexed localToken, address indexed remoteToken, address deployer);
@@ -589,7 +589,7 @@ event OptimismMintableERC20Created(address indexed localToken, address indexed r
 #### `StandardL2TokenCreated`
 
 It MUST trigger when `createOptimismMintableERC20WithDecimals`,
-`createOptimismMintableERC20` or `createStandardL2Token` are called.
+`createOptimismMintableERC20` or `createStandardL2Token` is called.
 This event exists for backward compatibility with legacy version.
 
 ```solidity
