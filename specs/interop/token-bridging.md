@@ -34,7 +34,7 @@ The `SuperchainERC20Bridge` is a predeploy that builds on the messaging protocol
 
 The standard will build on top of ERC20, implement the
 [`IERC7802`](https://github.com/ethereum/ERCs/pull/692)
-interface and include the following properties:
+interface, and include the following properties:
 
 1. Implement the [ERC20](https://eips.ethereum.org/EIPS/eip-20) interface
 2. Implement the [`ERC7802`](https://github.com/ethereum/ERCs/pull/692) interface
