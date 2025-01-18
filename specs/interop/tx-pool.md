@@ -36,7 +36,7 @@ SHOULD be enforced before entry into the transaction pool.
 After each new block, each transaction in the transaction pool is checked for validity again.
 A transaction with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.
 
-It is possible that a transaction that was valid becomes invalid or vice versa. The sequencer MAY choose
+It is possible that a transaction deemed valid becomes invalid or vice versa. The sequencer MAY choose
 to demote messages which are invalid but can still technically become valid.
 
 Transactions with invalid message-dependencies MUST NOT be included in block-building,
