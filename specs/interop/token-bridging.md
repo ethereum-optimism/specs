@@ -232,7 +232,7 @@ additional call to the `_to` address.
 This feature could be used for cross-chain concatenated actions,
 i.e. bridge funds and then do X.
 
-This vertical has much potential but can also be achieved outside the standard in the following way:
+This approach has great potential but can also be achieved outside the standard in the following way:
 
 ```mermaid
 ---
@@ -267,7 +267,8 @@ sequenceDiagram
   Messenger_B->>to: call(data)
 ```
 
-Adding the call to the standard would remove the dependence on the sequencer regarding the proper tx ordering
-at the sequencer level, but would also introduce more risk for cross-chain fund transferring,
-as an incorrectly formatted call would burn funds in the initiating chain but would revert
-in destination and could never be successfully replayed.
+Adding the call to the standard would remove the dependence on the sequencer for 
+proper transaction ordering at the sequencer level. 
+However, it would also introduce additional risks for cross-chain fund transfers. 
+Specifically, an incorrectly formatted call could burn funds on the initiating chain, 
+but revert on the destination chain, and could never be successfully replayed."
