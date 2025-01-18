@@ -665,6 +665,7 @@ The `convert` function conserves the following invariants:
 ---
 config:
   theme: dark
+  fontSize: 28
 ---
 sequenceDiagram
   participant Alice
@@ -760,6 +761,11 @@ event RelayedERC20(address indexed tokenAddress, address indexed from, address i
 The following diagram depicts a cross-chain transfer.
 
 ```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
 sequenceDiagram
   participant from
   participant L2SBA as SuperchainTokenBridge (Chain A)
