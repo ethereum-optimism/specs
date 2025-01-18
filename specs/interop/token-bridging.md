@@ -46,7 +46,7 @@ The third property will allow the `SuperchainERC20Bridge` to have a liquidity gu
 which would not be possible in a model based on lock/unlock.
 Liquidity availability is fundamental to achieving fungibility.
 
-SuperchainERC20Bridge does not have to be the exclusive caller of `crosschainMint` and `crosschainBurn`,
+SuperchainERC20Bridge does not have to be the exclusive caller of `crosschainMint` and `crosschainBurn`;
 other addresses may also be permitted to call these functions.
 
 The fourth property removes the need for cross-chain access control lists.
