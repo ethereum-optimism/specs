@@ -267,8 +267,8 @@ sequenceDiagram
   Messenger_B->>to: call(data)
 ```
 
-Adding the call to the standard would remove the dependence on the sequencer for 
-proper transaction ordering at the sequencer level. 
-However, it would also introduce additional risks for cross-chain fund transfers. 
-Specifically, an incorrectly formatted call could burn funds on the initiating chain, 
-but revert on the destination chain, and could never be successfully replayed."
+Adding the call to the standard would remove the dependence on the sequencer for
+proper transaction ordering at the sequencer level.
+However, it would also introduce additional risks for cross-chain fund transfers.
+Specifically, an incorrectly formatted call could burn funds on the initiating chain,
+but revert on the destination chain, and could never be successfully replayed.

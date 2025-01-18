@@ -25,7 +25,7 @@ the chain tips block header. Features that make this validation more costly have
 Ethereum due to the desire to ensure [commodity hardware](https://hackmd.io/@kevaundray/S1hUQuV4Jx) can
 easily participate in consensus.
 
-Layer twos can make more aggressive trade-offs and raise the minimum hardware requirements of the network. 
+Layer twos can make more aggressive trade-offs and raise the minimum hardware requirements of the network.
 However, with interop, full EVM execution of the transaction is required to fully validate it.
 
 ## Transaction validation
