@@ -823,7 +823,7 @@ The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require
   - A way to allow for remotely initiated bridging is to include remote approval,
     i.e. approve a certain address in a certain chainId to spend local funds.
 - Bridge Events:
-  - `sendERC20()` should emit a `SentERC20` event. `
+  - `sendERC20()` should emit a `SentERC20` event.
   - `relayERC20()` should emit a `RelayedERC20` event.
 
 ## Security Considerations
