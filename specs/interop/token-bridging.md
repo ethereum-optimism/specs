@@ -50,7 +50,7 @@ SuperchainERC20Bridge does not have to be the exclusive caller of `crosschainMin
 other addresses may also be permitted to call these functions.
 
 The fourth property removes the need for cross-chain access control lists.
-Otherwise, the `SuperchainERC20Bridge` would need a way to verify if the tokens they mint on
+Otherwise, the `SuperchainERC20Bridge` would need a way to verify if the tokens it mints on
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.
 
