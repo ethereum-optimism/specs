@@ -662,6 +662,10 @@ The `convert` function conserves the following invariants:
 ### Conversion Flow
 
 ```mermaid
+---
+config:
+  theme: dark
+---
 sequenceDiagram
   participant Alice
   participant L2StandardBridge
