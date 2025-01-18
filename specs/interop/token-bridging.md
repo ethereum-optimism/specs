@@ -130,6 +130,11 @@ in the [predeploys spec](./predeploys.md#superchainerc20bridge).
 The following diagram depicts a cross-chain transfer.
 
 ```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48 
+---
 sequenceDiagram
   participant from
   participant L2SBA as SuperchainERC20Bridge (Chain A)
