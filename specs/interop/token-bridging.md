@@ -199,6 +199,11 @@ For the moment, the standard will not include any specific functionality
 to facilitate such an action and rely on the usage of `Permit2` like this:
 
 ```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48 
+---
 sequenceDiagram
   participant from
   participant Intermediate_A as Initiator
@@ -230,6 +235,11 @@ i.e. bridge funds and then do X.
 This vertical has much potential but can also be achieved outside the standard in the following way:
 
 ```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48 
+---
 sequenceDiagram
   participant from
   participant Intermediate_A as intermediate A
