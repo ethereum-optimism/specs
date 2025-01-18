@@ -301,7 +301,7 @@ flowchart LR
 ```
 
 When relaying a message through the `L2ToL2CrossDomainMessenger`, it is important to require that
-the `_destination` equal to `block.chainid` to ensure that the message is only valid on a single
+the `_destination` be equal to `block.chainid` to ensure that the message is only valid on a single
 chain. The hash of the message is used for replay protection.
 
 It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
