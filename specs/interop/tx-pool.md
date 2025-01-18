@@ -64,5 +64,5 @@ the new deposit-context closing transaction (under 36,000 gas), and margin for e
 Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
 The mempool SHOULD perform low-cost checks before any sort of network access is performed.
-The results of the check SHOULD be cached such that another request does not need to be performed
-when building the block although consistency is not guaranteed.
+The results of the check SHOULD be cached, such that another request does not need to be performed
+when building the block, although consistency is not guaranteed.
