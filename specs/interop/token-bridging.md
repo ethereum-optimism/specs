@@ -54,8 +54,8 @@ Otherwise, the `SuperchainERC20Bridge` would need a way to verify if the tokens 
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.
 
-One way to guarantee the same address across the Superchain, and also bind it to the same `init_code`
-and constructor arguments is to use the
+One way to guarantee the same address across the Superchain (and also bind it to the same `init_code`
+and constructor arguments) is to use the
 [`Create2Deployer` preinstall](../protocol/preinstalls.md#create2deployer).
 There is also the [`OptimismSuperchainERC20Factory`](predeploys.md#optimismmintableerc20factory)
 predeploy that facilitates this process for L1 native tokens.
