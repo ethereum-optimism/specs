@@ -71,7 +71,8 @@ particular software when building the block.
 
 `cross-unsafe` represents the `unsafe` blocks that have had their cross chain messages fully verified.
 The network can be represented as a graph, where each block across all chains is represented as a node.
-A directed edge between two blocks indicates the source block of the initiating message and the block that includes the executing message."
+A directed edge between two blocks indicates the source block of the initiating message
+and the block that includes the executing message."
 
 An input can be promoted from `unsafe` to `cross-unsafe` when the full dependency graph is resolved,
 such that all cross chain messages are verified to be valid and at least one message in the dependency
