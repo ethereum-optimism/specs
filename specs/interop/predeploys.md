@@ -248,7 +248,7 @@ function sendMessage(uint256 _destination, address _target, bytes calldata _mess
 ```
 
 It returns the hash of the message being sent,
-which isused to track whether the message has successfully been relayed.
+which is used to track whether the message has successfully been relayed.
 It also emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
 
 ```solidity
