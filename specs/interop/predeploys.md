@@ -307,8 +307,8 @@ chain. The hash of the message is used for replay protection.
 It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
 it is possible to send a message that is not playable.
 
-A message is relayed by providing the [identifier](./messaging.md#message-identifier) to a `SentMessage`
-event and its corresponding [message payload](./messaging.md#message-payload).
+A message is relayed by providing the [identifier](./messaging.md#message-identifier) of a `SentMessage`
+event along with its corresponding [message payload](./messaging.md#message-payload).
 
 ```solidity
 function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
