@@ -20,13 +20,13 @@ and inserted into the node's transaction pool before being broadcasted via p2p n
 
 Since there is little cost to sending invalid transactions over the p2p network maliciously,
 Ethereum opts to ensure that the transactions can be validated as cheaply as possible. This validation
-consists of a nonce and balance (fee payment) check which can be done with solely state lookups and
+consists of a nonce and a balance (fee payment) check, which can be done with solely state lookups and
 the chain tips block header. Features that make this validation more costly have been rejected from L1
 Ethereum due to the desire to ensure [commodity hardware](https://hackmd.io/@kevaundray/S1hUQuV4Jx) can
 easily participate in consensus.
 
-Layer twos can make more aggressive tradeoffs and raise the minimum hardware requirements of the network.
-With interop, it requires full EVM execution of the transaction to fully validate it.
+Layer twos can make more aggressive trade-offs and raise the minimum hardware requirements of the network. 
+However, with interop, full EVM execution of the transaction is required to fully validate it.
 
 ## Transaction validation
 
