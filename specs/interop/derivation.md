@@ -122,7 +122,8 @@ to the trimmed transaction list.
 
 ### Optimistic Block Deposited Transaction
 
-An [L1 attributes deposited transaction](../protocol/deposits.md#l1-attributes-deposited-transaction) is a deposit transaction sent to the zero address.
+An [L1 attributes deposited transaction](../protocol/deposits.md#l1-attributes-deposited-transaction)
+is a deposit transaction sent to the zero address.
 
 This transaction MUST have the following values:
 
