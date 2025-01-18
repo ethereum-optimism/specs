@@ -348,7 +348,7 @@ getters.
 
 The `OptimismSuperchainERC20Factory` creates ERC20 contracts that implements the `SuperchainERC20` [standard](token-bridging.md),
 grants mint-burn rights to the `L2StandardBridge` (`OptimismSuperchainERC20`)
-and include a `remoteToken` variable.
+and includes a `remoteToken` variable.
 These ERC20s are called `OptimismSuperchainERC20` and can be converted back and forth with `OptimismMintableERC20` tokens.
 The goal of the `OptimismSuperchainERC20` is to extend functionalities
 of the `OptimismMintableERC20` so that they are interop compatible.
