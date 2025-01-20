@@ -49,7 +49,7 @@ The Guardian Safe is extended by the Deputy Guardian Module.
 ### Deputy Guardian Module
 
 As the sole owner of the Guardian Safe, the Security Council acts as the Guardian, which is
-authorized to activate the [Superchain Pause](../protocol/superchain-configuration.md#pausability)
+authorized to activate the [Superchain Pause](../protocol/superchain-config.md#pausability)
 functionality.
 
 However the Security Council cannot be expected to react quickly in an emergency situation.
@@ -107,7 +107,7 @@ The following security properties must be upheld by the `DeputyGuardianModule`:
 1. The module must not be able to cause the Safe to make calls to functions which the Guardian role
    is not authorized to make.
 1. The module must be safely removable.
-1. The module must not introduce any possibility of disabling the the Safe so that it can no longer
+1. The module must not introduce any possibility of disabling the Safe so that it can no longer
    forward transactions.
 1. The module must format calldata correctly such that the target it calls performs the expected
    action.

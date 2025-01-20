@@ -7,7 +7,6 @@
 - [Overview](#overview)
 - [CrossL2Inbox](#crossl2inbox)
   - [Functions](#functions)
-    - [executeMessage](#executemessage)
     - [validateMessage](#validatemessage)
   - [Interop Start Timestamp](#interop-start-timestamp)
   - [`ExecutingMessage` Event](#executingmessage-event)
@@ -16,15 +15,12 @@
   - [`Identifier` Getters](#identifier-getters)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
-  - [`sendExpire` Invariants](#sendexpire-invariants)
-  - [`relayExpire` Invariants](#relayexpire-invariants)
+  - [`sendMessage` Invariants](#sendmessage-invariants)
   - [Message Versioning](#message-versioning)
   - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
   - [Interfaces](#interfaces)
     - [Sending Messages](#sending-messages)
     - [Relaying Messages](#relaying-messages)
-    - [Sending Expired Message Hashes](#sending-expired-message-hashes)
-    - [Relaying Expired Message Hashes](#relaying-expired-message-hashes)
 - [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
   - [OptimismSuperchainERC20](#optimismsuperchainerc20)
   - [Overview](#overview-1)
@@ -36,11 +32,10 @@
   - [Events](#events)
     - [`OptimismSuperchainERC20Created`](#optimismsuperchainerc20created)
   - [Deployment Flow](#deployment-flow)
-- [BeaconContract](#beaconcontract)
+- [OptimismSuperchainERC20Beacon](#optimismsuperchainerc20beacon)
   - [Overview](#overview-2)
 - [L1Block](#l1block)
-  - [Static Configuration](#static-configuration)
-  - [Dependency Set](#dependency-set)
+  - [L1 Atributes Transaction](#l1-atributes-transaction)
   - [Deposit Context](#deposit-context)
   - [`isDeposit()`](#isdeposit)
     - [`depositsComplete()`](#depositscomplete)
@@ -60,7 +55,7 @@
     - [`Converted`](#converted)
   - [Invariants](#invariants)
   - [Conversion Flow](#conversion-flow)
-- [SuperchainERC20Bridge](#superchainerc20bridge)
+- [SuperchainTokenBridge](#superchaintokenbridge)
   - [Overview](#overview-3)
   - [Functions](#functions-3)
     - [`sendERC20`](#senderc20)
@@ -90,36 +85,9 @@ of cross chain messages, on behalf of any user.
 
 To ensure safety of the protocol, the [Message Invariants](./messaging.md#messaging-invariants) must be enforced.
 
-[message payload]: ./messaging.md#message-payload
 [`Identifier`]: ./messaging.md#message-identifier
 
 ### Functions
-
-#### executeMessage
-
-Executes a cross chain message and performs a `CALL` with the payload to the provided target address, allowing
-introspection of the data.
-Signals the transaction has a cross chain message to validate by emitting the `ExecuteMessage` event.
-
-The following fields are required for executing a cross chain message:
-
-| Name      | Type         | Description                                             |
-| --------- | ------------ | ------------------------------------------------------- |
-| `_msg`    | `bytes`      | The [message payload], matching the initiating message. |
-| `_id`     | `Identifier` | A [`Identifier`] pointing to the initiating message.    |
-| `_target` | `address`    | Account that is called with `_msg`.                     |
-
-Messages are broadcast, not directed. Upon execution the caller can specify which `address` to target:
-there is no protocol enforcement on what this value is.
-
-The `_target` is called with the `_msg` as input.
-In practice, the `_target` will be a contract that needs to know the schema of the `_msg` so that it can be decoded.
-It MAY call back to the `CrossL2Inbox` to authenticate
-properties about the `_msg` using the information in the `Identifier`.
-
-```solidity
-executeMessage(Identifier calldata _id, address _target, bytes memory _message)
-```
 
 #### validateMessage
 
@@ -134,7 +102,7 @@ The following fields are required for validating a cross chain message:
 | `_msgHash` | `bytes32`    | The keccak256 hash of the message payload matching the initiating message. |
 
 ```solidity
-validateMessage(Identifier calldata _id, bytes32 _msgHash)
+function validateMessage(Identifier calldata _id, bytes32 _msgHash)
 ```
 
 ### Interop Start Timestamp
@@ -151,7 +119,7 @@ that timestamp into the pre-determined storage slot.
 ### `ExecutingMessage` Event
 
 The `ExecutingMessage` event represents an executing message. It MUST be emitted on every call
-to `executeMessage` and `validateMessage`.
+to `validateMessage`.
 
 ```solidity
 event ExecutingMessage(bytes32 indexed msgHash, Identifier identifier);
@@ -171,54 +139,14 @@ hash comparison.
 
 ### Reference implementation
 
-A simple implementation of the `executeMessage` function is included below.
+A simple implementation of the `validateMessage` function is included below.
 
 ```solidity
-function executeMessage(Identifier calldata _id, address _target, bytes calldata _msg) public payable {
-    require(_id.timestamp <= block.timestamp);
-    require(L1Block.isInDependencySet(_id.chainid));
-    require(_id.timestamp > interopStart());
+    function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
+        // We need to know if this is being called on a depositTx
+        if (IL1BlockInterop(Predeploys.L1_BLOCK_ATTRIBUTES).isDeposit()) revert NoExecutingDeposits();
 
-    assembly {
-      tstore(ORIGIN_SLOT, _id.origin)
-      tstore(BLOCKNUMBER_SLOT, _id.blocknumber)
-      tstore(LOG_INDEX_SLOT, _id.logIndex)
-      tstore(TIMESTAMP_SLOT, _id.timestamp)
-      tstore(CHAINID_SLOT, _id.chainid)
-    }
-
-    bool success = SafeCall.call({
-      _target: _target,
-      _value: msg.value,
-      _calldata: _msg
-    });
-
-    require(success);
-
-    emit ExecutingMessage(keccak256(_msg), _id);
-}
-```
-
-Note that the `executeMessage` function is `payable` to enable relayers to earn in the gas paying asset.
-
-An example of encoding a cross chain call directly in an event. However realize the
-[L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger) predeploy provides a cleaner and user
-friendly abstraction for cross chain calls.
-
-```solidity
-contract MyCrossChainApp {
-    function sendMessage() external {
-        bytes memory data = abi.encodeCall(MyCrossChainApp.relayMessage, (1, address(0x20)));
-
-        // Encoded payload matches the required calldata by omission of an event topic
-        assembly {
-          log0(add(data, 0x20), mload(data))
-        }
-    }
-
-    function relayMessage(uint256 value, address recipient) external {
-        // Assert that this is only executed directly from the inbox
-        require(msg.sender == Predeploys.CrossL2Inbox);
+        emit ExecutingMessage(_msgHash, _id);
     }
 }
 ```
@@ -271,7 +199,6 @@ properties about the `_msg`.
 | ----------------- | -------------------------------------------- |
 | Address           | `0x4200000000000000000000000000000000000023` |
 | `MESSAGE_VERSION` | `uint256(0)`                                 |
-| `EXPIRY_WINDOW`   | `uint256(7200)`                              |
 
 The `L2ToL2CrossDomainMessenger` is a higher level abstraction on top of the `CrossL2Inbox` that
 provides general message passing, utilized for secure transfers ERC20 tokens between L2 chains.
@@ -282,21 +209,12 @@ as well as domain binding, ie the executing transaction can only be valid on a s
 
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chain id MUST be equal to the local chain id
+- Messages MUST NOT be relayed more than once
 
-### `sendExpire` Invariants
+### `sendMessage` Invariants
 
-- The message MUST have not been successfully relayed
-- The `EXPIRY_WINDOW` MUST have elapsed since the message first failed to be relayed
-- The expired message MUST not have been previously sent back to source
-- The expired message MUST not be relayable after being sent back
-
-### `relayExpire` Invariants
-
-- Only callable by the `CrossL2Inbox`
-- The message source MUST be `block.chainid`
-- The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
-- The `expiredMessages` mapping MUST only contain messages that originated in this chain and failed to be relayed on destination.
-- Already expired messages MUST NOT be relayed.
+- Sent Messages MUST be uniquely identifiable
+- It must emit the `SentMessage` event
 
 ### Message Versioning
 
@@ -361,10 +279,11 @@ Each subsequent call is labeled with a number.
 flowchart LR
     user -->|"1#46; sendMessage"| al2tol2
     user --> |"2#46; relayMessage"|bl2tol2
-    em{{SentMessage Event}}
+    im{{SentMessage Event}}
+    em{{ExecutingMessage Event}}
 
     direction TB
-    al2tol2 --> em
+    al2tol2 --> im
 
     bcl2[CrossL2Inbox]
     al2tol2[L2ToL2CrossDomainMessenger]
@@ -376,8 +295,8 @@ flowchart LR
 
     subgraph "Chain B"
       bl2tol2  --> |"3#46; validateMessage"|bcl2
-      bcl2 --> |"4#46;"| bl2tol2
-      bl2tol2 --> |"5#46;"| Contract
+      bcl2 --> em
+      bl2tol2 --> |"4#46;"| Contract
     end
 ```
 
@@ -388,16 +307,11 @@ chain. The hash of the message is used for replay protection.
 It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
 it is possible to send a message that is not playable.
 
-When a message fails to be relayed, only the timestamp at which it
-first failed along with its source chain id are stored. This is
-needed for calculation of the failed message's expiry. The source chain id
-is also required to simplify the function signature of `sendExpire`.
-
 A message is relayed by providing the [identifier](./messaging.md#message-identifier) to a `SentMessage`
 event and its corresponding [message payload](./messaging.md#message-payload).
 
 ```solidity
-function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable {
+function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
     CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
 
@@ -411,14 +325,11 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
-    bool success = SafeCall.call(_target, msg.value, _message);
-
-    if (success) {
-        successfulMessages[messageHash] = true;
-        emit RelayedMessage(_source, _nonce, messageHash);
-    } else {
-        emit FailedRelayedMessage(_source, _nonce, messageHash);
-    }
+    bool success;
+    (success, returnData_) = _target.call(_target, msg.value, _message);
+    require(success);
+    successfulMessages[messageHash] = true;
+    emit RelayedMessage(_source, _nonce, messageHash);
 }
 ```
 
@@ -426,69 +337,6 @@ Note that the `relayMessage` function is `payable` to enable relayers to earn in
 
 To enable cross chain authorization patterns, both the `_sender` and the `_source` MUST be exposed via `public`
 getters.
-
-#### Sending Expired Message Hashes
-
-When expiring a message that failed to be relayed on the destination chain
-to the source chain, it's crucial to ensure the message can only be sent back
-to the `L2ToL2CrossDomainMessenger` contract in its source chain.
-
-This function has no auth, which allows anyone to expire a given message hash.
-The `EXPIRY_WINDOW` variable is added to give the users enough time to replay their
-failed messages and to prevent malicious actors from performing a griefing attack
-by expiring messages upon arrival.
-
-Once the expired message is sent to the source chain, the message on the local chain is set
-as successful in the `successfulMessages` mapping to ensure non-replayability and deleted
-from `failedMessages`. An initiating message is then emitted to `relayExpire`
-
-```solidity
-function sendExpire(bytes32 _expiredHash) external nonReentrant {
-    if (successfulMessages[_expiredHash]) revert MessageAlreadyRelayed();
-
-    (uint256 messageTimestamp, uint256 messageSource) = failedMessages[_expiredHash];
-
-    if (block.timestamp <  messageTimestamp + EXPIRY_WINDOW) revert ExpiryWindowHasNotEnsued();
-
-    delete failedMessages[_expiredHash];
-    successfulMessages[_expiredHash] = true;
-
-    bytes memory data = abi.encodeCall(
-        L2ToL2CrossDomainMessenger.expired,
-        (_expiredHash, messageSource)
-    );
-    emit SentMessage(data);
-}
-```
-
-#### Relaying Expired Message Hashes
-
-When relaying an expired message, only message hashes
-of actual failed messages should be stored, for this we must ensure the origin
-of the log, and caller are all expected contracts.
-
-It's also important to ensure only the hashes of messages that were initiated
-in this chain are accepted.
-
-If all checks have been successful, the message has is stored in the
-`expiredMessages` mapping. This enables smart contracts to read from it and
-check whether a message expired or not, and handle this case accordingly.
-
-```solidity
-function relayExpire(bytes32 _expiredHash, uint256 _messageSource) external {
-    if (_messageSource != block.chainid) revert IncorrectMessageSource();
-    if (expiredMessages[_expiredHash] != 0) revert ExpiredMessageAlreadyRelayed();
-    if (msg.sender != Predeploys.CROSS_L2_INBOX) revert ExpiredMessageCallerNotCrossL2Inbox();
-
-    if (CrossL2Inbox(Predeploys.CROSS_L2_INBOX).origin() != Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER) {
-        revert CrossL2InboxOriginNotL2ToL2CrossDomainMessenger();
-    }
-
-    expiredMessages[_expiredHash] = block.timestamp;
-
-    emit MessageHashExpired(_expiredHash);
-}
-```
 
 ## OptimismSuperchainERC20Factory
 
@@ -544,7 +392,7 @@ Creates an instance of the `OptimismSuperchainERC20` contract with a set of meta
 - `_decimals`: `OptimismSuperchainERC20` decimals
 
 ```solidity
-deploy(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
+function deploy(address _remoteToken, string memory _name, string memory _symbol, uint8 _decimals) returns (address)
 ```
 
 It returns the address of the deployed `OptimismSuperchainERC20`.
@@ -593,7 +441,7 @@ sequenceDiagram
   BeaconProxy->>Implementation: initialize()
 ```
 
-## BeaconContract
+## OptimismSuperchainERC20Beacon
 
 | Constant | Value                                        |
 | -------- | -------------------------------------------- |
@@ -601,7 +449,7 @@ sequenceDiagram
 
 ### Overview
 
-The `BeaconContract` predeploy gets called by the `OptimismSuperchainERC20`
+The `OptimismSuperchainERC20Beacon` predeploy gets called by the `OptimismSuperchainERC20`
 BeaconProxies deployed by the
 [`SuperchainERC20Factory`](#optimismsuperchainerc20factory)
 
@@ -617,60 +465,28 @@ The implementation address gets deduced similarly to the `GasPriceOracle` addres
 | Address             | `0x4200000000000000000000000000000000000015` |
 | `DEPOSITOR_ACCOUNT` | `0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001` |
 
-### Static Configuration
+### L1 Atributes Transaction
 
-The `L1Block` contract MUST include method `setConfig(ConfigType, bytes)` for setting the system's static values, which
-are defined as values that only change based on the chain operator's input. This function serves to reduce the size of
-the L1 Attributes transaction, as well as to reduce the need to add specific one off functions. It can only be called by
-`DEPOSITOR_ACCOUNT`.
-
-The `ConfigType` enum is defined as follows:
+A new entrypoint on the `L1Block` contract is added that is used to open the [deposit context](./derivation.md#deposit-context).
 
 ```solidity
-enum ConfigType {
-    SET_GAS_PAYING_TOKEN,
-    ADD_DEPENDENCY,
-    REMOVE_DEPENDENCY
-}
+function setL1AttributesInterop() external;
 ```
 
-The second argument to `setConfig` is a `bytes` value that is ABI encoded with the necessary values for the `ConfigType`.
+WARNING: the function name is subject to change depending on the name of the network upgrade.
 
-| ConfigType             | Value                                       |
-| ---------------------- | ------------------------------------------- |
-| `SET_GAS_PAYING_TOKEN` | `abi.encode(token, decimals, name, symbol)` |
-| `ADD_DEPENDENCY`       | `abi.encode(chainId)`                       |
-| `REMOVE_DEPENDENCY`    | `abi.encode(chainId)`                       |
-
-where
-
-- `token` is the gas paying token's address (type `address`)
-
-- `decimals` is the gas paying token's decimals (type `uint8`)
-
-- `name` is the gas paying token's name (type `bytes32`)
-
-- `symbol` is the gas paying token's symbol (type `bytes32`)
-
-- `chainId` is the chain id intended to be added or removed from the dependency set (type `uint256`)
-
-Calls to `setConfig` MUST originate from `SystemConfig` and are forwarded to `L1Block` by `OptimismPortal`.
-
-### Dependency Set
-
-`L1Block` is updated to include the set of allowed chains. These chains are added and removed through `setConfig` calls
-with `ADD_DEPENDENCY` or `REMOVE_DEPENDENCY`, respectively. The maximum size of the dependency set is `type(uint8).max`,
-and adding a chain id when the dependency set size is at its maximum MUST revert. If a chain id already in the
-dependency set, such as the chain's chain id, is attempted to be added, the call MUST revert. If a chain id that is not
-in the dependency set is attempted to be removed, the call MUST revert. If the chain's chain id is attempted to be
-removed, the call also MUST revert.
-
-`L1Block` MUST provide a public getter to check if a particular chain is in the dependency set called
-`isInDependencySet(uint256)`. This function MUST return true when a chain id in the dependency set, or the chain's chain
-id, is passed in as an argument, and false otherwise. Additionally, `L1Block` MUST provide a public getter to return the
-dependency set called `dependencySet()`. This function MUST return the array of chain ids that are in the dependency set.
-`L1Block` MUST also provide a public getter to get the dependency set size called `dependencySetSize()`. This function
-MUST return the length of the dependency set array.
+| Input arg         | Type    | Calldata bytes | Segment |
+| ----------------- | ------- | -------------- | ------- |
+| {0xfe8f4eaf}      |         | 0-3            | n/a     |
+| baseFeeScalar     | uint32  | 4-7            | 1       |
+| blobBaseFeeScalar | uint32  | 8-11           |         |
+| sequenceNumber    | uint64  | 12-19          |         |
+| l1BlockTimestamp  | uint64  | 20-27          |         |
+| l1BlockNumber     | uint64  | 28-35          |         |
+| basefee           | uint256 | 36-67          | 2       |
+| blobBaseFee       | uint256 | 68-99          | 3       |
+| l1BlockHash       | bytes32 | 100-131        | 4       |
+| batcherHash       | bytes32 | 132-163        | 5       |
 
 ### Deposit Context
 
@@ -804,7 +620,7 @@ converts `_amount` of `_from` token to `_amount` of `_to` token,
 if and only if the token addresses are valid (as defined below).
 
 ```solidity
-convert(address _from, address _to, uint256 _amount)
+function convert(address _from, address _to, uint256 _amount)
 ```
 
 The function
@@ -863,7 +679,7 @@ sequenceDiagram
   L2StandardBridge-->L2StandardBridge: emit Converted(from, to, Alice, amount)
 ```
 
-## SuperchainERC20Bridge
+## SuperchainTokenBridge
 
 | Constant | Value                                        |
 | -------- | -------------------------------------------- |
@@ -871,7 +687,7 @@ sequenceDiagram
 
 ### Overview
 
-The `SuperchainERC20Bridge` is an abstraction on top of the `L2toL2CrossDomainMessenger`
+The `SuperchainTokenBridge` is an abstraction on top of the `L2toL2CrossDomainMessenger`
 that facilitates token bridging using interop.
 It has mint and burn rights over `SuperchainERC20` tokens
 as described in the [token bridging spec](./token-bridging.md).
@@ -895,7 +711,7 @@ implemented by the `SuperchainERC20` standard.
 Returns the `msgHash_` crafted by the `L2ToL2CrossChainMessenger`.
 
 ```solidity
-sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
+function sendERC20(address _tokenAddress, address _to, uint256 _amount, uint256 _chainId) returns (bytes32 msgHash_)
 ```
 
 #### `relayERC20`
@@ -914,7 +730,7 @@ which is included as part of the the
 implemented by the `SuperchainERC20` standard.
 
 ```solidity
-relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
+function relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
 ```
 
 ### Events
@@ -942,12 +758,12 @@ The following diagram depicts a cross-chain transfer.
 ```mermaid
 sequenceDiagram
   participant from
-  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant L2SBA as SuperchainTokenBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant L2SBB as SuperchainTokenBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from->>L2SBA: sendERC20(tokenAddr, to, amount, chainID)
@@ -966,7 +782,7 @@ sequenceDiagram
 
 ### Invariants
 
-The bridging of `SuperchainERC20` using the `SuperchainERC20Bridge` will require the following invariants:
+The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require the following invariants:
 
 - Conservation of bridged `amount`: The minted `amount` in `relayERC20()` should match the `amount`
   that was burnt in `sendERC20()`, as long as target chain has the initiating chain in the dependency set.

@@ -50,6 +50,7 @@
         - [GasPriceOracle Enable Ecotone](#gaspriceoracle-enable-ecotone)
         - [Beacon block roots contract deployment (EIP-4788)](#beacon-block-roots-contract-deployment-eip-4788)
   - [Building Individual Payload Attributes](#building-individual-payload-attributes)
+  - [On Future-Proof Transaction Log Derivation](#on-future-proof-transaction-log-derivation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -439,6 +440,11 @@ The Delta upgrade introduced an additional batch type, [span batches][span-batch
 
 Unknown versions make the batch invalid (it must be ignored by the rollup node), as do malformed contents.
 
+> **Note** if the batch version and contents can be RLP decoded correctly but extra content exists beyond the batch,
+> the additional data may be ignored during parsing. Data _between_ RLP encoded batches may not be ignored
+> (as they are seen as malformed batches), but if a batch can be fully described by the RLP decoding,
+> extra content does not invalidate the decoded batch.
+
 The `epoch_number` and the `timestamp` must also respect the constraints listed in the [Batch Queue][batch-queue]
 section, otherwise the batch is considered invalid and will be ignored.
 
@@ -501,6 +507,9 @@ extract data from its [batcher transactions][g-batcher-transaction]. A batcher
 transaction is one with the following properties:
 
 - The [`to`] field is equal to the configured batcher inbox address.
+
+- The transaction type is one of `0`, `1`, `2`, `3`, or `0x7e` (L2 [Deposited transaction type][g-deposit-tx-type], to
+  support force-inclusion of batcher transactions on nested OP Stack chains).
 
 - The sender, as recovered from the transaction signature (`v`, `r`, and `s`), is the batcher
   address loaded from the system config matching the L1 block of the data.
@@ -1017,6 +1026,9 @@ entries.
 
 [deposit-contract-spec]: deposits.md#deposit-contract
 
+Logs are derived from transactions following the future-proof best-effort process described in
+[On Future-Proof Transaction Log Derivation][#on-future-proof-transaction-log-derivation]
+
 ### Network upgrade automation transactions
 
 [network upgrade automation transactions]: #network-upgrade-automation-transactions
@@ -1281,3 +1293,28 @@ follows:
 
 [extended-attributes]: exec-engine.md#extended-payloadattributesv1
 [Fee Vaults]: exec-engine.md#fee-vaults
+
+## On Future-Proof Transaction Log Derivation
+
+As described in [L1 Retrieval][#l1-retrieval], batcher transactions' types are required to be from a fixed allow-list.
+
+However, we want to allow deposit transactions and `SystemConfig` update events to get derived even from receipts of
+future transaction types, as long as the receipts can be decoded following a best-effort process:
+
+As long as a future transaction type follows the [EIP-2718][https://eips.ethereum.org/EIPS/eip-2718] specification, the
+type can be decoded from the first byte of the transaction's (or its receipt's) binary encoding. We can then proceed as
+follows to get the logs of such a future transaction, or discard the transaction's receipt as invalid.
+
+- If it's a known transaction type, that is, legacy (first byte of the encoding is in the range `[0xc0, 0xfe]`) or its
+first byte is in the range `[0, 4]` or `0x7e` (_deposited_), then it's not a _future transaction_ and we know how to
+decode the receipt and this process is irrelevant.
+- If a transaction's first byte is in the range `[0x05, 0x7d]`, it is expected to be a _future_ EIP-2718 transaction, so
+we can proceed to the receipt. Note that we excluded `0x7e` because that's the deposit transaction type, which is known.
+- The _future_ receipt encoding's first byte must be the same byte as the transaction encoding's first byte, or it is
+discarded as invalid, because we require it to be an EIP-2718-encoded receipt to continue.
+- The receipt payload is decoded as if it is encoded as `rlp([status, cumulative_transaction_gas_used, logs_bloom,
+logs])`, which is the encoding of the known non-legacy transaction types.
+  - If this decoding fails, the transaction's receipt is discarded as invalid.
+  - If this decoding succeeds, the `logs` have been obtained and can be processed as those of known transaction types.
+
+The intention of this best-effort decoding process is to future-proof the protocol for new L1 transaction types.

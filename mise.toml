@@ -1,0 +1,23 @@
+[tools]
+
+# Core dependencies
+rust = "1.83.0"
+just = "1.37.0"
+node = "20.9.0"
+
+# Cargo dependencies
+"cargo:mdbook" = "0.4.43"
+"cargo:mdbook-katex" = "0.9.2"
+"cargo:mdbook-linkcheck" = "0.7.7"
+"cargo:mdbook-mermaid" = "0.14.1"
+
+[hooks]
+postinstall = [
+    # Enabling corepack will install the `pnpm` package manager specified in package.json
+    'npx corepack enable',
+    'pnpm i --frozen-lockfile'
+]
+
+[settings]
+# Needs to be enabled for hooks to work
+experimental = true
