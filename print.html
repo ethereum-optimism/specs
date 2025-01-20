@@ -2860,6 +2860,7 @@ but the client should regard any error like any other unanswered request, as the
 </ul>
 </li>
 <li><a href="protocol/derivation.html#building-individual-payload-attributes">Building Individual Payload Attributes</a></li>
+<li><a href="protocol/derivation.html#on-future-proof-transaction-log-derivation">On Future-Proof Transaction Log Derivation</a></li>
 </ul>
 </li>
 </ul>
@@ -3193,6 +3194,10 @@ transaction is one with the following properties:</p>
 <ul>
 <li>
 <p>The <a href="https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/frontier/fork_types.py#L52C31-L52C31"><code>to</code></a> field is equal to the configured batcher inbox address.</p>
+</li>
+<li>
+<p>The transaction type is one of <code>0</code>, <code>1</code>, <code>2</code>, <code>3</code>, or <code>0x7e</code> (L2 <a href="protocol/../glossary.html#deposited-transaction-type">Deposited transaction type</a>, to
+support force-inclusion of batcher transactions on nested OP Stack chains).</p>
 </li>
 <li>
 <p>The sender, as recovered from the transaction signature (<code>v</code>, <code>r</code>, and <code>s</code>), is the batcher
@@ -3691,6 +3696,8 @@ sequencer batch.</li>
 <p>The L1 attributes are read from the L1 block header, while deposits are read from the L1 block's <a href="protocol/../glossary.html#receipt">receipts</a>.
 Refer to the <a href="protocol/deposits.html#deposit-contract"><strong>deposit contract specification</strong></a> for details on how deposits are encoded as log
 entries.</p>
+<p>Logs are derived from transactions following the future-proof best-effort process described in
+[On Future-Proof Transaction Log Derivation][#on-future-proof-transaction-log-derivation]</p>
 <h3 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h3>
 <p>Some network upgrades require automated contract changes or deployments at specific blocks.
 To automate these, without adding persistent changes to the execution-layer,
@@ -3887,6 +3894,29 @@ encoded with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</li
 <li><code>gasLimit</code> is set to the current <code>gasLimit</code> value in the <a href="protocol/../glossary.html#system-configuration">system configuration</a> of this payload.</li>
 <li><code>withdrawals</code> is set to nil prior to Canyon and an empty array after Canyon</li>
 </ul>
+<h2 id="on-future-proof-transaction-log-derivation"><a class="header" href="#on-future-proof-transaction-log-derivation">On Future-Proof Transaction Log Derivation</a></h2>
+<p>As described in [L1 Retrieval][#l1-retrieval], batcher transactions' types are required to be from a fixed allow-list.</p>
+<p>However, we want to allow deposit transactions and <code>SystemConfig</code> update events to get derived even from receipts of
+future transaction types, as long as the receipts can be decoded following a best-effort process:</p>
+<p>As long as a future transaction type follows the [EIP-2718][https://eips.ethereum.org/EIPS/eip-2718] specification, the
+type can be decoded from the first byte of the transaction's (or its receipt's) binary encoding. We can then proceed as
+follows to get the logs of such a future transaction, or discard the transaction's receipt as invalid.</p>
+<ul>
+<li>If it's a known transaction type, that is, legacy (first byte of the encoding is in the range <code>[0xc0, 0xfe]</code>) or its
+first byte is in the range <code>[0, 4]</code> or <code>0x7e</code> (<em>deposited</em>), then it's not a <em>future transaction</em> and we know how to
+decode the receipt and this process is irrelevant.</li>
+<li>If a transaction's first byte is in the range <code>[0x05, 0x7d]</code>, it is expected to be a <em>future</em> EIP-2718 transaction, so
+we can proceed to the receipt. Note that we excluded <code>0x7e</code> because that's the deposit transaction type, which is known.</li>
+<li>The <em>future</em> receipt encoding's first byte must be the same byte as the transaction encoding's first byte, or it is
+discarded as invalid, because we require it to be an EIP-2718-encoded receipt to continue.</li>
+<li>The receipt payload is decoded as if it is encoded as <code>rlp([status, cumulative_transaction_gas_used, logs_bloom, logs])</code>, which is the encoding of the known non-legacy transaction types.
+<ul>
+<li>If this decoding fails, the transaction's receipt is discarded as invalid.</li>
+<li>If this decoding succeeds, the <code>logs</code> have been obtained and can be processed as those of known transaction types.</li>
+</ul>
+</li>
+</ul>
+<p>The intention of this best-effort decoding process is to future-proof the protocol for new L1 transaction types.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="batch-submitter"><a class="header" href="#batch-submitter">Batch Submitter</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -6566,6 +6596,8 @@ but the matching L1-origin information may not be present at the time of activat
 <a href="https://gov.optimism.io/t/upgrade-proposal-9-fjord-network-upgrade/8236">Governance Proposal</a>.</li>
 <li><code>v8.0.0</code>: 2024 Sep 11th - Granite network upgrade (Limit ecpairing input size + Reduce Channel Timeout).
 <a href="https://gov.optimism.io/t/upgrade-proposal-10-granite-network-upgrade/8733">Governance Proposal</a>.</li>
+<li><code>v9.0.0</code>: 2025 Jan 9th - Holocene network upgrade (Stricter Holocene derivation + EIP-1559 configurability).
+<a href="https://gov.optimism.io/t/upgrade-proposal-11-holocene-network-upgrade/9313">Governance Proposal</a>.</li>
 </ul>
 <h2 id="post-bedrock-network-upgrades"><a class="header" href="#post-bedrock-network-upgrades">Post-Bedrock Network upgrades</a></h2>
 <h3 id="activation-timestamps"><a class="header" href="#activation-timestamps">Activation Timestamps</a></h3>
@@ -6577,6 +6609,7 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 <tr><td>Ecotone</td><td>1710374401</td><td>1708534800</td><td>1707238800</td></tr>
 <tr><td>Fjord</td><td>1720627201</td><td>1716998400</td><td>n/a</td></tr>
 <tr><td>Granite</td><td>1726070401</td><td>1723478400</td><td>n/a</td></tr>
+<tr><td>Holocene</td><td>1736445601</td><td>1732633200</td><td>n/a</td></tr>
 </tbody></table>
 </div><div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="system-config"><a class="header" href="#system-config">System Config</a></h1>
@@ -6713,6 +6746,8 @@ retrieved from the L1 block info transaction. Otherwise, <code>batcherHash</code
 </ul>
 <p>After preparing the initial system configuration for the given L1 starting input,
 the system configuration is updated by processing all receipts from each new L1 block.</p>
+<p>Logs are derived from transactions following the future-proof best-effort process described in
+[On Future-Proof Transaction Log Derivation][derivation.md#on-future-proof-transaction-log-derivation]</p>
 <p>The contained log events are filtered and processed as follows:</p>
 <ul>
 <li>the log event contract address must match the rollup <code>SystemConfig</code> deployment</li>
@@ -10575,15 +10610,14 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#deployment-flow">Deployment Flow</a></li>
 </ul>
 </li>
-<li><a href="interop/predeploys.html#beaconcontract">BeaconContract</a>
+<li><a href="interop/predeploys.html#optimismsuperchainerc20beacon">OptimismSuperchainERC20Beacon</a>
 <ul>
 <li><a href="interop/predeploys.html#overview-2">Overview</a></li>
 </ul>
 </li>
 <li><a href="interop/predeploys.html#l1block">L1Block</a>
 <ul>
-<li><a href="interop/predeploys.html#static-configuration">Static Configuration</a></li>
-<li><a href="interop/predeploys.html#dependency-set">Dependency Set</a></li>
+<li><a href="interop/predeploys.html#l1-atributes-transaction">L1 Atributes Transaction</a></li>
 <li><a href="interop/predeploys.html#deposit-context">Deposit Context</a></li>
 <li><a href="interop/predeploys.html#isdeposit"><code>isDeposit()</code></a>
 <ul>
@@ -10623,7 +10657,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#conversion-flow">Conversion Flow</a></li>
 </ul>
 </li>
-<li><a href="interop/predeploys.html#superchainerc20bridge">SuperchainERC20Bridge</a>
+<li><a href="interop/predeploys.html#superchaintokenbridge">SuperchainTokenBridge</a>
 <ul>
 <li><a href="interop/predeploys.html#overview-3">Overview</a></li>
 <li><a href="interop/predeploys.html#functions-3">Functions</a>
@@ -10920,13 +10954,13 @@ and deployer<code>is the</code>msg.sender`.</p>
   BeaconProxy-&gt;&gt;Implementation: delegatecall()
   BeaconProxy-&gt;&gt;Implementation: initialize()
 </pre>
-<h2 id="beaconcontract"><a class="header" href="#beaconcontract">BeaconContract</a></h2>
+<h2 id="optimismsuperchainerc20beacon"><a class="header" href="#optimismsuperchainerc20beacon">OptimismSuperchainERC20Beacon</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
 <h3 id="overview-37"><a class="header" href="#overview-37">Overview</a></h3>
-<p>The <code>BeaconContract</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
+<p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
 <p>The Beacon Contract implements the interface defined
@@ -10938,57 +10972,24 @@ in <a href="https://eips.ethereum.org/EIPS/eip-1967">EIP-1967</a>.</p>
 <tr><td><code>DEPOSITOR_ACCOUNT</code></td><td><code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="static-configuration"><a class="header" href="#static-configuration">Static Configuration</a></h3>
-<p>The <code>L1Block</code> contract MUST include method <code>setConfig(ConfigType, bytes)</code> for setting the system's static values, which
-are defined as values that only change based on the chain operator's input. This function serves to reduce the size of
-the L1 Attributes transaction, as well as to reduce the need to add specific one off functions. It can only be called by
-<code>DEPOSITOR_ACCOUNT</code>.</p>
-<p>The <code>ConfigType</code> enum is defined as follows:</p>
-<pre><code class="language-solidity">enum ConfigType {
-    SET_GAS_PAYING_TOKEN,
-    ADD_DEPENDENCY,
-    REMOVE_DEPENDENCY
-}
+<h3 id="l1-atributes-transaction"><a class="header" href="#l1-atributes-transaction">L1 Atributes Transaction</a></h3>
+<p>A new entrypoint on the <code>L1Block</code> contract is added that is used to open the <a href="interop/./derivation.html#deposit-context">deposit context</a>.</p>
+<pre><code class="language-solidity">function setL1AttributesInterop() external;
 </code></pre>
-<p>The second argument to <code>setConfig</code> is a <code>bytes</code> value that is ABI encoded with the necessary values for the <code>ConfigType</code>.</p>
-<div class="table-wrapper"><table><thead><tr><th>ConfigType</th><th>Value</th></tr></thead><tbody>
-<tr><td><code>SET_GAS_PAYING_TOKEN</code></td><td><code>abi.encode(token, decimals, name, symbol)</code></td></tr>
-<tr><td><code>ADD_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
-<tr><td><code>REMOVE_DEPENDENCY</code></td><td><code>abi.encode(chainId)</code></td></tr>
+<p>WARNING: the function name is subject to change depending on the name of the network upgrade.</p>
+<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
+<tr><td>{0xfe8f4eaf}</td><td></td><td>0-3</td><td>n/a</td></tr>
+<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
+<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
+<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
+<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
+<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
+<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
+<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
+<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
+<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
 </tbody></table>
 </div>
-<p>where</p>
-<ul>
-<li>
-<p><code>token</code> is the gas paying token's address (type <code>address</code>)</p>
-</li>
-<li>
-<p><code>decimals</code> is the gas paying token's decimals (type <code>uint8</code>)</p>
-</li>
-<li>
-<p><code>name</code> is the gas paying token's name (type <code>bytes32</code>)</p>
-</li>
-<li>
-<p><code>symbol</code> is the gas paying token's symbol (type <code>bytes32</code>)</p>
-</li>
-<li>
-<p><code>chainId</code> is the chain id intended to be added or removed from the dependency set (type <code>uint256</code>)</p>
-</li>
-</ul>
-<p>Calls to <code>setConfig</code> MUST originate from <code>SystemConfig</code> and are forwarded to <code>L1Block</code> by <code>OptimismPortal</code>.</p>
-<h3 id="dependency-set"><a class="header" href="#dependency-set">Dependency Set</a></h3>
-<p><code>L1Block</code> is updated to include the set of allowed chains. These chains are added and removed through <code>setConfig</code> calls
-with <code>ADD_DEPENDENCY</code> or <code>REMOVE_DEPENDENCY</code>, respectively. The maximum size of the dependency set is <code>type(uint8).max</code>,
-and adding a chain id when the dependency set size is at its maximum MUST revert. If a chain id already in the
-dependency set, such as the chain's chain id, is attempted to be added, the call MUST revert. If a chain id that is not
-in the dependency set is attempted to be removed, the call MUST revert. If the chain's chain id is attempted to be
-removed, the call also MUST revert.</p>
-<p><code>L1Block</code> MUST provide a public getter to check if a particular chain is in the dependency set called
-<code>isInDependencySet(uint256)</code>. This function MUST return true when a chain id in the dependency set, or the chain's chain
-id, is passed in as an argument, and false otherwise. Additionally, <code>L1Block</code> MUST provide a public getter to return the
-dependency set called <code>dependencySet()</code>. This function MUST return the array of chain ids that are in the dependency set.
-<code>L1Block</code> MUST also provide a public getter to get the dependency set size called <code>dependencySetSize()</code>. This function
-MUST return the length of the dependency set array.</p>
 <h3 id="deposit-context"><a class="header" href="#deposit-context">Deposit Context</a></h3>
 <p>New methods will be added on the <code>L1Block</code> contract to interact with <a href="interop/./derivation.html#deposit-context">deposit contexts</a>.</p>
 <pre><code class="language-solidity">function isDeposit() public view returns (bool);
@@ -11128,13 +11129,13 @@ valid <code>OptimismSuperchainERC20</code> corresponding to the same remote toke
   L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
   L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
 </pre>
-<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge">SuperchainERC20Bridge</a></h2>
+<h2 id="superchaintokenbridge"><a class="header" href="#superchaintokenbridge">SuperchainTokenBridge</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
 <h3 id="overview-38"><a class="header" href="#overview-38">Overview</a></h3>
-<p>The <code>SuperchainERC20Bridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
+<p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
 as described in the <a href="interop/./token-bridging.html">token bridging spec</a>.</p>
@@ -11179,12 +11180,12 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
 <p>The following diagram depicts a cross-chain transfer.</p>
 <pre class="mermaid">sequenceDiagram
   participant from
-  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant L2SBA as SuperchainTokenBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant L2SBB as SuperchainTokenBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
@@ -11201,7 +11202,7 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
 <h3 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h3>
-<p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainERC20Bridge</code> will require the following invariants:</p>
+<p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
 that was burnt in <code>sendERC20()</code>, as long as target chain has the initiating chain in the dependency set.
@@ -11384,9 +11385,8 @@ behalf of the sequencer will result in the production of invalid blocks.</p>
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/verifier.html#derivation-pipeline">Derivation Pipeline</a>
+<li><a href="interop/verifier.html#driver">Driver</a>
 <ul>
-<li><a href="interop/verifier.html#depositing-an-executing-message">Depositing an Executing Message</a></li>
 <li><a href="interop/verifier.html#safety">Safety</a>
 <ul>
 <li><a href="interop/verifier.html#unsafe-inputs"><code>unsafe</code> Inputs</a></li>
@@ -11398,51 +11398,16 @@ behalf of the sequencer will result in the production of invalid blocks.</p>
 <li><a href="interop/verifier.html#honest-verifier">Honest Verifier</a></li>
 </ul>
 </li>
-<li><a href="interop/verifier.html#security-considerations">Security Considerations</a>
-<ul>
-<li><a href="interop/verifier.html#forced-inclusion-of-cross-chain-messages">Forced Inclusion of Cross Chain Messages</a>
-<ul>
-<li><a href="interop/verifier.html#what-if-safety-isnt-enough">What if Safety isn't Enough?</a></li>
-</ul>
-</li>
-<li><a href="interop/verifier.html#reliance-on-history">Reliance on History</a></li>
-</ul>
-</li>
+<li><a href="interop/verifier.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="derivation-pipeline"><a class="header" href="#derivation-pipeline">Derivation Pipeline</a></h2>
-<p>The derivation pipeline enforces invariants on safe blocks that include executing messages.</p>
-<ul>
-<li>The executing message MUST have a corresponding initiating message</li>
-<li>The initiating message that corresponds to an executing message MUST come from a chain in its dependency set</li>
-<li>A block MUST be considered invalid if it is built with any invalid executing messages</li>
-</ul>
-<p>Blocks that contain transactions that relay cross domain messages to the destination chain where the
-initiating transaction does not exist MUST be considered invalid and MUST not be allowed by the
-derivation pipeline to be considered safe.</p>
-<p>There is no concept of replay protection at the lowest level of abstractions within the protocol because
-there is no replay protection mechanism that fits well for all applications. Users MAY submit an
-arbitrary number of executing messages per initiating message. Applications MUST build their own replay
-protection mechanisms if they are interacting with the lowest level abstractions.</p>
-<p>Blocks that contain invalid executing messages are considered invalid by the protocol. The derivation
-pipeline will never promote them from being <code>unsafe</code>. A block that contains invalid executing messages
-MUST be replaced by a deposits only block at the same block number.</p>
-<h3 id="depositing-an-executing-message"><a class="header" href="#depositing-an-executing-message">Depositing an Executing Message</a></h3>
-<p>Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
-The derivation pipeline must gracefully handle the case in which a user uses a deposit transaction to
-relay a cross chain message. To not couple preconfirmation security to consensus, deposit transactions
-that execute cross chain messages MUST have an initiating message that is considered <a href="interop/verifier.html#safety">safe</a> by the remote
-chain's derivation pipeline. This relaxes a strict synchrony assumption on the sequencer
-that it MUST have all unsafe blocks of destination chains as fast as possible to ensure that it is building
-correct blocks.</p>
-<p>If a deposit transaction references an initiating transaction that is not yet safe or does not exist,
-it MUST be dropped by the derivation pipeline.</p>
-<p>This inclusion property prevents a class of attacks where the user can trick the derivation pipeline
-into reorganizing the sequencer.</p>
+<h2 id="driver-1"><a class="header" href="#driver-1">Driver</a></h2>
+<p>The driver is responsible for validating L2 blocks and promoting them from unsafe
+to safe. A series of invariants are enforced before promotion.</p>
 <h3 id="safety"><a class="header" href="#safety">Safety</a></h3>
-<p>Safety is an abstraction that is useful for reasoning about security. It should be thought about
-as a spectrum from <code>unsafe</code> to <code>finalized</code>. Users can choose to operate on information based on its
-level of safety depending on their risk profile and personal preferences.</p>
+<p>Safety is an abstraction that is useful for reasoning about the security of L2 blocks.
+It is a spectrum from <code>unsafe</code> to <code>finalized</code>. Users can choose to operate on L2 data
+based on its level of safety taking into account their risk profile and personal preferences.</p>
 <p>The following labels are used to describe both inputs and outputs:</p>
 <ul>
 <li><code>unsafe</code></li>
@@ -11511,29 +11476,6 @@ follows. The main difference is that the validity of included executing
 messages is verified instead of verifying possible executing messages before
 inclusion.</p>
 <h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
-<h3 id="forced-inclusion-of-cross-chain-messages"><a class="header" href="#forced-inclusion-of-cross-chain-messages">Forced Inclusion of Cross Chain Messages</a></h3>
-<p>The design is particular to not introduce any sort of "forced inclusion" between L2s. This design space introduces
-risky synchrony assumptions and forces the introduction of a message queue to prevent denial of service attacks where
-all chains in the network decide to send cross chain messages to the same chain at the same time.</p>
-<p>"Forced inclusion" transactions are good for censorship resistance. In the worst case of censoring sequencers, it will
-take at most 2 sequencing windows for the cross chain message to be processed. The initiating transaction can be sent
-via a deposit which MUST be included in the source chain or the sequencer will be reorganized at the end of the
-sequencing window that includes the deposit transaction. If the executing transaction is censored, it will take
-another sequencing window of time to force the inclusion of the executing message per the
-<a href="interop/verifier.html#depositing-an-executing-message">spec</a>.</p>
-<h4 id="what-if-safety-isnt-enough"><a class="header" href="#what-if-safety-isnt-enough">What if Safety isn't Enough?</a></h4>
-<p>It is possible that small latency differences may impact the allowance of deposited executing messages
-if the rule is that the initiating message is safe. A more strict invariant may be introduced:</p>
-<pre><code class="language-text">identifier.timestamp + sequencer_window &lt;= block.timestamp
-</code></pre>
-<p>This says that a sequencer window must elapse before the initiating message can be referenced
-in an executing message.</p>
-<h3 id="reliance-on-history"><a class="header" href="#reliance-on-history">Reliance on History</a></h3>
-<p>When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
-<a href="https://eips.ethereum.org/EIPS/eip-4444">EIP-4444</a> will eventually provide a solution for making historical receipts available without
-needing to require increasingly large execution client databases.</p>
-<p>It is also possible to introduce a form of expiry on historical receipts by enforcing that the timestamp
-is recent enough in the <code>CrossL2Inbox</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -11720,7 +11662,7 @@ that includes two external functions and two events:</p>
 <p>MUST trigger when <code>crosschainBurn</code> is called</p>
 <pre><code class="language-solidity">event CrosschainBurn(address indexed _from, uint256 _amount, address indexed _sender)
 </code></pre>
-<h2 id="superchainerc20bridge-1"><a class="header" href="#superchainerc20bridge-1"><code>SuperchainERC20Bridge</code></a></h2>
+<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></h2>
 <p>The <code>SuperchainERC20Bridge</code> is a predeploy that works as an abstraction
 on top of the <a href="interop/./predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
 for token bridging.
@@ -12026,7 +11968,9 @@ with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that suc
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/derivation.html#overview">Overview</a>
+<li><a href="interop/derivation.html#overview">Overview</a></li>
+<li><a href="interop/derivation.html#invariants">Invariants</a></li>
+<li><a href="interop/derivation.html#l1-attributes-transaction">L1 Attributes Transaction</a>
 <ul>
 <li><a href="interop/derivation.html#deposit-context">Deposit Context</a>
 <ul>
@@ -12040,19 +11984,43 @@ with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that suc
 </li>
 </ul>
 </li>
+<li><a href="interop/derivation.html#replacing-invalid-blocks">Replacing Invalid Blocks</a>
+<ul>
+<li><a href="interop/derivation.html#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></li>
+</ul>
+</li>
 <li><a href="interop/derivation.html#security-considerations">Security Considerations</a>
 <ul>
 <li><a href="interop/derivation.html#gas-considerations">Gas Considerations</a></li>
+<li><a href="interop/derivation.html#depositing-an-executing-message">Depositing an Executing Message</a></li>
+<li><a href="interop/derivation.html#reliance-on-history">Reliance on History</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
+<p>New derivation rules are added to guaranteee integrity of cross chain messages.
+The fork choice rule is updated to fork out unsafe blocks that contain invalid
+executing messages.</p>
+<h2 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h2>
+<ul>
+<li>An executing message MUST have a corresponding initiating message</li>
+<li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
+<li>A block MUST be considered invalid if it is built with any invalid executing messages</li>
+</ul>
+<p>L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
+They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
+because it includes invalid executing messages MUST be replaced by a deposits only block at the same
+block height. This guarantees progression of the chain, ensuring that an infinite loop of processing
+the same block in the proof system is not possible.</p>
+<h2 id="l1-attributes-transaction"><a class="header" href="#l1-attributes-transaction">L1 Attributes Transaction</a></h2>
+<p>The L1 attributes transaction is updated to a new entrypoint on the <code>L1Block</code> contract.</p>
 <h3 id="deposit-context-1"><a class="header" href="#deposit-context-1">Deposit Context</a></h3>
-<p>Derivation is extended to create <strong>deposit contexts</strong>, which signifies the execution of a depositing transaction.
-A deposit context is scoped to a single block, commencing with the execution of the first deposited transaction
-and concluding immediately after the execution of the final deposited transaction within that block.
-As such, there is exactly one deposit context per block.</p>
+<p>Derivation is extended to create <strong>deposit contexts</strong>, which signify the execution of a depositing transaction.
+A deposit context is scoped to a single block, opening with the first deposited transaction and closing after
+the execution of the final deposited transaction. As such, there is exactly one deposit context per block.
+The deposit context exists to give legibility within the EVM that execution is happening in the context of
+a deposit transaction. See <a href="interop/./predeploys.html#isdeposit"><code>isDeposit()</code></a> for more information.</p>
 <p>The order of deposit transactions occurs as follows:</p>
 <ol>
 <li>L1 attributes transaction, <a href="interop/derivation.html#opening-the-deposit-context">opening the deposit context</a>.</li>
@@ -12101,19 +12069,52 @@ The one difference is the source-hash domain: <code>3</code> (instead of <code>1
 And <code>seqNumber = l2BlockNum - l2EpochStartBlockNum</code>,
 where <code>l2BlockNum</code> is the L2 block number of the inclusion of the deposit tx in L2,
 and <code>l2EpochStartBlockNum</code> is the L2 block number of the first L2 block in the epoch.</p>
+<h2 id="replacing-invalid-blocks"><a class="header" href="#replacing-invalid-blocks">Replacing Invalid Blocks</a></h2>
+<p>When the <a href="interop/./messaging.html#resolving-cross-chain-safety">cross chain dependency resolution</a> determines
+that a block contains an <a href="interop/./messaging.html#invalid-messages">invalid message</a>, the block is replaced
+by a block with the same inputs, except for the transactions included. The transactions from the
+original block are trimmed to include only deposit transactions plus an
+<a href="interop/derivation.html#optimistic-block-deposited-transaction">optimistic block info deposit transaction</a> which is appended
+to the trimmed transaction list.</p>
+<h3 id="optimistic-block-deposited-transaction"><a class="header" href="#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></h3>
+<p>An [L1 attributes deposited transaction][g-l1-attr-deposit] is a deposit transaction sent to the zero address.</p>
+<p>This transaction MUST have the following values:</p>
+<ol>
+<li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002</code> (the address of the
+[L1 Attributes depositor account][depositor-account])</li>
+<li><code>to</code> is <code>0x0000000000000000000000000000000000000000</code> (the zero address as no EVM code execution is expected).</li>
+<li><code>mint</code> is <code>0</code></li>
+<li><code>value</code> is <code>0</code></li>
+<li><code>gasLimit</code> is set <code>36000</code> gas, to cover intrinsic costs, processing costs, and margin for change.</li>
+<li><code>isSystemTx</code> is set to <code>false</code>.</li>
+<li><code>data</code> is the preimage of the <a href="interop/../glossary.html#l2-output-root-proposals">L2 output root</a>
+of the replaced block. i.e. <code>version_byte || payload</code> without applying the <code>keccak256</code> hashing.</li>
+</ol>
+<p>This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
+<code>gasLimit</code>, as it is considered part of state-transition processing.</p>
 <h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
-<p>There must be sufficient gas available in the block to destroy deposit context.
-There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
-may be filled by the other deposit transactions. As a consequence, a deposit context may spill into multiple blocks.</p>
-<p>This will be fixed in the future.</p>
+<p>There must be sufficient gas available in the block to destroy deposit context. Depending on the
+chain configuration, there is no guarantee that the amount of guaranteed gas plus the amount used
+by the system transactions is less than the L2 block gas limit. It is important that the chain operator
+maintains a ~9 million gas buffer between the guaranteed gas limit and the L2 gas limit.</p>
+<h3 id="depositing-an-executing-message"><a class="header" href="#depositing-an-executing-message">Depositing an Executing Message</a></h3>
+<p>Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
+It is possible to deposit an invalid executing message, forcing the sequencer to reorg. It would
+be fairly cheap to continuously deposit invalid executing messages through L1 and cause L2 liveness
+instability. A future upgrade will enable deposits to trigger executing messages.</p>
+<h3 id="reliance-on-history"><a class="header" href="#reliance-on-history">Reliance on History</a></h3>
+<p>When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
+<a href="https://eips.ethereum.org/EIPS/eip-4444">EIP-4444</a> will eventually provide a solution for making historical receipts available without
+needing to execute increasingly long chain histories.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="transaction-pool"><a class="header" href="#transaction-pool">Transaction pool</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/tx-pool.html#message-validation">Message validation</a></li>
+<li><a href="interop/tx-pool.html#overview">Overview</a></li>
+<li><a href="interop/tx-pool.html#transaction-validation">Transaction validation</a></li>
 <li><a href="interop/tx-pool.html#system-deposits-transaction-margin">System deposits transaction margin</a></li>
 <li><a href="interop/tx-pool.html#security-considerations">Security Considerations</a>
 <ul>
@@ -12122,36 +12123,25 @@ may be filled by the other deposit transactions. As a consequence, a deposit con
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>The transaction-pool is part of the execution-engine,
-and generally replicated by the sequencer and its surrounding infrastructure.</p>
-<p>Not all messages may be included by the sequencer during <a href="interop/./sequencer.html#block-building">block building</a>,
-additional transaction-pool validation is thus required to prevent non-includable
-transactions from overwhelming the network.</p>
-<p>Transactions with cross-chain messages are subject to the same transaction-pool
-validation rules as regular transactions:
-nonce, balance and fee changes need to be applied to validation so the cross-chain transaction
-is possible to include in a block in the first place.</p>
-<p>However, additional validation rules are applied to demote messages that cannot be included in a block.</p>
-<h2 id="message-validation"><a class="header" href="#message-validation">Message validation</a></h2>
-<p>Through <a href="interop/./sequencer.html#static-analysis">static-analysis</a> as performed in block building,
-the <code>Identifier</code> of the message is read, and used for further validation. Static analysis is
-not always possible, therefore the mempool SHOULD delegate execution to another service that can
-horizontally scale validation of executing messages.</p>
-<p>The <a href="interop/./messaging.html#messaging-invariants">messaging invariants</a> should be enforced in the transaction pool,
-with dependency validation adapted for guarantees of the in-flight transactions:
-the executing message is not included in the chain yet,
-but the validity of the message and its initiating source is tracked.</p>
-<p>A Message with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.</p>
-<p>Irreversible invalidation conditions:</p>
-<ul>
-<li>The block at the initiating message source is finalized and does not pass the initiating-message checks.</li>
-<li>The message is expired.</li>
-</ul>
-<p>The sequencer MAY choose to demote messages which are invalid but can still technically become valid:</p>
-<ul>
-<li>The block at the initiating message source is known, but another conflicting unsafe block is canonical.</li>
-<li>The block at the initiating message has invalidated message dependencies.</li>
-</ul>
+<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
+before being included in a block. When a user submits a transaction to a node, it is validated
+and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
+<p>Since there is little cost to sending invalid transactions over the p2p network maliciously,
+Ethereum opts to ensure that the transactions can be validated as cheaply as possible. This validation
+consists of a nonce and balance (fee payment) check which can be done with solely state lookups and
+the chain tips block header. Features that make this validation more costly have been rejected from L1
+Ethereum due to the desire to ensure <a href="https://hackmd.io/@kevaundray/S1hUQuV4Jx">commodity hardware</a> can
+easily participate in consensus.</p>
+<p>Layer twos can make more aggressive tradeoffs and raise the minimum hardware requirements of the network.
+With interop, it requires full EVM execution of the transaction to fully validate it.</p>
+<h2 id="transaction-validation"><a class="header" href="#transaction-validation">Transaction validation</a></h2>
+<p>In addition to the nonce and balance checks, the <a href="interop/./messaging.html#messaging-invariants">messaging invariants</a>
+SHOULD be enforced before entry into the transaction pool.</p>
+<p>After each new block, each transaction in the transaction pool is checked for validity again.
+A transaction with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.</p>
+<p>It is possible that a transaction that was valid becomes invalid or vice versa. The sequencer MAY choose
+to demote messages which are invalid but can still technically become valid.</p>
 <p>Transactions with invalid message-dependencies MUST NOT be included in block-building,
 and should thus be dropped from the transaction-pool.</p>
 <h2 id="system-deposits-transaction-margin"><a class="header" href="#system-deposits-transaction-margin">System deposits transaction margin</a></h2>
@@ -12239,7 +12229,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -12529,7 +12519,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
+<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -12685,7 +12675,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
+<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
