@@ -8,10 +8,13 @@
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
   <<<<<<< HEAD
+  <<<<<<< HEAD
   - [Invariants](#invariants)
 - # [Security Considerations](#security-considerations)
 - [Future Considerations](#future-considerations)
-  > > > > > > > main
+  > > > > > > > # main
+- [Security Considerations](#security-considerations)
+  > > > > > > > 1fa11bce27d65b52ae17ee977676cb722ab4039b
   - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 - [Security Considerations](#security-considerations)
   - [Dependency Set Size](#dependency-set-size)
@@ -51,6 +54,9 @@ It is a known issue that not all software in the Ethereum ecosystem can handle 3
 
 The dependency set is managed in the client software. Adding a chain to the dependency set is
 considered an upgrade to the network. It is not possible to remove chains from the dependency set.
+
+The `SuperchainConfig` is updated to manage the dependency set.
+More details can be found on the [dependency manager section](./../protocol/superchain-configuration.md#dependency-manager).
 
 ## Future Considerations
 
