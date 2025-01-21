@@ -195,7 +195,7 @@ to safe. A series of invariants are enforced before promotion.</p>
 <h3 id="safety"><a class="header" href="#safety">Safety</a></h3>
 <p>Safety is an abstraction that is useful for reasoning about the security of L2 blocks.
 It is a spectrum from <code>unsafe</code> to <code>finalized</code>. Users can choose to operate on L2 data
-based on its level of safety taking into account their risk profile and personal preferences.</p>
+based on its level of safety, taking into account their risk profile and personal preferences.</p>
 <p>The following labels are used to describe both inputs and outputs:</p>
 <ul>
 <li><code>unsafe</code></li>
@@ -203,7 +203,7 @@ based on its level of safety taking into account their risk profile and personal
 <li><code>safe</code></li>
 <li><code>finalized</code></li>
 </ul>
-<p>Inputs correspond to the inputs to the state transition function while outputs correspond to the side
+<p>Inputs correspond to the inputs to the state transition function while, outputs correspond to the side
 effects of the state transition function.</p>
 <p>Anything before <code>safe</code> technically uses a "preconfirmation" based security model which is not part
 of consensus. While useful to have definitions of the default meanings of these terms, they are
@@ -233,11 +233,11 @@ particular software when building the block.</p>
 <ul>
 <li>MUST have valid cross chain messages</li>
 </ul>
-<p><code>cross-unsafe</code> represents the <code>unsafe</code> blocks that had their cross chain messages fully verified.
-The network can be represented as a graph where each block across all chains are represented as
-a node and then a directed edge between two blocks represents the source block of the initiating
-message and the block that included the executing message.</p>
-<p>An input can be promoted from <code>unsafe</code> to <code>cross-unsafe</code> when the full dependency graph is resolved
+<p><code>cross-unsafe</code> represents the <code>unsafe</code> blocks that have had their cross chain messages fully verified.
+The network can be represented as a graph, where each block across all chains is represented as a node.
+A directed edge between two blocks indicates the source block of the initiating message
+and the block that includes the executing message."</p>
+<p>An input can be promoted from <code>unsafe</code> to <code>cross-unsafe</code> when the full dependency graph is resolved,
 such that all cross chain messages are verified to be valid and at least one message in the dependency
 graph is still <code>unsafe</code>.</p>
 <p>Note that the <code>cross-unsafe</code> is not meant to be exposed to the end user via the RPC label. It is
@@ -258,10 +258,10 @@ in a way where all of the data has been published to the data availability layer
 <p><code>finalized</code> represents full Proof of Stake economic security on top of the data. This means that
 if the data is reorganized, then validators will be slashed.</p>
 <h3 id="honest-verifier"><a class="header" href="#honest-verifier">Honest Verifier</a></h3>
-<p>The honest verifier follows a naive verification algorithm. That is similar
+<p>The honest verifier follows a naive verification algorithm that is similar
 to the block building code that the <a href="./sequencer.html#direct-dependency-confirmation">sequencer</a>
 follows. The main difference is that the validity of included executing
-messages is verified instead of verifying possible executing messages before
+messages is verified, instead of verifying possible executing messages before
 inclusion.</p>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 

@@ -255,8 +255,8 @@ a block. This would make building atomic cross chain messages more simple by not
 exact state of the block templates between multiple chains together.</p>
 <h2 id="messaging-ends"><a class="header" href="#messaging-ends">Messaging ends</a></h2>
 <h3 id="initiating-messages"><a class="header" href="#initiating-messages">Initiating Messages</a></h3>
-<p>Each <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">Log</a> (also known as <code>event</code> in solidity) forms an initiating message.
-The raw log data from the <a href="#message-payload">Message Payload</a>.</p>
+<p>Each <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">Log</a> (also known as <code>event</code> in solidity) forms an initiating message,
+with the raw log data coming from the <a href="#message-payload">Message Payload</a>.</p>
 <p>Messages are <em>broadcast</em>: the protocol does not enshrine address-targeting within messages.</p>
 <p>The initiating message is uniquely identifiable with an <a href="#message-identifier"><code>Identifier</code></a>,
 such that it can be distinguished from other duplicate messages within the same transaction or block.</p>
@@ -282,7 +282,7 @@ be less than or equal to the timestamp of the executing message as well as great
 message MUST be lower than the initiating message timestamp (as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
-<p>The timestamp invariant ensures that initiating messages is at least the same timestamp as the Interop upgrade timestamp
+<p>The timestamp invariant ensures that initiating messages have at least the same timestamp as the Interop upgrade timestamp
 and cannot come from a future block than the block of its executing message. Note that since
 all transactions in a block have the same timestamp, it is possible for an executing transaction to be
 ordered before the initiating message in the same block.</p>
@@ -342,8 +342,8 @@ blocks with equal timestamp, of chains in the same dependency set,
 may have dependencies on one another.</p>
 <h3 id="resolving-cross-chain-safety"><a class="header" href="#resolving-cross-chain-safety">Resolving cross-chain safety</a></h3>
 <p>To determine cross-chain safety, the graph is inspected for valid graph components that have no invalid dependencies,
-while applying the respective safety-view on the blocks in the graph.</p>
-<p>I.e. the graph must not have any inward edges towards invalid blocks within the safety-view.</p>
+while applying the respective safety-view on the blocks in the graph.
+I.e., the graph must not have any inward edges towards invalid blocks within the safety-view.</p>
 <p>A safety-view is the subset of canonical blocks of all chains with the specified safety label or a higher safety label.
 Dependencies on blocks outside of the safety-view are invalid,
 but may turn valid once the safety-view changes (e.g. a reorg of unsafe blocks).</p>

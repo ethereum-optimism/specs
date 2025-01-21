@@ -207,7 +207,7 @@ The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messagi
 <h3 id="properties"><a class="header" href="#properties">Properties</a></h3>
 <p>The standard will build on top of ERC20, implement the
 <a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code></a>
-interface and include the following properties:</p>
+interface, and include the following properties:</p>
 <ol>
 <li>Implement the <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> interface</li>
 <li>Implement the <a href="https://github.com/ethereum/ERCs/pull/692"><code>ERC7802</code></a> interface</li>
@@ -218,14 +218,14 @@ interface and include the following properties:</p>
 <p>The third property will allow the <code>SuperchainERC20Bridge</code> to have a liquidity guarantee,
 which would not be possible in a model based on lock/unlock.
 Liquidity availability is fundamental to achieving fungibility.</p>
-<p>SuperchainERC20Bridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>,
+<p>SuperchainERC20Bridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>;
 other addresses may also be permitted to call these functions.</p>
 <p>The fourth property removes the need for cross-chain access control lists.
-Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens they mint on
+Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens it mints on
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.</p>
-<p>One way to guarantee the same address across the Superchain, and also bind it to the same <code>init_code</code>
-and constructor arguments is to use the
+<p>One way to guarantee the same address across the Superchain (and also bind it to the same <code>init_code</code>
+and constructor arguments) is to use the
 <a href="../protocol/preinstalls.html#create2deployer"><code>Create2Deployer</code> preinstall</a>.
 There is also the <a href="predeploys.html#optimismmintableerc20factory"><code>OptimismSuperchainERC20Factory</code></a>
 predeploy that facilitates this process for L1 native tokens.</p>
@@ -264,15 +264,20 @@ The <code>SuperchainERC20Bridge</code> includes two functions for bridging:</p>
 <li><code>sendERC20</code>: initializes a cross-chain transfer of a <code>SuperchainERC20</code>
 by burning the tokens locally and sending a message to the <code>SuperchainERC20Bridge</code>
 on the target chain using the <code>L2toL2CrossDomainMessenger</code>.
-Additionaly, it returns the <code>msgHash_</code> crafted by the <code>L2toL2CrossDomainMessenger</code>.</li>
-<li><code>relayERC20</code>: process incoming messages from the <code>L2toL2CrossDomainMessenger</code>
-and mints the corresponding amount of the <code>SuperchainERC20</code></li>
+Additionally, it returns the <code>msgHash_</code> crafted by the <code>L2toL2CrossDomainMessenger</code>.</li>
+<li><code>relayERC20</code>: processes incoming messages from the <code>L2toL2CrossDomainMessenger</code>
+and mints the corresponding amount of the <code>SuperchainERC20</code>.</li>
 </ul>
 <p>The full specifications and invariants are detailed
 in the <a href="./predeploys.html#superchainerc20bridge">predeploys spec</a>.</p>
 <h2 id="diagram"><a class="header" href="#diagram">Diagram</a></h2>
 <p>The following diagram depicts a cross-chain transfer.</p>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48 
+---
+sequenceDiagram
   participant from
   participant L2SBA as SuperchainERC20Bridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
@@ -326,7 +331,12 @@ For example, a contract in chain A could send pre-approved funds
 from a user in chain B to a contract in chain C.</p>
 <p>For the moment, the standard will not include any specific functionality
 to facilitate such an action and rely on the usage of <code>Permit2</code> like this:</p>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48 
+---
+sequenceDiagram
   participant from
   participant Intermediate_A as Initiator
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
@@ -350,8 +360,13 @@ a possible design could introduce a <code>remoteTransferFrom()</code> function.<
 additional call to the <code>_to</code> address.
 This feature could be used for cross-chain concatenated actions,
 i.e. bridge funds and then do X.</p>
-<p>This vertical has much potential but can also be achieved outside the standard in the following way:</p>
-<pre class="mermaid">sequenceDiagram
+<p>This approach has great potential but can also be achieved outside the standard in the following way:</p>
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48 
+---
+sequenceDiagram
   participant from
   participant Intermediate_A as intermediate A
   participant L2SBA as L2StandardBridge (Chain A)
@@ -377,10 +392,11 @@ i.e. bridge funds and then do X.</p>
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B-&gt;&gt;to: call(data)
 </pre>
-<p>Adding the call to the standard would remove the dependence on the sequencer regarding the proper tx ordering
-at the sequencer level, but would also introduce more risk for cross-chain fund transferring,
-as an incorrectly formatted call would burn funds in the initiating chain but would revert
-in destination and could never be successfully replayed.</p>
+<p>Adding the call to the standard would remove the dependence on the sequencer for
+proper transaction ordering at the sequencer level.
+However, it would also introduce additional risks for cross-chain fund transfers.
+Specifically, an incorrectly formatted call could burn funds on the initiating chain,
+but revert on the destination chain, and could never be successfully replayed.</p>
 
                     </main>
 

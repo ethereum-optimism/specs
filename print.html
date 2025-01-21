@@ -10422,8 +10422,8 @@ a block. This would make building atomic cross chain messages more simple by not
 exact state of the block templates between multiple chains together.</p>
 <h2 id="messaging-ends"><a class="header" href="#messaging-ends">Messaging ends</a></h2>
 <h3 id="initiating-messages"><a class="header" href="#initiating-messages">Initiating Messages</a></h3>
-<p>Each <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">Log</a> (also known as <code>event</code> in solidity) forms an initiating message.
-The raw log data from the <a href="interop/messaging.html#message-payload">Message Payload</a>.</p>
+<p>Each <a href="https://github.com/ethereum/go-ethereum/blob/5c67066a050e3924e1c663317fd8051bc8d34f43/core/types/log.go#L29">Log</a> (also known as <code>event</code> in solidity) forms an initiating message,
+with the raw log data coming from the <a href="interop/messaging.html#message-payload">Message Payload</a>.</p>
 <p>Messages are <em>broadcast</em>: the protocol does not enshrine address-targeting within messages.</p>
 <p>The initiating message is uniquely identifiable with an <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a>,
 such that it can be distinguished from other duplicate messages within the same transaction or block.</p>
@@ -10449,7 +10449,7 @@ be less than or equal to the timestamp of the executing message as well as great
 message MUST be lower than the initiating message timestamp (as defined in the <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
-<p>The timestamp invariant ensures that initiating messages is at least the same timestamp as the Interop upgrade timestamp
+<p>The timestamp invariant ensures that initiating messages have at least the same timestamp as the Interop upgrade timestamp
 and cannot come from a future block than the block of its executing message. Note that since
 all transactions in a block have the same timestamp, it is possible for an executing transaction to be
 ordered before the initiating message in the same block.</p>
@@ -10509,8 +10509,8 @@ blocks with equal timestamp, of chains in the same dependency set,
 may have dependencies on one another.</p>
 <h3 id="resolving-cross-chain-safety"><a class="header" href="#resolving-cross-chain-safety">Resolving cross-chain safety</a></h3>
 <p>To determine cross-chain safety, the graph is inspected for valid graph components that have no invalid dependencies,
-while applying the respective safety-view on the blocks in the graph.</p>
-<p>I.e. the graph must not have any inward edges towards invalid blocks within the safety-view.</p>
+while applying the respective safety-view on the blocks in the graph.
+I.e., the graph must not have any inward edges towards invalid blocks within the safety-view.</p>
 <p>A safety-view is the subset of canonical blocks of all chains with the specified safety label or a higher safety label.
 Dependencies on blocks outside of the safety-view are invalid,
 but may turn valid once the safety-view changes (e.g. a reorg of unsafe blocks).</p>
@@ -10776,7 +10776,7 @@ properties about the <code>_msg</code>.</p>
 <p>The <code>L2ToL2CrossDomainMessenger</code> is a higher level abstraction on top of the <code>CrossL2Inbox</code> that
 provides general message passing, utilized for secure transfers ERC20 tokens between L2 chains.
 Messages sent through the <code>L2ToL2CrossDomainMessenger</code> on the source chain receive both replay protection
-as well as domain binding, ie the executing transaction can only be valid on a single chain.</p>
+as well as domain binding, i.e. the executing transaction can only be valid on a single chain.</p>
 <h3 id="relaymessage-invariants"><a class="header" href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></h3>
 <ul>
 <li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
@@ -10800,7 +10800,7 @@ the <code>CrossDomainMessenger</code>.</p>
 sending <code>ether</code> between chains. <code>ether</code> must first be wrapped into WETH before sending between chains.
 See <a href="interop/./superchain-weth.html">SuperchainWETH</a> for more information.</p>
 <h3 id="interfaces"><a class="header" href="#interfaces">Interfaces</a></h3>
-<p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code> but
+<p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code>, but
 the <code>_minGasLimit</code> is removed to prevent complexity around EVM gas introspection and the <code>_destination</code>
 chain is included instead.</p>
 <h4 id="sending-messages"><a class="header" href="#sending-messages">Sending Messages</a></h4>
@@ -10808,8 +10808,8 @@ chain is included instead.</p>
 <pre><code class="language-solidity">function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
 </code></pre>
 <p>It returns the hash of the message being sent,
-used to track whether the message has successfully been relayed.
-It emits a <code>SentMessage</code> event with the necessary metadata to execute when relayed on the destination chain.</p>
+which is used to track whether the message has successfully been relayed.
+It also emits a <code>SentMessage</code> event with the necessary metadata to execute when relayed on the destination chain.</p>
 <pre><code class="language-solidity">event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
 </code></pre>
 <p>An explicit <code>_destination</code> chain and <code>nonce</code> are used to ensure that the message can only be played on a single remote
@@ -10850,12 +10850,12 @@ Each subsequent call is labeled with a number.</p>
     end
 </pre>
 <p>When relaying a message through the <code>L2ToL2CrossDomainMessenger</code>, it is important to require that
-the <code>_destination</code> equal to <code>block.chainid</code> to ensure that the message is only valid on a single
+the <code>_destination</code> be equal to <code>block.chainid</code> to ensure that the message is only valid on a single
 chain. The hash of the message is used for replay protection.</p>
 <p>It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
 it is possible to send a message that is not playable.</p>
-<p>A message is relayed by providing the <a href="interop/./messaging.html#message-identifier">identifier</a> to a <code>SentMessage</code>
-event and its corresponding <a href="interop/./messaging.html#message-payload">message payload</a>.</p>
+<p>A message is relayed by providing the <a href="interop/./messaging.html#message-identifier">identifier</a> of a <code>SentMessage</code>
+event along with its corresponding <a href="interop/./messaging.html#message-payload">message payload</a>.</p>
 <pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
     CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
@@ -10888,7 +10888,7 @@ getters.</p>
 <h3 id="optimismsuperchainerc20"><a class="header" href="#optimismsuperchainerc20">OptimismSuperchainERC20</a></h3>
 <p>The <code>OptimismSuperchainERC20Factory</code> creates ERC20 contracts that implements the <code>SuperchainERC20</code> <a href="interop/token-bridging.html">standard</a>,
 grants mint-burn rights to the <code>L2StandardBridge</code> (<code>OptimismSuperchainERC20</code>)
-and include a <code>remoteToken</code> variable.
+and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
@@ -11051,12 +11051,12 @@ by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fi
 <h3 id="events-1"><a class="header" href="#events-1">Events</a></h3>
 <h4 id="optimismmintableerc20created"><a class="header" href="#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></h4>
 <p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
-<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.</p>
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> is called.</p>
 <pre><code class="language-solidity">event OptimismMintableERC20Created(address indexed localToken, address indexed remoteToken, address deployer);
 </code></pre>
 <h4 id="standardl2tokencreated"><a class="header" href="#standardl2tokencreated"><code>StandardL2TokenCreated</code></a></h4>
 <p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
-<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> is called.
 This event exists for backward compatibility with legacy version.</p>
 <pre><code class="language-solidity">event StandardL2TokenCreated(address indexed remoteToken, address indexed localToken);
 </code></pre>
@@ -11113,7 +11113,12 @@ anyone can convert between allowed legacy representations and
 valid <code>OptimismSuperchainERC20</code> corresponding to the same remote token.</li>
 </ul>
 <h3 id="conversion-flow"><a class="header" href="#conversion-flow">Conversion Flow</a></h3>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 28
+---
+sequenceDiagram
   participant Alice
   participant L2StandardBridge
   participant factory as OptimismMintableERC20Factory
@@ -11178,7 +11183,12 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
 </code></pre>
 <h3 id="diagram"><a class="header" href="#diagram">Diagram</a></h3>
 <p>The following diagram depicts a cross-chain transfer.</p>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48
+---
+sequenceDiagram
   participant from
   participant L2SBA as SuperchainTokenBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
@@ -11243,7 +11253,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 <li>Bridge Events:
 <ul>
-<li><code>sendERC20()</code> should emit a <code>SentERC20</code> event. `</li>
+<li><code>sendERC20()</code> should emit a <code>SentERC20</code> event.</li>
 <li><code>relayERC20()</code> should emit a <code>RelayedERC20</code> event.</li>
 </ul>
 </li>
@@ -11407,7 +11417,7 @@ to safe. A series of invariants are enforced before promotion.</p>
 <h3 id="safety"><a class="header" href="#safety">Safety</a></h3>
 <p>Safety is an abstraction that is useful for reasoning about the security of L2 blocks.
 It is a spectrum from <code>unsafe</code> to <code>finalized</code>. Users can choose to operate on L2 data
-based on its level of safety taking into account their risk profile and personal preferences.</p>
+based on its level of safety, taking into account their risk profile and personal preferences.</p>
 <p>The following labels are used to describe both inputs and outputs:</p>
 <ul>
 <li><code>unsafe</code></li>
@@ -11415,7 +11425,7 @@ based on its level of safety taking into account their risk profile and personal
 <li><code>safe</code></li>
 <li><code>finalized</code></li>
 </ul>
-<p>Inputs correspond to the inputs to the state transition function while outputs correspond to the side
+<p>Inputs correspond to the inputs to the state transition function while, outputs correspond to the side
 effects of the state transition function.</p>
 <p>Anything before <code>safe</code> technically uses a "preconfirmation" based security model which is not part
 of consensus. While useful to have definitions of the default meanings of these terms, they are
@@ -11445,11 +11455,11 @@ particular software when building the block.</p>
 <ul>
 <li>MUST have valid cross chain messages</li>
 </ul>
-<p><code>cross-unsafe</code> represents the <code>unsafe</code> blocks that had their cross chain messages fully verified.
-The network can be represented as a graph where each block across all chains are represented as
-a node and then a directed edge between two blocks represents the source block of the initiating
-message and the block that included the executing message.</p>
-<p>An input can be promoted from <code>unsafe</code> to <code>cross-unsafe</code> when the full dependency graph is resolved
+<p><code>cross-unsafe</code> represents the <code>unsafe</code> blocks that have had their cross chain messages fully verified.
+The network can be represented as a graph, where each block across all chains is represented as a node.
+A directed edge between two blocks indicates the source block of the initiating message
+and the block that includes the executing message."</p>
+<p>An input can be promoted from <code>unsafe</code> to <code>cross-unsafe</code> when the full dependency graph is resolved,
 such that all cross chain messages are verified to be valid and at least one message in the dependency
 graph is still <code>unsafe</code>.</p>
 <p>Note that the <code>cross-unsafe</code> is not meant to be exposed to the end user via the RPC label. It is
@@ -11470,10 +11480,10 @@ in a way where all of the data has been published to the data availability layer
 <p><code>finalized</code> represents full Proof of Stake economic security on top of the data. This means that
 if the data is reorganized, then validators will be slashed.</p>
 <h3 id="honest-verifier"><a class="header" href="#honest-verifier">Honest Verifier</a></h3>
-<p>The honest verifier follows a naive verification algorithm. That is similar
+<p>The honest verifier follows a naive verification algorithm that is similar
 to the block building code that the <a href="interop/./sequencer.html#direct-dependency-confirmation">sequencer</a>
 follows. The main difference is that the validity of included executing
-messages is verified instead of verifying possible executing messages before
+messages is verified, instead of verifying possible executing messages before
 inclusion.</p>
 <h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
@@ -11493,7 +11503,7 @@ inclusion.</p>
 </ul>
 <h2 id="cascading-dependencies"><a class="header" href="#cascading-dependencies">Cascading dependencies</a></h2>
 <p>Deposits are a special case, synchronous with derivation, at enforced cross-L2 delay.
-Thus deposits cannot reference each others events intra-block.</p>
+Thus deposits cannot reference each other's events intra-block.</p>
 <p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
 The insight is that the fault proof program can be a superset of the state transition function.</p>
 <h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
@@ -11616,7 +11626,7 @@ The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messagi
 <h3 id="properties"><a class="header" href="#properties">Properties</a></h3>
 <p>The standard will build on top of ERC20, implement the
 <a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code></a>
-interface and include the following properties:</p>
+interface, and include the following properties:</p>
 <ol>
 <li>Implement the <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> interface</li>
 <li>Implement the <a href="https://github.com/ethereum/ERCs/pull/692"><code>ERC7802</code></a> interface</li>
@@ -11627,14 +11637,14 @@ interface and include the following properties:</p>
 <p>The third property will allow the <code>SuperchainERC20Bridge</code> to have a liquidity guarantee,
 which would not be possible in a model based on lock/unlock.
 Liquidity availability is fundamental to achieving fungibility.</p>
-<p>SuperchainERC20Bridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>,
+<p>SuperchainERC20Bridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>;
 other addresses may also be permitted to call these functions.</p>
 <p>The fourth property removes the need for cross-chain access control lists.
-Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens they mint on
+Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens it mints on
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.</p>
-<p>One way to guarantee the same address across the Superchain, and also bind it to the same <code>init_code</code>
-and constructor arguments is to use the
+<p>One way to guarantee the same address across the Superchain (and also bind it to the same <code>init_code</code>
+and constructor arguments) is to use the
 <a href="interop/../protocol/preinstalls.html#create2deployer"><code>Create2Deployer</code> preinstall</a>.
 There is also the <a href="interop/predeploys.html#optimismmintableerc20factory"><code>OptimismSuperchainERC20Factory</code></a>
 predeploy that facilitates this process for L1 native tokens.</p>
@@ -11673,15 +11683,20 @@ The <code>SuperchainERC20Bridge</code> includes two functions for bridging:</p>
 <li><code>sendERC20</code>: initializes a cross-chain transfer of a <code>SuperchainERC20</code>
 by burning the tokens locally and sending a message to the <code>SuperchainERC20Bridge</code>
 on the target chain using the <code>L2toL2CrossDomainMessenger</code>.
-Additionaly, it returns the <code>msgHash_</code> crafted by the <code>L2toL2CrossDomainMessenger</code>.</li>
-<li><code>relayERC20</code>: process incoming messages from the <code>L2toL2CrossDomainMessenger</code>
-and mints the corresponding amount of the <code>SuperchainERC20</code></li>
+Additionally, it returns the <code>msgHash_</code> crafted by the <code>L2toL2CrossDomainMessenger</code>.</li>
+<li><code>relayERC20</code>: processes incoming messages from the <code>L2toL2CrossDomainMessenger</code>
+and mints the corresponding amount of the <code>SuperchainERC20</code>.</li>
 </ul>
 <p>The full specifications and invariants are detailed
 in the <a href="interop/./predeploys.html#superchainerc20bridge">predeploys spec</a>.</p>
 <h2 id="diagram-1"><a class="header" href="#diagram-1">Diagram</a></h2>
 <p>The following diagram depicts a cross-chain transfer.</p>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48 
+---
+sequenceDiagram
   participant from
   participant L2SBA as SuperchainERC20Bridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
@@ -11735,7 +11750,12 @@ For example, a contract in chain A could send pre-approved funds
 from a user in chain B to a contract in chain C.</p>
 <p>For the moment, the standard will not include any specific functionality
 to facilitate such an action and rely on the usage of <code>Permit2</code> like this:</p>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48 
+---
+sequenceDiagram
   participant from
   participant Intermediate_A as Initiator
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
@@ -11759,8 +11779,13 @@ a possible design could introduce a <code>remoteTransferFrom()</code> function.<
 additional call to the <code>_to</code> address.
 This feature could be used for cross-chain concatenated actions,
 i.e. bridge funds and then do X.</p>
-<p>This vertical has much potential but can also be achieved outside the standard in the following way:</p>
-<pre class="mermaid">sequenceDiagram
+<p>This approach has great potential but can also be achieved outside the standard in the following way:</p>
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48 
+---
+sequenceDiagram
   participant from
   participant Intermediate_A as intermediate A
   participant L2SBA as L2StandardBridge (Chain A)
@@ -11786,10 +11811,11 @@ i.e. bridge funds and then do X.</p>
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
   Messenger_B-&gt;&gt;to: call(data)
 </pre>
-<p>Adding the call to the standard would remove the dependence on the sequencer regarding the proper tx ordering
-at the sequencer level, but would also introduce more risk for cross-chain fund transferring,
-as an incorrectly formatted call would burn funds in the initiating chain but would revert
-in destination and could never be successfully replayed.</p>
+<p>Adding the call to the standard would remove the dependence on the sequencer for
+proper transaction ordering at the sequencer level.
+However, it would also introduce additional risks for cross-chain fund transfers.
+Specifically, an incorrectly formatted call could burn funds on the initiating chain,
+but revert on the destination chain, and could never be successfully replayed.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="superchain-weth"><a class="header" href="#superchain-weth">Superchain WETH</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -11930,11 +11956,14 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
 <h4 id="global-invariants"><a class="header" href="#global-invariants">Global Invariants</a></h4>
 <ul>
-<li>Initial balance must be set to <code>type(uint248).max</code> (wei). Purpose for using <code>type(uint248).max</code> is to guarantees that
-the balance will be sufficient to credit all use within the <code>SuperchainWETH</code> contract but will never overflow on calls
-to <code>burn</code> because there is not ETH in the total ETH supply to cause such an overflow. Invariant that avoids overflow is
-maintained by  <code>SuperchainWETH</code> but could theoretically be broken by some future contract that is allowed to integrate
-with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that such future contracts do not break this invariant.</li>
+<li>Initial balance must be set to <code>type(uint248).max</code> (wei).
+The purpose for using <code>type(uint248).max</code> is to guarantee that
+the balance will be sufficient to credit all use within the <code>SuperchainWETH</code> contract,
+but will never overflow on calls to <code>burn</code> because there is not enough ETH
+in the total ETH supply to cause such an overflow.
+The invariant that avoids overflow is maintained by  <code>SuperchainWETH</code>, but could theoretically
+be broken by some future contract that is allowed to integrate with <code>ETHLiquidity</code>. Maintainers should be careful to
+ensure that such future contracts do not break this invariant.</li>
 </ul>
 <h4 id="burn"><a class="header" href="#burn"><code>burn</code></a></h4>
 <ul>
@@ -12074,14 +12103,15 @@ and <code>l2EpochStartBlockNum</code> is the L2 block number of the first L2 blo
 that a block contains an <a href="interop/./messaging.html#invalid-messages">invalid message</a>, the block is replaced
 by a block with the same inputs, except for the transactions included. The transactions from the
 original block are trimmed to include only deposit transactions plus an
-<a href="interop/derivation.html#optimistic-block-deposited-transaction">optimistic block info deposit transaction</a> which is appended
+<a href="interop/derivation.html#optimistic-block-deposited-transaction">optimistic block info deposit transaction</a>, which is appended
 to the trimmed transaction list.</p>
 <h3 id="optimistic-block-deposited-transaction"><a class="header" href="#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></h3>
-<p>An [L1 attributes deposited transaction][g-l1-attr-deposit] is a deposit transaction sent to the zero address.</p>
+<p>An <a href="interop/../protocol/deposits.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a>
+is a deposit transaction sent to the zero address.</p>
 <p>This transaction MUST have the following values:</p>
 <ol>
 <li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002</code> (the address of the
-[L1 Attributes depositor account][depositor-account])</li>
+<a href="interop/../protocol/deposits.html#l1-attributes-depositor-account">L1 Attributes depositor account</a>)</li>
 <li><code>to</code> is <code>0x0000000000000000000000000000000000000000</code> (the zero address as no EVM code execution is expected).</li>
 <li><code>mint</code> is <code>0</code></li>
 <li><code>value</code> is <code>0</code></li>
@@ -12129,18 +12159,18 @@ before being included in a block. When a user submits a transaction to a node, i
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
 <p>Since there is little cost to sending invalid transactions over the p2p network maliciously,
 Ethereum opts to ensure that the transactions can be validated as cheaply as possible. This validation
-consists of a nonce and balance (fee payment) check which can be done with solely state lookups and
+consists of a nonce and balance (fee payment) check, which can be done with solely state lookups and
 the chain tips block header. Features that make this validation more costly have been rejected from L1
 Ethereum due to the desire to ensure <a href="https://hackmd.io/@kevaundray/S1hUQuV4Jx">commodity hardware</a> can
 easily participate in consensus.</p>
-<p>Layer twos can make more aggressive tradeoffs and raise the minimum hardware requirements of the network.
-With interop, it requires full EVM execution of the transaction to fully validate it.</p>
+<p>Layer twos can make more aggressive trade-offs and raise the minimum hardware requirements of the network.
+However, with interop, full EVM execution of the transaction is required to fully validate it.</p>
 <h2 id="transaction-validation"><a class="header" href="#transaction-validation">Transaction validation</a></h2>
 <p>In addition to the nonce and balance checks, the <a href="interop/./messaging.html#messaging-invariants">messaging invariants</a>
 SHOULD be enforced before entry into the transaction pool.</p>
 <p>After each new block, each transaction in the transaction pool is checked for validity again.
 A transaction with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.</p>
-<p>It is possible that a transaction that was valid becomes invalid or vice versa. The sequencer MAY choose
+<p>It is possible that a transaction deemed valid becomes invalid or vice versa. The sequencer MAY choose
 to demote messages which are invalid but can still technically become valid.</p>
 <p>Transactions with invalid message-dependencies MUST NOT be included in block-building,
 and should thus be dropped from the transaction-pool.</p>
@@ -12160,8 +12190,8 @@ the new deposit-context closing transaction (under 36,000 gas), and margin for e
 <p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
 The mempool SHOULD perform low-cost checks before any sort of network access is performed.
-The results of the check SHOULD be cached such that another request does not need to be performed
-when building the block although consistency is not guaranteed.</p>
+The results of the check SHOULD be cached, such that another request does not need to be performed
+when building the block, although consistency is not guaranteed.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="op-contracts-manager"><a class="header" href="#op-contracts-manager">OP Contracts Manager</a></h1>
 <p>The OP Contracts Manager is a contract that deploys the L1 contracts for an OP Stack chain in a single

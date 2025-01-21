@@ -279,14 +279,15 @@ and <code>l2EpochStartBlockNum</code> is the L2 block number of the first L2 blo
 that a block contains an <a href="./messaging.html#invalid-messages">invalid message</a>, the block is replaced
 by a block with the same inputs, except for the transactions included. The transactions from the
 original block are trimmed to include only deposit transactions plus an
-<a href="#optimistic-block-deposited-transaction">optimistic block info deposit transaction</a> which is appended
+<a href="#optimistic-block-deposited-transaction">optimistic block info deposit transaction</a>, which is appended
 to the trimmed transaction list.</p>
 <h3 id="optimistic-block-deposited-transaction"><a class="header" href="#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></h3>
-<p>An [L1 attributes deposited transaction][g-l1-attr-deposit] is a deposit transaction sent to the zero address.</p>
+<p>An <a href="../protocol/deposits.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a>
+is a deposit transaction sent to the zero address.</p>
 <p>This transaction MUST have the following values:</p>
 <ol>
 <li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002</code> (the address of the
-[L1 Attributes depositor account][depositor-account])</li>
+<a href="../protocol/deposits.html#l1-attributes-depositor-account">L1 Attributes depositor account</a>)</li>
 <li><code>to</code> is <code>0x0000000000000000000000000000000000000000</code> (the zero address as no EVM code execution is expected).</li>
 <li><code>mint</code> is <code>0</code></li>
 <li><code>value</code> is <code>0</code></li>

@@ -391,7 +391,7 @@ properties about the <code>_msg</code>.</p>
 <p>The <code>L2ToL2CrossDomainMessenger</code> is a higher level abstraction on top of the <code>CrossL2Inbox</code> that
 provides general message passing, utilized for secure transfers ERC20 tokens between L2 chains.
 Messages sent through the <code>L2ToL2CrossDomainMessenger</code> on the source chain receive both replay protection
-as well as domain binding, ie the executing transaction can only be valid on a single chain.</p>
+as well as domain binding, i.e. the executing transaction can only be valid on a single chain.</p>
 <h3 id="relaymessage-invariants"><a class="header" href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></h3>
 <ul>
 <li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
@@ -415,7 +415,7 @@ the <code>CrossDomainMessenger</code>.</p>
 sending <code>ether</code> between chains. <code>ether</code> must first be wrapped into WETH before sending between chains.
 See <a href="./superchain-weth.html">SuperchainWETH</a> for more information.</p>
 <h3 id="interfaces"><a class="header" href="#interfaces">Interfaces</a></h3>
-<p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code> but
+<p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code>, but
 the <code>_minGasLimit</code> is removed to prevent complexity around EVM gas introspection and the <code>_destination</code>
 chain is included instead.</p>
 <h4 id="sending-messages"><a class="header" href="#sending-messages">Sending Messages</a></h4>
@@ -423,8 +423,8 @@ chain is included instead.</p>
 <pre><code class="language-solidity">function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
 </code></pre>
 <p>It returns the hash of the message being sent,
-used to track whether the message has successfully been relayed.
-It emits a <code>SentMessage</code> event with the necessary metadata to execute when relayed on the destination chain.</p>
+which is used to track whether the message has successfully been relayed.
+It also emits a <code>SentMessage</code> event with the necessary metadata to execute when relayed on the destination chain.</p>
 <pre><code class="language-solidity">event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
 </code></pre>
 <p>An explicit <code>_destination</code> chain and <code>nonce</code> are used to ensure that the message can only be played on a single remote
@@ -465,12 +465,12 @@ Each subsequent call is labeled with a number.</p>
     end
 </pre>
 <p>When relaying a message through the <code>L2ToL2CrossDomainMessenger</code>, it is important to require that
-the <code>_destination</code> equal to <code>block.chainid</code> to ensure that the message is only valid on a single
+the <code>_destination</code> be equal to <code>block.chainid</code> to ensure that the message is only valid on a single
 chain. The hash of the message is used for replay protection.</p>
 <p>It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
 it is possible to send a message that is not playable.</p>
-<p>A message is relayed by providing the <a href="./messaging.html#message-identifier">identifier</a> to a <code>SentMessage</code>
-event and its corresponding <a href="./messaging.html#message-payload">message payload</a>.</p>
+<p>A message is relayed by providing the <a href="./messaging.html#message-identifier">identifier</a> of a <code>SentMessage</code>
+event along with its corresponding <a href="./messaging.html#message-payload">message payload</a>.</p>
 <pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
     CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
@@ -503,7 +503,7 @@ getters.</p>
 <h3 id="optimismsuperchainerc20"><a class="header" href="#optimismsuperchainerc20">OptimismSuperchainERC20</a></h3>
 <p>The <code>OptimismSuperchainERC20Factory</code> creates ERC20 contracts that implements the <code>SuperchainERC20</code> <a href="token-bridging.html">standard</a>,
 grants mint-burn rights to the <code>L2StandardBridge</code> (<code>OptimismSuperchainERC20</code>)
-and include a <code>remoteToken</code> variable.
+and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
@@ -666,12 +666,12 @@ by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fi
 <h3 id="events-1"><a class="header" href="#events-1">Events</a></h3>
 <h4 id="optimismmintableerc20created"><a class="header" href="#optimismmintableerc20created"><code>OptimismMintableERC20Created</code></a></h4>
 <p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
-<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.</p>
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> is called.</p>
 <pre><code class="language-solidity">event OptimismMintableERC20Created(address indexed localToken, address indexed remoteToken, address deployer);
 </code></pre>
 <h4 id="standardl2tokencreated"><a class="header" href="#standardl2tokencreated"><code>StandardL2TokenCreated</code></a></h4>
 <p>It MUST trigger when <code>createOptimismMintableERC20WithDecimals</code>,
-<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> are called.
+<code>createOptimismMintableERC20</code> or <code>createStandardL2Token</code> is called.
 This event exists for backward compatibility with legacy version.</p>
 <pre><code class="language-solidity">event StandardL2TokenCreated(address indexed remoteToken, address indexed localToken);
 </code></pre>
@@ -728,7 +728,12 @@ anyone can convert between allowed legacy representations and
 valid <code>OptimismSuperchainERC20</code> corresponding to the same remote token.</li>
 </ul>
 <h3 id="conversion-flow"><a class="header" href="#conversion-flow">Conversion Flow</a></h3>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 28
+---
+sequenceDiagram
   participant Alice
   participant L2StandardBridge
   participant factory as OptimismMintableERC20Factory
@@ -793,7 +798,12 @@ implemented by the <code>SuperchainERC20</code> standard.</p>
 </code></pre>
 <h3 id="diagram"><a class="header" href="#diagram">Diagram</a></h3>
 <p>The following diagram depicts a cross-chain transfer.</p>
-<pre class="mermaid">sequenceDiagram
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48
+---
+sequenceDiagram
   participant from
   participant L2SBA as SuperchainTokenBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
@@ -858,7 +868,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 <li>Bridge Events:
 <ul>
-<li><code>sendERC20()</code> should emit a <code>SentERC20</code> event. `</li>
+<li><code>sendERC20()</code> should emit a <code>SentERC20</code> event.</li>
 <li><code>relayERC20()</code> should emit a <code>RelayedERC20</code> event.</li>
 </ul>
 </li>
