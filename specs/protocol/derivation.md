@@ -751,7 +751,8 @@ To interact with the engine, the [execution engine API][exec-engine] is used, wi
   - [`engine_newPayloadV4`] - executes an Isthmus execution payload to create a block.
 
 The current version of `op-node` uses the `v4` Engine API RPC methods as well as `engine_newPayloadV3` and
-`engine_newPayloadV2`, due to `engine_newPayloadV4` only supporting Isthmus execution payloads. Both `engine_forkchoiceUpdatedV4` and `engine_getPayloadV4` are backwards compatible with Ecotone, Bedrock,
+`engine_newPayloadV2`, due to `engine_newPayloadV4` only supporting Isthmus execution payloads. Both
+`engine_forkchoiceUpdatedV4` and `engine_getPayloadV4` are backwards compatible with Ecotone, Bedrock,
 Canyon & Delta payloads.
 
 Prior versions of `op-node` used `v3`, `v2` and `v1` methods.
