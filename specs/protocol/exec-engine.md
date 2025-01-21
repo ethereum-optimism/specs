@@ -346,7 +346,6 @@ In Ecotone it MUST be set to the parentBeaconBlockRoot from the L1 Origin block 
 when called with `payloadAttributes`.
 `engine_getPayloadV4` **must only be called with Isthmus payload.**
 
-
 ### `engine_signalSuperchainV1`
 
 Optional extension to the Engine API. Signals superchain information to the Engine:
