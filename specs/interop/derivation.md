@@ -5,23 +5,50 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Invariants](#invariants)
+- [L1 Attributes Transaction](#l1-attributes-transaction)
   - [Deposit Context](#deposit-context)
     - [Opening the deposit context](#opening-the-deposit-context)
     - [Closing the deposit context](#closing-the-deposit-context)
       - [Deposits-complete Source-hash](#deposits-complete-source-hash)
+- [Replacing Invalid Blocks](#replacing-invalid-blocks)
+  - [Optimistic Block Deposited Transaction](#optimistic-block-deposited-transaction)
 - [Security Considerations](#security-considerations)
   - [Gas Considerations](#gas-considerations)
+  - [Depositing an Executing Message](#depositing-an-executing-message)
+  - [Reliance on History](#reliance-on-history)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
 
+New derivation rules are added to guaranteee integrity of cross chain messages.
+The fork choice rule is updated to fork out unsafe blocks that contain invalid
+executing messages.
+
+## Invariants
+
+- An executing message MUST have a corresponding initiating message
+- The initiating message referenced in an executing message MUST come from a chain in its dependency set
+- A block MUST be considered invalid if it is built with any invalid executing messages
+
+L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
+They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
+because it includes invalid executing messages MUST be replaced by a deposits only block at the same
+block height. This guarantees progression of the chain, ensuring that an infinite loop of processing
+the same block in the proof system is not possible.
+
+## L1 Attributes Transaction
+
+The L1 attributes transaction is updated to a new entrypoint on the `L1Block` contract.
+
 ### Deposit Context
 
-Derivation is extended to create **deposit contexts**, which signifies the execution of a depositing transaction.
-A deposit context is scoped to a single block, commencing with the execution of the first deposited transaction
-and concluding immediately after the execution of the final deposited transaction within that block.
-As such, there is exactly one deposit context per block.
+Derivation is extended to create **deposit contexts**, which signify the execution of a depositing transaction.
+A deposit context is scoped to a single block, opening with the first deposited transaction and closing after
+the execution of the final deposited transaction. As such, there is exactly one deposit context per block.
+The deposit context exists to give legibility within the EVM that execution is happening in the context of
+a deposit transaction. See [`isDeposit()`](./predeploys.md#isdeposit) for more information.
 
 The order of deposit transactions occurs as follows:
 
@@ -84,12 +111,57 @@ And `seqNumber = l2BlockNum - l2EpochStartBlockNum`,
 where `l2BlockNum` is the L2 block number of the inclusion of the deposit tx in L2,
 and `l2EpochStartBlockNum` is the L2 block number of the first L2 block in the epoch.
 
+## Replacing Invalid Blocks
+
+When the [cross chain dependency resolution](./messaging.md#resolving-cross-chain-safety) determines
+that a block contains an [invalid message](./messaging.md#invalid-messages), the block is replaced
+by a block with the same inputs, except for the transactions included. The transactions from the
+original block are trimmed to include only deposit transactions plus an
+[optimistic block info deposit transaction](#optimistic-block-deposited-transaction) which is appended
+to the trimmed transaction list.
+
+### Optimistic Block Deposited Transaction
+
+[l1-attr-deposit]: #l1-attributes-deposited-transaction
+[l2-output-root-proposals]: ../protocol/proposals.md#l2-output-commitment-construction
+
+An [L1 attributes deposited transaction][g-l1-attr-deposit] is a deposit transaction sent to the zero address.
+
+This transaction MUST have the following values:
+
+1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002` (the address of the
+   [L1 Attributes depositor account][depositor-account])
+2. `to` is `0x0000000000000000000000000000000000000000` (the zero address as no EVM code execution is expected).
+3. `mint` is `0`
+4. `value` is `0`
+5. `gasLimit` is set `36000` gas, to cover intrinsic costs, processing costs, and margin for change.
+6. `isSystemTx` is set to `false`.
+7. `data` is the preimage of the [L2 output root](../glossary.md#l2-output-root-proposals)
+   of the replaced block. i.e. `version_byte || payload` without applying the `keccak256` hashing.
+
+This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
+`gasLimit`, as it is considered part of state-transition processing.
+
 ## Security Considerations
 
 ### Gas Considerations
 
-There must be sufficient gas available in the block to destroy deposit context.
-There's no guarantee on the minimum gas available for the second L1 attributes transaction as the block
-may be filled by the other deposit transactions. As a consequence, a deposit context may spill into multiple blocks.
+There must be sufficient gas available in the block to destroy deposit context. Depending on the
+chain configuration, there is no guarantee that the amount of guaranteed gas plus the amount used
+by the system transactions is less than the L2 block gas limit. It is important that the chain operator
+maintains a ~9 million gas buffer between the guaranteed gas limit and the L2 gas limit.
 
-This will be fixed in the future.
+### Depositing an Executing Message
+
+Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
+It is possible to deposit an invalid executing message, forcing the sequencer to reorg. It would
+be fairly cheap to continuously deposit invalid executing messages through L1 and cause L2 liveness
+instability. A future upgrade will enable deposits to trigger executing messages.
+
+### Reliance on History
+
+When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
+[EIP-4444][eip-4444] will eventually provide a solution for making historical receipts available without
+needing to execute increasingly long chain histories.
+
+[eip-4444]: https://eips.ethereum.org/EIPS/eip-4444

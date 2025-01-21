@@ -1,14 +1,27 @@
 version: 2.1
+
 orbs:
   slack: circleci/slack@4.10.1
-parameters:
-  ci_builder_image:
-    type: string
-    default: us-docker.pkg.dev/oplabs-tools-artifacts/images/ci-builder:v0.35.0
-  base_image:
-    type: string
-    default: ubuntu-2204:2022.07.1
+  utils: ethereum-optimism/circleci-utils@0.0.13
+
+executors:
+  default:
+    machine:
+      image: ubuntu-2204:2024.08.1
+
 commands:
+  install-dependencies:
+    steps:
+      - run:
+          name: Install mise
+          command: curl https://mise.run | MISE_INSTALL_PATH=/home/circleci/bin/mise sh
+      - run:
+          name: Activate mise
+          command: echo 'eval "$(mise activate bash)"' >> $BASH_ENV
+      - run:
+          name: Install mise dependencies
+          command: mise install
+
   notify-failures-on-develop:
     description: "Notify Slack"
     parameters:
@@ -21,37 +34,57 @@ commands:
           event: fail
           template: basic_fail_1
           branch_pattern: develop
+
 jobs:
   lint-specs:
-    docker:
-      - image: <<pipeline.parameters.ci_builder_image>>
+    executor: default
     steps:
       - checkout
-      - run:
-          name: Install pnpm
-          command: npm install -g pnpm@9.1.0
-      - run:
-          name: Install deps
-          command: just deps
+      - install-dependencies
       - run:
           name: markdown lint
           command: just lint-specs-md-check
       - run:
           name: markdown toc
           command: just lint-specs-toc-check
-      - run:
-          name: build book
-          command: just build
+
   lint-links:
-    machine:
-      image: <<pipeline.parameters.base_image>>
+    executor: default
     steps:
       - checkout
+      - install-dependencies
       - run:
           name: Lint check
           command: just lint-links
       - notify-failures-on-develop:
           channel: C055R639XT9 #notify-link-check
+
+  build-book:
+    executor: default
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Build
+          command: just build
+      - run:
+          name: Add CNAME file
+          command: echo "specs.optimism.io" > ./book/html/CNAME
+      - persist_to_workspace:
+          root: ./book
+          paths:
+            - html
+
+  publish-book:
+    executor: default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/book
+      - utils/get-github-access-token
+      - utils/github-pages-deploy:
+          src-pages-dir: /tmp/book/html
+
 workflows:
   specs-check:
     when:
@@ -59,9 +92,23 @@ workflows:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - lint-specs
+      - build-book
+  
   scheduled-links-check:
     when:
       equal: [build_daily, <<pipeline.schedule.name>>]
     jobs:
       - lint-links:
           context: slack
+
+  publish:
+    jobs:
+      - build-book:
+          filters: 
+            branches:
+              only: main
+      - publish-book:
+          requires:
+            - build-book
+          context: 
+            - circleci-repo-specs
