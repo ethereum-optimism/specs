@@ -20,7 +20,7 @@
 - [Block Body Withdrawals List](#block-body-withdrawals-list)
 - [Engine API Updates](#engine-api-updates)
   - [Update to `ExecutableData`](#update-to-executabledata)
-  - [`engine_newPayloadv4` API](#engine_newpayloadv4-api)
+  - [`engine_newPayloadV4` API](#engine_newpayloadv4-api)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
