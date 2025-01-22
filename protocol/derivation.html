@@ -814,13 +814,15 @@ instructs the engine to start building an execution payload if the payload attri
 <ul>
 <li><a href="exec-engine.html#engine_newpayloadv2"><code>engine_newPayloadV2</code></a> — executes a Bedrock/Canyon/Delta execution payload to create a block.</li>
 <li><a href="exec-engine.html#engine_newpayloadv3"><code>engine_newPayloadV3</code></a> — executes an Ecotone execution payload to create a block.</li>
+<li><a href="exec-engine.html#engine_newpayloadv4"><code>engine_newPayloadV4</code></a> - executes an Isthmus execution payload to create a block.</li>
 </ul>
 </li>
 </ul>
-<p>The current version of <code>op-node</code> uses the <code>v3</code> Engine API RPC methods as well as <code>engine_newPayloadV2</code>, due to
-<code>engine_newPayloadV3</code> only supporting Ecotone execution payloads. Both <code>engine_forkchoiceUpdatedV3</code> and
-<code>engine_getPayloadV3</code> are backwards compatible with Bedrock, Canyon &amp; Delta payloads.</p>
-<p>Prior versions of <code>op-node</code> used <code>v2</code> and <code>v1</code> methods.</p>
+<p>The current version of <code>op-node</code> uses the <code>v4</code> Engine API RPC methods as well as <code>engine_newPayloadV3</code> and
+<code>engine_newPayloadV2</code>, due to <code>engine_newPayloadV4</code> only supporting Isthmus execution payloads. Both
+<code>engine_forkchoiceUpdatedV4</code> and <code>engine_getPayloadV4</code> are backwards compatible with Ecotone, Bedrock,
+Canyon &amp; Delta payloads.</p>
+<p>Prior versions of <code>op-node</code> used <code>v3</code>, <code>v2</code> and <code>v1</code> methods.</p>
 <p>The execution payload is an object of type <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md"><code>ExecutionPayloadV3</code></a>.</p>
 <p>The <code>ExecutionPayload</code> has the following requirements:</p>
 <ul>
@@ -961,6 +963,11 @@ user to see the head of the L2 chain faster than the L1 may confirm the L2 batch
 <ul>
 <li><code>engine_newPayloadV3</code>: process the payload. It does not become canonical yet.</li>
 <li><code>engine_forkchoiceUpdatedV3</code>: make the payload the canonical unsafe L2 head, and keep the safe/finalized L2 heads.</li>
+</ul>
+</li>
+<li>Isthmus Payloads
+<ul>
+<li><code>engine_newPayloadV4</code>: process the payload. It does not become canonical yet.</li>
 </ul>
 </li>
 </ul>

@@ -1865,12 +1865,14 @@ will not match that of the block with that number and the call will revert.</p>
 </li>
 <li><a href="protocol/exec-engine.html#engine_newpayloadv2"><code>engine_newPayloadV2</code></a></li>
 <li><a href="protocol/exec-engine.html#engine_newpayloadv3"><code>engine_newPayloadV3</code></a></li>
+<li><a href="protocol/exec-engine.html#engine_newpayloadv4"><code>engine_newPayloadV4</code></a></li>
 <li><a href="protocol/exec-engine.html#engine_getpayloadv2"><code>engine_getPayloadV2</code></a></li>
 <li><a href="protocol/exec-engine.html#engine_getpayloadv3"><code>engine_getPayloadV3</code></a>
 <ul>
 <li><a href="protocol/exec-engine.html#extended-response">Extended Response</a></li>
 </ul>
 </li>
+<li><a href="protocol/exec-engine.html#engine_getpayloadv4"><code>engine_getPayloadV4</code></a></li>
 <li><a href="protocol/exec-engine.html#engine_signalsuperchainv1"><code>engine_signalSuperchainV1</code></a></li>
 </ul>
 </li>
@@ -2108,6 +2110,14 @@ modifications to this API.
 <li><code>expectedBlobVersionedHashes</code> MUST be an empty array.</li>
 <li><code>parentBeaconBlockRoot</code> MUST be the parent beacon block root from the L1 origin block of the L2 block.</li>
 </ul>
+<h3 id="engine_newpayloadv4"><a class="header" href="#engine_newpayloadv4"><code>engine_newPayloadV4</code></a></h3>
+<p>[<code>engine_newPayloadV4</code>][engine_newPayloadV4] applies an Isthmus L2 block to the engine state. There are no
+modifications to this API.
+<code>engine_newPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
+<p>The additional parameters should be set as follows:</p>
+<ul>
+<li><code>executionRequests</code> MUST be an empty array.</li>
+</ul>
 <h3 id="engine_getpayloadv2"><a class="header" href="#engine_getpayloadv2"><code>engine_getPayloadV2</code></a></h3>
 <p>No modifications to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_getpayloadv2"><code>engine_getPayloadV2</code></a>.
 Retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV2</code> when called with <code>payloadAttributes</code>.</p>
@@ -2126,6 +2136,10 @@ when called with <code>payloadAttributes</code>.
 }
 </code></pre>
 <p>In Ecotone it MUST be set to the parentBeaconBlockRoot from the L1 Origin block of the L2 block.</p>
+<h3 id="engine_getpayloadv4"><a class="header" href="#engine_getpayloadv4"><code>engine_getPayloadV4</code></a></h3>
+<p>[<code>engine_getPayloadV4</code>][engine_getPayloadV4] retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV3</code>
+when called with <code>payloadAttributes</code>.
+<code>engine_getPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
 <h3 id="engine_signalsuperchainv1"><a class="header" href="#engine_signalsuperchainv1"><code>engine_signalSuperchainV1</code></a></h3>
 <p>Optional extension to the Engine API. Signals superchain information to the Engine:
 V1 signals which protocol version is recommended and required.</p>
@@ -3418,13 +3432,15 @@ instructs the engine to start building an execution payload if the payload attri
 <ul>
 <li><a href="protocol/exec-engine.html#engine_newpayloadv2"><code>engine_newPayloadV2</code></a> — executes a Bedrock/Canyon/Delta execution payload to create a block.</li>
 <li><a href="protocol/exec-engine.html#engine_newpayloadv3"><code>engine_newPayloadV3</code></a> — executes an Ecotone execution payload to create a block.</li>
+<li><a href="protocol/exec-engine.html#engine_newpayloadv4"><code>engine_newPayloadV4</code></a> - executes an Isthmus execution payload to create a block.</li>
 </ul>
 </li>
 </ul>
-<p>The current version of <code>op-node</code> uses the <code>v3</code> Engine API RPC methods as well as <code>engine_newPayloadV2</code>, due to
-<code>engine_newPayloadV3</code> only supporting Ecotone execution payloads. Both <code>engine_forkchoiceUpdatedV3</code> and
-<code>engine_getPayloadV3</code> are backwards compatible with Bedrock, Canyon &amp; Delta payloads.</p>
-<p>Prior versions of <code>op-node</code> used <code>v2</code> and <code>v1</code> methods.</p>
+<p>The current version of <code>op-node</code> uses the <code>v4</code> Engine API RPC methods as well as <code>engine_newPayloadV3</code> and
+<code>engine_newPayloadV2</code>, due to <code>engine_newPayloadV4</code> only supporting Isthmus execution payloads. Both
+<code>engine_forkchoiceUpdatedV4</code> and <code>engine_getPayloadV4</code> are backwards compatible with Ecotone, Bedrock,
+Canyon &amp; Delta payloads.</p>
+<p>Prior versions of <code>op-node</code> used <code>v3</code>, <code>v2</code> and <code>v1</code> methods.</p>
 <p>The execution payload is an object of type <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md"><code>ExecutionPayloadV3</code></a>.</p>
 <p>The <code>ExecutionPayload</code> has the following requirements:</p>
 <ul>
@@ -3565,6 +3581,11 @@ user to see the head of the L2 chain faster than the L1 may confirm the L2 batch
 <ul>
 <li><code>engine_newPayloadV3</code>: process the payload. It does not become canonical yet.</li>
 <li><code>engine_forkchoiceUpdatedV3</code>: make the payload the canonical unsafe L2 head, and keep the safe/finalized L2 heads.</li>
+</ul>
+</li>
+<li>Isthmus Payloads
+<ul>
+<li><code>engine_newPayloadV4</code>: process the payload. It does not become canonical yet.</li>
 </ul>
 </li>
 </ul>
@@ -9325,7 +9346,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 <li><a href="protocol/isthmus/exec-engine.html#engine-api-updates">Engine API Updates</a>
 <ul>
 <li><a href="protocol/isthmus/exec-engine.html#update-to-executabledata">Update to <code>ExecutableData</code></a></li>
-<li><a href="protocol/isthmus/exec-engine.html#engine_newpayloadv3-api"><code>engine_newPayloadV3</code> API</a></li>
+<li><a href="protocol/isthmus/exec-engine.html#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></li>
 </ul>
 </li>
 </ul>
@@ -9409,8 +9430,8 @@ is applicable for scenarios where the actual withdrawals root value is not readi
 <h2 id="engine-api-updates"><a class="header" href="#engine-api-updates">Engine API Updates</a></h2>
 <h3 id="update-to-executabledata"><a class="header" href="#update-to-executabledata">Update to <code>ExecutableData</code></a></h3>
 <p><code>ExecutableData</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
-<h3 id="engine_newpayloadv3-api"><a class="header" href="#engine_newpayloadv3-api"><code>engine_newPayloadV3</code> API</a></h3>
-<p>Post Isthmus, <code>engine_newPayloadV3</code> will be used with the additional <code>ExecutionPayload</code> attribute. This attribute
+<h3 id="engine_newpayloadv4-api"><a class="header" href="#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></h3>
+<p>Post Isthmus, <code>engine_newPayloadV4</code> will be used with the additional <code>ExecutionPayload</code> attribute. This attribute
 is omitted prior to Isthmus.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="superchainconfig"><a class="header" href="#superchainconfig">SuperchainConfig</a></h1>
