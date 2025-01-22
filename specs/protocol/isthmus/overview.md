@@ -14,7 +14,7 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
-- [L2ToL1MessagePasser Storage Root in Header](./exec-engine.md##l2tol1messagepasser-storage-root-in-header)
+- [L2ToL1MessagePasser Storage Root in Header](./exec-engine.md#l2tol1messagepasser-storage-root-in-header)
 
 ## Consensus Layer
 
