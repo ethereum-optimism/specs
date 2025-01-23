@@ -13,10 +13,13 @@
       - [Deposits-complete Source-hash](#deposits-complete-source-hash)
 - [Replacing Invalid Blocks](#replacing-invalid-blocks)
   - [Optimistic Block Deposited Transaction](#optimistic-block-deposited-transaction)
+- [Updating the Dependency Set](#updating-the-dependency-set)
+  - [ABI Encoding](#abi-encoding)
 - [Security Considerations](#security-considerations)
   - [Gas Considerations](#gas-considerations)
   - [Depositing an Executing Message](#depositing-an-executing-message)
   - [Reliance on History](#reliance-on-history)
+  - [Malicious Modifications to the Dependency Set](#malicious-modifications-to-the-dependency-set)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -140,6 +143,36 @@ This transaction MUST have the following values:
 This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
 `gasLimit`, as it is considered part of state-transition processing.
 
+## Updating the Dependency Set
+
+The dependency set is updated as part of derivation. At the first L2 timestamp greater than a
+particular timestamp, chains can be added to the dependency set through a network upgrade transaction.
+If multiple chains are being added at the same time, there is a single network upgrade transaction per
+chain. The network upgrade transactions MUST be sorted by chain id in ascending order.
+
+1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002` (the address of the
+   [L1 Attributes depositor account](../protocol/deposits.md#l1-attributes-depositor-account))
+2. `to` is `0x4200000000000000000000000000000000000029` (the `DependencyManager` predeploy).
+3. `mint` is `0`
+4. `value` is `0`
+5. `gasLimit` is set `270000` gas (TODO confirm)
+6. `isSystemTx` is set to `false`.
+7. `data` is the ABI encoded call to `addDependency(address,uint256,address)`
+
+### ABI Encoding
+
+```solidity
+function addDependency(address superchainConfig, uint256 chainId, address systemConfig) external;
+```
+
+| Bytes   | Field                    |
+|---------|--------------------------|
+| 4       | Function signature       |
+| 32      | superchainConfig address |
+| 32      | chainId uint256          |
+| 32      | systemConfig address     |
+
+
 ## Security Considerations
 
 ### Gas Considerations
@@ -163,3 +196,11 @@ When fully executing historical blocks, a dependency on historical receipts from
 needing to execute increasingly long chain histories.
 
 [eip-4444]: https://eips.ethereum.org/EIPS/eip-4444
+
+### Malicious Modifications to the Dependency Set
+
+It is not possible for the sequencer to modify the dependency set unilaterally. If the sequencer
+decides to run software that modifies the dependency set in a way that the full network does not
+agree with, the network will fork out the sequencer's block. It will also not be possible for
+the sequencer to unilaterally withdraw updates to the dependency set because the proof program
+must also commit to dependency set modifications.

@@ -4,6 +4,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Overview](#overview)
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
 - [Future Considerations](#future-considerations)
@@ -12,6 +13,8 @@
   - [Dependency Set Size](#dependency-set-size)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Overview
 
 The dependency set defines the set of chains that destination chains allow as source chains. Another way of
 saying it is that the dependency set defines the set of initiating messages that are valid to be used
@@ -46,6 +49,9 @@ It is a known issue that not all software in the Ethereum ecosystem can handle 3
 
 The dependency set is managed in the client software. Adding a chain to the dependency set is
 considered an upgrade to the network. It is not possible to remove chains from the dependency set.
+[Network upgrade transactions](./derivation.md#updating-the-dependency-set) that add chains to
+the dependency set are automatically generated as part of derivation at a timestamp hardcoded
+by the client software.
 
 ## Future Considerations
 
