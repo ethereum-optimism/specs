@@ -10600,7 +10600,6 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#validatemessage">validateMessage</a></li>
 </ul>
 </li>
-<li><a href="interop/predeploys.html#interop-start-timestamp">Interop Start Timestamp</a></li>
 <li><a href="interop/predeploys.html#executingmessage-event"><code>ExecutingMessage</code> Event</a></li>
 <li><a href="interop/predeploys.html#reference-implementation">Reference implementation</a></li>
 <li><a href="interop/predeploys.html#deposit-handling">Deposit Handling</a></li>
@@ -10736,14 +10735,6 @@ Emits the <code>ExecutingMessage</code> event to signal the transaction has a cr
 </div>
 <pre><code class="language-solidity">function validateMessage(Identifier calldata _id, bytes32 _msgHash)
 </code></pre>
-<h3 id="interop-start-timestamp"><a class="header" href="#interop-start-timestamp">Interop Start Timestamp</a></h3>
-<p>The Interop Start Timestamp represents the earliest timestamp which an initiating message (identifier) can have to be
-considered valid. This is important because OP Mainnet migrated from a legacy system that is not provable. We cannot
-allow for interop messages to come from unproven parts of the chain history, since interop is secured by fault proofs.</p>
-<p>Interop Start Timestamp is stored in the storage of the CrossL2Inbox predeploy. During the Interop Network Upgrade,
-each chain sets variable via a call to <code>setInteropStart()</code> by the <code>DEPOSITOR_ACCOUNT</code> which sets Interop Start Timestamp
-to be the block.timestamp of the network upgrade block. Chains deployed after the network upgrade will have to enshrine
-that timestamp into the pre-determined storage slot.</p>
 <h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
 <p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
 to <code>validateMessage</code>.</p>
@@ -12038,11 +12029,13 @@ ensure that such future contracts do not break this invariant.</li>
 <li><a href="interop/derivation.html#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></li>
 </ul>
 </li>
+<li><a href="interop/derivation.html#expiry-window">Expiry Window</a></li>
 <li><a href="interop/derivation.html#security-considerations">Security Considerations</a>
 <ul>
 <li><a href="interop/derivation.html#gas-considerations">Gas Considerations</a></li>
 <li><a href="interop/derivation.html#depositing-an-executing-message">Depositing an Executing Message</a></li>
 <li><a href="interop/derivation.html#reliance-on-history">Reliance on History</a></li>
+<li><a href="interop/derivation.html#expiry-window-1">Expiry Window</a></li>
 </ul>
 </li>
 </ul>
@@ -12056,6 +12049,9 @@ executing messages.</p>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
 <li>A block MUST be considered invalid if it is built with any invalid executing messages</li>
+<li>The timestamp of the identifier MUST be greater than or equal to the interop network upgrade timestamp</li>
+<li>The timestamp of the identifier MUST be less than or equal to the timestamp of the block that includes it</li>
+<li>The timestamp of the identifier MUST be greater than timestamp of the block that includes it minus the expiry window</li>
 </ul>
 <p>L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
 They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
@@ -12142,6 +12138,12 @@ of the replaced block. i.e. <code>version_byte || payload</code> without applyin
 </ol>
 <p>This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
 <code>gasLimit</code>, as it is considered part of state-transition processing.</p>
+<h2 id="expiry-window"><a class="header" href="#expiry-window">Expiry Window</a></h2>
+<p>The expiry window is the time period after which an initiating message is no longer considered valid.</p>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>EXPIRY_WINDOW</code></td><td><code>TODO</code></td></tr>
+</tbody></table>
+</div>
 <h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
 <p>There must be sufficient gas available in the block to destroy deposit context. Depending on the
@@ -12157,6 +12159,11 @@ instability. A future upgrade will enable deposits to trigger executing messages
 <p>When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
 <a href="https://eips.ethereum.org/EIPS/eip-4444">EIP-4444</a> will eventually provide a solution for making historical receipts available without
 needing to execute increasingly long chain histories.</p>
+<h3 id="expiry-window-1"><a class="header" href="#expiry-window-1">Expiry Window</a></h3>
+<p>The expiry window ensures that the proof can execute in a reasonable amount of time.
+There is currently no way to prove old history with a sublinear proof size. The proof
+program needs to walk back and reexecute to reproduce the consumed logs. This means
+that very old logs are more expensive to prove.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="transaction-pool"><a class="header" href="#transaction-pool">Transaction pool</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->

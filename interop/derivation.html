@@ -194,11 +194,13 @@
 <li><a href="#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></li>
 </ul>
 </li>
+<li><a href="#expiry-window">Expiry Window</a></li>
 <li><a href="#security-considerations">Security Considerations</a>
 <ul>
 <li><a href="#gas-considerations">Gas Considerations</a></li>
 <li><a href="#depositing-an-executing-message">Depositing an Executing Message</a></li>
 <li><a href="#reliance-on-history">Reliance on History</a></li>
+<li><a href="#expiry-window-1">Expiry Window</a></li>
 </ul>
 </li>
 </ul>
@@ -212,6 +214,9 @@ executing messages.</p>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
 <li>A block MUST be considered invalid if it is built with any invalid executing messages</li>
+<li>The timestamp of the identifier MUST be greater than or equal to the interop network upgrade timestamp</li>
+<li>The timestamp of the identifier MUST be less than or equal to the timestamp of the block that includes it</li>
+<li>The timestamp of the identifier MUST be greater than timestamp of the block that includes it minus the expiry window</li>
 </ul>
 <p>L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
 They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
@@ -298,6 +303,12 @@ of the replaced block. i.e. <code>version_byte || payload</code> without applyin
 </ol>
 <p>This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
 <code>gasLimit</code>, as it is considered part of state-transition processing.</p>
+<h2 id="expiry-window"><a class="header" href="#expiry-window">Expiry Window</a></h2>
+<p>The expiry window is the time period after which an initiating message is no longer considered valid.</p>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>EXPIRY_WINDOW</code></td><td><code>TODO</code></td></tr>
+</tbody></table>
+</div>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 <h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
 <p>There must be sufficient gas available in the block to destroy deposit context. Depending on the
@@ -313,6 +324,11 @@ instability. A future upgrade will enable deposits to trigger executing messages
 <p>When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
 <a href="https://eips.ethereum.org/EIPS/eip-4444">EIP-4444</a> will eventually provide a solution for making historical receipts available without
 needing to execute increasingly long chain histories.</p>
+<h3 id="expiry-window-1"><a class="header" href="#expiry-window-1">Expiry Window</a></h3>
+<p>The expiry window ensures that the proof can execute in a reasonable amount of time.
+There is currently no way to prove old history with a sublinear proof size. The proof
+program needs to walk back and reexecute to reproduce the consumed logs. This means
+that very old logs are more expensive to prove.</p>
 
                     </main>
 

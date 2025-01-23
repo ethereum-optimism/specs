@@ -181,7 +181,6 @@
 <li><a href="#validatemessage">validateMessage</a></li>
 </ul>
 </li>
-<li><a href="#interop-start-timestamp">Interop Start Timestamp</a></li>
 <li><a href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></li>
 <li><a href="#reference-implementation">Reference implementation</a></li>
 <li><a href="#deposit-handling">Deposit Handling</a></li>
@@ -317,14 +316,6 @@ Emits the <code>ExecutingMessage</code> event to signal the transaction has a cr
 </div>
 <pre><code class="language-solidity">function validateMessage(Identifier calldata _id, bytes32 _msgHash)
 </code></pre>
-<h3 id="interop-start-timestamp"><a class="header" href="#interop-start-timestamp">Interop Start Timestamp</a></h3>
-<p>The Interop Start Timestamp represents the earliest timestamp which an initiating message (identifier) can have to be
-considered valid. This is important because OP Mainnet migrated from a legacy system that is not provable. We cannot
-allow for interop messages to come from unproven parts of the chain history, since interop is secured by fault proofs.</p>
-<p>Interop Start Timestamp is stored in the storage of the CrossL2Inbox predeploy. During the Interop Network Upgrade,
-each chain sets variable via a call to <code>setInteropStart()</code> by the <code>DEPOSITOR_ACCOUNT</code> which sets Interop Start Timestamp
-to be the block.timestamp of the network upgrade block. Chains deployed after the network upgrade will have to enshrine
-that timestamp into the pre-determined storage slot.</p>
 <h3 id="executingmessage-event"><a class="header" href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></h3>
 <p>The <code>ExecutingMessage</code> event represents an executing message. It MUST be emitted on every call
 to <code>validateMessage</code>.</p>
