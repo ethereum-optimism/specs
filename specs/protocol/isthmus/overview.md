@@ -21,6 +21,8 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
+- [Isthmus Derivation](./derivation.md)
+
 ## Smart Contracts
 
 - [SuperchainConfig](./superchain-config.md)
