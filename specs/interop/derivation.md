@@ -57,9 +57,9 @@ The order of deposit transactions occurs as follows:
 
 1. L1 attributes transaction, [opening the deposit context](#opening-the-deposit-context).
 2. User deposits (if any).
-3. L1 attributes transaction, [closing the deposit context](#closing-the-deposit-context).
-4. During upgrades, additional deposits, inserted by derivation, may follow after the above.
-   See [upgrade specification](./upgrade.md).
+3. [Dependency set management transactions if necessary](#updating-the-dependency-set)
+4. L1 attributes transaction, [closing the deposit context](#closing-the-deposit-context).
+5. TODO: Network upgrade transactions. See [upgrade specification](./upgrade.md).
 
 The L1 attributes operations wrap user deposits,
 such that `isDeposit = true` occurs during the first L1 attributes transaction
@@ -146,7 +146,7 @@ This system-initiated transaction for L1 attributes is not charged any ETH for i
 ## Updating the Dependency Set
 
 The dependency set is updated as part of derivation. At the first L2 timestamp greater than a
-particular timestamp, chains can be added to the dependency set through a network upgrade transaction.
+particular timestamp, chains can be added to the dependency set through network upgrade transactions.
 If multiple chains are being added at the same time, there is a single network upgrade transaction per
 chain. The network upgrade transactions MUST be sorted by chain id in ascending order.
 
