@@ -172,7 +172,6 @@ function addDependency(address superchainConfig, uint256 chainId, address system
 | 32      | chainId uint256          |
 | 32      | systemConfig address     |
 
-
 ## Security Considerations
 
 ### Gas Considerations
