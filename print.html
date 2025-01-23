@@ -2111,7 +2111,7 @@ modifications to this API.
 <li><code>parentBeaconBlockRoot</code> MUST be the parent beacon block root from the L1 origin block of the L2 block.</li>
 </ul>
 <h3 id="engine_newpayloadv4"><a class="header" href="#engine_newpayloadv4"><code>engine_newPayloadV4</code></a></h3>
-<p>[<code>engine_newPayloadV4</code>][engine_newPayloadV4] applies an Isthmus L2 block to the engine state. There are no
+<p><a href="https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_newpayloadv4"><code>engine_newPayloadV4</code></a> applies an Isthmus L2 block to the engine state. There are no
 modifications to this API.
 <code>engine_newPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
 <p>The additional parameters should be set as follows:</p>
@@ -2137,7 +2137,7 @@ when called with <code>payloadAttributes</code>.
 </code></pre>
 <p>In Ecotone it MUST be set to the parentBeaconBlockRoot from the L1 Origin block of the L2 block.</p>
 <h3 id="engine_getpayloadv4"><a class="header" href="#engine_getpayloadv4"><code>engine_getPayloadV4</code></a></h3>
-<p>[<code>engine_getPayloadV4</code>][engine_getPayloadV4] retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV3</code>
+<p><a href="https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_getpayloadv4"><code>engine_getPayloadV4</code></a> retrieves a payload by ID, prepared by <code>engine_forkchoiceUpdatedV3</code>
 when called with <code>payloadAttributes</code>.
 <code>engine_getPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
 <h3 id="engine_signalsuperchainv1"><a class="header" href="#engine_signalsuperchainv1"><code>engine_signalSuperchainV1</code></a></h3>
@@ -9306,11 +9306,15 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 <ul>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a></li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7623">EIP-7623</a></li>
 </ul>
 </li>
 <li><a href="protocol/isthmus/./exec-engine.html##l2tol1messagepasser-storage-root-in-header">L2ToL1MessagePasser Storage Root in Header</a></li>
 </ul>
 <h2 id="consensus-layer-6"><a class="header" href="#consensus-layer-6">Consensus Layer</a></h2>
+<ul>
+<li><a href="protocol/isthmus/./derivation.html">Isthmus Derivation</a></li>
+</ul>
 <h2 id="smart-contracts-1"><a class="header" href="#smart-contracts-1">Smart Contracts</a></h2>
 <ul>
 <li><a href="protocol/isthmus/./superchain-config.html">SuperchainConfig</a></li>
@@ -9435,6 +9439,246 @@ is applicable for scenarios where the actual withdrawals root value is not readi
 <p>Post Isthmus, <code>engine_newPayloadV4</code> will be used with the additional <code>ExecutionPayload</code> attribute. This attribute
 is omitted prior to Isthmus.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="isthumus-l2-chain-derivation-changes"><a class="header" href="#isthumus-l2-chain-derivation-changes">Isthumus L2 Chain Derivation Changes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/isthmus/derivation.html#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
+<ul>
+<li><a href="protocol/isthmus/derivation.html#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h1 id="network-upgrade-automation-transactions-2"><a class="header" href="#network-upgrade-automation-transactions-2">Network upgrade automation transactions</a></h1>
+<p>The Isthumus hardfork activation block contains the following transactions, in this order:</p>
+<ul>
+<li>L1 Attributes Transaction</li>
+<li>User deposits from L1</li>
+<li>Network Upgrade Transactions
+<ul>
+<li>EIP-2935 Contract Deployment</li>
+</ul>
+</li>
+</ul>
+<p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
+transactions by setting <code>noTxPool: true</code>.</p>
+<h2 id="eip-2935-contract-deployment"><a class="header" href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></h2>
+<p><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a> requires a contract to be deployed. To deploy this contract,
+a deposit transaction is created with attributes matching the EIP:</p>
+<ul>
+<li><code>from</code>: <code>0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10</code></li>
+<li><code>to</code>: <code>null</code>,</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>250,000</code></li>
+<li><code>data</code>: <code>0x60538060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500</code>,</li>
+<li><code>sourceHash</code>: <code>0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a</code>
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: EIP-2935 Contract Deployment"</li>
+</ul>
+<p>This results in the EIP-2935 contract being deployed to <code>0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10
+Computed Address: 0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: EIP-2935 Contract Deployment"))
+# 0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0x6e49e66782037c0555897870e29fa5e552daf4719552131a0abce779daec0a5d</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="overview-31"><a class="header" href="#overview-31">Overview</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#constants">Constants</a></li>
+<li><a href="protocol/isthmus/predeploys.html#predeploys">Predeploys</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#proxyadmin">ProxyAdmin</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#rationale">Rationale</a></li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/predeploys.html#l1block">L1Block</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#storage">Storage</a></li>
+<li><a href="protocol/isthmus/predeploys.html#interface">Interface</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#setisthmus"><code>setIsthmus</code></a></li>
+<li><a href="protocol/isthmus/predeploys.html#setconfig"><code>setConfig</code></a></li>
+<li><a href="protocol/isthmus/predeploys.html#getconfig"><code>getConfig</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/predeploys.html#feevault">FeeVault</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#interface-1">Interface</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#config"><code>config</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/predeploys.html#l2crossdomainmessenger">L2CrossDomainMessenger</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#interface-2">Interface</a></li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/predeploys.html#l2erc721bridge">L2ERC721Bridge</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#interface-3">Interface</a></li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/predeploys.html#l2standardbridge">L2StandardBridge</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#interface-4">Interface</a></li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/predeploys.html#optimismmintableerc721factory">OptimismMintableERC721Factory</a></li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/predeploys.html#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="protocol/isthmus/predeploys.html#governancetoken">GovernanceToken</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>This upgrade enables a deterministic L2 genesis state by moving all network
+specific configuration out of the initial L2 genesis state. All network specific
+configuration is sourced from deposit transactions during the initialization
+of the <code>SystemConfig</code>.</p>
+<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
+<tr><td><code>ConfigType</code></td><td><code>uint8</code></td><td>An enum representing the type of config being set</td></tr>
+<tr><td><code>WithdrawalNetwork</code></td><td><code>uint8(0)</code> or <code>uint8(1)</code></td><td><code>0</code> means withdraw to L1, <code>1</code> means withdraw to L2</td></tr>
+<tr><td><code>RECIPIENT</code></td><td><code>address</code></td><td>The account that will receive funds sent out of the <code>FeeVault</code></td></tr>
+<tr><td><code>MIN_WITHDRAWAL_AMOUNT</code></td><td><code>uint256</code></td><td>The minimum amount of native asset held in the <code>FeeVault</code> before withdrawal is authorized</td></tr>
+<tr><td>Fee Vault Config</td><td><code>bytes32</code></td><td><code>bytes32((WithdrawalNetwork &lt;&lt; 248) || uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) || uint256(uint160(RECIPIENT)))</code></td></tr>
+<tr><td><code>BASE_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.basefeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>BaseFeeVault</code></td></tr>
+<tr><td><code>L1_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.l1feevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>L1FeeVault</code></td></tr>
+<tr><td><code>SEQUENCER_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.sequencerfeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>SequencerFeeVault</code></td></tr>
+<tr><td><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1crossdomainmessengeraddress")) - 1)</code></td><td><code>abi.encode(address(L1CrossDomainMessengerProxy))</code></td></tr>
+<tr><td><code>L1_ERC_721_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1erc721bridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1ERC721BridgeProxy))</code></td></tr>
+<tr><td><code>L1_STANDARD_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1standardbridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1StandardBridgeProxy))</code></td></tr>
+<tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>bytes32(uint256(keccak256("opstack.remotechainid")) - 1)</code></td><td>Chain ID of the remote chain</td></tr>
+</tbody></table>
+</div>
+<h2 id="predeploys-2"><a class="header" href="#predeploys-2">Predeploys</a></h2>
+<p>All network specific configuration is moved to a single contract, the <code>L1Block</code> predeploy.
+All predeploys make calls to the <code>L1Block</code> contract to fetch network specific configuration
+rather than reading it from local state.</p>
+<pre class="mermaid">graph LR
+  subgraph L1
+  SystemConfig -- &quot;setConfig(uint8,bytes)&quot; --&gt; OptimismPortal
+  end
+  subgraph L2
+  L1Block
+  BaseFeeVault -- &quot;getConfig(ConfigType.GAS_PAYING_TOKEN)(address,uint256,uint8)&quot; --&gt; L1Block
+  SequencerFeeVault -- &quot;getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
+  L1FeeVault -- &quot;getConfig(ConfigType.L1_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
+  L2CrossDomainMessenger -- &quot;getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)(address)&quot; --&gt; L1Block
+  L2StandardBridge -- &quot;getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
+  L2ERC721Bridge -- &quot;getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
+  OptimismMintableERC721Factory -- &quot;getConfig(ConfigType.REMOTE_CHAIN_ID)(uint256)&quot; --&gt; L1Block
+  end
+  OptimismPortal -- &quot;setConfig(uint8,bytes)&quot; --&gt; L1Block
+</pre>
+<h3 id="proxyadmin-1"><a class="header" href="#proxyadmin-1">ProxyAdmin</a></h3>
+<p>The <code>ProxyAdmin</code> is updated to have its <code>owner</code> be the <code>DEPOSITOR_ACCOUNT</code>.
+This means that it can be deterministically called by network upgrade transactions
+or by special deposit transactions emitted by the <code>OptimismPortal</code> that assume
+the identity of the <code>DEPOSITOR_ACCOUNT</code>.</p>
+<h4 id="rationale-5"><a class="header" href="#rationale-5">Rationale</a></h4>
+<p>It is much easier to manage the overall roles of the full system under this model.
+The owner of the <code>ProxyAdmin</code> can upgrade any of the predeploys, meaning it can
+write storage slots that correspond to withdrawals. This ensures that only the
+system or a chain governor can issue upgrades to the predeploys.</p>
+<h3 id="l1block-1"><a class="header" href="#l1block-1">L1Block</a></h3>
+<h4 id="storage"><a class="header" href="#storage">Storage</a></h4>
+<p>The following storage slots are defined:</p>
+<ul>
+<li><code>BASE_FEE_VAULT_CONFIG</code></li>
+<li><code>L1_FEE_VAULT_CONFIG</code></li>
+<li><code>SEQUENCER_FEE_VAULT_CONFIG</code></li>
+<li><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></li>
+<li><code>L1_ERC_721_BRIDGE_ADDRESS</code></li>
+<li><code>L1_STANDARD_BRIDGE_ADDRESS</code></li>
+<li><code>REMOTE_CHAIN_ID</code></li>
+</ul>
+<p>Each slot MUST have a defined <code>ConfigType</code> that authorizes the setting of the storage slot
+via a deposit transaction from the <code>DEPOSITOR_ACCOUNT</code>.</p>
+<h4 id="interface-2"><a class="header" href="#interface-2">Interface</a></h4>
+<h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
+<p>This function is meant to be called once on the activation block of the holocene network upgrade.
+It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
+call each getter for the network specific config and set the returndata into storage.</p>
+<h5 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h5>
+<p>This function MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code>. It modifies the storage directly
+of the <code>L1Block</code> contract. It MUST handle all defined <code>ConfigType</code>s. To ensure a simple ABI, the
+<code>bytes</code> value MUST be abi decoded based on the <code>ConfigType</code>.</p>
+<pre><code class="language-solidity">function setConfig(ConfigType,bytes)
+</code></pre>
+<p>Note that <code>ConfigType</code> is an enum which is an alias for a <code>uint8</code>.</p>
+<h5 id="getconfig"><a class="header" href="#getconfig"><code>getConfig</code></a></h5>
+<p>This function is called by each contract with the appropriate <code>ConfigType</code> to fetch
+the network specific configuration. Using this pattern reduces the ABI of the <code>L1Block</code>
+contract by removing the need for special getters for each piece of config.</p>
+<pre><code class="language-solidity">function getConfig(ConfigType)(bytes)
+</code></pre>
+<p>The caller needs to ABI decode the data into the desired type.</p>
+<h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
+<p>The following changes apply to each of the <code>BaseFeeVault</code>, the <code>L1FeeVault</code> and the <code>SequencerFeeVault</code>.</p>
+<h4 id="interface-3"><a class="header" href="#interface-3">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract:</p>
+<ul>
+<li><code>recipient()(address)</code></li>
+<li><code>withdrawalNetwork()(WithdrawalNetwork)</code></li>
+<li><code>minWithdrawalAmount()(uint256)</code></li>
+<li><code>withdraw()</code></li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Call</th></tr></thead><tbody>
+<tr><td><code>BaseFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.BASE_FEE_VAULT_CONFIG)</code></td></tr>
+<tr><td><code>SequencerFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)</code></td></tr>
+<tr><td><code>L1FeeVault</code></td><td><code>L1Block.getConfig(ConfigType.L1_FEE_VAULT_CONFIG)</code></td></tr>
+</tbody></table>
+</div>
+<h5 id="config"><a class="header" href="#config"><code>config</code></a></h5>
+<p>A new function is added to fetch the full Fee Vault Config.</p>
+<pre><code class="language-solidity">function config()(address,uint256,WithdrawalNetwork)
+</code></pre>
+<h3 id="l2crossdomainmessenger-1"><a class="header" href="#l2crossdomainmessenger-1">L2CrossDomainMessenger</a></h3>
+<h4 id="interface-4"><a class="header" href="#interface-4">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code>:</p>
+<ul>
+<li><code>otherMessenger()(address)</code></li>
+<li><code>OTHER_MESSENGER()(address)</code></li>
+</ul>
+<h3 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h3>
+<h4 id="interface-5"><a class="header" href="#interface-5">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)</code>:</p>
+<ul>
+<li><code>otherBridge()(address)</code></li>
+<li><code>OTHER_BRIDGE()(address)</code></li>
+</ul>
+<h3 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h3>
+<h4 id="interface-6"><a class="header" href="#interface-6">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)</code>:</p>
+<ul>
+<li><code>otherBridge()(address)</code></li>
+<li><code>OTHER_BRIDGE()(address)</code></li>
+</ul>
+<h3 id="optimismmintableerc721factory-1"><a class="header" href="#optimismmintableerc721factory-1">OptimismMintableERC721Factory</a></h3>
+<p>The chain id is no longer read from storage but instead is read from the <code>L1Block</code> contract by calling
+<code>L1Block.getConfig(ConfigType.REMOTE_CHAIN_ID)</code></p>
+<h2 id="security-considerations-4"><a class="header" href="#security-considerations-4">Security Considerations</a></h2>
+<h3 id="governancetoken"><a class="header" href="#governancetoken">GovernanceToken</a></h3>
+<p>The predeploy defined by <code>GovernanceToken</code> should be an empty account until it is defined by
+a future hardfork.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="superchainconfig"><a class="header" href="#superchainconfig">SuperchainConfig</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -9446,16 +9690,16 @@ is omitted prior to Isthmus.</p>
 <li><a href="protocol/isthmus/superchain-config.html#initialization">Initialization</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
+<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
 <p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
 to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
 that call the L2 <code>ProxyAdmin</code>.</p>
-<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
+<h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
 <tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="interface-2"><a class="header" href="#interface-2">Interface</a></h2>
+<h2 id="interface-7"><a class="header" href="#interface-7">Interface</a></h2>
 <pre><code class="language-solidity">function upgrader() public view returns (address)
 </code></pre>
 <h2 id="initialization-1"><a class="header" href="#initialization-1">Initialization</a></h2>
@@ -9484,7 +9728,7 @@ that call the L2 <code>ProxyAdmin</code>.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
+<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -9617,7 +9861,7 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
+<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
 <p>Custom gas token is also known as "custom L2 native asset". It allows for an L1-native ERC20 token to collateralize
 and act as the gas token on L2. The native asset is used to buy gas which is used to pay for resources on the network
 and is represented by EVM opcodes such as <code>CALLVALUE</code> (<code>msg.value</code>).</p>
@@ -9627,7 +9871,7 @@ in the L1 <code>SystemConfig</code> smart contract.</p>
 <p>The terms "custom gas token", "gas paying token", "native asset" and "gas paying asset" can all be used interchangeably.
 Note, Ether is not a <strong>custom</strong> gas token, but may be used to pay gas. More on this in
 <a href="experimental/custom-gas-token.html#configuring-the-gas-paying-token">Configuring the Gas Paying Token</a>.</p>
-<h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
+<h2 id="constants-2"><a class="header" href="#constants-2">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ETHER_TOKEN_ADDRESS</code></td><td><code>address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)</code></td><td>Represents ether for gas paying asset</td></tr>
 <tr><td><code>DEPOSITOR_ACCOUNT</code></td><td><code>address(0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001)</code></td><td>Account with auth permissions on <code>L1Block</code> contract</td></tr>
@@ -9817,7 +10061,7 @@ on the token MUST be exactly 18, the name of the token MUST be less than or equa
 symbol MUST be less than or equal to 32 bytes. If the token passes all of these checks,
 <code>OptimismPortal.setGasPayingToken</code> is called. The implementation of <code>initialize</code> MUST not allow the chain
 operator to change the address of the custom gas token if it is already set.</p>
-<h3 id="l1block-1"><a class="header" href="#l1block-1">L1Block</a></h3>
+<h3 id="l1block-2"><a class="header" href="#l1block-2">L1Block</a></h3>
 <p>The <code>L1Block</code> contract is upgraded with a permissioned function <code>setGasPayingToken</code> that is used to set
 information about the gas paying token. The <code>DEPOSITOR_ACCOUNT</code> MUST be the only account that can call the
 setter function. This setter is differentiated from the <code>setL1BlockValues</code> functions because the gas paying
@@ -9976,7 +10220,7 @@ the OP Stack with custom gas token enabled. This will be defined in the future.<
 blobbasefee. When a custom gas token is used, fees are paid in the custom gas token but the conversion rate to ether
 is not taken into account as part of the protocol. It is assumed that the fees will be configured by the chain
 operator such that the revenue earned in custom gas token can be swapped into ether to pay for posting the data to L1.</p>
-<h2 id="security-considerations-4"><a class="header" href="#security-considerations-4">Security Considerations</a></h2>
+<h2 id="security-considerations-5"><a class="header" href="#security-considerations-5">Security Considerations</a></h2>
 <h3 id="optimismportal-token-allowance"><a class="header" href="#optimismportal-token-allowance">OptimismPortal Token Allowance</a></h3>
 <p>The <code>OptimismPortal</code> makes calls on behalf of users. It is therefore unsafe to be able to call the address of
 the custom gas token itself from the <code>OptimismPortal</code> because it would be a simple way to <code>approve</code> an attacker's
@@ -10021,7 +10265,7 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
+<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -10258,7 +10502,7 @@ when that commitment can no longer be invalidated. Then finalization can proceed
 that an L2 block is derived from becomes finalized, the L2 block can be marked as finalized.</p>
 <p>The engine queue will maintain a longer buffer of L2 blocks waiting for the DA window to expire
 and the L1 block with the commitment to be finalized in order to signal finality.</p>
-<h2 id="security-considerations-5"><a class="header" href="#security-considerations-5">Security Considerations</a></h2>
+<h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
 <p>The Data Availability Challenge contract mitigates DoS vulnerability with a payable bond requirement making
 challenging the availability of a commitment at least as expensive as submitting the data onchain to resolve
 the challenge.
@@ -10363,7 +10607,7 @@ considered an upgrade to the network. It is not possible to remove chains from t
 <h3 id="layer-1-as-part-of-the-dependency-set"><a class="header" href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></h3>
 <p>The layer one MAY be part of the dependency set in the future. This means that any event
 created on layer one is consumable on layer two.</p>
-<h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
+<h2 id="security-considerations-7"><a class="header" href="#security-considerations-7">Security Considerations</a></h2>
 <h3 id="dependency-set-size"><a class="header" href="#dependency-set-size">Dependency Set Size</a></h3>
 <p>It becomes increasingly expensive to fully validate the full cluster as the size of the dependency
 set grows. The proof system requires validating all of the chains so the size of the dependency
@@ -10576,7 +10820,7 @@ and thus a maximum inward degree of dependencies.</li>
 <li>Every block cannot depend on expired messages, as per the <a href="interop/messaging.html#message-expiry-invariant">Message expiry invariant</a>.</li>
 </ul>
 <p>The verifier is responsible for filtering out non-canonical parts of the graph.</p>
-<h2 id="security-considerations-7"><a class="header" href="#security-considerations-7">Security Considerations</a></h2>
+<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
 <h3 id="cyclic-dependencies"><a class="header" href="#cyclic-dependencies">Cyclic dependencies</a></h3>
 <p>If there is a cycle in the dependency set, chains MUST still be able to promote unsafe blocks
 to safe blocks. A cycle in the dependency set happens anytime that two chains are in each other's
@@ -10587,7 +10831,7 @@ dependencies are thus said to be transitive.
 Without validating the transitive dependencies,
 the verifier relies on the verification work of the nodes that it sources its direct dependencies from.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="predeploys-2"><a class="header" href="#predeploys-2">Predeploys</a></h1>
+<h1 id="predeploys-3"><a class="header" href="#predeploys-3">Predeploys</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -10712,7 +10956,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
+<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -10917,7 +11161,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-36"><a class="header" href="#overview-36">Overview</a></h3>
+<h3 id="overview-37"><a class="header" href="#overview-37">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -10984,14 +11228,14 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-37"><a class="header" href="#overview-37">Overview</a></h3>
+<h3 id="overview-38"><a class="header" href="#overview-38">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
 <p>The Beacon Contract implements the interface defined
 in <a href="https://eips.ethereum.org/EIPS/eip-1967">EIP-1967</a>.</p>
 <p>The implementation address gets deduced similarly to the <code>GasPriceOracle</code> address in Ecotone and Fjord updates.</p>
-<h2 id="l1block-2"><a class="header" href="#l1block-2">L1Block</a></h2>
+<h2 id="l1block-3"><a class="header" href="#l1block-3">L1Block</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000015</code></td></tr>
 <tr><td><code>DEPOSITOR_ACCOUNT</code></td><td><code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code></td></tr>
@@ -11085,7 +11329,7 @@ by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fi
 This event exists for backward compatibility with legacy version.</p>
 <pre><code class="language-solidity">event StandardL2TokenCreated(address indexed remoteToken, address indexed localToken);
 </code></pre>
-<h2 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h2>
+<h2 id="l2standardbridge-2"><a class="header" href="#l2standardbridge-2">L2StandardBridge</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000010</code></td></tr>
 </tbody></table>
@@ -11164,7 +11408,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-38"><a class="header" href="#overview-38">Overview</a></h3>
+<h3 id="overview-39"><a class="header" href="#overview-39">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -11283,7 +11527,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
+<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h1>
@@ -11311,7 +11555,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
+<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -11396,7 +11640,7 @@ messages will need to recursively check that all dependencies are safe.</p>
 <p>A shared sequencer can be built if the block builder is able to build the next canonical block
 for multiple chains. This can enable synchronous composability where transactions are able
 to execute across multiple chains at the same timestamp.</p>
-<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
+<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <h3 id="depending-on-preconfirmations"><a class="header" href="#depending-on-preconfirmations">Depending on Preconfirmations</a></h3>
 <p>If a local sequencer is accepting inbound cross chain transactions where the initiating message only has preconfirmation
 levels of security, this means that the remote sequencer can trigger a reorg on the local chain.</p>
@@ -11496,7 +11740,7 @@ to the block building code that the <a href="interop/./sequencer.html#direct-dep
 follows. The main difference is that the validity of included executing
 messages is verified, instead of verifying possible executing messages before
 inclusion.</p>
-<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -11517,7 +11761,7 @@ inclusion.</p>
 Thus deposits cannot reference each other's events intra-block.</p>
 <p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
 The insight is that the fault proof program can be a superset of the state transition function.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="interop-network-upgrade"><a class="header" href="#interop-network-upgrade">Interop Network Upgrade</a></h1>
@@ -11595,7 +11839,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </ul>
 <p>The <code>setL1BlockValuesIsthmus</code> input parameters are identical to <code>setL1BlockValuesEcotone</code> as described in
 <a href="interop/../protocol/ecotone/l1-attributes.html#l1-attributes-deposited-transaction-calldata">L1 Attributes Deposited Transaction Calldata</a>.</p>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
@@ -11628,7 +11872,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
+<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainERC20Bridge</code>.
@@ -11896,7 +12140,7 @@ either chain uses a different native asset.</p>
 <p>Support for native ETH opens the door to unnecessary complexity. Any solution to this problem should aim to minimize the
 amount of protocol code required to support native ETH. This generally points towards an app-layer solution if possible
 but does not preclude a protocol-layer solution as long as we minimize implementation size.</p>
-<h2 id="constants-2"><a class="header" href="#constants-2">Constants</a></h2>
+<h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>SuperchainWETH</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
 <tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
@@ -12040,7 +12284,7 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
 <p>New derivation rules are added to guaranteee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
@@ -12144,7 +12388,7 @@ of the replaced block. i.e. <code>version_byte || payload</code> without applyin
 <tr><td><code>EXPIRY_WINDOW</code></td><td><code>TODO</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
 <h3 id="gas-considerations"><a class="header" href="#gas-considerations">Gas Considerations</a></h3>
 <p>There must be sufficient gas available in the block to destroy deposit context. Depending on the
 chain configuration, there is no guarantee that the amount of guaranteed gas plus the amount used
@@ -12180,7 +12424,7 @@ that very old logs are more expensive to prove.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
+<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -12212,7 +12456,7 @@ and does not get stuck in the transaction pool.</p>
 should be maintained in the transaction pool.
 This leaves sufficient gas for the L1 attributes transaction (under 45,000 gas),
 the new deposit-context closing transaction (under 36,000 gas), and margin for error / change.</p>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
 <h3 id="mempool-denial-of-service"><a class="header" href="#mempool-denial-of-service">Mempool Denial of Service</a></h3>
 <p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
@@ -12286,7 +12530,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
+<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -12319,7 +12563,7 @@ function systemConfigs(uint256 _l2ChainId) external view returns (address);
 function version() external view returns (string memory);
 </code></pre>
 <h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
-<h3 id="interface-3"><a class="header" href="#interface-3">Interface</a></h3>
+<h3 id="interface-8"><a class="header" href="#interface-8">Interface</a></h3>
 <h4 id="deploy-1"><a class="header" href="#deploy-1"><code>deploy</code></a></h4>
 <p>The <code>deploy</code> method is used to deploy the full set of L1 contracts required to setup a new OP Stack
 chain that complies with the <a href="experimental/../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
@@ -12417,7 +12661,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
 <p>This section is written specifically for the Isthmus upgrade path, which is the first upgrade which will
 be performed by the OP Contracts Manager.</p>
-<h3 id="interface-4"><a class="header" href="#interface-4">Interface</a></h3>
+<h3 id="interface-9"><a class="header" href="#interface-9">Interface</a></h3>
 <h4 id="upgrade-1"><a class="header" href="#upgrade-1"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
@@ -12469,7 +12713,7 @@ function, increasing the cost and reducing the number of OP Chains which can be 
 <p>Because different OP Chains within a Superchain may use different dispute game types, and are
 expected to move from a permissioned to permissionless game over time, an <code>addGameType()</code> method is
 provided to enable adding a new game type to multiple games at once.</p>
-<h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
+<h3 id="interface-10"><a class="header" href="#interface-10">Interface</a></h3>
 <h4 id="addgametype"><a class="header" href="#addgametype"><code>addGameType</code></a></h4>
 <p>The <code>addGameType</code> method is used to orchestrate the actions required to add a new game type to one
 or more chains.</p>
@@ -12504,7 +12748,7 @@ revert if it would overwrite an existing entry.</li>
 <tr><td>l2ChainId</td><td>uint256</td><td>Chain ID of the L2 network</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<h2 id="security-considerations-16"><a class="header" href="#security-considerations-16">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
@@ -12576,7 +12820,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -12732,7 +12976,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
@@ -12764,7 +13008,7 @@ For example, to align the address <code>0x1002</code> targeting a 32-bit value:
 <li><code>UInt64</code> - A 64-bit unsigned integer value.</li>
 <li><code>Word</code> - A 64-bit value.</li>
 </ul>
-<h4 id="constants-3"><a class="header" href="#constants-3">Constants</a></h4>
+<h4 id="constants-4"><a class="header" href="#constants-4">Constants</a></h4>
 <ul>
 <li><code>EBADF</code> - A Linux error number indicating a bad file descriptor: <code>0x9</code>.</li>
 <li><code>MaxWord</code> - A <code>Word</code> with all bits set to 1: <code>0xFFFFFFFFFFFFFFFF</code>.

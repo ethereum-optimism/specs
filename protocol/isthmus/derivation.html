@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Superchain Config - OP Stack Specification</title>
+        <title>Derivation - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/superchain-config.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/derivation.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -168,41 +168,64 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="superchainconfig"><a class="header" href="#superchainconfig">SuperchainConfig</a></h1>
+<h1 id="isthumus-l2-chain-derivation-changes"><a class="header" href="#isthumus-l2-chain-derivation-changes">Isthumus L2 Chain Derivation Changes</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#constants">Constants</a></li>
-<li><a href="#interface">Interface</a></li>
-<li><a href="#initialization">Initialization</a></li>
+<li><a href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
+<ul>
+<li><a href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
-to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
-that call the L2 <code>ProxyAdmin</code>.</p>
-<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
-<tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
-</tbody></table>
-</div>
-<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
-<pre><code class="language-solidity">function upgrader() public view returns (address)
+<h1 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h1>
+<p>The Isthumus hardfork activation block contains the following transactions, in this order:</p>
+<ul>
+<li>L1 Attributes Transaction</li>
+<li>User deposits from L1</li>
+<li>Network Upgrade Transactions
+<ul>
+<li>EIP-2935 Contract Deployment</li>
+</ul>
+</li>
+</ul>
+<p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
+transactions by setting <code>noTxPool: true</code>.</p>
+<h2 id="eip-2935-contract-deployment"><a class="header" href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></h2>
+<p><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a> requires a contract to be deployed. To deploy this contract,
+a deposit transaction is created with attributes matching the EIP:</p>
+<ul>
+<li><code>from</code>: <code>0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10</code></li>
+<li><code>to</code>: <code>null</code>,</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>250,000</code></li>
+<li><code>data</code>: <code>0x60538060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500</code>,</li>
+<li><code>sourceHash</code>: <code>0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a</code>
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: EIP-2935 Contract Deployment"</li>
+</ul>
+<p>This results in the EIP-2935 contract being deployed to <code>0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10
+Computed Address: 0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC
 </code></pre>
-<h2 id="initialization"><a class="header" href="#initialization">Initialization</a></h2>
-<p>The <code>upgrader</code> can only be set during initialization.</p>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: EIP-2935 Contract Deployment"))
+# 0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0x6e49e66782037c0555897870e29fa5e552daf4719552131a0abce779daec0a5d</code>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/isthmus/predeploys.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/exec-engine.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../governance/gov-token.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/isthmus/predeploys.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -212,11 +235,11 @@ that call the L2 <code>ProxyAdmin</code>.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/isthmus/predeploys.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/exec-engine.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../governance/gov-token.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/isthmus/predeploys.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
