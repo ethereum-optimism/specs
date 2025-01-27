@@ -11,7 +11,9 @@
 - [Invariants](#invariants)
   - [System level invariants](#system-level-invariants)
   - [Contract level invariants](#contract-level-invariants)
-- [Reference implementation](#reference-implementation)
+- [Architecture](#architecture)
+  - [Authorization Flow](#authorization-flow)
+  - [ETH Management](#eth-management)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -29,10 +31,12 @@ from any OP chain in the Superchain, regardless of where the ETH was initially d
 The `SharedLockbox` contract is designed to manage the unified ETH liquidity for the Superchain.
 It implements two main functions: `lockETH` for depositing ETH into the lockbox,
 and `unlockETH` for withdrawing ETH from the lockbox.
+
 These functions are called by the `OptimismPortal` contracts to manage the shared ETH liquidity
 when making deposits or finalizing withdrawals.
-These `OptimismPortal`s will be allowlisted by the `SuperchainConfig` using the `authorizePortal` function
-when a chain is added.
+
+Authorization of `OptimismPortal`s is managed by the `SuperchainConfigInterop` contract when a chain
+is added to the dependency set.
 The `SharedLockbox` contract is proxied and managed by the L1 `ProxyAdmin`.
 
 ### Interface and properties
@@ -55,23 +59,12 @@ function lockETH() external payable;
 Withdraws a specified amount of ETH from the lockbox's liquidity pool.
 
 - Only authorized `OptimismPortal` addresses MUST be allowed to interact.
-- The function MUST NOT revert when called by an authorized `OptimismPortal`
+- The function MUST NOT revert when called by an authorized `OptimismPortal` unless paused
 - The function MUST emit the `ETHUnlocked` event with the `portal` that called it and the `amount`.
+- The function MUST use `donateETH` when sending ETH to avoid triggering deposits
 
 ```solidity
 function unlockETH(uint256 _value) external;
-```
-
-**`authorizePortal`**
-
-Grants authorization to a specific `OptimismPortal` contract.
-
-- Only `SuperchainConfig` address MUST be allowed to interact.
-- The function MUST add the specified address to the mapping of authorized portals.
-- The function MUST emit the [`PortalAuthorized`](#events) event when a portal is successfully added.
-
-```solidity
-function authorizePortal(address _portal) external;
 ```
 
 ### Events
@@ -92,14 +85,6 @@ MUST be triggered when `unlockETH` is called
 event ETHUnlocked(address indexed portal, uint256 amount);
 ```
 
-**`PortalAuthorized`**
-
-MUST be triggered when `authorizePortal` is called
-
-```solidity
-event PortalAuthorized(address indexed portal);
-```
-
 ## Invariants
 
 ### System level invariants
@@ -108,7 +93,7 @@ event PortalAuthorized(address indexed portal);
 
 - The ETH unlocked by any `OptimismPortal` MUST NOT exceed the available shared liquidity in the `SharedLockbox`.
 
-- The total withdrawable ETH amount present on all the dependency set’s chains MUST NEVER be more than the amount held
+- The total withdrawable ETH amount present on all the dependency set's chains MUST NEVER be more than the amount held
   by the `SharedLockbox` of the cluster
   > With "withdrawable amount", the ETH balance held on `ETHLiquidity` is excluded
 
@@ -118,13 +103,9 @@ event PortalAuthorized(address indexed portal);
 
 - It MUST allow only authorized portals to unlock ETH
 
-- Only the `SuperchainConfig` contract MUST be able to authorize an `OptimismPortal`
-
 - It MUST be in paused state if the `SuperchainConfig` is paused
 
 - No Ether MUST flow out of the contract when in a paused state
-
-- No `OptimismPortal` can be authorized when in a paused state
 
 - It MUST NOT trigger a new deposit when ETH amount is being unlocked from the `SharedLockbox` by the `OptimismPortal`
 
@@ -134,36 +115,24 @@ event PortalAuthorized(address indexed portal);
 
   - An `ETHUnlocked` event when unlocking ETH
 
-  - A `PortalAuthorized` event when authorizing a new portal
+## Architecture
 
-## Reference implementation
+### Authorization Flow
 
-An example implementation could look like this:
+1. When a new chain is added to the dependency set through the `SuperchainConfigInterop`, its `OptimismPortal` is authorized
 
-```solidity
-// OptimismPortals that are part of the dependency cluster.
-mapping(address _portal => bool) internal _authorizedPortals;
+2. The `SharedLockbox` checks portal authorization by querying the `SuperchainConfigInterop.authorizedPortals()` function
 
-function lockETH() external payable {
-    require(_authorizedPortals[msg.sender], "Unauthorized");
+3. Only authorized portals can lock and unlock ETH from the `SharedLockbox`
 
-    emit ETHLocked(msg.sender, msg.value);
-}
+### ETH Management
 
-function unlockETH(uint256 _value) external {
-    require(_authorizedPortals[msg.sender], "Unauthorized");
+- ETH is locked in the `SharedLockbox` when:
 
-    // Using `donateETH` to not trigger a deposit
-    IOptimismPortal(msg.sender).donateETH{ value: _value }();
+  - A portal migrates its ETH liquidity when joining the dependency set
 
-    emit ETHUnlocked(msg.sender, _value);
-}
+  - A deposit is made with ETH value on an authorized portal
 
-function authorizePortal(address _portal) external {
-    require(msg.sender == superchainConfig, "Unauthorized");
+- ETH is unlocked from the `SharedLockbox` when:
 
-    _authorizedPortals[_portal] = true;
-
-    emit PortalAuthorized(_portal);
-}
-```
+  - An authorized portal finalizes a withdrawal that requires ETH

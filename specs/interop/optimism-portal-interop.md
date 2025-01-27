@@ -1,4 +1,4 @@
-# OptimismPortal
+# OptimismPortal Interop
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -6,17 +6,24 @@
 
 - [Overview](#overview)
   - [Integrating `SharedLockbox`](#integrating-sharedlockbox)
-    - [`depositTransaction`](#deposittransaction)
-    - [`finalizeWithdrawalTransactionExternalProof`](#finalizewithdrawaltransactionexternalproof)
-  - [Invariants](#invariants)
+- [Interface and properties](#interface-and-properties)
+  - [ETH Management](#eth-management)
+    - [`migrateLiquidity`](#migrateliquidity)
+  - [Internal ETH Functions](#internal-eth-functions)
+    - [`_lockETH`](#_locketh)
+    - [`_unlockETH`](#_unlocketh)
+- [Events](#events)
+  - [`ETHMigrated`](#ethmigrated)
+- [Invariants](#invariants)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
 
-The `OptimismPortal` contract is upgraded to integrate the `SharedLockbox` and start using the shared ETH liquidity.
-This liquidity consists of every ETH balance migrated from each `OptimismPortal`
-when joining the op-governed dependency set.
+The `OptimismPortalInterop` contract extends `OptimismPortal2` to integrate with the `SharedLockbox`
+for managing unified ETH liquidity.
+This liquidity consists of every ETH balance migrated from each `OptimismPortal` when joining
+the op-governed dependency set.
 
 It is possible to upgrade to this version without being part of the op-governed dependency set. In this case,
 the corresponding chain would need to deploy and manage its own `SharedLockbox` and `SuperchainConfig`.
@@ -26,52 +33,87 @@ the corresponding chain would need to deploy and manage its own `SharedLockbox` 
 The integration with the `SharedLockbox` involves locking ETH when executing deposit transactions and unlocking ETH
 when finalizing withdrawal transactions, without altering other aspects of the current `OptimismPortal` implementation.
 
-To implement this solution, the following changes are needed:
+## Interface and properties
 
-#### `depositTransaction`
+### ETH Management
 
-Calls `lockETH` on the `SharedLockbox` with the `msg.value`.
+#### `migrateLiquidity`
 
-- The function MUST call `lockETH` with `msg.value` on the `SharedLockbox` if:
-  - The token is `ETHER`.
-  - `msg.value` is greater than zero.
+Migrates the ETH liquidity to the SharedLockbox. This function will only be called once by the
+SuperchainConfig when adding this chain to the dependency set.
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant OptimismPortal
-    participant SharedLockbox
-
-    User->>OptimismPortal: depositTransaction(...)
-    OptimismPortal->>SharedLockbox: lockETH()
-    OptimismPortal->>OptimismPortal: emit TransactionDeposited()
+```solidity
+function migrateLiquidity() external;
 ```
 
-#### `finalizeWithdrawalTransactionExternalProof`
+- MUST only be callable by the `SuperchainConfig` contract
+- MUST set the migrated flag to true
+- MUST transfer all ETH balance to the `SharedLockbox`
+- MUST emit an `ETHMigrated` event with the amount transferred
 
-Calls `unlockETH` on the `SharedLockbox` with the `tx.value`.
+### Internal ETH Functions
 
-- The function MUST call `unlockETH` on the `SharedLockbox` if:
-  - The token is `ETHER`.
-  - `tx.value` is greater than zero.
-- The ETH is received by the `OptimismPortal` and then sent with the withdrawal transaction
+The contract overrides two internal functions from `OptimismPortal2` to handle ETH management with the `SharedLockbox`:
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant OptimismPortal
-    participant SharedLockbox
+#### `_lockETH`
 
-    User->>OptimismPortal: finalizeWithdrawalTransactionExternalProof(...)
-    OptimismPortal->>SharedLockbox: unlockETH(uint256 value)
-    SharedLockbox->>OptimismPortal: donateETH()
-    OptimismPortal->>OptimismPortal: emit WithdrawalFinalized()
+Called during deposit transactions to handle ETH locking.
+
+```solidity
+function _lockETH() internal virtual override;
 ```
 
-### Invariants
+- MUST be called during `depositTransaction` when there is ETH value
+- If not migrated, function is a no-op
+- If migrated:
+  - MUST lock any ETH value in the `SharedLockbox`
+  - MUST NOT revert on zero value
 
-- It MUST lock the ETH amount on the `SharedLockbox` when on a deposit transaction with value greater than zero
+#### `_unlockETH`
 
-- It MUST unlock the ETH amount being withdrawn from the `SharedLockbox` if it is greater than zero
+Called during withdrawal finalization to handle ETH unlocking.
 
-- It MUST NOT hold any ETH balance from any deposit transaction.
+```solidity
+function _unlockETH(Types.WithdrawalTransaction memory _tx) internal virtual override;
+```
+
+- MUST be called during withdrawal finalization when there is ETH value
+- If not migrated, function is a no-op
+- If migrated:
+  - MUST unlock the withdrawal value from the `SharedLockbox`
+  - MUST NOT revert on zero value
+  - MUST revert if withdrawal target is the `SharedLockbox`
+
+## Events
+
+### `ETHMigrated`
+
+MUST be triggered when the ETH liquidity is migrated to the SharedLockbox.
+
+```solidity
+event ETHMigrated(uint256 amount);
+```
+
+## Invariants
+
+- Before migration:
+
+  - Deposits MUST keep the ETH in the portal
+
+  - Withdrawals MUST use the portal's own ETH balance
+
+- After migration:
+
+  - Deposits MUST lock the ETH in the `SharedLockbox`
+
+  - Withdrawals MUST unlock the ETH from the `SharedLockbox` and forward it to the withdrawal target
+
+  - The contract MUST NOT hold any ETH balance from deposits or withdrawals
+
+- General invariants:
+
+  - The contract MUST be able to handle zero ETH value operations
+
+  - The contract MUST NOT allow withdrawals to target the `SharedLockbox` address
+
+  - The contract MUST only migrate liquidity once
