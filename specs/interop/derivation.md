@@ -15,11 +15,13 @@
   - [Optimistic Block Deposited Transaction](#optimistic-block-deposited-transaction)
 - [Updating the Dependency Set](#updating-the-dependency-set)
   - [ABI Encoding](#abi-encoding)
+- [Expiry Window](#expiry-window)
 - [Security Considerations](#security-considerations)
   - [Gas Considerations](#gas-considerations)
   - [Depositing an Executing Message](#depositing-an-executing-message)
   - [Reliance on History](#reliance-on-history)
   - [Malicious Modifications to the Dependency Set](#malicious-modifications-to-the-dependency-set)
+  - [Expiry Window](#expiry-window-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -34,6 +36,9 @@ executing messages.
 - An executing message MUST have a corresponding initiating message
 - The initiating message referenced in an executing message MUST come from a chain in its dependency set
 - A block MUST be considered invalid if it is built with any invalid executing messages
+- The timestamp of the identifier MUST be greater than or equal to the interop network upgrade timestamp
+- The timestamp of the identifier MUST be less than or equal to the timestamp of the block that includes it
+- The timestamp of the identifier MUST be greater than timestamp of the block that includes it minus the expiry window
 
 L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
 They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
@@ -172,6 +177,14 @@ function addDependency(address superchainConfig, uint256 chainId, address system
 | 32      | chainId uint256          |
 | 32      | systemConfig address     |
 
+## Expiry Window
+
+The expiry window is the time period after which an initiating message is no longer considered valid.
+
+| Constant | Value |
+| -------- | ----- |
+| `EXPIRY_WINDOW` | `TODO` |
+
 ## Security Considerations
 
 ### Gas Considerations
@@ -203,3 +216,10 @@ decides to run software that modifies the dependency set in a way that the full 
 agree with, the network will fork out the sequencer's block. It will also not be possible for
 the sequencer to unilaterally withdraw updates to the dependency set because the proof program
 must also commit to dependency set modifications.
+
+### Expiry Window
+
+The expiry window ensures that the proof can execute in a reasonable amount of time.
+There is currently no way to prove old history with a sublinear proof size. The proof
+program needs to walk back and reexecute to reproduce the consumed logs. This means
+that very old logs are more expensive to prove.
