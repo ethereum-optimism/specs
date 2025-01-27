@@ -131,6 +131,16 @@ is applicable for scenarios where the actual withdrawals root value is not readi
 
 Withdrawals list in the block body is encoded as an empty RLP list.
 
+## EVM Changes
+
+Similar to the `bn256Pairing` precompile in the [granite hardfork](../granite/exec-engine.md),
+[EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) introduces a BLS
+precompile that short-circuits depending on input size in the EVM.
+
+The `BLS12-381` curve operation precompile reverts if its input is
+larger than `<todo>` bytes. This is the input size that consumes
+approximately `20`M gas given the latest `BLS12-381` gas schedule on L2.
+
 ## Engine API Updates
 
 ### Update to `ExecutableData`
