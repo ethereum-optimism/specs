@@ -18,6 +18,7 @@
     - [Client Implementation Considerations](#client-implementation-considerations)
       - [Transaction Simulation](#transaction-simulation)
 - [Block Body Withdrawals List](#block-body-withdrawals-list)
+- [Block Sealing](#block-sealing)
 - [Engine API Updates](#engine-api-updates)
   - [Update to `ExecutableData`](#update-to-executabledata)
   - [`engine_newPayloadV4` API](#engine_newpayloadv4-api)
