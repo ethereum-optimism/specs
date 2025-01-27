@@ -6,6 +6,7 @@
 
 - [Network upgrade automation transactions](#network-upgrade-automation-transactions)
   - [EIP-2935 Contract Deployment](#eip-2935-contract-deployment)
+- [Span Batch Updates](#span-batch-updates)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -51,3 +52,11 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 
 This transaction MUST deploy a contract with the following code hash
 `0x6e49e66782037c0555897870e29fa5e552daf4719552131a0abce779daec0a5d`.
+
+# Span Batch Updates
+
+[Span batches](../delta/span-batches.md) are a span of consecutive L2 blocks than are batched submitted.
+
+Span batches contain the L1 transactions and transaction types that are posted containing the span of L2 blocks.
+Since [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) introduces a new transaction type, the Span Batch must
+be updated to support the [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) transaction.
