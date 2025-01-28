@@ -139,8 +139,8 @@ Similar to the `bn256Pairing` precompile in the [granite hardfork](../granite/ex
 precompile that short-circuits depending on input size in the EVM.
 
 The `BLS12-381` curve operation precompile reverts if its input is
-larger than `<todo>` bytes. This is the input size that consumes
-approximately `20`M gas given the latest `BLS12-381` gas schedule on L2.
+larger than `235008` bytes. This is the input size that consumes
+approximately `20M` gas given the latest `BLS12-381` gas schedule on L2.
 
 ## Engine API Updates
 
