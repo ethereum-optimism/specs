@@ -218,6 +218,7 @@ is the currently respected game type.
 
 - MUST not revert if the caller is a Registered Game and sufficient gas is provided.
 - MUST not update the anchor state if the game is not a Proper Game for any reason.
+- MUST not update the anchor state if the game is not resolved (`IN_PROGRESS`).
 - MUST not update the anchor state if the game resolved in favor of the Challenger.
 - MUST not update the anchor state if the game corresponds to an L2 block height that is less than
   or equal to the current anchor state's L2 block height.
