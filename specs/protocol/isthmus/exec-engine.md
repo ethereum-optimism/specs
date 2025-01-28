@@ -134,10 +134,10 @@ Withdrawals list in the block body is encoded as an empty RLP list.
 
 ## Block Sealing
 
-[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces a new consolidation
-[EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) request with type `CONSOLIDATION_REQUEST_TYPE` (or `0x02`).
-After Isthmus, the OP Stack block sealing code must not add requests of `CONSOLIDATION_REQUEST_TYPE` if the optimism config
-is active. Note, this does not need to activate after any specific hardfork as this type does not exist pre-Pectra.
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces new request type `0x02`, the `CONSOLIDATION_REQUEST_TYPE`.
+Typed request envelopes debut in Pectra [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685). Execution layer requests
+continue to be ignored in Isthmus, including those of new type `0x02`. Note, this does not need to activate after any
+specific hardfork as this type does not exist pre-Pectra.
 
 ## Engine API Updates
 
