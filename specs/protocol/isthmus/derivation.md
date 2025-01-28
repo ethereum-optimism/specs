@@ -60,3 +60,11 @@ This transaction MUST deploy a contract with the following code hash
 Span batches contain the L1 transactions and transaction types that are posted containing the span of L2 blocks.
 Since [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) introduces a new transaction type, the Span Batch must
 be updated to support the [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) transaction.
+
+This corresponds with a new RLP-encoding of the `tx_datas` list as specified in [the Delta span batch spec](../delta/span-batches.md), adding a new transaction type:
+
+Transaction type `4` ([EIP-7702](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-7702.md)): `0x04 ++ rlp_encode(value, max_priority_fee_per_gas, max_fee_per_gas, data, access_list, authorization_list)`
+
+`authorization_list` is an RLP-encoded list of authorization tuples, matching the specification in [EIP-7702](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-7702.md).
+
+Span batches with transaction type `4` should only be accepted after Isthmus is enabled.
