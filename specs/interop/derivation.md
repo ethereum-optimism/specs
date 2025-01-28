@@ -128,13 +128,14 @@ to the trimmed transaction list.
 
 ### Optimistic Block Deposited Transaction
 
-An [L1 attributes deposited transaction](../protocol/deposits.md#l1-attributes-deposited-transaction)
-is a deposit transaction sent to the zero address.
+An Optimistic Block Deposited Transaction is a system deposited transaction,
+inserted into the replacement block,
+to signal when a previously derived local-safe block (the "optimistic" block) was invalidated.
 
 This transaction MUST have the following values:
 
-1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0001` (the address of the
-   [L1 Attributes depositor account](../protocol/deposits.md#l1-attributes-depositor-account))
+1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002`, like the address of the
+   [L1 Attributes depositor account](../protocol/deposits.md#l1-attributes-depositor-account), but incremented by 1
 2. `to` is `0x0000000000000000000000000000000000000000` (the zero address as no EVM code execution is expected).
 3. `mint` is `0`
 4. `value` is `0`
