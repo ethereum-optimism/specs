@@ -20,7 +20,7 @@
 
 ## Overview
 
-The `SuperchainConfig` contract extends `SuperchainConfig` to manage the dependency set and portal authorization
+The `SuperchainConfig` contract is extended to manage the dependency set and portal authorization
 for interoperability features.
 
 The contract is updated with a new `CLUSTER_MANAGER` role that has the ability to add chains to the dependency set.
