@@ -20,7 +20,7 @@
 
 ## Overview
 
-The `SuperchainConfigInterop` contract extends `SuperchainConfig` to manage the dependency set and portal authorization
+The `SuperchainConfig` contract extends `SuperchainConfig` to manage the dependency set and portal authorization
 for interoperability features.
 
 The contract is updated with a new `CLUSTER_MANAGER` role that has the ability to add chains to the dependency set.
@@ -105,7 +105,6 @@ event DependencyAdded(uint256 indexed chainId, address indexed systemConfig, add
 ```
 
 ## Invariants
-
 
 - If the chain is added through a withdrawal transaction, the L2 sender MUST be the `DependencyManager` predeploy contract.
 

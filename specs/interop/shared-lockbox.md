@@ -35,7 +35,7 @@ and `unlockETH` for withdrawing ETH from the lockbox.
 These functions are called by the `OptimismPortal` contracts to manage the shared ETH liquidity
 when making deposits or finalizing withdrawals.
 
-Authorization of `OptimismPortal`s is managed by the `SuperchainConfigInterop` contract when a chain
+Authorization of `OptimismPortal`s is managed by the `SuperchainConfig` contract when a chain
 is added to the dependency set.
 The `SharedLockbox` contract is proxied and managed by the L1 `ProxyAdmin`.
 
@@ -119,9 +119,9 @@ event ETHUnlocked(address indexed portal, uint256 amount);
 
 ### Authorization Flow
 
-1. When a new chain is added to the dependency set through the `SuperchainConfigInterop`, its `OptimismPortal` is authorized
+1. When a new chain is added to the dependency set through the `SuperchainConfig`, its `OptimismPortal` is authorized
 
-2. The `SharedLockbox` checks portal authorization by querying the `SuperchainConfigInterop.authorizedPortals()` function
+2. The `SharedLockbox` checks portal authorization by querying the `SuperchainConfig.authorizedPortals()` function
 
 3. Only authorized portals can lock and unlock ETH from the `SharedLockbox`
 

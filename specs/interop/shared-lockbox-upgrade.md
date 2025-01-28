@@ -40,7 +40,7 @@ This is an irreversible process that requires coordination between L1 and L2 com
 3. Upon successful validation, the `DependencyManager`:
 
    - Calls `initiateWithdrawal` on the `L2ToL1MessagePasser` predeploy
-   - Encodes a call to `SuperchainConfigInterop.addDependency(_chainId, _systemConfig)`
+   - Encodes a call to `SuperchainConfig.addDependency(_chainId, _systemConfig)`
    - Emits a `DependencyAdded` event with the chain ID, system config, and superchain config addresses
 
 4. The withdrawal transaction is queued in the `L2ToL1MessagePasser`, ready to be proven and finalized on L1
@@ -49,7 +49,7 @@ This is an irreversible process that requires coordination between L1 and L2 com
 
 1. The withdrawal transaction is proven and finalized through the `OptimismPortal`
 
-2. The `SuperchainConfigInterop` processes the addition by:
+2. The `SuperchainConfig` processes the addition by:
 
    - Validating the request came from an authorized portal or cluster manager
    - If from a portal, verifying the L2 sender is the `DependencyManager` predeploy
@@ -64,7 +64,7 @@ This is an irreversible process that requires coordination between L1 and L2 com
    - Adding the portal to the authorized portals mapping
    - Triggering ETH migration via `migrateLiquidity()`
 
-4. The `OptimismPortalInterop` migrates its ETH:
+4. The `OptimismPortal` migrates its ETH:
    - Sets migrated flag to true
    - Transfers entire ETH balance to `SharedLockbox` via `lockETH()`
    - `SharedLockbox` emits `ETHLocked` event
@@ -93,14 +93,14 @@ sequenceDiagram
     participant L2MP as L2ToL1MessagePasser
     participant User
     participant Portal as OptimismPortal
-    participant Config as SuperchainConfigInterop
+    participant Config as SuperchainConfig
     participant Lockbox as SharedLockbox
 
     Note over Pipeline: Client Side
     Note over DM: L2 Side
     Pipeline->>DM: addDependency(superchainConfig, chainId, systemConfig)
     DM->>DM: validate request
-    DM->>L2MP: initiateWithdrawal(SuperchainConfigInterop.addDependency)
+    DM->>L2MP: initiateWithdrawal(SuperchainConfig.addDependency)
     DM-->>DM: emits DependencyAdded
 
     Note over Portal: L1 Side
@@ -120,4 +120,4 @@ sequenceDiagram
 
 - Before calling `addDependency`, it MUST be ensured that the `chainId` and `systemConfig` match
 
-- The `OptimismPortalInterop` MUST be updated before finalizing the withdrawal transaction
+- The `OptimismPortal` MUST be updated before finalizing the withdrawal transaction

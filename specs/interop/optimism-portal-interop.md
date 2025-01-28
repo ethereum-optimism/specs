@@ -20,7 +20,7 @@
 
 ## Overview
 
-The `OptimismPortalInterop` contract extends `OptimismPortal2` to integrate with the `SharedLockbox`
+The `OptimismPortal` contract extends `OptimismPortal2` to integrate with the `SharedLockbox`
 for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each `OptimismPortal` when joining
 the op-governed dependency set.

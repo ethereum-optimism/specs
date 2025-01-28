@@ -8,7 +8,7 @@
 - [Updating the Dependency Set](#updating-the-dependency-set)
 - [Architecture](#architecture)
   - [L2 DependencyManager](#l2-dependencymanager)
-  - [L1 SuperchainConfigInterop](#l1-superchainconfiginterop)
+  - [L1 SuperchainConfig](#l1-superchainconfig)
 - [Future Considerations](#future-considerations)
   - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 - [Security Considerations](#security-considerations)
@@ -56,7 +56,7 @@ can initiate dependency additions on L2.
 The dependency set is managed through a two-step process involving both L2 and L1 contracts:
 
 1. The L2 `DependencyManager` predeploy contract initiates the addition of a new dependency through a withdrawal transaction
-2. The L1 `SuperchainConfigInterop` contract processes this withdrawal and updates the L1-side dependency set
+2. The L1 `SuperchainConfig` contract processes this withdrawal and updates the L1-side dependency set
 
 ## Architecture
 
@@ -71,9 +71,9 @@ that manages the L2-side dependency set. It:
 
 More details can be found on the [Dependency Manager specification](./predeploys.md#dependencymanager).
 
-### L1 SuperchainConfigInterop
+### L1 SuperchainConfig
 
-The L1 `SuperchainConfigInterop` extends `SuperchainConfig` to manage the L1-side dependency set. It:
+The L1 `SuperchainConfig` extends `SuperchainConfig` to manage the L1-side dependency set. It:
 
 - Processes withdrawal transactions from L2 `DependencyManager`
 - Maintains the L1-side dependency set
