@@ -9306,6 +9306,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 <ul>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a></li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a></li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7623">EIP-7623</a></li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a></li>
 </ul>
@@ -9349,6 +9350,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 </ul>
 </li>
 <li><a href="protocol/isthmus/exec-engine.html#block-body-withdrawals-list">Block Body Withdrawals List</a></li>
+<li><a href="protocol/isthmus/exec-engine.html#block-sealing">Block Sealing</a></li>
 <li><a href="protocol/isthmus/exec-engine.html#engine-api-updates">Engine API Updates</a>
 <ul>
 <li><a href="protocol/isthmus/exec-engine.html#update-to-executabledata">Update to <code>ExecutableData</code></a></li>
@@ -9433,6 +9435,11 @@ an empty withdrawals root should be included in the header of a block that consi
 is applicable for scenarios where the actual withdrawals root value is not readily available.</p>
 <h2 id="block-body-withdrawals-list"><a class="header" href="#block-body-withdrawals-list">Block Body Withdrawals List</a></h2>
 <p>Withdrawals list in the block body is encoded as an empty RLP list.</p>
+<h2 id="block-sealing"><a class="header" href="#block-sealing">Block Sealing</a></h2>
+<p><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a> introduces new request type <code>0x02</code>, the <code>CONSOLIDATION_REQUEST_TYPE</code>.
+Typed request envelopes debut in Pectra <a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a>. Execution layer requests
+continue to be ignored in Isthmus, including those of new type <code>0x02</code>. Note, this does not need to activate after any
+specific hardfork as this type does not exist pre-Pectra.</p>
 <h2 id="engine-api-updates"><a class="header" href="#engine-api-updates">Engine API Updates</a></h2>
 <h3 id="update-to-executabledata"><a class="header" href="#update-to-executabledata">Update to <code>ExecutableData</code></a></h3>
 <p><code>ExecutableData</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
