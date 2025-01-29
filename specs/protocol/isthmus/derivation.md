@@ -61,12 +61,15 @@ Span batches contain the L1 transactions and transaction types that are posted c
 Since [EIP-7702] introduces a new transaction type, the Span Batch must be updated to support the [EIP-7702]
 transaction.
 
-Part of this update is to include the new Span Batch transaction variant.
-That is, the `tx_types` must now include the [EIP-7702] tx type and the `tx_datas` transaction data
-must support a new [EIP-7702] transaction data format. The new [EIP-7702] data format
-is an extension of [EIP-1559] with a new `authorization_list` field.
+This corresponds with a new RLP-encoding of the `tx_datas` list as specified in
+[the Delta span batch spec](../delta/span-batches.md), adding a new transaction type:
 
-The [EIP-7702] transaction data contains the following.
+Transaction type `4` ([EIP-7702]):
+`0x04 ++ rlp_encode(value, max_priority_fee_per_gas, max_fee_per_gas, data, access_list, authorization_list)`
+
+The [EIP-7702] transaction extends [EIP-1559] to include a new `authorization_list` field.
+`authorization_list` is an RLP-encoded list of authorization tuples.
+The [EIP-7702] transaction format is as follows.
 
 - `value`: The transaction value as a `u256`.
 - `max_priority_fee_per_gas`: The maximum priority fee per gas allowed as a `u256`.
@@ -74,6 +77,8 @@ The [EIP-7702] transaction data contains the following.
 - `data`: The transaction data bytes.
 - `access_list`: The [EIP-2930] access list.
 - `authorization_list`: The [EIP-7702] signed authorization list.
+
+Span batches with transaction type `4` should only be accepted after Isthmus is enabled.
 
 [EIP-1559]: https://eips.ethereum.org/EIPS/eip-1559
 [EIP-7702]: https://eips.ethereum.org/EIPS/eip-7702
