@@ -18,6 +18,7 @@
     - [Client Implementation Considerations](#client-implementation-considerations)
       - [Transaction Simulation](#transaction-simulation)
 - [Block Body Withdrawals List](#block-body-withdrawals-list)
+- [Block Sealing](#block-sealing)
 - [Engine API Updates](#engine-api-updates)
   - [Update to `ExecutableData`](#update-to-executabledata)
   - [`engine_newPayloadV4` API](#engine_newpayloadv4-api)
@@ -115,7 +116,7 @@ directly fits with the OP Stack, and makes use of the existing field in the L1 h
 
 #### Client Implementation Considerations
 
-Varous EL clients store historical state of accounts differently. If, as a contrived case, an OP Stack chain did not have
+Various EL clients store historical state of accounts differently. If, as a contrived case, an OP Stack chain did not have
 an outbound withdrawal for a long period of time, the node may not have access to the account storage root of the
 [`L2ToL1MessagePasser`][l2-to-l1-mp]. In this case, the client would be unable to keep consensus. However, most modern
 clients are able to at the very least reconstruct the account storage root at a given block on the fly if it does not
@@ -130,6 +131,13 @@ is applicable for scenarios where the actual withdrawals root value is not readi
 ## Block Body Withdrawals List
 
 Withdrawals list in the block body is encoded as an empty RLP list.
+
+## Block Sealing
+
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces new request type `0x02`, the `CONSOLIDATION_REQUEST_TYPE`.
+Typed request envelopes debut in Pectra [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685). Execution layer requests
+continue to be ignored in Isthmus, including those of new type `0x02`. Note, this does not need to activate after any
+specific hardfork as this type does not exist pre-Pectra.
 
 ## Engine API Updates
 
