@@ -19,6 +19,7 @@
       - [Transaction Simulation](#transaction-simulation)
 - [Block Body Withdrawals List](#block-body-withdrawals-list)
 - [EVM Changes](#evm-changes)
+- [Block Sealing](#block-sealing)
 - [Engine API Updates](#engine-api-updates)
   - [Update to `ExecutableData`](#update-to-executabledata)
   - [`engine_newPayloadV4` API](#engine_newpayloadv4-api)
@@ -141,6 +142,13 @@ precompile that short-circuits depending on input size in the EVM.
 The `BLS12-381` curve operation precompile reverts if its input is
 larger than `235008` bytes. This is the input size that consumes
 approximately `20M` gas given the latest `BLS12-381` gas schedule on L2.
+
+## Block Sealing
+
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces new request type `0x02`, the `CONSOLIDATION_REQUEST_TYPE`.
+Typed request envelopes debut in Pectra [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685). Execution layer requests
+continue to be ignored in Isthmus, including those of new type `0x02`. Note, this does not need to activate after any
+specific hardfork as this type does not exist pre-Pectra.
 
 ## Engine API Updates
 

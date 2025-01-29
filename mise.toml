@@ -12,11 +12,8 @@ node = "20.9.0"
 "cargo:mdbook-mermaid" = "0.14.1"
 
 [hooks]
-postinstall = [
-    # Enabling corepack will install the `pnpm` package manager specified in package.json
-    'npx corepack enable',
-    'pnpm i --frozen-lockfile'
-]
+# Enabling corepack will install the `pnpm` package manager specified in package.json
+postinstall = "npx corepack enable && pnpm i --frozen-lockfile"
 
 [settings]
 # Needs to be enabled for hooks to work
