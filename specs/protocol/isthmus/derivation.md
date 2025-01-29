@@ -83,3 +83,4 @@ Span batches with transaction type `4` should only be accepted after Isthmus is 
 [EIP-1559]: https://eips.ethereum.org/EIPS/eip-1559
 [EIP-7702]: https://eips.ethereum.org/EIPS/eip-7702
 [EIP-2930]: https://eips.ethereum.org/EIPS/eip-2930
+
