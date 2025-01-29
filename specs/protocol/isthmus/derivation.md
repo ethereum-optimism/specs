@@ -58,5 +58,23 @@ This transaction MUST deploy a contract with the following code hash
 [Span batches](../delta/span-batches.md) are a span of consecutive L2 blocks than are batched submitted.
 
 Span batches contain the L1 transactions and transaction types that are posted containing the span of L2 blocks.
-Since [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) introduces a new transaction type, the Span Batch must
-be updated to support the [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) transaction.
+Since [EIP-7702] introduces a new transaction type, the Span Batch must be updated to support the [EIP-7702]
+transaction.
+
+Part of this update is to include the new Span Batch transaction variant.
+That is, the `tx_types` must now include the [EIP-7702] tx type and the `tx_datas` transaction data
+must support a new [EIP-7702] transaction data format. The new [EIP-7702] data format
+is an extension of [EIP-1559] with a new `authorization_list` field.
+
+The [EIP-7702] transaction data contains the following.
+
+- `value`: The transaction value as a `u256`.
+- `max_priority_fee_per_gas`: The maximum priority fee per gas allowed as a `u256`.
+- `max_fee_per_gas`: The maximum fee per gas as a `u256`.
+- `data`: The transaction data bytes.
+- `access_list`: The [EIP-2930] access list.
+- `authorization_list`: The [EIP-7702] signed authorization list.
+
+[EIP-1559]: https://eips.ethereum.org/EIPS/eip-1559
+[EIP-7702]: https://eips.ethereum.org/EIPS/eip-7702
+[EIP-2930]: https://eips.ethereum.org/EIPS/eip-2930
