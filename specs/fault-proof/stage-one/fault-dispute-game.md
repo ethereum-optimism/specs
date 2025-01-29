@@ -111,7 +111,8 @@ details.
 
 ### Respected Game Type
 
-A Fault Dispute Game must record whether its game type is respected at the time of its creation. See [Respected Game Type](./anchor-state-registry.md#respected-game-type) for more details.
+A Fault Dispute Game must record whether its game type is respected at the time of its creation. See
+[Respected Game Type](./anchor-state-registry.md#respected-game-type) for more details.
 
 ### DAG
 
@@ -558,4 +559,6 @@ Thus, no moves against the root, including uncontested ones, can win a root subg
 
 ### Finalization
 
-Once the game is resolved, it must wait for the `disputeGameFinalityDelaySeconds` on the `OptimismPortal` to pass before it can be finalized, after which bonds can be distributed via the process outlined in [Bond Incentives: Game Finalization](bond-incentives.md#game-finalization).
+Once the game is resolved, it must wait for the `disputeGameFinalityDelaySeconds` on the `OptimismPortal` to pass before
+it can be finalized, after which bonds can be distributed via the process outlined in [Bond Incentives: Game
+Finalization](bond-incentives.md#game-finalization).
