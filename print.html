@@ -1102,6 +1102,8 @@ Where <code>intent</code> is a UTF-8 byte string, identifying the upgrade intent
 <p>Without a <code>sourceHash</code> in a deposit, two different deposited transactions could have the same exact hash.</p>
 <p>The outer <code>keccak256</code> hashes the actual uniquely identifying information with a domain,
 to avoid collisions between different types of sources.</p>
+<p>The <a href="protocol/./derivation.html">Interop derivation spec</a> introduces two additional kinds of system deposits,
+with domains <code>3</code> and <code>4</code>.</p>
 <p>We do not use the sender's nonce to ensure uniqueness because this would require an extra L2 EVM state read from the
 <a href="protocol/../glossary.html#execution-engine">execution engine</a> during block-derivation.</p>
 <h3 id="kinds-of-deposited-transactions"><a class="header" href="#kinds-of-deposited-transactions">Kinds of Deposited Transactions</a></h3>
@@ -12278,7 +12280,11 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 <li><a href="interop/derivation.html#replacing-invalid-blocks">Replacing Invalid Blocks</a>
 <ul>
-<li><a href="interop/derivation.html#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></li>
+<li><a href="interop/derivation.html#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a>
+<ul>
+<li><a href="interop/derivation.html#optimistic-block-source-hash">Optimistic Block Source-hash</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="interop/derivation.html#expiry-window">Expiry Window</a></li>
@@ -12374,12 +12380,13 @@ original block are trimmed to include only deposit transactions plus an
 <a href="interop/derivation.html#optimistic-block-deposited-transaction">optimistic block info deposit transaction</a>, which is appended
 to the trimmed transaction list.</p>
 <h3 id="optimistic-block-deposited-transaction"><a class="header" href="#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></h3>
-<p>An <a href="interop/../protocol/deposits.html#l1-attributes-deposited-transaction">L1 attributes deposited transaction</a>
-is a deposit transaction sent to the zero address.</p>
+<p>An Optimistic Block Deposited Transaction is a system deposited transaction,
+inserted into the replacement block,
+to signal when a previously derived local-safe block (the "optimistic" block) was invalidated.</p>
 <p>This transaction MUST have the following values:</p>
 <ol>
-<li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002</code> (the address of the
-<a href="interop/../protocol/deposits.html#l1-attributes-depositor-account">L1 Attributes depositor account</a>)</li>
+<li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002</code>, like the address of the
+<a href="interop/../protocol/deposits.html#l1-attributes-depositor-account">L1 Attributes depositor account</a>, but incremented by 1</li>
 <li><code>to</code> is <code>0x0000000000000000000000000000000000000000</code> (the zero address as no EVM code execution is expected).</li>
 <li><code>mint</code> is <code>0</code></li>
 <li><code>value</code> is <code>0</code></li>
@@ -12387,9 +12394,16 @@ is a deposit transaction sent to the zero address.</p>
 <li><code>isSystemTx</code> is set to <code>false</code>.</li>
 <li><code>data</code> is the preimage of the <a href="interop/../glossary.html#l2-output-root-proposals">L2 output root</a>
 of the replaced block. i.e. <code>version_byte || payload</code> without applying the <code>keccak256</code> hashing.</li>
+<li><code>sourceHash</code> is computed with a new deposit source-hash domain, see below.</li>
 </ol>
 <p>This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
 <code>gasLimit</code>, as it is considered part of state-transition processing.</p>
+<h4 id="optimistic-block-source-hash"><a class="header" href="#optimistic-block-source-hash">Optimistic Block Source-hash</a></h4>
+<p>The source hash is <a href="interop/../protocol/deposits.html#source-hash-computation">computed</a>
+with a source-hash domain: <code>4</code> (instead of <code>1</code>),
+combined with the <a href="interop/../glossary.html#l2-output-root-proposals">L2 output root</a> of the optimistic block that was invalidated.</p>
+<p>The source-hash is thus computed as:
+<code>keccak256(bytes32(uint256(4)), outputRoot))</code>.</p>
 <h2 id="expiry-window"><a class="header" href="#expiry-window">Expiry Window</a></h2>
 <p>The expiry window is the time period after which an initiating message is no longer considered valid.</p>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>

@@ -290,6 +290,8 @@ Where <code>intent</code> is a UTF-8 byte string, identifying the upgrade intent
 <p>Without a <code>sourceHash</code> in a deposit, two different deposited transactions could have the same exact hash.</p>
 <p>The outer <code>keccak256</code> hashes the actual uniquely identifying information with a domain,
 to avoid collisions between different types of sources.</p>
+<p>The <a href="./derivation.html">Interop derivation spec</a> introduces two additional kinds of system deposits,
+with domains <code>3</code> and <code>4</code>.</p>
 <p>We do not use the sender's nonce to ensure uniqueness because this would require an extra L2 EVM state read from the
 <a href="../glossary.html#execution-engine">execution engine</a> during block-derivation.</p>
 <h3 id="kinds-of-deposited-transactions"><a class="header" href="#kinds-of-deposited-transactions">Kinds of Deposited Transactions</a></h3>
