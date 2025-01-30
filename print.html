@@ -9459,6 +9459,7 @@ is omitted prior to Isthmus.</p>
 <li><a href="protocol/isthmus/derivation.html#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
 </ul>
 </li>
+<li><a href="protocol/isthmus/derivation.html#span-batch-updates">Span Batch Updates</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h1 id="network-upgrade-automation-transactions-2"><a class="header" href="#network-upgrade-automation-transactions-2">Network upgrade automation transactions</a></h1>
@@ -9497,6 +9498,27 @@ Computed Address: 0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
 <code>0x6e49e66782037c0555897870e29fa5e552daf4719552131a0abce779daec0a5d</code>.</p>
+<h1 id="span-batch-updates"><a class="header" href="#span-batch-updates">Span Batch Updates</a></h1>
+<p><a href="protocol/isthmus/../delta/span-batches.html">Span batches</a> are a span of consecutive L2 blocks than are batched submitted.</p>
+<p>Span batches contain the L1 transactions and transaction types that are posted containing the span of L2 blocks.
+Since <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> introduces a new transaction type, the Span Batch must be updated to support the <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>
+transaction.</p>
+<p>This corresponds with a new RLP-encoding of the <code>tx_datas</code> list as specified in
+<a href="protocol/isthmus/../delta/span-batches.html">the Delta span batch spec</a>, adding a new transaction type:</p>
+<p>Transaction type <code>4</code> (<a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>):
+<code>0x04 ++ rlp_encode(value, max_priority_fee_per_gas, max_fee_per_gas, data, access_list, authorization_list)</code></p>
+<p>The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction extends <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> to include a new <code>authorization_list</code> field.
+<code>authorization_list</code> is an RLP-encoded list of authorization tuples.
+The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction format is as follows.</p>
+<ul>
+<li><code>value</code>: The transaction value as a <code>u256</code>.</li>
+<li><code>max_priority_fee_per_gas</code>: The maximum priority fee per gas allowed as a <code>u256</code>.</li>
+<li><code>max_fee_per_gas</code>: The maximum fee per gas as a <code>u256</code>.</li>
+<li><code>data</code>: The transaction data bytes.</li>
+<li><code>access_list</code>: The <a href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a> access list.</li>
+<li><code>authorization_list</code>: The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> signed authorization list.</li>
+</ul>
+<p>Span batches with transaction type <code>4</code> should only be accepted after Isthmus is enabled.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="overview-31"><a class="header" href="#overview-31">Overview</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
