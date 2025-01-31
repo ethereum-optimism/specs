@@ -11,8 +11,6 @@
   - [Finalized Withdrawal](#finalized-withdrawal)
   - [Valid Withdrawal](#valid-withdrawal)
   - [Invalid Withdrawal](#invalid-withdrawal)
-  - [Respected Game Type](#respected-game-type)
-  - [Retirement Timestamp](#retirement-timestamp)
   - [L2 Withdrawal Sender](#l2-withdrawal-sender)
 - [Assumptions](#assumptions)
   - [aOP-001: Dispute Game contracts properly report important properties](#aop-001-dispute-game-contracts-properly-report-important-properties)
@@ -21,14 +19,22 @@
     - [Mitigations](#mitigations-1)
   - [aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period](#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
     - [Mitigations](#mitigations-2)
+- [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [iOP-001: Invalid Withdrawals can never be finalized](#iop-001-invalid-withdrawals-can-never-be-finalized)
     - [Impact](#impact)
   - [iOP-002: Valid Withdrawals can always be finalized in bounded time](#iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time)
     - [Impact](#impact-1)
 - [Function Specification](#function-specification)
-  - [setRespectedGameType](#setrespectedgametype)
-  - [blacklistDisputeGame](#blacklistdisputegame)
+  - [constructor](#constructor)
+  - [initialize](#initialize)
+  - [paused](#paused)
+  - [guardian](#guardian)
+  - [proofMaturityDelaySeconds](#proofmaturitydelayseconds)
+  - [disputeGameFinalityDelaySeconds](#disputegamefinalitydelayseconds)
+  - [respectedGameType](#respectedgametype)
+  - [respectedGameTypeUpdatedAt](#respectedgametypeupdatedat)
+  - [l2Sender](#l2sender)
   - [proveWithdrawalTransaction](#provewithdrawaltransaction)
   - [checkWithdrawal](#checkwithdrawal)
   - [finalizeWithdrawalTransaction](#finalizewithdrawaltransaction)
@@ -67,10 +73,6 @@ conditions:
 Notably, the `OptimismPortal` allows users to prove withdrawals against games that are currently
 in progress (games that are not [Resolved Games](./anchor-state-registry.md#resolved-game)).
 
-Note that the `OptimismPortal` currently allows users to prove withdrawals against games that have
-been blacklisted, though these withdrawals cannot be [finalized](#finalized-withdrawal). To avoid
-user confusion, this functionality will likely be removed in a future release.
-
 Users may re-prove a withdrawal at any time. User withdrawals are stored on a per-user basis such
 that re-proving a withdrawal cannot cause the timer for
 [finalizing a withdrawal](#finalized-withdrawal) to be reset for another user.
@@ -96,18 +98,6 @@ would be reported by a perfect oracle for the query.
 ### Invalid Withdrawal
 
 An **Invalid Withdrawal** is any withdrawal that is not a [Valid Withdrawal](#valid-withdrawal).
-
-### Respected Game Type
-
-See [Respected Game Type](./anchor-state-registry.md#respected-game-type). The Respected Game Type
-can only be set by the Guardian.
-
-### Retirement Timestamp
-
-Any game whose creation timestamp is less than or equal to the **Retirement Timestamp** is
-considered to be a [Retired Game](./anchor-state-registry.md#retired-game). Retired Games cannot be
-used to [prove](#proven-withdrawal) or [finalize](#finalized-withdrawal) withdrawals. The
-Retirement Timestamp can only be set by the Guardian.
 
 ### L2 Withdrawal Sender
 
@@ -160,6 +150,11 @@ period.
 - Incident response plan
 - Monitoring
 
+## Dependencies
+
+- [iASR-001](./anchor-state-registry.md#iasr-001-games-are-represented-as-proper-games-accurately)
+- [iASR-002](./anchor-state-registry.md#iasr-002-all-valid-claims-are-truly-valid-claims)
+
 ## Invariants
 
 ### iOP-001: Invalid Withdrawals can never be finalized
@@ -188,35 +183,73 @@ see this as a critical system risk.
 
 ## Function Specification
 
-### setRespectedGameType
+### constructor
 
-Allows the Guardian to change the [Respected Game Type](#respected-game-type) and to update the
-[Retirement Timestamp](#retirement-timestamp).
+- MUST set the value of the [Proof Maturity Delay](#proof-maturity-delay).
 
-- MUST revert if the sender is not the Guardian.
-- If the game type is `type(uint32).max`, MUST update the Retirement Timestamp to the current
-  block timestamp and MUST NOT update the Respected Game Type.
-- If the game type is not `type(uint32).max`, MUST set the Respected Game Type to the provided game
-  type and MUST NOT update the Retirement Timestamp.
+### initialize
 
-### blacklistDisputeGame
+- MUST only be triggerable once.
+- MUST set the value of the `DisputeGameFactory` contract.
+- MUST set the value of the `SystemConfig` contract.
+- MUST set the value of the `SuperchainConfig` contract.
+- MUST set the value of the `AnchorStateRegistry` contract.
+- MUST set the value of the [L2 Withdrawal Sender](#l2-withdrawal-sender) variable to the default
+  value if the value is not set already.
+- MUST initialize the resource metering configuration.
 
-Allows the Guardian to [blacklist](./anchor-state-registry.md#blacklisted-game) a Dispute Game.
+### paused
 
-- MUST revert if the sender is not the Guardian.
-- MUST set the provided dispute game as blacklisted.
+Returns the current state of the `SuperchainConfig.paused()` function.
+
+### guardian
+
+Returns the address of the Guardian as per `SuperchainConfig.guardian()`.
+
+### proofMaturityDelaySeconds
+
+Returns the value of the [Proof Maturity Delay](#proof-maturity-delay).
+
+### disputeGameFinalityDelaySeconds
+
+**Legacy Function**
+
+Returns the value of the
+[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) as per
+a call to `AnchorStateRegistry.disputeGameFinalityDelaySeconds()`.
+
+### respectedGameType
+
+**Legacy Function**
+
+Returns the value of the current
+[Respected Game Type](./anchor-state-registry.md#respected-game-type) as per a call to
+`AnchorStateRegistry.respectedGameType`.
+
+### respectedGameTypeUpdatedAt
+
+**Legacy Function**
+
+Returns the value of the current
+[Retirement Timestamp](./anchor-state-registry.md#retirement-timestamp) as per a call to
+`AnchorStateRegistry.retirementTimestamp.
+
+### l2Sender
+
+Returns the address of the [L2 Withdrawal Sender](#l2-withdrawal-sender). If the `OptimismPortal`
+has not been initialized then this value will be `address(0)` and should not be used. If the
+`OptimismPortal` is not currently executing an withdrawal transaction then this value will be
+`0x000000000000000000000000000000000000dEaD` and should not be used.
 
 ### proveWithdrawalTransaction
 
 Allows a user to [prove](#proven-withdrawal) a withdrawal transaction.
 
+- MUST revert if the withdrawal target is the address of the `OptimismPortal` itself.
 - MUST revert if the withdrawal is being proven against a game that is not a
-  [Registered Game](./anchor-state-registry.md#registered-game).
-- MUST revert if the withdrawal is being proven against a game that has a game type not equal to
-  the current [Respected Game Type](#respected-game-type).
+  [Proper Game](./anchor-state-registry.md#proper-game).
 - MUST revert if the withdrawal is being proven against a game that is not a
   [Respected Game](./anchor-state-registry.md#respected-game).
-- MUST revert if the withdrawal is a [Retired Game](./anchor-state-registry.md#retired-game).
 - MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
   Challenger.
 - MUST revert if the provided merkle trie proof that the withdrawal was included within the root
@@ -229,13 +262,14 @@ Allows a user to [prove](#proven-withdrawal) a withdrawal transaction.
 
 Checks that a withdrawal transaction can be [finalized](#finalized-withdrawal).
 
+- MUST revert if the withdrawal being finalized has already been finalized.
 - MUST revert if the withdrawal being finalized has not been proven.
+- MUST revert if the withdrawal was proven at a timestamp less than the creation timestamp of the
+  dispute game it was proven against, which would signal an unexpected proving bug.
 - MUST revert if the withdrawal being finalized has been proven less than
   [Proof Maturity Delay](#proof-maturity-delay) seconds ago.
-- MUST revert if the withdrawal being finalized was proven against a game that is not a
-  [Valid Game](./anchor-state-registry.md#valid-game).
-- MUST revert if the withdrawal being finalized has already been finalized.
-- MUST otherwise return `true`.
+- MUST revert if the withdrawal being finalized was proven against a game that does not have a
+  [Valid Claim](./anchor-state-registry.md#valid-claim).
 
 ### finalizeWithdrawalTransaction
 
