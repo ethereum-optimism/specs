@@ -164,7 +164,7 @@ event Deployed(uint256 indexed l2ChainId, address indexed deployer, bytes deploy
 
 This method reverts on failure. This occurs when:
 
-- The input `l2ChainId` does not comply with the restrictions above.
+- The input `l2ChainId` does not comply with the enforced restrictions above.
 - The resulting configuration is not compliant with the [standard configuration].
 
 ### Implementation
