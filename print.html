@@ -9310,6 +9310,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 <li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a></li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a></li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7623">EIP-7623</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a></li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a></li>
 </ul>
 </li>
@@ -9351,6 +9352,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 </li>
 </ul>
 </li>
+<li><a href="protocol/isthmus/exec-engine.html#deposit-requests">Deposit Requests</a></li>
 <li><a href="protocol/isthmus/exec-engine.html#block-body-withdrawals-list">Block Body Withdrawals List</a></li>
 <li><a href="protocol/isthmus/exec-engine.html#block-sealing">Block Sealing</a></li>
 <li><a href="protocol/isthmus/exec-engine.html#engine-api-updates">Engine API Updates</a>
@@ -9435,6 +9437,12 @@ directly store this information.</p>
 <p>In response to RPC methods like <code>eth_simulateV1</code> that allow simulation of arbitrary transactions within one or more blocks,
 an empty withdrawals root should be included in the header of a block that consists of such simulated transactions. The same
 is applicable for scenarios where the actual withdrawals root value is not readily available.</p>
+<h2 id="deposit-requests"><a class="header" href="#deposit-requests">Deposit Requests</a></h2>
+<p><a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a> shifts deposit to the execution layer, introducing a new <a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a> deposit request of type
+<code>DEPOSIT_REQUEST_TYPE</code>. Deposit requests then appear in the <a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a> requests list. The OP Stack needs to ignore these
+requests. Requests generation must be modified to exclude <a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a> deposit requests. Note that since the <a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a>
+request type did <em>not</em> exist prior to Pectra on L1 and the Isthmus hardfork on L2, no activation time is needed since these
+deposit type requests may always be excluded.</p>
 <h2 id="block-body-withdrawals-list"><a class="header" href="#block-body-withdrawals-list">Block Body Withdrawals List</a></h2>
 <p>Withdrawals list in the block body is encoded as an empty RLP list.</p>
 <h2 id="block-sealing"><a class="header" href="#block-sealing">Block Sealing</a></h2>
