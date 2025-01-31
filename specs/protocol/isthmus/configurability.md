@@ -10,14 +10,14 @@
   - [Initialization](#initialization)
   - [Modifying Operator Fee Parameters](#modifying-operator-fee-parameters)
   - [Interface](#interface)
+    - [Fee Vault Config](#fee-vault-config)
+      - [`setBaseFeeVaultConfig`](#setbasefeevaultconfig)
+      - [`setL1FeeVaultConfig`](#setl1feevaultconfig)
+      - [`setSequencerFeeVaultConfig`](#setsequencerfeevaultconfig)
     - [Operator fee parameters](#operator-fee-parameters)
       - [`operatorFeeScalar`](#operatorfeescalar)
       - [`operatorFeeConstant`](#operatorfeeconstant)
       - [`setOperatorFeeScalars`](#setoperatorfeescalars)
-- [`OptimismPortal`](#optimismportal)
-  - [Interface](#interface-1)
-    - [`setConfig`](#setconfig)
-    - [`upgrade`](#upgrade)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
