@@ -79,8 +79,6 @@ function implementations() external view returns (Implementations memory);
 function protocolVersions() external view returns (address);
 /// @notice Address of the SuperchainConfig contract shared by all chains.
 function superchainConfig() external view returns (ISuperchainConfig);
-/// @notice Maps an L2 Chain ID to the SystemConfig for that chain.
-function systemConfigs(uint256 _l2ChainId) external view returns (address);
 /// @notice Semver version specific to the OPContractsManager
 function version() external view returns (string memory);
 ```
