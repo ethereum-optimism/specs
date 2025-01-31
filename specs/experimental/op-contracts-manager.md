@@ -66,9 +66,9 @@ Upgrades must be performed by the [Upgrade Controller](../protocol/stage-1.md#ro
 The following interface defines the available getter methods:
 
 ```solidity
-/// @notice Returns the latest approved release of the OP Stack contracts are named with the
-///         format `op-contracts/vX.Y.Z`.
-function release() external view returns (string memory);
+/// @notice Returns the release string with the format `op-contracts/vX.Y.Z`. 
+/// Appends "-rc" if this is a release candidate.
+function l1ContractsRelease() external view returns (string memory);
 /// @notice Represents the interface version so consumers know how to decode the DeployOutput struct
 function outputVersion() external view returns (uint256);
 /// @notice Addresses of the Blueprint contracts.
