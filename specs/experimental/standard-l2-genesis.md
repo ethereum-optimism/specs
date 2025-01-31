@@ -165,7 +165,7 @@ The following fields are included:
 #### `upgrade`
 
 The `upgrade` function MUST only be callable by the `UPGRADER` role as defined
-in the [`SuperchainConfig`](./superchain-config.md).
+in the [`SuperchainConfig`](#superchainconfig).
 
 ```solidity
 function upgrade(bytes memory _data) external
