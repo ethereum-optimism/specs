@@ -70,35 +70,44 @@
 
 ## Overview
 
-Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
-an update to the `L1Block`, `OptimismMintableERC20Factory` and `L2StandardBridge` contracts with additional functionalities.
+Interop introduces new predeploys that faciliate cross chain messaging and token bridging.
+
+### Predeploy Addresses
+
+These predeploys are added or modified as part of the interop network upgrade.
+
+| Name         | Value    | Type | Link |
+|-------------------|---------|----------------|
+| `CrossL2Inbox` | `0x4200000000000000000000000000000000000022` | `address` | [CrossL2Inbox](#crossl2inbox) |
+| `L2ToL2CrossDomainMessenger` | `0x4200000000000000000000000000000000000023` | `address` | [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger) |
+| `L1Block` | `0x4200000000000000000000000000000000000028` | `address` | [L1Block](#l1block) |
+| `OptimismMintableERC20Factory` | `0x4200000000000000000000000000000000000029` | `address` | [OptimismMintableERC20Factory](#optimismmintableerc20factory) |
+| `SuperchainTokenBridge` | `0x420000000000000000000000000000000000002A` | `address` | [SuperchainTokenBridge](#superchaintokenbridge) |
 
 ## CrossL2Inbox
 
-| Constant | Value                                        |
-| -------- | -------------------------------------------- |
-| Address  | `0x4200000000000000000000000000000000000022` |
-
-The `CrossL2Inbox` is the system predeploy for cross chain messaging. Anyone can trigger the execution or validation
-of cross chain messages, on behalf of any user.
+The `CrossL2Inbox` is the central predeploy for cross chain messaging. Any cross chain message MUST pass through
+the destination chain's `CrossL2Inbox` for it to be considered safe to consume. It is permissionless to validate
+any initiating message, on behalf of any user. There is no replay protection but it can be built at a higher layer.
 
 To ensure safety of the protocol, the [Message Invariants](./messaging.md#messaging-invariants) must be enforced.
 
 [`Identifier`]: ./messaging.md#message-identifier
+[`ExecutingMessage`]: #executingmessage-event
 
-### Functions
+### Interface
 
 #### validateMessage
 
-A helper to enable contracts to provide their own public entrypoints for cross chain interactions.
-Emits the `ExecutingMessage` event to signal the transaction has a cross chain message to validate.
+Emits the [`ExecutingMessage`] event to signal the transaction has a cross chain message that must be validated.
+This function should be called by applications that utilize cross chain messages.
 
 The following fields are required for validating a cross chain message:
 
 | Name     | Type       | Description                                                                |
 | -------- | ---------- | -------------------------------------------------------------------------- |
-| `_id`      | Identifier | A [`Identifier`] pointing to the initiating message.                         |
-| `_msgHash` | `bytes32`    | The keccak256 hash of the message payload matching the initiating message. |
+| `_id`      | Identifier | An [`Identifier`] pointing to the initiating message.                         |
+| `_msgHash` | `bytes32`    | The keccak256 hash of the message payload representing the initiating message. |
 
 ```solidity
 function validateMessage(Identifier calldata _id, bytes32 _msgHash)
@@ -125,19 +134,7 @@ Emitting the hash of the message is more efficient than emitting the
 message in its entirety. Equality with the initiating message can be handled off-chain through
 hash comparison.
 
-### Reference implementation
-
-A simple implementation of the `validateMessage` function is included below.
-
-```solidity
-    function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
-        // We need to know if this is being called on a depositTx
-        if (IL1BlockInterop(Predeploys.L1_BLOCK_ATTRIBUTES).isDeposit()) revert NoExecutingDeposits();
-
-        emit ExecutingMessage(_msgHash, _id);
-    }
-}
-```
+### Example Integration
 
 An example of a custom entrypoint utilizing `validateMessage` to consume a known
 event. Note that in this example, the contract is consuming its own event
@@ -169,40 +166,103 @@ contract MyCrossChainApp {
 
 ### Deposit Handling
 
-Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event will reverts
+Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event MUST revert
 if the call is made in a [deposit context](./derivation.md#deposit-context).
 The deposit context status can be determined by calling `isDeposit` on the `L1Block` contract.
 
 In the future, deposit handling will be modified to be more permissive.
 It will revert only in specific cases where interop dependency resolution is not feasible.
-
-### `Identifier` Getters
-
-The `Identifier` MUST be exposed via `public` getters so that contracts can call back to authenticate
-properties about the `_msg`.
+See [this issue](https://github.com/ethereum-optimism/specs/issues/520) for more information.
 
 ## L2ToL2CrossDomainMessenger
 
 | Constant          | Value                                        |
 | ----------------- | -------------------------------------------- |
-| Address           | `0x4200000000000000000000000000000000000023` |
 | `MESSAGE_VERSION` | `uint256(0)`                                 |
 
+
 The `L2ToL2CrossDomainMessenger` is a higher level abstraction on top of the `CrossL2Inbox` that
-provides general message passing, utilized for secure transfers ERC20 tokens between L2 chains.
+provides general message passing, utilized for secure transfers or ether or tokens between L2 chains.
 Messages sent through the `L2ToL2CrossDomainMessenger` on the source chain receive both replay protection
 as well as domain binding, i.e. the executing transaction can only be valid on a single chain.
 
-### `relayMessage` Invariants
+### Interface
+
+The `L2ToL2CrossDomainMessenger` uses a similar interface to the `L2CrossDomainMessenger`, but
+the `_minGasLimit` is removed to prevent complexity around EVM gas introspection and the `_destination`
+chain is included instead.
+
+#### `sendMessage`
+
+The `sendMessage` function is used to initiate a cross chain call on a remote chain.
+
+```solidity
+function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32 msgHash_);
+```
+
+The `sendMessage` function is used to initiate a cross chain call on a remote chain. It is permissionless to call.
+The `_destination` is the chain id of the remote chain to call.  The `_target` is the address of the contract to call on the remote chain.
+The `_message` is the calldata to call the contract with.
+
+It returns the hash of the message being sent, which is used to track whether the message has successfully been relayed.
+It MUST emits `SentMessage` event with the necessary metadata to authorize the execution of the message when relayed on the destination chain.
+
+```solidity
+event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
+```
+
+An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
+chain one time. The `_destination` is enforced to not be the local chain to avoid edge cases.
+
+The `sendMessage` function is not `payable` as it is not intended to be used for sending ether between chains.
+
+##### Address Aliasing
+
+There is no need for address aliasing as the aliased address would need to commit to the source chain's chain id
+to create a unique alias that commits to a particular sender on a particular domain and it is far more simple
+to assert on both the address and the source chain's chain id rather than assert on an unaliased address.
+In both cases, the source chain's chain id is required for security. Executing messages will never be able to
+assume the identity of an account because `msg.sender` will never be the identity that initiated the message,
+it will be the `L2ToL2CrossDomainMessenger` and users will need to callback to get the initiator of the message.
+
+Address aliasing would need to be implemented if the top level `msg.sender` value was set based on the caller
+of the `sendMessage` function. This is not the case as it would require a diff to the EVM spec.
+
+##### `sendMessage` Invariants
+
+- Sent Messages MUST be uniquely identifiable
+- It must emit the `SentMessage` event
+- The `_destination` MUST NOT be the chainid of the local chain
+- A locally defined `nonce` MUST increment on every call to `sendMessage`
+
+#### `relayMessage`
+
+The `relayMessage` function makes up the second half of a cross chain message.
+The call made to `sendMessage` executes when `relayMessage` is called on the destination chain.
+
+The `_id` is the [identifier](./messaging.md#message-identifier) of the `SentMessage` event that was emitted by the `sendMessage` call.
+The `_sentMessage` is the [message payload](./messaging.md#message-payload) of the `SentMessage` event.
+
+```solidity
+function relayMessage(Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_);
+```
+
+This needs to made into its own section!
+The `relayMessage` function is `payable` to enable relayers to earn for relaying messages.
+
+To enable cross chain authorization patterns, both the `_sender` and the `_source` MUST be exposed via `public`
+getters.
+
+##### `relayMessage` Invariants
 
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chain id MUST be equal to the local chain id
 - Messages MUST NOT be relayed more than once
 
-### `sendMessage` Invariants
+##### Dependency Set Management
 
-- Sent Messages MUST be uniquely identifiable
-- It must emit the `SentMessage` event
+The `L2ToL2CrossDomainMessenger` has no legibility of the dependency set. It is up to the offchain software to ensure that only
+messages from the dependency set can be relayed. Messages from outside the dependency set will be reorg'd out of the chain.
 
 ### Message Versioning
 
@@ -222,41 +282,6 @@ sending `ether` between chains. `ether` must first be wrapped into WETH before s
 See [SuperchainWETH](./superchain-weth.md) for more information.
 
 ### Interfaces
-
-The `L2ToL2CrossDomainMessenger` uses a similar interface to the `L2CrossDomainMessenger`, but
-the `_minGasLimit` is removed to prevent complexity around EVM gas introspection and the `_destination`
-chain is included instead.
-
-#### Sending Messages
-
-The following function is used for sending messages between domains:
-
-```solidity
-function sendMessage(uint256 _destination, address _target, bytes calldata _message) external returns (bytes32);
-```
-
-It returns the hash of the message being sent,
-which is used to track whether the message has successfully been relayed.
-It also emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
-
-```solidity
-event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
-```
-
-An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
-chain a single time. The `_destination` is enforced to not be the local chain to avoid edge cases.
-
-There is no need for address aliasing as the aliased address would need to commit to the source chain's chain id
-to create a unique alias that commits to a particular sender on a particular domain and it is far more simple
-to assert on both the address and the source chain's chain id rather than assert on an unaliased address.
-In both cases, the source chain's chain id is required for security. Executing messages will never be able to
-assume the identity of an account because `msg.sender` will never be the identity that initiated the message,
-it will be the `L2ToL2CrossDomainMessenger` and users will need to callback to get the initiator of the message.
-
-The `_destination` MUST NOT be the chainid of the local chain and a locally defined `nonce` MUST increment on
-every call to `sendMessage`.
-
-Note that `sendMessage` is not `payable`.
 
 #### Relaying Messages
 
@@ -288,16 +313,6 @@ flowchart LR
     end
 ```
 
-When relaying a message through the `L2ToL2CrossDomainMessenger`, it is important to require that
-the `_destination` be equal to `block.chainid` to ensure that the message is only valid on a single
-chain. The hash of the message is used for replay protection.
-
-It is important to ensure that the source chain is in the dependency set of the destination chain, otherwise
-it is possible to send a message that is not playable.
-
-A message is relayed by providing the [identifier](./messaging.md#message-identifier) of a `SentMessage`
-event along with its corresponding [message payload](./messaging.md#message-payload).
-
 ```solidity
 function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
@@ -320,11 +335,6 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     emit RelayedMessage(_source, _nonce, messageHash);
 }
 ```
-
-Note that the `relayMessage` function is `payable` to enable relayers to earn in the gas paying asset.
-
-To enable cross chain authorization patterns, both the `_sender` and the `_source` MUST be exposed via `public`
-getters.
 
 ## OptimismSuperchainERC20Factory
 
