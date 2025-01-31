@@ -199,9 +199,6 @@ This provides the following benefits:
 
 ## Upgrading
 
-This section is written specifically for the Isthmus upgrade path, which is the first upgrade which will
-be performed by the OP Contracts Manager.
-
 ### Interface
 
 #### `upgrade`
@@ -212,12 +209,17 @@ all chains that it controls.
 It has the following interface:
 
 ```solidity
-struct IsthmusConfig {
-    uint32 public operatorFeeScalar;
-    uint64 public operatorFeeConstant;
+/// @notice The input required to identify a chain for upgrading, along with new prestate hashes
+struct OpChainConfig {
+    ISystemConfig systemConfigProxy;
+    IProxyAdmin proxyAdmin;
+    Claim absolutePrestate;
 }
 
-function upgrade(ISystemConfig[] _systemConfigs, IProxyAdmin[] _proxyAdmins, IsthmusConfig[] _isthmusConfigs) public;
+/// @notice Upgrades a set of chains to the latest implementation contracts
+/// @param _opChainConfigs Array of OpChain structs, one per chain to upgrade
+/// @dev This function is intended to be called via DELEGATECALL from the Upgrade Controller Safe
+function upgrade(OpChainConfig[] memory _opChainConfigs) external
 ```
 
 For each chain successfully upgraded, the following event is emitted:
@@ -233,9 +235,11 @@ This method reverts if the upgrade is not successful for any of the chains.
 The high level logic of the upgrade method is as follows:
 
 1. The Upgrade Controller Safe will `DELEGATECALL` to the `OPCM.upgrade()` method.
-2. For each `_systemConfig`, the list of addresses in the chain is retrieved.
-3. For each address:
-   1. If it is receiving new state variables (only the SystemConfig for Isthmus), a call is made to:
+2. The SuperchainConfig contract will be upgraded, if not yet done.
+3. The ProtocolVersions contract will be upgraded, if not yet done.
+4. For each `_systemConfig`, the list of addresses in the chain is retrieved.
+5. For each address:
+   1. If it is receiving new state variables (only the AnchorStateRegistry for Isthmus), a call is made to:
       `ProxyAdmin.upgradeAndCall()` with data corresponding to the new value being set.
    2. Otherwise, `ProxyAdmin.upgrade()` is called on that address.
 
@@ -244,18 +248,6 @@ have an upgrade function which:
 
 1. Writes the new state variables
 2. MUST only be callable once
-
-Thus for Isthmus, the System config will receive the following new function.
-
-```solidity
-function upgradeIsthmus(IsthmusConfig _isthmusConfig) external;
-```
-
-#### `IsthmusConfig` struct
-
-This struct is used to pass the new chain configuration to the `upgrade` method. It's name and
-field will vary for each release of the OP Contracts Manager, based on what (if any) new parameters
-are being added.
 
 #### Requirements on the OP Chain contracts
 
