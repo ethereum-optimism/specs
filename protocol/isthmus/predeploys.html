@@ -168,196 +168,39 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="overview"><a class="header" href="#overview">Overview</a></h1>
+<h1 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#constants">Constants</a></li>
-<li><a href="#predeploys">Predeploys</a>
+<li><a href="#overview">Overview</a>
 <ul>
-<li><a href="#proxyadmin">ProxyAdmin</a>
-<ul>
-<li><a href="#rationale">Rationale</a></li>
-</ul>
-</li>
 <li><a href="#l1block">L1Block</a>
 <ul>
-<li><a href="#storage">Storage</a></li>
 <li><a href="#interface">Interface</a>
 <ul>
 <li><a href="#setisthmus"><code>setIsthmus</code></a></li>
-<li><a href="#setconfig"><code>setConfig</code></a></li>
-<li><a href="#getconfig"><code>getConfig</code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#feevault">FeeVault</a>
-<ul>
-<li><a href="#interface-1">Interface</a>
-<ul>
-<li><a href="#config"><code>config</code></a></li>
+<li><a href="#feevault">FeeVault</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a href="#l2crossdomainmessenger">L2CrossDomainMessenger</a>
-<ul>
-<li><a href="#interface-2">Interface</a></li>
-</ul>
-</li>
-<li><a href="#l2erc721bridge">L2ERC721Bridge</a>
-<ul>
-<li><a href="#interface-3">Interface</a></li>
-</ul>
-</li>
-<li><a href="#l2standardbridge">L2StandardBridge</a>
-<ul>
-<li><a href="#interface-4">Interface</a></li>
-</ul>
-</li>
-<li><a href="#optimismmintableerc721factory">OptimismMintableERC721Factory</a></li>
-</ul>
-</li>
-<li><a href="#security-considerations">Security Considerations</a>
-<ul>
-<li><a href="#governancetoken">GovernanceToken</a></li>
-</ul>
-</li>
+<li><a href="#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>This upgrade enables a deterministic L2 genesis state by moving all network
-specific configuration out of the initial L2 genesis state. All network specific
-configuration is sourced from deposit transactions during the initialization
-of the <code>SystemConfig</code>.</p>
-<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
-<tr><td><code>ConfigType</code></td><td><code>uint8</code></td><td>An enum representing the type of config being set</td></tr>
-<tr><td><code>WithdrawalNetwork</code></td><td><code>uint8(0)</code> or <code>uint8(1)</code></td><td><code>0</code> means withdraw to L1, <code>1</code> means withdraw to L2</td></tr>
-<tr><td><code>RECIPIENT</code></td><td><code>address</code></td><td>The account that will receive funds sent out of the <code>FeeVault</code></td></tr>
-<tr><td><code>MIN_WITHDRAWAL_AMOUNT</code></td><td><code>uint256</code></td><td>The minimum amount of native asset held in the <code>FeeVault</code> before withdrawal is authorized</td></tr>
-<tr><td>Fee Vault Config</td><td><code>bytes32</code></td><td><code>bytes32((WithdrawalNetwork &lt;&lt; 248) || uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) || uint256(uint160(RECIPIENT)))</code></td></tr>
-<tr><td><code>BASE_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.basefeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>BaseFeeVault</code></td></tr>
-<tr><td><code>L1_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.l1feevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>L1FeeVault</code></td></tr>
-<tr><td><code>SEQUENCER_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.sequencerfeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>SequencerFeeVault</code></td></tr>
-<tr><td><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1crossdomainmessengeraddress")) - 1)</code></td><td><code>abi.encode(address(L1CrossDomainMessengerProxy))</code></td></tr>
-<tr><td><code>L1_ERC_721_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1erc721bridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1ERC721BridgeProxy))</code></td></tr>
-<tr><td><code>L1_STANDARD_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1standardbridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1StandardBridgeProxy))</code></td></tr>
-<tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>bytes32(uint256(keccak256("opstack.remotechainid")) - 1)</code></td><td>Chain ID of the remote chain</td></tr>
-</tbody></table>
-</div>
-<h2 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h2>
-<p>All network specific configuration is moved to a single contract, the <code>L1Block</code> predeploy.
-All predeploys make calls to the <code>L1Block</code> contract to fetch network specific configuration
-rather than reading it from local state.</p>
-<pre class="mermaid">graph LR
-  subgraph L1
-  SystemConfig -- &quot;setConfig(uint8,bytes)&quot; --&gt; OptimismPortal
-  end
-  subgraph L2
-  L1Block
-  BaseFeeVault -- &quot;getConfig(ConfigType.GAS_PAYING_TOKEN)(address,uint256,uint8)&quot; --&gt; L1Block
-  SequencerFeeVault -- &quot;getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
-  L1FeeVault -- &quot;getConfig(ConfigType.L1_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
-  L2CrossDomainMessenger -- &quot;getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)(address)&quot; --&gt; L1Block
-  L2StandardBridge -- &quot;getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
-  L2ERC721Bridge -- &quot;getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
-  OptimismMintableERC721Factory -- &quot;getConfig(ConfigType.REMOTE_CHAIN_ID)(uint256)&quot; --&gt; L1Block
-  end
-  OptimismPortal -- &quot;setConfig(uint8,bytes)&quot; --&gt; L1Block
-</pre>
-<h3 id="proxyadmin"><a class="header" href="#proxyadmin">ProxyAdmin</a></h3>
-<p>The <code>ProxyAdmin</code> is updated to have its <code>owner</code> be the <code>DEPOSITOR_ACCOUNT</code>.
-This means that it can be deterministically called by network upgrade transactions
-or by special deposit transactions emitted by the <code>OptimismPortal</code> that assume
-the identity of the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="rationale"><a class="header" href="#rationale">Rationale</a></h4>
-<p>It is much easier to manage the overall roles of the full system under this model.
-The owner of the <code>ProxyAdmin</code> can upgrade any of the predeploys, meaning it can
-write storage slots that correspond to withdrawals. This ensures that only the
-system or a chain governor can issue upgrades to the predeploys.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>TODO describe operator fee change</p>
 <h3 id="l1block"><a class="header" href="#l1block">L1Block</a></h3>
-<h4 id="storage"><a class="header" href="#storage">Storage</a></h4>
-<p>The following storage slots are defined:</p>
-<ul>
-<li><code>BASE_FEE_VAULT_CONFIG</code></li>
-<li><code>L1_FEE_VAULT_CONFIG</code></li>
-<li><code>SEQUENCER_FEE_VAULT_CONFIG</code></li>
-<li><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></li>
-<li><code>L1_ERC_721_BRIDGE_ADDRESS</code></li>
-<li><code>L1_STANDARD_BRIDGE_ADDRESS</code></li>
-<li><code>REMOTE_CHAIN_ID</code></li>
-</ul>
-<p>Each slot MUST have a defined <code>ConfigType</code> that authorizes the setting of the storage slot
-via a deposit transaction from the <code>DEPOSITOR_ACCOUNT</code>.</p>
 <h4 id="interface"><a class="header" href="#interface">Interface</a></h4>
 <h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
 <p>This function is meant to be called once on the activation block of the holocene network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
 call each getter for the network specific config and set the returndata into storage.</p>
-<h5 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h5>
-<p>This function MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code>. It modifies the storage directly
-of the <code>L1Block</code> contract. It MUST handle all defined <code>ConfigType</code>s. To ensure a simple ABI, the
-<code>bytes</code> value MUST be abi decoded based on the <code>ConfigType</code>.</p>
-<pre><code class="language-solidity">function setConfig(ConfigType,bytes)
-</code></pre>
-<p>Note that <code>ConfigType</code> is an enum which is an alias for a <code>uint8</code>.</p>
-<h5 id="getconfig"><a class="header" href="#getconfig"><code>getConfig</code></a></h5>
-<p>This function is called by each contract with the appropriate <code>ConfigType</code> to fetch
-the network specific configuration. Using this pattern reduces the ABI of the <code>L1Block</code>
-contract by removing the need for special getters for each piece of config.</p>
-<pre><code class="language-solidity">function getConfig(ConfigType)(bytes)
-</code></pre>
-<p>The caller needs to ABI decode the data into the desired type.</p>
 <h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
-<p>The following changes apply to each of the <code>BaseFeeVault</code>, the <code>L1FeeVault</code> and the <code>SequencerFeeVault</code>.</p>
-<h4 id="interface-1"><a class="header" href="#interface-1">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract:</p>
-<ul>
-<li><code>recipient()(address)</code></li>
-<li><code>withdrawalNetwork()(WithdrawalNetwork)</code></li>
-<li><code>minWithdrawalAmount()(uint256)</code></li>
-<li><code>withdraw()</code></li>
-</ul>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Call</th></tr></thead><tbody>
-<tr><td><code>BaseFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.BASE_FEE_VAULT_CONFIG)</code></td></tr>
-<tr><td><code>SequencerFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)</code></td></tr>
-<tr><td><code>L1FeeVault</code></td><td><code>L1Block.getConfig(ConfigType.L1_FEE_VAULT_CONFIG)</code></td></tr>
-</tbody></table>
-</div>
-<h5 id="config"><a class="header" href="#config"><code>config</code></a></h5>
-<p>A new function is added to fetch the full Fee Vault Config.</p>
-<pre><code class="language-solidity">function config()(address,uint256,WithdrawalNetwork)
-</code></pre>
-<h3 id="l2crossdomainmessenger"><a class="header" href="#l2crossdomainmessenger">L2CrossDomainMessenger</a></h3>
-<h4 id="interface-2"><a class="header" href="#interface-2">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code>:</p>
-<ul>
-<li><code>otherMessenger()(address)</code></li>
-<li><code>OTHER_MESSENGER()(address)</code></li>
-</ul>
-<h3 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h3>
-<h4 id="interface-3"><a class="header" href="#interface-3">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)</code>:</p>
-<ul>
-<li><code>otherBridge()(address)</code></li>
-<li><code>OTHER_BRIDGE()(address)</code></li>
-</ul>
-<h3 id="l2standardbridge"><a class="header" href="#l2standardbridge">L2StandardBridge</a></h3>
-<h4 id="interface-4"><a class="header" href="#interface-4">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)</code>:</p>
-<ul>
-<li><code>otherBridge()(address)</code></li>
-<li><code>OTHER_BRIDGE()(address)</code></li>
-</ul>
-<h3 id="optimismmintableerc721factory"><a class="header" href="#optimismmintableerc721factory">OptimismMintableERC721Factory</a></h3>
-<p>The chain id is no longer read from storage but instead is read from the <code>L1Block</code> contract by calling
-<code>L1Block.getConfig(ConfigType.REMOTE_CHAIN_ID)</code></p>
+<p>TODO</p>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
-<h3 id="governancetoken"><a class="header" href="#governancetoken">GovernanceToken</a></h3>
-<p>The predeploy defined by <code>GovernanceToken</code> should be an empty account until it is defined by
-a future hardfork.</p>
 
                     </main>
 

@@ -168,31 +168,7 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="superchainconfig"><a class="header" href="#superchainconfig">SuperchainConfig</a></h1>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#constants">Constants</a></li>
-<li><a href="#interface">Interface</a></li>
-<li><a href="#initialization">Initialization</a></li>
-</ul>
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
-to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
-that call the L2 <code>ProxyAdmin</code>.</p>
-<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
-<tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
-</tbody></table>
-</div>
-<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
-<pre><code class="language-solidity">function upgrader() public view returns (address)
-</code></pre>
-<h2 id="initialization"><a class="header" href="#initialization">Initialization</a></h2>
-<p>The <code>upgrader</code> can only be set during initialization.</p>
+<h1 id="superchain-config"><a class="header" href="#superchain-config">Superchain Config</a></h1>
 
                     </main>
 
