@@ -68,13 +68,13 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 Verify `data`:
 
 ```bash
-git checkout 905311d64d3df67649837ec57f0b0a4b6214ce31
+git checkout TODO
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 ```
 
 This transaction MUST deploy a contract with the following code hash
-`0xd78dfe1a1c48a195a3ea11625b43ca814350cdd606a9caefc8f2a99f64f22419`.
+`TODO`.
 
 ## GasPriceOracle deployment
 
@@ -108,13 +108,13 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 Verify `data`:
 
 ```bash
-git checkout 905311d64d3df67649837ec57f0b0a4b6214ce31
+git checkout TODO
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
 ```
 
 This transaction MUST deploy a contract with the following code hash
-`0x16b1c60e30264e085800ea45bcc4e8794d03f2c92eb159e1401801cb95db0cfb`.
+`TODO`.
 
 ## Operator fee vault deployment
 
@@ -153,13 +153,13 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 Verify `data`:
 
 ```bash
-git checkout 905311d64d3df67649837ec57f0b0a4b6214ce31
+git checkout TODO
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json
 ```
 
 This transaction MUST deploy a contract with the following code hash
-`0xe2e41e4c7d4a7b8422efe3e1b25122378c63ff90a6736fa1fd5f04976e92d644`.
+`TODO`.
 
 ## L1Block Proxy Update
 

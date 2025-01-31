@@ -10,10 +10,6 @@
   - [Initialization](#initialization)
   - [Modifying Operator Fee Parameters](#modifying-operator-fee-parameters)
   - [Interface](#interface)
-    - [Fee Vault Config](#fee-vault-config)
-      - [`setBaseFeeVaultConfig`](#setbasefeevaultconfig)
-      - [`setL1FeeVaultConfig`](#setl1feevaultconfig)
-      - [`setSequencerFeeVaultConfig`](#setsequencerfeevaultconfig)
     - [Operator fee parameters](#operator-fee-parameters)
       - [`operatorFeeScalar`](#operatorfeescalar)
       - [`operatorFeeConstant`](#operatorfeeconstant)
@@ -38,6 +34,7 @@ The following `ConfigUpdate` event is defined where the `CONFIG_VERSION` is `uin
 | `GAS_LIMIT` | `uint8(2)` | `abi.encode(uint64 _gasLimit)` | Modifies the L2 gas limit |
 | `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)` | Modifies the account that is authorized to progress the unsafe chain |
 | `EIP_1559_PARAMS` | `uint8(4)` | `uint256(uint64(uint32(_denominator))) << 32 \| uint64(uint32(_elasticity))` | Modifies the EIP-1559 denominator and elasticity |
+| `OPERATOR_FEE_PARAMS` | `uint8(5)` | `uint256(_operatorFeeScalar) << 64 \| _operatorFeeConstant` | Modifies the operator fee sclar and constant |
 
 ### Initialization
 
@@ -61,32 +58,6 @@ A new `SystemConfig` `UpdateType` is introduced that enables the modification of
 the `operatorFeeScalar` and `operatorFeeConstant` by the [`OperatorFeeManager`](../configurability.md#operator-fee-manager).
 
 ### Interface
-
-#### Fee Vault Config
-
-For each `FeeVault`, there is a setter for its config. The arguments to the setter include
-the `RECIPIENT`, the `MIN_WITHDRAWAL_AMOUNT` and the `WithdrawalNetwork`.
-Each of these functions should be `public` and only callable by the chain governor.
-
-Each function calls `OptimismPortal.setConfig(ConfigType,bytes)` with its corresponding `ConfigType`.
-
-##### `setBaseFeeVaultConfig`
-
-```solidity
-function setBaseFeeVaultConfig(address,uint256,WithdrawalNetwork)
-```
-
-##### `setL1FeeVaultConfig`
-
-```solidity
-function setL1FeeVaultConfig(address,uint256,WithdrawalNetwork)
-```
-
-##### `setSequencerFeeVaultConfig`
-
-```solidity
-function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
-```
 
 #### Operator fee parameters
 
