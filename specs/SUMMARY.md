@@ -55,6 +55,7 @@
       - [Execution Engine](./protocol/holocene/exec-engine.md)
       - [System Config](./protocol/holocene/system-config.md)
     - [Isthmus](./protocol/isthmus/overview.md)
+      - [Configurability](./protocol/isthmus/configurability.md)
       - [Execution Engine](./protocol/isthmus/exec-engine.md)
       - [Derivation](./protocol/isthmus/derivation.md)
       - [Predeploys](./protocol/isthmus/predeploys.md)
