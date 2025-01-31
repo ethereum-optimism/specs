@@ -93,6 +93,7 @@ The `deploy` method is used to deploy the full set of L1 contracts required to s
 chain that complies with the [standard configuration]. It has the following interface:
 
 ```solidity
+/// @notice Represents the roles that can be set when deploying a standard OP Stack chain.
 struct Roles {
     address opChainProxyAdminOwner;
     address systemConfigOwner;
@@ -102,40 +103,43 @@ struct Roles {
     address challenger;
 }
 
+/// @notice The full set of inputs to deploy a new OP Stack chain.
 struct DeployInput {
     Roles roles;
     uint32 basefeeScalar;
     uint32 blobBasefeeScalar;
     uint256 l2ChainId;
-    bytes startingAnchorRoots;
+    // The correct type is OutputRoot memory but OP Deployer does not yet support structs.
+    bytes startingAnchorRoot;
     string saltMixer;
     uint64 gasLimit;
-    uint32 disputeGameType;
-    bytes32 disputeAbsolutePrestate;
+    // Configurable dispute game parameters.
+    GameType disputeGameType;
+    Claim disputeAbsolutePrestate;
     uint256 disputeMaxGameDepth;
     uint256 disputeSplitDepth;
-    uint64 disputeClockExtension;
-    uint64 disputeMaxClockDuration;
+    Duration disputeClockExtension;
+    Duration disputeMaxClockDuration;
 }
 
+/// @notice The full set of outputs from deploying a new OP Stack chain.
 struct DeployOutput {
-      IProxyAdmin opChainProxyAdmin;
-      IAddressManager addressManager;
-      IL1ERC721Bridge l1ERC721BridgeProxy;
-      ISystemConfig systemConfigProxy;
-      IOptimismMintableERC20Factory optimismMintableERC20FactoryProxy;
-      IL1StandardBridge l1StandardBridgeProxy;
-      IL1CrossDomainMessenger l1CrossDomainMessengerProxy;
-      // Fault proof contracts below.
-      IOptimismPortal2 optimismPortalProxy;
-      IDisputeGameFactory disputeGameFactoryProxy;
-      IAnchorStateRegistry anchorStateRegistryProxy;
-      IAnchorStateRegistry anchorStateRegistryImpl;
-      IFaultDisputeGame faultDisputeGame;
-      IPermissionedDisputeGame permissionedDisputeGame;
-      IDelayedWETH delayedWETHPermissionedGameProxy;
-      IDelayedWETH delayedWETHPermissionlessGameProxy;
-  }
+    IProxyAdmin opChainProxyAdmin;
+    IAddressManager addressManager;
+    IL1ERC721Bridge l1ERC721BridgeProxy;
+    ISystemConfig systemConfigProxy;
+    IOptimismMintableERC20Factory optimismMintableERC20FactoryProxy;
+    IL1StandardBridge l1StandardBridgeProxy;
+    IL1CrossDomainMessenger l1CrossDomainMessengerProxy;
+    // Fault proof contracts below.
+    IOptimismPortal2 optimismPortalProxy;
+    IDisputeGameFactory disputeGameFactoryProxy;
+    IAnchorStateRegistry anchorStateRegistryProxy;
+    IFaultDisputeGame faultDisputeGame;
+    IPermissionedDisputeGame permissionedDisputeGame;
+    IDelayedWETH delayedWETHPermissionedGameProxy;
+    IDelayedWETH delayedWETHPermissionlessGameProxy;
+}
 
 /// @notice Deploys a new OP Chain
 /// @param _input DeployInput containing chain specific config information.
