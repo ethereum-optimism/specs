@@ -19,11 +19,11 @@ This document is not finalized and should be considered experimental.
     - [Span Batch Updates](./derivation.md#span-batch-updates)
   - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935)
   - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002)
+    - Predeploy does not apply, withdrawal request types must be ignored.
   - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251)
   - [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623)
   - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110)
   - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685)
-  - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
 - [L2ToL1MessagePasser Storage Root in Header](./exec-engine.md##l2tol1messagepasser-storage-root-in-header)
 
 ## Consensus Layer
