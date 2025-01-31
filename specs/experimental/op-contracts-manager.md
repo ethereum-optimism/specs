@@ -272,36 +272,45 @@ The `addGameType` method is used to orchestrate the actions required to add a ne
 or more chains.
 
 ```solidity
-struct PermissionlessGameConfig {
-  bytes32 absolutePrestate;
+struct AddGameInput {
+    string saltMixer;
+    ISystemConfig systemConfig;
+    IProxyAdmin proxyAdmin;
+    IDelayedWETH delayedWETH;
+    GameType disputeGameType;
+    Claim disputeAbsolutePrestate;
+    uint256 disputeMaxGameDepth;
+    uint256 disputeSplitDepth;
+    Duration disputeClockExtension;
+    Duration disputeMaxClockDuration;
+    uint256 initialBond;
+    IBigStepper vm;
+    bool permissioned;
 }
 
-function addGameType(ISystemConfig[] _systemConfigs, PermissionlessGameConfig[] _newGames) public;
+struct AddGameOutput {
+    IDelayedWETH delayedWETH;
+    IFaultDisputeGame faultDisputeGame;
+}
+
+/// @notice addGameType deploys a new dispute game and links it to the DisputeGameFactory. The inputted _gameConfigs
+/// must be added in ascending GameType order.
+function addGameType(AddGameInput[] memory _gameConfigs) external returns (AddGameOutput[] memory)
 ```
 
 ### Implementation
 
 The high level logic of the `addGameType` method is as follows (for each chain):
 
-1. Deploy and initialize new `DelayedWethProxy` for the new game type, reusing the existing implementation
-1. Deploy a new `FaultDisputeGame` contract. The source of the constructor args is indicated below this list,
+1. Deploy and initialize new `DelayedWethProxy` for the new game type, if one hasn't already been specified.
+2. Deploy a new `FaultDisputeGame` contract. The constructor args must be provided as arguments, except as per the table below.
    the value which is not available onchain is the `absolutePrestate`.
-1. Calls `upgrade()` on the `AnchorStateRegistry` to set the new game type to
-   add a new entry to the `anchors` mapping. The `upgrade()` method should
-   revert if it would overwrite an existing entry.
-1. Read the `DisputeGameFactory` address from the `SystemConfig`.
-1. Call `DisputeGameFactory.setImplementation()` to register the new game.
+3. Read the `DisputeGameFactory` address from the `SystemConfig`.
+4. Call `DisputeGameFactory.setImplementation()` to register the new game.
 
 | Name                | Type    | Description                                        | Source                                     |
 | ------------------- | ------- | -------------------------------------------------- | ------------------------------------------ |
-| gameType            | uint32  | Constant value of 1 indicating the game type       | Hardcoded constant                         |
-| absolutePrestate    | bytes32 | Initial state of the game                          | Input in `PermissionlessGameConfig` struct |
-| maxGameDepth        | uint256 | Maximum depth of the game tree                     | Copied from existing `PermissionedGame`    |
-| splitDepth          | uint256 | Depth at which the game tree splits                | Copied from existing `PermissionedGame`    |
-| clockExtension      | uint64  | Time extension granted for moves                   | Copied from existing `PermissionedGame`    |
-| maxClockDuration    | uint64  | Maximum duration of the game clock                 | Copied from existing `PermissionedGame`    |
-| vm                  | address | Virtual machine contract address                   | Copied from existing `PermissionedGame`    |
-| weth                | address | Address of the newly deployed DelayedWeth contract | Newly deployed contract                    |
+| weth                | address | Address of the newly deployed DelayedWeth contract | Newly deployed contract, or provided       |
 | anchorStateRegistry | address | Registry contract address                          | Copied from existing `PermissionedGame`    |
 | l2ChainId           | uint256 | Chain ID of the L2 network                         | Copied from existing `PermissionedGame`    |
 
