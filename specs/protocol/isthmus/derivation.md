@@ -228,13 +228,13 @@ deployment.
 A deposit transaction is derived with the following attributes:
 
 - `from`: `0x0000000000000000000000000000000000000000`
-- `to`: `0x420000000000000000000000000000000000001B` (Gas Price Oracle Proxy)
+- `to`: `0x420000000000000000000000000000000000001B` (Operator Fee Vault Proxy)
 - `mint`: `0`
 - `value`: `0`
 - `gasLimit`: `50,000`
 - `data`: `0x3659cfe60000000000000000000000004fa2be8cd41504037f1838bce3bcc93bc68ff537`
 - `sourceHash`: `0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927`
-  computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Gas Price Oracle Proxy Update"`
+  computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Operator Fee Vault Proxy Update"`
 
 Verify data:
 

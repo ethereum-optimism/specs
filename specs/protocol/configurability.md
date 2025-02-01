@@ -289,13 +289,13 @@ contracts deployed on layer 1.<br/>
 ### [Operator Fee Scalar](exec-engine.md#operator-fees)
 
 **Description:** Operator fee scalar -- used to calculate the operator fee<br/>
-**Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
+**Administrator:** [System Config Owner](#admin-roles)<br/>
 **Requirement:** 0 <br/>
 
 ### [Operator Fee Constant](exec-engine.md#operator-fees)
 
 **Description:** Operator fee constant -- used to calculate the operator fee<br/>
-**Administrator:** [Operator Fee Manager](#operator-fee-manager)<br/>
+**Administrator:** [System Config Owner](#admin-roles)<br/>
 **Requirement:** 0 <br/>
 
 Note that the operator fee scalar and constant are primarily used for non-standard configurations,
@@ -458,12 +458,5 @@ configuration of the permissioned dispute game.<br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
 **Requirement:** No requirement<br/>
 **Notes:** <br/>
-
-### Operator Fee Manager
-
-**Description:** Account authorized to modify the operator fee scalar. <br/>
-**Administrator:** [System Config Owner](#admin-roles)<br/>
-**Requirement:** `address(0)`<br/>
-**Notes:** For standard configurations, the operator fee manager is not used, so it is set to the null address. <br/>
 
 [^of-gnosis-safe-l1]: 5 of 7 GnosisSafe controlled by Optimism Foundation (OF). Mainnet and Sepolia addresses can be found at [privileged roles](https://docs.optimism.io/chain/security/privileged-roles).
