@@ -138,9 +138,16 @@ Similar to the `bn256Pairing` precompile in the [granite hardfork](../granite/ex
 [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) introduces a BLS
 precompile that short-circuits depending on input size in the EVM.
 
-The `BLS12-381` curve operation precompile reverts if its input is
-larger than `235008` bytes. This is the input size that consumes
-approximately `20M` gas given the latest `BLS12-381` gas schedule on L2.
+The input size limits of the BLS precompile contracts are listed below:
+
+- G1 multiple-scalar-multiply: `input_size <= 513760 bytes`
+- G2 multiple-scalar-multiply: `input_size <= 488448 bytes`
+- Pairing check: `input_size <= 235008 bytes`
+
+The rest of the BLS precompiles are fixed-size operations which have a fixed gas cost.
+
+All of the BLS precompiles should be [accelerated](../../fault-proof/index.md#precompile-accelerators) in fault proof
+programs so they call out to the L1 instead of calculating the result inside the program.
 
 ## Engine API Updates
 
