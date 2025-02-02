@@ -49,7 +49,6 @@
   - [Guardian address](#guardian-address)
   - [Proposer address](#proposer-address)
   - [Sequencer P2P / Unsafe head signer](#sequencer-p2p--unsafe-head-signer)
-  - [Operator Fee Manager](#operator-fee-manager)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
