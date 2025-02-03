@@ -175,6 +175,16 @@
 <ul>
 <li><a href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a></li>
 <li><a href="#blob-encoding">Blob Encoding</a></li>
+<li><a href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
+<ul>
+<li><a href="#l1block-deployment">L1Block Deployment</a></li>
+<li><a href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></li>
+<li><a href="#l1block-proxy-update">L1Block Proxy Update</a></li>
+<li><a href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="#gaspriceoracle-enable-ecotone">GasPriceOracle Enable Ecotone</a></li>
+<li><a href="#beacon-block-roots-contract-deployment-eip-4788">Beacon block roots contract deployment (EIP-4788)</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="ecotone-blob-retrieval"><a class="header" href="#ecotone-blob-retrieval">Ecotone: Blob Retrieval</a></h2>
@@ -254,6 +264,185 @@ to make the encoding/decoding bijective.</p>
 Any trailing data, past the length delimiter, must be 0, to keep the encoding/decoding bijective.
 If the length is larger than <code>130048 - 4</code>, the blob is invalid.</p>
 <p>If any of the encoding is invalid, the blob as a whole must be ignored.</p>
+<h2 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h2>
+<p>The Ecotone hardfork activation block contains the following transactions, in this order:</p>
+<ul>
+<li>L1 Attributes Transaction, using the pre-Ecotone <code>setL1BlockValues</code></li>
+<li>User deposits from L1</li>
+<li>Network Upgrade Transactions
+<ul>
+<li>L1Block deployment</li>
+<li>GasPriceOracle deployment</li>
+<li>Update L1Block Proxy ERC-1967 Implementation Slot</li>
+<li>Update GasPriceOracle Proxy ERC-1967 Implementation Slot</li>
+<li>GasPriceOracle Enable Ecotone</li>
+<li>Beacon block roots contract deployment (EIP-4788)</li>
+</ul>
+</li>
+</ul>
+<p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
+transactions by setting <code>noTxPool: true</code>.</p>
+<h3 id="l1block-deployment"><a class="header" href="#l1block-deployment">L1Block Deployment</a></h3>
+<p>The <code>L1Block</code> contract is upgraded to process the new Ecotone L1-data-fee parameters and L1 blob base-fee.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>375,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="../../static/bytecode/ecotone-l1-block-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Deployment"</li>
+</ul>
+<p>This results in the Ecotone L1Block contract being deployed to <code>0x07dbe8500fc591d1852B76feE44d5a05e13097Ff</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000000
+Computed Address: 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Deployment"))
+# 0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
+pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0xc88a313aa75dc4fbf0b6850d9f9ae41e04243b7008cf3eadb29256d4a71c1dfd</code>.</p>
+<h3 id="gaspriceoracle-deployment"><a class="header" href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></h3>
+<p>The <code>GasPriceOracle</code> contract is upgraded to support the new Ecotone L1-data-fee parameters. Post fork this contract
+will use the blob base fee to compute the gas price for L1-data-fee transactions.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000001</code></li>
+<li><code>to</code>: <code>null</code>,</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1,000,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100...</code> (<a href="../../static/bytecode/ecotone-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42</code>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Deployment"</li>
+</ul>
+<p>This results in the Ecotone GasPriceOracle contract being deployed to <code>0xb528D11cC114E026F138fE568744c6D45ce6Da7A</code>,
+to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000001
+Computed Address: 0xb528D11cC114E026F138fE568744c6D45ce6Da7A
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">❯ cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Deployment"))
+# 0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
+pnpm clean &amp;&amp; pnpm install &amp;&amp; pnpm build
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0x8b71360ea773b4cfaf1ae6d2bd15464a4e1e2e360f786e475f63aeaed8da0ae5</code>.</p>
+<h3 id="l1block-proxy-update"><a class="header" href="#l1block-proxy-update">L1Block Proxy Update</a></h3>
+<p>This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x4200000000000000000000000000000000000015</code> (L1Block Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff</code></li>
+<li><code>sourceHash</code>: <code>0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc</code>
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Proxy Update"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff)
+0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Proxy Update"))
+# 0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc
+</code></pre>
+<h3 id="gaspriceoracle-proxy-update"><a class="header" href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></h3>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a</code></li>
+<li><code>sourceHash</code>: <code>0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Ecotone: Gas Price Oracle Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xb528D11cC114E026F138fE568744c6D45ce6Da7A)
+0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Proxy Update"))
+# 0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a
+</code></pre>
+<h3 id="gaspriceoracle-enable-ecotone"><a class="header" href="#gaspriceoracle-enable-ecotone">GasPriceOracle Enable Ecotone</a></h3>
+<p>This transaction informs the GasPriceOracle to start using the Ecotone gas calculation formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>80,000</code></li>
+<li><code>data</code>: <code>0x22b90ab3</code></li>
+<li><code>sourceHash</code>: <code>0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Set Ecotone"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig "setEcotone()"
+0x22b90ab3
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Set Ecotone"))
+# 0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93
+</code></pre>
+<h3 id="beacon-block-roots-contract-deployment-eip-4788"><a class="header" href="#beacon-block-roots-contract-deployment-eip-4788">Beacon block roots contract deployment (EIP-4788)</a></h3>
+<p><a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> introduces a "Beacon block roots" contract, that processes and exposes the beacon-block-root values.
+at address <code>BEACON_ROOTS_ADDRESS = 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</code>.</p>
+<p>For deployment, <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> defines a pre-<a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> legacy transaction, sent from a key that is derived such that the
+transaction signature validity is bound to message-hash, which is bound to the input-data, containing the init-code.</p>
+<p>However, this type of transaction requires manual deployment and gas-payments.
+And since the processing is an integral part of the chain processing, and has to be repeated for every OP-Stack chain,
+the deployment is approached differently here.</p>
+<p>Some chains may already have a user-submitted instance of the <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a> transaction.
+This is cryptographically guaranteed to be correct, but may result in the upgrade transaction
+deploying a second contract, with the next nonce. The result of this deployment can be ignored.</p>
+<p>A Deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0B799C86a49DEeb90402691F1041aa3AF2d3C875</code>, as specified in the EIP.</li>
+<li><code>to</code>: null</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>0x3d090</code>, as specified in the EIP.</li>
+<li><code>isCreation</code>: <code>true</code></li>
+<li><code>data</code>:
+<code>0x60618060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500</code></li>
+<li><code>isSystemTx</code>: <code>false</code>, as per the Regolith upgrade, even the system-generated transactions spend gas.</li>
+<li><code>sourceHash</code>: <code>0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c</code>,
+computed with the "Upgrade-deposited" type, with <code>intent = "Ecotone: beacon block roots contract deployment"</code></li>
+</ul>
+<p>The contract address upon deployment is computed as <code>rlp([sender, nonce])</code>, which will equal:</p>
+<ul>
+<li><code>BEACON_ROOTS_ADDRESS</code> if deployed</li>
+<li>a different address (<code>0xE3aE1Ae551eeEda337c0BfF6C4c7cbA98dce353B</code>) if <code>nonce = 1</code>:
+when a user already submitted the EIP transaction before the upgrade.</li>
+</ul>
+<p>Verify <code>BEACON_ROOTS_ADDRESS</code>:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x0B799C86a49DEeb90402691F1041aa3AF2d3C875
+# Computed Address: 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: beacon block roots contract deployment"))
+# 0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c
+</code></pre>
 
                     </main>
 
