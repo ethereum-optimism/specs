@@ -64,6 +64,15 @@
     - [`RelayedERC20`](#relayederc20)
   - [Diagram](#diagram)
   - [Invariants](#invariants-1)
+- [DependencyManager](#dependencymanager)
+  - [Functions](#functions-4)
+    - [`addDependency`](#adddependency)
+    - [`isInDependencySet`](#isindependencyset)
+    - [`dependencySetSize`](#dependencysetsize)
+    - [`dependencySet`](#dependencyset)
+  - [Events](#events-3)
+    - [`DependencyAdded`](#dependencyadded)
+  - [Invariants](#invariants-2)
 - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -95,10 +104,10 @@ Emits the `ExecutingMessage` event to signal the transaction has a cross chain m
 
 The following fields are required for validating a cross chain message:
 
-| Name     | Type       | Description                                                                |
-| -------- | ---------- | -------------------------------------------------------------------------- |
-| `_id`      | Identifier | A [`Identifier`] pointing to the initiating message.                         |
-| `_msgHash` | `bytes32`    | The keccak256 hash of the message payload matching the initiating message. |
+| Name       | Type       | Description                                                                |
+| ---------- | ---------- | -------------------------------------------------------------------------- |
+| `_id`      | Identifier | A [`Identifier`] pointing to the initiating message.                       |
+| `_msgHash` | `bytes32`  | The keccak256 hash of the message payload matching the initiating message. |
 
 ```solidity
 function validateMessage(Identifier calldata _id, bytes32 _msgHash)
@@ -768,9 +777,9 @@ sequenceDiagram
   L2SBA->>SuperERC20_A: crosschainBurn(from, amount)
   SuperERC20_A-->SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
-  Messenger_A->>L2SBA: return msgHash_ 
+  Messenger_A->>L2SBA: return msgHash_
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
-  L2SBA->>from: return msgHash_ 
+  L2SBA->>from: return msgHash_
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB->>SuperERC20_B: crosschainMint(to, amount)
@@ -801,7 +810,7 @@ The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require
   to the same address on the target chain.
   Similarly, the `relayERC20()` function should only process messages originating from the same address.
   - Note: The [`Create2Deployer` preinstall](../protocol/preinstalls.md#create2deployer)
-  and the custom Factory will ensure same address deployment.
+    and the custom Factory will ensure same address deployment.
 - Locally initiated: The bridging action should be initialized
   from the chain where funds are located only.
   - This is because the same address might correspond to different users cross-chain.
@@ -813,6 +822,78 @@ The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require
 - Bridge Events:
   - `sendERC20()` should emit a `SentERC20` event.
   - `relayERC20()` should emit a `RelayedERC20` event.
+
+## DependencyManager
+
+| Constant | Value                                        |
+| -------- | -------------------------------------------- |
+| Address  | `0x4200000000000000000000000000000000000029` |
+
+The `DependencyManager` is a predeploy contract that manages the L2-side dependency set. It maintains the list of chain IDs
+that are part of the dependency set and initiates withdrawal transactions to add new dependencies.
+
+### Functions
+
+#### `addDependency`
+
+Initiates the addition of a new chain to the dependency set through a withdrawal transaction.
+
+```solidity
+function addDependency(uint256 _chainId) external;
+```
+
+- MUST only be callable by the `DEPOSITOR_ACCOUNT`
+- MUST revert if the chain ID is already in the dependency set
+- MUST revert if the chain ID is the same as the current chain
+- MUST revert if adding the chain would exceed the maximum size (255)
+- MUST initiate a withdrawal transaction to the L1 `SuperchainConfigInterop`
+
+#### `isInDependencySet`
+
+Returns whether a chain ID is in the dependency set.
+
+```solidity
+function isInDependencySet(uint256 _chainId) public view returns (bool);
+```
+
+- MUST return true if the chain ID is the current chain's ID
+- MUST return true if the chain ID is in the dependency set
+- MUST return false otherwise
+
+#### `dependencySetSize`
+
+Returns the number of chains in the dependency set.
+
+```solidity
+function dependencySetSize() external view returns (uint8);
+```
+
+#### `dependencySet`
+
+Returns the list of chain IDs in the dependency set.
+
+```solidity
+function dependencySet() external view returns (uint256[] memory);
+```
+
+### Events
+
+#### `DependencyAdded`
+
+MUST be triggered when a new dependency is added to the set.
+
+```solidity
+event DependencyAdded(uint256 indexed chainId);
+```
+
+### Invariants
+
+- Only the `DEPOSITOR_ACCOUNT` can add dependencies
+- A chain cannot be added to its own dependency set
+- A chain cannot be added more than once
+- The dependency set cannot exceed 255 entries
+- A chain's own chain ID is always implicitly part of its dependency set
+- MUST initiate a withdrawal transaction to the L1 `SuperchainConfigInterop` when adding a new dependency
 
 ## Security Considerations
 
