@@ -180,7 +180,7 @@ A deposit transaction is derived with the following attributes:
 - `mint`: `0`
 - `value`: `0`
 - `gasLimit`: `1,000,000`
-- `data`: `0x60806040523480156100...` ([full bytecode](../static/bytecode/ecotone-gas-price-oracle-deployment.txt))
+- `data`: `0x60806040523480156100...` ([full bytecode](../../static/bytecode/ecotone-gas-price-oracle-deployment.txt))
 - `sourceHash`: `0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42`
   computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Deployment"
 
