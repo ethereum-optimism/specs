@@ -9377,16 +9377,27 @@ Changes to the L2 Block execution rules are applied when the <code>L2 Timestamp 
 field in the block header. The storage root should be the same root that is returned by <code>eth_getProof</code>
 at the given block number.</p>
 <h3 id="header-validity-rules"><a class="header" href="#header-validity-rules">Header Validity Rules</a></h3>
-<p>Prior to isthmus activation, the L2 block header's <code>withdrawalsRoot</code> field must be:</p>
+<p>Prior to isthmus activation:</p>
+<ul>
+<li>the L2 block header's <code>withdrawalsRoot</code> field must be:
 <ul>
 <li><code>nil</code> if Canyon has not been activated.</li>
 <li><code>keccak256(rlp(empty_string_code))</code> if Canyon has been activated.</li>
 </ul>
-<p>After Isthmus activation, an L2 block header's <code>withdrawalsRoot</code> field is valid iff:</p>
+</li>
+<li>the L2 block header's <code>requestsHash</code> field must be omitted.</li>
+</ul>
+<p>After Isthmus activation, an L2 block header is valid iff:</p>
 <ol>
-<li>It is exactly 32 bytes in length.</li>
-<li>The <a href="protocol/isthmus/../../protocol/predeploys.html#L2ToL1MessagePasser"><code>L2ToL1MessagePasser</code></a> account storage root, as committed to in the <code>storageRoot</code> within the block
-header, is equal to the header's <code>withdrawalsRoot</code> field.</li>
+<li>The <code>withdrawalsRoot</code> field
+<ol>
+<li>Is 32 bytes in length.</li>
+<li>Matches the <a href="protocol/isthmus/../../protocol/predeploys.html#L2ToL1MessagePasser"><code>L2ToL1MessagePasser</code></a> account storage root,
+as committed to in the <code>storageRoot</code> within the block header</li>
+</ol>
+</li>
+<li>The <code>requestsHash</code> field is equal to <code>sha256('') = 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</code>
+indicating no requests in the block.</li>
 </ol>
 <h3 id="header-withdrawals-root"><a class="header" href="#header-withdrawals-root">Header Withdrawals Root</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Byte offset</th><th>Description</th></tr></thead><tbody>
