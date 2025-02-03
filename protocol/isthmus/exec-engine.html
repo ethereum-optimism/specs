@@ -197,6 +197,7 @@
 </li>
 <li><a href="#deposit-requests">Deposit Requests</a></li>
 <li><a href="#block-body-withdrawals-list">Block Body Withdrawals List</a></li>
+<li><a href="#evm-changes">EVM Changes</a></li>
 <li><a href="#block-sealing">Block Sealing</a></li>
 <li><a href="#engine-api-updates">Engine API Updates</a>
 <ul>
@@ -299,6 +300,19 @@ request type did <em>not</em> exist prior to Pectra on L1 and the Isthmus hardfo
 deposit type requests may always be excluded.</p>
 <h2 id="block-body-withdrawals-list"><a class="header" href="#block-body-withdrawals-list">Block Body Withdrawals List</a></h2>
 <p>Withdrawals list in the block body is encoded as an empty RLP list.</p>
+<h2 id="evm-changes"><a class="header" href="#evm-changes">EVM Changes</a></h2>
+<p>Similar to the <code>bn256Pairing</code> precompile in the <a href="../granite/exec-engine.html">granite hardfork</a>,
+<a href="https://eips.ethereum.org/EIPS/eip-2537">EIP-2537</a> introduces a BLS
+precompile that short-circuits depending on input size in the EVM.</p>
+<p>The input size limits of the BLS precompile contracts are listed below:</p>
+<ul>
+<li>G1 multiple-scalar-multiply: <code>input_size &lt;= 513760 bytes</code></li>
+<li>G2 multiple-scalar-multiply: <code>input_size &lt;= 488448 bytes</code></li>
+<li>Pairing check: <code>input_size &lt;= 235008 bytes</code></li>
+</ul>
+<p>The rest of the BLS precompiles are fixed-size operations which have a fixed gas cost.</p>
+<p>All of the BLS precompiles should be <a href="../../fault-proof/index.html#precompile-accelerators">accelerated</a> in fault proof
+programs so they call out to the L1 instead of calculating the result inside the program.</p>
 <h2 id="block-sealing"><a class="header" href="#block-sealing">Block Sealing</a></h2>
 <p><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a> introduces new request type <code>0x02</code>, the <code>CONSOLIDATION_REQUEST_TYPE</code>.
 Typed request envelopes debut in Pectra <a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a>. Execution layer requests
