@@ -6634,6 +6634,8 @@ and apply the event-based changes as the stage traverses to the next L1 block.</
 <li><a href="protocol/configurability.html#start-block">Start block</a></li>
 <li><a href="protocol/configurability.html#superchain-target">Superchain target</a></li>
 <li><a href="protocol/configurability.html#governance-token">Governance Token</a></li>
+<li><a href="protocol/configurability.html#operator-fee-scalar">Operator Fee Scalar</a></li>
+<li><a href="protocol/configurability.html#operator-fee-constant">Operator Fee Constant</a></li>
 <li><a href="protocol/configurability.html#resource-config">Resource Config</a></li>
 </ul>
 </li>
@@ -6843,6 +6845,16 @@ contracts deployed on layer 1.<br/></p>
 <strong>Administrator:</strong> n/a<br/>
 <strong>Requirement:</strong> Disabled<br/>
 <strong>Notes:</strong> Simple clear restriction.<br/></p>
+<h3 id="operator-fee-scalar"><a class="header" href="#operator-fee-scalar"><a href="protocol/exec-engine.html#operator-fees">Operator Fee Scalar</a></a></h3>
+<p><strong>Description:</strong> Operator fee scalar -- used to calculate the operator fee<br/>
+<strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">System Config Owner</a><br/>
+<strong>Requirement:</strong> 0 <br/></p>
+<h3 id="operator-fee-constant"><a class="header" href="#operator-fee-constant"><a href="protocol/exec-engine.html#operator-fees">Operator Fee Constant</a></a></h3>
+<p><strong>Description:</strong> Operator fee constant -- used to calculate the operator fee<br/>
+<strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">System Config Owner</a><br/>
+<strong>Requirement:</strong> 0 <br/></p>
+<p>Note that the operator fee scalar and constant are primarily used for non-standard configurations,
+like op-succinct, so their standard values are 0.</p>
 <div class="footnote-definition" id="chain-id-uniqueness"><sup class="footnote-definition-label">1</sup>
 <p>The chain ID must be globally unique among all EVM chains.</p>
 </div>
@@ -9326,15 +9338,350 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 </ul>
 </li>
 <li><a href="protocol/isthmus/./exec-engine.html##l2tol1messagepasser-storage-root-in-header">L2ToL1MessagePasser Storage Root in Header</a></li>
+<li><a href="protocol/isthmus/./exec-engine.html#operator-fee">Operator Fee</a></li>
 </ul>
 <h2 id="consensus-layer-6"><a class="header" href="#consensus-layer-6">Consensus Layer</a></h2>
 <ul>
 <li><a href="protocol/isthmus/./derivation.html">Isthmus Derivation</a></li>
+<li><a href="protocol/isthmus/./configurability.html">Configurability</a></li>
 </ul>
 <h2 id="smart-contracts-1"><a class="header" href="#smart-contracts-1">Smart Contracts</a></h2>
 <ul>
 <li><a href="protocol/isthmus/./superchain-config.html">SuperchainConfig</a></li>
+<li><a href="protocol/isthmus/./predeploys.html">Predeploys</a></li>
+<li><a href="protocol/isthmus/./l1-attributes.html">L1 Block Attributes</a></li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="configurability"><a class="header" href="#configurability">Configurability</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/isthmus/configurability.html#overview">Overview</a></li>
+<li><a href="protocol/isthmus/configurability.html#systemconfig"><code>SystemConfig</code></a>
+<ul>
+<li><a href="protocol/isthmus/configurability.html#configupdate"><code>ConfigUpdate</code></a></li>
+<li><a href="protocol/isthmus/configurability.html#initialization">Initialization</a></li>
+<li><a href="protocol/isthmus/configurability.html#modifying-operator-fee-parameters">Modifying Operator Fee Parameters</a></li>
+<li><a href="protocol/isthmus/configurability.html#interface">Interface</a>
+<ul>
+<li><a href="protocol/isthmus/configurability.html#operator-fee-parameters">Operator fee parameters</a>
+<ul>
+<li><a href="protocol/isthmus/configurability.html#operatorfeescalar"><code>operatorFeeScalar</code></a></li>
+<li><a href="protocol/isthmus/configurability.html#operatorfeeconstant"><code>operatorFeeConstant</code></a></li>
+<li><a href="protocol/isthmus/configurability.html#setoperatorfeescalars"><code>setOperatorFeeScalars</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
+<p>The SystemConfig is updated.</p>
+<h2 id="systemconfig"><a class="header" href="#systemconfig"><code>SystemConfig</code></a></h2>
+<h3 id="configupdate-1"><a class="header" href="#configupdate-1"><code>ConfigUpdate</code></a></h3>
+<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
+<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
+<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
+<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+<tr><td><code>OPERATOR_FEE_PARAMS</code></td><td><code>uint8(5)</code></td><td><code>uint256(_operatorFeeScalar) &lt;&lt; 64 | _operatorFeeConstant</code></td><td>Modifies the operator fee sclar and constant</td></tr>
+</tbody></table>
+</div>
+<h3 id="initialization-1"><a class="header" href="#initialization-1">Initialization</a></h3>
+<p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
+<ul>
+<li><code>emit ConfigUpdate.BATCHER</code></li>
+<li><code>emit ConfigUpdate.FEE_SCALARS</code></li>
+<li><code>emit ConfigUpdate.GAS_LIMIT</code></li>
+<li><code>emit ConfigUpdate.UNSAFE_BLOCK_SIGNER</code></li>
+<li><code>emit ConfigUpdate.EIP_1559_PARAMS</code></li>
+</ul>
+<p>These actions MAY only be triggered if there is a diff to the value.</p>
+<p>The <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are initialized to 0.</p>
+<h3 id="modifying-operator-fee-parameters"><a class="header" href="#modifying-operator-fee-parameters">Modifying Operator Fee Parameters</a></h3>
+<p>A new <code>SystemConfig</code> <code>UpdateType</code> is introduced that enables the modification of
+the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <code>SystemConfig</code> owner.</p>
+<h3 id="interface-2"><a class="header" href="#interface-2">Interface</a></h3>
+<h4 id="operator-fee-parameters"><a class="header" href="#operator-fee-parameters">Operator fee parameters</a></h4>
+<h5 id="operatorfeescalar"><a class="header" href="#operatorfeescalar"><code>operatorFeeScalar</code></a></h5>
+<p>This function returns the currently configured operator fee scalar.</p>
+<pre><code class="language-solidity">function operatorFeeScalar()(uint32)
+</code></pre>
+<h5 id="operatorfeeconstant"><a class="header" href="#operatorfeeconstant"><code>operatorFeeConstant</code></a></h5>
+<p>This function returns the currently configured operator fee constant.</p>
+<pre><code class="language-solidity">function operatorFeeConstant()(uint64)
+</code></pre>
+<h5 id="setoperatorfeescalars"><a class="header" href="#setoperatorfeescalars"><code>setOperatorFeeScalars</code></a></h5>
+<p>This function sets the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>.</p>
+<p>This function MUST only be callable by the <code>SystemConfig</code> owner.</p>
+<pre><code class="language-solidity">function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="isthmus-l2-chain-derivation-changes"><a class="header" href="#isthmus-l2-chain-derivation-changes">Isthmus L2 Chain Derivation Changes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/isthmus/derivation.html#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
+<ul>
+<li><a href="protocol/isthmus/derivation.html#l1block-deployment">L1Block deployment</a></li>
+<li><a href="protocol/isthmus/derivation.html#gaspriceoracle-deployment">GasPriceOracle deployment</a></li>
+<li><a href="protocol/isthmus/derivation.html#operator-fee-vault-deployment">Operator fee vault deployment</a></li>
+<li><a href="protocol/isthmus/derivation.html#l1block-proxy-update">L1Block Proxy Update</a></li>
+<li><a href="protocol/isthmus/derivation.html#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="protocol/isthmus/derivation.html#operatorfeevault-proxy-update">OperatorFeeVault Proxy Update</a></li>
+<li><a href="protocol/isthmus/derivation.html#gaspriceoracle-enable-isthmus">GasPriceOracle Enable Isthmus</a></li>
+<li><a href="protocol/isthmus/derivation.html#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/derivation.html#span-batch-updates">Span Batch Updates</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h1 id="network-upgrade-automation-transactions-3"><a class="header" href="#network-upgrade-automation-transactions-3">Network upgrade automation transactions</a></h1>
+<p>The Isthumus hardfork activation block contains the following transactions, in this order:</p>
+<ul>
+<li>L1 Attributes Transaction</li>
+<li>User deposits from L1</li>
+<li>Network Upgrade Transactions
+<ul>
+<li>L1Block deployment</li>
+<li>GasPriceOracle deployment</li>
+<li>Operator Fee vault deployment</li>
+<li>Update L1Block Proxy ERC-1967 Implementation</li>
+<li>Update GasPriceOracle Proxy ERC-1967 Implementation</li>
+<li>Update Operator Fee vault Proxy ERC-1967 Implementation</li>
+<li>GasPriceOracle Enable Isthmus</li>
+<li>EIP-2935 Contract Deployment</li>
+</ul>
+</li>
+</ul>
+<p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
+transactions by setting <code>noTxPool: true</code>.</p>
+<h2 id="l1block-deployment-1"><a class="header" href="#l1block-deployment-1">L1Block deployment</a></h2>
+<p>The <code>L1Block</code> contract is upgraded to support the Isthmus operator fee feature.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000003</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>425,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="protocol/isthmus/../../static/bytecode/isthmus-l1-block-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: L1 Block Deployment"</li>
+</ul>
+<p>This results in the Isthmus L1Block contract being deployed to <code>0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: L1 Block Deployment"))
+# 0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="gaspriceoracle-deployment-2"><a class="header" href="#gaspriceoracle-deployment-2">GasPriceOracle deployment</a></h2>
+<p>The <code>GasPriceOracle</code> contract is also upgraded to support the Isthmus operator fee feature.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000004</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1,625,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="protocol/isthmus/../../static/bytecode/isthmus-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Gas Price Oracle Deployment"</li>
+</ul>
+<p>This results in the Isthmus GasPriceOracle contract being deployed to <code>0x93e57A196454CB919193fa9946f14943cf733845</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Deployment"))
+# 0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="operator-fee-vault-deployment"><a class="header" href="#operator-fee-vault-deployment">Operator fee vault deployment</a></h2>
+<p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created with
+the following arguments:</p>
+<ul>
+<li>Recipient address: The base fee vault</li>
+<li>Min withdrawal amount: 0</li>
+<li>Withdrawal network: L2</li>
+</ul>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000005</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>500,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="protocol/isthmus/../../static/bytecode/isthmus-operator-fee-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Operator Fee Vault Deployment"</li>
+</ul>
+<p>This results in the Isthmus GasPriceOracle contract being deployed to <code>0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Operator Fee Vault Deployment"))
+# 0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="l1block-proxy-update-1"><a class="header" href="#l1block-proxy-update-1">L1Block Proxy Update</a></h2>
+<p>This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x4200000000000000000000000000000000000015</code> (L1Block Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe6000000000000000000000000ff256497d61dcd71a9e9ff43967c13fde1f72d12</code></li>
+<li><code>sourceHash</code>: <code>0xebe8b5cb10ca47e0d8bda8f5355f2d66711a54ddeb0ef1d30e29418c9bf17a0e</code>
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: L1 Block Proxy Update"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xff256497d61dcd71a9e9ff43967c13fde1f72d12)
+0x3659cfe6000000000000000000000000ff256497d61dcd71a9e9ff43967c13fde1f72d12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: L1 Block Proxy Update"))
+# 0xebe8b5cb10ca47e0d8bda8f5355f2d66711a54ddeb0ef1d30e29418c9bf17a0e
+</code></pre>
+<h2 id="gaspriceoracle-proxy-update-2"><a class="header" href="#gaspriceoracle-proxy-update-2">GasPriceOracle Proxy Update</a></h2>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe600000000000000000000000093e57a196454cb919193fa9946f14943cf733845</code></li>
+<li><code>sourceHash</code>: <code>0xecf2d9161d26c54eda6b7bfdd9142719b1e1199a6e5641468d1bf705bc531ab0</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Isthmus: Gas Price Oracle Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x93e57a196454cb919193fa9946f14943cf733845)
+0x3659cfe600000000000000000000000093e57a196454cb919193fa9946f14943cf733845
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Proxy Update"))
+# 0xecf2d9161d26c54eda6b7bfdd9142719b1e1199a6e5641468d1bf705bc531ab0
+</code></pre>
+<h2 id="operatorfeevault-proxy-update"><a class="header" href="#operatorfeevault-proxy-update">OperatorFeeVault Proxy Update</a></h2>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000001B</code> (Operator Fee Vault Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe60000000000000000000000004fa2be8cd41504037f1838bce3bcc93bc68ff537</code></li>
+<li><code>sourceHash</code>: <code>0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Isthmus: Operator Fee Vault Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x4fa2be8cd41504037f1838bce3bcc93bc68ff537)
+0x3659cfe60000000000000000000000004fa2be8cd41504037f1838bce3bcc93bc68ff537
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Operator Fee Vault Proxy Update"))
+# 0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927
+</code></pre>
+<h2 id="gaspriceoracle-enable-isthmus"><a class="header" href="#gaspriceoracle-enable-isthmus">GasPriceOracle Enable Isthmus</a></h2>
+<p>This transaction informs the GasPriceOracle to start using the Isthmus gas calculation formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>90,000</code></li>
+<li><code>data</code>: <code>0x291b0383</code></li>
+<li><code>sourceHash</code>: <code>0x3ddf4b1302548dd92939826e970f260ba36167f4c25f18390a5e8b194b295319</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Gas Price Oracle Set Isthmus"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig "setIsthmus()"
+0x8e98b106
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Set Isthmus"))
+# 0x3ddf4b1302548dd92939826e970f260ba36167f4c25f18390a5e8b194b295319
+</code></pre>
+<h2 id="eip-2935-contract-deployment"><a class="header" href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></h2>
+<p><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a> requires a contract to be deployed. To deploy this contract,
+a deposit transaction is created with attributes matching the EIP:</p>
+<ul>
+<li><code>from</code>: <code>0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10</code></li>
+<li><code>to</code>: <code>null</code>,</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>250,000</code></li>
+<li><code>data</code>: <code>0x60538060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500</code>,</li>
+<li><code>sourceHash</code>: <code>0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a</code>
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: EIP-2935 Contract Deployment"</li>
+</ul>
+<p>This results in the EIP-2935 contract being deployed to <code>0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10
+Computed Address: 0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: EIP-2935 Contract Deployment"))
+# 0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>0x6e49e66782037c0555897870e29fa5e552daf4719552131a0abce779daec0a5d</code>.</p>
+<h1 id="span-batch-updates"><a class="header" href="#span-batch-updates">Span Batch Updates</a></h1>
+<p><a href="protocol/isthmus/../delta/span-batches.html">Span batches</a> are a span of consecutive L2 blocks than are batched submitted.</p>
+<p>Span batches contain the L1 transactions and transaction types that are posted containing the span of L2 blocks.
+Since <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> introduces a new transaction type, the Span Batch must be updated to support the <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>
+transaction.</p>
+<p>This corresponds with a new RLP-encoding of the <code>tx_datas</code> list as specified in
+<a href="protocol/isthmus/../delta/span-batches.html">the Delta span batch spec</a>, adding a new transaction type:</p>
+<p>Transaction type <code>4</code> (<a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>):
+<code>0x04 ++ rlp_encode(value, max_priority_fee_per_gas, max_fee_per_gas, data, access_list, authorization_list)</code></p>
+<p>The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction extends <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> to include a new <code>authorization_list</code> field.
+<code>authorization_list</code> is an RLP-encoded list of authorization tuples.
+The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction format is as follows.</p>
+<ul>
+<li><code>value</code>: The transaction value as a <code>u256</code>.</li>
+<li><code>max_priority_fee_per_gas</code>: The maximum priority fee per gas allowed as a <code>u256</code>.</li>
+<li><code>max_fee_per_gas</code>: The maximum fee per gas as a <code>u256</code>.</li>
+<li><code>data</code>: The transaction data bytes.</li>
+<li><code>access_list</code>: The <a href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a> access list.</li>
+<li><code>authorization_list</code>: The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> signed authorization list.</li>
+</ul>
+<p>Span batches with transaction type <code>4</code> should only be accepted after Isthmus is enabled.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l2-execution-engine-4"><a class="header" href="#l2-execution-engine-4">L2 Execution Engine</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -9373,10 +9720,20 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 <li><a href="protocol/isthmus/exec-engine.html#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></li>
 </ul>
 </li>
+<li><a href="protocol/isthmus/exec-engine.html#fees">Fees</a>
+<ul>
+<li><a href="protocol/isthmus/exec-engine.html#operator-fee">Operator Fee</a>
+<ul>
+<li><a href="protocol/isthmus/exec-engine.html#configuring-parameters">Configuring Parameters</a></li>
+</ul>
+</li>
+<li><a href="protocol/isthmus/exec-engine.html#fee-vaults">Fee Vaults</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
-<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
+<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
 <p>The storage root of the <code>L2ToL1MessagePasser</code> is included in the block header's
 <code>withdrawalRoot</code> field.</p>
 <h2 id="timestamp-activation-2"><a class="header" href="#timestamp-activation-2">Timestamp Activation</a></h2>
@@ -9492,34 +9849,260 @@ specific hardfork as this type does not exist pre-Pectra.</p>
 <h3 id="engine_newpayloadv4-api"><a class="header" href="#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></h3>
 <p>Post Isthmus, <code>engine_newPayloadV4</code> will be used with the additional <code>ExecutionPayload</code> attribute. This attribute
 is omitted prior to Isthmus.</p>
+<h2 id="fees-2"><a class="header" href="#fees-2">Fees</a></h2>
+<p>New OP stack variants have different resource consumption patterns, and thus require a more flexible
+pricing model. To enable more customizable fee structures, Isthmus adds a new component to the fee
+calculation: the <code>operatorFee</code>, which is parameterized by two scalars: the <code>operatorFeeScalar</code>
+and the <code>operatorFeeConstant</code>.</p>
+<h3 id="operator-fee"><a class="header" href="#operator-fee">Operator Fee</a></h3>
+<p>The operator fee, is set as follows:</p>
+<p><code>operatorFee = (gasUsed * operatorFeeScalar / 1e6) + operatorFeeConstant</code></p>
+<p>Where:</p>
+<ul>
+<li><code>gasUsed</code> is amount of gas used by the transaction.</li>
+<li><code>operatorFeeScalar</code> is a <code>uint32</code> scalar set by the chain operator, scaled by <code>1e6</code>.</li>
+<li><code>operatorFeeConstant</code> is a <code>uint64</code> scalar set by the chain operator.</li>
+</ul>
+<h4 id="configuring-parameters"><a class="header" href="#configuring-parameters">Configuring Parameters</a></h4>
+<p><code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are loaded in a similar way to the <code>baseFeeScalar</code> and
+<code>blobBaseFeeScalar</code> used in the <a href="protocol/isthmus/../../protocol/exec-engine.html#ecotone-l1-cost-fee-changes-eip-4844-da"><code>L1Fee</code></a>.
+calculation. In more detail, these parameters can be accessed in two interchangable ways.</p>
+<ul>
+<li>read from the deposited L1 attributes (<code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>) of the current L2 block</li>
+<li>read from the L1 Block Info contract (<code>0x4200000000000000000000000000000000000015</code>)
+<ul>
+<li>using the respective solidity getter functions (<code>operatorFeeScalar</code>, <code>operatorFeeConstant</code>)</li>
+<li>using direct storage-reads:
+<ul>
+<li>Operator fee scalar as big-endian <code>uint32</code> in slot <code>8</code> at offset <code>0</code>.</li>
+<li>Operator fee constant as big-endian <code>uint64</code> in slot <code>8</code> at offset <code>4</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="fee-vaults-1"><a class="header" href="#fee-vaults-1">Fee Vaults</a></h3>
+<p>These collected fees are sent to a new vault for the <code>operatorFee</code>: the <a href="protocol/isthmus/predeploys.html#operatorfeevault"><code>OperatorFeeVault</code></a>.</p>
+<p>Like the existing vaults, this is a hardcoded address, pointing at a pre-deployed proxy contract.
+The proxy is backed by a vault contract deployment, based on <code>FeeVault</code>, to route vault funds to L1 securely.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="isthumus-l2-chain-derivation-changes"><a class="header" href="#isthumus-l2-chain-derivation-changes">Isthumus L2 Chain Derivation Changes</a></h1>
+<h1 id="isthmus-l2-chain-derivation-changes-1"><a class="header" href="#isthmus-l2-chain-derivation-changes-1">Isthmus L2 Chain Derivation Changes</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="protocol/isthmus/derivation.html#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
 <ul>
+<li><a href="protocol/isthmus/derivation.html#l1block-deployment">L1Block deployment</a></li>
+<li><a href="protocol/isthmus/derivation.html#gaspriceoracle-deployment">GasPriceOracle deployment</a></li>
+<li><a href="protocol/isthmus/derivation.html#operator-fee-vault-deployment">Operator fee vault deployment</a></li>
+<li><a href="protocol/isthmus/derivation.html#l1block-proxy-update">L1Block Proxy Update</a></li>
+<li><a href="protocol/isthmus/derivation.html#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="protocol/isthmus/derivation.html#operatorfeevault-proxy-update">OperatorFeeVault Proxy Update</a></li>
+<li><a href="protocol/isthmus/derivation.html#gaspriceoracle-enable-isthmus">GasPriceOracle Enable Isthmus</a></li>
 <li><a href="protocol/isthmus/derivation.html#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
 </ul>
 </li>
 <li><a href="protocol/isthmus/derivation.html#span-batch-updates">Span Batch Updates</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h1 id="network-upgrade-automation-transactions-3"><a class="header" href="#network-upgrade-automation-transactions-3">Network upgrade automation transactions</a></h1>
+<h1 id="network-upgrade-automation-transactions-4"><a class="header" href="#network-upgrade-automation-transactions-4">Network upgrade automation transactions</a></h1>
 <p>The Isthumus hardfork activation block contains the following transactions, in this order:</p>
 <ul>
 <li>L1 Attributes Transaction</li>
 <li>User deposits from L1</li>
 <li>Network Upgrade Transactions
 <ul>
+<li>L1Block deployment</li>
+<li>GasPriceOracle deployment</li>
+<li>Operator Fee vault deployment</li>
+<li>Update L1Block Proxy ERC-1967 Implementation</li>
+<li>Update GasPriceOracle Proxy ERC-1967 Implementation</li>
+<li>Update Operator Fee vault Proxy ERC-1967 Implementation</li>
+<li>GasPriceOracle Enable Isthmus</li>
 <li>EIP-2935 Contract Deployment</li>
 </ul>
 </li>
 </ul>
 <p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
 transactions by setting <code>noTxPool: true</code>.</p>
-<h2 id="eip-2935-contract-deployment"><a class="header" href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></h2>
+<h2 id="l1block-deployment-2"><a class="header" href="#l1block-deployment-2">L1Block deployment</a></h2>
+<p>The <code>L1Block</code> contract is upgraded to support the Isthmus operator fee feature.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000003</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>425,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="protocol/isthmus/../../static/bytecode/isthmus-l1-block-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: L1 Block Deployment"</li>
+</ul>
+<p>This results in the Isthmus L1Block contract being deployed to <code>0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: L1 Block Deployment"))
+# 0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="gaspriceoracle-deployment-3"><a class="header" href="#gaspriceoracle-deployment-3">GasPriceOracle deployment</a></h2>
+<p>The <code>GasPriceOracle</code> contract is also upgraded to support the Isthmus operator fee feature.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000004</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1,625,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="protocol/isthmus/../../static/bytecode/isthmus-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Gas Price Oracle Deployment"</li>
+</ul>
+<p>This results in the Isthmus GasPriceOracle contract being deployed to <code>0x93e57A196454CB919193fa9946f14943cf733845</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Deployment"))
+# 0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="operator-fee-vault-deployment-1"><a class="header" href="#operator-fee-vault-deployment-1">Operator fee vault deployment</a></h2>
+<p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created with
+the following arguments:</p>
+<ul>
+<li>Recipient address: The base fee vault</li>
+<li>Min withdrawal amount: 0</li>
+<li>Withdrawal network: L2</li>
+</ul>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000005</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>500,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="protocol/isthmus/../../static/bytecode/isthmus-operator-fee-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Operator Fee Vault Deployment"</li>
+</ul>
+<p>This results in the Isthmus GasPriceOracle contract being deployed to <code>0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Operator Fee Vault Deployment"))
+# 0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="l1block-proxy-update-2"><a class="header" href="#l1block-proxy-update-2">L1Block Proxy Update</a></h2>
+<p>This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x4200000000000000000000000000000000000015</code> (L1Block Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe6000000000000000000000000ff256497d61dcd71a9e9ff43967c13fde1f72d12</code></li>
+<li><code>sourceHash</code>: <code>0xebe8b5cb10ca47e0d8bda8f5355f2d66711a54ddeb0ef1d30e29418c9bf17a0e</code>
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: L1 Block Proxy Update"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xff256497d61dcd71a9e9ff43967c13fde1f72d12)
+0x3659cfe6000000000000000000000000ff256497d61dcd71a9e9ff43967c13fde1f72d12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: L1 Block Proxy Update"))
+# 0xebe8b5cb10ca47e0d8bda8f5355f2d66711a54ddeb0ef1d30e29418c9bf17a0e
+</code></pre>
+<h2 id="gaspriceoracle-proxy-update-3"><a class="header" href="#gaspriceoracle-proxy-update-3">GasPriceOracle Proxy Update</a></h2>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe600000000000000000000000093e57a196454cb919193fa9946f14943cf733845</code></li>
+<li><code>sourceHash</code>: <code>0xecf2d9161d26c54eda6b7bfdd9142719b1e1199a6e5641468d1bf705bc531ab0</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Isthmus: Gas Price Oracle Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x93e57a196454cb919193fa9946f14943cf733845)
+0x3659cfe600000000000000000000000093e57a196454cb919193fa9946f14943cf733845
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Proxy Update"))
+# 0xecf2d9161d26c54eda6b7bfdd9142719b1e1199a6e5641468d1bf705bc531ab0
+</code></pre>
+<h2 id="operatorfeevault-proxy-update-1"><a class="header" href="#operatorfeevault-proxy-update-1">OperatorFeeVault Proxy Update</a></h2>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000001B</code> (Operator Fee Vault Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe60000000000000000000000004fa2be8cd41504037f1838bce3bcc93bc68ff537</code></li>
+<li><code>sourceHash</code>: <code>0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Isthmus: Operator Fee Vault Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x4fa2be8cd41504037f1838bce3bcc93bc68ff537)
+0x3659cfe60000000000000000000000004fa2be8cd41504037f1838bce3bcc93bc68ff537
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Operator Fee Vault Proxy Update"))
+# 0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927
+</code></pre>
+<h2 id="gaspriceoracle-enable-isthmus-1"><a class="header" href="#gaspriceoracle-enable-isthmus-1">GasPriceOracle Enable Isthmus</a></h2>
+<p>This transaction informs the GasPriceOracle to start using the Isthmus gas calculation formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>90,000</code></li>
+<li><code>data</code>: <code>0x291b0383</code></li>
+<li><code>sourceHash</code>: <code>0x3ddf4b1302548dd92939826e970f260ba36167f4c25f18390a5e8b194b295319</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Gas Price Oracle Set Isthmus"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig "setIsthmus()"
+0x8e98b106
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Set Isthmus"))
+# 0x3ddf4b1302548dd92939826e970f260ba36167f4c25f18390a5e8b194b295319
+</code></pre>
+<h2 id="eip-2935-contract-deployment-1"><a class="header" href="#eip-2935-contract-deployment-1">EIP-2935 Contract Deployment</a></h2>
 <p><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a> requires a contract to be deployed. To deploy this contract,
 a deposit transaction is created with attributes matching the EIP:</p>
 <ul>
@@ -9542,7 +10125,7 @@ Computed Address: 0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
 <code>0x6e49e66782037c0555897870e29fa5e552daf4719552131a0abce779daec0a5d</code>.</p>
-<h1 id="span-batch-updates"><a class="header" href="#span-batch-updates">Span Batch Updates</a></h1>
+<h1 id="span-batch-updates-1"><a class="header" href="#span-batch-updates-1">Span Batch Updates</a></h1>
 <p><a href="protocol/isthmus/../delta/span-batches.html">Span batches</a> are a span of consecutive L2 blocks than are batched submitted.</p>
 <p>Span batches contain the L1 transactions and transaction types that are posted containing the span of L2 blocks.
 Since <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> introduces a new transaction type, the Span Batch must be updated to support the <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>
@@ -9564,6 +10147,42 @@ The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction f
 </ul>
 <p>Span batches with transaction type <code>4</code> should only be accepted after Isthmus is enabled.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l1-block-attributes"><a class="header" href="#l1-block-attributes">L1 Block Attributes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/isthmus/l1-attributes.html#overview">Overview</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
+<p>The L1 block attributes transaction is updated to include the operator fee parameters.</p>
+<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
+<tr><td>{0x098999be}</td><td></td><td>0-3</td><td>n/a</td></tr>
+<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
+<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
+<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
+<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
+<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
+<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
+<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
+<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
+<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
+<tr><td>operatorFeeScalar</td><td>uint32</td><td>164-167</td><td>6</td></tr>
+<tr><td>operatorFeeConstant</td><td>uint64</td><td>168-175</td><td></td></tr>
+</tbody></table>
+</div>
+<p>Note that the first input argument, in the same pattern as previous versions of the L1 attributes transaction,
+is the function selector: the first four bytes of <code>keccak256("setL1BlockValuesIsthmus()")</code>.</p>
+<p>In the first L2 block after the Isthmus activation block, the Isthmus L1 attributes are first used.</p>
+<p>The pre-Isthmus values are migrated over 1:1.
+Blocks after the Isthmus activation block contain all pre-Isthmus values 1:1,
+and also set the following new attributes:</p>
+<ul>
+<li>The <code>operatorFeeScalar</code> is set to <code>0</code>.</li>
+<li>The <code>operatorFeeConstant</code> is set to <code>0</code>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="predeploys-2"><a class="header" href="#predeploys-2">Predeploys</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -9580,22 +10199,23 @@ The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction f
 </li>
 </ul>
 </li>
-<li><a href="protocol/isthmus/predeploys.html#feevault">FeeVault</a></li>
+<li><a href="protocol/isthmus/predeploys.html#operatorfeevault">OperatorFeeVault</a></li>
 </ul>
 </li>
 <li><a href="protocol/isthmus/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
-<p>TODO describe operator fee change</p>
+<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
 <h3 id="l1block-1"><a class="header" href="#l1block-1">L1Block</a></h3>
-<h4 id="interface-2"><a class="header" href="#interface-2">Interface</a></h4>
+<h4 id="interface-3"><a class="header" href="#interface-3">Interface</a></h4>
 <h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
 <p>This function is meant to be called once on the activation block of the holocene network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
 call each getter for the network specific config and set the returndata into storage.</p>
-<h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
-<p>TODO</p>
+<h3 id="operatorfeevault"><a class="header" href="#operatorfeevault">OperatorFeeVault</a></h3>
+<p>This vault implements <code>FeeVault</code>, like <code>BaseFeeVault</code>, <code>SequencerFeeVault</code>, and <code>L1FeeVault</code>.
+No special logic is needed in order to insert or withdraw funds.</p>
+<p>Its address will be <code>0x420000000000000000000000000000000000001b</code>.</p>
 <h2 id="security-considerations-4"><a class="header" href="#security-considerations-4">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="superchain-config"><a class="header" href="#superchain-config">Superchain Config</a></h1>
@@ -9623,7 +10243,7 @@ call each getter for the network specific config and set the returndata into sto
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
+<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -9756,7 +10376,7 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
+<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
 <p>Custom gas token is also known as "custom L2 native asset". It allows for an L1-native ERC20 token to collateralize
 and act as the gas token on L2. The native asset is used to buy gas which is used to pay for resources on the network
 and is represented by EVM opcodes such as <code>CALLVALUE</code> (<code>msg.value</code>).</p>
@@ -9944,7 +10564,7 @@ a tuple of the address and decimals of the custom gas token.</p>
 <li>The <code>L1CrossDomainMessenger</code> fetches this tuple from the <code>SystemConfig</code> contract.</li>
 <li>The <code>L2CrossDomainMessenger</code> fetches this tuple from the <code>L1Block</code> contract.</li>
 </ul>
-<h3 id="systemconfig"><a class="header" href="#systemconfig">SystemConfig</a></h3>
+<h3 id="systemconfig-1"><a class="header" href="#systemconfig-1">SystemConfig</a></h3>
 <p>The <code>SystemConfig</code> is the source of truth for the address of the custom gas token. It does on chain validation,
 stores information about the token and well as passes the information to L2.</p>
 <h4 id="initialize"><a class="header" href="#initialize">initialize</a></h4>
@@ -10043,7 +10663,7 @@ the upgrade will work because there is no guarantee that the <code>Proxy</code> 
 <code>ProxyAdmin</code> and going through the <code>ProxyAdmin</code> would require stealing the identity
 of its owner, which may be different on every chain. That would require adding L2
 RPC access to the derivation pipeline and make the upgrade transactions non deterministic.</p>
-<h3 id="l1block-deployment-1"><a class="header" href="#l1block-deployment-1">L1Block Deployment</a></h3>
+<h3 id="l1block-deployment-3"><a class="header" href="#l1block-deployment-3">L1Block Deployment</a></h3>
 <ul>
 <li><code>from</code>: <code>0x4210000000000000000000000000000000000002</code></li>
 <li><code>to</code>: <code>null</code></li>
@@ -10073,7 +10693,7 @@ RPC access to the derivation pipeline and make the upgrade transactions non dete
 <li><code>data</code>: TODO</li>
 <li><code>sourceHash</code>: TODO</li>
 </ul>
-<h3 id="l1block-proxy-update-1"><a class="header" href="#l1block-proxy-update-1">L1Block Proxy Update</a></h3>
+<h3 id="l1block-proxy-update-3"><a class="header" href="#l1block-proxy-update-3">L1Block Proxy Update</a></h3>
 <ul>
 <li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
 <li><code>to</code>: <code>0x4200000000000000000000000000000000000015</code></li>
@@ -10110,7 +10730,7 @@ or <a href="https://github.com/ethereum/execution-apis/pull/484">APIs</a>.</p>
 <h2 id="standard-config"><a class="header" href="#standard-config">Standard Config</a></h2>
 <p>There is currently no strong definition of what it means to be part of the standard config when using
 the OP Stack with custom gas token enabled. This will be defined in the future.</p>
-<h2 id="fees-2"><a class="header" href="#fees-2">Fees</a></h2>
+<h2 id="fees-3"><a class="header" href="#fees-3">Fees</a></h2>
 <p>The OP Stack natively charges fees in terms of ether due to the fee formula taking into account the basefee and
 blobbasefee. When a custom gas token is used, fees are paid in the custom gas token but the conversion rate to ether
 is not taken into account as part of the protocol. It is assumed that the fees will be configured by the chain
@@ -10229,7 +10849,7 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
+<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
 <h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
@@ -10246,8 +10866,8 @@ configurability.</p>
 <tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>uint8(7)</code></td><td>Sets the chain id of the base chain</td></tr>
 </tbody></table>
 </div>
-<h2 id="systemconfig-1"><a class="header" href="#systemconfig-1"><code>SystemConfig</code></a></h2>
-<h3 id="configupdate-1"><a class="header" href="#configupdate-1"><code>ConfigUpdate</code></a></h3>
+<h2 id="systemconfig-2"><a class="header" href="#systemconfig-2"><code>SystemConfig</code></a></h2>
+<h3 id="configupdate-2"><a class="header" href="#configupdate-2"><code>ConfigUpdate</code></a></h3>
 <p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
 <tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
@@ -10257,7 +10877,7 @@ configurability.</p>
 <tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
 </tbody></table>
 </div>
-<h3 id="initialization-1"><a class="header" href="#initialization-1">Initialization</a></h3>
+<h3 id="initialization-2"><a class="header" href="#initialization-2">Initialization</a></h3>
 <p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
 <ul>
 <li><code>emit ConfigUpdate.BATCHER</code></li>
@@ -10275,7 +10895,7 @@ configurability.</p>
 <li><code>setConfig(SET_REMOTE_CHAIN_ID)</code></li>
 </ul>
 <p>These actions MAY only be triggered if there is a diff to the value.</p>
-<h3 id="interface-3"><a class="header" href="#interface-3">Interface</a></h3>
+<h3 id="interface-4"><a class="header" href="#interface-4">Interface</a></h3>
 <h4 id="fee-vault-config"><a class="header" href="#fee-vault-config">Fee Vault Config</a></h4>
 <p>For each <code>FeeVault</code>, there is a setter for its config. The arguments to the setter include
 the <code>RECIPIENT</code>, the <code>MIN_WITHDRAWAL_AMOUNT</code> and the <code>WithdrawalNetwork</code>.
@@ -10292,7 +10912,7 @@ Each of these functions should be <code>public</code> and only callable by the c
 </code></pre>
 <h2 id="optimismportal-1"><a class="header" href="#optimismportal-1"><code>OptimismPortal</code></a></h2>
 <p>The <code>OptimismPortal</code> is updated to emit a special system <code>TransactionDeposited</code> event.</p>
-<h3 id="interface-4"><a class="header" href="#interface-4">Interface</a></h3>
+<h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
 <h4 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h4>
 <p>The <code>setConfig</code> function MUST only be callable by the <code>SystemConfig</code>. This ensures that the <code>SystemConfig</code>
 is the single source of truth for chain operator ownership.</p>
@@ -10334,10 +10954,10 @@ that call the L2 <code>ProxyAdmin</code>.</p>
 <tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
+<h3 id="interface-6"><a class="header" href="#interface-6">Interface</a></h3>
 <pre><code class="language-solidity">function upgrader() public view returns (address)
 </code></pre>
-<h3 id="initialization-2"><a class="header" href="#initialization-2">Initialization</a></h3>
+<h3 id="initialization-3"><a class="header" href="#initialization-3">Initialization</a></h3>
 <p>The <code>upgrader</code> can only be set during initialization.</p>
 <h2 id="predeploys-3"><a class="header" href="#predeploys-3">Predeploys</a></h2>
 <p>This upgrade enables a deterministic L2 genesis state by moving all network
@@ -10404,7 +11024,7 @@ system or a chain governor can issue upgrades to the predeploys.</p>
 </ul>
 <p>Each slot MUST have a defined <code>ConfigType</code> that authorizes the setting of the storage slot
 via a deposit transaction from the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="interface-6"><a class="header" href="#interface-6">Interface</a></h4>
+<h4 id="interface-7"><a class="header" href="#interface-7">Interface</a></h4>
 <h5 id="setisthmus-1"><a class="header" href="#setisthmus-1"><code>setIsthmus</code></a></h5>
 <p>This function is meant to be called once on the activation block of the holocene network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
@@ -10423,9 +11043,9 @@ contract by removing the need for special getters for each piece of config.</p>
 <pre><code class="language-solidity">function getConfig(ConfigType)(bytes)
 </code></pre>
 <p>The caller needs to ABI decode the data into the desired type.</p>
-<h3 id="feevault-1"><a class="header" href="#feevault-1">FeeVault</a></h3>
+<h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
 <p>The following changes apply to each of the <code>BaseFeeVault</code>, the <code>L1FeeVault</code> and the <code>SequencerFeeVault</code>.</p>
-<h4 id="interface-7"><a class="header" href="#interface-7">Interface</a></h4>
+<h4 id="interface-8"><a class="header" href="#interface-8">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract:</p>
 <ul>
 <li><code>recipient()(address)</code></li>
@@ -10444,21 +11064,21 @@ contract by removing the need for special getters for each piece of config.</p>
 <pre><code class="language-solidity">function config()(address,uint256,WithdrawalNetwork)
 </code></pre>
 <h3 id="l2crossdomainmessenger-1"><a class="header" href="#l2crossdomainmessenger-1">L2CrossDomainMessenger</a></h3>
-<h4 id="interface-8"><a class="header" href="#interface-8">Interface</a></h4>
+<h4 id="interface-9"><a class="header" href="#interface-9">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherMessenger()(address)</code></li>
 <li><code>OTHER_MESSENGER()(address)</code></li>
 </ul>
 <h3 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h3>
-<h4 id="interface-9"><a class="header" href="#interface-9">Interface</a></h4>
+<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherBridge()(address)</code></li>
 <li><code>OTHER_BRIDGE()(address)</code></li>
 </ul>
 <h3 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h3>
-<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
+<h4 id="interface-11"><a class="header" href="#interface-11">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherBridge()(address)</code></li>
@@ -10503,7 +11123,7 @@ a future hardfork.</p>
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
+<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -11194,7 +11814,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
+<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -11399,7 +12019,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-37"><a class="header" href="#overview-37">Overview</a></h3>
+<h3 id="overview-39"><a class="header" href="#overview-39">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -11466,7 +12086,7 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-38"><a class="header" href="#overview-38">Overview</a></h3>
+<h3 id="overview-40"><a class="header" href="#overview-40">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -11646,7 +12266,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-39"><a class="header" href="#overview-39">Overview</a></h3>
+<h3 id="overview-41"><a class="header" href="#overview-41">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -11793,7 +12413,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
+<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -12110,7 +12730,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainERC20Bridge</code>.
@@ -12526,7 +13146,7 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
+<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
 <p>New derivation rules are added to guaranteee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
@@ -12674,7 +13294,7 @@ that very old logs are more expensive to prove.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -12780,7 +13400,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -12813,7 +13433,7 @@ function systemConfigs(uint256 _l2ChainId) external view returns (address);
 function version() external view returns (string memory);
 </code></pre>
 <h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
-<h3 id="interface-11"><a class="header" href="#interface-11">Interface</a></h3>
+<h3 id="interface-12"><a class="header" href="#interface-12">Interface</a></h3>
 <h4 id="deploy-1"><a class="header" href="#deploy-1"><code>deploy</code></a></h4>
 <p>The <code>deploy</code> method is used to deploy the full set of L1 contracts required to setup a new OP Stack
 chain that complies with the <a href="experimental/../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
@@ -12911,7 +13531,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
 <p>This section is written specifically for the Isthmus upgrade path, which is the first upgrade which will
 be performed by the OP Contracts Manager.</p>
-<h3 id="interface-12"><a class="header" href="#interface-12">Interface</a></h3>
+<h3 id="interface-13"><a class="header" href="#interface-13">Interface</a></h3>
 <h4 id="upgrade-2"><a class="header" href="#upgrade-2"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
@@ -12963,7 +13583,7 @@ function, increasing the cost and reducing the number of OP Chains which can be 
 <p>Because different OP Chains within a Superchain may use different dispute game types, and are
 expected to move from a permissioned to permissionless game over time, an <code>addGameType()</code> method is
 provided to enable adding a new game type to multiple games at once.</p>
-<h3 id="interface-13"><a class="header" href="#interface-13">Interface</a></h3>
+<h3 id="interface-14"><a class="header" href="#interface-14">Interface</a></h3>
 <h4 id="addgametype"><a class="header" href="#addgametype"><code>addGameType</code></a></h4>
 <p>The <code>addGameType</code> method is used to orchestrate the actions required to add a new game type to one
 or more chains.</p>
@@ -13070,7 +13690,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -13226,7 +13846,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,

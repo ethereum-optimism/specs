@@ -184,29 +184,30 @@
 </li>
 </ul>
 </li>
-<li><a href="#feevault">FeeVault</a></li>
+<li><a href="#operatorfeevault">OperatorFeeVault</a></li>
 </ul>
 </li>
 <li><a href="#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>TODO describe operator fee change</p>
 <h3 id="l1block"><a class="header" href="#l1block">L1Block</a></h3>
 <h4 id="interface"><a class="header" href="#interface">Interface</a></h4>
 <h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
 <p>This function is meant to be called once on the activation block of the holocene network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
 call each getter for the network specific config and set the returndata into storage.</p>
-<h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
-<p>TODO</p>
+<h3 id="operatorfeevault"><a class="header" href="#operatorfeevault">OperatorFeeVault</a></h3>
+<p>This vault implements <code>FeeVault</code>, like <code>BaseFeeVault</code>, <code>SequencerFeeVault</code>, and <code>L1FeeVault</code>.
+No special logic is needed in order to insert or withdraw funds.</p>
+<p>Its address will be <code>0x420000000000000000000000000000000000001b</code>.</p>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/isthmus/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/l1-attributes.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -220,7 +221,7 @@ call each getter for the network specific config and set the returndata into sto
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/isthmus/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/l1-attributes.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

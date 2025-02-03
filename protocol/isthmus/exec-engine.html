@@ -205,6 +205,16 @@
 <li><a href="#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></li>
 </ul>
 </li>
+<li><a href="#fees">Fees</a>
+<ul>
+<li><a href="#operator-fee">Operator Fee</a>
+<ul>
+<li><a href="#configuring-parameters">Configuring Parameters</a></li>
+</ul>
+</li>
+<li><a href="#fee-vaults">Fee Vaults</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
@@ -324,12 +334,48 @@ specific hardfork as this type does not exist pre-Pectra.</p>
 <h3 id="engine_newpayloadv4-api"><a class="header" href="#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></h3>
 <p>Post Isthmus, <code>engine_newPayloadV4</code> will be used with the additional <code>ExecutionPayload</code> attribute. This attribute
 is omitted prior to Isthmus.</p>
+<h2 id="fees"><a class="header" href="#fees">Fees</a></h2>
+<p>New OP stack variants have different resource consumption patterns, and thus require a more flexible
+pricing model. To enable more customizable fee structures, Isthmus adds a new component to the fee
+calculation: the <code>operatorFee</code>, which is parameterized by two scalars: the <code>operatorFeeScalar</code>
+and the <code>operatorFeeConstant</code>.</p>
+<h3 id="operator-fee"><a class="header" href="#operator-fee">Operator Fee</a></h3>
+<p>The operator fee, is set as follows:</p>
+<p><code>operatorFee = (gasUsed * operatorFeeScalar / 1e6) + operatorFeeConstant</code></p>
+<p>Where:</p>
+<ul>
+<li><code>gasUsed</code> is amount of gas used by the transaction.</li>
+<li><code>operatorFeeScalar</code> is a <code>uint32</code> scalar set by the chain operator, scaled by <code>1e6</code>.</li>
+<li><code>operatorFeeConstant</code> is a <code>uint64</code> scalar set by the chain operator.</li>
+</ul>
+<h4 id="configuring-parameters"><a class="header" href="#configuring-parameters">Configuring Parameters</a></h4>
+<p><code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are loaded in a similar way to the <code>baseFeeScalar</code> and
+<code>blobBaseFeeScalar</code> used in the <a href="../../protocol/exec-engine.html#ecotone-l1-cost-fee-changes-eip-4844-da"><code>L1Fee</code></a>.
+calculation. In more detail, these parameters can be accessed in two interchangable ways.</p>
+<ul>
+<li>read from the deposited L1 attributes (<code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>) of the current L2 block</li>
+<li>read from the L1 Block Info contract (<code>0x4200000000000000000000000000000000000015</code>)
+<ul>
+<li>using the respective solidity getter functions (<code>operatorFeeScalar</code>, <code>operatorFeeConstant</code>)</li>
+<li>using direct storage-reads:
+<ul>
+<li>Operator fee scalar as big-endian <code>uint32</code> in slot <code>8</code> at offset <code>0</code>.</li>
+<li>Operator fee constant as big-endian <code>uint64</code> in slot <code>8</code> at offset <code>4</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="fee-vaults"><a class="header" href="#fee-vaults">Fee Vaults</a></h3>
+<p>These collected fees are sent to a new vault for the <code>operatorFee</code>: the <a href="predeploys.html#operatorfeevault"><code>OperatorFeeVault</code></a>.</p>
+<p>Like the existing vaults, this is a hardcoded address, pointing at a pre-deployed proxy contract.
+The proxy is backed by a vault contract deployment, based on <code>FeeVault</code>, to route vault funds to L1 securely.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/isthmus/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -343,7 +389,7 @@ is omitted prior to Isthmus.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/isthmus/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

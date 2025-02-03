@@ -168,13 +168,20 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="isthumus-l2-chain-derivation-changes"><a class="header" href="#isthumus-l2-chain-derivation-changes">Isthumus L2 Chain Derivation Changes</a></h1>
+<h1 id="isthmus-l2-chain-derivation-changes"><a class="header" href="#isthmus-l2-chain-derivation-changes">Isthmus L2 Chain Derivation Changes</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a>
 <ul>
+<li><a href="#l1block-deployment">L1Block deployment</a></li>
+<li><a href="#gaspriceoracle-deployment">GasPriceOracle deployment</a></li>
+<li><a href="#operator-fee-vault-deployment">Operator fee vault deployment</a></li>
+<li><a href="#l1block-proxy-update">L1Block Proxy Update</a></li>
+<li><a href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="#operatorfeevault-proxy-update">OperatorFeeVault Proxy Update</a></li>
+<li><a href="#gaspriceoracle-enable-isthmus">GasPriceOracle Enable Isthmus</a></li>
 <li><a href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
 </ul>
 </li>
@@ -188,12 +195,195 @@
 <li>User deposits from L1</li>
 <li>Network Upgrade Transactions
 <ul>
+<li>L1Block deployment</li>
+<li>GasPriceOracle deployment</li>
+<li>Operator Fee vault deployment</li>
+<li>Update L1Block Proxy ERC-1967 Implementation</li>
+<li>Update GasPriceOracle Proxy ERC-1967 Implementation</li>
+<li>Update Operator Fee vault Proxy ERC-1967 Implementation</li>
+<li>GasPriceOracle Enable Isthmus</li>
 <li>EIP-2935 Contract Deployment</li>
 </ul>
 </li>
 </ul>
 <p>To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
 transactions by setting <code>noTxPool: true</code>.</p>
+<h2 id="l1block-deployment"><a class="header" href="#l1block-deployment">L1Block deployment</a></h2>
+<p>The <code>L1Block</code> contract is upgraded to support the Isthmus operator fee feature.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000003</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>425,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="../../static/bytecode/isthmus-l1-block-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: L1 Block Deployment"</li>
+</ul>
+<p>This results in the Isthmus L1Block contract being deployed to <code>0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: L1 Block Deployment"))
+# 0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="gaspriceoracle-deployment"><a class="header" href="#gaspriceoracle-deployment">GasPriceOracle deployment</a></h2>
+<p>The <code>GasPriceOracle</code> contract is also upgraded to support the Isthmus operator fee feature.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000004</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1,625,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="../../static/bytecode/isthmus-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Gas Price Oracle Deployment"</li>
+</ul>
+<p>This results in the Isthmus GasPriceOracle contract being deployed to <code>0x93e57A196454CB919193fa9946f14943cf733845</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Deployment"))
+# 0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="operator-fee-vault-deployment"><a class="header" href="#operator-fee-vault-deployment">Operator fee vault deployment</a></h2>
+<p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created with
+the following arguments:</p>
+<ul>
+<li>Recipient address: The base fee vault</li>
+<li>Min withdrawal amount: 0</li>
+<li>Withdrawal network: L2</li>
+</ul>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000005</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>500,000</code></li>
+<li><code>data</code>: <code>0x60806040523480156100105...</code> (<a href="../../static/bytecode/isthmus-operator-fee-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Operator Fee Vault Deployment"</li>
+</ul>
+<p>This results in the Isthmus GasPriceOracle contract being deployed to <code>0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
+Computed Address: 0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Operator Fee Vault Deployment"))
+# 0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout TODO
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash
+<code>TODO</code>.</p>
+<h2 id="l1block-proxy-update"><a class="header" href="#l1block-proxy-update">L1Block Proxy Update</a></h2>
+<p>This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x4200000000000000000000000000000000000015</code> (L1Block Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe6000000000000000000000000ff256497d61dcd71a9e9ff43967c13fde1f72d12</code></li>
+<li><code>sourceHash</code>: <code>0xebe8b5cb10ca47e0d8bda8f5355f2d66711a54ddeb0ef1d30e29418c9bf17a0e</code>
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: L1 Block Proxy Update"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xff256497d61dcd71a9e9ff43967c13fde1f72d12)
+0x3659cfe6000000000000000000000000ff256497d61dcd71a9e9ff43967c13fde1f72d12
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: L1 Block Proxy Update"))
+# 0xebe8b5cb10ca47e0d8bda8f5355f2d66711a54ddeb0ef1d30e29418c9bf17a0e
+</code></pre>
+<h2 id="gaspriceoracle-proxy-update"><a class="header" href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></h2>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe600000000000000000000000093e57a196454cb919193fa9946f14943cf733845</code></li>
+<li><code>sourceHash</code>: <code>0xecf2d9161d26c54eda6b7bfdd9142719b1e1199a6e5641468d1bf705bc531ab0</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Isthmus: Gas Price Oracle Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x93e57a196454cb919193fa9946f14943cf733845)
+0x3659cfe600000000000000000000000093e57a196454cb919193fa9946f14943cf733845
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Proxy Update"))
+# 0xecf2d9161d26c54eda6b7bfdd9142719b1e1199a6e5641468d1bf705bc531ab0
+</code></pre>
+<h2 id="operatorfeevault-proxy-update"><a class="header" href="#operatorfeevault-proxy-update">OperatorFeeVault Proxy Update</a></h2>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
+deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000001B</code> (Operator Fee Vault Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe60000000000000000000000004fa2be8cd41504037f1838bce3bcc93bc68ff537</code></li>
+<li><code>sourceHash</code>: <code>0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Isthmus: Operator Fee Vault Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x4fa2be8cd41504037f1838bce3bcc93bc68ff537)
+0x3659cfe60000000000000000000000004fa2be8cd41504037f1838bce3bcc93bc68ff537
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Operator Fee Vault Proxy Update"))
+# 0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927
+</code></pre>
+<h2 id="gaspriceoracle-enable-isthmus"><a class="header" href="#gaspriceoracle-enable-isthmus">GasPriceOracle Enable Isthmus</a></h2>
+<p>This transaction informs the GasPriceOracle to start using the Isthmus gas calculation formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>90,000</code></li>
+<li><code>data</code>: <code>0x291b0383</code></li>
+<li><code>sourceHash</code>: <code>0x3ddf4b1302548dd92939826e970f260ba36167f4c25f18390a5e8b194b295319</code>,
+computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Gas Price Oracle Set Isthmus"</li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig "setIsthmus()"
+0x8e98b106
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: Gas Price Oracle Set Isthmus"))
+# 0x3ddf4b1302548dd92939826e970f260ba36167f4c25f18390a5e8b194b295319
+</code></pre>
 <h2 id="eip-2935-contract-deployment"><a class="header" href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></h2>
 <p><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a> requires a contract to be deployed. To deploy this contract,
 a deposit transaction is created with attributes matching the EIP:</p>
@@ -243,11 +433,11 @@ The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction f
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/isthmus/exec-engine.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/configurability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../protocol/isthmus/predeploys.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/isthmus/exec-engine.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -257,11 +447,11 @@ The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction f
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/isthmus/exec-engine.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/configurability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../protocol/isthmus/predeploys.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/isthmus/exec-engine.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

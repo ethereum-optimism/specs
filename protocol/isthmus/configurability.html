@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Isthmus - OP Stack Specification</title>
+        <title>Configurability - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/configurability.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -168,67 +168,85 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="isthmus-network-upgrade"><a class="header" href="#isthmus-network-upgrade">Isthmus Network Upgrade</a></h1>
+<h1 id="configurability"><a class="header" href="#configurability">Configurability</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#execution-layer">Execution Layer</a></li>
-<li><a href="#consensus-layer">Consensus Layer</a></li>
-<li><a href="#smart-contracts">Smart Contracts</a></li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#systemconfig"><code>SystemConfig</code></a>
+<ul>
+<li><a href="#configupdate"><code>ConfigUpdate</code></a></li>
+<li><a href="#initialization">Initialization</a></li>
+<li><a href="#modifying-operator-fee-parameters">Modifying Operator Fee Parameters</a></li>
+<li><a href="#interface">Interface</a>
+<ul>
+<li><a href="#operator-fee-parameters">Operator fee parameters</a>
+<ul>
+<li><a href="#operatorfeescalar"><code>operatorFeeScalar</code></a></li>
+<li><a href="#operatorfeeconstant"><code>operatorFeeConstant</code></a></li>
+<li><a href="#setoperatorfeescalars"><code>setOperatorFeeScalars</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>This document is not finalized and should be considered experimental.</p>
-<h2 id="execution-layer"><a class="header" href="#execution-layer">Execution Layer</a></h2>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The SystemConfig is updated.</p>
+<h2 id="systemconfig"><a class="header" href="#systemconfig"><code>SystemConfig</code></a></h2>
+<h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
+<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
+<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
+<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
+<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+<tr><td><code>OPERATOR_FEE_PARAMS</code></td><td><code>uint8(5)</code></td><td><code>uint256(_operatorFeeScalar) &lt;&lt; 64 | _operatorFeeConstant</code></td><td>Modifies the operator fee sclar and constant</td></tr>
+</tbody></table>
+</div>
+<h3 id="initialization"><a class="header" href="#initialization">Initialization</a></h3>
+<p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
 <ul>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7600">Pectra</a> (Execution Layer):
-<ul>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>
-<ul>
-<li><a href="./derivation.html#span-batch-updates">Span Batch Updates</a></li>
+<li><code>emit ConfigUpdate.BATCHER</code></li>
+<li><code>emit ConfigUpdate.FEE_SCALARS</code></li>
+<li><code>emit ConfigUpdate.GAS_LIMIT</code></li>
+<li><code>emit ConfigUpdate.UNSAFE_BLOCK_SIGNER</code></li>
+<li><code>emit ConfigUpdate.EIP_1559_PARAMS</code></li>
 </ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-2537">EIP-2537</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7002">EIP-7002</a>
-<ul>
-<li>The EIP-7002 predeploy contract and syscall are not adopted as part of the OP Stack.</li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a>
-<ul>
-<li>The EIP-7251 predeploy contract and syscall are not adopted as part of the OP Stack.</li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7623">EIP-7623</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a></li>
-</ul>
-</li>
-<li><a href="./exec-engine.html##l2tol1messagepasser-storage-root-in-header">L2ToL1MessagePasser Storage Root in Header</a></li>
-<li><a href="./exec-engine.html#operator-fee">Operator Fee</a></li>
-</ul>
-<h2 id="consensus-layer"><a class="header" href="#consensus-layer">Consensus Layer</a></h2>
-<ul>
-<li><a href="./derivation.html">Isthmus Derivation</a></li>
-<li><a href="./configurability.html">Configurability</a></li>
-</ul>
-<h2 id="smart-contracts"><a class="header" href="#smart-contracts">Smart Contracts</a></h2>
-<ul>
-<li><a href="./superchain-config.html">SuperchainConfig</a></li>
-<li><a href="./predeploys.html">Predeploys</a></li>
-<li><a href="./l1-attributes.html">L1 Block Attributes</a></li>
-</ul>
+<p>These actions MAY only be triggered if there is a diff to the value.</p>
+<p>The <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are initialized to 0.</p>
+<h3 id="modifying-operator-fee-parameters"><a class="header" href="#modifying-operator-fee-parameters">Modifying Operator Fee Parameters</a></h3>
+<p>A new <code>SystemConfig</code> <code>UpdateType</code> is introduced that enables the modification of
+the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <code>SystemConfig</code> owner.</p>
+<h3 id="interface"><a class="header" href="#interface">Interface</a></h3>
+<h4 id="operator-fee-parameters"><a class="header" href="#operator-fee-parameters">Operator fee parameters</a></h4>
+<h5 id="operatorfeescalar"><a class="header" href="#operatorfeescalar"><code>operatorFeeScalar</code></a></h5>
+<p>This function returns the currently configured operator fee scalar.</p>
+<pre><code class="language-solidity">function operatorFeeScalar()(uint32)
+</code></pre>
+<h5 id="operatorfeeconstant"><a class="header" href="#operatorfeeconstant"><code>operatorFeeConstant</code></a></h5>
+<p>This function returns the currently configured operator fee constant.</p>
+<pre><code class="language-solidity">function operatorFeeConstant()(uint64)
+</code></pre>
+<h5 id="setoperatorfeescalars"><a class="header" href="#setoperatorfeescalars"><code>setOperatorFeeScalars</code></a></h5>
+<p>This function sets the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>.</p>
+<p>This function MUST only be callable by the <code>SystemConfig</code> owner.</p>
+<pre><code class="language-solidity">function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/holocene/system-config.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../protocol/isthmus/configurability.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/isthmus/derivation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -238,11 +256,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/holocene/system-config.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../protocol/isthmus/configurability.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/isthmus/derivation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

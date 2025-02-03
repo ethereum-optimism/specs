@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Isthmus - OP Stack Specification</title>
+        <title>L1 Attributes - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/l1-attributes.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -168,67 +168,51 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="isthmus-network-upgrade"><a class="header" href="#isthmus-network-upgrade">Isthmus Network Upgrade</a></h1>
+<h1 id="l1-block-attributes"><a class="header" href="#l1-block-attributes">L1 Block Attributes</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#execution-layer">Execution Layer</a></li>
-<li><a href="#consensus-layer">Consensus Layer</a></li>
-<li><a href="#smart-contracts">Smart Contracts</a></li>
+<li><a href="#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>This document is not finalized and should be considered experimental.</p>
-<h2 id="execution-layer"><a class="header" href="#execution-layer">Execution Layer</a></h2>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The L1 block attributes transaction is updated to include the operator fee parameters.</p>
+<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
+<tr><td>{0x098999be}</td><td></td><td>0-3</td><td>n/a</td></tr>
+<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
+<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
+<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
+<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
+<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
+<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
+<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
+<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
+<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
+<tr><td>operatorFeeScalar</td><td>uint32</td><td>164-167</td><td>6</td></tr>
+<tr><td>operatorFeeConstant</td><td>uint64</td><td>168-175</td><td></td></tr>
+</tbody></table>
+</div>
+<p>Note that the first input argument, in the same pattern as previous versions of the L1 attributes transaction,
+is the function selector: the first four bytes of <code>keccak256("setL1BlockValuesIsthmus()")</code>.</p>
+<p>In the first L2 block after the Isthmus activation block, the Isthmus L1 attributes are first used.</p>
+<p>The pre-Isthmus values are migrated over 1:1.
+Blocks after the Isthmus activation block contain all pre-Isthmus values 1:1,
+and also set the following new attributes:</p>
 <ul>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7600">Pectra</a> (Execution Layer):
-<ul>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>
-<ul>
-<li><a href="./derivation.html#span-batch-updates">Span Batch Updates</a></li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-2537">EIP-2537</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7002">EIP-7002</a>
-<ul>
-<li>The EIP-7002 predeploy contract and syscall are not adopted as part of the OP Stack.</li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a>
-<ul>
-<li>The EIP-7251 predeploy contract and syscall are not adopted as part of the OP Stack.</li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7623">EIP-7623</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a></li>
-</ul>
-</li>
-<li><a href="./exec-engine.html##l2tol1messagepasser-storage-root-in-header">L2ToL1MessagePasser Storage Root in Header</a></li>
-<li><a href="./exec-engine.html#operator-fee">Operator Fee</a></li>
-</ul>
-<h2 id="consensus-layer"><a class="header" href="#consensus-layer">Consensus Layer</a></h2>
-<ul>
-<li><a href="./derivation.html">Isthmus Derivation</a></li>
-<li><a href="./configurability.html">Configurability</a></li>
-</ul>
-<h2 id="smart-contracts"><a class="header" href="#smart-contracts">Smart Contracts</a></h2>
-<ul>
-<li><a href="./superchain-config.html">SuperchainConfig</a></li>
-<li><a href="./predeploys.html">Predeploys</a></li>
-<li><a href="./l1-attributes.html">L1 Block Attributes</a></li>
+<li>The <code>operatorFeeScalar</code> is set to <code>0</code>.</li>
+<li>The <code>operatorFeeConstant</code> is set to <code>0</code>.</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/holocene/system-config.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../protocol/isthmus/configurability.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/isthmus/predeploys.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -238,11 +222,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/holocene/system-config.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../protocol/isthmus/configurability.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/isthmus/predeploys.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
