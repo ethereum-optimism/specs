@@ -265,8 +265,8 @@ jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOrac
 <p>This transaction MUST deploy a contract with the following code hash
 <code>TODO</code>.</p>
 <h2 id="operator-fee-vault-deployment"><a class="header" href="#operator-fee-vault-deployment">Operator fee vault deployment</a></h2>
-<p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created with
-the following arguments:</p>
+<p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created
+with the following arguments:</p>
 <ul>
 <li>Recipient address: The base fee vault</li>
 <li>Min withdrawal amount: 0</li>
@@ -283,7 +283,8 @@ the following arguments:</p>
 <li><code>sourceHash</code>: <code>0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96</code>,
 computed with the "Upgrade-deposited" type, with `intent = "Isthmus: Operator Fee Vault Deployment"</li>
 </ul>
-<p>This results in the Isthmus GasPriceOracle contract being deployed to <code>0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537</code>, to verify:</p>
+<p>This results in the Isthmus OperatorFeeVault contract being deployed to
+<code>0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537</code>, to verify:</p>
 <pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000003
 Computed Address: 0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537
 </code></pre>
@@ -433,11 +434,11 @@ The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction f
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/isthmus/configurability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/exec-engine.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../protocol/isthmus/exec-engine.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/isthmus/l1-attributes.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -447,11 +448,11 @@ The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction f
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/isthmus/configurability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/exec-engine.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../protocol/isthmus/exec-engine.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/isthmus/l1-attributes.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
