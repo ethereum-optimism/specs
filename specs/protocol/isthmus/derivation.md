@@ -118,8 +118,8 @@ This transaction MUST deploy a contract with the following code hash
 
 ## Operator fee vault deployment
 
-A new `OperatorFeeVault` contract has been created to recieve the operator fees. The contract is created with
-the following arguments:
+A new `OperatorFeeVault` contract has been created to recieve the operator fees. The contract is created
+with the following arguments:
 
 - Recipient address: The base fee vault
 - Min withdrawal amount: 0
