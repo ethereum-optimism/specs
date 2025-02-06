@@ -17,7 +17,7 @@
     - [Mitigations](#mitigations)
   - [aOP-002: DisputeGameFactory properly reports its created games](#aop-002-disputegamefactory-properly-reports-its-created-games)
     - [Mitigations](#mitigations-1)
-  - [aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period](#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
+  - [aOP-003: Incorrectly resolving games will be invalidated before they have Valid Claims](#aop-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
     - [Mitigations](#mitigations-2)
 - [Dependencies](#dependencies)
 - [Invariants](#invariants)
@@ -139,10 +139,20 @@ created.
 - Existing audit on the `DisputeGameFactory` contract
 - Integration testing
 
-### aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period
+### aOP-003: Incorrectly resolving games will be invalidated before they have Valid Claims
 
-We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
-period.
+We assume that any games that are resolved incorrectly will be invalidated either by
+[blacklisting](./anchor-state-registry.md#blacklisted-game) or by
+[retirement](./anchor-state-registry.md#retired-game) BEFORE they are considered to have
+[Valid Claims](./anchor-state-registry.md#valid-claim).
+
+Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
+[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) has
+elapsed UNLESS the Superchain-wide pause mechanism is active. Therefore, in the absence of the
+Superchain-wide pause mechanism, parties responsible for game invalidation have exactly the Dispute
+Game Finality Delay to invalidate a withdrawal after it resolves incorrectly. If the
+Superchain-wide pause is active, then any incorrectly resolving games must be invalidated before
+the pause is deactivated.
 
 #### Mitigations
 

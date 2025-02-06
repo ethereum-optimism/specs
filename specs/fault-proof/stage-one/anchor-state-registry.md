@@ -27,7 +27,7 @@
     - [Mitigations](#mitigations)
   - [aASR-002: DisputeGameFactory properly reports its created games](#aasr-002-disputegamefactory-properly-reports-its-created-games)
     - [Mitigations](#mitigations-1)
-  - [aASR-003: Incorrectly resolving games will be invalidated within the airgap delay period](#aasr-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
+  - [aASR-003: Incorrectly resolving games will be invalidated before they have Valid Claims](#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
     - [Mitigations](#mitigations-2)
 - [Invariants](#invariants)
   - [iASR-001: Games are represented as Proper Games accurately](#iasr-001-games-are-represented-as-proper-games-accurately)
@@ -45,6 +45,7 @@
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [initialize](#initialize)
+  - [paused](#paused)
   - [respectedGameType](#respectedgametype)
   - [retirementTimestamp](#retirementtimestamp)
   - [disputeGameFinalityDelaySeconds](#disputegamefinalitydelayseconds)
@@ -151,6 +152,9 @@ Specifically, a game is considered to be a Proper Game if all of the following a
 - The game is **NOT** a [Blacklisted Game](#blacklisted-game)
 - The game is **NOT** a [Retired Game](#retired-game)
 
+Additionally, ALL games will NOT be considered to be Proper Games while the Superchain-wide pause
+is active.
+
 ### Resolved Game
 
 A Dispute Game is considered to be a **Resolved Game** if the game has resolved a result in favor
@@ -241,11 +245,18 @@ created.
 - Existing audit on the `DisputeGameFactory` contract
 - Integration testing
 
-### aASR-003: Incorrectly resolving games will be invalidated within the airgap delay period
+### aASR-003: Incorrectly resolving games will be invalidated before they have Valid Claims
 
-We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
-period. Invalidation happens by either [blacklisting](#blacklisted-game) or
-[retiring](#retired-game) dispute games.
+We assume that any games that are resolved incorrectly will be invalidated either by
+[blacklisting](#blacklisted-game) or by [retirement](#retired-game) BEFORE they are considered to
+have [Valid Claims](#valid-claim).
+
+Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
+[Dispute Game Finality Delay](#dispute-game-finality-delay-airgap) has elapsed UNLESS the
+Superchain-wide pause mechanism is active. Therefore, in the absence of the Superchain-wide pause
+mechanism, parties responsible for game invalidation have exactly the Dispute Game Finality Delay
+to invalidate a withdrawal after it resolves incorrectly. If the Superchain-wide pause is active,
+then any incorrectly resolving games must be invalidated before the pause is deactivated.
 
 #### Mitigations
 
@@ -273,7 +284,7 @@ bond refunding mode.
 
 - [aASR-001](#aasr-001-dispute-game-contracts-properly-report-important-properties)
 - [aASR-002](#aasr-002-disputegamefactory-properly-reports-its-created-games)
-- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
+- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
 
 ### iASR-002: All Valid Claims are Truly Valid Claims
 
@@ -305,7 +316,7 @@ Some examples of strong negative impact are:
 
 - [aASR-001](#aasr-001-dispute-game-contracts-properly-report-important-properties)
 - [aASR-002](#aasr-002-disputegamefactory-properly-reports-its-created-games)
-- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
+- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
 
 ### iASR-003: The Anchor Game is a Truly Valid Claim
 
@@ -330,7 +341,7 @@ Dispute Game instances. This would lead games to resolve incorrectly.
 
 - [aASR-001](#aasr-001-dispute-game-contracts-properly-report-important-properties)
 - [aASR-002](#aasr-002-disputegamefactory-properly-reports-its-created-games)
-- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
+- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
 
 ### iASR-004: Invalidation functions operate correctly
 
@@ -351,7 +362,7 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 
 #### Dependencies
 
-- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period)
+- [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
 
 ## Function Specification
 
@@ -372,6 +383,10 @@ finalize withdrawals with invalidated games would be considered Critical Severit
   for game validity. In this way, the `AnchorStateRegistry` does not need to consider the state of
   the legacy blacklisting/retirement mechanisms within the `OptimismPortal` and starts from a clean
   slate.
+
+### paused
+
+Returns the value of the Superchain-wide `paused()` flag in the `SuperchainConfig` contract.
 
 ### respectedGameType
 
@@ -443,8 +458,8 @@ Determines if a game is a Retired Game.
 
 Determines if a game is a Proper Game.
 
-- MUST return `true` if and only if `isGameRegistered(game)` is `true` and
-  `isGameBlacklisted(game)` and `isGameRetired(game)` are both `false`.
+- MUST return `true` if and only if `isGameRegistered(game)` is `true`, `isGameBlacklisted(game)`
+  and `isGameRetired(game)` are both `false`, and `paused()` is `false`.
 
 ### isGameResolved
 
