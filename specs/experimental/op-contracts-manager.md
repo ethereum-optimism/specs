@@ -32,7 +32,6 @@ of governance approved [contract releases] can be found on the
   - [Interface](#interface-1)
     - [`upgrade`](#upgrade)
   - [Implementation](#implementation-1)
-    - [`IsthmusConfig` struct](#isthmusconfig-struct)
     - [Requirements on the OP Chain contracts](#requirements-on-the-op-chain-contracts)
 - [Adding game types](#adding-game-types)
   - [Interface](#interface-2)
@@ -303,8 +302,8 @@ function addGameType(AddGameInput[] memory _gameConfigs) external returns (AddGa
 The high level logic of the `addGameType` method is as follows (for each chain):
 
 1. Deploy and initialize new `DelayedWethProxy` for the new game type, if one hasn't already been specified.
-2. Deploy a new `FaultDisputeGame` contract. The constructor args must be provided as arguments, except as per the table below.
-   the value which is not available onchain is the `absolutePrestate`.
+2. Deploy a new `FaultDisputeGame` contract. The constructor args must be provided as arguments, except as per the
+   table below.
 3. Read the `DisputeGameFactory` address from the `SystemConfig`.
 4. Call `DisputeGameFactory.setImplementation()` to register the new game.
 
