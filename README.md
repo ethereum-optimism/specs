@@ -65,16 +65,74 @@ just serve
 
 ### Linting
 
-`doctoc` is used to automatically add a table of contents.
+[doctoc](https://github.com/thlorenz/doctoc) is used to automatically add a table of contents.
+
+To check the table of contents:
 
 ```sh
-just lint-specs-toc-check
+just lint-specs-toc
+```
+
+To fix the table of contents:
+
+```sh
+just lint-specs-toc-fix
+```
+
+[markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2) is used to check markdown linting errors.
+
+To check markdown linting errors:
+
+```sh
+just lint-specs-md
 ```
 
 To fix markdown linting errors:
 
 ```sh
 just lint-specs-md-fix
+```
+
+`cspell` is used to check spelling.
+
+To check spelling:
+
+```sh
+just lint-specs-spelling
+```
+
+To fix spelling:
+
+```sh
+just lint-specs-spelling-fix
+```
+
+[lychee](https://github.com/lycheeverse/lychee) is used to check hyperlinks.
+
+To check all hyperlinks respond with status 200:
+
+```sh
+just lint-links
+```
+
+`find` is used to check filenames do not contain underscores.
+
+To check filenames do not contain underscores:
+
+```sh
+just lint-filenames
+```
+
+To check all linting:
+
+```sh
+just lint
+```
+
+To fix all linting that can be automatically fixed:
+
+```sh
+just lint-fix
 ```
 
 See the [markdownlint rule reference](https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md)
@@ -94,4 +152,4 @@ To lint links:
 just lint-links
 ```
 
-[lychee](https://github.com/lycheeverse/lychee) is used for linting links.
+ is used for linting links.
