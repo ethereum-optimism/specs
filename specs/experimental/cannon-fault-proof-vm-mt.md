@@ -285,8 +285,6 @@ The FPVM is a state transition function that operates on a state object consisti
 1. `step` - [`UInt64`] A step counter.
 1. `stepsSinceLastContextSwitch` - [`UInt64`] A step counter that tracks the number of steps executed on the current
    thread since the last [preemption](#thread-preemption).
-1. `wakeup` - [`Word`] The address set via a futex syscall signaling that the VM has entered wakeup traversal or else
-   `MaxWord` if there is no active wakeup signal. For details see ["Wakeup Traversal"](#wakeup-traversal).
 1. `traverseRight` - [`Boolean`] Indicates whether the currently active thread is on the left or right thread
     stack, as well as some details on thread traversal mechanics.
     See ["Thread Traversal Mechanics"](#thread-traversal-mechanics) for details.
@@ -296,11 +294,11 @@ The FPVM is a state transition function that operates on a state object consisti
    For details, see the [“Thread Stack Hashing” section.](#thread-stack-hashing)
 1. `nextThreadID` - [`Word`] The value defining the id to assign to the next thread that is created.
 
-The state is represented by packing the above fields, in order, into a 196-byte buffer.
+The state is represented by packing the above fields, in order, into a 188-byte buffer.
 
 ### State Hash
 
-The state hash is computed by hashing the 196-byte state buffer with the Keccak256 hash function
+The state hash is computed by hashing the 188-byte state buffer with the Keccak256 hash function
 and then setting the high-order byte to the respective VM status.
 
 The VM status can be derived from the state's `exited` and `exitCode` fields.
@@ -333,11 +331,6 @@ The state of a single thread is tracked and represented by a thread state object
 1. `threadID` - [`Word`] A unique thread identifier.
 1. `exitCode` - [`UInt8`] The exit code value.
 1. `exited` - [`Boolean`] Indicates whether the thread has exited.
-1. `futexAddr` - [`Word`] An address set via a futex syscall indicating that this thread is waiting on a value change
-    at this address.
-1. `futexVal` - [`Word`] A value representing the memory contents at `futexAddr` when this thread began waiting.
-1. `futexTimeoutStep` - [`UInt64`] A value representing the future `step` at which the futex wait will time out.
-Set to `MaxWord` if no timeout is active.
 1. `pc` - [`Word`] The program counter.
 1. `nextPC` - [`Word`] The next program counter. Note that this value may not always be $pc+4$
    when executing a branch/jump delay slot.
@@ -345,11 +338,11 @@ Set to `MaxWord` if no timeout is active.
 1. `hi` - [`Word`] The MIPS HI special register.
 1. `registers` - 32 general-purpose MIPS registers numbered 0 - 31. Each register contains a `Word` value.
 
-A thread is represented by packing the above fields, in order, into a 322-byte buffer.
+A thread is represented by packing the above fields, in order, into a 298-byte buffer.
 
 ### Thread Hash
 
-A thread hash is computed by hashing the 322-byte thread state buffer with the Keccak256 hash function.
+A thread hash is computed by hashing the 298-byte thread state buffer with the Keccak256 hash function.
 
 ### Thread Stack Hashing
 
