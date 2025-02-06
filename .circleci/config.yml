@@ -43,10 +43,10 @@ jobs:
       - install-dependencies
       - run:
           name: markdown lint
-          command: just lint-specs-md-check
+          command: just lint-specs-md
       - run:
           name: markdown toc
-          command: just lint-specs-toc-check
+          command: just lint-specs-toc
 
   lint-links:
     executor: default
