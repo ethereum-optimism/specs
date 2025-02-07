@@ -56,7 +56,7 @@ function lockETH() external payable;
 
 **`unlockETH`**
 
-Withdraws a specified amount of ETH from the lockbox's liquidity pool.
+Withdraws a specified amount of ETH from the lockbox's liquidity pool to the `OptimismPortal` calling it.
 
 - Only authorized `OptimismPortal` addresses MUST be allowed to interact.
 - The function MUST NOT revert when called by an authorized `OptimismPortal` unless paused

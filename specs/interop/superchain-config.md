@@ -12,6 +12,7 @@
   - [`authorizedPortals`](#authorizedportals)
   - [`dependencySet`](#dependencyset)
   - [`dependencySetSize`](#dependencysetsize)
+  - [`isInDependencySet`](#isindependencyset)
 - [Events](#events)
   - [`DependencyAdded`](#dependencyadded)
 - [Invariants](#invariants)
@@ -63,8 +64,7 @@ between chains in the dependency set:
 
 ### `addDependency`
 
-Adds a new chain to the dependency set. Can only be called by an authorized portal via a withdrawal transaction
-initiated by the `DependencyManager`, or by the `CLUSTER_MANAGER` role.
+Adds a new chain to the dependency set. Can only be called by the `CLUSTER_MANAGER` role.
 
 ```solidity
 function addDependency(uint256 _chainId, address _systemConfig) external;
@@ -94,6 +94,14 @@ Returns the number of chains in the dependency set.
 function dependencySetSize() external view returns (uint8);
 ```
 
+### `isInDependencySet`
+
+Returns whether a chain ID is part of the dependency set.
+
+```solidity
+function isInDependencySet(uint256 _chainId) external view returns (bool);
+```
+
 ## Events
 
 ### `DependencyAdded`
@@ -106,9 +114,7 @@ event DependencyAdded(uint256 indexed chainId, address indexed systemConfig, add
 
 ## Invariants
 
-- If the chain is added through a withdrawal transaction, the L2 sender MUST be the `DependencyManager` predeploy contract.
-
-- If the chain is NOT added through a withdrawal transaction, the msg sender MUST be the `CLUSTER_MANAGER`.
+- The sender MUST be the `CLUSTER_MANAGER`.
 
 - A chain CANNOT be added to the dependency set if:
 

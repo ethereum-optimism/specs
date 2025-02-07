@@ -6,9 +6,7 @@
 
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
-- [Architecture](#architecture)
-  - [L2 DependencyManager](#l2-dependencymanager)
-  - [L1 SuperchainConfig](#l1-superchainconfig)
+  - [The CLUSTER_MANAGER Role](#the-cluster_manager-role)
 - [Future Considerations](#future-considerations)
   - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 - [Security Considerations](#security-considerations)
@@ -50,38 +48,20 @@ It is a known issue that not all software in the Ethereum ecosystem can handle 3
 The dependency set is managed in the client software. Adding a chain to the dependency set is
 considered an upgrade to the network. It is not possible to remove chains from the dependency set.
 
-During an upgrade, only the derivation pipeline (impersonating the `DEPOSITOR_ACCOUNT`)
-can initiate dependency additions on L2.
+The dependency set is managed by the L1 `SuperchainConfig` contract. It:
 
-The dependency set is managed through a two-step process involving both L2 and L1 contracts:
-
-1. The L2 `DependencyManager` predeploy contract initiates the addition of a new dependency through a withdrawal transaction
-2. The L1 `SuperchainConfig` contract processes this withdrawal and updates the L1-side dependency set
-
-## Architecture
-
-### L2 DependencyManager
-
-The L2 `DependencyManager` is a predeploy contract (0x4200000000000000000000000000000000000029)
-that manages the L2-side dependency set. It:
-
-- Maintains the list of chain IDs in the dependency set
-- Initiates withdrawal transactions to L1 when adding new dependencies
-- Provides query methods to check dependency set membership and size
-
-More details can be found on the [Dependency Manager specification](./predeploys.md#dependencymanager).
-
-### L1 SuperchainConfig
-
-The L1 `SuperchainConfig` extends `SuperchainConfig` to manage the L1-side dependency set. It:
-
-- Processes withdrawal transactions from L2 `DependencyManager`
 - Maintains the L1-side dependency set
 - Manages authorized `OptimismPortal`s
 - Handles ETH liquidity migration to `SharedLockbox` when adding new dependencies
-- Can only be updated by authorized portals through withdrawal transactions or the `CLUSTER_MANAGER` role
+- Can only be updated by the `CLUSTER_MANAGER` role
 
 More details can be found on the [Superchain Config interop specification](./superchain-config.md#Overview).
+
+### The CLUSTER_MANAGER Role
+
+The `CLUSTER_MANAGER` role is a privileged role in the `SuperchainConfig` contract that has the authority
+to directly add chains to the dependency set. This role can add chains by calling `addDependency` and must
+provide valid chain ID and `SystemConfig` contract addresses when doing so.
 
 ## Future Considerations
 
