@@ -344,7 +344,7 @@ The following diagram demonstrates this interaction and all key OP Stack compone
 </pre>
 <h3 id="withdrawing"><a class="header" href="#withdrawing">Withdrawing</a></h3>
 <p>Users may also want to withdraw ETH or ERC20 tokens from an OP Stack chain back to Ethereum. Withdrawals are initiated
-as standard transactions on L2 but are then completed using transactions on L2. Withdrawals must reference a valid
+as standard transactions on L2 but are then completed using transactions on L1. Withdrawals must reference a valid
 <code>FaultDisputeGame</code> contract that proposes the state of the L2 at a given point in time.</p>
 <pre class="mermaid">graph LR
     subgraph &quot;Ethereum L1&quot;
