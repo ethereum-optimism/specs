@@ -3726,7 +3726,7 @@ encoded with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</li
 <li><code>withdrawals</code> is set to nil prior to Canyon and an empty array after Canyon</li>
 </ul>
 <h2 id="on-future-proof-transaction-log-derivation"><a class="header" href="#on-future-proof-transaction-log-derivation">On Future-Proof Transaction Log Derivation</a></h2>
-<p>As described in [L1 Retrieval][#l1-retrieval], batcher transactions' types are required to be from a fixed allow-list.</p>
+<p>As described in <a href="protocol/derivation.html#l1-retrieval">L1 Retrieval</a>, batcher transactions' types are required to be from a fixed allow-list.</p>
 <p>However, we want to allow deposit transactions and <code>SystemConfig</code> update events to get derived even from receipts of
 future transaction types, as long as the receipts can be decoded following a best-effort process:</p>
 <p>As long as a future transaction type follows the [EIP-2718][https://eips.ethereum.org/EIPS/eip-2718] specification, the
@@ -9321,7 +9321,11 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 </ul>
 </li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-2537">EIP-2537</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a></li>
+<li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a>
+<ul>
+<li><a href="protocol/isthmus/./derivation.html#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
+</ul>
+</li>
 <li><a href="https://eips.ethereum.org/EIPS/eip-7002">EIP-7002</a>
 <ul>
 <li>The EIP-7002 predeploy contract and syscall are not adopted as part of the OP Stack.</li>
