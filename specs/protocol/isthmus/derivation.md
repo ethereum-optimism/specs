@@ -341,7 +341,7 @@ The [EIP-7702] transaction format is as follows.
 
 Singular batches with transactions of type `4` must only be accepted if Isthmus is active at the
 timestamp of the batch. If a singular batch contains a transaction of type `4` before Isthmus is
-active, this batch must be _dropped_. Note that according to Holocene derivation, this will also
+active, this batch must be _dropped_. Note that if Holocene is active, this will also
 lead to the remaining span batch, and channel that contained it, to get dropped.
 
 Also note that this check must happen at the level of individual batches that are derived from span
