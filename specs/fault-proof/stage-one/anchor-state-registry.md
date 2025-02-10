@@ -143,17 +143,25 @@ A Dispute Game is considered to be a **Proper Game** if it has not been invalida
 the mechanisms defined by the `AnchorStateRegistry` contract. A Proper Game is, in a sense, a
 "clean" game that exists in the set of games that are playing out correctly in a bug-free manner. A
 Dispute Game can be a Proper Game even if it has not yet resolved or resolves in favor of the
-Challenger. A Game that was previously a Proper Game can no longer be a Proper Game if it is later
-invalidated.
+Challenger.
 
-Specifically, a game is considered to be a Proper Game if all of the following are true:
+A Dispute Game that is **NOT** a Proper Game can also be referred to as an **Improper Game** for
+brevity. A Dispute Game can go from being a Proper Game to later *not* being an **Improper Game**
+if it is invalidated by being [blacklisted](#blacklisted-game) or [retired](#retired-game).
+
+**ALL** Dispute Games **TEMPORARILY** become Improper Games while the Superchain-wide pause
+mechanism is active. However, this is a *temporary* condition such that Registered Games that are
+not invalidated by [blacklisting](#blacklisted-game) or [retirement](#retired-game) will become
+Proper Games again once the pause is lifted. The Superchain-wide pause is therefore a way to
+*temporarily* prevent Dispute Games from being used by consumers like the `OptimismPortal` while
+relevant parties coordinate the use of some other invalidation mechanism.
+
+A Game is considered to be a Proper Game if all of the following are true:
 
 - The game is a [Registered Game](#registered-game)
 - The game is **NOT** a [Blacklisted Game](#blacklisted-game)
 - The game is **NOT** a [Retired Game](#retired-game)
-
-Additionally, ALL games will NOT be considered to be Proper Games while the Superchain-wide pause
-is active.
+- The Superchain-wide pause is not active
 
 ### Resolved Game
 
