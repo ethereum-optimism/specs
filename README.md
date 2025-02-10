@@ -70,13 +70,13 @@ just serve
 To check the table of contents:
 
 ```sh
-just lint-specs-toc
+just lint-specs-toc-check
 ```
 
 To fix the table of contents:
 
 ```sh
-just lint-specs-toc-fix
+just lint-specs-toc
 ```
 
 [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2) is used to check markdown linting errors.
@@ -84,13 +84,13 @@ just lint-specs-toc-fix
 To check markdown linting errors:
 
 ```sh
-just lint-specs-md
+just lint-specs-md-check
 ```
 
 To fix markdown linting errors:
 
 ```sh
-just lint-specs-md-fix
+just lint-specs-md
 ```
 
 `cspell` is used to check spelling.
@@ -98,13 +98,13 @@ just lint-specs-md-fix
 To check spelling:
 
 ```sh
-just lint-specs-spelling
+just lint-specs-spelling-check
 ```
 
 To fix spelling:
 
 ```sh
-just lint-specs-spelling-fix
+just lint-specs-spelling
 ```
 
 [lychee](https://github.com/lycheeverse/lychee) is used to check hyperlinks.
@@ -112,7 +112,7 @@ just lint-specs-spelling-fix
 To check all hyperlinks respond with status 200:
 
 ```sh
-just lint-links
+just lint-links-check
 ```
 
 `find` is used to check filenames do not contain underscores.
@@ -120,19 +120,19 @@ just lint-links
 To check filenames do not contain underscores:
 
 ```sh
-just lint-filenames
+just lint-filenames-check
 ```
 
 To check all linting:
 
 ```sh
-just lint
+just lint-check
 ```
 
 To fix all linting that can be automatically fixed:
 
 ```sh
-just lint-fix
+just lint
 ```
 
 See the [markdownlint rule reference](https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md)
