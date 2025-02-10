@@ -185,7 +185,11 @@
 <li><a href="#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
 </ul>
 </li>
-<li><a href="#span-batch-updates">Span Batch Updates</a></li>
+<li><a href="#span-batch-updates">Span Batch Updates</a>
+<ul>
+<li><a href="#activation">Activation</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h1 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h1>
@@ -415,7 +419,7 @@ Since <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> introduces 
 transaction.</p>
 <p>This corresponds with a new RLP-encoding of the <code>tx_datas</code> list as specified in
 <a href="../delta/span-batches.html">the Delta span batch spec</a>, adding a new transaction type:</p>
-<p>Transaction type <code>4</code> (<a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>):
+<p>Transaction type <code>4</code> (<a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> <code>SetCode</code>):
 <code>0x04 ++ rlp_encode(value, max_priority_fee_per_gas, max_fee_per_gas, data, access_list, authorization_list)</code></p>
 <p>The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction extends <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> to include a new <code>authorization_list</code> field.
 <code>authorization_list</code> is an RLP-encoded list of authorization tuples.
@@ -428,7 +432,16 @@ The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> transaction f
 <li><code>access_list</code>: The <a href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a> access list.</li>
 <li><code>authorization_list</code>: The <a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> signed authorization list.</li>
 </ul>
-<p>Span batches with transaction type <code>4</code> should only be accepted after Isthmus is enabled.</p>
+<h2 id="activation"><a class="header" href="#activation">Activation</a></h2>
+<p>Singular batches with transactions of type <code>4</code> must only be accepted if Isthmus is active at the
+timestamp of the batch. If a singular batch contains a transaction of type <code>4</code> before Isthmus is
+active, this batch must be <em>dropped</em>. Note that if Holocene is active, this will also
+lead to the remaining span batch, and channel that contained it, to get dropped.</p>
+<p>Also note that this check must happen at the level of individual batches that are derived from span
+batches, not to span batches as a whole. In particular, it is allowed for a span batch to span the
+Isthmus activation timestamp and contain SetCode transactions in singular batches that have a
+timestamp at or after the Isthmus activation time, even if the timestamp of the span batch is before
+the Isthmus activation time.</p>
 
                     </main>
 

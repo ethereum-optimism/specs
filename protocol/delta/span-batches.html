@@ -567,6 +567,9 @@ that is invalid or derived by other means exclusively:
 <ul>
 <li>any transaction that is empty (zero length <code>tx_data</code>)</li>
 <li>any <a href="../../glossary.html#deposited-transaction-type">deposited transactions</a> (identified by the transaction type prefix byte in <code>tx_data</code>)</li>
+<li>any transaction of a future type &gt; 2 (note that
+<a href="../isthmus/derivation.html#activation">Isthmus adds support</a>
+for <code>SetCode</code> transactions of type 4)</li>
 </ul>
 </li>
 </ul>
