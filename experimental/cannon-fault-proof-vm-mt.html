@@ -203,9 +203,13 @@
 <li><a href="#thread-preemption">Thread Preemption</a></li>
 </ul>
 </li>
-<li><a href="#wakeup-traversal">Wakeup Traversal</a></li>
 <li><a href="#exited-threads">Exited Threads</a></li>
-<li><a href="#waiting-threads">Waiting Threads</a></li>
+<li><a href="#futex-operations">Futex Operations</a>
+<ul>
+<li><a href="#wait">Wait</a></li>
+<li><a href="#wake">Wake</a></li>
+</ul>
+</li>
 <li><a href="#voluntary-preemption">Voluntary Preemption</a></li>
 <li><a href="#forced-preemption">Forced Preemption</a></li>
 </ul>
@@ -338,74 +342,32 @@ the FPVM would traverse to each as follows: 0, 1, 2, 3, 3, 2, 1, 0, 0, 1, 2, 3, 
 <p>Threads are traversed via "preemption": the currently active thread is popped from the active stack and pushed to the
 inactive stack.  If the active stack is empty, the FPVM state's <code>traverseRight</code> field is flipped ensuring that
 there is always an active thread.</p>
-<h3 id="wakeup-traversal"><a class="header" href="#wakeup-traversal">Wakeup Traversal</a></h3>
-<p>When a futex wake syscall is made, the FPVM state’s <code>wakeup</code> field is set to the memory address specified by this
-syscall.  This causes the FPVM to enter a "wakeup traversal" mode where it iterates
-through the existing threads, looking for a thread that is currently waiting on the <code>wakeup</code> address.
-The wakeup traversal will continue until such a thread is found or else all threads have been checked.
-During wakeup traversal, no instructions are processed and no threads are updated, the VM simply steps through threads
-one at a time until wakeup traversal completes.</p>
-<p>Wakeup traversal proceeds as follows across multiple steps:</p>
-<ul>
-<li>When a futex wakeup syscall is made:
-<ul>
-<li>The state's <code>wakeup</code> field is set to an address specified by the syscall.</li>
-<li>The currently active thread is preempted.</li>
-<li>The FPVM state is set to traverse left, if possible (if the left thread stack is non-empty).</li>
-</ul>
-</li>
-<li>On each subsequent step while <code>wakeup</code> is set:
-<ul>
-<li>The currently active thread's <code>futexAddr</code> is checked for a match with <code>wakeup</code>.</li>
-<li>If a match is found:
-<ul>
-<li>The wakeup traversal completes <sup class="footnote-reference"><a href="#traversal-completion">1</a></sup>, leaving the matching thread as the currently active thread.</li>
-</ul>
-</li>
-<li>If the currently active thread is not a match:
-<ul>
-<li>The active thread is preempted.</li>
-<li>If the right thread stack is now empty:
-<ul>
-<li>This means all threads have been visited (the traversal begins by moving
-left, then right so this is the end of the traversal).</li>
-<li>The wakeup traversal completes <sup class="footnote-reference"><a href="#traversal-completion">1</a></sup>.</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<div class="footnote-definition" id="traversal-completion"><sup class="footnote-definition-label">1</sup>
-<p>Wakeup traversal is completed by setting the FPVM state's <code>wakeup</code> field to <code>MaxWord</code>,
-causing the FPVM to resume normal execution.</p>
-</div>
 <h3 id="exited-threads"><a class="header" href="#exited-threads">Exited Threads</a></h3>
 <p>When the VM encounters an active thread that has exited, it is popped from the active thread stack, removing it from
 the VM state.</p>
-<h3 id="waiting-threads"><a class="header" href="#waiting-threads">Waiting Threads</a></h3>
-<p>Threads enter a waiting state when a futex wait syscall is successfully executed, setting the thread's
-<code>futexAddr</code>, <code>futexVal</code>, and <code>futexTimeoutStep</code> fields according to the futex syscall arguments.</p>
-<p>During normal execution, when the active thread is in a waiting state (its <code>futexAddr</code> is not equal to <code>MaxWord</code>), the VM
-checks if it can be woken up.</p>
-<p>A waiting thread will be woken up if:</p>
-<ul>
-<li>The current <code>step</code> (after incrementing) is greater than <code>futexTimeoutStep</code></li>
-<li>The memory value at <code>futexAddr</code> is no longer equal to <code>futexVal</code></li>
-</ul>
-<p>The VM will wake such a thread by resetting its futex fields:</p>
-<ul>
-<li><code>futexAddr</code> = <code>MaxWord</code></li>
-<li><code>futexVal</code> = 0</li>
-<li><code>futexTimeoutStep</code> = 0</li>
-</ul>
-<p>If the current thread is waiting and cannot be woken, it is preempted.</p>
+<h3 id="futex-operations"><a class="header" href="#futex-operations">Futex Operations</a></h3>
+<p>The VM supports <a href="https://www.man7.org/linux/man-pages/man2/futex.2.html">futex syscall</a> operations
+<code>FUTEX_WAIT_PRIVATE</code> and <code>FUTEX_WAKE_PRIVATE</code>.</p>
+<p>Futexes are commonly used to implement locks in user space.
+In this scenario, a shared 32-bit value (the "futex value") represents the state of a lock.
+If a thread cannot acquire the lock, it calls a futex wait, which puts the thread to sleep.
+To release the lock, the owning thread updates the futex value and then calls a futex wake
+to notify any other waiting threads.</p>
+<p>Because wake-ups may be spurious or could be triggered by unrelated operations on the same memory,
+waiting threads must always re-check the futex value after waking up to decide if they can proceed.</p>
+<h4 id="wait"><a class="header" href="#wait">Wait</a></h4>
+<p>When a futex wait is successfully executed, the current thread is simply <a href="#thread-preemption">preempted</a>.
+This gives other threads a chance to run and potentially change the shared futex value (for example, by releasing a lock).
+When the thread is eventually scheduled again, if the futex value has not changed the wakeup will be considered spurious
+and the thread will simply call futex wait again.</p>
+<h4 id="wake"><a class="header" href="#wake">Wake</a></h4>
+<p>When a futex wake is executed, the current thread is <a href="#thread-preemption">preempted</a>. This allows the scheduler to move
+on to other threads which may potentially be ready to run (for example, because a shared lock was released).</p>
 <h3 id="voluntary-preemption"><a class="header" href="#voluntary-preemption">Voluntary Preemption</a></h3>
-<p>In addition to the futex wait syscall (see <a href="#waiting-threads">"Waiting Threads"</a>), there are a few other syscalls that
+<p>In addition to the <a href="#futex-operations">futex syscall</a>, there are a few other syscalls that
 will cause a thread to be "voluntarily" preempted: <code>sched_yield</code>, <code>nanosleep</code>.</p>
 <h3 id="forced-preemption"><a class="header" href="#forced-preemption">Forced Preemption</a></h3>
-<p>To avoid thread starvation (for example where a thread hogs resources by never executing a sleep, yield, or wait),
+<p>To avoid thread starvation (for example where a thread hogs resources by never executing a sleep, yield, wait, etc.),
 the FPVM will force a context switch if the active thread has been executing too long.</p>
 <p>For each step executed on a particular thread, the state field <code>stepsSinceLastContextSwitch</code> is incremented.
 When a thread is preempted, <code>StepsSinceLastContextSwitch</code> is reset to 0.
@@ -480,8 +442,6 @@ or <code>0</code> if there is no active reservation.</li>
 <li><code>step</code> - [<code>UInt64</code>] A step counter.</li>
 <li><code>stepsSinceLastContextSwitch</code> - [<code>UInt64</code>] A step counter that tracks the number of steps executed on the current
 thread since the last <a href="#thread-preemption">preemption</a>.</li>
-<li><code>wakeup</code> - [<code>Word</code>] The address set via a futex syscall signaling that the VM has entered wakeup traversal or else
-<code>MaxWord</code> if there is no active wakeup signal. For details see <a href="#wakeup-traversal">"Wakeup Traversal"</a>.</li>
 <li><code>traverseRight</code> - [<code>Boolean</code>] Indicates whether the currently active thread is on the left or right thread
 stack, as well as some details on thread traversal mechanics.
 See <a href="#thread-traversal-mechanics">"Thread Traversal Mechanics"</a> for details.</li>
@@ -491,9 +451,9 @@ For details, see the <a href="#thread-stack-hashing">“Thread Stack Hashing” 
 For details, see the <a href="#thread-stack-hashing">“Thread Stack Hashing” section.</a></li>
 <li><code>nextThreadID</code> - [<code>Word</code>] The value defining the id to assign to the next thread that is created.</li>
 </ol>
-<p>The state is represented by packing the above fields, in order, into a 196-byte buffer.</p>
+<p>The state is represented by packing the above fields, in order, into a 188-byte buffer.</p>
 <h3 id="state-hash"><a class="header" href="#state-hash">State Hash</a></h3>
-<p>The state hash is computed by hashing the 196-byte state buffer with the Keccak256 hash function
+<p>The state hash is computed by hashing the 188-byte state buffer with the Keccak256 hash function
 and then setting the high-order byte to the respective VM status.</p>
 <p>The VM status can be derived from the state's <code>exited</code> and <code>exitCode</code> fields.</p>
 <pre><code class="language-rs">enum VmStatus {
@@ -521,11 +481,6 @@ fn vm_status(exit_code: u8, exited: bool) -&gt; u8 {
 <li><code>threadID</code> - [<code>Word</code>] A unique thread identifier.</li>
 <li><code>exitCode</code> - [<code>UInt8</code>] The exit code value.</li>
 <li><code>exited</code> - [<code>Boolean</code>] Indicates whether the thread has exited.</li>
-<li><code>futexAddr</code> - [<code>Word</code>] An address set via a futex syscall indicating that this thread is waiting on a value change
-at this address.</li>
-<li><code>futexVal</code> - [<code>Word</code>] A value representing the memory contents at <code>futexAddr</code> when this thread began waiting.</li>
-<li><code>futexTimeoutStep</code> - [<code>UInt64</code>] A value representing the future <code>step</code> at which the futex wait will time out.
-Set to <code>MaxWord</code> if no timeout is active.</li>
 <li><code>pc</code> - [<code>Word</code>] The program counter.</li>
 <li><code>nextPC</code> - [<code>Word</code>] The next program counter. Note that this value may not always be <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span>
 when executing a branch/jump delay slot.</li>
@@ -533,9 +488,9 @@ when executing a branch/jump delay slot.</li>
 <li><code>hi</code> - [<code>Word</code>] The MIPS HI special register.</li>
 <li><code>registers</code> - 32 general-purpose MIPS registers numbered 0 - 31. Each register contains a <code>Word</code> value.</li>
 </ol>
-<p>A thread is represented by packing the above fields, in order, into a 322-byte buffer.</p>
+<p>A thread is represented by packing the above fields, in order, into a 298-byte buffer.</p>
 <h3 id="thread-hash"><a class="header" href="#thread-hash">Thread Hash</a></h3>
-<p>A thread hash is computed by hashing the 322-byte thread state buffer with the Keccak256 hash function.</p>
+<p>A thread hash is computed by hashing the 298-byte thread state buffer with the Keccak256 hash function.</p>
 <h3 id="thread-stack-hashing"><a class="header" href="#thread-stack-hashing">Thread Stack Hashing</a></h3>
 <blockquote>
 <p><strong>Note:</strong> The <code>++</code> operation represents concatenation of 2 byte string arguments</p>
