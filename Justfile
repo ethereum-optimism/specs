@@ -23,6 +23,10 @@ lint-specs-md-check:
 lint-specs-md:
     npx markdownlint-cli2 --fix "./specs/**/*.md"
 
+# Backwards compatibility
+lint-specs-md-fix:
+    lint-specs-md
+
 # Validates Table of Content Sections with doctoc
 lint-specs-toc-check:
     npx doctoc '--title=**Table of Contents**' ./specs && git diff --exit-code ./specs
@@ -31,6 +35,10 @@ lint-specs-toc-check:
 lint-specs-toc:
     npx doctoc '--title=**Table of Contents**' ./specs
 
+# Backwards compatibility
+lint-specs-toc-fix:
+    lint-specs-toc
+
 # Validates spelling using cspell
 lint-specs-spelling-check:
     npx cspell "./**/*.md"
@@ -38,6 +46,10 @@ lint-specs-spelling-check:
 # Updates cspell words file with new words
 lint-specs-spelling:
     npx cspell --words-only --unique "./**/*.md" | sort --ignore-case | uniq > words.txt
+
+# Backwards compatibility
+lint-specs-spelling-fix:
+    lint-specs-spelling
 
 # Validates all hyperlinks respond with status 200
 lint-links-check:
