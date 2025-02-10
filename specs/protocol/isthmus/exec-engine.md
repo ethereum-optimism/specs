@@ -17,10 +17,17 @@
     - [Forwards Compatibility Considerations](#forwards-compatibility-considerations)
     - [Client Implementation Considerations](#client-implementation-considerations)
       - [Transaction Simulation](#transaction-simulation)
+- [Deposit Requests](#deposit-requests)
 - [Block Body Withdrawals List](#block-body-withdrawals-list)
+- [EVM Changes](#evm-changes)
+- [Block Sealing](#block-sealing)
 - [Engine API Updates](#engine-api-updates)
   - [Update to `ExecutableData`](#update-to-executabledata)
-  - [`engine_newPayloadV3` API](#engine_newpayloadv3-api)
+  - [`engine_newPayloadV4` API](#engine_newpayloadv4-api)
+- [Fees](#fees)
+  - [Operator Fee](#operator-fee)
+    - [Configuring Parameters](#configuring-parameters)
+  - [Fee Vaults](#fee-vaults)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -48,16 +55,21 @@ at the given block number.
 
 ### Header Validity Rules
 
-Prior to isthmus activation, the L2 block header's `withdrawalsRoot` field must be:
+Prior to isthmus activation:
 
-- `nil` if Canyon has not been activated.
-- `keccak256(rlp(empty_string_code))` if Canyon has been activated.
+- the L2 block header's `withdrawalsRoot` field must be:
+  - `nil` if Canyon has not been activated.
+  - `keccak256(rlp(empty_string_code))` if Canyon has been activated.
+- the L2 block header's `requestsHash` field must be omitted.
 
-After Isthmus activation, an L2 block header's `withdrawalsRoot` field is valid iff:
+After Isthmus activation, an L2 block header is valid iff:
 
-1. It is exactly 32 bytes in length.
-1. The [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root, as committed to in the `storageRoot` within the block
-   header, is equal to the header's `withdrawalsRoot` field.
+1. The `withdrawalsRoot` field
+    1. Is 32 bytes in length.
+    1. Matches the [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root,
+    as committed to in the `storageRoot` within the block header
+1. The `requestsHash` field is equal to `sha256('') = 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+indicating no requests in the block.
 
 ### Header Withdrawals Root
 
@@ -115,7 +127,7 @@ directly fits with the OP Stack, and makes use of the existing field in the L1 h
 
 #### Client Implementation Considerations
 
-Varous EL clients store historical state of accounts differently. If, as a contrived case, an OP Stack chain did not have
+Various EL clients store historical state of accounts differently. If, as a contrived case, an OP Stack chain did not have
 an outbound withdrawal for a long period of time, the node may not have access to the account storage root of the
 [`L2ToL1MessagePasser`][l2-to-l1-mp]. In this case, the client would be unable to keep consensus. However, most modern
 clients are able to at the very least reconstruct the account storage root at a given block on the fly if it does not
@@ -127,9 +139,44 @@ In response to RPC methods like `eth_simulateV1` that allow simulation of arbitr
 an empty withdrawals root should be included in the header of a block that consists of such simulated transactions. The same
 is applicable for scenarios where the actual withdrawals root value is not readily available.
 
+## Deposit Requests
+
+[EIP-6110] shifts deposit to the execution layer, introducing a new [EIP-7685] deposit request of type
+`DEPOSIT_REQUEST_TYPE`. Deposit requests then appear in the [EIP-7685] requests list. The OP Stack needs to ignore these
+requests. Requests generation must be modified to exclude [EIP-6110] deposit requests. Note that since the [EIP-6110]
+request type did _not_ exist prior to Pectra on L1 and the Isthmus hardfork on L2, no activation time is needed since these
+deposit type requests may always be excluded.
+
+[EIP-6110]: https://eips.ethereum.org/EIPS/eip-6110
+[EIP-7685]: https://eips.ethereum.org/EIPS/eip-7685
+
 ## Block Body Withdrawals List
 
 Withdrawals list in the block body is encoded as an empty RLP list.
+
+## EVM Changes
+
+Similar to the `bn256Pairing` precompile in the [granite hardfork](../granite/exec-engine.md),
+[EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) introduces a BLS
+precompile that short-circuits depending on input size in the EVM.
+
+The input size limits of the BLS precompile contracts are listed below:
+
+- G1 multiple-scalar-multiply: `input_size <= 513760 bytes`
+- G2 multiple-scalar-multiply: `input_size <= 488448 bytes`
+- Pairing check: `input_size <= 235008 bytes`
+
+The rest of the BLS precompiles are fixed-size operations which have a fixed gas cost.
+
+All of the BLS precompiles should be [accelerated](../../fault-proof/index.md#precompile-accelerators) in fault proof
+programs so they call out to the L1 instead of calculating the result inside the program.
+
+## Block Sealing
+
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces new request type `0x02`, the `CONSOLIDATION_REQUEST_TYPE`.
+Typed request envelopes debut in Pectra [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685). Execution layer requests
+continue to be ignored in Isthmus, including those of new type `0x02`. Note, this does not need to activate after any
+specific hardfork as this type does not exist pre-Pectra.
 
 ## Engine API Updates
 
@@ -137,7 +184,46 @@ Withdrawals list in the block body is encoded as an empty RLP list.
 
 `ExecutableData` will contain an extra field for `withdrawalsRoot` after Isthmus hard fork.
 
-### `engine_newPayloadV3` API
+### `engine_newPayloadV4` API
 
-Post Isthmus, `engine_newPayloadV3` will be used with the additional `ExecutionPayload` attribute. This attribute
+Post Isthmus, `engine_newPayloadV4` will be used with the additional `ExecutionPayload` attribute. This attribute
 is omitted prior to Isthmus.
+
+## Fees
+
+New OP stack variants have different resource consumption patterns, and thus require a more flexible
+pricing model. To enable more customizable fee structures, Isthmus adds a new component to the fee
+calculation: the `operatorFee`, which is parameterized by two scalars: the `operatorFeeScalar`
+and the `operatorFeeConstant`.
+
+### Operator Fee
+
+The operator fee, is set as follows:
+
+`operatorFee = (gasUsed * operatorFeeScalar / 1e6) + operatorFeeConstant`
+
+Where:
+
+- `gasUsed` is amount of gas used by the transaction.
+- `operatorFeeScalar` is a `uint32` scalar set by the chain operator, scaled by `1e6`.
+- `operatorFeeConstant` is a `uint64` scalar set by the chain operator.
+
+#### Configuring Parameters
+
+`operatorFeeScalar` and `operatorFeeConstant` are loaded in a similar way to the `baseFeeScalar` and
+`blobBaseFeeScalar` used in the [`L1Fee`](../../protocol/exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da).
+calculation. In more detail, these parameters can be accessed in two interchangable ways.
+
+- read from the deposited L1 attributes (`operatorFeeScalar` and `operatorFeeConstant`) of the current L2 block
+- read from the L1 Block Info contract (`0x4200000000000000000000000000000000000015`)
+  - using the respective solidity getter functions (`operatorFeeScalar`, `operatorFeeConstant`)
+  - using direct storage-reads:
+    - Operator fee scalar as big-endian `uint32` in slot `8` at offset `0`.
+    - Operator fee constant as big-endian `uint64` in slot `8` at offset `4`.
+
+### Fee Vaults
+
+These collected fees are sent to a new vault for the `operatorFee`: the [`OperatorFeeVault`](predeploys.md#operatorfeevault).
+
+Like the existing vaults, this is a hardcoded address, pointing at a pre-deployed proxy contract.
+The proxy is backed by a vault contract deployment, based on `FeeVault`, to route vault funds to L1 securely.

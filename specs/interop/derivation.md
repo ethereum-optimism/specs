@@ -13,10 +13,13 @@
       - [Deposits-complete Source-hash](#deposits-complete-source-hash)
 - [Replacing Invalid Blocks](#replacing-invalid-blocks)
   - [Optimistic Block Deposited Transaction](#optimistic-block-deposited-transaction)
+    - [Optimistic Block Source-hash](#optimistic-block-source-hash)
+- [Expiry Window](#expiry-window)
 - [Security Considerations](#security-considerations)
   - [Gas Considerations](#gas-considerations)
   - [Depositing an Executing Message](#depositing-an-executing-message)
   - [Reliance on History](#reliance-on-history)
+  - [Expiry Window](#expiry-window-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -31,6 +34,9 @@ executing messages.
 - An executing message MUST have a corresponding initiating message
 - The initiating message referenced in an executing message MUST come from a chain in its dependency set
 - A block MUST be considered invalid if it is built with any invalid executing messages
+- The timestamp of the identifier MUST be greater than or equal to the interop network upgrade timestamp
+- The timestamp of the identifier MUST be less than or equal to the timestamp of the block that includes it
+- The timestamp of the identifier MUST be greater than timestamp of the block that includes it minus the expiry window
 
 L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
 They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
@@ -117,30 +123,49 @@ When the [cross chain dependency resolution](./messaging.md#resolving-cross-chai
 that a block contains an [invalid message](./messaging.md#invalid-messages), the block is replaced
 by a block with the same inputs, except for the transactions included. The transactions from the
 original block are trimmed to include only deposit transactions plus an
-[optimistic block info deposit transaction](#optimistic-block-deposited-transaction) which is appended
+[optimistic block info deposit transaction](#optimistic-block-deposited-transaction), which is appended
 to the trimmed transaction list.
 
 ### Optimistic Block Deposited Transaction
 
-[l1-attr-deposit]: #l1-attributes-deposited-transaction
-[l2-output-root-proposals]: ../protocol/proposals.md#l2-output-commitment-construction
-
-An [L1 attributes deposited transaction][g-l1-attr-deposit] is a deposit transaction sent to the zero address.
+An Optimistic Block Deposited Transaction is a system deposited transaction,
+inserted into the replacement block,
+to signal when a previously derived local-safe block (the "optimistic" block) was invalidated.
 
 This transaction MUST have the following values:
 
-1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002` (the address of the
-   [L1 Attributes depositor account][depositor-account])
+1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002`, like the address of the
+   [L1 Attributes depositor account](../protocol/deposits.md#l1-attributes-depositor-account), but incremented by 1
 2. `to` is `0x0000000000000000000000000000000000000000` (the zero address as no EVM code execution is expected).
 3. `mint` is `0`
 4. `value` is `0`
 5. `gasLimit` is set `36000` gas, to cover intrinsic costs, processing costs, and margin for change.
 6. `isSystemTx` is set to `false`.
-7. `data` is the preimage of the [L2 output root](../glossary.md#l2-output-root-proposals)
+7. `data` is the preimage of the [L2 output root]
    of the replaced block. i.e. `version_byte || payload` without applying the `keccak256` hashing.
+8. `sourceHash` is computed with a new deposit source-hash domain, see below.
 
 This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
 `gasLimit`, as it is considered part of state-transition processing.
+
+[L2 output root]: ../glossary.md#l2-output-root-proposals
+
+#### Optimistic Block Source-hash
+
+The source hash is [computed](../protocol/deposits.md#source-hash-computation)
+with a source-hash domain: `4` (instead of `1`),
+combined with the [L2 output root] of the optimistic block that was invalidated.
+
+The source-hash is thus computed as:
+`keccak256(bytes32(uint256(4)), outputRoot))`.
+
+## Expiry Window
+
+The expiry window is the time period after which an initiating message is no longer considered valid.
+
+| Constant | Value |
+| -------- | ----- |
+| `EXPIRY_WINDOW` | `TODO` |
 
 ## Security Considerations
 
@@ -165,3 +190,10 @@ When fully executing historical blocks, a dependency on historical receipts from
 needing to execute increasingly long chain histories.
 
 [eip-4444]: https://eips.ethereum.org/EIPS/eip-4444
+
+### Expiry Window
+
+The expiry window ensures that the proof can execute in a reasonable amount of time.
+There is currently no way to prove old history with a sublinear proof size. The proof
+program needs to walk back and reexecute to reproduce the consumed logs. This means
+that very old logs are more expensive to prove.

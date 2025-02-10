@@ -21,9 +21,11 @@
     - [Extended PayloadAttributesV3](#extended-payloadattributesv3)
   - [`engine_newPayloadV2`](#engine_newpayloadv2)
   - [`engine_newPayloadV3`](#engine_newpayloadv3)
+  - [`engine_newPayloadV4`](#engine_newpayloadv4)
   - [`engine_getPayloadV2`](#engine_getpayloadv2)
   - [`engine_getPayloadV3`](#engine_getpayloadv3)
     - [Extended Response](#extended-response)
+  - [`engine_getPayloadV4`](#engine_getpayloadv4)
   - [`engine_signalSuperchainV1`](#engine_signalsuperchainv1)
 - [Networking](#networking)
 - [Sync](#sync)
@@ -299,6 +301,16 @@ The additional parameters should be set as follows:
 - `expectedBlobVersionedHashes` MUST be an empty array.
 - `parentBeaconBlockRoot` MUST be the parent beacon block root from the L1 origin block of the L2 block.
 
+### `engine_newPayloadV4`
+
+[`engine_newPayloadV4`][engine_newPayloadV4] applies an Isthmus L2 block to the engine state. There are no
+modifications to this API.
+`engine_newPayloadV4` **must only be called with Isthmus payload.**
+
+The additional parameters should be set as follows:
+
+- `executionRequests` MUST be an empty array.
+
 ### `engine_getPayloadV2`
 
 No modifications to [`engine_getPayloadV2`][engine_getPayloadV2].
@@ -327,6 +339,12 @@ The [response][GetPayloadV3Response] is extended to:
 [GetPayloadV3Response]: https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#response-2
 
 In Ecotone it MUST be set to the parentBeaconBlockRoot from the L1 Origin block of the L2 block.
+
+### `engine_getPayloadV4`
+
+[`engine_getPayloadV4`][engine_getPayloadV4] retrieves a payload by ID, prepared by `engine_forkchoiceUpdatedV3`
+when called with `payloadAttributes`.
+`engine_getPayloadV4` **must only be called with Isthmus payload.**
 
 ### `engine_signalSuperchainV1`
 
@@ -477,8 +495,10 @@ For the Ecotone upgrade, this entails that:
 [engine_forkchoiceUpdatedV2]: https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_forkchoiceupdatedv2
 [engine_newPayloadV2]: https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_newpayloadv2
 [engine_newPayloadV3]: https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_newpayloadv3
+[engine_newPayloadV4]: https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_newpayloadv4
 [engine_getPayloadV2]: https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_getpayloadv2
 [engine_getPayloadV3]: https://github.com/ethereum/execution-apis/blob/a0d03086564ab1838b462befbc083f873dcf0c0f/src/engine/cancun.md#engine_getpayloadv3
+[engine_getPayloadV4]: https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_getpayloadv4
 [HEX value encoding]: https://eth.wiki/json-rpc/API#hex-value-encoding
 [JSON-RPC-API]: https://github.com/ethereum/execution-apis
 
