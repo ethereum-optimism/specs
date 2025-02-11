@@ -65,16 +65,74 @@ just serve
 
 ### Linting
 
-`doctoc` is used to automatically add a table of contents.
+[doctoc](https://github.com/thlorenz/doctoc) is used to automatically add a table of contents.
+
+To check the table of contents:
 
 ```sh
 just lint-specs-toc-check
 ```
 
+To fix the table of contents:
+
+```sh
+just lint-specs-toc
+```
+
+[markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2) is used to check markdown linting errors.
+
+To check markdown linting errors:
+
+```sh
+just lint-specs-md-check
+```
+
 To fix markdown linting errors:
 
 ```sh
-just lint-specs-md-fix
+just lint-specs-md
+```
+
+`cspell` is used to check spelling.
+
+To check spelling:
+
+```sh
+just lint-specs-spelling-check
+```
+
+To fix spelling:
+
+```sh
+just lint-specs-spelling
+```
+
+[lychee](https://github.com/lycheeverse/lychee) is used to check hyperlinks.
+
+To check all hyperlinks respond with status 200:
+
+```sh
+just lint-links-check
+```
+
+`find` is used to check filenames do not contain underscores.
+
+To check filenames do not contain underscores:
+
+```sh
+just lint-filenames-check
+```
+
+To check all linting:
+
+```sh
+just lint-check
+```
+
+To fix all linting that can be automatically fixed:
+
+```sh
+just lint
 ```
 
 See the [markdownlint rule reference](https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md)
@@ -87,11 +145,3 @@ Justification for linting rules in
 - _no-blanks-blockquote_: enable multiple consecutive blockquotes separated by white lines
 - _single-title_: enable reusing `<h1>` for content
 - _no-emphasis-as-heading_: enable emphasized paragraphs
-
-To lint links:
-
-```sh
-just lint-links
-```
-
-[lychee](https://github.com/lycheeverse/lychee) is used for linting links.
