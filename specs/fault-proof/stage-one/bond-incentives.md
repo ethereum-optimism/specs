@@ -158,17 +158,16 @@ The `FaultDisputeGame` contract can be closed after finalization via the `closeG
 `closeGame` must do the following:
 
 1. Verify the game is resolved and finalized according to the Anchor State Registry
-2. Attempt to set this game as the new anchor game .
+2. Attempt to set this game as the new anchor game.
 3. Determine the bond distribution mode based on whether the [AnchorStateRegistry's
    `isGameProper()`](anchor-state-registry.md#isgameproper) returns `true`.
 4. Emit a `GameClosed` event with the chosen distribution mode.
 
 ### Claiming Credit
 
-After the game is closed and the bond distribution mode is determined, there is a 2-step process to claim credit. First,
-`claimCredit(address claimant)` should be called to unlock the credit from the [DelayedWETH](#delayedweth) contract.
-After DelayedWETH's [delay period](#delay-period) has passed, `claimCredit` should be called again to withdraw the
-credit.
+There is a 2-step process to claim credit. First, `claimCredit(address claimant)` should be called to unlock the credit
+from the [DelayedWETH](#delayedweth) contract. After DelayedWETH's [delay period](#delay-period) has passed,
+`claimCredit` should be called again to withdraw the credit.
 
 The `claimCredit(address claimant)` function must do the following:
 
