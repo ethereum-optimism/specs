@@ -22,7 +22,7 @@
 - [EVM Changes](#evm-changes)
 - [Block Sealing](#block-sealing)
 - [Engine API Updates](#engine-api-updates)
-  - [Update to `ExecutableData`](#update-to-executabledata)
+  - [Update to `ExecutionPayload`](#update-to-executionpayload)
   - [`engine_newPayloadV4` API](#engine_newpayloadv4-api)
 - [Fees](#fees)
   - [Operator Fee](#operator-fee)
