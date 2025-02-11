@@ -1,0 +1,614 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Anchor State Registry - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/fault-proof/stage-one/anchor-state-registry.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="anchorstateregistry"><a class="header" href="#anchorstateregistry">AnchorStateRegistry</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#dispute-game">Dispute Game</a></li>
+<li><a href="#respected-game-type">Respected Game Type</a></li>
+<li><a href="#registered-game">Registered Game</a></li>
+<li><a href="#respected-game">Respected Game</a></li>
+<li><a href="#blacklisted-game">Blacklisted Game</a></li>
+<li><a href="#retired-game">Retired Game</a></li>
+<li><a href="#proper-game">Proper Game</a></li>
+<li><a href="#resolved-game">Resolved Game</a></li>
+<li><a href="#finalized-game">Finalized Game</a></li>
+<li><a href="#valid-claim">Valid Claim</a></li>
+<li><a href="#truly-valid-claim">Truly Valid Claim</a></li>
+<li><a href="#starting-anchor-state">Starting Anchor State</a></li>
+<li><a href="#anchor-game">Anchor Game</a></li>
+<li><a href="#anchor-root">Anchor Root</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001: Dispute Game contracts properly report important properties</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002: DisputeGameFactory properly reports its created games</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003: OptimismPortal properly reports respected game type, blacklist, and retirement time</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004: Incorrectly resolving games will be invalidated within the airgap delay period</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001: Games are represented as Proper Games accurately</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002: All Valid Claims are Truly Valid Claims</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+<li><a href="#dependencies-1">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#iasr-003-the-anchor-game-is-a-truly-valid-claim">iASR-003: The Anchor Game is a Truly Valid Claim</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+<li><a href="#dependencies-2">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#iasr-004-invalidation-functions-operate-correctly">iASR-004: Invalidation functions operate correctly</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+<li><a href="#dependencies-3">Dependencies</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#isgameregistered">isGameRegistered</a></li>
+<li><a href="#isgamerespected">isGameRespected</a></li>
+<li><a href="#isgameblacklisted">isGameBlacklisted</a></li>
+<li><a href="#isgameretired">isGameRetired</a></li>
+<li><a href="#isgameproper">isGameProper</a></li>
+<li><a href="#isgameresolved">isGameResolved</a></li>
+<li><a href="#isgamefinalized">isGameFinalized</a></li>
+<li><a href="#isgameclaimvalid">isGameClaimValid</a></li>
+<li><a href="#getanchorroot">getAnchorRoot</a></li>
+<li><a href="#anchors">anchors</a></li>
+<li><a href="#setanchorstate">setAnchorState</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>AnchorStateRegistry</code> was designed as a registry where <code>DisputeGame</code> contracts could store and
+register their results so that these results could be used as the starting states for new
+<code>DisputeGame</code> instances. These starting states, called "anchor states", allow new <code>DisputeGame</code>
+contracts to use a newer starting state to bound the size of the execution trace for any given
+game.</p>
+<p>We are generally aiming to shift the <code>AnchorStateRegistry</code> to act as a unified source of truth for
+the validity of <code>DisputeGame</code> contracts and their corresponding root claims. This specification
+corresponds to the first iteration of the <code>AnchorStateRegistry</code> that will move us in this
+direction.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="dispute-game"><a class="header" href="#dispute-game">Dispute Game</a></h3>
+<blockquote>
+<p>See <a href="fault-dispute-game.html">Fault Dispute Game</a></p>
+</blockquote>
+<p>A Dispute Game is a smart contract that makes a determination about the validity of some claim. In
+the context of the OP Stack, the claim is generally assumed to be a claim about the value of an
+output root at a given L2 block height. We assume that all Dispute Game contracts using the same
+AnchorStateRegistry contract are arguing over the same underlying state/claim structure.</p>
+<h3 id="respected-game-type"><a class="header" href="#respected-game-type">Respected Game Type</a></h3>
+<p>The <code>OptimismPortal</code> contract defines a "respected game type" which is the Dispute Game type that
+the portal allows to be used for the purpose of proving and finalizing withdrawals. This mechanism
+allows the system to use multiple game types simultaneously while still ensuring that the
+<code>OptimismPortal</code> contract only trusts respected games specifically.</p>
+<p>The <code>OptimismPortal</code> contract defines a "respected game type" which is the type of Dispute Game
+that it believes to be correct for the purpose of proving and finalizing withdrawals. This
+mechanism allows the system to use multiple game types simultaneously while still ensuring that the
+<code>OptimismPortal</code> contract only trusts respected games specifically. If the respected game type is
+updated, any games created when their game type was respected are still considered Respected Games.</p>
+<h3 id="registered-game"><a class="header" href="#registered-game">Registered Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Registered Game</strong> if the game contract was created by the
+system's <code>DisputeGameFactory</code> contract.</p>
+<h3 id="respected-game"><a class="header" href="#respected-game">Respected Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Respected Game</strong> if the game contract's game type <strong>was</strong>
+the <code>respectedGameType</code> defined by the <code>OptimismPortal</code> contract at the time of the game's
+creation. Games that are not Respected Games cannot be used as an Anchor Game. See
+<a href="#respected-game-type">Respected Game Type</a> for more information.</p>
+<h3 id="blacklisted-game"><a class="header" href="#blacklisted-game">Blacklisted Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Blacklisted Game</strong> if the game contract's address is marked
+as blacklisted inside of the <code>OptimismPortal</code> contract.</p>
+<h3 id="retired-game"><a class="header" href="#retired-game">Retired Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Retired Game</strong> if the game contract was created with a
+timestamp less than or equal to the retirement timestamp (<code>respectedGameTypeUpdatedAt</code>) defined in
+the <code>OptimismPortal</code> contract. The retirement timestamp has the effect of retiring all games
+created before the specific transaction in which the retirement timestamp was set. This includes
+all games created in the same block as the transaction that set the retirement timestamp. We
+acknowledge the edge-case that games created in the same block <em>after</em> the retirement timestamp
+was set will be considered Retired Games even though they were technically created after the
+retirement timestamp was set.</p>
+<h3 id="proper-game"><a class="header" href="#proper-game">Proper Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Proper Game</strong> if it has not been invalidated through any of
+the mechanisms defined by the <code>OptimismPortal</code> contract. A Proper Game is, in a sense, a "clean"
+game that exists in the set of games that are playing out correctly in a bug-free manner. A Dispute
+Game can be a Proper Game even if it has not yet resolved or resolves in favor of the Challenger.
+A Game that was previously a Proper Game can no longer be a Proper Game if it is later invalidated.</p>
+<p>Specifically, a game is considered to be a Proper Game if all of the following are true:</p>
+<ul>
+<li>The game is a Registered Game</li>
+<li>The game is not a Blacklisted Game</li>
+<li>The game is not a Retired Game</li>
+</ul>
+<h3 id="resolved-game"><a class="header" href="#resolved-game">Resolved Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Resolved Game</strong> if the game has resolved a result in favor
+of either the Challenger or the Defender.</p>
+<h3 id="finalized-game"><a class="header" href="#finalized-game">Finalized Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Finalized Game</strong> if all of the following are true:</p>
+<ul>
+<li>The game is a Resolved Game</li>
+<li>The game resolved a result more than the airgap delay seconds ago as defined by the
+<code>disputeGameFinalityDelaySeconds</code> variable in the <code>OptimismPortal</code> contract.</li>
+</ul>
+<h3 id="valid-claim"><a class="header" href="#valid-claim">Valid Claim</a></h3>
+<p>A Dispute Game is considered to have a <strong>Valid Claim</strong> if all of the following are true:</p>
+<ul>
+<li>The game is a Proper Game</li>
+<li>The game is a Respected Game</li>
+<li>The game is a Finalized Game</li>
+<li>The game resolved in favor of the root claim (i.e., in favor of the Defender)</li>
+</ul>
+<h3 id="truly-valid-claim"><a class="header" href="#truly-valid-claim">Truly Valid Claim</a></h3>
+<p>A Truly Valid Claim is a claim that accurately represents the correct root for the L2 block height
+on the L2 system as would be reported by a perfect oracle for the L2 system state.</p>
+<h3 id="starting-anchor-state"><a class="header" href="#starting-anchor-state">Starting Anchor State</a></h3>
+<p>The Starting Anchor State is the anchor state (root and L2 block height) that is used as the
+starting state for new Dispute Game instances when there is no current Anchor Game. The Starting
+Anchor State is set during the initialization of the <code>AnchorStateRegistry</code> contract.</p>
+<h3 id="anchor-game"><a class="header" href="#anchor-game">Anchor Game</a></h3>
+<p>The Anchor Game is a game whose claim is used as the starting state for new Dispute Game instances.
+A Game can become the Anchor Game if it has a Valid Claim and the claim's L2 block height is
+greater than the claim of the current Anchor Game. If there is no current Anchor Game, a Game can
+become the Anchor Game if it has a Valid Claim and the claim's L2 block height is greater than the
+current Starting Anchor State's L2 block height.</p>
+<p>After a Game becomes the Anchor Game, it will remain the Anchor Game until it is replaced by some
+other Game. A Game that is retired after becoming the Anchor Game will remain the Anchor Game.</p>
+<h3 id="anchor-root"><a class="header" href="#anchor-root">Anchor Root</a></h3>
+<p>The Anchor Root is the root and L2 block height that is used as the starting state for new Dispute
+Game instances. The value of the Anchor Root is the Starting Anchor State if no Anchor Game has
+been set. Otherwise, the value of the Anchor Root is the root and L2 block height of the current
+Anchor Game.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<blockquote>
+<p><strong>NOTE:</strong> Assumptions are utilized by specific invariants and do not apply globally. Invariants
+typically only rely on a subset of the following assumptions. Different invariants may rely on
+different assumptions. Refer to individual invariants for their dependencies.</p>
+</blockquote>
+<h3 id="aasr-001-dispute-game-contracts-properly-report-important-properties"><a class="header" href="#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001: Dispute Game contracts properly report important properties</a></h3>
+<p>We assume that the <code>FaultDisputeGame</code> and <code>PermissionedDisputeGame</code> contracts properly and
+faithfully report the following properties:</p>
+<ul>
+<li>Game type</li>
+<li>L2 block number</li>
+<li>Root claim value</li>
+<li>Game extra data</li>
+<li>Creation timestamp</li>
+<li>Resolution timestamp</li>
+<li>Resolution result</li>
+<li>Whether the game was the respected game type at creation</li>
+</ul>
+<p>We also specifically assume that the game creation timestamp and the resolution timestamp are not
+set to values in the future.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>FaultDisputeGame</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aasr-002-disputegamefactory-properly-reports-its-created-games"><a class="header" href="#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002: DisputeGameFactory properly reports its created games</a></h3>
+<p>We assume that the <code>DisputeGameFactory</code> contract properly and faithfully reports the games it has
+created.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>DisputeGameFactory</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time"><a class="header" href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003: OptimismPortal properly reports respected game type, blacklist, and retirement time</a></h3>
+<p>We assume that the <code>OptimismPortal</code> contract properly and faithfully reports the respected game
+type, blacklist, and retirement timestamp.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>OptimismPortal</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period"><a class="header" href="#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004: Incorrectly resolving games will be invalidated within the airgap delay period</a></h3>
+<p>We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
+period. Invalidation happens within the <code>OptimismPortal</code> contract.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>Stakeholder incentives / processes</li>
+<li>Incident response plan</li>
+<li>Monitoring</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="iasr-001-games-are-represented-as-proper-games-accurately"><a class="header" href="#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001: Games are represented as Proper Games accurately</a></h3>
+<p>When asked if a game is a Proper Game, the <code>AnchorStateRegistry</code> must serve a response that is
+identical to the response that would be given by a perfect oracle for this query.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
+future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
+incorrectly. Additionally, this could cause a <code>FaultDisputeGame</code> to incorrectly choose the wrong
+bond refunding mode.</p>
+<h4 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h4>
+<ul>
+<li><a href="#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
+<li><a href="#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
+<li><a href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+</ul>
+<h3 id="iasr-002-all-valid-claims-are-truly-valid-claims"><a class="header" href="#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002: All Valid Claims are Truly Valid Claims</a></h3>
+<p>When asked if a game has a Valid Claim, the <code>AnchorStateRegistry</code> must serve a response that is
+identical to the response that would be given by a perfect oracle for this query. However, it is
+important to note that we do NOT say that all Truly Valid Claims are Valid Claims. It is possible
+that a game has a Truly Valid Claim but the <code>AnchorStateRegistry</code> reports that the claim is not
+a Valid Claim. This permits the <code>AnchorStateRegistry</code> and system-wide safety net actions to err on
+the side of caution.</p>
+<p>In a nutshell, the set of Valid Claims is a subset of the set of Truly Valid Claims.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
+future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
+incorrectly. If the <code>OptimismPortal</code> contract is updated to use the <code>AnchorStateRegistry</code> as the
+source of truth for the validity of claims, the severity of this invariant will be increased to
+Critical.</p>
+<p>Fundamentally, this invariant depends on the safety net mechanisms in the <code>OptimismPortal</code> contract
+being used correctly.</p>
+<h4 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h4>
+<ul>
+<li><a href="#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
+<li><a href="#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
+<li><a href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+<li><a href="#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004</a></li>
+</ul>
+<h3 id="iasr-003-the-anchor-game-is-a-truly-valid-claim"><a class="header" href="#iasr-003-the-anchor-game-is-a-truly-valid-claim">iASR-003: The Anchor Game is a Truly Valid Claim</a></h3>
+<p>We require that the Anchor Game is a Truly Valid Claim. This makes it possible to use the Anchor
+Game as the starting state for new Dispute Game instances. Notably, given the allowance that not
+all Truly Valid Claims are Valid Claims, this invariant does not imply that the Anchor Game is a
+Valid Claim.</p>
+<p>We allow retired games to be used as the Anchor Game because the retirement mechanism is broad in a
+way that commonly causes Truly Valid Claims to no longer be considered Valid Claims. However, we
+explicitly disallow blacklisted games from being used as the Anchor Game. If a game is blacklisted,
+it should no longer be used as the Anchor Game.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, an invalid Anchor Game could be used as the starting state for new
+Dispute Game instances. This would lead games to resolve incorrectly.</p>
+<h4 id="dependencies-2"><a class="header" href="#dependencies-2">Dependencies</a></h4>
+<ul>
+<li><a href="#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
+<li><a href="#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
+<li><a href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+<li><a href="#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004</a></li>
+</ul>
+<h3 id="iasr-004-invalidation-functions-operate-correctly"><a class="header" href="#iasr-004-invalidation-functions-operate-correctly">iASR-004: Invalidation functions operate correctly</a></h3>
+<p>We require that the blacklisting and retirement functions operate correctly. Games that are
+blacklisted must not be used as the Anchor Game, must not be considered Valid Games, and must not
+be usable to prove or finalize withdrawals. Any game created before a transaction that updates the
+retirement timestamp must not be set as the Anchor Game, must not be considered Valid Games, and
+must not be usable to prove or finalize withdrawals.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
+future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
+incorrectly and would be considered a High Severity issue. Issues that would allow users to
+finalize withdrawals with invalidated games would be considered Critical Severity.</p>
+<h4 id="dependencies-3"><a class="header" href="#dependencies-3">Dependencies</a></h4>
+<ul>
+<li><a href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+</ul>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="isgameregistered"><a class="header" href="#isgameregistered">isGameRegistered</a></h3>
+<p>Determines if a game is a Registered Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game was created by the system's <code>DisputeGameFactory</code> contract.</li>
+</ul>
+<h3 id="isgamerespected"><a class="header" href="#isgamerespected">isGameRespected</a></h3>
+<p>Determines if a game is a Respected Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game's game type was the respected game type defined by the
+<code>OptimismPortal</code> contract at the time of the game's creation as per a call to
+<code>OptimismPortal.respectedGameType()</code>.</li>
+</ul>
+<h3 id="isgameblacklisted"><a class="header" href="#isgameblacklisted">isGameBlacklisted</a></h3>
+<p>Determines if a game is a Blacklisted Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game's address is marked as blacklisted inside of the
+<code>OptimismPortal</code> contract as per a call to <code>OptimismPortal.disputeGameBlacklist(game)</code>.</li>
+</ul>
+<h3 id="isgameretired"><a class="header" href="#isgameretired">isGameRetired</a></h3>
+<p>Determines if a game is a Retired Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game was created before the retirement timestamp defined by
+the <code>OptimismPortal</code> contract as per a call to <code>OptimismPortal.respectedGameTypeUpdatedAt()</code>.
+Check should be a strict comparison that the creation is less than the retirement timestamp.</li>
+</ul>
+<h3 id="isgameproper"><a class="header" href="#isgameproper">isGameProper</a></h3>
+<p>Determines if a game is a Proper Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if <code>isGameRegistered(game)</code> is <code>true</code> and
+<code>isGameBlacklisted(game)</code> and <code>isGameRetired(game)</code> are both <code>false</code>.</li>
+</ul>
+<h3 id="isgameresolved"><a class="header" href="#isgameresolved">isGameResolved</a></h3>
+<p>Determines if a game is a Resolved Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game has resolved a result in favor of either the
+Challenger or the Defender as determined by the <code>FaultDisputeGame.status()</code> function.</li>
+</ul>
+<h3 id="isgamefinalized"><a class="header" href="#isgamefinalized">isGameFinalized</a></h3>
+<p>Determines if a game is a Finalized Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if <code>isGameResolved(game)</code> and the game has resolved a result more
+than the airgap delay seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
+the <code>OptimismPortal</code> contract.</li>
+</ul>
+<h3 id="isgameclaimvalid"><a class="header" href="#isgameclaimvalid">isGameClaimValid</a></h3>
+<p>Determines if a game has a Valid Claim.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if <code>isGameProper(game)</code> is <code>true</code>, <code>isGameRespected(game)</code> is
+<code>true</code>, <code>isGameFinalized(game)</code> is <code>true</code>, and the game resolved in favor of the root claim
+(i.e., in favor of the Defender).</li>
+</ul>
+<h3 id="getanchorroot"><a class="header" href="#getanchorroot">getAnchorRoot</a></h3>
+<p>Retrieves the current anchor root.</p>
+<ul>
+<li>MUST return the root hash and L2 block height of the current anchor state.</li>
+</ul>
+<h3 id="anchors"><a class="header" href="#anchors">anchors</a></h3>
+<p>Legacy function. Accepts a game type as a parameter but does not use it.</p>
+<ul>
+<li>MUST return the current value of <code>getAnchorRoot()</code>.</li>
+</ul>
+<h3 id="setanchorstate"><a class="header" href="#setanchorstate">setAnchorState</a></h3>
+<p>Allows any address to attempt to update the Anchor Game with a new Game as input.</p>
+<ul>
+<li>MUST revert if the provided game does not have a Valid Claim for any reason.</li>
+<li>MUST revert if the provided game corresponds to an L2 block height that is less than or equal
+to the current anchor state's L2 block height.</li>
+<li>MUST otherwise update the anchor state to match the game's result.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../fault-proof/stage-one/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../fault-proof/stage-one/dispute-game-interface.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../fault-proof/stage-one/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../fault-proof/stage-one/dispute-game-interface.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

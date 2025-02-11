@@ -4431,6 +4431,396 @@ can rely on specific compiler behaviors because users inherently must employ saf
 for <a href="fault-proof/stage-one/../../glossary.html#l2-output-root-proposals">output proposals</a> and the integration with the <code>OptimismPortal</code> contract, which is the arbiter of
 withdrawals on L1.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="anchorstateregistry"><a class="header" href="#anchorstateregistry">AnchorStateRegistry</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#overview">Overview</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#definitions">Definitions</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game">Dispute Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#registered-game">Registered Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#respected-game">Respected Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">Blacklisted Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">Retired Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#proper-game">Proper Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#resolved-game">Resolved Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#finalized-game">Finalized Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#valid-claim">Valid Claim</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#truly-valid-claim">Truly Valid Claim</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#starting-anchor-state">Starting Anchor State</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#anchor-game">Anchor Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#anchor-root">Anchor Root</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001: Dispute Game contracts properly report important properties</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002: DisputeGameFactory properly reports its created games</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003: OptimismPortal properly reports respected game type, blacklist, and retirement time</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004: Incorrectly resolving games will be invalidated within the airgap delay period</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#invariants">Invariants</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001: Games are represented as Proper Games accurately</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#impact">Impact</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002: All Valid Claims are Truly Valid Claims</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#impact-1">Impact</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#dependencies-1">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#iasr-003-the-anchor-game-is-a-truly-valid-claim">iASR-003: The Anchor Game is a Truly Valid Claim</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#impact-2">Impact</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#dependencies-2">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#iasr-004-invalidation-functions-operate-correctly">iASR-004: Invalidation functions operate correctly</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#impact-3">Impact</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#dependencies-3">Dependencies</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#function-specification">Function Specification</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameregistered">isGameRegistered</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgamerespected">isGameRespected</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameblacklisted">isGameBlacklisted</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameretired">isGameRetired</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameproper">isGameProper</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameresolved">isGameResolved</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgamefinalized">isGameFinalized</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameclaimvalid">isGameClaimValid</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#getanchorroot">getAnchorRoot</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#anchors">anchors</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#setanchorstate">setAnchorState</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-14"><a class="header" href="#overview-14">Overview</a></h2>
+<p>The <code>AnchorStateRegistry</code> was designed as a registry where <code>DisputeGame</code> contracts could store and
+register their results so that these results could be used as the starting states for new
+<code>DisputeGame</code> instances. These starting states, called "anchor states", allow new <code>DisputeGame</code>
+contracts to use a newer starting state to bound the size of the execution trace for any given
+game.</p>
+<p>We are generally aiming to shift the <code>AnchorStateRegistry</code> to act as a unified source of truth for
+the validity of <code>DisputeGame</code> contracts and their corresponding root claims. This specification
+corresponds to the first iteration of the <code>AnchorStateRegistry</code> that will move us in this
+direction.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="dispute-game"><a class="header" href="#dispute-game">Dispute Game</a></h3>
+<blockquote>
+<p>See <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a></p>
+</blockquote>
+<p>A Dispute Game is a smart contract that makes a determination about the validity of some claim. In
+the context of the OP Stack, the claim is generally assumed to be a claim about the value of an
+output root at a given L2 block height. We assume that all Dispute Game contracts using the same
+AnchorStateRegistry contract are arguing over the same underlying state/claim structure.</p>
+<h3 id="respected-game-type"><a class="header" href="#respected-game-type">Respected Game Type</a></h3>
+<p>The <code>OptimismPortal</code> contract defines a "respected game type" which is the Dispute Game type that
+the portal allows to be used for the purpose of proving and finalizing withdrawals. This mechanism
+allows the system to use multiple game types simultaneously while still ensuring that the
+<code>OptimismPortal</code> contract only trusts respected games specifically.</p>
+<p>The <code>OptimismPortal</code> contract defines a "respected game type" which is the type of Dispute Game
+that it believes to be correct for the purpose of proving and finalizing withdrawals. This
+mechanism allows the system to use multiple game types simultaneously while still ensuring that the
+<code>OptimismPortal</code> contract only trusts respected games specifically. If the respected game type is
+updated, any games created when their game type was respected are still considered Respected Games.</p>
+<h3 id="registered-game"><a class="header" href="#registered-game">Registered Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Registered Game</strong> if the game contract was created by the
+system's <code>DisputeGameFactory</code> contract.</p>
+<h3 id="respected-game"><a class="header" href="#respected-game">Respected Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Respected Game</strong> if the game contract's game type <strong>was</strong>
+the <code>respectedGameType</code> defined by the <code>OptimismPortal</code> contract at the time of the game's
+creation. Games that are not Respected Games cannot be used as an Anchor Game. See
+<a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a> for more information.</p>
+<h3 id="blacklisted-game"><a class="header" href="#blacklisted-game">Blacklisted Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Blacklisted Game</strong> if the game contract's address is marked
+as blacklisted inside of the <code>OptimismPortal</code> contract.</p>
+<h3 id="retired-game"><a class="header" href="#retired-game">Retired Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Retired Game</strong> if the game contract was created with a
+timestamp less than or equal to the retirement timestamp (<code>respectedGameTypeUpdatedAt</code>) defined in
+the <code>OptimismPortal</code> contract. The retirement timestamp has the effect of retiring all games
+created before the specific transaction in which the retirement timestamp was set. This includes
+all games created in the same block as the transaction that set the retirement timestamp. We
+acknowledge the edge-case that games created in the same block <em>after</em> the retirement timestamp
+was set will be considered Retired Games even though they were technically created after the
+retirement timestamp was set.</p>
+<h3 id="proper-game"><a class="header" href="#proper-game">Proper Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Proper Game</strong> if it has not been invalidated through any of
+the mechanisms defined by the <code>OptimismPortal</code> contract. A Proper Game is, in a sense, a "clean"
+game that exists in the set of games that are playing out correctly in a bug-free manner. A Dispute
+Game can be a Proper Game even if it has not yet resolved or resolves in favor of the Challenger.
+A Game that was previously a Proper Game can no longer be a Proper Game if it is later invalidated.</p>
+<p>Specifically, a game is considered to be a Proper Game if all of the following are true:</p>
+<ul>
+<li>The game is a Registered Game</li>
+<li>The game is not a Blacklisted Game</li>
+<li>The game is not a Retired Game</li>
+</ul>
+<h3 id="resolved-game"><a class="header" href="#resolved-game">Resolved Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Resolved Game</strong> if the game has resolved a result in favor
+of either the Challenger or the Defender.</p>
+<h3 id="finalized-game"><a class="header" href="#finalized-game">Finalized Game</a></h3>
+<p>A Dispute Game is considered to be a <strong>Finalized Game</strong> if all of the following are true:</p>
+<ul>
+<li>The game is a Resolved Game</li>
+<li>The game resolved a result more than the airgap delay seconds ago as defined by the
+<code>disputeGameFinalityDelaySeconds</code> variable in the <code>OptimismPortal</code> contract.</li>
+</ul>
+<h3 id="valid-claim"><a class="header" href="#valid-claim">Valid Claim</a></h3>
+<p>A Dispute Game is considered to have a <strong>Valid Claim</strong> if all of the following are true:</p>
+<ul>
+<li>The game is a Proper Game</li>
+<li>The game is a Respected Game</li>
+<li>The game is a Finalized Game</li>
+<li>The game resolved in favor of the root claim (i.e., in favor of the Defender)</li>
+</ul>
+<h3 id="truly-valid-claim"><a class="header" href="#truly-valid-claim">Truly Valid Claim</a></h3>
+<p>A Truly Valid Claim is a claim that accurately represents the correct root for the L2 block height
+on the L2 system as would be reported by a perfect oracle for the L2 system state.</p>
+<h3 id="starting-anchor-state"><a class="header" href="#starting-anchor-state">Starting Anchor State</a></h3>
+<p>The Starting Anchor State is the anchor state (root and L2 block height) that is used as the
+starting state for new Dispute Game instances when there is no current Anchor Game. The Starting
+Anchor State is set during the initialization of the <code>AnchorStateRegistry</code> contract.</p>
+<h3 id="anchor-game"><a class="header" href="#anchor-game">Anchor Game</a></h3>
+<p>The Anchor Game is a game whose claim is used as the starting state for new Dispute Game instances.
+A Game can become the Anchor Game if it has a Valid Claim and the claim's L2 block height is
+greater than the claim of the current Anchor Game. If there is no current Anchor Game, a Game can
+become the Anchor Game if it has a Valid Claim and the claim's L2 block height is greater than the
+current Starting Anchor State's L2 block height.</p>
+<p>After a Game becomes the Anchor Game, it will remain the Anchor Game until it is replaced by some
+other Game. A Game that is retired after becoming the Anchor Game will remain the Anchor Game.</p>
+<h3 id="anchor-root"><a class="header" href="#anchor-root">Anchor Root</a></h3>
+<p>The Anchor Root is the root and L2 block height that is used as the starting state for new Dispute
+Game instances. The value of the Anchor Root is the Starting Anchor State if no Anchor Game has
+been set. Otherwise, the value of the Anchor Root is the root and L2 block height of the current
+Anchor Game.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<blockquote>
+<p><strong>NOTE:</strong> Assumptions are utilized by specific invariants and do not apply globally. Invariants
+typically only rely on a subset of the following assumptions. Different invariants may rely on
+different assumptions. Refer to individual invariants for their dependencies.</p>
+</blockquote>
+<h3 id="aasr-001-dispute-game-contracts-properly-report-important-properties"><a class="header" href="#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001: Dispute Game contracts properly report important properties</a></h3>
+<p>We assume that the <code>FaultDisputeGame</code> and <code>PermissionedDisputeGame</code> contracts properly and
+faithfully report the following properties:</p>
+<ul>
+<li>Game type</li>
+<li>L2 block number</li>
+<li>Root claim value</li>
+<li>Game extra data</li>
+<li>Creation timestamp</li>
+<li>Resolution timestamp</li>
+<li>Resolution result</li>
+<li>Whether the game was the respected game type at creation</li>
+</ul>
+<p>We also specifically assume that the game creation timestamp and the resolution timestamp are not
+set to values in the future.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>FaultDisputeGame</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aasr-002-disputegamefactory-properly-reports-its-created-games"><a class="header" href="#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002: DisputeGameFactory properly reports its created games</a></h3>
+<p>We assume that the <code>DisputeGameFactory</code> contract properly and faithfully reports the games it has
+created.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>DisputeGameFactory</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time"><a class="header" href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003: OptimismPortal properly reports respected game type, blacklist, and retirement time</a></h3>
+<p>We assume that the <code>OptimismPortal</code> contract properly and faithfully reports the respected game
+type, blacklist, and retirement timestamp.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>OptimismPortal</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period"><a class="header" href="#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004: Incorrectly resolving games will be invalidated within the airgap delay period</a></h3>
+<p>We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
+period. Invalidation happens within the <code>OptimismPortal</code> contract.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>Stakeholder incentives / processes</li>
+<li>Incident response plan</li>
+<li>Monitoring</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="iasr-001-games-are-represented-as-proper-games-accurately"><a class="header" href="#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001: Games are represented as Proper Games accurately</a></h3>
+<p>When asked if a game is a Proper Game, the <code>AnchorStateRegistry</code> must serve a response that is
+identical to the response that would be given by a perfect oracle for this query.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
+future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
+incorrectly. Additionally, this could cause a <code>FaultDisputeGame</code> to incorrectly choose the wrong
+bond refunding mode.</p>
+<h4 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h4>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+</ul>
+<h3 id="iasr-002-all-valid-claims-are-truly-valid-claims"><a class="header" href="#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002: All Valid Claims are Truly Valid Claims</a></h3>
+<p>When asked if a game has a Valid Claim, the <code>AnchorStateRegistry</code> must serve a response that is
+identical to the response that would be given by a perfect oracle for this query. However, it is
+important to note that we do NOT say that all Truly Valid Claims are Valid Claims. It is possible
+that a game has a Truly Valid Claim but the <code>AnchorStateRegistry</code> reports that the claim is not
+a Valid Claim. This permits the <code>AnchorStateRegistry</code> and system-wide safety net actions to err on
+the side of caution.</p>
+<p>In a nutshell, the set of Valid Claims is a subset of the set of Truly Valid Claims.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
+future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
+incorrectly. If the <code>OptimismPortal</code> contract is updated to use the <code>AnchorStateRegistry</code> as the
+source of truth for the validity of claims, the severity of this invariant will be increased to
+Critical.</p>
+<p>Fundamentally, this invariant depends on the safety net mechanisms in the <code>OptimismPortal</code> contract
+being used correctly.</p>
+<h4 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h4>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004</a></li>
+</ul>
+<h3 id="iasr-003-the-anchor-game-is-a-truly-valid-claim"><a class="header" href="#iasr-003-the-anchor-game-is-a-truly-valid-claim">iASR-003: The Anchor Game is a Truly Valid Claim</a></h3>
+<p>We require that the Anchor Game is a Truly Valid Claim. This makes it possible to use the Anchor
+Game as the starting state for new Dispute Game instances. Notably, given the allowance that not
+all Truly Valid Claims are Valid Claims, this invariant does not imply that the Anchor Game is a
+Valid Claim.</p>
+<p>We allow retired games to be used as the Anchor Game because the retirement mechanism is broad in a
+way that commonly causes Truly Valid Claims to no longer be considered Valid Claims. However, we
+explicitly disallow blacklisted games from being used as the Anchor Game. If a game is blacklisted,
+it should no longer be used as the Anchor Game.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, an invalid Anchor Game could be used as the starting state for new
+Dispute Game instances. This would lead games to resolve incorrectly.</p>
+<h4 id="dependencies-2"><a class="header" href="#dependencies-2">Dependencies</a></h4>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004</a></li>
+</ul>
+<h3 id="iasr-004-invalidation-functions-operate-correctly"><a class="header" href="#iasr-004-invalidation-functions-operate-correctly">iASR-004: Invalidation functions operate correctly</a></h3>
+<p>We require that the blacklisting and retirement functions operate correctly. Games that are
+blacklisted must not be used as the Anchor Game, must not be considered Valid Games, and must not
+be usable to prove or finalize withdrawals. Any game created before a transaction that updates the
+retirement timestamp must not be set as the Anchor Game, must not be considered Valid Games, and
+must not be usable to prove or finalize withdrawals.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
+future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
+incorrectly and would be considered a High Severity issue. Issues that would allow users to
+finalize withdrawals with invalidated games would be considered Critical Severity.</p>
+<h4 id="dependencies-3"><a class="header" href="#dependencies-3">Dependencies</a></h4>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+</ul>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="isgameregistered"><a class="header" href="#isgameregistered">isGameRegistered</a></h3>
+<p>Determines if a game is a Registered Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game was created by the system's <code>DisputeGameFactory</code> contract.</li>
+</ul>
+<h3 id="isgamerespected"><a class="header" href="#isgamerespected">isGameRespected</a></h3>
+<p>Determines if a game is a Respected Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game's game type was the respected game type defined by the
+<code>OptimismPortal</code> contract at the time of the game's creation as per a call to
+<code>OptimismPortal.respectedGameType()</code>.</li>
+</ul>
+<h3 id="isgameblacklisted"><a class="header" href="#isgameblacklisted">isGameBlacklisted</a></h3>
+<p>Determines if a game is a Blacklisted Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game's address is marked as blacklisted inside of the
+<code>OptimismPortal</code> contract as per a call to <code>OptimismPortal.disputeGameBlacklist(game)</code>.</li>
+</ul>
+<h3 id="isgameretired"><a class="header" href="#isgameretired">isGameRetired</a></h3>
+<p>Determines if a game is a Retired Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game was created before the retirement timestamp defined by
+the <code>OptimismPortal</code> contract as per a call to <code>OptimismPortal.respectedGameTypeUpdatedAt()</code>.
+Check should be a strict comparison that the creation is less than the retirement timestamp.</li>
+</ul>
+<h3 id="isgameproper"><a class="header" href="#isgameproper">isGameProper</a></h3>
+<p>Determines if a game is a Proper Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if <code>isGameRegistered(game)</code> is <code>true</code> and
+<code>isGameBlacklisted(game)</code> and <code>isGameRetired(game)</code> are both <code>false</code>.</li>
+</ul>
+<h3 id="isgameresolved"><a class="header" href="#isgameresolved">isGameResolved</a></h3>
+<p>Determines if a game is a Resolved Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if the game has resolved a result in favor of either the
+Challenger or the Defender as determined by the <code>FaultDisputeGame.status()</code> function.</li>
+</ul>
+<h3 id="isgamefinalized"><a class="header" href="#isgamefinalized">isGameFinalized</a></h3>
+<p>Determines if a game is a Finalized Game.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if <code>isGameResolved(game)</code> and the game has resolved a result more
+than the airgap delay seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
+the <code>OptimismPortal</code> contract.</li>
+</ul>
+<h3 id="isgameclaimvalid"><a class="header" href="#isgameclaimvalid">isGameClaimValid</a></h3>
+<p>Determines if a game has a Valid Claim.</p>
+<ul>
+<li>MUST return <code>true</code> if and only if <code>isGameProper(game)</code> is <code>true</code>, <code>isGameRespected(game)</code> is
+<code>true</code>, <code>isGameFinalized(game)</code> is <code>true</code>, and the game resolved in favor of the root claim
+(i.e., in favor of the Defender).</li>
+</ul>
+<h3 id="getanchorroot"><a class="header" href="#getanchorroot">getAnchorRoot</a></h3>
+<p>Retrieves the current anchor root.</p>
+<ul>
+<li>MUST return the root hash and L2 block height of the current anchor state.</li>
+</ul>
+<h3 id="anchors"><a class="header" href="#anchors">anchors</a></h3>
+<p>Legacy function. Accepts a game type as a parameter but does not use it.</p>
+<ul>
+<li>MUST return the current value of <code>getAnchorRoot()</code>.</li>
+</ul>
+<h3 id="setanchorstate"><a class="header" href="#setanchorstate">setAnchorState</a></h3>
+<p>Allows any address to attempt to update the Anchor Game with a new Game as input.</p>
+<ul>
+<li>MUST revert if the provided game does not have a Valid Claim for any reason.</li>
+<li>MUST revert if the provided game corresponds to an L2 block height that is less than or equal
+to the current anchor state's L2 block height.</li>
+<li>MUST otherwise update the anchor state to match the game's result.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="dispute-game-interface"><a class="header" href="#dispute-game-interface">Dispute Game Interface</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -4442,7 +4832,7 @@ withdrawals on L1.</p>
 <li><a href="fault-proof/stage-one/dispute-game-interface.html#disputegame-interface"><code>DisputeGame</code> Interface</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-14"><a class="header" href="#overview-14">Overview</a></h2>
+<h2 id="overview-15"><a class="header" href="#overview-15">Overview</a></h2>
 <p>A dispute game is played between multiple parties when contesting the truthiness
 of a claim. In the context of an optimistic rollup, claims are made about the
 state of the layer two network to enable withdrawals to the layer one. A proposer
@@ -4735,6 +5125,7 @@ interface IDisputeGame is IInitializable {
 <li><a href="fault-proof/stage-one/fault-dispute-game.html#claims">Claims</a></li>
 <li><a href="fault-proof/stage-one/fault-dispute-game.html#anchor-state">Anchor State</a></li>
 <li><a href="fault-proof/stage-one/fault-dispute-game.html#anchor-state-registry">Anchor State Registry</a></li>
+<li><a href="fault-proof/stage-one/fault-dispute-game.html#respected-game-type">Respected Game Type</a></li>
 <li><a href="fault-proof/stage-one/fault-dispute-game.html#dag">DAG</a></li>
 <li><a href="fault-proof/stage-one/fault-dispute-game.html#subgame">Subgame</a></li>
 <li><a href="fault-proof/stage-one/fault-dispute-game.html#game-tree">Game Tree</a></li>
@@ -4770,7 +5161,7 @@ interface IDisputeGame is IInitializable {
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- Glossary References -->
-<h2 id="overview-15"><a class="header" href="#overview-15">Overview</a></h2>
+<h2 id="overview-16"><a class="header" href="#overview-16">Overview</a></h2>
 <p>The Fault Dispute Game (FDG) is a specific type of <a href="fault-proof/stage-one/dispute-game-interface.html">dispute game</a> that verifies the
 validity of a root claim by iteratively bisecting over <a href="fault-proof/stage-one/../../glossary.html#l2-output-root">output roots</a> and execution traces of single
 block state transitions down to a single instruction step. It relies on a Virtual Machine (VM) to falsify invalid
@@ -4779,7 +5170,7 @@ claims made at a single instruction step.</p>
 Each claim made narrows the range over the entire historical state of L2, until the source of dispute is a single
 state transition. Once a time limit is reached, the dispute game is <em>resolved</em>, based on claims made that are disputed
 and which aren't, to determine the winners of the game.</p>
-<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h2 id="definitions-1"><a class="header" href="#definitions-1">Definitions</a></h2>
 <h3 id="virtual-machine-vm"><a class="header" href="#virtual-machine-vm">Virtual Machine (VM)</a></h3>
 <p>This is a state transition function (STF) that takes a <em>pre-state</em> and computes the post-state.
 The VM may access data referenced during the STF and as such, it also accepts a <em>proof</em> of this data.
@@ -4816,10 +5207,14 @@ state. In order to reduce this L1 data requirement, <a href="fault-proof/stage-o
 become new anchor states when dispute games resolve in their favor. FDG contracts set their anchor
 states at initialization time so that these updates do not impact active games.</p>
 <h3 id="anchor-state-registry"><a class="header" href="#anchor-state-registry">Anchor State Registry</a></h3>
-<p>The Anchor State Registry is a registry that maps FDG types to their current <a href="fault-proof/stage-one/fault-dispute-game.html#anchor-state">anchor states</a>.
-The Anchor State Registry is specific to Fault Dispute Game contracts and may not be applicable to
-other types of dispute game contracts that do not have the same concept of state that progresses
-over time.</p>
+<p>The Anchor State Registry is a registry that the FDG uses to determine its <a href="fault-proof/stage-one/fault-dispute-game.html#anchor-state">anchor state</a>. It also
+determines if the game is <a href="fault-proof/stage-one/anchor-state-registry.html#finalized-game">finalized</a> and
+<a href="fault-proof/stage-one/anchor-state-registry.html#proper-game">"proper"</a> for purposes of <a href="fault-proof/stage-one/./bond-incentives.html#game-finalization">Bond
+Distribution</a>. See <a href="fault-proof/stage-one/anchor-state-registry.html">Anchor State Registry</a> for more
+details.</p>
+<h3 id="respected-game-type-1"><a class="header" href="#respected-game-type-1">Respected Game Type</a></h3>
+<p>A Fault Dispute Game must record whether its game type is respected at the time of its creation. See
+<a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game-type">Respected Game Type</a> for more details.</p>
 <h3 id="dag"><a class="header" href="#dag">DAG</a></h3>
 <p>A Directed Acyclic Graph <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="mclose">)</span></span></span></span> representing the relationship between claims, where:</p>
 <ul>
@@ -5186,16 +5581,9 @@ claims to be bonded, while rewarding game winners using the bonds of dishonest c
 the L2 block number challenger, if it exist, must be the winner of a root subgame.
 Thus, no moves against the root, including uncontested ones, can win a root subgame that has an L2 block number challenge.</p>
 <h3 id="finalization"><a class="header" href="#finalization">Finalization</a></h3>
-<p>Once the game is resolved, if the claim is shown to be valid, the FDG reports its state to the
-Anchor State Registry. The Anchor State Registry verifies that the request to update an anchor
-state comes from a FDG contract created by the Dispute Game Factory contract, confirms that the
-game resolved in favor of the defender, and confirms that the updated state would be newer than
-the current anchor state (based on the result of <code>FaultDisputeGame.l2BlockNumber()</code>). If these
-conditions are true, the Anchor State Registry updates the anchor state for the given game type.</p>
-<p>Note that the dependency of the Anchor State Registry on the <code>l2BlockNumber()</code> function means that
-the registry may not be applicable to dispute game types that do not have a similar sense of
-progressing state over time. Currently, the Anchor State Registry is therefore assumed to be
-specific to the Fault Dispute Game contract and not to other dispute game types.</p>
+<p>Once the game is resolved, it must wait for the <code>disputeGameFinalityDelaySeconds</code> on the <code>OptimismPortal</code> to pass before
+it can be finalized, after which bonds can be distributed via the process outlined in <a href="fault-proof/stage-one/bond-incentives.html#game-finalization">Bond Incentives: Game
+Finalization</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="honest-challenger-fault-dispute-game"><a class="header" href="#honest-challenger-fault-dispute-game">Honest Challenger (Fault Dispute Game)</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -5214,7 +5602,7 @@ specific to the Fault Dispute Game contract and not to other dispute game types.
 <li><a href="fault-proof/stage-one/honest-challenger-fdg.html#resolution">Resolution</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-16"><a class="header" href="#overview-16">Overview</a></h2>
+<h2 id="overview-17"><a class="header" href="#overview-17">Overview</a></h2>
 <p>The honest challenger is an agent interacting in the <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a>
 that supports honest claims and disputes false claims.
 An honest challenger strives to ensure a correct, truthful, game resolution.
@@ -5232,7 +5620,7 @@ For verifying the legitimacy of claims, it relies on a synced, trusted rollup no
 as well as a trace provider (ex: <a href="fault-proof/stage-one/../cannon-fault-proof-vm.html">Cannon</a>).
 The trace provider must be configured with the <a href="fault-proof/stage-one/fault-dispute-game.html#execution-trace">ABSOLUTE_PRESTATE</a>
 of the game being interacted with to generate the traces needed to make truthful claims.</p>
-<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h2 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h2>
 <p>To ensure an accurate and incentive compatible fault dispute system, the honest challenger behavior must preserve
 three invariants for any game:</p>
 <ol>
@@ -5308,6 +5696,18 @@ challengers are economically incentivized to resolve the game promptly to captur
 <li><a href="fault-proof/stage-one/bond-incentives.html#bond-scaling">Bond Scaling</a></li>
 <li><a href="fault-proof/stage-one/bond-incentives.html#required-bond-formula">Required Bond Formula</a></li>
 <li><a href="fault-proof/stage-one/bond-incentives.html#other-incentives">Other Incentives</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/bond-incentives.html#game-finalization">Game Finalization</a>
+<ul>
+<li><a href="fault-proof/stage-one/bond-incentives.html#bond-distribution-mode">Bond Distribution Mode</a>
+<ul>
+<li><a href="fault-proof/stage-one/bond-incentives.html#normal-mode">Normal Mode</a></li>
+<li><a href="fault-proof/stage-one/bond-incentives.html#refund-mode">Refund Mode</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/bond-incentives.html#game-closure">Game Closure</a></li>
+<li><a href="fault-proof/stage-one/bond-incentives.html#claiming-credit">Claiming Credit</a></li>
 <li><a href="fault-proof/stage-one/bond-incentives.html#delayedweth">DelayedWETH</a>
 <ul>
 <li><a href="fault-proof/stage-one/bond-incentives.html#sub-account-model">Sub-Account Model</a></li>
@@ -5319,7 +5719,7 @@ challengers are economically incentivized to resolve the game promptly to captur
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-17"><a class="header" href="#overview-17">Overview</a></h2>
+<h2 id="overview-18"><a class="header" href="#overview-18">Overview</a></h2>
 <p>Bonds is an add-on to the core <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a>. The core game mechanics are
 designed to ensure honesty as the best response to winning subgames. By introducing financial incentives,
 Bonds makes it worthwhile for honest challengers to participate.
@@ -5393,8 +5793,50 @@ At each depth <code>N</code>, the amount of gas charged is therefore <code>400_0
 opportunity cost of locking up capital in the dispute game. While we do not explicitly create incentives to cover
 these costs, we assume that the current bond rewards, based on this specification, are enough as a whole to cover
 all other costs of participation.</p>
+<h2 id="game-finalization"><a class="header" href="#game-finalization">Game Finalization</a></h2>
+<p>After the game is resolved, claimants must wait for the <a href="fault-proof/stage-one/anchor-state-registry.html#isgamefinalized">AnchorStateRegistry's
+<code>isGameFinalized()</code></a> to return <code>true</code> before they can claim their bonds. This
+implies a wait period of at least the <code>disputeGameFinalityDelaySeconds</code> variable from the <code>OptimismPortal</code> contract.
+After the game is finalized, bonds can be distributed.</p>
+<h3 id="bond-distribution-mode"><a class="header" href="#bond-distribution-mode">Bond Distribution Mode</a></h3>
+<p>The FDG will in most cases distribute bonds to the winners of the game after it is resolved and finalized, but in
+special cases will refund the bonds to the original depositor.</p>
+<h4 id="normal-mode"><a class="header" href="#normal-mode">Normal Mode</a></h4>
+<p>In normal mode, the FDG will distribute bonds to the winners of the game after it is resolved and finalized.</p>
+<h4 id="refund-mode"><a class="header" href="#refund-mode">Refund Mode</a></h4>
+<p>In refund mode, the FDG will refund the bonds to the original depositor.</p>
+<h3 id="game-closure"><a class="header" href="#game-closure">Game Closure</a></h3>
+<p>The <code>FaultDisputeGame</code> contract can be closed after finalization via the <code>closeGame()</code> function.</p>
+<p><code>closeGame</code> must do the following:</p>
+<ol>
+<li>Verify the game is resolved and finalized according to the Anchor State Registry</li>
+<li>Attempt to set this game as the new anchor game.</li>
+<li>Determine the bond distribution mode based on whether the <a href="fault-proof/stage-one/anchor-state-registry.html#isgameproper">AnchorStateRegistry's
+<code>isGameProper()</code></a> returns <code>true</code>.</li>
+<li>Emit a <code>GameClosed</code> event with the chosen distribution mode.</li>
+</ol>
+<h3 id="claiming-credit"><a class="header" href="#claiming-credit">Claiming Credit</a></h3>
+<p>There is a 2-step process to claim credit. First, <code>claimCredit(address claimant)</code> should be called to unlock the credit
+from the <a href="fault-proof/stage-one/bond-incentives.html#delayedweth">DelayedWETH</a> contract. After DelayedWETH's <a href="fault-proof/stage-one/bond-incentives.html#delay-period">delay period</a> has passed,
+<code>claimCredit</code> should be called again to withdraw the credit.</p>
+<p>The <code>claimCredit(address claimant)</code> function must do the following:</p>
+<ul>
+<li>Call <code>closeGame()</code> to determine the distribution mode if not already closed.
+<ul>
+<li>In NORMAL mode: Distribute credit from the standard <code>normalModeCredit</code> mapping.</li>
+<li>In REFUND mode: Distribute credit from the <code>refundModeCredit</code> mapping.</li>
+</ul>
+</li>
+<li>If the claimant has not yet unlocked their credit, unlock it by calling <code>DelayedWETH.unlock(claimant, credit)</code>.
+<ul>
+<li>Claimant must not be able to unlock this credit again.</li>
+</ul>
+</li>
+<li>If the claimant has already unlocked their credit, call <code>DelayedWETH.withdraw(claimant, credit)</code> (implying a
+<a href="fault-proof/stage-one/bond-incentives.html#delay-period">delay period</a>) to withdraw the credit, and set claimant's <code>credit</code> balances to 0.</li>
+</ul>
 <h3 id="delayedweth"><a class="header" href="#delayedweth">DelayedWETH</a></h3>
-<p>FPM introduces a contract <code>DelayedWETH</code> designed to hold the bonded ETH for each
+<p><code>DelayedWETH</code> is designed to hold the bonded ETH for each
 <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a>.
 <code>DelayedWETH</code> is an extended version of the standard <code>WETH</code> contract that introduces a delayed unwrap mechanism that
 allows an owner address to function as a backstop in the case that a Fault Dispute Game would
@@ -5415,7 +5857,10 @@ seconds and reverts if not. It also confirms that the amount being withdrawn is 
 request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
 <code>withdraw(wad)</code> function becomes an alias for <code>withdraw(msg.sender, wad)</code>.
 <code>withdraw(guy,wad)</code> will not be callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
-<li><code>DelayedWETH</code> has a <code>hold()</code> function that allows the <code>owner()</code> address to give itself an allowance from any address.</li>
+<li><code>DelayedWETH</code> has a <code>hold(guy,wad)</code> function that allows the <code>owner()</code> address to, for any holder, give itself an
+allowance and immediately <code>transferFrom</code> that allowance amount to itself.</li>
+<li><code>DelayedWETH</code> has a <code>hold(guy)</code> function that allows the <code>owner()</code> address to, for any holder, give itself a full
+allowance of the holder's balance and immediately <code>transferFrom</code> that amount to itself.</li>
 <li><code>DelayedWETH</code> has a <code>recover()</code> function that allows the <code>owner()</code> address to recover any amount of ETH from the
 contract.</li>
 </ul>
@@ -5435,8 +5880,8 @@ over multiple timezones.</p>
 <ul>
 <li>When <code>FaultDisputeGame.initialize</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
 <li>When <code>FaultDisputeGame.move</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
-<li>When <code>FaultDisputeGame.resolveClaim</code> is triggered, <code>DelayedWETH.unlock(recipient, bond)</code> is called.</li>
-<li>When <code>FaultDisputeGame.claimCredit</code> is triggered, <code>DelayedWETH.withdraw(recipient, claim)</code> is called.</li>
+<li>When <code>FaultDisputeGame.resolveClaim</code> is triggered, the game will add to the claimant's internal credit balance.</li>
+<li>When <code>FaultDisputeGame.claimCredit</code> is triggered, <code>DelayedWETH.withdraw(recipient, credit)</code> is called.</li>
 </ul>
 <pre class="mermaid">sequenceDiagram
     participant U as User
@@ -5455,13 +5900,17 @@ over multiple timezones.</p>
 
     loop resolveClaim by Users
         U-&gt;&gt;FDG: resolveClaim()
-        FDG-&gt;&gt;DW: unlock(recipient, bond)
-        Note over DW: Starts timer for recipient
+        FDG-&gt;&gt;FDG: Add to claimant credit
     end
 
-    loop claimCredit by Users
+  loop Initial claimCredit call by Users
         U-&gt;&gt;FDG: claimCredit()
-        FDG-&gt;&gt;DW: withdraw(recipient, claim)
+        FDG-&gt;&gt;DW: unlock(recipient, bond)
+    end
+
+    loop Subsequent claimCredit call by Users
+        U-&gt;&gt;FDG: claimCredit()
+        FDG-&gt;&gt;DW: withdraw(recipient, credit)
         Note over DW: Checks timer/amount for recipient
         DW-&gt;&gt;FDG: Transfer claim to FDG
         FDG-&gt;&gt;U: Transfer claim to User
@@ -5518,7 +5967,7 @@ over multiple timezones.</p>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- all glossary references -->
 <!-- all links -->
-<h2 id="overview-18"><a class="header" href="#overview-18">Overview</a></h2>
+<h2 id="overview-19"><a class="header" href="#overview-19">Overview</a></h2>
 <p>With fault proofs, the withdrawal path changes such that withdrawals submitted to the <code>OptimismPortal</code> are proven
 against <a href="fault-proof/stage-one/../../glossary.html#l2-output-root-proposals">output proposals</a> submitted as a <a href="fault-proof/stage-one/fault-dispute-game.html"><code>FaultDisputeGame</code></a> prior to being finalized. Output
 proposals are now finalized whenever a dispute game resolves in their favor.</p>
@@ -5710,6 +6159,239 @@ address public immutable CHALLENGER;
 <p>If the <code>msg.sender</code> does not have either role, the function must revert.</p>
 <p>The exception is the <code>initialize</code> function, which may only be called if the <code>tx.origin</code> is the <code>PROPOSER</code> role.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="optimismportal"><a class="header" href="#optimismportal">OptimismPortal</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#overview">Overview</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#definitions">Definitions</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">Finalized Withdrawal</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawal</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#invalid-withdrawal">Invalid Withdrawal</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#respected-game-type">Respected Game Type</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#retirement-timestamp">Retirement Timestamp</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#aop-001-dispute-game-contracts-properly-report-important-properties">aOP-001: Dispute Game contracts properly report important properties</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#aop-002-disputegamefactory-properly-reports-its-created-games">aOP-002: DisputeGameFactory properly reports its created games</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#invariants">Invariants</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time">iOP-002: Valid Withdrawals can always be finalized in bounded time</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#impact-1">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#function-specification">Function Specification</a>
+<ul>
+<li><a href="fault-proof/stage-one/optimism-portal.html#setrespectedgametype">setRespectedGameType</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#blacklistdisputegame">blacklistDisputeGame</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#provewithdrawaltransaction">proveWithdrawalTransaction</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#checkwithdrawal">checkWithdrawal</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-20"><a class="header" href="#overview-20">Overview</a></h2>
+<p>The <code>OptimismPortal</code> contract is the primary interface for deposits and withdrawals between the L1
+and L2 chains within an OP Stack system. The <code>OptimismPortal</code> contract allows users to create
+"deposit transactions" on the L1 chain that are automatically executed on the L2 chain within a
+bounded amount of time. Additionally, the <code>OptimismPortal</code> contract allows users to execute
+withdrawal transactions by proving that such a withdrawal was initiated on the L2 chain. The
+<code>OptimismPortal</code> verifies the correctness of these withdrawal transactions against Output Roots
+that have been declared valid by the L1 Fault Proof system.</p>
+<h2 id="definitions-2"><a class="header" href="#definitions-2">Definitions</a></h2>
+<h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay">Proof Maturity Delay</a></h3>
+<p>The <strong>Proof Maturity Delay</strong> is the minimum amount of time that a withdrawal must be a
+<a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a> before it can be finalized.</p>
+<h3 id="proven-withdrawal"><a class="header" href="#proven-withdrawal">Proven Withdrawal</a></h3>
+<p>A <strong>Proven Withdrawal</strong> is a withdrawal transaction that has been proven against some Output Root
+by a user. Users can prove withdrawals against any Dispute Game contract that meets the following
+conditions:</p>
+<ul>
+<li>The game is a <a href="fault-proof/stage-one/./anchor-state-registry.html#registered-game">Registered Game</a></li>
+<li>The game is not a <a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">Retired Game</a></li>
+<li>The game has a game type that matches the current
+<a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game-type">Respected Game Type</a></li>
+<li>The game has not resolved in favor of the Challenger</li>
+</ul>
+<p>Notably, the <code>OptimismPortal</code> allows users to prove withdrawals against games that are currently
+in progress (games that are not <a href="fault-proof/stage-one/./anchor-state-registry.html#resolved-game">Resolved Games</a>).</p>
+<p>Note that the <code>OptimismPortal</code> currently allows users to prove withdrawals against games that have
+been blacklisted, though these withdrawals cannot be <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a>. To avoid
+user confusion, this functionality will likely be removed in a future release.</p>
+<p>Users may re-prove a withdrawal at any time. User withdrawals are stored on a per-user basis such
+that re-proving a withdrawal cannot cause the timer for
+<a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalizing a withdrawal</a> to be reset for another user.</p>
+<h3 id="finalized-withdrawal"><a class="header" href="#finalized-withdrawal">Finalized Withdrawal</a></h3>
+<p>A <strong>Finalized Withdrawal</strong> is a withdrawal transaction that was previously a Proven Withdrawal and
+meets a number of additional conditions that allow the withdrawal to be executed.</p>
+<p>Users can finalize a withdrawal if they have previously proven the withdrawal and their withdrawal
+meets the following conditions:</p>
+<ul>
+<li>Withdrawal is a <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a></li>
+<li>Withdrawal was proven at least <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> seconds ago</li>
+<li>Withdrawal was proven against a game with a <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a></li>
+<li>Withdrawal was not previously finalized</li>
+</ul>
+<h3 id="valid-withdrawal"><a class="header" href="#valid-withdrawal">Valid Withdrawal</a></h3>
+<p>A <strong>Valid Withdrawal</strong> is a withdrawal transaction that was correctly executed on the L2 system as
+would be reported by a perfect oracle for the query.</p>
+<h3 id="invalid-withdrawal"><a class="header" href="#invalid-withdrawal">Invalid Withdrawal</a></h3>
+<p>An <strong>Invalid Withdrawal</strong> is any withdrawal that is not a <a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawal</a>.</p>
+<h3 id="respected-game-type-2"><a class="header" href="#respected-game-type-2">Respected Game Type</a></h3>
+<p>See <a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game-type">Respected Game Type</a>. The Respected Game Type
+can only be set by the Guardian.</p>
+<h3 id="retirement-timestamp"><a class="header" href="#retirement-timestamp">Retirement Timestamp</a></h3>
+<p>Any game whose creation timestamp is less than or equal to the <strong>Retirement Timestamp</strong> is
+considered to be a <a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">Retired Game</a>. Retired Games cannot be
+used to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> or <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> withdrawals. The
+Retirement Timestamp can only be set by the Guardian.</p>
+<h3 id="l2-withdrawal-sender"><a class="header" href="#l2-withdrawal-sender">L2 Withdrawal Sender</a></h3>
+<p>The <strong>L2 Withdrawal Sender</strong> is the address of the account that triggered a given withdrawal
+transaction on L2. The <code>OptimismPortal</code> is expected to expose a variable that includes this value
+when <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalizing</a> a withdrawal.</p>
+<h2 id="assumptions-1"><a class="header" href="#assumptions-1">Assumptions</a></h2>
+<h3 id="aop-001-dispute-game-contracts-properly-report-important-properties"><a class="header" href="#aop-001-dispute-game-contracts-properly-report-important-properties">aOP-001: Dispute Game contracts properly report important properties</a></h3>
+<p>We assume that the <code>FaultDisputeGame</code> and <code>PermissionedDisputeGame</code> contracts properly and
+faithfully report the following properties:</p>
+<ul>
+<li>Game type</li>
+<li>L2 block number</li>
+<li>Root claim value</li>
+<li>Game extra data</li>
+<li>Creation timestamp</li>
+<li>Resolution timestamp</li>
+<li>Resolution result</li>
+<li>Whether the game was the respected game type at creation</li>
+</ul>
+<p>We also specifically assume that the game creation timestamp and the resolution timestamp are not
+set to values in the future.</p>
+<h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>FaultDisputeGame</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aop-002-disputegamefactory-properly-reports-its-created-games"><a class="header" href="#aop-002-disputegamefactory-properly-reports-its-created-games">aOP-002: DisputeGameFactory properly reports its created games</a></h3>
+<p>We assume that the <code>DisputeGameFactory</code> contract properly and faithfully reports the games it has
+created.</p>
+<h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>DisputeGameFactory</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period"><a class="header" href="#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period</a></h3>
+<p>We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
+period.</p>
+<h4 id="mitigations-6"><a class="header" href="#mitigations-6">Mitigations</a></h4>
+<ul>
+<li>Stakeholder incentives / processes</li>
+<li>Incident response plan</li>
+<li>Monitoring</li>
+</ul>
+<h2 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h2>
+<h3 id="iop-001-invalid-withdrawals-can-never-be-finalized"><a class="header" href="#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a></h3>
+<p>We require that <a href="fault-proof/stage-one/optimism-portal.html#invalid-withdrawal">Invalid Withdrawals</a> can never be
+<a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a> for any reason.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, any number of arbitrarily bad outcomes could happen. Most obviously,
+we would expect all bridge systems relying on the <code>OptimismPortal</code> to be immediately compromised.</p>
+<h3 id="iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time"><a class="header" href="#iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time">iOP-002: Valid Withdrawals can always be finalized in bounded time</a></h3>
+<p>We require that <a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawals</a> can always be
+<a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a> within some reasonable, bounded amount of time.</p>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, we would expect that users are unable to withdraw bridged assets. We
+see this as a critical system risk.</p>
+<h2 id="function-specification-1"><a class="header" href="#function-specification-1">Function Specification</a></h2>
+<h3 id="setrespectedgametype"><a class="header" href="#setrespectedgametype">setRespectedGameType</a></h3>
+<p>Allows the Guardian to change the <a href="fault-proof/stage-one/optimism-portal.html#respected-game-type">Respected Game Type</a> and to update the
+<a href="fault-proof/stage-one/optimism-portal.html#retirement-timestamp">Retirement Timestamp</a>.</p>
+<ul>
+<li>MUST revert if the sender is not the Guardian.</li>
+<li>If the game type is <code>type(uint32).max</code>, MUST update the Retirement Timestamp to the current
+block timestamp and MUST NOT update the Respected Game Type.</li>
+<li>If the game type is not <code>type(uint32).max</code>, MUST set the Respected Game Type to the provided game
+type and MUST NOT update the Retirement Timestamp.</li>
+</ul>
+<h3 id="blacklistdisputegame"><a class="header" href="#blacklistdisputegame">blacklistDisputeGame</a></h3>
+<p>Allows the Guardian to <a href="fault-proof/stage-one/./anchor-state-registry.html#blacklisted-game">blacklist</a> a Dispute Game.</p>
+<ul>
+<li>MUST revert if the sender is not the Guardian.</li>
+<li>MUST set the provided dispute game as blacklisted.</li>
+</ul>
+<h3 id="provewithdrawaltransaction"><a class="header" href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></h3>
+<p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> a withdrawal transaction.</p>
+<ul>
+<li>MUST revert if the withdrawal is being proven against a game that is not a
+<a href="fault-proof/stage-one/./anchor-state-registry.html#registered-game">Registered Game</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that has a game type not equal to
+the current <a href="fault-proof/stage-one/optimism-portal.html#respected-game-type">Respected Game Type</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that is not a
+<a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
+<li>MUST revert if the withdrawal is a <a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">Retired Game</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
+Challenger.</li>
+<li>MUST revert if the provided merkle trie proof that the withdrawal was included within the root
+claim of the provided dispute game is invalid.</li>
+<li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
+withdrawal, the address of the game against which it was proven, and the block timestamp at which
+the proof transaction was submitted.</li>
+</ul>
+<h3 id="checkwithdrawal"><a class="header" href="#checkwithdrawal">checkWithdrawal</a></h3>
+<p>Checks that a withdrawal transaction can be <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a>.</p>
+<ul>
+<li>MUST revert if the withdrawal being finalized has not been proven.</li>
+<li>MUST revert if the withdrawal being finalized has been proven less than
+<a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> seconds ago.</li>
+<li>MUST revert if the withdrawal being finalized was proven against a game that is not a
+<a href="fault-proof/stage-one/./anchor-state-registry.html#valid-game">Valid Game</a>.</li>
+<li>MUST revert if the withdrawal being finalized has already been finalized.</li>
+<li>MUST otherwise return <code>true</code>.</li>
+</ul>
+<h3 id="finalizewithdrawaltransaction"><a class="header" href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></h3>
+<p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> a withdrawal transaction.</p>
+<ul>
+<li>MUST revert if the function is called while a previous withdrawal is being executed.</li>
+<li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code>.</li>
+<li>MUST mark the withdrawal as finalized.</li>
+<li>MUST set the L2 Withdrawal Sender variable correctly.</li>
+<li>MUST execute the withdrawal transaction by executing a contract call to the target address with
+the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
+specified by the withdrawal.</li>
+<li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="precompiles"><a class="header" href="#precompiles">Precompiles</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -5719,7 +6401,7 @@ address public immutable CHALLENGER;
 <li><a href="protocol/precompiles.html#p256verify">P256VERIFY</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-19"><a class="header" href="#overview-19">Overview</a></h2>
+<h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
 <p><a href="protocol/../glossary.html#precompiled-contract-precompile">Precompiled contracts</a> exist on OP-Stack chains at
 predefined addresses. They are similar to predeploys but are implemented as native code in the EVM as opposed to
 bytecode. Precompiles are used for computationally expensive operations, that would be cost prohibitive to implement
@@ -5766,7 +6448,7 @@ the OP-Stack protocol in the Fjord release. The op-geth implementation is
 <li><a href="protocol/predeploys.html#beacon-block-root">Beacon Block Root</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-20"><a class="header" href="#overview-20">Overview</a></h2>
+<h2 id="overview-22"><a class="header" href="#overview-22">Overview</a></h2>
 <p><a href="protocol/../glossary.html#predeployed-contract-predeploy">Predeployed smart contracts</a> exist on Optimism
 at predetermined addresses in the genesis state. They are similar to precompiles but instead run
 directly in the EVM instead of running native code outside of the EVM.</p>
@@ -6013,7 +6695,7 @@ Ecotone network upgrade and is specified in <a href="https://eips.ethereum.org/E
 <li><a href="protocol/preinstalls.html#erc-4337-v070-sendercreator">ERC-4337 v0.7.0 SenderCreator</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
+<h2 id="overview-23"><a class="header" href="#overview-23">Overview</a></h2>
 <p><a href="protocol/../glossary.html#preinstalled-contract-preinstall">Preinstalled smart contracts</a> exist on Optimism
 at predetermined addresses in the genesis state. They are similar to precompiles but instead run
 directly in the EVM instead of running native code outside of the EVM and are developed by third
@@ -6180,7 +6862,7 @@ which is explicitly not <code>EntryPoint</code> itself.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-22"><a class="header" href="#overview-22">Overview</a></h2>
+<h2 id="overview-24"><a class="header" href="#overview-24">Overview</a></h2>
 <p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains within
 a single Superchain network.</p>
 <h2 id="configurable-values"><a class="header" href="#configurable-values">Configurable values</a></h2>
@@ -6259,7 +6941,7 @@ layer.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-23"><a class="header" href="#overview-23">Overview</a></h2>
+<h2 id="overview-25"><a class="header" href="#overview-25">Overview</a></h2>
 <p>Superchain upgrades, also known as forks or hardforks, implement consensus-breaking changes.</p>
 <p>A Superchain upgrade requires the node software to support up to a given Protocol Version.
 The version indicates support, the upgrade indicates the activation of new functionality.</p>
@@ -6469,7 +7151,7 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 <li><a href="protocol/system-config.html#reading-the-system-config">Reading the system config</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-24"><a class="header" href="#overview-24">Overview</a></h2>
+<h2 id="overview-26"><a class="header" href="#overview-26">Overview</a></h2>
 <p>The <code>SystemConfig</code> is a contract on L1 that can emit rollup configuration changes as log events.
 The rollup <a href="protocol/derivation.html">block derivation process</a> picks up on these log events and applies the changes.</p>
 <h2 id="system-config-contents-version-0"><a class="header" href="#system-config-contents-version-0">System config contents (version 0)</a></h2>
@@ -6713,7 +7395,7 @@ concatenation, <code>versionByte</code> is <code>0x00</code>, and <code>chainId<
 <strong>Requirement:</strong> Foundation-approved, globally unique value <sup class="footnote-reference"><a href="#chain-id-uniqueness">1</a></sup>.<br/>
 <strong>Notes:</strong> Foundation will ensure chains are responsible with their chain IDs until there's a governance process in
 place.<br/></p>
-<h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#fpac-optimismportal-mods-specification">Proof Maturity Delay</a></a></h3>
+<h3 id="proof-maturity-delay-1"><a class="header" href="#proof-maturity-delay-1"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#fpac-optimismportal-mods-specification">Proof Maturity Delay</a></a></h3>
 <p><strong>Description:</strong> The length of time that must pass between proving and finalizing a withdrawal.<br/>
 <strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin</a><br/>
 <strong>Requirement:</strong> 7 days<br/>
@@ -6727,7 +7409,7 @@ any withdrawals proven against it can be finalized, in the case of a system fail
 <strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin</a><br/>
 <strong>Requirement:</strong> 3.5 days<br/>
 <strong>Notes:</strong> High security. Allows enough time for the <code>Guardian</code> to blacklist games.<br/></p>
-<h3 id="respected-game-type"><a class="header" href="#respected-game-type"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#new-state-variables">Respected Game Type</a></a></h3>
+<h3 id="respected-game-type-3"><a class="header" href="#respected-game-type-3"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#new-state-variables">Respected Game Type</a></a></h3>
 <p><strong>Description:</strong> The respected game type of the <code>OptimismPortal</code>. Determines the type of dispute games that can be used
 to finalize withdrawals.<br/>
 <strong>Administrator:</strong> <a href="protocol/configurability.html#service-roles">Guardian</a><br/>
@@ -7253,7 +7935,7 @@ according to the steps in the <a href="protocol/safe-extensions.html#deploying-t
 <li><a href="protocol/stage-1.html#ownership-model-diagram">Ownership model diagram</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-25"><a class="header" href="#overview-25">Overview</a></h2>
+<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
 <p>This document outlines configuration requirements (including roles and other parameters)
 for an implementation of the OP Stack to satisfy the Stage 1 decentralization requirements as defined
 by
@@ -7400,7 +8082,7 @@ included here for completeness, but is not considered as either Safety or Livene
 <li><a href="protocol/regolith/overview.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-26"><a class="header" href="#overview-26">Overview</a></h2>
+<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
 <p>The Regolith upgrade, named after a material best described as "deposited dust on top of a layer of bedrock",
 implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
 the Bedrock Optimism Goerli testnet.</p>
@@ -8262,7 +8944,7 @@ when a user already submitted the EIP transaction before the upgrade.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
+<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
 <p>On the Ecotone activation block, and if Ecotone is not activated at Genesis,
 the L1 Attributes Transaction includes a call to <code>setL1BlockValues()</code>
 because the L1 Attributes transaction precedes the <a href="protocol/ecotone/derivation.html#network-upgrade-automation-transactions">Ecotone Upgrade Transactions</a>,
@@ -9162,7 +9844,7 @@ search any further back, so we go back a channel timeout before the finalized L2
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
+<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
 <p>The EIP-1559 parameters are encoded in the block header's <code>extraData</code> field and can be configured dynamically through
 the <code>SystemConfig</code>.</p>
 <h2 id="timestamp-activation-1"><a class="header" href="#timestamp-activation-1">Timestamp Activation</a></h2>
@@ -9262,7 +9944,7 @@ contract values to the block builder via <code>PayloadAttributesV3</code> parame
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
+<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
 <p>The <code>SystemConfig</code> is updated to allow for dynamic EIP-1559 parameters.</p>
 <h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
 <p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
@@ -9388,7 +10070,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
+<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
 <p>The SystemConfig is updated.</p>
 <h2 id="systemconfig"><a class="header" href="#systemconfig"><code>SystemConfig</code></a></h2>
 <h3 id="configupdate-1"><a class="header" href="#configupdate-1"><code>ConfigUpdate</code></a></h3>
@@ -9482,7 +10164,7 @@ the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
-<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
+<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
 <p>The storage root of the <code>L2ToL1MessagePasser</code> is included in the block header's
 <code>withdrawalRoot</code> field.</p>
 <h2 id="timestamp-activation-2"><a class="header" href="#timestamp-activation-2">Timestamp Activation</a></h2>
@@ -9918,7 +10600,7 @@ the Isthmus activation time.</p>
 <li><a href="protocol/isthmus/l1-attributes.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
+<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
 <p>The L1 block attributes transaction is updated to include the operator fee parameters.</p>
 <div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
 <tr><td>{0x098999be}</td><td></td><td>0-3</td><td>n/a</td></tr>
@@ -9968,7 +10650,7 @@ and also set the following new attributes:</p>
 <li><a href="protocol/isthmus/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
+<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
 <h3 id="l1block-1"><a class="header" href="#l1block-1">L1Block</a></h3>
 <h4 id="interface-3"><a class="header" href="#interface-3">Interface</a></h4>
 <h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
@@ -10006,7 +10688,7 @@ No special logic is needed in order to insert or withdraw funds.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
+<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -10139,7 +10821,7 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
+<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
 <p>Custom gas token is also known as "custom L2 native asset". It allows for an L1-native ERC20 token to collateralize
 and act as the gas token on L2. The native asset is used to buy gas which is used to pay for resources on the network
 and is represented by EVM opcodes such as <code>CALLVALUE</code> (<code>msg.value</code>).</p>
@@ -10245,7 +10927,7 @@ but do not expose anything as part of their ABI that indicates awareness.</p>
 <li><code>L2CrossDomainMessenger</code></li>
 <li><code>OptimismPortal</code></li>
 </ul>
-<h3 id="optimismportal"><a class="header" href="#optimismportal">OptimismPortal</a></h3>
+<h3 id="optimismportal-1"><a class="header" href="#optimismportal-1">OptimismPortal</a></h3>
 <p>The <code>OptimismPortal</code> is updated with a new interface specifically for depositing custom tokens.</p>
 <h4 id="depositerc20transaction"><a class="header" href="#depositerc20transaction"><code>depositERC20Transaction</code></a></h4>
 <p>The <code>depositERC20Transaction</code> function is useful for sending custom gas tokens to L2. It is broken out into its
@@ -10612,7 +11294,7 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
+<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
 <h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
@@ -10673,7 +11355,7 @@ Each of these functions should be <code>public</code> and only callable by the c
 <h5 id="setsequencerfeevaultconfig"><a class="header" href="#setsequencerfeevaultconfig"><code>setSequencerFeeVaultConfig</code></a></h5>
 <pre><code class="language-solidity">function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
 </code></pre>
-<h2 id="optimismportal-1"><a class="header" href="#optimismportal-1"><code>OptimismPortal</code></a></h2>
+<h2 id="optimismportal-2"><a class="header" href="#optimismportal-2"><code>OptimismPortal</code></a></h2>
 <p>The <code>OptimismPortal</code> is updated to emit a special system <code>TransactionDeposited</code> event.</p>
 <h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
 <h4 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h4>
@@ -10886,7 +11568,7 @@ a future hardfork.</p>
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
+<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -11577,7 +12259,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
+<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -11782,7 +12464,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-39"><a class="header" href="#overview-39">Overview</a></h3>
+<h3 id="overview-41"><a class="header" href="#overview-41">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -11849,7 +12531,7 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-40"><a class="header" href="#overview-40">Overview</a></h3>
+<h3 id="overview-42"><a class="header" href="#overview-42">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -11983,7 +12665,7 @@ with <code>convert</code>.</p>
 </code></pre>
 <p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
 <code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
-<h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
+<h3 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h3>
 <p>The <code>convert</code> function conserves the following invariants:</p>
 <ul>
 <li>Conservation of amount:
@@ -12029,7 +12711,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-41"><a class="header" href="#overview-41">Overview</a></h3>
+<h3 id="overview-43"><a class="header" href="#overview-43">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -12101,7 +12783,7 @@ sequenceDiagram
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h3 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h3>
+<h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
 <p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -12176,7 +12858,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
+<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -12493,7 +13175,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainERC20Bridge</code>.
@@ -12769,7 +13451,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </div>
 <h2 id="superchainweth"><a class="header" href="#superchainweth">SuperchainWETH</a></h2>
 <!-- TODO (https://github.com/ethereum-optimism/specs/issues/479) re-write invariants to use imperative form -->
-<h3 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h3>
+<h3 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h3>
 <h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
 <ul>
 <li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
@@ -12829,7 +13511,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <li>Emits a <code>RelayETH</code> event with details about the sender, recipient, amount, and source chain.</li>
 </ul>
 <h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
-<h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
+<h3 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h3>
 <h4 id="global-invariants"><a class="header" href="#global-invariants">Global Invariants</a></h4>
 <ul>
 <li>Initial balance must be set to <code>type(uint248).max</code> (wei).
@@ -12909,11 +13591,11 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
 <p>New derivation rules are added to guaranteee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
-<h2 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h2>
+<h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
 <ul>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
@@ -13057,7 +13739,7 @@ that very old logs are more expensive to prove.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -13163,7 +13845,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -13453,7 +14135,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -13613,7 +14295,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
@@ -13626,7 +14308,7 @@ that executes a single instruction. We say the VM is a function <span class="kat
 single instruction encoded in the state to produce a new state <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span>.
 <span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">re</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></span></p>
 <p>Thus, the trace of a program executed by the FPVM is an ordered set of VM states.</p>
-<h3 id="definitions-1"><a class="header" href="#definitions-1">Definitions</a></h3>
+<h3 id="definitions-3"><a class="header" href="#definitions-3">Definitions</a></h3>
 <h4 id="concepts"><a class="header" href="#concepts">Concepts</a></h4>
 <h5 id="natural-alignment"><a class="header" href="#natural-alignment">Natural Alignment</a></h5>
 <p>A memory address is said to be "naturally aligned" in the context of some data type

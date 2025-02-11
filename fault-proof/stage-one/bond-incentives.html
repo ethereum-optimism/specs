@@ -187,6 +187,18 @@
 <li><a href="#bond-scaling">Bond Scaling</a></li>
 <li><a href="#required-bond-formula">Required Bond Formula</a></li>
 <li><a href="#other-incentives">Other Incentives</a></li>
+</ul>
+</li>
+<li><a href="#game-finalization">Game Finalization</a>
+<ul>
+<li><a href="#bond-distribution-mode">Bond Distribution Mode</a>
+<ul>
+<li><a href="#normal-mode">Normal Mode</a></li>
+<li><a href="#refund-mode">Refund Mode</a></li>
+</ul>
+</li>
+<li><a href="#game-closure">Game Closure</a></li>
+<li><a href="#claiming-credit">Claiming Credit</a></li>
 <li><a href="#delayedweth">DelayedWETH</a>
 <ul>
 <li><a href="#sub-account-model">Sub-Account Model</a></li>
@@ -272,8 +284,50 @@ At each depth <code>N</code>, the amount of gas charged is therefore <code>400_0
 opportunity cost of locking up capital in the dispute game. While we do not explicitly create incentives to cover
 these costs, we assume that the current bond rewards, based on this specification, are enough as a whole to cover
 all other costs of participation.</p>
+<h2 id="game-finalization"><a class="header" href="#game-finalization">Game Finalization</a></h2>
+<p>After the game is resolved, claimants must wait for the <a href="anchor-state-registry.html#isgamefinalized">AnchorStateRegistry's
+<code>isGameFinalized()</code></a> to return <code>true</code> before they can claim their bonds. This
+implies a wait period of at least the <code>disputeGameFinalityDelaySeconds</code> variable from the <code>OptimismPortal</code> contract.
+After the game is finalized, bonds can be distributed.</p>
+<h3 id="bond-distribution-mode"><a class="header" href="#bond-distribution-mode">Bond Distribution Mode</a></h3>
+<p>The FDG will in most cases distribute bonds to the winners of the game after it is resolved and finalized, but in
+special cases will refund the bonds to the original depositor.</p>
+<h4 id="normal-mode"><a class="header" href="#normal-mode">Normal Mode</a></h4>
+<p>In normal mode, the FDG will distribute bonds to the winners of the game after it is resolved and finalized.</p>
+<h4 id="refund-mode"><a class="header" href="#refund-mode">Refund Mode</a></h4>
+<p>In refund mode, the FDG will refund the bonds to the original depositor.</p>
+<h3 id="game-closure"><a class="header" href="#game-closure">Game Closure</a></h3>
+<p>The <code>FaultDisputeGame</code> contract can be closed after finalization via the <code>closeGame()</code> function.</p>
+<p><code>closeGame</code> must do the following:</p>
+<ol>
+<li>Verify the game is resolved and finalized according to the Anchor State Registry</li>
+<li>Attempt to set this game as the new anchor game.</li>
+<li>Determine the bond distribution mode based on whether the <a href="anchor-state-registry.html#isgameproper">AnchorStateRegistry's
+<code>isGameProper()</code></a> returns <code>true</code>.</li>
+<li>Emit a <code>GameClosed</code> event with the chosen distribution mode.</li>
+</ol>
+<h3 id="claiming-credit"><a class="header" href="#claiming-credit">Claiming Credit</a></h3>
+<p>There is a 2-step process to claim credit. First, <code>claimCredit(address claimant)</code> should be called to unlock the credit
+from the <a href="#delayedweth">DelayedWETH</a> contract. After DelayedWETH's <a href="#delay-period">delay period</a> has passed,
+<code>claimCredit</code> should be called again to withdraw the credit.</p>
+<p>The <code>claimCredit(address claimant)</code> function must do the following:</p>
+<ul>
+<li>Call <code>closeGame()</code> to determine the distribution mode if not already closed.
+<ul>
+<li>In NORMAL mode: Distribute credit from the standard <code>normalModeCredit</code> mapping.</li>
+<li>In REFUND mode: Distribute credit from the <code>refundModeCredit</code> mapping.</li>
+</ul>
+</li>
+<li>If the claimant has not yet unlocked their credit, unlock it by calling <code>DelayedWETH.unlock(claimant, credit)</code>.
+<ul>
+<li>Claimant must not be able to unlock this credit again.</li>
+</ul>
+</li>
+<li>If the claimant has already unlocked their credit, call <code>DelayedWETH.withdraw(claimant, credit)</code> (implying a
+<a href="#delay-period">delay period</a>) to withdraw the credit, and set claimant's <code>credit</code> balances to 0.</li>
+</ul>
 <h3 id="delayedweth"><a class="header" href="#delayedweth">DelayedWETH</a></h3>
-<p>FPM introduces a contract <code>DelayedWETH</code> designed to hold the bonded ETH for each
+<p><code>DelayedWETH</code> is designed to hold the bonded ETH for each
 <a href="fault-dispute-game.html">Fault Dispute Game</a>.
 <code>DelayedWETH</code> is an extended version of the standard <code>WETH</code> contract that introduces a delayed unwrap mechanism that
 allows an owner address to function as a backstop in the case that a Fault Dispute Game would
@@ -294,7 +348,10 @@ seconds and reverts if not. It also confirms that the amount being withdrawn is 
 request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
 <code>withdraw(wad)</code> function becomes an alias for <code>withdraw(msg.sender, wad)</code>.
 <code>withdraw(guy,wad)</code> will not be callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
-<li><code>DelayedWETH</code> has a <code>hold()</code> function that allows the <code>owner()</code> address to give itself an allowance from any address.</li>
+<li><code>DelayedWETH</code> has a <code>hold(guy,wad)</code> function that allows the <code>owner()</code> address to, for any holder, give itself an
+allowance and immediately <code>transferFrom</code> that allowance amount to itself.</li>
+<li><code>DelayedWETH</code> has a <code>hold(guy)</code> function that allows the <code>owner()</code> address to, for any holder, give itself a full
+allowance of the holder's balance and immediately <code>transferFrom</code> that amount to itself.</li>
 <li><code>DelayedWETH</code> has a <code>recover()</code> function that allows the <code>owner()</code> address to recover any amount of ETH from the
 contract.</li>
 </ul>
@@ -314,8 +371,8 @@ over multiple timezones.</p>
 <ul>
 <li>When <code>FaultDisputeGame.initialize</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
 <li>When <code>FaultDisputeGame.move</code> is triggered, <code>DelayedWETH.deposit{value: msg.value}()</code> is called.</li>
-<li>When <code>FaultDisputeGame.resolveClaim</code> is triggered, <code>DelayedWETH.unlock(recipient, bond)</code> is called.</li>
-<li>When <code>FaultDisputeGame.claimCredit</code> is triggered, <code>DelayedWETH.withdraw(recipient, claim)</code> is called.</li>
+<li>When <code>FaultDisputeGame.resolveClaim</code> is triggered, the game will add to the claimant's internal credit balance.</li>
+<li>When <code>FaultDisputeGame.claimCredit</code> is triggered, <code>DelayedWETH.withdraw(recipient, credit)</code> is called.</li>
 </ul>
 <pre class="mermaid">sequenceDiagram
     participant U as User
@@ -334,13 +391,17 @@ over multiple timezones.</p>
 
     loop resolveClaim by Users
         U-&gt;&gt;FDG: resolveClaim()
-        FDG-&gt;&gt;DW: unlock(recipient, bond)
-        Note over DW: Starts timer for recipient
+        FDG-&gt;&gt;FDG: Add to claimant credit
     end
 
-    loop claimCredit by Users
+  loop Initial claimCredit call by Users
         U-&gt;&gt;FDG: claimCredit()
-        FDG-&gt;&gt;DW: withdraw(recipient, claim)
+        FDG-&gt;&gt;DW: unlock(recipient, bond)
+    end
+
+    loop Subsequent claimCredit call by Users
+        U-&gt;&gt;FDG: claimCredit()
+        FDG-&gt;&gt;DW: withdraw(recipient, credit)
         Note over DW: Checks timer/amount for recipient
         DW-&gt;&gt;FDG: Transfer claim to FDG
         FDG-&gt;&gt;U: Transfer claim to User

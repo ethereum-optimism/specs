@@ -182,6 +182,7 @@
 <li><a href="#claims">Claims</a></li>
 <li><a href="#anchor-state">Anchor State</a></li>
 <li><a href="#anchor-state-registry">Anchor State Registry</a></li>
+<li><a href="#respected-game-type">Respected Game Type</a></li>
 <li><a href="#dag">DAG</a></li>
 <li><a href="#subgame">Subgame</a></li>
 <li><a href="#game-tree">Game Tree</a></li>
@@ -263,10 +264,14 @@ state. In order to reduce this L1 data requirement, <a href="#claims">claims</a>
 become new anchor states when dispute games resolve in their favor. FDG contracts set their anchor
 states at initialization time so that these updates do not impact active games.</p>
 <h3 id="anchor-state-registry"><a class="header" href="#anchor-state-registry">Anchor State Registry</a></h3>
-<p>The Anchor State Registry is a registry that maps FDG types to their current <a href="#anchor-state">anchor states</a>.
-The Anchor State Registry is specific to Fault Dispute Game contracts and may not be applicable to
-other types of dispute game contracts that do not have the same concept of state that progresses
-over time.</p>
+<p>The Anchor State Registry is a registry that the FDG uses to determine its <a href="#anchor-state">anchor state</a>. It also
+determines if the game is <a href="anchor-state-registry.html#finalized-game">finalized</a> and
+<a href="anchor-state-registry.html#proper-game">"proper"</a> for purposes of <a href="./bond-incentives.html#game-finalization">Bond
+Distribution</a>. See <a href="anchor-state-registry.html">Anchor State Registry</a> for more
+details.</p>
+<h3 id="respected-game-type"><a class="header" href="#respected-game-type">Respected Game Type</a></h3>
+<p>A Fault Dispute Game must record whether its game type is respected at the time of its creation. See
+<a href="./anchor-state-registry.html#respected-game-type">Respected Game Type</a> for more details.</p>
 <h3 id="dag"><a class="header" href="#dag">DAG</a></h3>
 <p>A Directed Acyclic Graph <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">G</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="mclose">)</span></span></span></span> representing the relationship between claims, where:</p>
 <ul>
@@ -633,16 +638,9 @@ claims to be bonded, while rewarding game winners using the bonds of dishonest c
 the L2 block number challenger, if it exist, must be the winner of a root subgame.
 Thus, no moves against the root, including uncontested ones, can win a root subgame that has an L2 block number challenge.</p>
 <h3 id="finalization"><a class="header" href="#finalization">Finalization</a></h3>
-<p>Once the game is resolved, if the claim is shown to be valid, the FDG reports its state to the
-Anchor State Registry. The Anchor State Registry verifies that the request to update an anchor
-state comes from a FDG contract created by the Dispute Game Factory contract, confirms that the
-game resolved in favor of the defender, and confirms that the updated state would be newer than
-the current anchor state (based on the result of <code>FaultDisputeGame.l2BlockNumber()</code>). If these
-conditions are true, the Anchor State Registry updates the anchor state for the given game type.</p>
-<p>Note that the dependency of the Anchor State Registry on the <code>l2BlockNumber()</code> function means that
-the registry may not be applicable to dispute game types that do not have a similar sense of
-progressing state over time. Currently, the Anchor State Registry is therefore assumed to be
-specific to the Fault Dispute Game contract and not to other dispute game types.</p>
+<p>Once the game is resolved, it must wait for the <code>disputeGameFinalityDelaySeconds</code> on the <code>OptimismPortal</code> to pass before
+it can be finalized, after which bonds can be distributed via the process outlined in <a href="bond-incentives.html#game-finalization">Bond Incentives: Game
+Finalization</a>.</p>
 
                     </main>
 

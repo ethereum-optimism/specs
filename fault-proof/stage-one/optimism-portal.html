@@ -1,0 +1,457 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Optimism Portal - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/fault-proof/stage-one/optimism-portal.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="optimismportal"><a class="header" href="#optimismportal">OptimismPortal</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#proof-maturity-delay">Proof Maturity Delay</a></li>
+<li><a href="#proven-withdrawal">Proven Withdrawal</a></li>
+<li><a href="#finalized-withdrawal">Finalized Withdrawal</a></li>
+<li><a href="#valid-withdrawal">Valid Withdrawal</a></li>
+<li><a href="#invalid-withdrawal">Invalid Withdrawal</a></li>
+<li><a href="#respected-game-type">Respected Game Type</a></li>
+<li><a href="#retirement-timestamp">Retirement Timestamp</a></li>
+<li><a href="#l2-withdrawal-sender">L2 Withdrawal Sender</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#aop-001-dispute-game-contracts-properly-report-important-properties">aOP-001: Dispute Game contracts properly report important properties</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#aop-002-disputegamefactory-properly-reports-its-created-games">aOP-002: DisputeGameFactory properly reports its created games</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time">iOP-002: Valid Withdrawals can always be finalized in bounded time</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#setrespectedgametype">setRespectedGameType</a></li>
+<li><a href="#blacklistdisputegame">blacklistDisputeGame</a></li>
+<li><a href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></li>
+<li><a href="#checkwithdrawal">checkWithdrawal</a></li>
+<li><a href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>OptimismPortal</code> contract is the primary interface for deposits and withdrawals between the L1
+and L2 chains within an OP Stack system. The <code>OptimismPortal</code> contract allows users to create
+"deposit transactions" on the L1 chain that are automatically executed on the L2 chain within a
+bounded amount of time. Additionally, the <code>OptimismPortal</code> contract allows users to execute
+withdrawal transactions by proving that such a withdrawal was initiated on the L2 chain. The
+<code>OptimismPortal</code> verifies the correctness of these withdrawal transactions against Output Roots
+that have been declared valid by the L1 Fault Proof system.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay">Proof Maturity Delay</a></h3>
+<p>The <strong>Proof Maturity Delay</strong> is the minimum amount of time that a withdrawal must be a
+<a href="#proven-withdrawal">Proven Withdrawal</a> before it can be finalized.</p>
+<h3 id="proven-withdrawal"><a class="header" href="#proven-withdrawal">Proven Withdrawal</a></h3>
+<p>A <strong>Proven Withdrawal</strong> is a withdrawal transaction that has been proven against some Output Root
+by a user. Users can prove withdrawals against any Dispute Game contract that meets the following
+conditions:</p>
+<ul>
+<li>The game is a <a href="./anchor-state-registry.html#registered-game">Registered Game</a></li>
+<li>The game is not a <a href="./anchor-state-registry.html#retired-game">Retired Game</a></li>
+<li>The game has a game type that matches the current
+<a href="./anchor-state-registry.html#respected-game-type">Respected Game Type</a></li>
+<li>The game has not resolved in favor of the Challenger</li>
+</ul>
+<p>Notably, the <code>OptimismPortal</code> allows users to prove withdrawals against games that are currently
+in progress (games that are not <a href="./anchor-state-registry.html#resolved-game">Resolved Games</a>).</p>
+<p>Note that the <code>OptimismPortal</code> currently allows users to prove withdrawals against games that have
+been blacklisted, though these withdrawals cannot be <a href="#finalized-withdrawal">finalized</a>. To avoid
+user confusion, this functionality will likely be removed in a future release.</p>
+<p>Users may re-prove a withdrawal at any time. User withdrawals are stored on a per-user basis such
+that re-proving a withdrawal cannot cause the timer for
+<a href="#finalized-withdrawal">finalizing a withdrawal</a> to be reset for another user.</p>
+<h3 id="finalized-withdrawal"><a class="header" href="#finalized-withdrawal">Finalized Withdrawal</a></h3>
+<p>A <strong>Finalized Withdrawal</strong> is a withdrawal transaction that was previously a Proven Withdrawal and
+meets a number of additional conditions that allow the withdrawal to be executed.</p>
+<p>Users can finalize a withdrawal if they have previously proven the withdrawal and their withdrawal
+meets the following conditions:</p>
+<ul>
+<li>Withdrawal is a <a href="#proven-withdrawal">Proven Withdrawal</a></li>
+<li>Withdrawal was proven at least <a href="#proof-maturity-delay">Proof Maturity Delay</a> seconds ago</li>
+<li>Withdrawal was proven against a game with a <a href="./anchor-state-registry.html#valid-claim">Valid Claim</a></li>
+<li>Withdrawal was not previously finalized</li>
+</ul>
+<h3 id="valid-withdrawal"><a class="header" href="#valid-withdrawal">Valid Withdrawal</a></h3>
+<p>A <strong>Valid Withdrawal</strong> is a withdrawal transaction that was correctly executed on the L2 system as
+would be reported by a perfect oracle for the query.</p>
+<h3 id="invalid-withdrawal"><a class="header" href="#invalid-withdrawal">Invalid Withdrawal</a></h3>
+<p>An <strong>Invalid Withdrawal</strong> is any withdrawal that is not a <a href="#valid-withdrawal">Valid Withdrawal</a>.</p>
+<h3 id="respected-game-type"><a class="header" href="#respected-game-type">Respected Game Type</a></h3>
+<p>See <a href="./anchor-state-registry.html#respected-game-type">Respected Game Type</a>. The Respected Game Type
+can only be set by the Guardian.</p>
+<h3 id="retirement-timestamp"><a class="header" href="#retirement-timestamp">Retirement Timestamp</a></h3>
+<p>Any game whose creation timestamp is less than or equal to the <strong>Retirement Timestamp</strong> is
+considered to be a <a href="./anchor-state-registry.html#retired-game">Retired Game</a>. Retired Games cannot be
+used to <a href="#proven-withdrawal">prove</a> or <a href="#finalized-withdrawal">finalize</a> withdrawals. The
+Retirement Timestamp can only be set by the Guardian.</p>
+<h3 id="l2-withdrawal-sender"><a class="header" href="#l2-withdrawal-sender">L2 Withdrawal Sender</a></h3>
+<p>The <strong>L2 Withdrawal Sender</strong> is the address of the account that triggered a given withdrawal
+transaction on L2. The <code>OptimismPortal</code> is expected to expose a variable that includes this value
+when <a href="#finalized-withdrawal">finalizing</a> a withdrawal.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="aop-001-dispute-game-contracts-properly-report-important-properties"><a class="header" href="#aop-001-dispute-game-contracts-properly-report-important-properties">aOP-001: Dispute Game contracts properly report important properties</a></h3>
+<p>We assume that the <code>FaultDisputeGame</code> and <code>PermissionedDisputeGame</code> contracts properly and
+faithfully report the following properties:</p>
+<ul>
+<li>Game type</li>
+<li>L2 block number</li>
+<li>Root claim value</li>
+<li>Game extra data</li>
+<li>Creation timestamp</li>
+<li>Resolution timestamp</li>
+<li>Resolution result</li>
+<li>Whether the game was the respected game type at creation</li>
+</ul>
+<p>We also specifically assume that the game creation timestamp and the resolution timestamp are not
+set to values in the future.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>FaultDisputeGame</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aop-002-disputegamefactory-properly-reports-its-created-games"><a class="header" href="#aop-002-disputegamefactory-properly-reports-its-created-games">aOP-002: DisputeGameFactory properly reports its created games</a></h3>
+<p>We assume that the <code>DisputeGameFactory</code> contract properly and faithfully reports the games it has
+created.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Existing audit on the <code>DisputeGameFactory</code> contract</li>
+<li>Integration testing</li>
+</ul>
+<h3 id="aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period"><a class="header" href="#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period</a></h3>
+<p>We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
+period.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>Stakeholder incentives / processes</li>
+<li>Incident response plan</li>
+<li>Monitoring</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="iop-001-invalid-withdrawals-can-never-be-finalized"><a class="header" href="#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a></h3>
+<p>We require that <a href="#invalid-withdrawal">Invalid Withdrawals</a> can never be
+<a href="#finalized-withdrawal">finalized</a> for any reason.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, any number of arbitrarily bad outcomes could happen. Most obviously,
+we would expect all bridge systems relying on the <code>OptimismPortal</code> to be immediately compromised.</p>
+<h3 id="iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time"><a class="header" href="#iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time">iOP-002: Valid Withdrawals can always be finalized in bounded time</a></h3>
+<p>We require that <a href="#valid-withdrawal">Valid Withdrawals</a> can always be
+<a href="#finalized-withdrawal">finalized</a> within some reasonable, bounded amount of time.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, we would expect that users are unable to withdraw bridged assets. We
+see this as a critical system risk.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="setrespectedgametype"><a class="header" href="#setrespectedgametype">setRespectedGameType</a></h3>
+<p>Allows the Guardian to change the <a href="#respected-game-type">Respected Game Type</a> and to update the
+<a href="#retirement-timestamp">Retirement Timestamp</a>.</p>
+<ul>
+<li>MUST revert if the sender is not the Guardian.</li>
+<li>If the game type is <code>type(uint32).max</code>, MUST update the Retirement Timestamp to the current
+block timestamp and MUST NOT update the Respected Game Type.</li>
+<li>If the game type is not <code>type(uint32).max</code>, MUST set the Respected Game Type to the provided game
+type and MUST NOT update the Retirement Timestamp.</li>
+</ul>
+<h3 id="blacklistdisputegame"><a class="header" href="#blacklistdisputegame">blacklistDisputeGame</a></h3>
+<p>Allows the Guardian to <a href="./anchor-state-registry.html#blacklisted-game">blacklist</a> a Dispute Game.</p>
+<ul>
+<li>MUST revert if the sender is not the Guardian.</li>
+<li>MUST set the provided dispute game as blacklisted.</li>
+</ul>
+<h3 id="provewithdrawaltransaction"><a class="header" href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></h3>
+<p>Allows a user to <a href="#proven-withdrawal">prove</a> a withdrawal transaction.</p>
+<ul>
+<li>MUST revert if the withdrawal is being proven against a game that is not a
+<a href="./anchor-state-registry.html#registered-game">Registered Game</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that has a game type not equal to
+the current <a href="#respected-game-type">Respected Game Type</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that is not a
+<a href="./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
+<li>MUST revert if the withdrawal is a <a href="./anchor-state-registry.html#retired-game">Retired Game</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
+Challenger.</li>
+<li>MUST revert if the provided merkle trie proof that the withdrawal was included within the root
+claim of the provided dispute game is invalid.</li>
+<li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
+withdrawal, the address of the game against which it was proven, and the block timestamp at which
+the proof transaction was submitted.</li>
+</ul>
+<h3 id="checkwithdrawal"><a class="header" href="#checkwithdrawal">checkWithdrawal</a></h3>
+<p>Checks that a withdrawal transaction can be <a href="#finalized-withdrawal">finalized</a>.</p>
+<ul>
+<li>MUST revert if the withdrawal being finalized has not been proven.</li>
+<li>MUST revert if the withdrawal being finalized has been proven less than
+<a href="#proof-maturity-delay">Proof Maturity Delay</a> seconds ago.</li>
+<li>MUST revert if the withdrawal being finalized was proven against a game that is not a
+<a href="./anchor-state-registry.html#valid-game">Valid Game</a>.</li>
+<li>MUST revert if the withdrawal being finalized has already been finalized.</li>
+<li>MUST otherwise return <code>true</code>.</li>
+</ul>
+<h3 id="finalizewithdrawaltransaction"><a class="header" href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></h3>
+<p>Allows a user to <a href="#finalized-withdrawal">finalize</a> a withdrawal transaction.</p>
+<ul>
+<li>MUST revert if the function is called while a previous withdrawal is being executed.</li>
+<li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code>.</li>
+<li>MUST mark the withdrawal as finalized.</li>
+<li>MUST set the L2 Withdrawal Sender variable correctly.</li>
+<li>MUST execute the withdrawal transaction by executing a contract call to the target address with
+the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
+specified by the withdrawal.</li>
+<li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../fault-proof/stage-one/bridge-integration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/precompiles.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../fault-proof/stage-one/bridge-integration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/precompiles.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
