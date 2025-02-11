@@ -4441,9 +4441,11 @@ withdrawals on L1.</p>
 <ul>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game">Dispute Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay (Airgap)</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#registered-game">Registered Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#respected-game">Respected Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">Blacklisted Game</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">Retired Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#proper-game">Proper Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#resolved-game">Resolved Game</a></li>
@@ -4467,14 +4469,9 @@ withdrawals on L1.</p>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#mitigations-1">Mitigations</a></li>
 </ul>
 </li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003: OptimismPortal properly reports respected game type, blacklist, and retirement time</a>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003: Incorrectly resolving games will be invalidated before they have Valid Claims</a>
 <ul>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#mitigations-2">Mitigations</a></li>
-</ul>
-</li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004: Incorrectly resolving games will be invalidated within the airgap delay period</a>
-<ul>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#mitigations-3">Mitigations</a></li>
 </ul>
 </li>
 </ul>
@@ -4509,6 +4506,15 @@ withdrawals on L1.</p>
 </li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#function-specification">Function Specification</a>
 <ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#constructor">constructor</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#initialize">initialize</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#paused">paused</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#respectedgametype">respectedGameType</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#retirementtimestamp">retirementTimestamp</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#setrespectedgametype">setRespectedGameType</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#updateretirementtimestamp">updateRetirementTimestamp</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#blacklistdisputegame">blacklistDisputeGame</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameregistered">isGameRegistered</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#isgamerespected">isGameRespected</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#isgameblacklisted">isGameBlacklisted</a></li>
@@ -4544,46 +4550,58 @@ the context of the OP Stack, the claim is generally assumed to be a claim about 
 output root at a given L2 block height. We assume that all Dispute Game contracts using the same
 AnchorStateRegistry contract are arguing over the same underlying state/claim structure.</p>
 <h3 id="respected-game-type"><a class="header" href="#respected-game-type">Respected Game Type</a></h3>
-<p>The <code>OptimismPortal</code> contract defines a "respected game type" which is the Dispute Game type that
-the portal allows to be used for the purpose of proving and finalizing withdrawals. This mechanism
-allows the system to use multiple game types simultaneously while still ensuring that the
-<code>OptimismPortal</code> contract only trusts respected games specifically.</p>
-<p>The <code>OptimismPortal</code> contract defines a "respected game type" which is the type of Dispute Game
-that it believes to be correct for the purpose of proving and finalizing withdrawals. This
-mechanism allows the system to use multiple game types simultaneously while still ensuring that the
-<code>OptimismPortal</code> contract only trusts respected games specifically. If the respected game type is
-updated, any games created when their game type was respected are still considered Respected Games.</p>
+<p>The <code>AnchorStateRegistry</code> contract defines a <strong>Respected Game Type</strong> which is the Dispute Game type
+that is considered to be the correct by the <code>AnchorStateRegistry</code> and, by extension, other
+contracts that may rely on the assertions made within the <code>AnchorStateRegistry</code>. The Respected Game
+Type is, in a more general sense, a game type that the system believes will resolve correctly. For
+now, the <code>AnchorStateRegistry</code> only allows a single Respected Game Type.</p>
+<h3 id="dispute-game-finality-delay-airgap"><a class="header" href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay (Airgap)</a></h3>
+<p>The <strong>Dispute Game Finality Delay</strong> or <strong>Airgap</strong> is the amount of time that must elapse after a
+game resolves before the game's result is considered "final".</p>
 <h3 id="registered-game"><a class="header" href="#registered-game">Registered Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Registered Game</strong> if the game contract was created by the
 system's <code>DisputeGameFactory</code> contract.</p>
 <h3 id="respected-game"><a class="header" href="#respected-game">Respected Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Respected Game</strong> if the game contract's game type <strong>was</strong>
-the <code>respectedGameType</code> defined by the <code>OptimismPortal</code> contract at the time of the game's
+the Respected Game Type defined by the <code>AnchorStateRegistry</code> contract at the time of the game's
 creation. Games that are not Respected Games cannot be used as an Anchor Game. See
 <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a> for more information.</p>
 <h3 id="blacklisted-game"><a class="header" href="#blacklisted-game">Blacklisted Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Blacklisted Game</strong> if the game contract's address is marked
-as blacklisted inside of the <code>OptimismPortal</code> contract.</p>
+as blacklisted inside of the <code>AnchorStateRegistry</code> contract.</p>
+<h3 id="retirement-timestamp"><a class="header" href="#retirement-timestamp">Retirement Timestamp</a></h3>
+<p>The <strong>Retirement Timestamp</strong> is a timestamp value maintained within the <code>AnchorStateRegistry</code> that
+can be used to invalidate games. Games with a creation timestamp less than or equal to the
+Retirement Timestamp are automatically considered to be invalid.</p>
+<p>The RetirementTimestamp has the effect of retiring all games created before the specific
+transaction in which the retirement timestamp was set. This includes all games created in the same
+block as the transaction that set the Retirement Timestamp. We acknowledge the edge-case that games
+created in the same block <em>after</em> the Retirement Timestamp was set will be considered Retired Games
+even though they were technically created "after" the Retirement Timestamp was set.</p>
 <h3 id="retired-game"><a class="header" href="#retired-game">Retired Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Retired Game</strong> if the game contract was created with a
-timestamp less than or equal to the retirement timestamp (<code>respectedGameTypeUpdatedAt</code>) defined in
-the <code>OptimismPortal</code> contract. The retirement timestamp has the effect of retiring all games
-created before the specific transaction in which the retirement timestamp was set. This includes
-all games created in the same block as the transaction that set the retirement timestamp. We
-acknowledge the edge-case that games created in the same block <em>after</em> the retirement timestamp
-was set will be considered Retired Games even though they were technically created after the
-retirement timestamp was set.</p>
+timestamp less than or equal to the <a href="fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a>.</p>
 <h3 id="proper-game"><a class="header" href="#proper-game">Proper Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Proper Game</strong> if it has not been invalidated through any of
-the mechanisms defined by the <code>OptimismPortal</code> contract. A Proper Game is, in a sense, a "clean"
-game that exists in the set of games that are playing out correctly in a bug-free manner. A Dispute
-Game can be a Proper Game even if it has not yet resolved or resolves in favor of the Challenger.
-A Game that was previously a Proper Game can no longer be a Proper Game if it is later invalidated.</p>
-<p>Specifically, a game is considered to be a Proper Game if all of the following are true:</p>
+the mechanisms defined by the <code>AnchorStateRegistry</code> contract. A Proper Game is, in a sense, a
+"clean" game that exists in the set of games that are playing out correctly in a bug-free manner. A
+Dispute Game can be a Proper Game even if it has not yet resolved or resolves in favor of the
+Challenger.</p>
+<p>A Dispute Game that is <strong>NOT</strong> a Proper Game can also be referred to as an <strong>Improper Game</strong> for
+brevity. A Dispute Game can go from being a Proper Game to later <em>not</em> being an <strong>Improper Game</strong>
+if it is invalidated by being <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklisted</a> or <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">retired</a>.</p>
+<p><strong>ALL</strong> Dispute Games <strong>TEMPORARILY</strong> become Improper Games while the Superchain-wide pause
+mechanism is active. However, this is a <em>temporary</em> condition such that Registered Games that are
+not invalidated by <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklisting</a> or <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">retirement</a> will become
+Proper Games again once the pause is lifted. The Superchain-wide pause is therefore a way to
+<em>temporarily</em> prevent Dispute Games from being used by consumers like the <code>OptimismPortal</code> while
+relevant parties coordinate the use of some other invalidation mechanism.</p>
+<p>A Game is considered to be a Proper Game if all of the following are true:</p>
 <ul>
-<li>The game is a Registered Game</li>
-<li>The game is not a Blacklisted Game</li>
-<li>The game is not a Retired Game</li>
+<li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#registered-game">Registered Game</a></li>
+<li>The game is <strong>NOT</strong> a <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">Blacklisted Game</a></li>
+<li>The game is <strong>NOT</strong> a <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">Retired Game</a></li>
+<li>The Superchain-wide pause is not active</li>
 </ul>
 <h3 id="resolved-game"><a class="header" href="#resolved-game">Resolved Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Resolved Game</strong> if the game has resolved a result in favor
@@ -4591,16 +4609,17 @@ of either the Challenger or the Defender.</p>
 <h3 id="finalized-game"><a class="header" href="#finalized-game">Finalized Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Finalized Game</strong> if all of the following are true:</p>
 <ul>
-<li>The game is a Resolved Game</li>
-<li>The game resolved a result more than the airgap delay seconds ago as defined by the
-<code>disputeGameFinalityDelaySeconds</code> variable in the <code>OptimismPortal</code> contract.</li>
+<li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#resolved-game">Resolved Game</a></li>
+<li>The game resolved a result more than
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> seconds ago as defined by the
+<code>disputeGameFinalityDelaySeconds</code> variable in the <code>AnchorStateRegistry</code> contract.</li>
 </ul>
 <h3 id="valid-claim"><a class="header" href="#valid-claim">Valid Claim</a></h3>
 <p>A Dispute Game is considered to have a <strong>Valid Claim</strong> if all of the following are true:</p>
 <ul>
-<li>The game is a Proper Game</li>
-<li>The game is a Respected Game</li>
-<li>The game is a Finalized Game</li>
+<li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#proper-game">Proper Game</a></li>
+<li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game">Respected Game</a></li>
+<li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#finalized-game">Finalized Game</a></li>
 <li>The game resolved in favor of the root claim (i.e., in favor of the Defender)</li>
 </ul>
 <h3 id="truly-valid-claim"><a class="header" href="#truly-valid-claim">Truly Valid Claim</a></h3>
@@ -4657,18 +4676,17 @@ created.</p>
 <li>Existing audit on the <code>DisputeGameFactory</code> contract</li>
 <li>Integration testing</li>
 </ul>
-<h3 id="aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time"><a class="header" href="#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003: OptimismPortal properly reports respected game type, blacklist, and retirement time</a></h3>
-<p>We assume that the <code>OptimismPortal</code> contract properly and faithfully reports the respected game
-type, blacklist, and retirement timestamp.</p>
+<h3 id="aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims"><a class="header" href="#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003: Incorrectly resolving games will be invalidated before they have Valid Claims</a></h3>
+<p>We assume that any games that are resolved incorrectly will be invalidated either by
+<a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklisting</a> or by <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">retirement</a> BEFORE they are considered to
+have <a href="fault-proof/stage-one/anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
+<p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has elapsed UNLESS the
+Superchain-wide pause mechanism is active. Therefore, in the absence of the Superchain-wide pause
+mechanism, parties responsible for game invalidation have exactly the Dispute Game Finality Delay
+to invalidate a withdrawal after it resolves incorrectly. If the Superchain-wide pause is active,
+then any incorrectly resolving games must be invalidated before the pause is deactivated.</p>
 <h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
-<ul>
-<li>Existing audit on the <code>OptimismPortal</code> contract</li>
-<li>Integration testing</li>
-</ul>
-<h3 id="aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period"><a class="header" href="#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004: Incorrectly resolving games will be invalidated within the airgap delay period</a></h3>
-<p>We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
-period. Invalidation happens within the <code>OptimismPortal</code> contract.</p>
-<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
 <li>Incident response plan</li>
@@ -4688,7 +4706,7 @@ bond refunding mode.</p>
 <ul>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003</a></li>
 </ul>
 <h3 id="iasr-002-all-valid-claims-are-truly-valid-claims"><a class="header" href="#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002: All Valid Claims are Truly Valid Claims</a></h3>
 <p>When asked if a game has a Valid Claim, the <code>AnchorStateRegistry</code> must serve a response that is
@@ -4699,20 +4717,22 @@ a Valid Claim. This permits the <code>AnchorStateRegistry</code> and system-wide
 the side of caution.</p>
 <p>In a nutshell, the set of Valid Claims is a subset of the set of Truly Valid Claims.</p>
 <h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
-<p><strong>Severity: High</strong></p>
-<p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
-future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
-incorrectly. If the <code>OptimismPortal</code> contract is updated to use the <code>AnchorStateRegistry</code> as the
-source of truth for the validity of claims, the severity of this invariant will be increased to
-Critical.</p>
-<p>Fundamentally, this invariant depends on the safety net mechanisms in the <code>OptimismPortal</code> contract
-being used correctly.</p>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, then any component that relies on the correctness of this function may
+allow actions to occur based on invalid dispute games.</p>
+<p>Some examples of strong negative impact are:</p>
+<ul>
+<li>Invalid Dispute Game could be used as the Anchor Game, which would cause future Dispute Game
+instances to use an incorrect starting state. This would lead these games to resolve incorrectly.
+<strong>(HIGH)</strong></li>
+<li>Invalid Dispute Game could be used to prove or finalize withdrawals within the <code>OptimismPortal</code>
+contract. This would lead to a critical vulnerability in the bridging system. <strong>(CRITICAL)</strong></li>
+</ul>
 <h4 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h4>
 <ul>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003</a></li>
 </ul>
 <h3 id="iasr-003-the-anchor-game-is-a-truly-valid-claim"><a class="header" href="#iasr-003-the-anchor-game-is-a-truly-valid-claim">iASR-003: The Anchor Game is a Truly Valid Claim</a></h3>
 <p>We require that the Anchor Game is a Truly Valid Claim. This makes it possible to use the Anchor
@@ -4731,8 +4751,7 @@ Dispute Game instances. This would lead games to resolve incorrectly.</p>
 <ul>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-001-dispute-game-contracts-properly-report-important-properties">aASR-001</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-002-disputegamefactory-properly-reports-its-created-games">aASR-002</a></li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-004-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aASR-004</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003</a></li>
 </ul>
 <h3 id="iasr-004-invalidation-functions-operate-correctly"><a class="header" href="#iasr-004-invalidation-functions-operate-correctly">iASR-004: Invalidation functions operate correctly</a></h3>
 <p>We require that the blacklisting and retirement functions operate correctly. Games that are
@@ -4748,9 +4767,56 @@ incorrectly and would be considered a High Severity issue. Issues that would all
 finalize withdrawals with invalidated games would be considered Critical Severity.</p>
 <h4 id="dependencies-3"><a class="header" href="#dependencies-3">Dependencies</a></h4>
 <ul>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-optimismportal-properly-reports-respected-game-type-blacklist-and-retirement-time">aASR-003</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003</a></li>
 </ul>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<ul>
+<li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a>.</li>
+</ul>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<ul>
+<li>MUST only be triggerable once.</li>
+<li>MUST set the value of the <code>SuperchainConfig</code> contract that stores the address of the Guardian.</li>
+<li>MUST set the value of the <code>DisputeGameFactory</code> contract that creates Dispute Game instances.</li>
+<li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#starting-anchor-state">Starting Anchor State</a>.</li>
+<li>MUST set the value of the initial <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</li>
+<li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a> to the current block
+timestamp. NOTE that this is a safety mechanism that invalidates all existing Dispute Game
+contracts to support the safe transition away from the <code>OptimismPortal</code> as the source of truth
+for game validity. In this way, the <code>AnchorStateRegistry</code> does not need to consider the state of
+the legacy blacklisting/retirement mechanisms within the <code>OptimismPortal</code> and starts from a clean
+slate.</li>
+</ul>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>Returns the value of the Superchain-wide <code>paused()</code> flag in the <code>SuperchainConfig</code> contract.</p>
+<h3 id="respectedgametype"><a class="header" href="#respectedgametype">respectedGameType</a></h3>
+<p>Returns the value of the currently <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</p>
+<h3 id="retirementtimestamp"><a class="header" href="#retirementtimestamp">retirementTimestamp</a></h3>
+<p>Returns the value of the current <a href="fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a>.</p>
+<h3 id="disputegamefinalitydelayseconds"><a class="header" href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></h3>
+<p>Returns the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a>.</p>
+<h3 id="setrespectedgametype"><a class="header" href="#setrespectedgametype">setRespectedGameType</a></h3>
+<p>Permits the Guardian role to set the <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</p>
+<ul>
+<li>MUST revert if called by any address other than the Guardian.</li>
+<li>MUST update the respected game type with the provided type.</li>
+<li>MUST emit an event showing that the game type was updated.</li>
+</ul>
+<h3 id="updateretirementtimestamp"><a class="header" href="#updateretirementtimestamp">updateRetirementTimestamp</a></h3>
+<p>Permits the Guardian role to update the <a href="fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a>.</p>
+<ul>
+<li>MUST revert if called by any address other than the Guardian.</li>
+<li>MUST set the retirement timestamp to the current block timestamp.</li>
+<li>MUST emit an event showing that the retirement timestamp was updated.</li>
+</ul>
+<h3 id="blacklistdisputegame"><a class="header" href="#blacklistdisputegame">blacklistDisputeGame</a></h3>
+<p>Permits the Guardian role to <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklist</a> a Dispute Game.</p>
+<ul>
+<li>MUST revert if called by any address other than the Guardian.</li>
+<li>MUST mark the game as blacklisted.</li>
+<li>MUST emit an event showing that the game was blacklisted.</li>
+</ul>
 <h3 id="isgameregistered"><a class="header" href="#isgameregistered">isGameRegistered</a></h3>
 <p>Determines if a game is a Registered Game.</p>
 <ul>
@@ -4760,27 +4826,28 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 <p>Determines if a game is a Respected Game.</p>
 <ul>
 <li>MUST return <code>true</code> if and only if the game's game type was the respected game type defined by the
-<code>OptimismPortal</code> contract at the time of the game's creation as per a call to
-<code>OptimismPortal.respectedGameType()</code>.</li>
+<code>AnchorStateRegistry</code> contract at the time of the game's creation as per a call to
+<code>AnchorStateRegistry.respectedGameType()</code>.</li>
+<li>MUST return <code>false</code> if the call to <code>FaultDisputeGame.wasRespectedGameTypeWhenCreated</code> reverts.</li>
 </ul>
 <h3 id="isgameblacklisted"><a class="header" href="#isgameblacklisted">isGameBlacklisted</a></h3>
 <p>Determines if a game is a Blacklisted Game.</p>
 <ul>
 <li>MUST return <code>true</code> if and only if the game's address is marked as blacklisted inside of the
-<code>OptimismPortal</code> contract as per a call to <code>OptimismPortal.disputeGameBlacklist(game)</code>.</li>
+<code>AnchorStateRegistry</code> contract.</li>
 </ul>
 <h3 id="isgameretired"><a class="header" href="#isgameretired">isGameRetired</a></h3>
 <p>Determines if a game is a Retired Game.</p>
 <ul>
 <li>MUST return <code>true</code> if and only if the game was created before the retirement timestamp defined by
-the <code>OptimismPortal</code> contract as per a call to <code>OptimismPortal.respectedGameTypeUpdatedAt()</code>.
+the <code>AnchorStateRegistry</code> contract as per a call to <code>AnchorStateRegistry.retirementTimestamp()</code>.
 Check should be a strict comparison that the creation is less than the retirement timestamp.</li>
 </ul>
 <h3 id="isgameproper"><a class="header" href="#isgameproper">isGameProper</a></h3>
 <p>Determines if a game is a Proper Game.</p>
 <ul>
-<li>MUST return <code>true</code> if and only if <code>isGameRegistered(game)</code> is <code>true</code> and
-<code>isGameBlacklisted(game)</code> and <code>isGameRetired(game)</code> are both <code>false</code>.</li>
+<li>MUST return <code>true</code> if and only if <code>isGameRegistered(game)</code> is <code>true</code>, <code>isGameBlacklisted(game)</code>
+and <code>isGameRetired(game)</code> are both <code>false</code>, and <code>paused()</code> is <code>false</code>.</li>
 </ul>
 <h3 id="isgameresolved"><a class="header" href="#isgameresolved">isGameResolved</a></h3>
 <p>Determines if a game is a Resolved Game.</p>
@@ -4793,7 +4860,7 @@ Challenger or the Defender as determined by the <code>FaultDisputeGame.status()<
 <ul>
 <li>MUST return <code>true</code> if and only if <code>isGameResolved(game)</code> and the game has resolved a result more
 than the airgap delay seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
-the <code>OptimismPortal</code> contract.</li>
+the <code>AnchorStateRegistry</code> contract.</li>
 </ul>
 <h3 id="isgameclaimvalid"><a class="header" href="#isgameclaimvalid">isGameClaimValid</a></h3>
 <p>Determines if a game has a Valid Claim.</p>
@@ -6172,8 +6239,6 @@ address public immutable CHALLENGER;
 <li><a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">Finalized Withdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#invalid-withdrawal">Invalid Withdrawal</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#respected-game-type">Respected Game Type</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#retirement-timestamp">Retirement Timestamp</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a></li>
 </ul>
 </li>
@@ -6189,13 +6254,14 @@ address public immutable CHALLENGER;
 <li><a href="fault-proof/stage-one/optimism-portal.html#mitigations-1">Mitigations</a></li>
 </ul>
 </li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period</a>
+<li><a href="fault-proof/stage-one/optimism-portal.html#aop-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aOP-003: Incorrectly resolving games will be invalidated before they have Valid Claims</a>
 <ul>
 <li><a href="fault-proof/stage-one/optimism-portal.html#mitigations-2">Mitigations</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#dependencies">Dependencies</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#invariants">Invariants</a>
 <ul>
 <li><a href="fault-proof/stage-one/optimism-portal.html#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a>
@@ -6212,8 +6278,15 @@ address public immutable CHALLENGER;
 </li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#function-specification">Function Specification</a>
 <ul>
-<li><a href="fault-proof/stage-one/optimism-portal.html#setrespectedgametype">setRespectedGameType</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#blacklistdisputegame">blacklistDisputeGame</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#constructor">constructor</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#initialize">initialize</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#paused">paused</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#guardian">guardian</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#respectedgametype">respectedGameType</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#respectedgametypeupdatedat">respectedGameTypeUpdatedAt</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#l2sender">l2Sender</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#provewithdrawaltransaction">proveWithdrawalTransaction</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#checkwithdrawal">checkWithdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></li>
@@ -6246,9 +6319,6 @@ conditions:</p>
 </ul>
 <p>Notably, the <code>OptimismPortal</code> allows users to prove withdrawals against games that are currently
 in progress (games that are not <a href="fault-proof/stage-one/./anchor-state-registry.html#resolved-game">Resolved Games</a>).</p>
-<p>Note that the <code>OptimismPortal</code> currently allows users to prove withdrawals against games that have
-been blacklisted, though these withdrawals cannot be <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a>. To avoid
-user confusion, this functionality will likely be removed in a future release.</p>
 <p>Users may re-prove a withdrawal at any time. User withdrawals are stored on a per-user basis such
 that re-proving a withdrawal cannot cause the timer for
 <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalizing a withdrawal</a> to be reset for another user.</p>
@@ -6268,14 +6338,6 @@ meets the following conditions:</p>
 would be reported by a perfect oracle for the query.</p>
 <h3 id="invalid-withdrawal"><a class="header" href="#invalid-withdrawal">Invalid Withdrawal</a></h3>
 <p>An <strong>Invalid Withdrawal</strong> is any withdrawal that is not a <a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawal</a>.</p>
-<h3 id="respected-game-type-2"><a class="header" href="#respected-game-type-2">Respected Game Type</a></h3>
-<p>See <a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game-type">Respected Game Type</a>. The Respected Game Type
-can only be set by the Guardian.</p>
-<h3 id="retirement-timestamp"><a class="header" href="#retirement-timestamp">Retirement Timestamp</a></h3>
-<p>Any game whose creation timestamp is less than or equal to the <strong>Retirement Timestamp</strong> is
-considered to be a <a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">Retired Game</a>. Retired Games cannot be
-used to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> or <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> withdrawals. The
-Retirement Timestamp can only be set by the Guardian.</p>
 <h3 id="l2-withdrawal-sender"><a class="header" href="#l2-withdrawal-sender">L2 Withdrawal Sender</a></h3>
 <p>The <strong>L2 Withdrawal Sender</strong> is the address of the account that triggered a given withdrawal
 transaction on L2. The <code>OptimismPortal</code> is expected to expose a variable that includes this value
@@ -6296,7 +6358,7 @@ faithfully report the following properties:</p>
 </ul>
 <p>We also specifically assume that the game creation timestamp and the resolution timestamp are not
 set to values in the future.</p>
-<h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
 <ul>
 <li>Existing audit on the <code>FaultDisputeGame</code> contract</li>
 <li>Integration testing</li>
@@ -6304,19 +6366,33 @@ set to values in the future.</p>
 <h3 id="aop-002-disputegamefactory-properly-reports-its-created-games"><a class="header" href="#aop-002-disputegamefactory-properly-reports-its-created-games">aOP-002: DisputeGameFactory properly reports its created games</a></h3>
 <p>We assume that the <code>DisputeGameFactory</code> contract properly and faithfully reports the games it has
 created.</p>
-<h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
+<h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
 <ul>
 <li>Existing audit on the <code>DisputeGameFactory</code> contract</li>
 <li>Integration testing</li>
 </ul>
-<h3 id="aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period"><a class="header" href="#aop-003-incorrectly-resolving-games-will-be-invalidated-within-the-airgap-delay-period">aOP-003: Incorrectly resolving games will be invalidated within the airgap delay period</a></h3>
-<p>We assume that any games that are resolved incorrectly will be invalidated within the airgap delay
-period.</p>
-<h4 id="mitigations-6"><a class="header" href="#mitigations-6">Mitigations</a></h4>
+<h3 id="aop-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims"><a class="header" href="#aop-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aOP-003: Incorrectly resolving games will be invalidated before they have Valid Claims</a></h3>
+<p>We assume that any games that are resolved incorrectly will be invalidated either by
+<a href="fault-proof/stage-one/./anchor-state-registry.html#blacklisted-game">blacklisting</a> or by
+<a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">retirement</a> BEFORE they are considered to have
+<a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
+<p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
+<a href="fault-proof/stage-one/./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has
+elapsed UNLESS the Superchain-wide pause mechanism is active. Therefore, in the absence of the
+Superchain-wide pause mechanism, parties responsible for game invalidation have exactly the Dispute
+Game Finality Delay to invalidate a withdrawal after it resolves incorrectly. If the
+Superchain-wide pause is active, then any incorrectly resolving games must be invalidated before
+the pause is deactivated.</p>
+<h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
 <li>Incident response plan</li>
 <li>Monitoring</li>
+</ul>
+<h2 id="dependencies-4"><a class="header" href="#dependencies-4">Dependencies</a></h2>
+<ul>
+<li><a href="fault-proof/stage-one/./anchor-state-registry.html#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001</a></li>
+<li><a href="fault-proof/stage-one/./anchor-state-registry.html#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002</a></li>
 </ul>
 <h2 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h2>
 <h3 id="iop-001-invalid-withdrawals-can-never-be-finalized"><a class="header" href="#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a></h3>
@@ -6334,32 +6410,55 @@ we would expect all bridge systems relying on the <code>OptimismPortal</code> to
 <p>If this invariant is broken, we would expect that users are unable to withdraw bridged assets. We
 see this as a critical system risk.</p>
 <h2 id="function-specification-1"><a class="header" href="#function-specification-1">Function Specification</a></h2>
-<h3 id="setrespectedgametype"><a class="header" href="#setrespectedgametype">setRespectedGameType</a></h3>
-<p>Allows the Guardian to change the <a href="fault-proof/stage-one/optimism-portal.html#respected-game-type">Respected Game Type</a> and to update the
-<a href="fault-proof/stage-one/optimism-portal.html#retirement-timestamp">Retirement Timestamp</a>.</p>
+<h3 id="constructor-1"><a class="header" href="#constructor-1">constructor</a></h3>
 <ul>
-<li>MUST revert if the sender is not the Guardian.</li>
-<li>If the game type is <code>type(uint32).max</code>, MUST update the Retirement Timestamp to the current
-block timestamp and MUST NOT update the Respected Game Type.</li>
-<li>If the game type is not <code>type(uint32).max</code>, MUST set the Respected Game Type to the provided game
-type and MUST NOT update the Retirement Timestamp.</li>
+<li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</li>
 </ul>
-<h3 id="blacklistdisputegame"><a class="header" href="#blacklistdisputegame">blacklistDisputeGame</a></h3>
-<p>Allows the Guardian to <a href="fault-proof/stage-one/./anchor-state-registry.html#blacklisted-game">blacklist</a> a Dispute Game.</p>
+<h3 id="initialize-1"><a class="header" href="#initialize-1">initialize</a></h3>
 <ul>
-<li>MUST revert if the sender is not the Guardian.</li>
-<li>MUST set the provided dispute game as blacklisted.</li>
+<li>MUST only be triggerable once.</li>
+<li>MUST set the value of the <code>DisputeGameFactory</code> contract.</li>
+<li>MUST set the value of the <code>SystemConfig</code> contract.</li>
+<li>MUST set the value of the <code>SuperchainConfig</code> contract.</li>
+<li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
+<li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
+value if the value is not set already.</li>
+<li>MUST initialize the resource metering configuration.</li>
 </ul>
+<h3 id="paused-1"><a class="header" href="#paused-1">paused</a></h3>
+<p>Returns the current state of the <code>SuperchainConfig.paused()</code> function.</p>
+<h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
+<p>Returns the address of the Guardian as per <code>SuperchainConfig.guardian()</code>.</p>
+<h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
+<p>Returns the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="disputegamefinalitydelayseconds-1"><a class="header" href="#disputegamefinalitydelayseconds-1">disputeGameFinalityDelaySeconds</a></h3>
+<p><strong>Legacy Function</strong></p>
+<p>Returns the value of the
+<a href="fault-proof/stage-one/./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> as per
+a call to <code>AnchorStateRegistry.disputeGameFinalityDelaySeconds()</code>.</p>
+<h3 id="respectedgametype-1"><a class="header" href="#respectedgametype-1">respectedGameType</a></h3>
+<p><strong>Legacy Function</strong></p>
+<p>Returns the value of the current
+<a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game-type">Respected Game Type</a> as per a call to
+<code>AnchorStateRegistry.respectedGameType</code>.</p>
+<h3 id="respectedgametypeupdatedat"><a class="header" href="#respectedgametypeupdatedat">respectedGameTypeUpdatedAt</a></h3>
+<p><strong>Legacy Function</strong></p>
+<p>Returns the value of the current
+<a href="fault-proof/stage-one/./anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a> as per a call to
+`AnchorStateRegistry.retirementTimestamp.</p>
+<h3 id="l2sender"><a class="header" href="#l2sender">l2Sender</a></h3>
+<p>Returns the address of the <a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a>. If the <code>OptimismPortal</code>
+has not been initialized then this value will be <code>address(0)</code> and should not be used. If the
+<code>OptimismPortal</code> is not currently executing an withdrawal transaction then this value will be
+<code>0x000000000000000000000000000000000000dEaD</code> and should not be used.</p>
 <h3 id="provewithdrawaltransaction"><a class="header" href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></h3>
 <p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> a withdrawal transaction.</p>
 <ul>
+<li>MUST revert if the withdrawal target is the address of the <code>OptimismPortal</code> itself.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
-<a href="fault-proof/stage-one/./anchor-state-registry.html#registered-game">Registered Game</a>.</li>
-<li>MUST revert if the withdrawal is being proven against a game that has a game type not equal to
-the current <a href="fault-proof/stage-one/optimism-portal.html#respected-game-type">Respected Game Type</a>.</li>
+<a href="fault-proof/stage-one/./anchor-state-registry.html#proper-game">Proper Game</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
 <a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
-<li>MUST revert if the withdrawal is a <a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">Retired Game</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
 Challenger.</li>
 <li>MUST revert if the provided merkle trie proof that the withdrawal was included within the root
@@ -6371,13 +6470,14 @@ the proof transaction was submitted.</li>
 <h3 id="checkwithdrawal"><a class="header" href="#checkwithdrawal">checkWithdrawal</a></h3>
 <p>Checks that a withdrawal transaction can be <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a>.</p>
 <ul>
+<li>MUST revert if the withdrawal being finalized has already been finalized.</li>
 <li>MUST revert if the withdrawal being finalized has not been proven.</li>
+<li>MUST revert if the withdrawal was proven at a timestamp less than the creation timestamp of the
+dispute game it was proven against, which would signal an unexpected proving bug.</li>
 <li>MUST revert if the withdrawal being finalized has been proven less than
 <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> seconds ago.</li>
-<li>MUST revert if the withdrawal being finalized was proven against a game that is not a
-<a href="fault-proof/stage-one/./anchor-state-registry.html#valid-game">Valid Game</a>.</li>
-<li>MUST revert if the withdrawal being finalized has already been finalized.</li>
-<li>MUST otherwise return <code>true</code>.</li>
+<li>MUST revert if the withdrawal being finalized was proven against a game that does not have a
+<a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a>.</li>
 </ul>
 <h3 id="finalizewithdrawaltransaction"><a class="header" href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></h3>
 <p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> a withdrawal transaction.</p>
@@ -7409,7 +7509,7 @@ any withdrawals proven against it can be finalized, in the case of a system fail
 <strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin</a><br/>
 <strong>Requirement:</strong> 3.5 days<br/>
 <strong>Notes:</strong> High security. Allows enough time for the <code>Guardian</code> to blacklist games.<br/></p>
-<h3 id="respected-game-type-3"><a class="header" href="#respected-game-type-3"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#new-state-variables">Respected Game Type</a></a></h3>
+<h3 id="respected-game-type-2"><a class="header" href="#respected-game-type-2"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#new-state-variables">Respected Game Type</a></a></h3>
 <p><strong>Description:</strong> The respected game type of the <code>OptimismPortal</code>. Determines the type of dispute games that can be used
 to finalize withdrawals.<br/>
 <strong>Administrator:</strong> <a href="protocol/configurability.html#service-roles">Guardian</a><br/>
@@ -11012,7 +11112,7 @@ a tuple of the address and decimals of the custom gas token.</p>
 <h3 id="systemconfig-1"><a class="header" href="#systemconfig-1">SystemConfig</a></h3>
 <p>The <code>SystemConfig</code> is the source of truth for the address of the custom gas token. It does on chain validation,
 stores information about the token and well as passes the information to L2.</p>
-<h4 id="initialize"><a class="header" href="#initialize">initialize</a></h4>
+<h4 id="initialize-2"><a class="header" href="#initialize-2">initialize</a></h4>
 <p>The <code>SystemConfig</code> is modified to allow the address of the custom gas paying token to be set during the call
 to <code>initialize</code>. Using a custom gas token is indicated by passing an address other than <code>ETHER_TOKEN_ADDRESS</code>
 or <code>address(0)</code>. If <code>address(0)</code> is used for initialization, it MUST be mapped into <code>ETHER_TOKEN_ADDRESS</code>
