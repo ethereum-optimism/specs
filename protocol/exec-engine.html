@@ -452,9 +452,9 @@ modifications to this API.
 <li><code>parentBeaconBlockRoot</code> MUST be the parent beacon block root from the L1 origin block of the L2 block.</li>
 </ul>
 <h3 id="engine_newpayloadv4"><a class="header" href="#engine_newpayloadv4"><code>engine_newPayloadV4</code></a></h3>
-<p><a href="https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_newpayloadv4"><code>engine_newPayloadV4</code></a> applies an Isthmus L2 block to the engine state. There are no
-modifications to this API.
-<code>engine_newPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
+<p><a href="https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_newpayloadv4"><code>engine_newPayloadV4</code></a> applies an Isthmus L2 block to the engine state.
+The <code>ExecutionPayload</code> parameter will contain an extra field, <code>withdrawalsRoot</code>, after the Isthmus hardfork.</p>
+<p><code>engine_newPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
 <p>The additional parameters should be set as follows:</p>
 <ul>
 <li><code>executionRequests</code> MUST be an empty array.</li>

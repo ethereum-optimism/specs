@@ -2113,9 +2113,9 @@ modifications to this API.
 <li><code>parentBeaconBlockRoot</code> MUST be the parent beacon block root from the L1 origin block of the L2 block.</li>
 </ul>
 <h3 id="engine_newpayloadv4"><a class="header" href="#engine_newpayloadv4"><code>engine_newPayloadV4</code></a></h3>
-<p><a href="https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_newpayloadv4"><code>engine_newPayloadV4</code></a> applies an Isthmus L2 block to the engine state. There are no
-modifications to this API.
-<code>engine_newPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
+<p><a href="https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_newpayloadv4"><code>engine_newPayloadV4</code></a> applies an Isthmus L2 block to the engine state.
+The <code>ExecutionPayload</code> parameter will contain an extra field, <code>withdrawalsRoot</code>, after the Isthmus hardfork.</p>
+<p><code>engine_newPayloadV4</code> <strong>must only be called with Isthmus payload.</strong></p>
 <p>The additional parameters should be set as follows:</p>
 <ul>
 <li><code>executionRequests</code> MUST be an empty array.</li>
@@ -10247,7 +10247,7 @@ the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <
 <li><a href="protocol/isthmus/exec-engine.html#block-sealing">Block Sealing</a></li>
 <li><a href="protocol/isthmus/exec-engine.html#engine-api-updates">Engine API Updates</a>
 <ul>
-<li><a href="protocol/isthmus/exec-engine.html#update-to-executabledata">Update to <code>ExecutableData</code></a></li>
+<li><a href="protocol/isthmus/exec-engine.html#update-to-executionpayload">Update to <code>ExecutionPayload</code></a></li>
 <li><a href="protocol/isthmus/exec-engine.html#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></li>
 </ul>
 </li>
@@ -10375,11 +10375,11 @@ Typed request envelopes debut in Pectra <a href="https://eips.ethereum.org/EIPS/
 continue to be ignored in Isthmus, including those of new type <code>0x02</code>. Note, this does not need to activate after any
 specific hardfork as this type does not exist pre-Pectra.</p>
 <h2 id="engine-api-updates"><a class="header" href="#engine-api-updates">Engine API Updates</a></h2>
-<h3 id="update-to-executabledata"><a class="header" href="#update-to-executabledata">Update to <code>ExecutableData</code></a></h3>
-<p><code>ExecutableData</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
+<h3 id="update-to-executionpayload"><a class="header" href="#update-to-executionpayload">Update to <code>ExecutionPayload</code></a></h3>
+<p><code>ExecutionPayload</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
 <h3 id="engine_newpayloadv4-api"><a class="header" href="#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></h3>
-<p>Post Isthmus, <code>engine_newPayloadV4</code> will be used with the additional <code>ExecutionPayload</code> attribute. This attribute
-is omitted prior to Isthmus.</p>
+<p>Post Isthmus, <code>engine_newPayloadV4</code> will be used.</p>
+<p>The <code>executionRequests</code> parameter MUST be an empty array.</p>
 <h2 id="fees-2"><a class="header" href="#fees-2">Fees</a></h2>
 <p>New OP stack variants have different resource consumption patterns, and thus require a more flexible
 pricing model. To enable more customizable fee structures, Isthmus adds a new component to the fee

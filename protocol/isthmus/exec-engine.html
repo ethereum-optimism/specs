@@ -201,7 +201,7 @@
 <li><a href="#block-sealing">Block Sealing</a></li>
 <li><a href="#engine-api-updates">Engine API Updates</a>
 <ul>
-<li><a href="#update-to-executabledata">Update to <code>ExecutableData</code></a></li>
+<li><a href="#update-to-executionpayload">Update to <code>ExecutionPayload</code></a></li>
 <li><a href="#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></li>
 </ul>
 </li>
@@ -329,11 +329,11 @@ Typed request envelopes debut in Pectra <a href="https://eips.ethereum.org/EIPS/
 continue to be ignored in Isthmus, including those of new type <code>0x02</code>. Note, this does not need to activate after any
 specific hardfork as this type does not exist pre-Pectra.</p>
 <h2 id="engine-api-updates"><a class="header" href="#engine-api-updates">Engine API Updates</a></h2>
-<h3 id="update-to-executabledata"><a class="header" href="#update-to-executabledata">Update to <code>ExecutableData</code></a></h3>
-<p><code>ExecutableData</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
+<h3 id="update-to-executionpayload"><a class="header" href="#update-to-executionpayload">Update to <code>ExecutionPayload</code></a></h3>
+<p><code>ExecutionPayload</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
 <h3 id="engine_newpayloadv4-api"><a class="header" href="#engine_newpayloadv4-api"><code>engine_newPayloadV4</code> API</a></h3>
-<p>Post Isthmus, <code>engine_newPayloadV4</code> will be used with the additional <code>ExecutionPayload</code> attribute. This attribute
-is omitted prior to Isthmus.</p>
+<p>Post Isthmus, <code>engine_newPayloadV4</code> will be used.</p>
+<p>The <code>executionRequests</code> parameter MUST be an empty array.</p>
 <h2 id="fees"><a class="header" href="#fees">Fees</a></h2>
 <p>New OP stack variants have different resource consumption patterns, and thus require a more flexible
 pricing model. To enable more customizable fee structures, Isthmus adds a new component to the fee
