@@ -55,7 +55,7 @@ jobs:
       - install-dependencies
       - run:
           name: Lint check
-          command: just lint-links
+          command: just lint-links-check
       - notify-failures-on-develop:
           channel: C055R639XT9 #notify-link-check
 
