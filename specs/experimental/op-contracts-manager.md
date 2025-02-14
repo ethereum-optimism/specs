@@ -276,12 +276,12 @@ struct AddGameInput {
     ISystemConfig systemConfig;
     IProxyAdmin proxyAdmin;
     IDelayedWETH delayedWETH;
-    GameType disputeGameType;
-    Claim disputeAbsolutePrestate;
+    uint32 disputeGameType;
+    bytes32 disputeAbsolutePrestate;
     uint256 disputeMaxGameDepth;
     uint256 disputeSplitDepth;
-    Duration disputeClockExtension;
-    Duration disputeMaxClockDuration;
+    uint64 disputeClockExtension;
+    uint64 disputeMaxClockDuration;
     uint256 initialBond;
     IBigStepper vm;
     bool permissioned;
