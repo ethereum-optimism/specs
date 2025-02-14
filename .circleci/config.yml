@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.10.1
-  utils: ethereum-optimism/circleci-utils@0.0.13
+  utils: ethereum-optimism/circleci-utils@1.0.8
 
 executors:
   default:
@@ -81,7 +81,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: /tmp/book
-      - utils/get-github-access-token
       - utils/github-pages-deploy:
           src-pages-dir: /tmp/book/html
 
