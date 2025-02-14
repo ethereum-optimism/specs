@@ -238,7 +238,7 @@ The high level logic of the upgrade method is as follows:
 3. The ProtocolVersions contract will be upgraded, if not yet done.
 4. For each `_systemConfig`, the list of addresses in the chain is retrieved.
 5. For each address:
-   1. If it is receiving new state variables (only the AnchorStateRegistry for Isthmus), a call is made to:
+   1. If it is receiving new state variables, a call is made to:
       `ProxyAdmin.upgradeAndCall()` with data corresponding to the new value being set.
    2. Otherwise, `ProxyAdmin.upgrade()` is called on that address.
 
