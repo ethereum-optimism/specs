@@ -212,7 +212,7 @@ It has the following interface:
 struct OpChainConfig {
     ISystemConfig systemConfigProxy;
     IProxyAdmin proxyAdmin;
-    Claim absolutePrestate;
+    bytes32 absolutePrestate;
 }
 
 /// @notice Upgrades a set of chains to the latest implementation contracts
