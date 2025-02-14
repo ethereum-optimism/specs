@@ -108,17 +108,15 @@ struct DeployInput {
     uint32 basefeeScalar;
     uint32 blobBasefeeScalar;
     uint256 l2ChainId;
-    // The correct type is OutputRoot memory but OP Deployer does not yet support structs.
     bytes startingAnchorRoot;
     string saltMixer;
     uint64 gasLimit;
-    // Configurable dispute game parameters.
-    GameType disputeGameType;
-    Claim disputeAbsolutePrestate;
+    uint32 disputeGameType;
+    bytes32 disputeAbsolutePrestate;
     uint256 disputeMaxGameDepth;
     uint256 disputeSplitDepth;
-    Duration disputeClockExtension;
-    Duration disputeMaxClockDuration;
+    uint64 disputeClockExtension;
+    uint64 disputeMaxClockDuration;
 }
 
 /// @notice The full set of outputs from deploying a new OP Stack chain.
