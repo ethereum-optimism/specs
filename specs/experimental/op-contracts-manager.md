@@ -309,7 +309,7 @@ The high level logic of the `addGameType` method is as follows (for each chain):
 
 | Name                | Type    | Description                                        | Source                                     |
 | ------------------- | ------- | -------------------------------------------------- | ------------------------------------------ |
-| weth                | address | Address of the newly deployed DelayedWeth contract | Newly deployed contract, or provided       |
+| weth                | address | Address of the DelayedWeth contract | Newly deployed contract, or provided       |
 | anchorStateRegistry | address | Registry contract address                          | Copied from existing `PermissionedGame`    |
 | l2ChainId           | uint256 | Chain ID of the L2 network                         | Copied from existing `PermissionedGame`    |
 
