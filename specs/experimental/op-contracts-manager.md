@@ -302,8 +302,8 @@ function addGameType(AddGameInput[] memory _gameConfigs) external returns (AddGa
 The high level logic of the `addGameType` method is as follows (for each chain):
 
 1. Deploy and initialize new `DelayedWethProxy` for the new game type, if one hasn't already been specified.
-2. Deploy a new `FaultDisputeGame` contract. The constructor args must be provided as arguments, except as per the
-   table below.
+2. Deploy a new dispute game contract, based on the specified game type. The constructor args must be provided as arguments, unless otherwise specified in
+   the table below.
 3. Read the `DisputeGameFactory` address from the `SystemConfig`.
 4. Call `DisputeGameFactory.setImplementation()` to register the new game.
 
