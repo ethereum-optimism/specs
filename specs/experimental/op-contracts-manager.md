@@ -295,6 +295,12 @@ struct AddGameOutput {
 function addGameType(AddGameInput[] memory _gameConfigs) external returns (AddGameOutput[] memory)
 ```
 
+On success, the following event is emitted:
+
+```solidity
+event GameTypeAdded(uint256 indexed l2ChainId, uint32 indexed gameType, address indexed deployer);
+```
+
 ### Implementation
 
 The high level logic of the `addGameType` method is as follows (for each chain):
