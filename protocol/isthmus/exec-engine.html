@@ -197,7 +197,11 @@
 </li>
 <li><a href="#deposit-requests">Deposit Requests</a></li>
 <li><a href="#block-body-withdrawals-list">Block Body Withdrawals List</a></li>
-<li><a href="#evm-changes">EVM Changes</a></li>
+<li><a href="#evm-changes">EVM Changes</a>
+<ul>
+<li><a href="#bls-precompiles">BLS Precompiles</a></li>
+</ul>
+</li>
 <li><a href="#block-sealing">Block Sealing</a></li>
 <li><a href="#engine-api-updates">Engine API Updates</a>
 <ul>
@@ -311,6 +315,7 @@ deposit type requests may always be excluded.</p>
 <h2 id="block-body-withdrawals-list"><a class="header" href="#block-body-withdrawals-list">Block Body Withdrawals List</a></h2>
 <p>Withdrawals list in the block body is encoded as an empty RLP list.</p>
 <h2 id="evm-changes"><a class="header" href="#evm-changes">EVM Changes</a></h2>
+<h3 id="bls-precompiles"><a class="header" href="#bls-precompiles">BLS Precompiles</a></h3>
 <p>Similar to the <code>bn256Pairing</code> precompile in the <a href="../granite/exec-engine.html">granite hardfork</a>,
 <a href="https://eips.ethereum.org/EIPS/eip-2537">EIP-2537</a> introduces a BLS
 precompile that short-circuits depending on input size in the EVM.</p>
@@ -324,10 +329,10 @@ precompile that short-circuits depending on input size in the EVM.</p>
 <p>All of the BLS precompiles should be <a href="../../fault-proof/index.html#precompile-accelerators">accelerated</a> in fault proof
 programs so they call out to the L1 instead of calculating the result inside the program.</p>
 <h2 id="block-sealing"><a class="header" href="#block-sealing">Block Sealing</a></h2>
-<p><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a> introduces new request type <code>0x02</code>, the <code>CONSOLIDATION_REQUEST_TYPE</code>.
-Typed request envelopes debut in Pectra <a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a>. Execution layer requests
-continue to be ignored in Isthmus, including those of new type <code>0x02</code>. Note, this does not need to activate after any
-specific hardfork as this type does not exist pre-Pectra.</p>
+<p>To match EVM execution as closely as possible, the post-execution transactions to process logs and the request queue
+included as part of <a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a>, <a href="https://eips.ethereum.org/EIPS/eip-7002">EIP-7002</a>,
+and <a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a> must be executed. However, the resulting
+<code>requests</code> is ignored because Isthmus block <code>requests</code> must be an empty array.</p>
 <h2 id="engine-api-updates"><a class="header" href="#engine-api-updates">Engine API Updates</a></h2>
 <h3 id="update-to-executionpayload"><a class="header" href="#update-to-executionpayload">Update to <code>ExecutionPayload</code></a></h3>
 <p><code>ExecutionPayload</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
