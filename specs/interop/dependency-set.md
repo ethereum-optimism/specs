@@ -6,7 +6,6 @@
 
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
-  - [The CLUSTER_MANAGER Role](#the-cluster_manager-role)
 - [Future Considerations](#future-considerations)
   - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 - [Security Considerations](#security-considerations)
@@ -47,21 +46,6 @@ It is a known issue that not all software in the Ethereum ecosystem can handle 3
 
 The dependency set is managed in the client software. Adding a chain to the dependency set is
 considered an upgrade to the network. It is not possible to remove chains from the dependency set.
-
-The dependency set is managed by the L1 `SuperchainConfig` contract. It:
-
-- Maintains the L1-side dependency set
-- Manages authorized `OptimismPortal`s
-- Handles ETH liquidity migration to `SharedLockbox` when adding new dependencies
-- Can only be updated by the `CLUSTER_MANAGER` role
-
-More details can be found on the [Superchain Config interop specification](./superchain-config.md#Overview).
-
-### The CLUSTER_MANAGER Role
-
-The `CLUSTER_MANAGER` role is a privileged role in the `SuperchainConfig` contract that has the authority
-to directly add chains to the dependency set. This role can add chains by calling `addDependency` and must
-provide valid chain ID and `SystemConfig` contract addresses when doing so.
 
 ## Future Considerations
 
