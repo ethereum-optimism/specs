@@ -1,4 +1,4 @@
-* @protolambda @tynes @ajsutton @sebastianst @mslipper
+* @protolambda @tynes @ajsutton @sebastianst @mslipper @mds1
 
 batcher.md @sebastianst @axelKingsley
 bridges.md @tynes @maurelian
@@ -22,6 +22,7 @@ system-config.md @sebastianst @protolambda @tynes
 withdrawals.md @tynes @maurelian @clabby
 safe-extensions.md @mds1 @maurelian
 stage-1.md  @mds1 @maurelian
+op-contracts-manager.md @mds1 @maurelian
 
 # Fault Proofs
 /specs/fault-proof @ajsutton @clabby @inphi @refcell @mbaxter
