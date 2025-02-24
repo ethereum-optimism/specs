@@ -105,6 +105,7 @@ function authorizeLockbox(address _lockbox) external;
 Migrates the ETH liquidity from the current `ETHLockbox` to another `ETHLockbox`.
 
 - Only the `ProxyAdmin` owner can call the function.
+- The `ProxyAdmin` owner of the source lockbox must be the same as the `ProxyAdmin` owner of the destination lockbox.
 - The function MUST emit the `LiquidityMigrated` event with the `lockbox` that is being migrated to.
 
 ```solidity

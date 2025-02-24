@@ -56,7 +56,7 @@ function migrateLiquidity() external;
 Called during deposit transactions to handle ETH locking.
 
 ```solidity
-function _lockETH() internal virtual override;
+function _lockETH() internal;
 ```
 
 - MUST be called during `depositTransaction` when there is ETH value
@@ -68,7 +68,7 @@ function _lockETH() internal virtual override;
 Called during withdrawal finalization to handle ETH unlocking.
 
 ```solidity
-function _unlockETH(Types.WithdrawalTransaction memory _tx) internal virtual override;
+function _unlockETH(Types.WithdrawalTransaction memory _tx) internal;
 ```
 
 - MUST be called during withdrawal finalization when there is ETH value
