@@ -59,7 +59,7 @@ Called during deposit transactions to handle ETH locking.
 function _lockETH() internal;
 ```
 
-- MUST be called during `depositTransaction` when there is ETH value
+- MUST be invoked during `depositTransaction` when there is ETH value
 - MUST lock any ETH value in the `ETHLockbox`
 - MUST NOT revert on zero value
 
@@ -71,7 +71,7 @@ Called during withdrawal finalization to handle ETH unlocking.
 function _unlockETH(uint256 _amount) internal;
 ```
 
-- MUST be called during withdrawal finalization when there is ETH value
+- MUST be invoked during withdrawal finalization when there is ETH value
 - MUST unlock the withdrawal value from the `ETHLockbox`
 - MUST NOT revert on zero value
 - MUST revert if withdrawal target is the `ETHLockbox`
@@ -97,5 +97,3 @@ event ETHMigrated(uint256 amount);
 - The contract MUST be able to handle zero ETH value operations
 
 - The contract MUST NOT allow withdrawals to target the `ETHLockbox` address
-
-- The contract MUST only migrate liquidity once

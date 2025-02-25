@@ -80,10 +80,11 @@ function unlockETH(uint256 _value) external;
 
 #### `authorizePortal`
 
-Authorizes a `OptimismPortal` to interact with the `ETHLockbox`.
+Authorizes an `OptimismPortal` to interact with the `ETHLockbox`.
 
 - Only the `ProxyAdmin` owner can call the function.
 - The function MUST emit the `PortalAuthorized` event with the `portal`.
+- The function MUST NOT allow the same `OptimismPortal` to be authorized more than once.
 
 ```solidity
 function authorizePortal(address _portal) external;
