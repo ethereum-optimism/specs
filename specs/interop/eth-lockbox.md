@@ -96,6 +96,7 @@ Authorizes another `ETHLockbox` to migrate its ETH liquidity to the current `ETH
 
 - Only the `ProxyAdmin` owner can call the function.
 - The function MUST emit the `LockboxAuthorized` event with the `lockbox` that is being authorized.
+- The function MUST NOT allow the same `ETHLockbox` to be authorized more than once.
 
 ```solidity
 function authorizeLockbox(address _lockbox) external;
