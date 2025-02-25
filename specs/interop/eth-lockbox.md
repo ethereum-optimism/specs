@@ -179,8 +179,6 @@ event LiquidityReceived(address indexed lockbox);
 
 - The ETH held in the `ETHLockbox` MUST never be less than the amount deposited but not yet withdrawn by the `OptimismPortal`s
 
-- The ETH unlocked by any `OptimismPortal` MUST NOT exceed the available shared liquidity in the `ETHLockbox`.
-
 - The total withdrawable ETH amount present on all the dependency set's chains MUST NEVER be more than the amount held
   by the `ETHLockbox` of the cluster
   > With "withdrawable amount", the ETH balance held on `ETHLiquidity` is excluded

@@ -68,7 +68,7 @@ function _lockETH() internal;
 Called during withdrawal finalization to handle ETH unlocking.
 
 ```solidity
-function _unlockETH(Types.WithdrawalTransaction memory _tx) internal;
+function _unlockETH(uint256 _amount) internal;
 ```
 
 - MUST be called during withdrawal finalization when there is ETH value
