@@ -13,6 +13,7 @@
     - [`authorizeLockbox`](#authorizelockbox)
     - [`migrateLiquidity`](#migrateliquidity)
     - [`receiveLiquidity`](#receiveliquidity)
+    - [`adminOwner`](#adminowner)
   - [Events](#events)
     - [`ETHLocked`](#ethlocked)
     - [`ETHUnlocked`](#ethunlocked)
@@ -73,6 +74,7 @@ Withdraws a specified amount of ETH from the lockbox's liquidity pool to the `Op
 - The function MUST NOT revert when called by an authorized `OptimismPortal` unless paused.
 - The function MUST emit the `ETHUnlocked` event with the `portal` that called it and the `amount`.
 - The function MUST use `donateETH` when sending ETH to avoid triggering deposits.
+- The function MUST NOT allow to be called as part of a withdrawal transaction (`OptimismPortal.l2Sender()` MUST be the `DEFAULT_L2_SENDER`).
 
 ```solidity
 function unlockETH(uint256 _value) external;
@@ -123,6 +125,14 @@ Receives the ETH liquidity from another `ETHLockbox`.
 
 ```solidity
 function receiveLiquidity() external payable;
+```
+
+#### `adminOwner`
+
+Returns the `ProxyAdmin` owner that manages the `ETHLockbox`.
+
+```solidity
+function adminOwner() external view returns (address);
 ```
 
 ### Events
