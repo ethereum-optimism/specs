@@ -12,10 +12,10 @@
   - [Valid Withdrawal](#valid-withdrawal)
   - [Invalid Withdrawal](#invalid-withdrawal)
   - [L2 Withdrawal Sender](#l2-withdrawal-sender)
+  - [Block Output](#block-output)
   - [Output Root](#output-root)
-  - [Output Root Hash](#output-root-hash)
+  - [Super Output](#super-output)
   - [Super Root](#super-root)
-  - [Super Root Hash](#super-root-hash)
 - [Assumptions](#assumptions)
   - [aOP-001: Dispute Game contracts properly report important properties](#aop-001-dispute-game-contracts-properly-report-important-properties)
     - [Mitigations](#mitigations)
@@ -111,13 +111,17 @@ The **L2 Withdrawal Sender** is the address of the account that triggered a give
 transaction on L2. The `OptimismPortal` is expected to expose a variable that includes this value
 when [finalizing](#finalized-withdrawal) a withdrawal.
 
-### Output Root
+### Block Output
 
-An **Output Root** is a data structure that wraps the key hash elements of a given L2 block. An
-Output Root has the following structure:
+A **Block Output**, commonly called an **Output**, is a data structure that wraps the key hash
+elements of a given L2 block.
+
+The structure of the Block Output is versioned (32 bytes). The current Block Output version is
+`0x0000000000000000000000000000000000000000000000000000000000000000` (V0). A V0 Block Output has
+the following structure:
 
 ```solidity
-struct OutputRoot {
+struct BlockOutput {
   bytes32 version;
   bytes32 stateRoot;
   bytes32 messagePasserStorageRoot;
@@ -133,45 +137,40 @@ Where:
   block this Output Root corresponds to
 - `blockHash` is the block hash of the L2 block this Output Root corresponds to
 
-### Output Root Hash
+### Output Root
 
-An **Output Root Hash** is the hash of an [Output Root](#output-root), computed as:
+An **Output Root** is a commitment to a [Block Output](#block-output). A detailed description of
+this commitment can be found [here](../../protocol/proposals.md#l2-output-commitment-construction).
 
-```solidity
-keccak256(abi.encode(OutputRoot))
-```
+### Super Output
 
-Output Root Hashes are used as the Root Claims for the `FaultDisputeGame` and
-`PermissionedDisputeGame` contracts.
+A **Super Output** is a data structure that commits all of the [Block Outputs](#block-output) for
+all chains within the Superchain Interop Set at a given timestamp.
 
-### Super Root
-
-A **Super Root** is a data structure that commits all of the [Output Roots](#output-root) for all
-chains within the Superchain Interop Set at a given timestamp. It has the following structure:
+The structure of the Super Output is versioned (1 byte). The current version is `0x01` (V1). A V1
+Super Output has the following structure:
 
 ```solidity
-struct OutputRootHashWithChainId {
+struct OutputRootWithChainId {
   uint256 chainId;
-  bytes32 outputRootHash;
+  bytes32 outputRoot;
 }
 
-struct SuperRoot {
+struct SuperOutput {
   uint64 timestamp;
   OutputRootHashWithChainid[] outputRoots;
 }
 ```
 
-The Super Root is versioned and currently has a version byte of `0x01`.
+### Super Root
 
-### Super Root Hash
-
-A **Super Root Hash** is the hash of a [Super Root](#super-root), computed as:
+A **Super Root** is a commitment to a [Super Output](#super-output), computed as:
 
 ```solidity
 keccak256(encodeSuperRoot(SuperRoot))
 ```
 
-Where `encodeSuperRoot` is:
+Where `encodeSuperRoot` for the V1 Super Output is:
 
 ```solidity
 function encodeSuperRoot(SuperRoot memory root) returns (bytes) {
@@ -349,14 +348,14 @@ that uses dispute games that argue over [Super Roots](#super-root).
 - MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
   Challenger.
 - MUST revert if `superRootsActive` is `false`.
-- MUST revert if the proof provided by the user of the contents of the Super Root that the dispute
+- MUST revert if the proof provided by the user of the preimage of the Super Root that the dispute
   game argues about is invalid. This proof is verified by hashing the user-provided Super Root
-  contents and comparing them to the Super Root in the referenced dispute game.
+  preimage and comparing them to the Super Root in the referenced dispute game.
 - MUST revert if the pointer index of the Output Root inside of the Super Root provided by the user
   is beyond the size of the Output Roots array or points to a chain ID other than the chain ID
   stored within the `SystemConfig` contract for the `OptimismPortal`.
-- MUST revert if the proof provided by the user of the contents of the Output Root is invalid. This
-  proof is verified by hashing the user-provided contents and comparing them to the Output Root.
+- MUST revert if the proof provided by the user of the preimage of the Output Root is invalid. This
+  proof is verified by hashing the user-provided preimage and comparing them to the Output Root.
 - MUST revert if the provided merkle trie proof that the withdrawal was included within the root
   claim of the provided dispute game is invalid.
 - MUST otherwise store a record of the withdrawal proof that includes the hash of the proven  
@@ -376,8 +375,8 @@ that uses dispute games that argue over [Output Roots](#output-root).
 - MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
   Challenger.
 - MUST revert if `superRootsActive` is `true`.
-- MUST revert if the proof provided by the user of the contents of the Output Root that the dispute
-  game argues about is invalid. This proof is verified by hashing the user-provided contents and
+- MUST revert if the proof provided by the user of the preimage of the Output Root that the dispute
+  game argues about is invalid. This proof is verified by hashing the user-provided preimage and
   comparing them to the root claim of the referenced dispute game.
 - MUST revert if the provided merkle trie proof that the withdrawal was included within the root
   claim of the provided dispute game is invalid.
