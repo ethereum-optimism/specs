@@ -161,12 +161,27 @@ struct SuperRoot {
 }
 ```
 
+The Super Root is versioned and currently has a version byte of `0x01`.
+
 ### Super Root Hash
 
 A **Super Root Hash** is the hash of a [Super Root](#super-root), computed as:
 
 ```solidity
-keccak256(abi.encode(SuperRoot))
+keccak256(encodeSuperRoot(SuperRoot))
+```
+
+Where `encodeSuperRoot` is:
+
+```solidity
+function encodeSuperRoot(SuperRoot memory root) returns (bytes) {
+  require(root.outputRoots.length > 0); // Super Root must have at least one Output Root.
+  return concat(
+    0x01, // Super Root version byte
+    root.timestamp,
+    [outputRoot.chainId || outputRoot.outputRootHash for outputRoot in root.outputRoots]
+  );
+}
 ```
 
 ## Assumptions
@@ -336,9 +351,10 @@ that uses dispute games that argue over [Super Roots](#super-root).
 - MUST revert if `superRootsActive` is `false`.
 - MUST revert if the proof provided by the user of the contents of the Super Root that the dispute
   game argues about is invalid. This proof is verified by hashing the user-provided Super Root
-  contents and comparing them to the Super Root in the referenced dispute game. The user provides
-  a specific Output Root index to extract and the chain ID of this Output Root must match the chain
-  ID within the `SystemConfig` contract.
+  contents and comparing them to the Super Root in the referenced dispute game.
+- MUST revert if the pointer index of the Output Root inside of the Super Root provided by the user
+  is beyond the size of the Output Roots array or points to a chain ID other than the chain ID
+  stored within the `SystemConfig` contract for the `OptimismPortal`.
 - MUST revert if the proof provided by the user of the contents of the Output Root is invalid. This
   proof is verified by hashing the user-provided contents and comparing them to the Output Root.
 - MUST revert if the provided merkle trie proof that the withdrawal was included within the root
