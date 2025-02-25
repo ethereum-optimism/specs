@@ -145,7 +145,8 @@ this commitment can be found [here](../../protocol/proposals.md#l2-output-commit
 ### Super Output
 
 A **Super Output** is a data structure that commits all of the [Block Outputs](#block-output) for
-all chains within the Superchain Interop Set at a given timestamp.
+all chains within the Superchain Interop Set at a given timestamp. A Super Output can also commit
+to a single Block Output to maintain compatibility with chains outside of the Interop Set.
 
 The structure of the Super Output is versioned (1 byte). The current version is `0x01` (V1). A V1
 Super Output has the following structure:
