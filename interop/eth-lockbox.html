@@ -1,0 +1,479 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ETH Lockbox - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/eth-lockbox.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="eth-lockbox"><a class="header" href="#eth-lockbox">ETH Lockbox</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#design">Design</a>
+<ul>
+<li><a href="#interface-and-properties">Interface and properties</a>
+<ul>
+<li><a href="#locketh"><code>lockETH</code></a></li>
+<li><a href="#unlocketh"><code>unlockETH</code></a></li>
+<li><a href="#authorizeportal"><code>authorizePortal</code></a></li>
+<li><a href="#authorizelockbox"><code>authorizeLockbox</code></a></li>
+<li><a href="#migrateliquidity"><code>migrateLiquidity</code></a></li>
+<li><a href="#receiveliquidity"><code>receiveLiquidity</code></a></li>
+<li><a href="#adminowner"><code>adminOwner</code></a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#ethlocked"><code>ETHLocked</code></a></li>
+<li><a href="#ethunlocked"><code>ETHUnlocked</code></a></li>
+<li><a href="#portalauthorized"><code>PortalAuthorized</code></a></li>
+<li><a href="#lockboxauthorized"><code>LockboxAuthorized</code></a></li>
+<li><a href="#liquiditymigrated"><code>LiquidityMigrated</code></a></li>
+<li><a href="#liquidityreceived"><code>LiquidityReceived</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#system-level-invariants">System level invariants</a></li>
+<li><a href="#contract-level-invariants">Contract level invariants</a></li>
+</ul>
+</li>
+<li><a href="#architecture">Architecture</a>
+<ul>
+<li><a href="#eth-management">ETH Management</a></li>
+<li><a href="#merge-process">Merge process</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
+This is due to having the possibility to move ETH liquidity across the different chains and it could happen
+that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
+The <code>ETHLockbox</code> improves the Superchain's interoperable ETH withdrawal user experience and avoids this issue.
+To do so, it unifies ETH L1 liquidity in a single contract (<code>ETHLockbox</code>), enabling seamless withdrawals of ETH
+from any OP chain in the Superchain, regardless of where the ETH was initially deposited.</p>
+<h2 id="design"><a class="header" href="#design">Design</a></h2>
+<p>The <code>ETHLockbox</code> contract is designed to manage the unified ETH liquidity for the Superchain.
+It implements two main functions: <code>lockETH</code> for depositing ETH into the lockbox,
+and <code>unlockETH</code> for withdrawing ETH from the lockbox.</p>
+<p>These functions are called by the <code>OptimismPortal</code> contracts to manage the shared ETH liquidity
+when making deposits or finalizing withdrawals.</p>
+<p>Authorization of <code>OptimismPortal</code>s is managed by the <code>ProxyAdmin</code> owner.
+The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>ProxyAdmin</code>.</p>
+<h3 id="interface-and-properties"><a class="header" href="#interface-and-properties">Interface and properties</a></h3>
+<h4 id="locketh"><a class="header" href="#locketh"><code>lockETH</code></a></h4>
+<p>Deposits and locks ETH into the lockbox's liquidity pool.</p>
+<ul>
+<li>The function MUST accept ETH.</li>
+<li>Only authorized <code>OptimismPortal</code> addresses MUST be allowed to interact.</li>
+<li>The function MUST NOT revert when called by an authorized <code>OptimismPortal</code></li>
+<li>The function MUST emit the <code>ETHLocked</code> event with the <code>portal</code> that called it and the <code>amount</code>.</li>
+</ul>
+<pre><code class="language-solidity">function lockETH() external payable;
+</code></pre>
+<h4 id="unlocketh"><a class="header" href="#unlocketh"><code>unlockETH</code></a></h4>
+<p>Withdraws a specified amount of ETH from the lockbox's liquidity pool to the <code>OptimismPortal</code> calling it.</p>
+<ul>
+<li>Only authorized <code>OptimismPortal</code> addresses MUST be allowed to interact.</li>
+<li>The function MUST NOT revert when called by an authorized <code>OptimismPortal</code> unless paused.</li>
+<li>The function MUST emit the <code>ETHUnlocked</code> event with the <code>portal</code> that called it and the <code>amount</code>.</li>
+<li>The function MUST use <code>donateETH</code> when sending ETH to avoid triggering deposits.</li>
+<li>The function MUST NOT allow to be called as part of a withdrawal transaction (<code>OptimismPortal.l2Sender()</code> MUST be the <code>DEFAULT_L2_SENDER</code>).</li>
+</ul>
+<pre><code class="language-solidity">function unlockETH(uint256 _value) external;
+</code></pre>
+<h4 id="authorizeportal"><a class="header" href="#authorizeportal"><code>authorizePortal</code></a></h4>
+<p>Authorizes an <code>OptimismPortal</code> to interact with the <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
+<li>The <code>ProxyAdmin</code> owner of the <code>OptimismPortal</code> must be the same as the <code>ProxyAdmin</code> owner of the <code>ETHLockbox</code>.</li>
+<li>The function MUST emit the <code>PortalAuthorized</code> event with the <code>portal</code>.</li>
+<li>The function MUST NOT allow the same <code>OptimismPortal</code> to be authorized more than once.</li>
+</ul>
+<pre><code class="language-solidity">function authorizePortal(address _portal) external;
+</code></pre>
+<h4 id="authorizelockbox"><a class="header" href="#authorizelockbox"><code>authorizeLockbox</code></a></h4>
+<p>Authorizes another <code>ETHLockbox</code> to migrate its ETH liquidity to the current <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
+<li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
+<li>The function MUST emit the <code>LockboxAuthorized</code> event with the <code>lockbox</code> that is being authorized.</li>
+<li>The function MUST NOT allow the same <code>ETHLockbox</code> to be authorized more than once.</li>
+</ul>
+<pre><code class="language-solidity">function authorizeLockbox(address _lockbox) external;
+</code></pre>
+<h4 id="migrateliquidity"><a class="header" href="#migrateliquidity"><code>migrateLiquidity</code></a></h4>
+<p>Migrates the ETH liquidity from the current <code>ETHLockbox</code> to another <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
+<li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
+<li>The function MUST call <code>receiveLiquidity</code> from the destination <code>ETHLockbox</code>.</li>
+<li>The function MUST emit the <code>LiquidityMigrated</code> event with the <code>lockbox</code> that is being migrated to.</li>
+</ul>
+<pre><code class="language-solidity">function migrateLiquidity(address _lockbox) external;
+</code></pre>
+<h4 id="receiveliquidity"><a class="header" href="#receiveliquidity"><code>receiveLiquidity</code></a></h4>
+<p>Receives the ETH liquidity from another <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only an authorized <code>ETHLockbox</code> can call the function.</li>
+<li>The function MUST emit the <code>LiquidityReceived</code> event with the <code>lockbox</code> that is being received from.</li>
+</ul>
+<pre><code class="language-solidity">function receiveLiquidity() external payable;
+</code></pre>
+<h4 id="adminowner"><a class="header" href="#adminowner"><code>adminOwner</code></a></h4>
+<p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
+<pre><code class="language-solidity">function adminOwner() external view returns (address);
+</code></pre>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h4 id="ethlocked"><a class="header" href="#ethlocked"><code>ETHLocked</code></a></h4>
+<p>MUST be triggered when <code>lockETH</code> is called</p>
+<pre><code class="language-solidity">event ETHLocked(address indexed portal, uint256 amount);
+</code></pre>
+<h4 id="ethunlocked"><a class="header" href="#ethunlocked"><code>ETHUnlocked</code></a></h4>
+<p>MUST be triggered when <code>unlockETH</code> is called</p>
+<pre><code class="language-solidity">event ETHUnlocked(address indexed portal, uint256 amount);
+</code></pre>
+<h4 id="portalauthorized"><a class="header" href="#portalauthorized"><code>PortalAuthorized</code></a></h4>
+<p>MUST be triggered when <code>authorizePortal</code> is called</p>
+<pre><code class="language-solidity">event PortalAuthorized(address indexed portal);
+</code></pre>
+<h4 id="lockboxauthorized"><a class="header" href="#lockboxauthorized"><code>LockboxAuthorized</code></a></h4>
+<p>MUST be triggered when <code>authorizeLockbox</code> is called</p>
+<pre><code class="language-solidity">event LockboxAuthorized(address indexed lockbox);
+</code></pre>
+<h4 id="liquiditymigrated"><a class="header" href="#liquiditymigrated"><code>LiquidityMigrated</code></a></h4>
+<p>MUST be triggered when <code>migrateLiquidity</code> is called</p>
+<pre><code class="language-solidity">event LiquidityMigrated(address indexed lockbox);
+</code></pre>
+<h4 id="liquidityreceived"><a class="header" href="#liquidityreceived"><code>LiquidityReceived</code></a></h4>
+<p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
+<pre><code class="language-solidity">event LiquidityReceived(address indexed lockbox);
+</code></pre>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>
+<ul>
+<li>
+<p>The ETH held in the <code>ETHLockbox</code> MUST never be less than the amount deposited but not yet withdrawn by the <code>OptimismPortal</code>s</p>
+</li>
+<li>
+<p>All chains joining the same <code>ETHLockbox</code> MUST have the same <code>ProxyAdmin</code> owner</p>
+</li>
+<li>
+<p>The total withdrawable ETH amount present on all the dependency set's chains MUST NEVER be more than the amount held
+by the <code>ETHLockbox</code> of the cluster</p>
+<blockquote>
+<p>With "withdrawable amount", the ETH balance held on <code>ETHLiquidity</code> is excluded</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="contract-level-invariants"><a class="header" href="#contract-level-invariants">Contract level invariants</a></h3>
+<ul>
+<li>
+<p>It MUST allow only authorized portals to lock ETH</p>
+</li>
+<li>
+<p>It MUST allow only authorized portals to unlock ETH</p>
+</li>
+<li>
+<p>It MUST be in paused state if the <code>SuperchainConfig</code> is paused</p>
+</li>
+<li>
+<p>No Ether MUST flow out of the contract when in a paused state</p>
+</li>
+<li>
+<p>It MUST NOT trigger a new deposit when ETH amount is being unlocked from the <code>ETHLockbox</code> by the <code>OptimismPortal</code></p>
+</li>
+<li>
+<p>It MUST allow only the <code>ProxyAdmin</code> owner to call the <code>authorizePortal</code>, <code>authorizeLockbox</code> and <code>migrateLiquidity</code> functions</p>
+</li>
+<li>
+<p>It MUST allow only authorized lockboxes to call the <code>receiveLiquidity</code> function</p>
+</li>
+<li>
+<p>It MUST migrate the whole ETH liquidity from the source <code>ETHLockbox</code> to the destination <code>ETHLockbox</code> when calling <code>migrateLiquidity</code></p>
+</li>
+<li>
+<p>It MUST emit:</p>
+<ul>
+<li>
+<p>An <code>ETHLocked</code> event when locking ETH</p>
+</li>
+<li>
+<p>An <code>ETHUnlocked</code> event when unlocking ETH</p>
+</li>
+<li>
+<p>A <code>PortalAuthorized</code> event when authorizing a portal</p>
+</li>
+<li>
+<p>A <code>LockboxAuthorized</code> event when authorizing a lockbox</p>
+</li>
+<li>
+<p>A <code>LiquidityMigrated</code> event when migrating liquidity</p>
+</li>
+<li>
+<p>A <code>LiquidityReceived</code> event when receiving liquidity</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<h3 id="eth-management"><a class="header" href="#eth-management">ETH Management</a></h3>
+<ul>
+<li>
+<p>ETH is locked in the <code>ETHLockbox</code> when:</p>
+<ul>
+<li>
+<p>A portal migrates its ETH liquidity when updating</p>
+</li>
+<li>
+<p>A deposit is made with ETH value on an authorized portal</p>
+</li>
+</ul>
+</li>
+<li>
+<p>ETH is unlocked from the <code>ETHLockbox</code> when:</p>
+<ul>
+<li>An authorized portal finalizes a withdrawal that requires ETH</li>
+</ul>
+</li>
+</ul>
+<h3 id="merge-process"><a class="header" href="#merge-process">Merge process</a></h3>
+<p>The merge process is the process of merging two <code>ETHLockbox</code>es into a single one,
+transferring the ETH liquidity from the both source <code>ETHLockbox</code> to the destination <code>ETHLockbox</code>.</p>
+<p>For each source <code>ETHLockbox</code>, the following steps MUST be followed:</p>
+<ul>
+<li>
+<p>The destination <code>ETHLockbox</code> MUST call <code>authorizeLockbox</code> with the source <code>ETHLockbox</code> as argument.</p>
+</li>
+<li>
+<p>The source <code>ETHLockbox</code> MUST call <code>migrateLiquidity</code> with the destination <code>ETHLockbox</code> as argument.</p>
+</li>
+<li>
+<p><code>migrateLiquidity</code> MUST call <code>receiveLiquidity</code> from the destination <code>ETHLockbox</code>.</p>
+</li>
+</ul>
+<p>This process ensures that the ETH liquidity is migrated from the source <code>ETHLockbox</code> to the correct destination <code>ETHLockbox</code>.</p>
+<p>These transactions SHOULD be executed atomically. A possible way is through the <code>OPCM</code> contract.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/optimism-portal.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../experimental/op-contracts-manager.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/optimism-portal.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../experimental/op-contracts-manager.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

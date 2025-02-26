@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Transaction Pool - OP Stack Specification</title>
+        <title>OptimismPortal - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/tx-pool.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/optimism-portal.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -168,70 +168,111 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="transaction-pool"><a class="header" href="#transaction-pool">Transaction pool</a></h1>
+<h1 id="optimismportal-interop"><a class="header" href="#optimismportal-interop">OptimismPortal Interop</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#transaction-validation">Transaction validation</a></li>
-<li><a href="#system-deposits-transaction-margin">System deposits transaction margin</a></li>
-<li><a href="#security-considerations">Security Considerations</a>
+<li><a href="#overview">Overview</a>
 <ul>
-<li><a href="#mempool-denial-of-service">Mempool Denial of Service</a></li>
+<li><a href="#integrating-ethlockbox">Integrating <code>ETHLockbox</code></a></li>
+</ul>
+</li>
+<li><a href="#interface-and-properties">Interface and properties</a>
+<ul>
+<li><a href="#eth-management">ETH Management</a>
+<ul>
+<li><a href="#migrateliquidity"><code>migrateLiquidity</code></a></li>
+</ul>
+</li>
+<li><a href="#internal-eth-functions">Internal ETH Functions</a>
+<ul>
+<li><a href="#_locketh"><code>_lockETH</code></a></li>
+<li><a href="#_unlocketh"><code>_unlockETH</code></a></li>
 </ul>
 </li>
 </ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#ethmigrated"><code>ETHMigrated</code></a></li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a></li>
+</ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
-before being included in a block. When a user submits a transaction to a node, it is validated
-and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
-<p>Since there is little cost to sending invalid transactions over the p2p network maliciously,
-Ethereum opts to ensure that the transactions can be validated as cheaply as possible. This validation
-consists of a nonce and balance (fee payment) check, which can be done with solely state lookups and
-the chain tips block header. Features that make this validation more costly have been rejected from L1
-Ethereum due to the desire to ensure <a href="https://hackmd.io/@kevaundray/S1hUQuV4Jx">commodity hardware</a> can
-easily participate in consensus.</p>
-<p>Layer twos can make more aggressive trade-offs and raise the minimum hardware requirements of the network.
-However, with interop, full EVM execution of the transaction is required to fully validate it.</p>
-<h2 id="transaction-validation"><a class="header" href="#transaction-validation">Transaction validation</a></h2>
-<p>In addition to the nonce and balance checks, the <a href="./messaging.html#messaging-invariants">messaging invariants</a>
-SHOULD be enforced before entry into the transaction pool.</p>
-<p>After each new block, each transaction in the transaction pool is checked for validity again.
-A transaction with a definitively invalid message-dependency SHOULD be "demoted" from the transaction pool.</p>
-<p>It is possible that a transaction deemed valid becomes invalid or vice versa. The sequencer MAY choose
-to demote messages which are invalid but can still technically become valid.</p>
-<p>Transactions with invalid message-dependencies MUST NOT be included in block-building,
-and should thus be dropped from the transaction-pool.</p>
-<h2 id="system-deposits-transaction-margin"><a class="header" href="#system-deposits-transaction-margin">System deposits transaction margin</a></h2>
-<p>The <a href="./derivation.html#closing-the-deposit-context">Deposit context closing transaction</a> requires
-a small margin of additional EVM gas to be available for system operations.</p>
-<p>The transaction-pool should filter out L2 transactions that spend more than the
-gas limit, minus the gas spent on system transactions.
-This ensures that the transaction can be included in a valid L2 block,
-and does not get stuck in the transaction pool.</p>
-<p>A notion of an "effective gas limit", that subtracts 100,000 gas from the regular gas limit,
-should be maintained in the transaction pool.
-This leaves sufficient gas for the L1 attributes transaction (under 45,000 gas),
-the new deposit-context closing transaction (under 36,000 gas), and margin for error / change.</p>
-<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
-<h3 id="mempool-denial-of-service"><a class="header" href="#mempool-denial-of-service">Mempool Denial of Service</a></h3>
-<p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
-service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
-The mempool SHOULD perform low-cost checks before any sort of network access is performed.
-The results of the check SHOULD be cached, such that another request does not need to be performed
-when building the block, although consistency is not guaranteed.</p>
+<p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
+This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
+the op-governed dependency set.</p>
+<p>It is possible to upgrade to this version without being part of the op-governed dependency set. In this case,
+the corresponding chain would need to deploy and manage its own <code>ETHLockbox</code>.</p>
+<h3 id="integrating-ethlockbox"><a class="header" href="#integrating-ethlockbox">Integrating <code>ETHLockbox</code></a></h3>
+<p>The integration with the <code>ETHLockbox</code> involves locking ETH when executing deposit transactions and unlocking ETH
+when finalizing withdrawal transactions, without altering other aspects of the current <code>OptimismPortal</code> implementation.</p>
+<h2 id="interface-and-properties"><a class="header" href="#interface-and-properties">Interface and properties</a></h2>
+<h3 id="eth-management"><a class="header" href="#eth-management">ETH Management</a></h3>
+<h4 id="migrateliquidity"><a class="header" href="#migrateliquidity"><code>migrateLiquidity</code></a></h4>
+<p>Migrates the ETH liquidity to the <code>ETHLockbox</code>. This function will only be called once by the
+<code>ProxyAdmin</code> owner when updating the <code>OptimismPortal</code> contract.</p>
+<pre><code class="language-solidity">function migrateLiquidity() external;
+</code></pre>
+<ul>
+<li>MUST only be callable by the <code>ProxyAdmin</code> owner</li>
+<li>MUST transfer all ETH balance to the <code>ETHLockbox</code></li>
+<li>MUST emit an <code>ETHMigrated</code> event with the amount transferred</li>
+</ul>
+<h3 id="internal-eth-functions"><a class="header" href="#internal-eth-functions">Internal ETH Functions</a></h3>
+<h4 id="_locketh"><a class="header" href="#_locketh"><code>_lockETH</code></a></h4>
+<p>Called during deposit transactions to handle ETH locking.</p>
+<pre><code class="language-solidity">function _lockETH() internal;
+</code></pre>
+<ul>
+<li>MUST be invoked during <code>depositTransaction</code> when there is ETH value</li>
+<li>MUST lock any ETH value in the <code>ETHLockbox</code></li>
+</ul>
+<h4 id="_unlocketh"><a class="header" href="#_unlocketh"><code>_unlockETH</code></a></h4>
+<p>Called during withdrawal finalization to handle ETH unlocking.</p>
+<pre><code class="language-solidity">function _unlockETH(uint256 _amount) internal;
+</code></pre>
+<ul>
+<li>MUST be invoked during withdrawal finalization when there is ETH value</li>
+<li>MUST unlock the withdrawal value from the <code>ETHLockbox</code></li>
+<li>MUST revert if withdrawal target is the <code>ETHLockbox</code></li>
+</ul>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<h3 id="ethmigrated"><a class="header" href="#ethmigrated"><code>ETHMigrated</code></a></h3>
+<p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
+<pre><code class="language-solidity">event ETHMigrated(uint256 amount);
+</code></pre>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<ul>
+<li>
+<p>Deposits MUST lock the ETH in the <code>ETHLockbox</code></p>
+</li>
+<li>
+<p>Withdrawals MUST unlock the ETH from the <code>ETHLockbox</code> and forward it to the withdrawal target</p>
+</li>
+<li>
+<p>The contract MUST NOT hold any ETH balance from deposits or withdrawals</p>
+</li>
+<li>
+<p>The contract MUST be able to handle zero ETH value operations</p>
+</li>
+<li>
+<p>The contract MUST NOT allow withdrawals to target the <code>ETHLockbox</code> address</p>
+</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../interop/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../interop/tx-pool.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../interop/optimism-portal.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../interop/eth-lockbox.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -241,11 +282,11 @@ when building the block, although consistency is not guaranteed.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../interop/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../interop/tx-pool.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../interop/optimism-portal.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../interop/eth-lockbox.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

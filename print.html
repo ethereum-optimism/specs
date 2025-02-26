@@ -7065,7 +7065,6 @@ which is explicitly not <code>EntryPoint</code> itself.</p>
 <p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains within
 a single Superchain network.</p>
 <h2 id="configurable-values"><a class="header" href="#configurable-values">Configurable values</a></h2>
-<p>Configurability of the Superchain is currently limited to two values:</p>
 <p>The <code>SuperchainConfig</code> contract manages the following configuration values:</p>
 <ul>
 <li><code>PAUSED_SLOT</code>: A boolean value indicating whether the Superchain is paused.</li>
@@ -12978,9 +12977,9 @@ sequenceDiagram
   L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
   SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
-  Messenger_A-&gt;&gt;L2SBA: return msgHash_ 
+  Messenger_A-&gt;&gt;L2SBA: return msgHash_
   L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
-  L2SBA-&gt;&gt;from: return msgHash_ 
+  L2SBA-&gt;&gt;from: return msgHash_
   Inbox-&gt;&gt;Messenger_B: relayMessage()
   Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
@@ -13983,6 +13982,357 @@ The mempool SHOULD perform low-cost checks before any sort of network access is 
 The results of the check SHOULD be cached, such that another request does not need to be performed
 when building the block, although consistency is not guaranteed.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="optimismportal-interop"><a class="header" href="#optimismportal-interop">OptimismPortal Interop</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="interop/optimism-portal.html#overview">Overview</a>
+<ul>
+<li><a href="interop/optimism-portal.html#integrating-ethlockbox">Integrating <code>ETHLockbox</code></a></li>
+</ul>
+</li>
+<li><a href="interop/optimism-portal.html#interface-and-properties">Interface and properties</a>
+<ul>
+<li><a href="interop/optimism-portal.html#eth-management">ETH Management</a>
+<ul>
+<li><a href="interop/optimism-portal.html#migrateliquidity"><code>migrateLiquidity</code></a></li>
+</ul>
+</li>
+<li><a href="interop/optimism-portal.html#internal-eth-functions">Internal ETH Functions</a>
+<ul>
+<li><a href="interop/optimism-portal.html#_locketh"><code>_lockETH</code></a></li>
+<li><a href="interop/optimism-portal.html#_unlocketh"><code>_unlockETH</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="interop/optimism-portal.html#events">Events</a>
+<ul>
+<li><a href="interop/optimism-portal.html#ethmigrated"><code>ETHMigrated</code></a></li>
+</ul>
+</li>
+<li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
+This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
+the op-governed dependency set.</p>
+<p>It is possible to upgrade to this version without being part of the op-governed dependency set. In this case,
+the corresponding chain would need to deploy and manage its own <code>ETHLockbox</code>.</p>
+<h3 id="integrating-ethlockbox"><a class="header" href="#integrating-ethlockbox">Integrating <code>ETHLockbox</code></a></h3>
+<p>The integration with the <code>ETHLockbox</code> involves locking ETH when executing deposit transactions and unlocking ETH
+when finalizing withdrawal transactions, without altering other aspects of the current <code>OptimismPortal</code> implementation.</p>
+<h2 id="interface-and-properties"><a class="header" href="#interface-and-properties">Interface and properties</a></h2>
+<h3 id="eth-management"><a class="header" href="#eth-management">ETH Management</a></h3>
+<h4 id="migrateliquidity"><a class="header" href="#migrateliquidity"><code>migrateLiquidity</code></a></h4>
+<p>Migrates the ETH liquidity to the <code>ETHLockbox</code>. This function will only be called once by the
+<code>ProxyAdmin</code> owner when updating the <code>OptimismPortal</code> contract.</p>
+<pre><code class="language-solidity">function migrateLiquidity() external;
+</code></pre>
+<ul>
+<li>MUST only be callable by the <code>ProxyAdmin</code> owner</li>
+<li>MUST transfer all ETH balance to the <code>ETHLockbox</code></li>
+<li>MUST emit an <code>ETHMigrated</code> event with the amount transferred</li>
+</ul>
+<h3 id="internal-eth-functions"><a class="header" href="#internal-eth-functions">Internal ETH Functions</a></h3>
+<h4 id="_locketh"><a class="header" href="#_locketh"><code>_lockETH</code></a></h4>
+<p>Called during deposit transactions to handle ETH locking.</p>
+<pre><code class="language-solidity">function _lockETH() internal;
+</code></pre>
+<ul>
+<li>MUST be invoked during <code>depositTransaction</code> when there is ETH value</li>
+<li>MUST lock any ETH value in the <code>ETHLockbox</code></li>
+</ul>
+<h4 id="_unlocketh"><a class="header" href="#_unlocketh"><code>_unlockETH</code></a></h4>
+<p>Called during withdrawal finalization to handle ETH unlocking.</p>
+<pre><code class="language-solidity">function _unlockETH(uint256 _amount) internal;
+</code></pre>
+<ul>
+<li>MUST be invoked during withdrawal finalization when there is ETH value</li>
+<li>MUST unlock the withdrawal value from the <code>ETHLockbox</code></li>
+<li>MUST revert if withdrawal target is the <code>ETHLockbox</code></li>
+</ul>
+<h2 id="events-3"><a class="header" href="#events-3">Events</a></h2>
+<h3 id="ethmigrated"><a class="header" href="#ethmigrated"><code>ETHMigrated</code></a></h3>
+<p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
+<pre><code class="language-solidity">event ETHMigrated(uint256 amount);
+</code></pre>
+<h2 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h2>
+<ul>
+<li>
+<p>Deposits MUST lock the ETH in the <code>ETHLockbox</code></p>
+</li>
+<li>
+<p>Withdrawals MUST unlock the ETH from the <code>ETHLockbox</code> and forward it to the withdrawal target</p>
+</li>
+<li>
+<p>The contract MUST NOT hold any ETH balance from deposits or withdrawals</p>
+</li>
+<li>
+<p>The contract MUST be able to handle zero ETH value operations</p>
+</li>
+<li>
+<p>The contract MUST NOT allow withdrawals to target the <code>ETHLockbox</code> address</p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="eth-lockbox"><a class="header" href="#eth-lockbox">ETH Lockbox</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="interop/eth-lockbox.html#overview">Overview</a></li>
+<li><a href="interop/eth-lockbox.html#design">Design</a>
+<ul>
+<li><a href="interop/eth-lockbox.html#interface-and-properties">Interface and properties</a>
+<ul>
+<li><a href="interop/eth-lockbox.html#locketh"><code>lockETH</code></a></li>
+<li><a href="interop/eth-lockbox.html#unlocketh"><code>unlockETH</code></a></li>
+<li><a href="interop/eth-lockbox.html#authorizeportal"><code>authorizePortal</code></a></li>
+<li><a href="interop/eth-lockbox.html#authorizelockbox"><code>authorizeLockbox</code></a></li>
+<li><a href="interop/eth-lockbox.html#migrateliquidity"><code>migrateLiquidity</code></a></li>
+<li><a href="interop/eth-lockbox.html#receiveliquidity"><code>receiveLiquidity</code></a></li>
+<li><a href="interop/eth-lockbox.html#adminowner"><code>adminOwner</code></a></li>
+</ul>
+</li>
+<li><a href="interop/eth-lockbox.html#events">Events</a>
+<ul>
+<li><a href="interop/eth-lockbox.html#ethlocked"><code>ETHLocked</code></a></li>
+<li><a href="interop/eth-lockbox.html#ethunlocked"><code>ETHUnlocked</code></a></li>
+<li><a href="interop/eth-lockbox.html#portalauthorized"><code>PortalAuthorized</code></a></li>
+<li><a href="interop/eth-lockbox.html#lockboxauthorized"><code>LockboxAuthorized</code></a></li>
+<li><a href="interop/eth-lockbox.html#liquiditymigrated"><code>LiquidityMigrated</code></a></li>
+<li><a href="interop/eth-lockbox.html#liquidityreceived"><code>LiquidityReceived</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="interop/eth-lockbox.html#invariants">Invariants</a>
+<ul>
+<li><a href="interop/eth-lockbox.html#system-level-invariants">System level invariants</a></li>
+<li><a href="interop/eth-lockbox.html#contract-level-invariants">Contract level invariants</a></li>
+</ul>
+</li>
+<li><a href="interop/eth-lockbox.html#architecture">Architecture</a>
+<ul>
+<li><a href="interop/eth-lockbox.html#eth-management">ETH Management</a></li>
+<li><a href="interop/eth-lockbox.html#merge-process">Merge process</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
+This is due to having the possibility to move ETH liquidity across the different chains and it could happen
+that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
+The <code>ETHLockbox</code> improves the Superchain's interoperable ETH withdrawal user experience and avoids this issue.
+To do so, it unifies ETH L1 liquidity in a single contract (<code>ETHLockbox</code>), enabling seamless withdrawals of ETH
+from any OP chain in the Superchain, regardless of where the ETH was initially deposited.</p>
+<h2 id="design"><a class="header" href="#design">Design</a></h2>
+<p>The <code>ETHLockbox</code> contract is designed to manage the unified ETH liquidity for the Superchain.
+It implements two main functions: <code>lockETH</code> for depositing ETH into the lockbox,
+and <code>unlockETH</code> for withdrawing ETH from the lockbox.</p>
+<p>These functions are called by the <code>OptimismPortal</code> contracts to manage the shared ETH liquidity
+when making deposits or finalizing withdrawals.</p>
+<p>Authorization of <code>OptimismPortal</code>s is managed by the <code>ProxyAdmin</code> owner.
+The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>ProxyAdmin</code>.</p>
+<h3 id="interface-and-properties-1"><a class="header" href="#interface-and-properties-1">Interface and properties</a></h3>
+<h4 id="locketh"><a class="header" href="#locketh"><code>lockETH</code></a></h4>
+<p>Deposits and locks ETH into the lockbox's liquidity pool.</p>
+<ul>
+<li>The function MUST accept ETH.</li>
+<li>Only authorized <code>OptimismPortal</code> addresses MUST be allowed to interact.</li>
+<li>The function MUST NOT revert when called by an authorized <code>OptimismPortal</code></li>
+<li>The function MUST emit the <code>ETHLocked</code> event with the <code>portal</code> that called it and the <code>amount</code>.</li>
+</ul>
+<pre><code class="language-solidity">function lockETH() external payable;
+</code></pre>
+<h4 id="unlocketh"><a class="header" href="#unlocketh"><code>unlockETH</code></a></h4>
+<p>Withdraws a specified amount of ETH from the lockbox's liquidity pool to the <code>OptimismPortal</code> calling it.</p>
+<ul>
+<li>Only authorized <code>OptimismPortal</code> addresses MUST be allowed to interact.</li>
+<li>The function MUST NOT revert when called by an authorized <code>OptimismPortal</code> unless paused.</li>
+<li>The function MUST emit the <code>ETHUnlocked</code> event with the <code>portal</code> that called it and the <code>amount</code>.</li>
+<li>The function MUST use <code>donateETH</code> when sending ETH to avoid triggering deposits.</li>
+<li>The function MUST NOT allow to be called as part of a withdrawal transaction (<code>OptimismPortal.l2Sender()</code> MUST be the <code>DEFAULT_L2_SENDER</code>).</li>
+</ul>
+<pre><code class="language-solidity">function unlockETH(uint256 _value) external;
+</code></pre>
+<h4 id="authorizeportal"><a class="header" href="#authorizeportal"><code>authorizePortal</code></a></h4>
+<p>Authorizes an <code>OptimismPortal</code> to interact with the <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
+<li>The <code>ProxyAdmin</code> owner of the <code>OptimismPortal</code> must be the same as the <code>ProxyAdmin</code> owner of the <code>ETHLockbox</code>.</li>
+<li>The function MUST emit the <code>PortalAuthorized</code> event with the <code>portal</code>.</li>
+<li>The function MUST NOT allow the same <code>OptimismPortal</code> to be authorized more than once.</li>
+</ul>
+<pre><code class="language-solidity">function authorizePortal(address _portal) external;
+</code></pre>
+<h4 id="authorizelockbox"><a class="header" href="#authorizelockbox"><code>authorizeLockbox</code></a></h4>
+<p>Authorizes another <code>ETHLockbox</code> to migrate its ETH liquidity to the current <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
+<li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
+<li>The function MUST emit the <code>LockboxAuthorized</code> event with the <code>lockbox</code> that is being authorized.</li>
+<li>The function MUST NOT allow the same <code>ETHLockbox</code> to be authorized more than once.</li>
+</ul>
+<pre><code class="language-solidity">function authorizeLockbox(address _lockbox) external;
+</code></pre>
+<h4 id="migrateliquidity-1"><a class="header" href="#migrateliquidity-1"><code>migrateLiquidity</code></a></h4>
+<p>Migrates the ETH liquidity from the current <code>ETHLockbox</code> to another <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
+<li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
+<li>The function MUST call <code>receiveLiquidity</code> from the destination <code>ETHLockbox</code>.</li>
+<li>The function MUST emit the <code>LiquidityMigrated</code> event with the <code>lockbox</code> that is being migrated to.</li>
+</ul>
+<pre><code class="language-solidity">function migrateLiquidity(address _lockbox) external;
+</code></pre>
+<h4 id="receiveliquidity"><a class="header" href="#receiveliquidity"><code>receiveLiquidity</code></a></h4>
+<p>Receives the ETH liquidity from another <code>ETHLockbox</code>.</p>
+<ul>
+<li>Only an authorized <code>ETHLockbox</code> can call the function.</li>
+<li>The function MUST emit the <code>LiquidityReceived</code> event with the <code>lockbox</code> that is being received from.</li>
+</ul>
+<pre><code class="language-solidity">function receiveLiquidity() external payable;
+</code></pre>
+<h4 id="adminowner"><a class="header" href="#adminowner"><code>adminOwner</code></a></h4>
+<p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
+<pre><code class="language-solidity">function adminOwner() external view returns (address);
+</code></pre>
+<h3 id="events-4"><a class="header" href="#events-4">Events</a></h3>
+<h4 id="ethlocked"><a class="header" href="#ethlocked"><code>ETHLocked</code></a></h4>
+<p>MUST be triggered when <code>lockETH</code> is called</p>
+<pre><code class="language-solidity">event ETHLocked(address indexed portal, uint256 amount);
+</code></pre>
+<h4 id="ethunlocked"><a class="header" href="#ethunlocked"><code>ETHUnlocked</code></a></h4>
+<p>MUST be triggered when <code>unlockETH</code> is called</p>
+<pre><code class="language-solidity">event ETHUnlocked(address indexed portal, uint256 amount);
+</code></pre>
+<h4 id="portalauthorized"><a class="header" href="#portalauthorized"><code>PortalAuthorized</code></a></h4>
+<p>MUST be triggered when <code>authorizePortal</code> is called</p>
+<pre><code class="language-solidity">event PortalAuthorized(address indexed portal);
+</code></pre>
+<h4 id="lockboxauthorized"><a class="header" href="#lockboxauthorized"><code>LockboxAuthorized</code></a></h4>
+<p>MUST be triggered when <code>authorizeLockbox</code> is called</p>
+<pre><code class="language-solidity">event LockboxAuthorized(address indexed lockbox);
+</code></pre>
+<h4 id="liquiditymigrated"><a class="header" href="#liquiditymigrated"><code>LiquidityMigrated</code></a></h4>
+<p>MUST be triggered when <code>migrateLiquidity</code> is called</p>
+<pre><code class="language-solidity">event LiquidityMigrated(address indexed lockbox);
+</code></pre>
+<h4 id="liquidityreceived"><a class="header" href="#liquidityreceived"><code>LiquidityReceived</code></a></h4>
+<p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
+<pre><code class="language-solidity">event LiquidityReceived(address indexed lockbox);
+</code></pre>
+<h2 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h2>
+<h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>
+<ul>
+<li>
+<p>The ETH held in the <code>ETHLockbox</code> MUST never be less than the amount deposited but not yet withdrawn by the <code>OptimismPortal</code>s</p>
+</li>
+<li>
+<p>All chains joining the same <code>ETHLockbox</code> MUST have the same <code>ProxyAdmin</code> owner</p>
+</li>
+<li>
+<p>The total withdrawable ETH amount present on all the dependency set's chains MUST NEVER be more than the amount held
+by the <code>ETHLockbox</code> of the cluster</p>
+<blockquote>
+<p>With "withdrawable amount", the ETH balance held on <code>ETHLiquidity</code> is excluded</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="contract-level-invariants"><a class="header" href="#contract-level-invariants">Contract level invariants</a></h3>
+<ul>
+<li>
+<p>It MUST allow only authorized portals to lock ETH</p>
+</li>
+<li>
+<p>It MUST allow only authorized portals to unlock ETH</p>
+</li>
+<li>
+<p>It MUST be in paused state if the <code>SuperchainConfig</code> is paused</p>
+</li>
+<li>
+<p>No Ether MUST flow out of the contract when in a paused state</p>
+</li>
+<li>
+<p>It MUST NOT trigger a new deposit when ETH amount is being unlocked from the <code>ETHLockbox</code> by the <code>OptimismPortal</code></p>
+</li>
+<li>
+<p>It MUST allow only the <code>ProxyAdmin</code> owner to call the <code>authorizePortal</code>, <code>authorizeLockbox</code> and <code>migrateLiquidity</code> functions</p>
+</li>
+<li>
+<p>It MUST allow only authorized lockboxes to call the <code>receiveLiquidity</code> function</p>
+</li>
+<li>
+<p>It MUST migrate the whole ETH liquidity from the source <code>ETHLockbox</code> to the destination <code>ETHLockbox</code> when calling <code>migrateLiquidity</code></p>
+</li>
+<li>
+<p>It MUST emit:</p>
+<ul>
+<li>
+<p>An <code>ETHLocked</code> event when locking ETH</p>
+</li>
+<li>
+<p>An <code>ETHUnlocked</code> event when unlocking ETH</p>
+</li>
+<li>
+<p>A <code>PortalAuthorized</code> event when authorizing a portal</p>
+</li>
+<li>
+<p>A <code>LockboxAuthorized</code> event when authorizing a lockbox</p>
+</li>
+<li>
+<p>A <code>LiquidityMigrated</code> event when migrating liquidity</p>
+</li>
+<li>
+<p>A <code>LiquidityReceived</code> event when receiving liquidity</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="architecture-1"><a class="header" href="#architecture-1">Architecture</a></h2>
+<h3 id="eth-management-1"><a class="header" href="#eth-management-1">ETH Management</a></h3>
+<ul>
+<li>
+<p>ETH is locked in the <code>ETHLockbox</code> when:</p>
+<ul>
+<li>
+<p>A portal migrates its ETH liquidity when updating</p>
+</li>
+<li>
+<p>A deposit is made with ETH value on an authorized portal</p>
+</li>
+</ul>
+</li>
+<li>
+<p>ETH is unlocked from the <code>ETHLockbox</code> when:</p>
+<ul>
+<li>An authorized portal finalizes a withdrawal that requires ETH</li>
+</ul>
+</li>
+</ul>
+<h3 id="merge-process"><a class="header" href="#merge-process">Merge process</a></h3>
+<p>The merge process is the process of merging two <code>ETHLockbox</code>es into a single one,
+transferring the ETH liquidity from the both source <code>ETHLockbox</code> to the destination <code>ETHLockbox</code>.</p>
+<p>For each source <code>ETHLockbox</code>, the following steps MUST be followed:</p>
+<ul>
+<li>
+<p>The destination <code>ETHLockbox</code> MUST call <code>authorizeLockbox</code> with the source <code>ETHLockbox</code> as argument.</p>
+</li>
+<li>
+<p>The source <code>ETHLockbox</code> MUST call <code>migrateLiquidity</code> with the destination <code>ETHLockbox</code> as argument.</p>
+</li>
+<li>
+<p><code>migrateLiquidity</code> MUST call <code>receiveLiquidity</code> from the destination <code>ETHLockbox</code>.</p>
+</li>
+</ul>
+<p>This process ensures that the ETH liquidity is migrated from the source <code>ETHLockbox</code> to the correct destination <code>ETHLockbox</code>.</p>
+<p>These transactions SHOULD be executed atomically. A possible way is through the <code>OPCM</code> contract.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="op-contracts-manager"><a class="header" href="#op-contracts-manager">OP Contracts Manager</a></h1>
 <p>The OP Contracts Manager is a contract that deploys the L1 contracts for an OP Stack chain in a single
 transaction. It provides a minimal set of user-configurable parameters to ensure that the resulting
@@ -14048,7 +14398,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -14346,7 +14696,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -14506,7 +14856,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
