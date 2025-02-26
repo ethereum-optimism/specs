@@ -15,7 +15,8 @@ command = "mdbook-mermaid"
 git-repository-url = "https://github.com/ethereum-optimism/specs"
 edit-url-template = "https://github.com/ethereum-optimism/specs/edit/main/{path}"
 default-theme = "ayu"
-additional-js = ["specs/static/solidity.min.js", "specs/static/mermaid.min.js", "specs/static/mermaid-init.js"]
+additional-css = ["theme/css/footer.css"]
+additional-js = ["specs/static/solidity.min.js", "specs/static/mermaid.min.js", "specs/static/mermaid-init.js", "theme/js/footer.js"]
 
 [output.html.redirect]
 "/experimental/fault-proof/index.html" = "/fault-proof/index.html"
