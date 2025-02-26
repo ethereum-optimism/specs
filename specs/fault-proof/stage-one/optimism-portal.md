@@ -154,12 +154,12 @@ Super Output has the following structure:
 ```solidity
 struct OutputRootWithChainId {
   uint256 chainId;
-  bytes32 outputRoot;
+  bytes32 root;
 }
 
 struct SuperOutput {
   uint64 timestamp;
-  OutputRootHashWithChainid[] outputRoots;
+  OutputRootWithChainid[] outputRoots;
 }
 ```
 
@@ -179,7 +179,11 @@ function encodeSuperRoot(SuperRoot memory root) returns (bytes) {
   return concat(
     0x01, // Super Root version byte
     root.timestamp,
-    [outputRoot.chainId || outputRoot.outputRootHash for outputRoot in root.outputRoots]
+    [
+      concat(outputRoot.chainId, outputRoot.root)
+      for outputRoot
+      in root.outputRoots
+    ]
   );
 }
 ```
