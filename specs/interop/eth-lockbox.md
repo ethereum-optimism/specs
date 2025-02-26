@@ -194,7 +194,7 @@ event LiquidityReceived(address indexed lockbox);
 
 - The ETH held in the `ETHLockbox` MUST never be less than the amount deposited but not yet withdrawn by the `OptimismPortal`s
 
-- All chains in a dependency set MUST have the same `ProxyAdmin` owner
+- All chains joining the same `ETHLockbox` MUST have the same `ProxyAdmin` owner
 
 - The total withdrawable ETH amount present on all the dependency set's chains MUST NEVER be more than the amount held
   by the `ETHLockbox` of the cluster
