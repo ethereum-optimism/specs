@@ -61,7 +61,6 @@ function _lockETH() internal;
 
 - MUST be invoked during `depositTransaction` when there is ETH value
 - MUST lock any ETH value in the `ETHLockbox`
-- MUST NOT revert on zero value
 
 #### `_unlockETH`
 
@@ -73,7 +72,6 @@ function _unlockETH(uint256 _amount) internal;
 
 - MUST be invoked during withdrawal finalization when there is ETH value
 - MUST unlock the withdrawal value from the `ETHLockbox`
-- MUST NOT revert on zero value
 - MUST revert if withdrawal target is the `ETHLockbox`
 
 ## Events

@@ -85,6 +85,7 @@ function unlockETH(uint256 _value) external;
 Authorizes an `OptimismPortal` to interact with the `ETHLockbox`.
 
 - Only the `ProxyAdmin` owner can call the function.
+- The `ProxyAdmin` owner of the `OptimismPortal` must be the same as the `ProxyAdmin` owner of the `ETHLockbox`.
 - The function MUST emit the `PortalAuthorized` event with the `portal`.
 - The function MUST NOT allow the same `OptimismPortal` to be authorized more than once.
 
@@ -97,6 +98,7 @@ function authorizePortal(address _portal) external;
 Authorizes another `ETHLockbox` to migrate its ETH liquidity to the current `ETHLockbox`.
 
 - Only the `ProxyAdmin` owner can call the function.
+- The `ProxyAdmin` owner of the source lockbox must be the same as the `ProxyAdmin` owner of the destination lockbox.
 - The function MUST emit the `LockboxAuthorized` event with the `lockbox` that is being authorized.
 - The function MUST NOT allow the same `ETHLockbox` to be authorized more than once.
 
@@ -192,6 +194,8 @@ event LiquidityReceived(address indexed lockbox);
 
 - The ETH held in the `ETHLockbox` MUST never be less than the amount deposited but not yet withdrawn by the `OptimismPortal`s
 
+- All chains in a dependency set MUST have the same `ProxyAdmin` owner
+
 - The total withdrawable ETH amount present on all the dependency set's chains MUST NEVER be more than the amount held
   by the `ETHLockbox` of the cluster
   > With "withdrawable amount", the ETH balance held on `ETHLiquidity` is excluded
@@ -244,7 +248,10 @@ event LiquidityReceived(address indexed lockbox);
 
 ### Merge process
 
-The merge process is the process of migrating the ETH liquidity from one `ETHLockbox` to another.
+The merge process is the process of merging two `ETHLockbox`es into a single one,
+transferring the ETH liquidity from the both source `ETHLockbox` to the destination `ETHLockbox`.
+
+For each source `ETHLockbox`, the following steps MUST be followed:
 
 - The destination `ETHLockbox` MUST call `authorizeLockbox` with the source `ETHLockbox` as argument.
 
@@ -253,3 +260,5 @@ The merge process is the process of migrating the ETH liquidity from one `ETHLoc
 - `migrateLiquidity` MUST call `receiveLiquidity` from the destination `ETHLockbox`.
 
 This process ensures that the ETH liquidity is migrated from the source `ETHLockbox` to the correct destination `ETHLockbox`.
+
+These transactions SHOULD be executed atomically. A possible way is through the `OPCM` contract.
