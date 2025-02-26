@@ -182,6 +182,10 @@
 <li><a href="#valid-withdrawal">Valid Withdrawal</a></li>
 <li><a href="#invalid-withdrawal">Invalid Withdrawal</a></li>
 <li><a href="#l2-withdrawal-sender">L2 Withdrawal Sender</a></li>
+<li><a href="#block-output">Block Output</a></li>
+<li><a href="#output-root">Output Root</a></li>
+<li><a href="#super-output">Super Output</a></li>
+<li><a href="#super-root">Super Root</a></li>
 </ul>
 </li>
 <li><a href="#assumptions">Assumptions</a>
@@ -225,11 +229,13 @@
 <li><a href="#paused">paused</a></li>
 <li><a href="#guardian">guardian</a></li>
 <li><a href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></li>
+<li><a href="#superrootsactive">superRootsActive</a></li>
 <li><a href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
 <li><a href="#respectedgametype">respectedGameType</a></li>
 <li><a href="#respectedgametypeupdatedat">respectedGameTypeUpdatedAt</a></li>
 <li><a href="#l2sender">l2Sender</a></li>
-<li><a href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></li>
+<li><a href="#provewithdrawaltransaction-super-roots">proveWithdrawalTransaction (Super Roots)</a></li>
+<li><a href="#provewithdrawaltransaction-output-roots">proveWithdrawalTransaction (Output Roots)</a></li>
 <li><a href="#checkwithdrawal">checkWithdrawal</a></li>
 <li><a href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></li>
 </ul>
@@ -284,6 +290,64 @@ would be reported by a perfect oracle for the query.</p>
 <p>The <strong>L2 Withdrawal Sender</strong> is the address of the account that triggered a given withdrawal
 transaction on L2. The <code>OptimismPortal</code> is expected to expose a variable that includes this value
 when <a href="#finalized-withdrawal">finalizing</a> a withdrawal.</p>
+<h3 id="block-output"><a class="header" href="#block-output">Block Output</a></h3>
+<p>A <strong>Block Output</strong>, commonly called an <strong>Output</strong>, is a data structure that wraps the key hash
+elements of a given L2 block.</p>
+<p>The structure of the Block Output is versioned (32 bytes). The current Block Output version is
+<code>0x0000000000000000000000000000000000000000000000000000000000000000</code> (V0). A V0 Block Output has
+the following structure:</p>
+<pre><code class="language-solidity">struct BlockOutput {
+  bytes32 version;
+  bytes32 stateRoot;
+  bytes32 messagePasserStorageRoot;
+  bytes32 blockHash;
+}
+</code></pre>
+<p>Where:</p>
+<ul>
+<li><code>version</code> is a version identifier that describes the structure of the Output Root</li>
+<li><code>stateRoot</code> is the state root of the L2 block this Output Root corresponds to</li>
+<li><code>messagePasserStorageRoot</code> is the storage root of the <code>L2ToL1MessagePasser</code> contract at the L2
+block this Output Root corresponds to</li>
+<li><code>blockHash</code> is the block hash of the L2 block this Output Root corresponds to</li>
+</ul>
+<h3 id="output-root"><a class="header" href="#output-root">Output Root</a></h3>
+<p>An <strong>Output Root</strong> is a commitment to a <a href="#block-output">Block Output</a>. A detailed description of
+this commitment can be found <a href="../../protocol/proposals.html#l2-output-commitment-construction">here</a>.</p>
+<h3 id="super-output"><a class="header" href="#super-output">Super Output</a></h3>
+<p>A <strong>Super Output</strong> is a data structure that commits all of the <a href="#block-output">Block Outputs</a> for
+all chains within the Superchain Interop Set at a given timestamp. A Super Output can also commit
+to a single Block Output to maintain compatibility with chains outside of the Interop Set.</p>
+<p>The structure of the Super Output is versioned (1 byte). The current version is <code>0x01</code> (V1). A V1
+Super Output has the following structure:</p>
+<pre><code class="language-solidity">struct OutputRootWithChainId {
+  uint256 chainId;
+  bytes32 root;
+}
+
+struct SuperOutput {
+  uint64 timestamp;
+  OutputRootWithChainid[] outputRoots;
+}
+</code></pre>
+<h3 id="super-root"><a class="header" href="#super-root">Super Root</a></h3>
+<p>A <strong>Super Root</strong> is a commitment to a <a href="#super-output">Super Output</a>, computed as:</p>
+<pre><code class="language-solidity">keccak256(encodeSuperRoot(SuperRoot))
+</code></pre>
+<p>Where <code>encodeSuperRoot</code> for the V1 Super Output is:</p>
+<pre><code class="language-solidity">function encodeSuperRoot(SuperRoot memory root) returns (bytes) {
+  require(root.outputRoots.length &gt; 0); // Super Root must have at least one Output Root.
+  return concat(
+    0x01, // Super Root version byte
+    root.timestamp,
+    [
+      concat(outputRoot.chainId, outputRoot.root)
+      for outputRoot
+      in root.outputRoots
+    ]
+  );
+}
+</code></pre>
 <h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
 <h3 id="aop-001-dispute-game-contracts-properly-report-important-properties"><a class="header" href="#aop-001-dispute-game-contracts-properly-report-important-properties">aOP-001: Dispute Game contracts properly report important properties</a></h3>
 <p>We assume that the <code>FaultDisputeGame</code> and <code>PermissionedDisputeGame</code> contracts properly and
@@ -363,6 +427,7 @@ see this as a critical system risk.</p>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
 <li>MUST set the value of the <code>SuperchainConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
+<li>MUST set <code>superRootsActive</code> to either <code>true</code> or <code>false</code>.</li>
 <li>MUST set the value of the <a href="#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
 value if the value is not set already.</li>
 <li>MUST initialize the resource metering configuration.</li>
@@ -373,6 +438,9 @@ value if the value is not set already.</li>
 <p>Returns the address of the Guardian as per <code>SuperchainConfig.guardian()</code>.</p>
 <h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
 <p>Returns the value of the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="superrootsactive"><a class="header" href="#superrootsactive">superRootsActive</a></h3>
+<p>Returns the value of the <code>superRootsActive</code> variable which determines if the <code>OptimismPortal</code> will
+use the standard Output Root proof or the Super Root proof.</p>
 <h3 id="disputegamefinalitydelayseconds"><a class="header" href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></h3>
 <p><strong>Legacy Function</strong></p>
 <p>Returns the value of the
@@ -393,8 +461,9 @@ a call to <code>AnchorStateRegistry.disputeGameFinalityDelaySeconds()</code>.</p
 has not been initialized then this value will be <code>address(0)</code> and should not be used. If the
 <code>OptimismPortal</code> is not currently executing an withdrawal transaction then this value will be
 <code>0x000000000000000000000000000000000000dEaD</code> and should not be used.</p>
-<h3 id="provewithdrawaltransaction"><a class="header" href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></h3>
-<p>Allows a user to <a href="#proven-withdrawal">prove</a> a withdrawal transaction.</p>
+<h3 id="provewithdrawaltransaction-super-roots"><a class="header" href="#provewithdrawaltransaction-super-roots">proveWithdrawalTransaction (Super Roots)</a></h3>
+<p>Allows a user to <a href="#proven-withdrawal">prove</a> a withdrawal transaction within an <code>OptimismPortal</code>
+that uses dispute games that argue over <a href="#super-root">Super Roots</a>.</p>
 <ul>
 <li>MUST revert if the withdrawal target is the address of the <code>OptimismPortal</code> itself.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
@@ -403,6 +472,36 @@ has not been initialized then this value will be <code>address(0)</code> and sho
 <a href="./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
 Challenger.</li>
+<li>MUST revert if <code>superRootsActive</code> is <code>false</code>.</li>
+<li>MUST revert if the proof provided by the user of the preimage of the Super Root that the dispute
+game argues about is invalid. This proof is verified by hashing the user-provided Super Root
+preimage and comparing them to the Super Root in the referenced dispute game.</li>
+<li>MUST revert if the pointer index of the Output Root inside of the Super Root provided by the user
+is beyond the size of the Output Roots array or points to a chain ID other than the chain ID
+stored within the <code>SystemConfig</code> contract for the <code>OptimismPortal</code>.</li>
+<li>MUST revert if the proof provided by the user of the preimage of the Output Root is invalid. This
+proof is verified by hashing the user-provided preimage and comparing them to the Output Root.</li>
+<li>MUST revert if the provided merkle trie proof that the withdrawal was included within the root
+claim of the provided dispute game is invalid.</li>
+<li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
+withdrawal, the address of the game against which it was proven, and the block timestamp at which
+the proof transaction was submitted.</li>
+</ul>
+<h3 id="provewithdrawaltransaction-output-roots"><a class="header" href="#provewithdrawaltransaction-output-roots">proveWithdrawalTransaction (Output Roots)</a></h3>
+<p>Allows a user to <a href="#proven-withdrawal">prove</a> a withdrawal transaction within an <code>OptimismPortal</code>
+that uses dispute games that argue over <a href="#output-root">Output Roots</a>.</p>
+<ul>
+<li>MUST revert if the withdrawal target is the address of the <code>OptimismPortal</code> itself.</li>
+<li>MUST revert if the withdrawal is being proven against a game that is not a
+<a href="./anchor-state-registry.html#proper-game">Proper Game</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that is not a
+<a href="./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
+<li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
+Challenger.</li>
+<li>MUST revert if <code>superRootsActive</code> is <code>true</code>.</li>
+<li>MUST revert if the proof provided by the user of the preimage of the Output Root that the dispute
+game argues about is invalid. This proof is verified by hashing the user-provided preimage and
+comparing them to the root claim of the referenced dispute game.</li>
 <li>MUST revert if the provided merkle trie proof that the withdrawal was included within the root
 claim of the provided dispute game is invalid.</li>
 <li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
