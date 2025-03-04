@@ -8601,8 +8601,11 @@ The assumption makes upper inequality to hold. Therefore, we decided to manage <
 <li>L1 Origin Number
 <ul>
 <li>The parent of the first L2 block's L1 origin number is <code>l1_origin_num - sum(origin_bits)</code></li>
-<li>Then we can derive other blocks' L1 origin number with <code>origin_bits</code></li>
-<li><code>ith block's L1 origin number = (i-1)th block's L1 origin number + (origin_bits[i] ? 1 : 0)</code></li>
+<li>Then we can derive other blocks' L1 origin number with <code>origin_bits</code>
+<ul>
+<li><code>i-th block's L1 origin number = (i-1)th block's L1 origin number + (origin_bits[i] ? 1 : 0)</code></li>
+</ul>
+</li>
 </ul>
 </li>
 <li>L1 Origin Hash
