@@ -329,10 +329,14 @@ precompile that short-circuits depending on input size in the EVM.</p>
 <p>All of the BLS precompiles should be <a href="../../fault-proof/index.html#precompile-accelerators">accelerated</a> in fault proof
 programs so they call out to the L1 instead of calculating the result inside the program.</p>
 <h2 id="block-sealing"><a class="header" href="#block-sealing">Block Sealing</a></h2>
-<p>To match EVM execution as closely as possible, the post-execution transactions to process logs and the request queue
-included as part of <a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a>, <a href="https://eips.ethereum.org/EIPS/eip-7002">EIP-7002</a>,
-and <a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a> must be executed. However, the resulting
-<code>requests</code> is ignored because Isthmus block <code>requests</code> must be an empty array.</p>
+<p>In the OP Stack, <code>EIP-7685</code> is no-op'd, and the <code>requestsHash</code> is always set to <code>sha256('')</code> (as noted in
+<a href="#header-validity-rules">header validity rules</a>). As such, <a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a>,
+<a href="https://eips.ethereum.org/EIPS/eip-7002">EIP-7002</a>, and <a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a> are not
+enabled either. The OP Stack execution layer must ensure that the post-block filtering of events in the deposit contract
+(EIP-6110) as well as the <code>EIP-7002</code> + <code>EIP-7251</code> system calls are <em>not invoked</em> during the block sealing process after
+Isthmus activation.</p>
+<p>Users of the OP Stack may still permissionlessly deploy these smart contracts, but they will not be treated as special
+by the OP Stack execution layer, and the system calls introduced in L1's Pectra hardfork are not considered.</p>
 <h2 id="engine-api-updates"><a class="header" href="#engine-api-updates">Engine API Updates</a></h2>
 <h3 id="update-to-executionpayload"><a class="header" href="#update-to-executionpayload">Update to <code>ExecutionPayload</code></a></h3>
 <p><code>ExecutionPayload</code> will contain an extra field for <code>withdrawalsRoot</code> after Isthmus hard fork.</p>
