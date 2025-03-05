@@ -933,7 +933,7 @@ Successful messages have their hash stored in the <code>successfulMessages</code
 while unsuccessful messages have their hash stored in the <code>failedMessages</code>
 mapping.</p>
 <p>The user experience when sending from L1 to L2 is a bit different than when
-sending a transaction from L2 to L1. When going into L1 from L2, the user does
+sending a transaction from L2 to L1. When going from L1 into L2, the user does
 not need to call <code>relayMessage</code> on L2 themselves. The user pays for L2 gas on L1
 and the transaction is automatically pulled into L2 where it is executed on L2.
 When going from L2 into L1, the user proves their withdrawal on OptimismPortal,
@@ -14345,7 +14345,7 @@ transferring the ETH liquidity from the both source <code>ETHLockbox</code> to t
 transaction. It provides a minimal set of user-configurable parameters to ensure that the resulting
 chain meets the <a href="experimental/../protocol/configurability.html">standard configuration</a> requirements.</p>
 <p>The version deployed is always a governance-approved contract release. The set
-of governance approved <a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/VERSIONING.md">contract releases</a> can be found on the
+of governance approved <a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/meta/VERSIONING.md">contract releases</a> can be found on the
 <a href="https://github.com/ethereum-optimism/optimism/releases">Optimism Monorepo releases</a> page, and is the set of releases named
 <code>op-contracts/vX.Y.Z</code>.</p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
