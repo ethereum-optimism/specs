@@ -15,7 +15,6 @@
       - [`setFeeVaultConfig`](#setfeevaultconfig)
     - [Fee Admin](#fee-admin)
       - [`feeAdmin`](#feeadmin)
-      - [`setFeeVaultAdmin`](#setfeevaultadmin)
   - [Invariants](#invariants)
 - [`OptimismPortal`](#optimismportal)
   - [Interface](#interface-1)
@@ -86,7 +85,6 @@ The following `ConfigUpdate` event is defined where the `CONFIG_VERSION` is `uin
 | `GAS_LIMIT`           | `uint8(2)` | `abi.encode(uint64 _gasLimit)`                                                    | Modifies the L2 gas limit                                            |
 | `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)`                                                             | Modifies the account that is authorized to progress the unsafe chain |
 | `EIP_1559_PARAMS`     | `uint8(4)` | `uint256(uint64(uint32(_denominator))) << 32 \| uint64(uint32(_elasticity))`      | Modifies the EIP-1559 denominator and elasticity                     |
-| `FEE_VAULT_ADMIN`     | `uint8(5)` | `abi.encode(address)`                                                             | Modifies the fee vault admin                                         |
 
 ### Initialization
 
@@ -97,7 +95,7 @@ The following actions should happen during the initialization of the `SystemConf
 - `emit ConfigUpdate.GAS_LIMIT`
 - `emit ConfigUpdate.UNSAFE_BLOCK_SIGNER`
 - `emit ConfigUpdate.EIP_1559_PARAMS`
-- `emit ConfigUpdate.FEE_VAULT_ADMIN`
+- `setConfig(FEE_VAULT_ADMIN)`
 - `setConfig(SET_GAS_PAYING_TOKEN)`
 - `setConfig(SET_BASE_FEE_VAULT_CONFIG)`
 - `setConfig(SET_L1_FEE_VAULT_CONFIG)`
@@ -121,6 +119,8 @@ Each function calls `OptimismPortal.setConfig(ConfigType,bytes)` with its corres
 
 ##### `setFeeVaultConfig`
 
+The `setFeeVaultConfig` MUST revert if the `ConfigType` doesn't correspond to a fee vault config type.
+
 ```solidity
 function setFeeVaultConfig(ConfigType,address,uint256,WithdrawalNetwork)
 ```
@@ -128,19 +128,12 @@ function setFeeVaultConfig(ConfigType,address,uint256,WithdrawalNetwork)
 #### Fee Admin
 
 A new role is introduced to call the vault config setters. This role is updated at the `initialize` function.
+The fee admin role and can only be changed by an upgrade of the `SystemConfig`.
 
 ##### `feeAdmin`
 
 ```solidity
 function feeAdmin() returns (address)
-```
-
-##### `setFeeVaultAdmin`
-
-The `setFeeVaultAdmin` function MUST only be callable by the system config owner.
-
-```solidity
-function setFeeVaultAdmin(address)
 ```
 
 ### Invariants
@@ -190,6 +183,7 @@ function upgrade(uint32 _gasLimit, bytes memory _data) external
 ```
 
 This function emits a `TransactionDeposited` event.
+The deposit transaction is always targetted to `L2_PROXY_ADMIN`.
 
 ```solidity
 event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
