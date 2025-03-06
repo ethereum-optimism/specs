@@ -184,6 +184,7 @@
 </li>
 </ul>
 </li>
+<li><a href="#gaspriceoracle">GasPriceOracle</a></li>
 <li><a href="#operatorfeevault">OperatorFeeVault</a></li>
 </ul>
 </li>
@@ -197,6 +198,11 @@
 <p>This function is meant to be called once on the activation block of the Isthmus network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
 call each getter for the network specific config and set the returndata into storage.</p>
+<h3 id="gaspriceoracle"><a class="header" href="#gaspriceoracle">GasPriceOracle</a></h3>
+<p>Following the Isthmus upgrade, a new method is introduced: <code>getOperatorFee(uint256)</code>. This method
+returns the operator fee for the given <code>gasUsed</code>. The operator fee calculation follows the formula
+outlined in the <a href="./exec-engine.html#">Operator Fee</a> section of the execution engine spec.</p>
+<p>The value returned by <code>getOperatorFee(uint256)</code> is capped at <code>U256</code> max value.</p>
 <h3 id="operatorfeevault"><a class="header" href="#operatorfeevault">OperatorFeeVault</a></h3>
 <p>This vault implements <code>FeeVault</code>, like <code>BaseFeeVault</code>, <code>SequencerFeeVault</code>, and <code>L1FeeVault</code>.
 No special logic is needed in order to insert or withdraw funds.</p>

@@ -933,7 +933,7 @@ Successful messages have their hash stored in the <code>successfulMessages</code
 while unsuccessful messages have their hash stored in the <code>failedMessages</code>
 mapping.</p>
 <p>The user experience when sending from L1 to L2 is a bit different than when
-sending a transaction from L2 to L1. When going into L1 from L2, the user does
+sending a transaction from L2 to L1. When going from L1 into L2, the user does
 not need to call <code>relayMessage</code> on L2 themselves. The user pays for L2 gas on L1
 and the transaction is automatically pulled into L2 where it is executed on L2.
 When going from L2 into L1, the user proves their withdrawal on OptimismPortal,
@@ -10854,6 +10854,7 @@ and also set the following new attributes:</p>
 </li>
 </ul>
 </li>
+<li><a href="protocol/isthmus/predeploys.html#gaspriceoracle">GasPriceOracle</a></li>
 <li><a href="protocol/isthmus/predeploys.html#operatorfeevault">OperatorFeeVault</a></li>
 </ul>
 </li>
@@ -10867,6 +10868,11 @@ and also set the following new attributes:</p>
 <p>This function is meant to be called once on the activation block of the Isthmus network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
 call each getter for the network specific config and set the returndata into storage.</p>
+<h3 id="gaspriceoracle-2"><a class="header" href="#gaspriceoracle-2">GasPriceOracle</a></h3>
+<p>Following the Isthmus upgrade, a new method is introduced: <code>getOperatorFee(uint256)</code>. This method
+returns the operator fee for the given <code>gasUsed</code>. The operator fee calculation follows the formula
+outlined in the <a href="protocol/isthmus/./exec-engine.html#">Operator Fee</a> section of the execution engine spec.</p>
+<p>The value returned by <code>getOperatorFee(uint256)</code> is capped at <code>U256</code> max value.</p>
 <h3 id="operatorfeevault"><a class="header" href="#operatorfeevault">OperatorFeeVault</a></h3>
 <p>This vault implements <code>FeeVault</code>, like <code>BaseFeeVault</code>, <code>SequencerFeeVault</code>, and <code>L1FeeVault</code>.
 No special logic is needed in order to insert or withdraw funds.</p>
