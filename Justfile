@@ -25,7 +25,7 @@ lint-specs-md:
 
 # Backwards compatibility
 lint-specs-md-fix:
-    lint-specs-md
+    just lint-specs-md
 
 # Validates Table of Content Sections with doctoc
 lint-specs-toc-check:
