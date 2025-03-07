@@ -221,6 +221,7 @@ in lower latency messaging at a higher risk or an invalid block being produced.<
 If the block containing the initiating message is considered safe, no additional trust
 assumptions are assumed. The only time that additional trust assumptions are added is
 when an initiating message from an unsafe block is consumed.</p>
+<p>It is recommended to leverage the <a href="./supervisor.html">supervisor</a> API to validate messages.</p>
 <h4 id="executing-message-validation"><a class="header" href="#executing-message-validation">Executing Message Validation</a></h4>
 <p>The block builder SHOULD validate executing messages directly before including the transaction
 that produced the executing message in a block. Given the async nature of many independent chains

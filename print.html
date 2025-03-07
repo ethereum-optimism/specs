@@ -12071,6 +12071,7 @@ depth.</p>
 <li><a href="interop/./predeploys.html">Predeploys</a>: system contracts to interface with other chains.</li>
 <li><a href="interop/./sequencer.html">Sequencer</a>: Sequencer Policy and block-building information.</li>
 <li><a href="interop/./verifier.html">Verifier</a>: Verification of cross-L2 messaging.</li>
+<li><a href="interop/./supervisor.html">Supervisor</a>: API for validating messages.</li>
 <li><a href="interop/./fault-proof.html">Fault Proof</a>: modifications to prove interop functionality in the fault-proof.</li>
 <li><a href="interop/./upgrade.html">Upgrade</a>: Superchain upgrade process to activate Interop.</li>
 <li><a href="interop/./token-bridging.html">Token Bridging</a>: sending ERC20 tokens between chains</li>
@@ -13102,6 +13103,7 @@ in lower latency messaging at a higher risk or an invalid block being produced.<
 If the block containing the initiating message is considered safe, no additional trust
 assumptions are assumed. The only time that additional trust assumptions are added is
 when an initiating message from an unsafe block is consumed.</p>
+<p>It is recommended to leverage the <a href="interop/./supervisor.html">supervisor</a> API to validate messages.</p>
 <h4 id="executing-message-validation"><a class="header" href="#executing-message-validation">Executing Message Validation</a></h4>
 <p>The block builder SHOULD validate executing messages directly before including the transaction
 that produced the executing message in a block. Given the async nature of many independent chains
@@ -13261,6 +13263,222 @@ messages is verified, instead of verifying possible executing messages before
 inclusion.</p>
 <h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="supervisor"><a class="header" href="#supervisor">Supervisor</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="interop/supervisor.html#overview">Overview</a></li>
+<li><a href="interop/supervisor.html#rpc-api">RPC API</a>
+<ul>
+<li><a href="interop/supervisor.html#common-types">Common types</a>
+<ul>
+<li><a href="interop/supervisor.html#identifier"><code>Identifier</code></a></li>
+<li><a href="interop/supervisor.html#message"><code>Message</code></a></li>
+<li><a href="interop/supervisor.html#executingdescriptor"><code>ExecutingDescriptor</code></a></li>
+<li><a href="interop/supervisor.html#hexuint64"><code>HexUint64</code></a></li>
+<li><a href="interop/supervisor.html#int"><code>Int</code></a></li>
+<li><a href="interop/supervisor.html#chainid"><code>ChainID</code></a></li>
+<li><a href="interop/supervisor.html#hash"><code>Hash</code></a></li>
+<li><a href="interop/supervisor.html#bytes"><code>Bytes</code></a></li>
+<li><a href="interop/supervisor.html#blockid"><code>BlockID</code></a></li>
+<li><a href="interop/supervisor.html#blockref"><code>BlockRef</code></a></li>
+<li><a href="interop/supervisor.html#derivedidpair"><code>DerivedIDPair</code></a></li>
+<li><a href="interop/supervisor.html#chainrootinfo"><code>ChainRootInfo</code></a></li>
+<li><a href="interop/supervisor.html#superrootresponse"><code>SuperRootResponse</code></a></li>
+<li><a href="interop/supervisor.html#safetylevel"><code>SafetyLevel</code></a></li>
+</ul>
+</li>
+<li><a href="interop/supervisor.html#methods">Methods</a>
+<ul>
+<li><a href="interop/supervisor.html#supervisor_checkmessage"><code>supervisor_checkMessage</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_checkmessages"><code>supervisor_checkMessages</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_checkmessagesv2"><code>supervisor_checkMessagesV2</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_crossderivedtosource"><code>supervisor_crossDerivedToSource</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_localunsafe"><code>supervisor_localUnsafe</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_crosssafe"><code>supervisor_crossSafe</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_finalized"><code>supervisor_finalized</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_finalizedl1"><code>supervisor_finalizedL1</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_superrootattimestamp"><code>supervisor_superRootAtTimestamp</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_syncstatus"><code>supervisor_syncStatus</code></a></li>
+<li><a href="interop/supervisor.html#supervisor_allsafederivedat"><code>supervisor_allSafeDerivedAt</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<p>The supervisor is an implementation detail of OP Stack native interop and is not the only
+architecture that can be used to implement it. The supervisor is responsible for indexing
+data from all of the chains in a cluster so that the <a href="interop/./verifier.html#safety">safety level</a>
+of executing messages can quickly be determined.</p>
+<h2 id="rpc-api"><a class="header" href="#rpc-api">RPC API</a></h2>
+<h3 id="common-types"><a class="header" href="#common-types">Common types</a></h3>
+<h4 id="identifier"><a class="header" href="#identifier"><code>Identifier</code></a></h4>
+<p>The identifier of a message.
+Corresponds to an <a href="interop/./messaging.html#message-identifier">Identifier</a>.</p>
+<p>Object:</p>
+<ul>
+<li><code>origin</code>: <code>Address</code></li>
+<li><code>blockNumber</code>: <code>HexUint64</code></li>
+<li><code>logIndex</code>: <code>HexUint64</code></li>
+<li><code>timestamp</code>: <code>HexUint64</code></li>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<h4 id="message-1"><a class="header" href="#message-1"><code>Message</code></a></h4>
+<p>Describes an initiating message.</p>
+<p>Object:</p>
+<ul>
+<li><code>identifier</code>: <code>Identifier</code> - identifier of the message</li>
+<li><code>payloadHash</code>: <code>Hash</code> - <code>keccak256</code> hash of the message-payload bytes</li>
+</ul>
+<h4 id="executingdescriptor"><a class="header" href="#executingdescriptor"><code>ExecutingDescriptor</code></a></h4>
+<p>Describes the context for message verification.
+Specifically, this helps apply message-expiry rules on message checks.</p>
+<p>Object:</p>
+<ul>
+<li><code>timestamp</code>: <code>HexUint64</code></li>
+</ul>
+<h4 id="hexuint64"><a class="header" href="#hexuint64"><code>HexUint64</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded big-endian number, variable length up to 64 bits, prefixed with <code>0x</code>.</p>
+<h4 id="int"><a class="header" href="#int"><code>Int</code></a></h4>
+<p><code>NUMBER</code>:
+Regular JSON number, always integer. Assumed to always fit in 51 bits.</p>
+<h4 id="chainid"><a class="header" href="#chainid"><code>ChainID</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded big-endian number, variable length up to 256 bits, prefixed with <code>0x</code>.</p>
+<h4 id="hash"><a class="header" href="#hash"><code>Hash</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded, fixed-length, representing 32 bytes, prefixed with <code>0x</code>.</p>
+<h4 id="bytes"><a class="header" href="#bytes"><code>Bytes</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded, variable length (always full bytes, no odd number of nibbles),
+representing a bytes list, prefixed with <code>0x</code>.</p>
+<h4 id="blockid-1"><a class="header" href="#blockid-1"><code>BlockID</code></a></h4>
+<p>Describes a block.</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>hash</code>: <code>HASH</code> - block hash</li>
+<li><code>number</code>: <code>Int</code> - block number</li>
+</ul>
+<h4 id="blockref"><a class="header" href="#blockref"><code>BlockRef</code></a></h4>
+<p>Describes a block.</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>hash</code>: <code>Hash</code> - block hash</li>
+<li><code>number</code>: <code>Int</code> - block number</li>
+<li><code>parentHash</code>: <code>Hash</code> - block parent-hash</li>
+<li><code>timestamp</code>: <code>Int</code> - block timestamp</li>
+</ul>
+<h4 id="derivedidpair"><a class="header" href="#derivedidpair"><code>DerivedIDPair</code></a></h4>
+<h4 id="chainrootinfo"><a class="header" href="#chainrootinfo"><code>ChainRootInfo</code></a></h4>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>chainId</code>: <code>HexUint64</code> - The chain ID (Note: this is changing to <code>ChainID</code> soon)</li>
+<li><code>canonical</code>: <code>Hash</code> - output root at the latest canonical block</li>
+<li><code>pending</code>: <code>Bytes</code> - output root preimage</li>
+</ul>
+<h4 id="superrootresponse"><a class="header" href="#superrootresponse"><code>SuperRootResponse</code></a></h4>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>crossSafeDerivedFrom</code>: <code>BlockID</code> - common derived-from where all chains are cross-safe</li>
+<li><code>timestamp</code>: <code>Int</code> - The timestamp of the super root</li>
+<li><code>superRoot</code>: <code>Hash</code> - The root of the super root</li>
+<li><code>version</code>: <code>Int</code> - The version of the response</li>
+<li><code>chains</code>: <code>ARRAY</code> of <code>ChainRootInfo</code> - List of chains included in the super root</li>
+</ul>
+<h4 id="safetylevel"><a class="header" href="#safetylevel"><code>SafetyLevel</code></a></h4>
+<p>The safety level of the message.
+Corresponds to a verifier <a href="interop/./verifier.html#safety">SafetyLevel</a>.</p>
+<p><code>STRING</code>, one of:</p>
+<ul>
+<li><code>invalid</code></li>
+<li><code>unsafe</code></li>
+<li><code>cross-unsafe</code></li>
+<li><code>local-safe</code></li>
+<li><code>safe</code></li>
+<li><code>finalized</code></li>
+</ul>
+<h3 id="methods"><a class="header" href="#methods">Methods</a></h3>
+<h4 id="supervisor_checkmessage"><a class="header" href="#supervisor_checkmessage"><code>supervisor_checkMessage</code></a></h4>
+<p>Checks the safety level of a specific message based on its identifier and message hash.
+This RPC is useful for the block builder to determine if a message should be included in a block.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>identifier</code>: <code>Identifier</code></li>
+<li><code>payloadHash</code>: <code>Hash</code></li>
+<li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code></li>
+</ul>
+<p>Returns: <code>SafetyLevel</code></p>
+<h4 id="supervisor_checkmessages"><a class="header" href="#supervisor_checkmessages"><code>supervisor_checkMessages</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>messages</code>: ARRAY of <code>Message</code></li>
+<li><code>minSafety</code>: <code>SafetyLevel</code></li>
+</ul>
+<h4 id="supervisor_checkmessagesv2"><a class="header" href="#supervisor_checkmessagesv2"><code>supervisor_checkMessagesV2</code></a></h4>
+<p>Next version <code>supervisor_checkMessage</code>,
+additionally verifying the message-expiry, by referencing when the execution happens.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>messages</code>: ARRAY of <code>Message</code></li>
+<li><code>minSafety</code>: <code>SafetyLevel</code></li>
+<li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code> - applies as execution-context to all messages</li>
+</ul>
+<p>Returns: RPC error the minSafety is not met by one or more of the messages, with</p>
+<h4 id="supervisor_crossderivedtosource"><a class="header" href="#supervisor_crossderivedtosource"><code>supervisor_crossDerivedToSource</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+<li><code>derived</code>: <code>BlockID</code></li>
+</ul>
+<p>Returns: derivedFrom <code>BlockRef</code></p>
+<h4 id="supervisor_localunsafe"><a class="header" href="#supervisor_localunsafe"><code>supervisor_localUnsafe</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<p>Returns: <code>BlockID</code></p>
+<h4 id="supervisor_crosssafe"><a class="header" href="#supervisor_crosssafe"><code>supervisor_crossSafe</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<p>Returns: <code>DerivedIDPair</code></p>
+<h4 id="supervisor_finalized"><a class="header" href="#supervisor_finalized"><code>supervisor_finalized</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<p>Returns: <code>BlockID</code></p>
+<h4 id="supervisor_finalizedl1"><a class="header" href="#supervisor_finalizedl1"><code>supervisor_finalizedL1</code></a></h4>
+<p>Parameters: (none)</p>
+<p>Returns: <code>BlockRef</code></p>
+<h4 id="supervisor_superrootattimestamp"><a class="header" href="#supervisor_superrootattimestamp"><code>supervisor_superRootAtTimestamp</code></a></h4>
+<p>Retrieves the super root state at the specified timestamp,
+which represents the global state across all monitored chains.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>timestamp</code>: <code>HexUint64</code></li>
+</ul>
+<p>Returns: <code>SuperRootResponse</code></p>
+<h4 id="supervisor_syncstatus"><a class="header" href="#supervisor_syncstatus"><code>supervisor_syncStatus</code></a></h4>
+<p>Parameters: (none)</p>
+<p>Returns: <code>SupervisorSyncStatus</code></p>
+<h4 id="supervisor_allsafederivedat"><a class="header" href="#supervisor_allsafederivedat"><code>supervisor_allSafeDerivedAt</code></a></h4>
+<p>Returns the last derived block for each chain, from the given L1 block.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>derivedFrom</code>: <code>BlockID</code></li>
+</ul>
+<p>Returns: derived blocks, mapped in a <code>OBJECT</code>:</p>
+<ul>
+<li>key: <code>ChainID</code></li>
+<li>value: <code>BlockID</code></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -13391,7 +13609,7 @@ The contract is upgraded later in this block, to support <code>setL1BlockValuesI
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainERC20Bridge</code>.
@@ -13807,7 +14025,7 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <p>New derivation rules are added to guaranteee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
@@ -13955,7 +14173,7 @@ that very old logs are more expensive to prove.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -14028,7 +14246,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -14136,7 +14354,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -14411,7 +14629,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -14709,7 +14927,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -14869,7 +15087,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,

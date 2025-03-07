@@ -1,0 +1,440 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Supervisor - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/supervisor.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="supervisor"><a class="header" href="#supervisor">Supervisor</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#rpc-api">RPC API</a>
+<ul>
+<li><a href="#common-types">Common types</a>
+<ul>
+<li><a href="#identifier"><code>Identifier</code></a></li>
+<li><a href="#message"><code>Message</code></a></li>
+<li><a href="#executingdescriptor"><code>ExecutingDescriptor</code></a></li>
+<li><a href="#hexuint64"><code>HexUint64</code></a></li>
+<li><a href="#int"><code>Int</code></a></li>
+<li><a href="#chainid"><code>ChainID</code></a></li>
+<li><a href="#hash"><code>Hash</code></a></li>
+<li><a href="#bytes"><code>Bytes</code></a></li>
+<li><a href="#blockid"><code>BlockID</code></a></li>
+<li><a href="#blockref"><code>BlockRef</code></a></li>
+<li><a href="#derivedidpair"><code>DerivedIDPair</code></a></li>
+<li><a href="#chainrootinfo"><code>ChainRootInfo</code></a></li>
+<li><a href="#superrootresponse"><code>SuperRootResponse</code></a></li>
+<li><a href="#safetylevel"><code>SafetyLevel</code></a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#supervisor_checkmessage"><code>supervisor_checkMessage</code></a></li>
+<li><a href="#supervisor_checkmessages"><code>supervisor_checkMessages</code></a></li>
+<li><a href="#supervisor_checkmessagesv2"><code>supervisor_checkMessagesV2</code></a></li>
+<li><a href="#supervisor_crossderivedtosource"><code>supervisor_crossDerivedToSource</code></a></li>
+<li><a href="#supervisor_localunsafe"><code>supervisor_localUnsafe</code></a></li>
+<li><a href="#supervisor_crosssafe"><code>supervisor_crossSafe</code></a></li>
+<li><a href="#supervisor_finalized"><code>supervisor_finalized</code></a></li>
+<li><a href="#supervisor_finalizedl1"><code>supervisor_finalizedL1</code></a></li>
+<li><a href="#supervisor_superrootattimestamp"><code>supervisor_superRootAtTimestamp</code></a></li>
+<li><a href="#supervisor_syncstatus"><code>supervisor_syncStatus</code></a></li>
+<li><a href="#supervisor_allsafederivedat"><code>supervisor_allSafeDerivedAt</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The supervisor is an implementation detail of OP Stack native interop and is not the only
+architecture that can be used to implement it. The supervisor is responsible for indexing
+data from all of the chains in a cluster so that the <a href="./verifier.html#safety">safety level</a>
+of executing messages can quickly be determined.</p>
+<h2 id="rpc-api"><a class="header" href="#rpc-api">RPC API</a></h2>
+<h3 id="common-types"><a class="header" href="#common-types">Common types</a></h3>
+<h4 id="identifier"><a class="header" href="#identifier"><code>Identifier</code></a></h4>
+<p>The identifier of a message.
+Corresponds to an <a href="./messaging.html#message-identifier">Identifier</a>.</p>
+<p>Object:</p>
+<ul>
+<li><code>origin</code>: <code>Address</code></li>
+<li><code>blockNumber</code>: <code>HexUint64</code></li>
+<li><code>logIndex</code>: <code>HexUint64</code></li>
+<li><code>timestamp</code>: <code>HexUint64</code></li>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<h4 id="message"><a class="header" href="#message"><code>Message</code></a></h4>
+<p>Describes an initiating message.</p>
+<p>Object:</p>
+<ul>
+<li><code>identifier</code>: <code>Identifier</code> - identifier of the message</li>
+<li><code>payloadHash</code>: <code>Hash</code> - <code>keccak256</code> hash of the message-payload bytes</li>
+</ul>
+<h4 id="executingdescriptor"><a class="header" href="#executingdescriptor"><code>ExecutingDescriptor</code></a></h4>
+<p>Describes the context for message verification.
+Specifically, this helps apply message-expiry rules on message checks.</p>
+<p>Object:</p>
+<ul>
+<li><code>timestamp</code>: <code>HexUint64</code></li>
+</ul>
+<h4 id="hexuint64"><a class="header" href="#hexuint64"><code>HexUint64</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded big-endian number, variable length up to 64 bits, prefixed with <code>0x</code>.</p>
+<h4 id="int"><a class="header" href="#int"><code>Int</code></a></h4>
+<p><code>NUMBER</code>:
+Regular JSON number, always integer. Assumed to always fit in 51 bits.</p>
+<h4 id="chainid"><a class="header" href="#chainid"><code>ChainID</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded big-endian number, variable length up to 256 bits, prefixed with <code>0x</code>.</p>
+<h4 id="hash"><a class="header" href="#hash"><code>Hash</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded, fixed-length, representing 32 bytes, prefixed with <code>0x</code>.</p>
+<h4 id="bytes"><a class="header" href="#bytes"><code>Bytes</code></a></h4>
+<p><code>STRING</code>:
+Hex-encoded, variable length (always full bytes, no odd number of nibbles),
+representing a bytes list, prefixed with <code>0x</code>.</p>
+<h4 id="blockid"><a class="header" href="#blockid"><code>BlockID</code></a></h4>
+<p>Describes a block.</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>hash</code>: <code>HASH</code> - block hash</li>
+<li><code>number</code>: <code>Int</code> - block number</li>
+</ul>
+<h4 id="blockref"><a class="header" href="#blockref"><code>BlockRef</code></a></h4>
+<p>Describes a block.</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>hash</code>: <code>Hash</code> - block hash</li>
+<li><code>number</code>: <code>Int</code> - block number</li>
+<li><code>parentHash</code>: <code>Hash</code> - block parent-hash</li>
+<li><code>timestamp</code>: <code>Int</code> - block timestamp</li>
+</ul>
+<h4 id="derivedidpair"><a class="header" href="#derivedidpair"><code>DerivedIDPair</code></a></h4>
+<h4 id="chainrootinfo"><a class="header" href="#chainrootinfo"><code>ChainRootInfo</code></a></h4>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>chainId</code>: <code>HexUint64</code> - The chain ID (Note: this is changing to <code>ChainID</code> soon)</li>
+<li><code>canonical</code>: <code>Hash</code> - output root at the latest canonical block</li>
+<li><code>pending</code>: <code>Bytes</code> - output root preimage</li>
+</ul>
+<h4 id="superrootresponse"><a class="header" href="#superrootresponse"><code>SuperRootResponse</code></a></h4>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>crossSafeDerivedFrom</code>: <code>BlockID</code> - common derived-from where all chains are cross-safe</li>
+<li><code>timestamp</code>: <code>Int</code> - The timestamp of the super root</li>
+<li><code>superRoot</code>: <code>Hash</code> - The root of the super root</li>
+<li><code>version</code>: <code>Int</code> - The version of the response</li>
+<li><code>chains</code>: <code>ARRAY</code> of <code>ChainRootInfo</code> - List of chains included in the super root</li>
+</ul>
+<h4 id="safetylevel"><a class="header" href="#safetylevel"><code>SafetyLevel</code></a></h4>
+<p>The safety level of the message.
+Corresponds to a verifier <a href="./verifier.html#safety">SafetyLevel</a>.</p>
+<p><code>STRING</code>, one of:</p>
+<ul>
+<li><code>invalid</code></li>
+<li><code>unsafe</code></li>
+<li><code>cross-unsafe</code></li>
+<li><code>local-safe</code></li>
+<li><code>safe</code></li>
+<li><code>finalized</code></li>
+</ul>
+<h3 id="methods"><a class="header" href="#methods">Methods</a></h3>
+<h4 id="supervisor_checkmessage"><a class="header" href="#supervisor_checkmessage"><code>supervisor_checkMessage</code></a></h4>
+<p>Checks the safety level of a specific message based on its identifier and message hash.
+This RPC is useful for the block builder to determine if a message should be included in a block.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>identifier</code>: <code>Identifier</code></li>
+<li><code>payloadHash</code>: <code>Hash</code></li>
+<li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code></li>
+</ul>
+<p>Returns: <code>SafetyLevel</code></p>
+<h4 id="supervisor_checkmessages"><a class="header" href="#supervisor_checkmessages"><code>supervisor_checkMessages</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>messages</code>: ARRAY of <code>Message</code></li>
+<li><code>minSafety</code>: <code>SafetyLevel</code></li>
+</ul>
+<h4 id="supervisor_checkmessagesv2"><a class="header" href="#supervisor_checkmessagesv2"><code>supervisor_checkMessagesV2</code></a></h4>
+<p>Next version <code>supervisor_checkMessage</code>,
+additionally verifying the message-expiry, by referencing when the execution happens.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>messages</code>: ARRAY of <code>Message</code></li>
+<li><code>minSafety</code>: <code>SafetyLevel</code></li>
+<li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code> - applies as execution-context to all messages</li>
+</ul>
+<p>Returns: RPC error the minSafety is not met by one or more of the messages, with</p>
+<h4 id="supervisor_crossderivedtosource"><a class="header" href="#supervisor_crossderivedtosource"><code>supervisor_crossDerivedToSource</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+<li><code>derived</code>: <code>BlockID</code></li>
+</ul>
+<p>Returns: derivedFrom <code>BlockRef</code></p>
+<h4 id="supervisor_localunsafe"><a class="header" href="#supervisor_localunsafe"><code>supervisor_localUnsafe</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<p>Returns: <code>BlockID</code></p>
+<h4 id="supervisor_crosssafe"><a class="header" href="#supervisor_crosssafe"><code>supervisor_crossSafe</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<p>Returns: <code>DerivedIDPair</code></p>
+<h4 id="supervisor_finalized"><a class="header" href="#supervisor_finalized"><code>supervisor_finalized</code></a></h4>
+<p>Parameters:</p>
+<ul>
+<li><code>chainID</code>: <code>ChainID</code></li>
+</ul>
+<p>Returns: <code>BlockID</code></p>
+<h4 id="supervisor_finalizedl1"><a class="header" href="#supervisor_finalizedl1"><code>supervisor_finalizedL1</code></a></h4>
+<p>Parameters: (none)</p>
+<p>Returns: <code>BlockRef</code></p>
+<h4 id="supervisor_superrootattimestamp"><a class="header" href="#supervisor_superrootattimestamp"><code>supervisor_superRootAtTimestamp</code></a></h4>
+<p>Retrieves the super root state at the specified timestamp,
+which represents the global state across all monitored chains.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>timestamp</code>: <code>HexUint64</code></li>
+</ul>
+<p>Returns: <code>SuperRootResponse</code></p>
+<h4 id="supervisor_syncstatus"><a class="header" href="#supervisor_syncstatus"><code>supervisor_syncStatus</code></a></h4>
+<p>Parameters: (none)</p>
+<p>Returns: <code>SupervisorSyncStatus</code></p>
+<h4 id="supervisor_allsafederivedat"><a class="header" href="#supervisor_allsafederivedat"><code>supervisor_allSafeDerivedAt</code></a></h4>
+<p>Returns the last derived block for each chain, from the given L1 block.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>derivedFrom</code>: <code>BlockID</code></li>
+</ul>
+<p>Returns: derived blocks, mapped in a <code>OBJECT</code>:</p>
+<ul>
+<li>key: <code>ChainID</code></li>
+<li>value: <code>BlockID</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/verifier.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/fault-proof.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/verifier.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/fault-proof.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
