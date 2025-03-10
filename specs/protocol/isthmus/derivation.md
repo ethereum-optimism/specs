@@ -75,7 +75,7 @@ jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/
 ```
 
 This transaction MUST deploy a contract with the following code hash
-`TODO`.
+0xa1f984b8ea199574261c19122b5a9c8c7dbd3633980b1e7aaf6b7af24af60478.
 
 ## GasPriceOracle deployment
 
@@ -115,7 +115,7 @@ jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOrac
 ```
 
 This transaction MUST deploy a contract with the following code hash
-`TODO`.
+0x38ef70b2783dd45ad807afcf57972c7df4abaaeb5d16d17cdb451b9e931a9cbb.
 
 ## Operator fee vault deployment
 
@@ -161,7 +161,7 @@ jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeV
 ```
 
 This transaction MUST deploy a contract with the following code hash
-`TODO`.
+0x3d8c0d7736e8767f2f797da1c20c5fe30bd7f48a4cf75f376290481ad7c0f91f.
 
 ## L1Block Proxy Update
 
