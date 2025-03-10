@@ -29,6 +29,7 @@
   - [Operator Fee](#operator-fee)
     - [Configuring Parameters](#configuring-parameters)
   - [Fee Vaults](#fee-vaults)
+  - [Receipts](#receipts)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
