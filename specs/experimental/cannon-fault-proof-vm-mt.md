@@ -35,6 +35,7 @@
   - [Thread Stack Hashing](#thread-stack-hashing)
 - [Memory](#memory)
   - [Heap](#heap)
+    - [mmap hints](#mmap-hints)
 - [Delay Slots](#delay-slots)
 - [Syscalls](#syscalls)
   - [Supported Syscalls](#supported-syscalls)
