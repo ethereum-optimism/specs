@@ -33,6 +33,7 @@
     - [`supervisor_superRootAtTimestamp`](#supervisor_superrootattimestamp)
     - [`supervisor_syncStatus`](#supervisor_syncstatus)
     - [`supervisor_allSafeDerivedAt`](#supervisor_allsafederivedat)
+    - [`supervisor_checkAccessList`](#supervisor_checkaccesslist)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -74,6 +75,8 @@ Specifically, this helps apply message-expiry rules on message checks.
 
 Object:
 - `timestamp`: `HexUint64`
+- `timeout`: `HexUint64` or `null` - optional, requests verification to still hold at `timestamp+timeout`
+  (message expiry may drop previously valid messages).
 
 #### `HexUint64`
 
@@ -167,7 +170,7 @@ Returns: `SafetyLevel`
 #### `supervisor_checkMessages`
 
 Parameters:
-- `messages`: ARRAY of `Message`
+- `messages`: `ARRAY` of `Message`
 - `minSafety`: `SafetyLevel`
 
 #### `supervisor_checkMessagesV2`
@@ -176,11 +179,11 @@ Next version `supervisor_checkMessage`,
 additionally verifying the message-expiry, by referencing when the execution happens.
 
 Parameters:
-- `messages`: ARRAY of `Message`
+- `messages`: `ARRAY` of `Message`
 - `minSafety`: `SafetyLevel`
 - `executingDescriptor`: `ExecutingDescriptor` - applies as execution-context to all messages
 
-Returns: RPC error the minSafety is not met by one or more of the messages, with
+Returns: RPC error if the `minSafety` is not met by one or more of the `messages`.
 
 #### `supervisor_crossDerivedToSource`
 
@@ -243,3 +246,26 @@ Parameters:
 Returns: derived blocks, mapped in a `OBJECT`:
 - key: `ChainID`
 - value: `BlockID`
+
+#### `supervisor_checkAccessList`
+
+Verifies if an access-list references only valid messages.
+Message execution in the [`CrossL2Inbox`] that is statically declared in the access-list will not revert.
+
+Only the [`CrossL2Inbox`] subset of the access-list in the transaction is required,
+storage-access by other addresses is not included.
+
+The provided execution-context is used to determine validity relative to the provided time constraints,
+see [timestamp invariants](./derivation.md#invariants).
+
+The access-list entries represent messages, and may be incomplete or malformed.
+Malformed access-lists result in an RPC error.
+
+[`CrossL2Inbox`]: ./predeploys.md#crossl2inbox
+
+Parameters:
+- `inboxEntries`: `ARRAY` of `Hash` - statically declared `CrossL2Inbox` access entries.
+- `minSafety`: `SafetyLevel` - minimum required safety.
+- `executingDescriptor`: `ExecutingDescriptor` - applies as execution-context to all messages.
+
+Returns: RPC error if the `minSafety` is not met by one or more of the access entries.

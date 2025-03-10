@@ -6,6 +6,10 @@
 
 - [Overview](#overview)
 - [CrossL2Inbox](#crossl2inbox)
+  - [Access-list](#access-list)
+    - [type 1: Lookup identity](#type-1-lookup-identity)
+    - [type 2: ChainID extension](#type-2-chainid-extension)
+    - [type 3: Checksum](#type-3-checksum)
   - [Functions](#functions)
     - [validateMessage](#validatemessage)
   - [`ExecutingMessage` Event](#executingmessage-event)
@@ -86,6 +90,142 @@ To ensure safety of the protocol, the [Message Invariants](./messaging.md#messag
 
 [`Identifier`]: ./messaging.md#message-identifier
 
+### Access-list
+
+Execution of messages is statically pre-declared in transactions,
+to ensure the cross-chain validity can be verified outside the single-chain EVM environment constraints.
+
+After pre-verification of the access-list, the `CrossL2Inbox` can allow messages
+to execute when there is a matching pre-verified access-list entry.
+
+Each executing message is declared with 3 typed access-list entries:
+- 1: Lookup identity
+- 2: ChainID extension
+- 3: Checksum
+
+The type of entry is encoded in the first byte.
+Type 0 is reserved, so valid access-list entries are always non-zero.
+
+Note that the access-list entries may be de-duplicated:
+the same message may be executed multiple times.
+
+The access-list content not always a multiple of 3.
+
+The access-list content is ordered:
+- after type 1, a type 2 or 3 entry is expected.
+- after type 2, a type 3 entry is expected.
+
+Note that type 1 and 2 are only enforced out-of-protocol:
+these provide a hint, for viable block-building,
+to lookup data to determine the validity of the checksum without prior transaction execution.
+
+Not every access-list entry may be executed:
+access-list content must not be used by applications to interpret results of transactions,
+the `ExecutingMessage` event describes in detail what is executed.
+
+To prevent cross-contamination of access-list contents,
+the checksum entry commits to the contents of the other entries.
+The checksum will be invalid if the wrong entries are interpreted with it.
+
+The `CrossL2Inbox` only checks the checksum is present in the access-list:
+the presence of other needed entries is enforced during pre-validation.
+
+#### type 1: Lookup identity
+
+Packed attributes for message lookup.
+
+```text
+0..1: type byte, always 0x01
+1..4: reserved, zeroed by default
+4..12: big-endian uint64 chain ID
+12..16: big-endian uint64, block number
+16..24: big-endian uint64, timestamp
+24..32: big-endian uint32, log index
+```
+
+Note: chain IDs larger than `uint64` are supported, with additional typed entries.
+
+In solidity:
+
+```solidity
+// idLogIndex, idTimestamp, idBlockNumber refer to the Identifier attributes.
+assembly {
+  mstore(32, idLogIndex) // 32..64 = big-endian uint32 log index
+  mstore(28, idTimestamp) // 28..60 = big-endian uint64 timestamp
+  mstore(20, idBlockNumber) // 20..52 = big-endian uint64 block number
+  mstore8(32, 1) // 32..33 = type byte, always 0x01
+  let lookupID := mload(32) // 32..64 = packed result
+}
+```
+
+#### type 2: ChainID extension
+
+Large `uint256` Chain IDs are represented with an extension entry,
+included right after the lookup ID entry.
+
+This extension entry does not have to be included for chainIDs that fit in `uint64`.
+
+```text
+0..1: type byte, always 0x02
+8..32: upper 24 bytes of big-endian uint256 chainID
+```
+
+#### type 3: Checksum
+
+The checksum is a versioned hash, committing to implied attributes.
+These implied attributes are compared against the full version
+of the executing message by recomputing the checksum from the full version.
+The full version is retrieved based on the preceding lookup entry and optional chainID extension.
+
+The checksum is iteratively constructed:
+this allows services to work with intermediate implied data.
+E.g. the supervisor does not persist the `origin` or `msgHash`,
+but does store a `logHash`.
+
+```text
+# Syntax:
+#   H(bytes): keccak256 hash function
+#   ++: bytes concatenation
+logHash = H(bytes20(idOrigin) ++ msgHash)
+# This matches the trailing part of the lookupID
+idPacked = bytes12(0) ++ idBlockNumber ++ idTimestamp ++ idLogIndex
+idLogHash = H(logHash ++ idPacked)
+bareChecksum = H(idLogHash ++ idChainID)
+typeByte = 0x03
+checksum = typeByte ++ bareChecksum[1:]
+```
+
+In solidity:
+
+```solidity
+require(idLogIndex < uint256(1 << 32));
+require(idTimestamp < uint256(1 << 64));
+require(idBlockNumber < uint256(1 << 64));
+
+assembly {
+  mstore(0, idOrigin)
+  mstore(20, msgHash)
+  let logHash := keccak256(0, add(20, 32))
+
+  mstore(32, idLogIndex) // 32..64 = big-endian uint32 log index
+  mstore(28, idTimestamp) // 28..60 = big-endian uint64 timestamp
+  mstore(20, idBlockNumber) // 20..52 = big-endian uint64 block number
+  let idPacked := mload(32)
+
+  mstore(0, logHash)
+  mstore(32, idPacked)
+  let idLogHash := keccak256(0, 64)
+
+  mstore(0, idLogHash)
+  mstore(32, idChainID)
+  let bareChecksum := keccak256(0, 64)
+
+  mstore(0, bareChecksum)
+  mstore8(0, 3) // type byte
+  let checksum := mload(0)
+}
+```
+
 ### Functions
 
 #### validateMessage
@@ -131,8 +271,9 @@ A simple implementation of the `validateMessage` function is included below.
 
 ```solidity
     function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
-        // We need to know if this is being called on a depositTx
-        if (IL1BlockInterop(Predeploys.L1_BLOCK_ATTRIBUTES).isDeposit()) revert NoExecutingDeposits();
+        // TODO calldata load the inputs
+        // TODO compute checksum
+        // TODO check if checksum is known access-list entry
 
         emit ExecutingMessage(_msgHash, _id);
     }
