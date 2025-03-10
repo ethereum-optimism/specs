@@ -60,6 +60,7 @@
   - [Unsafe L2 Head](#unsafe-l2-head)
   - [Unsafe Block Consolidation](#unsafe-block-consolidation)
   - [Finalized L2 Head](#finalized-l2-head)
+  - [Upgrade Gas](#upgrade-gas)
 - [Other L2 Chain Concepts](#other-l2-chain-concepts)
   - [Address Aliasing](#address-aliasing)
   - [Rollup Node](#rollup-node)
@@ -688,6 +689,16 @@ The finalized L2 head is the highest L2 block that can be derived from _[finaliz
 blocks older than two L1 epochs (64 L1 [time slots][time-slot]).
 
 [finality]: https://hackmd.io/@prysmaticlabs/finality
+
+## Upgrade Gas
+
+[upgrade-gas]: glossary.md#upgrade-gas
+
+Upgrade gas is added to the gas limit of upgrade blocks to account for additional gas requirements
+of upgrade transactions.
+
+See the [Upgrade Gas](protocol/isthmus/derivation.md#upgrade-gas) section of the Isthmus hardfork
+derivation specs for more details.
 
 ---
 

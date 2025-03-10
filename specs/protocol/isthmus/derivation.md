@@ -4,21 +4,48 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Network upgrade automation transactions](#network-upgrade-automation-transactions)
-  - [L1Block deployment](#l1block-deployment)
-  - [GasPriceOracle deployment](#gaspriceoracle-deployment)
-  - [Operator fee vault deployment](#operator-fee-vault-deployment)
-  - [L1Block Proxy Update](#l1block-proxy-update)
-  - [GasPriceOracle Proxy Update](#gaspriceoracle-proxy-update)
-  - [OperatorFeeVault Proxy Update](#operatorfeevault-proxy-update)
-  - [GasPriceOracle Enable Isthmus](#gaspriceoracle-enable-isthmus)
-  - [EIP-2935 Contract Deployment](#eip-2935-contract-deployment)
+- [Network upgrade block rules](#network-upgrade-block-rules)
+  - [Upgrade Gas](#upgrade-gas)
+  - [Omission of user transactions](#omission-of-user-transactions)
+  - [Isthmus network upgrade automation transactions](#isthmus-network-upgrade-automation-transactions)
+    - [L1Block deployment](#l1block-deployment)
+    - [GasPriceOracle deployment](#gaspriceoracle-deployment)
+    - [Operator fee vault deployment](#operator-fee-vault-deployment)
+    - [L1Block Proxy Update](#l1block-proxy-update)
+    - [GasPriceOracle Proxy Update](#gaspriceoracle-proxy-update)
+    - [OperatorFeeVault Proxy Update](#operatorfeevault-proxy-update)
+    - [GasPriceOracle Enable Isthmus](#gaspriceoracle-enable-isthmus)
+    - [EIP-2935 Contract Deployment](#eip-2935-contract-deployment)
 - [Span Batch Updates](#span-batch-updates)
   - [Activation](#activation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Network upgrade automation transactions
+# Network upgrade block rules
+
+## Upgrade Gas
+
+Starting with Isthmus, a change to the gas limit of upgrade blocks is introduced to ensure that
+upgrade transactions cannot run out of gas:
+If a hardfork activation block contains upgrade deposit transactions, the total sum of all upgrade
+transaction's gas limits, called *upgrade gas*, is added to the gas limit of the payload attributes.
+
+Before this change, it was possible that a chain with a low gas limit would not have enough gas to
+execute all upgrade transactions. Note that the default *system transaction max gas* is `1e6` and
+the only constraint on the *block gas limit* is that it has to be larger or equal to the *system
+transaction max gas* plus the *max resource limit* (default: `2e7`, may fully be consumed by user
+deposit transactions). So if the L1 deposit transaction plus upgrade transactions would consume more
+than the *system transaction max gas*, there was a risk of running out of gas.
+
+## Omission of user transactions
+
+Starting with Isthmus, network upgrade blocks must not contain any non-deposit transactions, to
+avoid any unintended interplay of user transactions with upgrade transactions.
+
+This is checked at the batch stage. So if a batch of an upgrade block is not empty, it is considered
+invalid and the rules for dropped batches apply.
+
+## Isthmus network upgrade automation transactions
 
 The Isthumus hardfork activation block contains the following transactions, in this order:
 
@@ -37,7 +64,7 @@ The Isthumus hardfork activation block contains the following transactions, in t
 To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
 transactions by setting `noTxPool: true`.
 
-## L1Block deployment
+### L1Block deployment
 
 The `L1Block` contract is upgraded to support the Isthmus operator fee feature.
 
@@ -77,7 +104,7 @@ jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/
 This transaction MUST deploy a contract with the following code hash
 `TODO`.
 
-## GasPriceOracle deployment
+### GasPriceOracle deployment
 
 The `GasPriceOracle` contract is also upgraded to support the Isthmus operator fee feature.
 
@@ -117,7 +144,7 @@ jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOrac
 This transaction MUST deploy a contract with the following code hash
 `TODO`.
 
-## Operator fee vault deployment
+### Operator fee vault deployment
 
 A new `OperatorFeeVault` contract has been created to recieve the operator fees. The contract is created
 with the following arguments:
@@ -163,7 +190,7 @@ jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeV
 This transaction MUST deploy a contract with the following code hash
 `TODO`.
 
-## L1Block Proxy Update
+### L1Block Proxy Update
 
 This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.
 
@@ -192,7 +219,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 # 0xebe8b5cb10ca47e0d8bda8f5355f2d66711a54ddeb0ef1d30e29418c9bf17a0e
 ```
 
-## GasPriceOracle Proxy Update
+### GasPriceOracle Proxy Update
 
 This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
 deployment.
@@ -222,7 +249,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 # 0xecf2d9161d26c54eda6b7bfdd9142719b1e1199a6e5641468d1bf705bc531ab0
 ```
 
-## OperatorFeeVault Proxy Update
+### OperatorFeeVault Proxy Update
 
 This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
 deployment.
@@ -252,7 +279,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 # 0xad74e1adb877ccbe176b8fa1cc559388a16e090ddbe8b512f5b37d07d887a927
 ```
 
-## GasPriceOracle Enable Isthmus
+### GasPriceOracle Enable Isthmus
 
 This transaction informs the GasPriceOracle to start using the Isthmus gas calculation formula.
 
@@ -281,7 +308,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 # 0x3ddf4b1302548dd92939826e970f260ba36167f4c25f18390a5e8b194b295319
 ```
 
-## EIP-2935 Contract Deployment
+### EIP-2935 Contract Deployment
 
 [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) requires a contract to be deployed. To deploy this contract,
 a deposit transaction is created with attributes matching the EIP:
@@ -341,7 +368,7 @@ The [EIP-7702] transaction format is as follows.
 
 Singular batches with transactions of type `4` must only be accepted if Isthmus is active at the
 timestamp of the batch. If a singular batch contains a transaction of type `4` before Isthmus is
-active, this batch must be _dropped_. Note that if Holocene is active, this will also
+active, this batch must be *dropped*. Note that if Holocene is active, this will also
 lead to the remaining span batch, and channel that contained it, to get dropped.
 
 Also note that this check must happen at the level of individual batches that are derived from span
