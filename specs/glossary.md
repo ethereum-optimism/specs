@@ -449,7 +449,7 @@ information about deposits (cf. the section on [L2 derivation inputs][deriv-inpu
 [channel]: glossary.md#channel
 
 A channel is a sequence of [sequencer batches][sequencer-batch] (for sequential blocks) compressed together. The reason
-to group multiple batches together is simply to obtain a better compression rate, hence reducing data availability
+to group multiple batches together is simply to obtain a better compression rate, hence reducing [data availability][data-availability]
 costs.
 
 A channel can be split in [frames][channel-frame] in order to be transmitted via [batcher
@@ -476,8 +476,8 @@ batcher transaction.
 
 [batcher]: glossary.md#batcher
 
-A batcher is a software component (independent program) that is responsible to make channels available on a data
-availability provider. The batcher communicates with the rollup node in order to retrieve the channels. The channels are
+A batcher is a software component (independent program) that is responsible to make [channels][channel] available on a [data
+availability provider][avail-provider]. The batcher communicates with the rollup node in order to retrieve the channels. The channels are
 then made available using [batcher transactions][batcher-transaction].
 
 > **TODO** In the future, we might want to make the batcher responsible for constructing the channels, letting it only
@@ -487,8 +487,8 @@ then made available using [batcher transactions][batcher-transaction].
 
 [batcher-transaction]: glossary.md#batcher-transaction
 
-A batcher transaction is a transaction submitted by a [batcher] to a data availability provider, in order to make
-channels available. These transactions carry one or more full frames, which may belong to different channels. A
+A batcher transaction is a transaction submitted by a [batcher] to a [data availability provider][avail-provider], in order to make
+[channels][channel] available. These transactions carry one or more full frames, which may belong to different channels. A
 channel's frames may be split between multiple batcher transactions.
 
 When submitted to Ethereum calldata, the batcher transaction's receiver must be the sequencer inbox address. The
@@ -498,7 +498,7 @@ is stored in the [System Configuration][system-config].
 ## Batch submission frequency
 
 Within the [sequencing-window] constraints the batcher is permitted by the protocol to submit L2 blocks for
-data-availability at any time. The batcher software allows for dynamic policy configuration by its operator.
+[data-availability][data-availability] at any time. The batcher software allows for dynamic policy configuration by its operator.
 The rollup enforces safety guarantees and liveness through the sequencing window, if the batcher does not submit
 data within this allotted time.
 
