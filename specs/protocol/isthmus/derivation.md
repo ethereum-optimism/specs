@@ -69,7 +69,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 Verify `data`:
 
 ```bash
-git checkout TODO
+git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 ```
@@ -109,7 +109,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 Verify `data`:
 
 ```bash
-git checkout TODO
+git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
 ```
@@ -155,7 +155,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 Verify `data`:
 
 ```bash
-git checkout TODO
+git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json
 ```
