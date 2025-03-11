@@ -241,4 +241,4 @@ The proxy is backed by a vault contract deployment, based on `FeeVault`, to rout
 ### Receipts
 
 After Isthmus activation, 2 new fields `operatorFeeScalar` and `operatorFeeConstant` are added to transaction receipts
-only if at least one of them is non zero.
+if and only if at least one of them is non zero.
