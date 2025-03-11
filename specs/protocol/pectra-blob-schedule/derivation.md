@@ -1,0 +1,17 @@
+# Pectra Blob Schedule Derivation
+
+## If enabled
+
+If this hardfork is enabled (i.e. if there is a non nil hardfork activation timestamp set), the following rules apply:
+
+When setting the [L1 Attributes Deposited Transaction](../../glossary.md#l1-attributes-deposited-transaction) The adoption of the Pectra blob base fee update fraction (see [EIP-7691](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-7691.md)) occurs for L2 blocks with an L1 origin equal to or greater than the hard fork timestamp.
+
+## If disabled (default)
+
+If the hardfork activation timestamp is nil, the blob base fee update rules which are active at any given L1 block will apply to the L1 Attributes Deposited Transaction
+
+## Motivation and Rationale
+
+Due to a consensus layer bug, OPStack chains on Holesky and Sepolia did not update their blob base fee update fraction (for L1 Attributes Deposited Transaction) in tandem with the Prague upgrade on L1. This optional fork is a mechanism to bring those chains back in line. It is unecessary for chains using Ethereum mainnet for L1.
+
+Activating by L1 origin preserves the invariant that the L1BlockInfo is constant for blocks with the same epoch.
