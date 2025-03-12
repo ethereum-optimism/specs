@@ -31,8 +31,9 @@
     - [`supervisor_syncStatus`](#supervisor_syncstatus)
     - [`supervisor_allSafeDerivedAt`](#supervisor_allsafederivedat)
     - [`supervisor_checkAccessList`](#supervisor_checkaccesslist)
-      - [Access-list joining](#access-list-joining)
+      - [Access-list contents](#access-list-contents)
       - [Access-list execution context](#access-list-execution-context)
+      - [Access-list checks](#access-list-checks)
       - [`supervisor_checkAccessList` contents](#supervisor_checkaccesslist-contents)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -223,13 +224,21 @@ Returns: derived blocks, mapped in a `OBJECT`:
 Verifies if an access-list, as defined in [EIP-2930], references only valid messages.
 Message execution in the [`CrossL2Inbox`] that is statically declared in the access-list will not revert.
 
-##### Access-list joining
+[EIP-2930]: https://eips.ethereum.org/EIPS/eip-2930
+
+##### Access-list contents
 
 Only the [`CrossL2Inbox`] subset of the access-list in the transaction is required,
 storage-access by other addresses is not included.
+
 Note that an access-list can contain multiple different storage key lists for the `CrossL2Inbox` address.
 All storage keys applicable to the `CrossL2Inbox` MUST be joined together (preserving ordering),
 missing storage-keys breaks inbox safety.
+
+**ALL storage-keys in the access-list for the `CrossL2Inbox` MUST be checked.**
+If there is any unrecognized or invalid key, the access-list check MUST fail.
+
+[`CrossL2Inbox`]: ./predeploys.md#crossl2inbox
 
 ##### Access-list execution context
 
@@ -246,14 +255,13 @@ As transaction pre-verifier, a `timeout` of `86400` (1 day) should be used.
 The transaction should be re-verified or dropped after this time duration,
 as it can no longer be safely included in the block due to message-expiry.
 
-The access-list checks are not definite, checks can be extra conservative.
+##### Access-list checks
+
+The access-list check errors are not definite state-transition blockers, the RPC based checks can be extra conservative.
 I.e. a message that is uncertain to meet the requested safety level may be denied.
 Specifically, no attempt may be made to verify messages that are initiated and executed within the same timestamp,
 these are `invalid` by default.
 Advanced block-builders may still choose to include these messages by verifying the intra-block constraints.
-
-[EIP-2930]: https://eips.ethereum.org/EIPS/eip-2930
-[`CrossL2Inbox`]: ./predeploys.md#crossl2inbox
 
 ##### `supervisor_checkAccessList` contents
 
