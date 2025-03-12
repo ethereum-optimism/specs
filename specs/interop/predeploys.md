@@ -109,7 +109,7 @@ Type 0 is reserved, so valid access-list entries are always non-zero.
 Note that the access-list entries may be de-duplicated:
 the same message may be executed multiple times.
 
-The access-list content not always a multiple of 3.
+The access-list content might not always be a multiple of 3.
 
 The access-list content is ordered:
 - after type 1, a type 2 or 3 entry is expected.
@@ -236,7 +236,7 @@ function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
 
   (bool _isSlotWarm,) = _isWarm(checksum);
 
-  if (!_isSlotWarm) revert NotWarm();
+  if (!_isSlotWarm) revert NonDeclaredExecutingMessage();
 
   emit ExecutingMessage(_msgHash, _id);
 }
@@ -245,8 +245,8 @@ function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
 `calculateChecksum` implements the checksum computation (including type-byte) as defined
 in the [access-list checksum computation](#type-3-checksum) spec.
 
-`_isWarm` checks that the access-list prepared the `checksum` storage key to be warm,
-no other contract function may warm up this storage without message validation.
+`_isWarm` checks that the access-list prepared the `checksum` storage key to be warm.
+**No other contract function may warm up this storage without message validation.**
 
 An example of a custom entrypoint utilizing `validateMessage` to consume a known
 event. Note that in this example, the contract is consuming its own event
