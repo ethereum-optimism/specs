@@ -1,3 +1,5 @@
+# Pectra Blob Schedule Derivation
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -9,8 +11,6 @@
   - [Motivation and Rationale](#motivation-and%C2%A0rationale)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Pectra Blob Schedule Derivation
 
 ## If enabled
 
