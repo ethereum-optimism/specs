@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Consensus Layer](#consensus-layer)
@@ -21,4 +22,3 @@ if it is not nil, and then _deactivated_ at the hard fork timestamp.
 ## Consensus Layer
 
 - [Derivation](./derivation.md)
-
