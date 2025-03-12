@@ -2,13 +2,11 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
 
-**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
-
-- [Pectra Blob Schedule Derivation](#pectra-blob-schedule-derivation)
-  - [If enabled](#if-enabled)
-  - [If disabled (default)](#if-disabled-default)
-  - [Motivation and Rationale](#motivation-and%C2%A0rationale)
+- [If enabled](#if-enabled)
+- [If disabled (default)](#if-disabled-default)
+- [Motivation and Rationale](#motivation-and%C2%A0rationale)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
