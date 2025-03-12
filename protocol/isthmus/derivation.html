@@ -234,12 +234,17 @@ Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
 # 0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout TODO
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
-<code>TODO</code>.</p>
+0x8e3fe7a416d3e5f3b7be74ddd4e7e58e516fa3f80b67c6d930e3cd7297da4a4b.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json)
+</code></pre>
 <h2 id="gaspriceoracle-deployment"><a class="header" href="#gaspriceoracle-deployment">GasPriceOracle deployment</a></h2>
 <p>The <code>GasPriceOracle</code> contract is also upgraded to support the Isthmus operator fee feature.</p>
 <p>A deposit transaction is derived with the following attributes:</p>
@@ -262,12 +267,17 @@ Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
 # 0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout TODO
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
-<code>TODO</code>.</p>
+0x4d195a9d7caf9fb6d4beaf80de252c626c853afd5868c4f4f8d19c9d301c2679.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
+</code></pre>
 <h2 id="operator-fee-vault-deployment"><a class="header" href="#operator-fee-vault-deployment">Operator fee vault deployment</a></h2>
 <p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created
 with the following arguments:</p>
@@ -297,12 +307,17 @@ Computed Address: 0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537
 # 0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout TODO
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
-<code>TODO</code>.</p>
+0x83d0e197ddf18068cfb3a7b07539aa1d3e4f30b39430edca78b49ae4f6be08d5.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json)
+</code></pre>
 <h2 id="l1block-proxy-update"><a class="header" href="#l1block-proxy-update">L1Block Proxy Update</a></h2>
 <p>This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.</p>
 <p>A deposit transaction is derived with the following attributes:</p>

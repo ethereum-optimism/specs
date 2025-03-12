@@ -10364,6 +10364,7 @@ the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <
 </ul>
 </li>
 <li><a href="protocol/isthmus/exec-engine.html#fee-vaults">Fee Vaults</a></li>
+<li><a href="protocol/isthmus/exec-engine.html#receipts">Receipts</a></li>
 </ul>
 </li>
 </ul>
@@ -10526,6 +10527,9 @@ calculation. In more detail, these parameters can be accessed in two interchanga
 <p>These collected fees are sent to a new vault for the <code>operatorFee</code>: the <a href="protocol/isthmus/predeploys.html#operatorfeevault"><code>OperatorFeeVault</code></a>.</p>
 <p>Like the existing vaults, this is a hardcoded address, pointing at a pre-deployed proxy contract.
 The proxy is backed by a vault contract deployment, based on <code>FeeVault</code>, to route vault funds to L1 securely.</p>
+<h3 id="receipts"><a class="header" href="#receipts">Receipts</a></h3>
+<p>After Isthmus activation, 2 new fields <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are added to transaction receipts
+if and only if at least one of them is non zero.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="isthmus-l2-chain-derivation-changes"><a class="header" href="#isthmus-l2-chain-derivation-changes">Isthmus L2 Chain Derivation Changes</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -10593,12 +10597,17 @@ Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
 # 0x3b2d0821ca2411ad5cd3595804d1213d15737188ae4cbd58aa19c821a6c211bf
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout TODO
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
-<code>TODO</code>.</p>
+0x8e3fe7a416d3e5f3b7be74ddd4e7e58e516fa3f80b67c6d930e3cd7297da4a4b.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json)
+</code></pre>
 <h2 id="gaspriceoracle-deployment-2"><a class="header" href="#gaspriceoracle-deployment-2">GasPriceOracle deployment</a></h2>
 <p>The <code>GasPriceOracle</code> contract is also upgraded to support the Isthmus operator fee feature.</p>
 <p>A deposit transaction is derived with the following attributes:</p>
@@ -10621,12 +10630,17 @@ Computed Address: 0xFf256497D61dcd71a9e9Ff43967C13fdE1F72D12
 # 0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout TODO
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
-<code>TODO</code>.</p>
+0x4d195a9d7caf9fb6d4beaf80de252c626c853afd5868c4f4f8d19c9d301c2679.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
+</code></pre>
 <h2 id="operator-fee-vault-deployment"><a class="header" href="#operator-fee-vault-deployment">Operator fee vault deployment</a></h2>
 <p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created
 with the following arguments:</p>
@@ -10656,12 +10670,17 @@ Computed Address: 0x4fa2Be8cd41504037F1838BcE3bCC93bC68Ff537
 # 0x107a570d3db75e6110817eb024f09f3172657e920634111ce9875d08a16daa96
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout TODO
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
-<code>TODO</code>.</p>
+0x83d0e197ddf18068cfb3a7b07539aa1d3e4f30b39430edca78b49ae4f6be08d5.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 9436dba8c4c906e36675f5922e57d1b55582889e
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/OperatorFeeVault.sol/OperatorFeeVault.json)
+</code></pre>
 <h2 id="l1block-proxy-update-1"><a class="header" href="#l1block-proxy-update-1">L1Block Proxy Update</a></h2>
 <p>This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.</p>
 <p>A deposit transaction is derived with the following attributes:</p>

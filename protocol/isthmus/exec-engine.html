@@ -217,6 +217,7 @@
 </ul>
 </li>
 <li><a href="#fee-vaults">Fee Vaults</a></li>
+<li><a href="#receipts">Receipts</a></li>
 </ul>
 </li>
 </ul>
@@ -379,6 +380,9 @@ calculation. In more detail, these parameters can be accessed in two interchanga
 <p>These collected fees are sent to a new vault for the <code>operatorFee</code>: the <a href="predeploys.html#operatorfeevault"><code>OperatorFeeVault</code></a>.</p>
 <p>Like the existing vaults, this is a hardcoded address, pointing at a pre-deployed proxy contract.
 The proxy is backed by a vault contract deployment, based on <code>FeeVault</code>, to route vault funds to L1 securely.</p>
+<h3 id="receipts"><a class="header" href="#receipts">Receipts</a></h3>
+<p>After Isthmus activation, 2 new fields <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are added to transaction receipts
+if and only if at least one of them is non zero.</p>
 
                     </main>
 
