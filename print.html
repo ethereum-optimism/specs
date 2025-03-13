@@ -10189,6 +10189,64 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 <pre><code class="language-solidity">function eip1559Denominator()(uint32)
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="pectra-blob-schedule-optional-network-upgrade"><a class="header" href="#pectra-blob-schedule-optional-network-upgrade">Pectra Blob Schedule (Optional) Network Upgrade</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/pectra-blob-schedule/overview.html#consensus-layer">Consensus Layer</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>The Pectra Blob Schedule hardfork is an optional hardfork which delays the adoption of the
+Prague blob base fee update fraction until the specified time. Until that time, the Cancun
+update fraction from the previous fork is retained.</p>
+<p>Note that the activation logic for this upgrade is different to most other upgrades.
+Usually, specific behavior is activated at the <em>hard fork timestamp</em>, if it is not nil,
+and continues until overridden by another hardfork.
+Here, specific behavior is activated for all times up to the hard fork timestamp,
+if it is not nil, and then <em>deactivated</em> at the hard fork timestamp.</p>
+<h2 id="consensus-layer-6"><a class="header" href="#consensus-layer-6">Consensus Layer</a></h2>
+<ul>
+<li><a href="protocol/pectra-blob-schedule/./derivation.html">Derivation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="pectra-blob-schedule-derivation"><a class="header" href="#pectra-blob-schedule-derivation">Pectra Blob Schedule Derivation</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/pectra-blob-schedule/derivation.html#if-enabled">If enabled</a></li>
+<li><a href="protocol/pectra-blob-schedule/derivation.html#if-disabled-default">If disabled (default)</a></li>
+<li><a href="protocol/pectra-blob-schedule/derivation.html#motivation-and%C2%A0rationale">Motivation and Rationale</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="if-enabled"><a class="header" href="#if-enabled">If enabled</a></h2>
+<p>If this hardfork is enabled (i.e. if there is a non nil hardfork activation timestamp set), the following rules apply:</p>
+<p>When setting the <a href="protocol/pectra-blob-schedule/../../glossary.html#l1-attributes-deposited-transaction">L1 Attributes Deposited Transaction</a>,
+the adoption of the Pectra blob base fee update fraction
+(see <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-7691.md">EIP-7691</a>)
+occurs for L2 blocks with an L1 origin equal to or greater than the hard fork timestamp.
+For L2 blocks with an L1 origin less than the hard fork timestamp, the Cancun blob base fee update fraction is used
+(see <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4844.md">EIP-4844</a>).</p>
+<h2 id="if-disabled-default"><a class="header" href="#if-disabled-default">If disabled (default)</a></h2>
+<p>If the hardfork activation timestamp is nil, the blob base fee update rules which are active
+at any given L1 block will apply to the L1 Attributes Deposited Transaction.</p>
+<h2 id="motivation-and-rationale"><a class="header" href="#motivation-and-rationale">Motivation and Rationale</a></h2>
+<p>Due to a consensus layer bug, OPStack chains on Holesky and Sepolia running oficially released op-node software
+did not update their blob base fee update fraction (for L1 Attributes Deposited Transaction)
+in tandem with the Prague upgrade on L1.</p>
+<p>These chains, or any OPStack chain with a sequencer running
+the buggy consensus code<sup class="footnote-reference"><a href="#1">1</a></sup> when Holesky/Sepolia activated Pectra,
+will have an inaccurate blob base fee in the <a href="protocol/pectra-blob-schedule/../../protocol/predeploys.html#l1block">L1Block</a> contract.
+This optional fork is a mechanism to bring those chains back in line.
+It is unnecessary for chains using Ethereum mainnet for L1 and running op-node
+<a href="https://github.com/ethereum-optimism/optimism/releases/tag/op-node%2Fv1.12.0">v1.12.0</a>
+or later before Pectra activates on L1.</p>
+<p>Activating by L1 origin preserves the invariant that the L1BlockInfo is constant for blocks with the same epoch.</p>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>This is any commit <em>before</em> the code was fixed in <a href="https://github.com/ethereum-optimism/optimism/commit/aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f">aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f</a></p>
+</div>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="isthmus-network-upgrade"><a class="header" href="#isthmus-network-upgrade">Isthmus Network Upgrade</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -10233,7 +10291,7 @@ It is possible for the chain operator to set EIP-1559 parameters that result in 
 <li><a href="protocol/isthmus/./exec-engine.html##l2tol1messagepasser-storage-root-in-header">L2ToL1MessagePasser Storage Root in Header</a></li>
 <li><a href="protocol/isthmus/./exec-engine.html#operator-fee">Operator Fee</a></li>
 </ul>
-<h2 id="consensus-layer-6"><a class="header" href="#consensus-layer-6">Consensus Layer</a></h2>
+<h2 id="consensus-layer-7"><a class="header" href="#consensus-layer-7">Consensus Layer</a></h2>
 <ul>
 <li><a href="protocol/isthmus/./derivation.html">Isthmus Derivation</a></li>
 <li><a href="protocol/isthmus/./configurability.html">Configurability</a></li>

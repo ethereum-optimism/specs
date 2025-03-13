@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Isthmus - OP Stack Specification</title>
+        <title>Pectra Blob Schedule - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/pectra-blob-schedule/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -168,71 +168,36 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="isthmus-network-upgrade"><a class="header" href="#isthmus-network-upgrade">Isthmus Network Upgrade</a></h1>
+<h1 id="pectra-blob-schedule-optional-network-upgrade"><a class="header" href="#pectra-blob-schedule-optional-network-upgrade">Pectra Blob Schedule (Optional) Network Upgrade</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#execution-layer">Execution Layer</a></li>
 <li><a href="#consensus-layer">Consensus Layer</a></li>
-<li><a href="#smart-contracts">Smart Contracts</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>This document is not finalized and should be considered experimental.</p>
-<h2 id="execution-layer"><a class="header" href="#execution-layer">Execution Layer</a></h2>
-<ul>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7600">Pectra</a> (Execution Layer):
-<ul>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a>
-<ul>
-<li><a href="./derivation.html#span-batch-updates">Span Batch Updates</a></li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-2537">EIP-2537</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-2935">EIP-2935</a>
-<ul>
-<li><a href="./derivation.html#eip-2935-contract-deployment">EIP-2935 Contract Deployment</a></li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7002">EIP-7002</a>
-<ul>
-<li>The EIP-7002 predeploy contract and syscall are not adopted as part of the OP Stack.</li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7251">EIP-7251</a>
-<ul>
-<li>The EIP-7251 predeploy contract and syscall are not adopted as part of the OP Stack.</li>
-</ul>
-</li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7623">EIP-7623</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-6110">EIP-6110</a></li>
-<li><a href="https://eips.ethereum.org/EIPS/eip-7685">EIP-7685</a></li>
-</ul>
-</li>
-<li><a href="./exec-engine.html##l2tol1messagepasser-storage-root-in-header">L2ToL1MessagePasser Storage Root in Header</a></li>
-<li><a href="./exec-engine.html#operator-fee">Operator Fee</a></li>
-</ul>
+<p>The Pectra Blob Schedule hardfork is an optional hardfork which delays the adoption of the
+Prague blob base fee update fraction until the specified time. Until that time, the Cancun
+update fraction from the previous fork is retained.</p>
+<p>Note that the activation logic for this upgrade is different to most other upgrades.
+Usually, specific behavior is activated at the <em>hard fork timestamp</em>, if it is not nil,
+and continues until overridden by another hardfork.
+Here, specific behavior is activated for all times up to the hard fork timestamp,
+if it is not nil, and then <em>deactivated</em> at the hard fork timestamp.</p>
 <h2 id="consensus-layer"><a class="header" href="#consensus-layer">Consensus Layer</a></h2>
 <ul>
-<li><a href="./derivation.html">Isthmus Derivation</a></li>
-<li><a href="./configurability.html">Configurability</a></li>
-</ul>
-<h2 id="smart-contracts"><a class="header" href="#smart-contracts">Smart Contracts</a></h2>
-<ul>
-<li><a href="./superchain-config.html">SuperchainConfig</a></li>
-<li><a href="./predeploys.html">Predeploys</a></li>
-<li><a href="./l1-attributes.html">L1 Block Attributes</a></li>
+<li><a href="./derivation.html">Derivation</a></li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/pectra-blob-schedule/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/holocene/system-config.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../protocol/isthmus/configurability.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/pectra-blob-schedule/derivation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -242,11 +207,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/pectra-blob-schedule/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/holocene/system-config.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../protocol/isthmus/configurability.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/pectra-blob-schedule/derivation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
