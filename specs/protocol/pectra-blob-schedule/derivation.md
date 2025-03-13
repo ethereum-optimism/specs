@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [If enabled](#if-enabled)
@@ -34,12 +35,10 @@ in tandem with the Prague upgrade on L1. These chains, or any OPStack chain with
 the buggy consensus code[^1] when Holesky/Sepolia activated Pectra,
 will have an incorrect blob base fee in the L1Block contract.
 This optional fork is a mechanism to bring those chains back in line.
-It is unnecessary for chains using Ethereum mainnet for L1 and running op-node [v1.12.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node%2Fv1.12.0) or late before Pectra activates on L1.
+It is unnecessary for chains using Ethereum mainnet for L1 and running op-node [v1.12.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node%2Fv1.12.0) or later before Pectra activates on L1.
 
 https://github.com/ethereum-optimism/optimism/commit/aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f
 
 Activating by L1 origin preserves the invariant that the L1BlockInfo is constant for blocks with the same epoch.
 
-[^1]:
-    This is [aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f](https://github.com/ethereum-optimism/optimism/commit/aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f)
-    or earlier.
+[^1]: This is any commit _before_ the code was fixed in[aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f](https://github.com/ethereum-optimism/optimism/commit/aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f)
