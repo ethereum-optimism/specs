@@ -43,4 +43,4 @@ or later before Pectra activates on L1.
 
 Activating by L1 origin preserves the invariant that the L1BlockInfo is constant for blocks with the same epoch.
 
-[^1]: This is any commit _before_ the code was fixed in[aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f](https://github.com/ethereum-optimism/optimism/commit/aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f)
+[^1]: This is any commit _before_ the code was fixed in [aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f](https://github.com/ethereum-optimism/optimism/commit/aabf3fe054c5979d6a0008f26fe1a73fdf3aad9f)
