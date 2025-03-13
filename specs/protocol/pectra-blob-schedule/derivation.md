@@ -37,7 +37,9 @@ These chains, or any OPStack chain with a sequencer running
 the buggy consensus code[^1] when Holesky/Sepolia activated Pectra,
 will have an inaccurate blob base fee in the [L1Block](../../protocol/predeploys.md#l1block) contract.
 This optional fork is a mechanism to bring those chains back in line.
-It is unnecessary for chains using Ethereum mainnet for L1 and running op-node [v1.12.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node%2Fv1.12.0) or later before Pectra activates on L1.
+It is unnecessary for chains using Ethereum mainnet for L1 and running op-node
+[v1.12.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-node%2Fv1.12.0)
+or later before Pectra activates on L1.
 
 Activating by L1 origin preserves the invariant that the L1BlockInfo is constant for blocks with the same epoch.
 
