@@ -422,8 +422,12 @@ The extended validator emits one of the following validation signals:</p>
 <ul>
 <li><code>signature</code>: A <code>secp256k1</code> signature, always 65 bytes, <code>r (uint256), s (uint256), y_parity (uint8)</code></li>
 <li><code>parentBeaconBlockRoot</code>: L1 origin parent beacon block root, always 32 bytes</li>
-<li><code>withdrawalsRoot</code>: L2 withdrawals root, always 32 bytes.</li>
-<li><code>payload</code>: A SSZ-encoded <code>ExecutionPayload</code>, always the remaining bytes.</li>
+<li><code>payload</code>: A SSZ-encoded <code>ExecutionPayload</code>, always the remaining bytes.
+<ul>
+<li><em>Note</em> - the <code>ExecutionPayload</code> is modified for the first time in Isthmus. See
+<a href="./isthmus/exec-engine.html#update-to-executionpayload">"Update to <code>ExecutionPayload</code>"</a> in the Isthmus spec.</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
