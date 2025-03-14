@@ -115,6 +115,7 @@ interchangable
 invis
 IPFS
 IWANT
+justfile
 katex
 keccack
 Keccak
