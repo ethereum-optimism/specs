@@ -1,0 +1,5 @@
+#!/bin/bash
+# Optional Pre-Commit Hook
+echo "Running optional pre-commit hook..."
+just lint-check
+echo "Pre-commit hook finished."
