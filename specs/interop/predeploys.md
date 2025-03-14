@@ -34,7 +34,7 @@
 - [OptimismSuperchainERC20Beacon](#optimismsuperchainerc20beacon)
   - [Overview](#overview-2)
 - [L1Block](#l1block)
-  - [L1 Attributes Transaction](#l1-atributes-transaction)
+  - [L1 Attributes Transaction](#l1-attributes-transaction)
   - [Deposit Context](#deposit-context)
   - [`isDeposit()`](#isdeposit)
     - [`depositsComplete()`](#depositscomplete)
