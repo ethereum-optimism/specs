@@ -34,7 +34,7 @@
   - [L1Block](#l1block)
     - [Storage](#storage)
     - [Interface](#interface-3)
-      - [`setIsthmus`](#setisthmus)
+      - [`setXfork`](#setxfork)
       - [`setConfig`](#setconfig-1)
       - [`getConfig`](#getconfig)
   - [FeeVault](#feevault)
@@ -67,10 +67,11 @@ The `ConfigType` enum represents configuration that can be modified.
 | `BASE_FEE_VAULT_CONFIG`             | `uint8(1)` | Sets the Fee Vault Config for the `BaseFeeVault`      |
 | `L1_FEE_VAULT_CONFIG`               | `uint8(2)` | Sets the Fee Vault Config for the `L1FeeVault`        |
 | `SEQUENCER_FEE_VAULT_CONFIG`        | `uint8(3)` | Sets the Fee Vault Config for the `SequencerFeeVault` |
-| `L1_CROSS_DOMAIN_MESSENGER_ADDRESS` | `uint8(4)` | Sets the `L1CrossDomainMessenger` address             |
-| `L1_ERC_721_BRIDGE_ADDRESS`         | `uint8(5)` | Sets the `L1ERC721Bridge` address                     |
-| `L1_STANDARD_BRIDGE_ADDRESS`        | `uint8(6)` | Sets the `L1StandardBridge` address                   |
-| `REMOTE_CHAIN_ID`                   | `uint8(7)` | Sets the chain id of the base chain                   |
+| `OPERATOR_FEE_VAULT_CONFIG`         | `uint8(4)` | Sets the Fee Vault Config for the `OperatorFeeVault`  |
+| `L1_CROSS_DOMAIN_MESSENGER_ADDRESS` | `uint8(5)` | Sets the `L1CrossDomainMessenger` address             |
+| `L1_ERC_721_BRIDGE_ADDRESS`         | `uint8(6)` | Sets the `L1ERC721Bridge` address                     |
+| `L1_STANDARD_BRIDGE_ADDRESS`        | `uint8(7)` | Sets the `L1StandardBridge` address                   |
+| `REMOTE_CHAIN_ID`                   | `uint8(8)` | Sets the chain id of the base chain                   |
 
 ## `SystemConfig`
 
@@ -85,6 +86,7 @@ The following `ConfigUpdate` event is defined where the `CONFIG_VERSION` is `uin
 | `GAS_LIMIT`           | `uint8(2)` | `abi.encode(uint64 _gasLimit)`                                                    | Modifies the L2 gas limit                                            |
 | `UNSAFE_BLOCK_SIGNER` | `uint8(3)` | `abi.encode(address)`                                                             | Modifies the account that is authorized to progress the unsafe chain |
 | `EIP_1559_PARAMS`     | `uint8(4)` | `uint256(uint64(uint32(_denominator))) << 32 \| uint64(uint32(_elasticity))`      | Modifies the EIP-1559 denominator and elasticity                     |
+| `OPERATOR_FEE_PARAMS` | `uint8(5)` | `uint256(_operatorFeeScalar) << 64 \| _operatorFeeConstant`                       | Modifies the operator fee scalar and constant                        |
 
 ### Initialization
 
@@ -95,15 +97,6 @@ The following actions should happen during the initialization of the `SystemConf
 - `emit ConfigUpdate.GAS_LIMIT`
 - `emit ConfigUpdate.UNSAFE_BLOCK_SIGNER`
 - `emit ConfigUpdate.EIP_1559_PARAMS`
-- `setConfig(FEE_VAULT_ADMIN)`
-- `setConfig(SET_GAS_PAYING_TOKEN)`
-- `setConfig(SET_BASE_FEE_VAULT_CONFIG)`
-- `setConfig(SET_L1_FEE_VAULT_CONFIG)`
-- `setConfig(SET_SEQUENCER_FEE_VAULT_CONFIG)`
-- `setConfig(SET_L1_CROSS_DOMAIN_MESSENGER_ADDRESS)`
-- `setConfig(SET_L1_ERC_721_BRIDGE_ADDRESS)`
-- `setConfig(SET_L1_STANDARD_BRIDGE_ADDRESS)`
-- `setConfig(SET_REMOTE_CHAIN_ID)`
 
 These actions MAY only be triggered if there is a diff to the value.
 
@@ -242,7 +235,7 @@ of the `SystemConfig`.
 | `WithdrawalNetwork`     | `uint8(0)` or `uint8(1)` | `0` means withdraw to L1, `1` means withdraw to L2                                                                 |
 | `RECIPIENT`             | `address`                | The account that will receive funds sent out of the `FeeVault`                                                     |
 | `MIN_WITHDRAWAL_AMOUNT` | `uint256`                | The minimum amount of native asset held in the `FeeVault` before withdrawal is authorized                          |
-| Fee Vault Config        | `bytes32`                | `bytes32((WithdrawalNetwork << 248) \|\| uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) \|\| uint256(uint160(RECIPIENT)))` |
+| `FEE_VAULT_CONFIG`      | `bytes32`                | `bytes32((WithdrawalNetwork << 248) \|\| uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) << 160 \|\| uint256(uint160(RECIPIENT)))` |
 
 ### L1Block slots
 
@@ -251,6 +244,7 @@ of the `SystemConfig`.
 | `BASE_FEE_VAULT_CONFIG`             | `bytes32(uint256(keccak256("opstack.basefeevaultconfig")) - 1)`            | The Fee Vault Config for the `BaseFeeVault`        |
 | `L1_FEE_VAULT_CONFIG`               | `bytes32(uint256(keccak256("opstack.l1feevaultconfig")) - 1)`              | The Fee Vault Config for the `L1FeeVault`          |
 | `SEQUENCER_FEE_VAULT_CONFIG`        | `bytes32(uint256(keccak256("opstack.sequencerfeevaultconfig")) - 1)`       | The Fee Vault Config for the `SequencerFeeVault`   |
+| `OPERATOR_FEE_VAULT_CONFIG`         | `bytes32(uint256(keccak256("opstack.operatorfeevaultconfig")) - 1)`        | The Fee Vault Config for the `OperatorFeeVault`    |
 | `L1_CROSS_DOMAIN_MESSENGER_ADDRESS` | `bytes32(uint256(keccak256("opstack.l1crossdomainmessengeraddress")) - 1)` | `abi.encode(address(L1CrossDomainMessengerProxy))` |
 | `L1_ERC_721_BRIDGE_ADDRESS`         | `bytes32(uint256(keccak256("opstack.l1erc721bridgeaddress")) - 1)`         | `abi.encode(address(L1ERC721BridgeProxy))`         |
 | `L1_STANDARD_BRIDGE_ADDRESS`        | `bytes32(uint256(keccak256("opstack.l1standardbridgeaddress")) - 1)`       | `abi.encode(address(L1StandardBridgeProxy))`       |
@@ -272,6 +266,7 @@ graph LR
   BaseFeeVault -- "getConfig(ConfigType.GAS_PAYING_TOKEN)(address,uint256,uint8)" --> L1Block
   SequencerFeeVault -- "getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)(address,uint256,uint8)" --> L1Block
   L1FeeVault -- "getConfig(ConfigType.L1_FEE_VAULT_CONFIG)(address,uint256,uint8)" --> L1Block
+  OperatorFeeVault -- "getConfig(ConfigType.OPERATOR_FEE_VAULT_CONFIG)(address,uint256,uint8)" --> L1Block
   L2CrossDomainMessenger -- "getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)(address)" --> L1Block
   L2StandardBridge -- "getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)(address)" --> L1Block
   L2ERC721Bridge -- "getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)(address)" --> L1Block
@@ -303,6 +298,7 @@ The following storage slots are defined:
 - `BASE_FEE_VAULT_CONFIG`
 - `L1_FEE_VAULT_CONFIG`
 - `SEQUENCER_FEE_VAULT_CONFIG`
+- `OPERATOR_FEE_VAULT_CONFIG`
 - `L1_CROSS_DOMAIN_MESSENGER_ADDRESS`
 - `L1_ERC_721_BRIDGE_ADDRESS`
 - `L1_STANDARD_BRIDGE_ADDRESS`
@@ -313,9 +309,9 @@ via a deposit transaction from the `DEPOSITOR_ACCOUNT`.
 
 #### Interface
 
-##### `setIsthmus`
+##### `setXfork`
 
-This function is meant to be called once on the activation block of the Isthmus network upgrade.
+This function is meant to be called once on the activation block of the Xfork network upgrade.
 It MUST only be callable by the `DEPOSITOR_ACCOUNT` once. When it is called, it MUST call
 each getter for the network specific config and set the returndata into storage.
 
@@ -345,7 +341,7 @@ The caller needs to ABI decode the data into the desired type.
 
 ### FeeVault
 
-The following changes apply to each of the `BaseFeeVault`, the `L1FeeVault` and the `SequencerFeeVault`.
+The following changes apply to each of the `BaseFeeVault`, the `L1FeeVault`, the `SequencerFeeVault` and the `OperatorFeeVault`.
 
 #### Interface
 
@@ -361,6 +357,7 @@ The following functions are updated to read from the `L1Block` contract:
 | `BaseFeeVault`      | `L1Block.getConfig(ConfigType.BASE_FEE_VAULT_CONFIG)`      |
 | `SequencerFeeVault` | `L1Block.getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)` |
 | `L1FeeVault`        | `L1Block.getConfig(ConfigType.L1_FEE_VAULT_CONFIG)`        |
+| `OperatorFeeVault`  | `L1Block.getConfig(ConfigType.OPERATOR_FEE_VAULT_CONFIG)`  |
 
 ##### `config`
 
