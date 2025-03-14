@@ -40,7 +40,6 @@
 - [Syscalls](#syscalls)
   - [Supported Syscalls](#supported-syscalls)
   - [Noop Syscalls](#noop-syscalls)
-- [I/O](#io)
   - [Standard Streams](#standard-streams)
   - [Hint Communication](#hint-communication)
   - [Pre-image Communication](#pre-image-communication)
@@ -448,7 +447,7 @@ If an unsupported syscall is encountered, the VM will raise an exception.
 | 5038 | getpid        | 🚫              | 🚫               | 🚫           | 🚫               | Returns 0.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ### Noop Syscalls
-
+<!-- cspell:disable -->
 For the following noop syscalls, the VM must do nothing except to zero out the syscall return (`$v0`)
 and errno (`$a3`) registers.
 
@@ -485,7 +484,7 @@ and errno (`$a3`) registers.
 | 5216 | timer_create       |
 | 5217 | timer_settime      |
 | 5220 | timer_delete       |
-
+<!-- cspell:enable -->
 ## I/O
 
 The VM does not support Linux open(2). However, the VM can read from and write to a predefined set of file descriptors.

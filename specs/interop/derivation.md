@@ -25,7 +25,7 @@
 
 ## Overview
 
-New derivation rules are added to guaranteee integrity of cross chain messages.
+New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.
 
