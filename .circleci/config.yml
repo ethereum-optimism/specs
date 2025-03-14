@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.10.1
-  utils: ethereum-optimism/circleci-utils@1.0.8
+  utils: ethereum-optimism/circleci-utils@1.0.13
 
 executors:
   default:
@@ -10,17 +10,6 @@ executors:
       image: ubuntu-2204:2024.08.1
 
 commands:
-  install-dependencies:
-    steps:
-      - run:
-          name: Install mise
-          command: curl https://mise.run | MISE_INSTALL_PATH=/home/circleci/bin/mise sh
-      - run:
-          name: Activate mise
-          command: echo 'eval "$(mise activate bash)"' >> $BASH_ENV
-      - run:
-          name: Install mise dependencies
-          command: mise install
 
   notify-failures-on-develop:
     description: "Notify Slack"
@@ -39,8 +28,7 @@ jobs:
   lint-specs:
     executor: default
     steps:
-      - checkout
-      - install-dependencies
+      - utils/checkout-with-mise
       - run:
           name: markdown lint
           command: just lint-specs-md-check
@@ -54,8 +42,7 @@ jobs:
   lint-links:
     executor: default
     steps:
-      - checkout
-      - install-dependencies
+      - utils/checkout-with-mise
       - run:
           name: Lint check
           command: just lint-links-check
@@ -65,8 +52,7 @@ jobs:
   build-book:
     executor: default
     steps:
-      - checkout
-      - install-dependencies
+      - utils/checkout-with-mise
       - run:
           name: Build
           command: just build
