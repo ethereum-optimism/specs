@@ -34,7 +34,7 @@
 - [OptimismSuperchainERC20Beacon](#optimismsuperchainerc20beacon)
   - [Overview](#overview-2)
 - [L1Block](#l1block)
-  - [L1 Atributes Transaction](#l1-atributes-transaction)
+  - [L1 Attributes Transaction](#l1-atributes-transaction)
   - [Deposit Context](#deposit-context)
   - [`isDeposit()`](#isdeposit)
     - [`depositsComplete()`](#depositscomplete)
@@ -453,7 +453,7 @@ The implementation address gets deduced similarly to the `GasPriceOracle` addres
 | Address             | `0x4200000000000000000000000000000000000015` |
 | `DEPOSITOR_ACCOUNT` | `0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001` |
 
-### L1 Atributes Transaction
+### L1 Attributes Transaction
 
 A new entrypoint on the `L1Block` contract is added that is used to open the [deposit context](./derivation.md#deposit-context).
 
