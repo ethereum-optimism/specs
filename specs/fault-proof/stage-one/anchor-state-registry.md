@@ -149,19 +149,20 @@ A Dispute Game that is **NOT** a Proper Game can also be referred to as an **Imp
 brevity. A Dispute Game can go from being a Proper Game to later *not* being an **Improper Game**
 if it is invalidated by being [blacklisted](#blacklisted-game) or [retired](#retired-game).
 
-**ALL** Dispute Games **TEMPORARILY** become Improper Games while the Superchain-wide pause
-mechanism is active. However, this is a *temporary* condition such that Registered Games that are
-not invalidated by [blacklisting](#blacklisted-game) or [retirement](#retired-game) will become
-Proper Games again once the pause is lifted. The Superchain-wide pause is therefore a way to
-*temporarily* prevent Dispute Games from being used by consumers like the `OptimismPortal` while
-relevant parties coordinate the use of some other invalidation mechanism.
+**ALL** Dispute Games **TEMPORARILY** become Improper Games while the
+[Pause Mechanism](../../protocol/superchain-config.md#pause-mechanism) is active. However, this is
+a *temporary* condition such that Registered Games that are not invalidated by
+[blacklisting](#blacklisted-game) or [retirement](#retired-game) will become Proper Games again
+once the pause is lifted. The Pause Mechanism is therefore a way to *temporarily* prevent Dispute
+Games from being used by consumers like the `OptimismPortal` while relevant parties coordinate the
+use of some other invalidation mechanism.
 
 A Game is considered to be a Proper Game if all of the following are true:
 
 - The game is a [Registered Game](#registered-game)
 - The game is **NOT** a [Blacklisted Game](#blacklisted-game)
 - The game is **NOT** a [Retired Game](#retired-game)
-- The Superchain-wide pause is not active
+- The [Pause Mechanism](../../protocol/superchain-config.md#pause-mechanism) is not active
 
 ### Resolved Game
 
@@ -261,10 +262,10 @@ have [Valid Claims](#valid-claim).
 
 Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
 [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap) has elapsed UNLESS the
-Superchain-wide pause mechanism is active. Therefore, in the absence of the Superchain-wide pause
-mechanism, parties responsible for game invalidation have exactly the Dispute Game Finality Delay
-to invalidate a withdrawal after it resolves incorrectly. If the Superchain-wide pause is active,
-then any incorrectly resolving games must be invalidated before the pause is deactivated.
+Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism, parties responsible
+for game invalidation have exactly the Dispute Game Finality Delay to invalidate a withdrawal after
+it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
+must be invalidated before the pause is deactivated.
 
 #### Mitigations
 
@@ -381,7 +382,7 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 ### initialize
 
 - MUST only be triggerable once.
-- MUST set the value of the `SuperchainConfig` contract that stores the address of the Guardian.
+- MUST set the value of the `SystemConfig` contract that stores the address of the Guardian.
 - MUST set the value of the `DisputeGameFactory` contract that creates Dispute Game instances.
 - MUST set the value of the [Starting Anchor State](#starting-anchor-state).
 - MUST set the value of the initial [Respected Game Type](#respected-game-type).
@@ -394,7 +395,7 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 
 ### paused
 
-Returns the value of the Superchain-wide `paused()` flag in the `SuperchainConfig` contract.
+Returns the value of `paused()` from the `SystemConfig` contract.
 
 ### respectedGameType
 

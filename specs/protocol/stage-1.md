@@ -90,7 +90,7 @@ achieve Stage 1.
 1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that (via the
    Guardian Safe's `DeputyGuardianModule`) it can call any functions in the system which impacts
    liveness. It is extended with the `DeputyPauseModule` to allow a signing key to execute the
-   Superchain-wide pause function quickly.
+   pause function quickly.
 
 ## Ownership model diagram
 
