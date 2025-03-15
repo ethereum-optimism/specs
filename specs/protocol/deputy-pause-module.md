@@ -9,9 +9,9 @@
 - [Context](#context)
 - [Upgradeability](#upgradeability)
 - [Assumptions](#assumptions)
-  - [aSCP-001: Superchain-wide pause authorization process is well-defined](#ascp-001-superchain-wide-pause-authorization-process-is-well-defined)
-  - [aSCP-002: Superchain-wide pause authorization process is robust](#ascp-002-superchain-wide-pause-authorization-process-is-robust)
-  - [aSCP-003: Superchain-wide pause authorization process is fast](#ascp-003-superchain-wide-pause-authorization-process-is-fast)
+  - [aSCP-001: Pause authorization process is well-defined](#ascp-001-pause-authorization-process-is-well-defined)
+  - [aSCP-002: Pause authorization process is robust](#ascp-002-pause-authorization-process-is-robust)
+  - [aSCP-003: Pause authorization process is fast](#ascp-003-pause-authorization-process-is-fast)
   - [aDPM-001: Contract is configured correctly](#adpm-001-contract-is-configured-correctly)
     - [Mitigations](#mitigations)
   - [aDPM-002: Deputy key is not compromised](#adpm-002-deputy-key-is-not-compromised)
@@ -29,10 +29,10 @@
   - [aDPM-008: Deputy key is capable of creating signatures](#adpm-008-deputy-key-is-capable-of-creating-signatures)
     - [Mitigations](#mitigations-7)
 - [System Invariants](#system-invariants)
-  - [iSCP-001: Superchain-wide pause can be activated within a short bounded time of authorization](#iscp-001-superchain-wide-pause-can-be-activated-within-a-short-bounded-time-of-authorization)
+  - [iSCP-001: Pause can be activated within a short bounded time of authorization](#iscp-001-pause-can-be-activated-within-a-short-bounded-time-of-authorization)
     - [Impact](#impact)
     - [Dependencies](#dependencies)
-  - [iSCP-002: Superchain-wide pause is not activated outside of the standard process](#iscp-002-superchain-wide-pause-is-not-activated-outside-of-the-standard-process)
+  - [iSCP-002: Pause is not activated outside of the standard process](#iscp-002-pause-is-not-activated-outside-of-the-standard-process)
     - [Impact](#impact-1)
     - [Dependencies](#dependencies-1)
 - [Component Invariants](#component-invariants)
@@ -40,7 +40,7 @@
     - [Impact](#impact-2)
     - [Mitigations](#mitigations-8)
     - [Dependencies](#dependencies-2)
-  - [iDPM-002: Deputy must only be able to trigger the Superchain-wide pause](#idpm-002-deputy-must-only-be-able-to-trigger-the-superchain-wide-pause)
+  - [iDPM-002: Deputy must only be able to trigger the pause](#idpm-002-deputy-must-only-be-able-to-trigger-the-pause)
     - [Impact](#impact-3)
     - [Mitigations](#mitigations-9)
     - [Dependencies](#dependencies-3)
@@ -81,9 +81,10 @@ Proposed
 
 The `DeputyPauseModule` is a [Safe Module][safe-modules] designed to be installed into the Optimism
 Foundation Operations Safe that allows a dedicated Deputy address to create an ECDSA signature that
-authorizes the execution of the Superchain-wide pause mechanism. The `DeputyPauseModule` assumes
-that the Optimism Foundation Operations Safe is the Deputy Guardian that is permitted to act within
-the `DeputyGuardianModule` installed into the Optimism Security Council Safe.
+authorizes the execution of the [Pause Mechanism](./superchain-config.md#pause-mechanism). The
+`DeputyPauseModule` assumes that the Optimism Foundation Operations Safe is the Deputy Guardian
+that is permitted to act within the `DeputyGuardianModule` installed into the Optimism Security
+Council Safe.
 
 ## Context
 
@@ -104,21 +105,21 @@ replaced.
 > typically only rely on a subset of the following assumptions. Different invariants may rely on
 > different assumptions. Refer to individual invariants for their dependencies.
 
-### aSCP-001: Superchain-wide pause authorization process is well-defined
+### aSCP-001: Pause authorization process is well-defined
 
-We assume that the process by which a Superchain-wide pause can be authorized is well-defined such
-that the cases in which the pause should and should not be triggered are apparent.
+We assume that the process by which a pause can be authorized is well-defined such that the cases
+in which the pause should and should not be triggered are apparent.
 
-### aSCP-002: Superchain-wide pause authorization process is robust
+### aSCP-002: Pause authorization process is robust
 
-We assume that the process by which a Superchain-wide pause can be authorized correctly accounts
-for all cases in which such a pause would be necessary.
+We assume that the process by which a pause can be authorized correctly accounts for all cases in
+which such a pause would be necessary.
 
-### aSCP-003: Superchain-wide pause authorization process is fast
+### aSCP-003: Pause authorization process is fast
 
-We assume that the process by which a Superchain-wide pause can be authorized is fast acting such
-that it can make the decision to trigger the pause within a short period of time of any situation
-that would require such a pause.
+We assume that the process by which a pause can be authorized is fast acting such that it can make
+the decision to trigger the pause within a short period of time of any situation that would require
+such a pause.
 
 ### aDPM-001: Contract is configured correctly
 
@@ -166,8 +167,8 @@ transaction submitted to the network can be processed within a reasonable time b
 ### aDPM-005: DeputyGuardianModule pause function correctly triggers pause
 
 We assume that the `pause` function exposed by the `DeputyGuardianModule` will correctly trigger
-the Superchain-wide pause through the Guardian account. We assume that this function will not carry
-out any other action.
+the [Pause Mechanism](./superchain-config.md#pause-mechanism) through the Guardian account. We
+assume that this function will not carry out any other action.
 
 #### Mitigations
 
@@ -203,44 +204,44 @@ We assume that the Deputy key configured is actually capable of creating signatu
 
 ## System Invariants
 
-### iSCP-001: Superchain-wide pause can be activated within a short bounded time of authorization
+### iSCP-001: Pause can be activated within a short bounded time of authorization
 
-It is an important system-level invariant that the Superchain-wide pause functionality can be
-activated within a short, bounded amount of time of its authorization by the standard process that
-approves the usage of this pause.
+It is an important system-level invariant that the pause functionality can be activated within a
+short, bounded amount of time of its authorization by the standard process that approves the usage
+of this pause.
 
 #### Impact
 
 **Severity: High (estimated)**
 
-If this invariant is broken, various recovery options that rely on fast activation of the
-Superchain-wide pause may fail. We estimate the severity of this invariant being broken to be high
-but final severity will depend on the formalization of other invariants that rely on this one.
+If this invariant is broken, various recovery options that rely on fast activation of the pause may
+fail. We estimate the severity of this invariant being broken to be high but final severity will
+depend on the formalization of other invariants that rely on this one.
 
 #### Dependencies
 
-- [aSCP-002](#ascp-002-superchain-wide-pause-authorization-process-is-robust)
-- [aSCP-003](#ascp-003-superchain-wide-pause-authorization-process-is-fast)
+- [aSCP-002](#ascp-002-pause-authorization-process-is-robust)
+- [aSCP-003](#ascp-003-pause-authorization-process-is-fast)
 - [iDPM-003](#idpm-003-deputy-must-always-be-able-to-act-through-the-module)
 - [aDPM-001](#adpm-001-contract-is-configured-correctly)
 
-### iSCP-002: Superchain-wide pause is not activated outside of the standard process
+### iSCP-002: Pause is not activated outside of the standard process
 
-We must maintain that the Superchain-wide pause is not activated outside of the standard process
-that approves the usage of the pause.
+We must maintain that the pause is not activated outside of the standard process that approves the
+usage of the pause.
 
 #### Impact
 
 **Severity: High**
 
-If this invariant is broken, all components that rely on the Superchain-wide pause would be placed
-into a paused state unexpectedly. This would cause a temporary liveness failure for withdrawals
-through the Standard Bridge system and would negatively impact users until liveness could be
-restored by either the Guardian or the Deputy Guardian.
+If this invariant is broken, all components that rely on the pause would be placed into a paused
+state unexpectedly. This would cause a temporary liveness failure for withdrawals through the
+Standard Bridge system and would negatively impact users until liveness could be restored by either
+the Guardian or the Deputy Guardian.
 
 #### Dependencies
 
-- [aSCP-001](#ascp-001-superchain-wide-pause-authorization-process-is-well-defined)
+- [aSCP-001](#ascp-001-pause-authorization-process-is-well-defined)
 - [iDPM-001](#idpm-001-only-the-deputy-may-act-through-the-module)
 - [iDPM-004](#idpm-004-deputy-authorizations-must-not-be-replayable)
 - [aDPM-002](#adpm-002-deputy-key-is-not-compromised)
@@ -260,10 +261,9 @@ authorization of the Deputy.
 
 If this invariant is broken, accounts other than the Deputy would be able to carry out the actions
 allowed by this module. Assuming that
-[iDPM-002](#idpm-002-deputy-must-only-be-able-to-trigger-the-superchain-wide-pause) holds, this
-means that an account other than the Deputy would be able to trigger the Superchain-wide pause,
-presumably without the authorization of the social consensus process that typically triggers this
-pause.
+[iDPM-002](#idpm-002-deputy-must-only-be-able-to-trigger-the-pause) holds, this
+means that an account other than the Deputy would be able to trigger the pause, presumably without
+the authorization of the social consensus process that typically triggers this pause.
 
 #### Mitigations
 
@@ -274,11 +274,11 @@ pause.
 
 - [aDPM-006](#adpm-006-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs)
 
-### iDPM-002: Deputy must only be able to trigger the Superchain-wide pause
+### iDPM-002: Deputy must only be able to trigger the pause
 
-The Deputy must only be able to trigger the Superchain-wide pause action by causing the module to
-call the `pause` function on the `DeputyGuardianModule`. The Deputy must not be able to trigger any
-other action.
+The Deputy must only be able to trigger the pause action by causing the module to call the `pause`
+function on the `DeputyGuardianModule`. The Deputy must not be able to trigger any other
+priviledged action on behalf of the Guardian or Deputy Guardian.
 
 #### Impact
 
@@ -308,8 +308,8 @@ efficiently execute the pause action.
 **Severity: High**
 
 If this invariant is broken, we would not be able to provide the system-level invariant that the
-Deputy account can always be used to trigger the Superchain-wide pause within a bounded amount of
-time of the decision being made to carry out this action.
+Deputy account can always be used to trigger the pause within a bounded amount of time of the
+decision being made to carry out this action.
 
 #### Mitigations
 
@@ -337,8 +337,8 @@ authorization must not be usable again in any `DeputyPauseModule`.
 
 If this invariant is broken, a Deputy authorization created by the same Deputy address for
 another `DeputyPauseModule` or a previous authorization for the same module could be reused and
-would result in the Superchain-wide pause being triggered outside of the standard process by which
-such a pause is approved.
+would result in the pause being triggered outside of the standard process by which such a pause is
+approved.
 
 #### Mitigations
 

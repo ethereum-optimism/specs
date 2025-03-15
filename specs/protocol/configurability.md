@@ -91,7 +91,7 @@ see [Batcher Transaction](../glossary.md#batcher-transaction)).<br/>
 concatenation, `versionByte` is `0x00`, and `chainId` is a `uint256`.<br/>
 **Notes:** It is recommended, but not required, to follow this convention.
 
-### [Batcher Hash](./system-config.md#batcherhash-bytes32)
+### [Batcher Hash](./system-config.md#batcher-hash)
 
 **Description:** A versioned hash of the current authorized batcher sender(s).<br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
@@ -220,7 +220,7 @@ using fault proofs from genesis.<br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
 **Requirement:** Set such that Fee Margin is between 0 and 50%.<br/>
 
-### [Gas Limit](./system-config.md#gaslimit-uint64)
+### [Gas Limit](./system-config.md#l2-gas-limit)
 
 **Description:** Gas limit of the L2 blocks is configured through the system config.<br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
