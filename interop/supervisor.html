@@ -196,9 +196,6 @@
 </li>
 <li><a href="#methods">Methods</a>
 <ul>
-<li><a href="#supervisor_checkmessage"><code>supervisor_checkMessage</code></a></li>
-<li><a href="#supervisor_checkmessages"><code>supervisor_checkMessages</code></a></li>
-<li><a href="#supervisor_checkmessagesv2"><code>supervisor_checkMessagesV2</code></a></li>
 <li><a href="#supervisor_crossderivedtosource"><code>supervisor_crossDerivedToSource</code></a></li>
 <li><a href="#supervisor_localunsafe"><code>supervisor_localUnsafe</code></a></li>
 <li><a href="#supervisor_crosssafe"><code>supervisor_crossSafe</code></a></li>
@@ -207,6 +204,14 @@
 <li><a href="#supervisor_superrootattimestamp"><code>supervisor_superRootAtTimestamp</code></a></li>
 <li><a href="#supervisor_syncstatus"><code>supervisor_syncStatus</code></a></li>
 <li><a href="#supervisor_allsafederivedat"><code>supervisor_allSafeDerivedAt</code></a></li>
+<li><a href="#supervisor_checkaccesslist"><code>supervisor_checkAccessList</code></a>
+<ul>
+<li><a href="#access-list-contents">Access-list contents</a></li>
+<li><a href="#access-list-execution-context">Access-list execution context</a></li>
+<li><a href="#access-list-checks">Access-list checks</a></li>
+<li><a href="#supervisor_checkaccesslist-contents"><code>supervisor_checkAccessList</code> contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -243,7 +248,10 @@ Corresponds to an <a href="./messaging.html#message-identifier">Identifier</a>.<
 Specifically, this helps apply message-expiry rules on message checks.</p>
 <p>Object:</p>
 <ul>
-<li><code>timestamp</code>: <code>HexUint64</code></li>
+<li><code>timestamp</code>: <code>HexUint64</code> - expected timestamp during message execution.</li>
+<li><code>timeout</code>: <code>HexUint64</code> - optional, requests verification to still hold at <code>timestamp+timeout</code> (inclusive).
+The message expiry-window may invalidate messages.
+Default interpretation is a <code>0</code> timeout: what is valid at <code>timestamp</code> may not be valid at <code>timestamp+1</code>.</li>
 </ul>
 <h4 id="hexuint64"><a class="header" href="#hexuint64"><code>HexUint64</code></a></h4>
 <p><code>STRING</code>:
@@ -300,39 +308,13 @@ Corresponds to a verifier <a href="./verifier.html#safety">SafetyLevel</a>.</p>
 <p><code>STRING</code>, one of:</p>
 <ul>
 <li><code>invalid</code></li>
-<li><code>unsafe</code></li>
+<li><code>unsafe</code>: equivalent to safety of the <code>latest</code> RPC label.</li>
 <li><code>cross-unsafe</code></li>
 <li><code>local-safe</code></li>
-<li><code>safe</code></li>
+<li><code>safe</code>: matching cross-safe, named <code>safe</code> to match the RPC label.</li>
 <li><code>finalized</code></li>
 </ul>
 <h3 id="methods"><a class="header" href="#methods">Methods</a></h3>
-<h4 id="supervisor_checkmessage"><a class="header" href="#supervisor_checkmessage"><code>supervisor_checkMessage</code></a></h4>
-<p>Checks the safety level of a specific message based on its identifier and message hash.
-This RPC is useful for the block builder to determine if a message should be included in a block.</p>
-<p>Parameters:</p>
-<ul>
-<li><code>identifier</code>: <code>Identifier</code></li>
-<li><code>payloadHash</code>: <code>Hash</code></li>
-<li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code></li>
-</ul>
-<p>Returns: <code>SafetyLevel</code></p>
-<h4 id="supervisor_checkmessages"><a class="header" href="#supervisor_checkmessages"><code>supervisor_checkMessages</code></a></h4>
-<p>Parameters:</p>
-<ul>
-<li><code>messages</code>: ARRAY of <code>Message</code></li>
-<li><code>minSafety</code>: <code>SafetyLevel</code></li>
-</ul>
-<h4 id="supervisor_checkmessagesv2"><a class="header" href="#supervisor_checkmessagesv2"><code>supervisor_checkMessagesV2</code></a></h4>
-<p>Next version <code>supervisor_checkMessage</code>,
-additionally verifying the message-expiry, by referencing when the execution happens.</p>
-<p>Parameters:</p>
-<ul>
-<li><code>messages</code>: ARRAY of <code>Message</code></li>
-<li><code>minSafety</code>: <code>SafetyLevel</code></li>
-<li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code> - applies as execution-context to all messages</li>
-</ul>
-<p>Returns: RPC error the minSafety is not met by one or more of the messages, with</p>
 <h4 id="supervisor_crossderivedtosource"><a class="header" href="#supervisor_crossderivedtosource"><code>supervisor_crossDerivedToSource</code></a></h4>
 <p>Parameters:</p>
 <ul>
@@ -383,6 +365,52 @@ which represents the global state across all monitored chains.</p>
 <li>key: <code>ChainID</code></li>
 <li>value: <code>BlockID</code></li>
 </ul>
+<h4 id="supervisor_checkaccesslist"><a class="header" href="#supervisor_checkaccesslist"><code>supervisor_checkAccessList</code></a></h4>
+<p>Verifies if an access-list, as defined in <a href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a>, references only valid messages.
+Message execution in the <a href="./predeploys.html#crossl2inbox"><code>CrossL2Inbox</code></a> that is statically declared in the access-list will not revert.</p>
+<h5 id="access-list-contents"><a class="header" href="#access-list-contents">Access-list contents</a></h5>
+<p>Only the <a href="./predeploys.html#crossl2inbox"><code>CrossL2Inbox</code></a> subset of the access-list in the transaction is required,
+storage-access by other addresses is not included.</p>
+<p>Note that an access-list can contain multiple different storage key lists for the <code>CrossL2Inbox</code> address.
+All storage keys applicable to the <code>CrossL2Inbox</code> MUST be joined together (preserving ordering),
+missing storage-keys breaks inbox safety.</p>
+<p><strong>ALL storage-keys in the access-list for the <code>CrossL2Inbox</code> MUST be checked.</strong>
+If there is any unrecognized or invalid key, the access-list check MUST fail.</p>
+<h5 id="access-list-execution-context"><a class="header" href="#access-list-execution-context">Access-list execution context</a></h5>
+<p>The provided execution-context is used to determine validity relative to the provided time constraints,
+see <a href="./derivation.html#invariants">timestamp invariants</a>.</p>
+<p>Since messages expire, validity is not definitive.
+To reserve validity for a longer time range, a non-zero <code>timeout</code> value can be used.
+See <a href="#executingdescriptor"><code>ExecutingDescriptor</code></a> documentation.</p>
+<p>As block-builder a <code>timeout</code> of <code>0</code> should be used.</p>
+<p>As transaction pre-verifier, a <code>timeout</code> of <code>86400</code> (1 day) should be used.
+The transaction should be re-verified or dropped after this time duration,
+as it can no longer be safely included in the block due to message-expiry.</p>
+<h5 id="access-list-checks"><a class="header" href="#access-list-checks">Access-list checks</a></h5>
+<p>The access-list check errors are not definite state-transition blockers, the RPC based checks can be extra conservative.
+I.e. a message that is uncertain to meet the requested safety level may be denied.
+Specifically, no attempt may be made to verify messages that are initiated and executed within the same timestamp,
+these are <code>invalid</code> by default.
+Advanced block-builders may still choose to include these messages by verifying the intra-block constraints.</p>
+<h5 id="supervisor_checkaccesslist-contents"><a class="header" href="#supervisor_checkaccesslist-contents"><code>supervisor_checkAccessList</code> contents</a></h5>
+<p>Parameters:</p>
+<ul>
+<li><code>inboxEntries</code>: <code>ARRAY</code> of <code>Hash</code> - statically declared <code>CrossL2Inbox</code> access entries.</li>
+<li><code>minSafety</code>: <code>SafetyLevel</code> - minimum required safety, one of:
+<ul>
+<li><code>unsafe</code>: the message exists.</li>
+<li><code>cross-unsafe</code>: the message exists in a cross-unsafe block.</li>
+<li><code>local-safe</code>: the message exists in a local-safe block, not yet cross-verified.</li>
+<li><code>safe</code>: the message exists in a derived block that is cross-verified.</li>
+<li><code>finalized</code>: the message exists in a finalized block.</li>
+<li>Other safety levels are invalid and result in an error.</li>
+</ul>
+</li>
+<li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code> - applies as execution-context to all messages.</li>
+</ul>
+<p>Returns: RPC error if the <code>minSafety</code> is not met by one or more of the access entries.</p>
+<p>The access-list entries represent messages, and may be incomplete or malformed.
+Malformed access-lists result in an RPC error.</p>
 
                     </main>
 
