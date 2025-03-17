@@ -19,7 +19,7 @@
 - [`OptimismPortal`](#optimismportal)
   - [Interface](#interface-1)
     - [`setConfig`](#setconfig)
-    - [`upgrade`](#upgrade)
+    - [`callL2ProxyAdmin`](#calll2proxyadmin)
   - [Invariants](#invariants-1)
 - [SuperchainConfig](#superchainconfig)
   - [Constants](#constants-1)
@@ -166,15 +166,16 @@ The following fields are included:
 - `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
   is `200_000`, `isCreation` is `false` and the `data` is `abi.encodeCall(L1Block.setConfig, (_type, _value))`
 
-#### `upgrade`
+#### `callL2ProxyAdmin`
 
-The `upgrade` function MUST only be callable by the `UPGRADER` role as defined
+The `callL2ProxyAdmin` function MUST only be callable by the `UPGRADER` role as defined
 in the [`SuperchainConfig`](#superchainconfig).
 
 ```solidity
-function upgrade(uint32 _gasLimit, bytes memory _data) external
+function callL2ProxyAdmin(uint32 _gasLimit, bytes memory _data) external
 ```
 
+This function can be used to upgrade the L2 predeploys.
 This function emits a `TransactionDeposited` event.
 The deposit transaction is always targetted to `L2_PROXY_ADMIN`.
 
@@ -188,15 +189,15 @@ The following fields are included:
 - `to` is `Predeploys.L2_PROXY_ADMIN`
 - `version` is `uint256(0)`
 - `opaqueData` is the tightly packed transaction data where `mint` is `0`, `value` is `0`, the `gasLimit`
-  is `200_000`, `isCreation` is `false` and the `data` is the data passed into `upgrade`.
+  is `200_000`, `isCreation` is `false` and the `data` is the data passed into `callL2ProxyAdmin`.
 
 ### Invariants
 
 - Only the `SystemConfig` MUST be able to call `setConfig`
 
-- Only the `UPGRADER` role MUST be able to call `upgrade`
+- Only the `UPGRADER` role MUST be able to call `callL2ProxyAdmin`
 
-- `setConfig` and `upgrade` MUST emit a system deposit tx through `TransactionDeposited` event
+- `setConfig` and `callL2ProxyAdmin` MUST emit a system deposit tx through `TransactionDeposited` event
 
 ## SuperchainConfig
 
