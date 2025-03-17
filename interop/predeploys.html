@@ -236,17 +236,6 @@
 <li><a href="#overview-2">Overview</a></li>
 </ul>
 </li>
-<li><a href="#l1block">L1Block</a>
-<ul>
-<li><a href="#l1-atributes-transaction">L1 Atributes Transaction</a></li>
-<li><a href="#deposit-context">Deposit Context</a></li>
-<li><a href="#isdeposit"><code>isDeposit()</code></a>
-<ul>
-<li><a href="#depositscomplete"><code>depositsComplete()</code></a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li><a href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a>
 <ul>
 <li><a href="#optimismmintableerc20">OptimismMintableERC20</a></li>
@@ -659,42 +648,6 @@ BeaconProxies deployed by the
 <p>The Beacon Contract implements the interface defined
 in <a href="https://eips.ethereum.org/EIPS/eip-1967">EIP-1967</a>.</p>
 <p>The implementation address gets deduced similarly to the <code>GasPriceOracle</code> address in Ecotone and Fjord updates.</p>
-<h2 id="l1block"><a class="header" href="#l1block">L1Block</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
-<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000015</code></td></tr>
-<tr><td><code>DEPOSITOR_ACCOUNT</code></td><td><code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code></td></tr>
-</tbody></table>
-</div>
-<h3 id="l1-atributes-transaction"><a class="header" href="#l1-atributes-transaction">L1 Atributes Transaction</a></h3>
-<p>A new entrypoint on the <code>L1Block</code> contract is added that is used to open the <a href="./derivation.html#deposit-context">deposit context</a>.</p>
-<pre><code class="language-solidity">function setL1AttributesInterop() external;
-</code></pre>
-<p>WARNING: the function name is subject to change depending on the name of the network upgrade.</p>
-<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
-<tr><td>{0xfe8f4eaf}</td><td></td><td>0-3</td><td>n/a</td></tr>
-<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
-<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
-<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
-<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
-<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
-<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
-<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
-<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
-<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
-</tbody></table>
-</div>
-<h3 id="deposit-context"><a class="header" href="#deposit-context">Deposit Context</a></h3>
-<p>New methods will be added on the <code>L1Block</code> contract to interact with <a href="./derivation.html#deposit-context">deposit contexts</a>.</p>
-<pre><code class="language-solidity">function isDeposit() public view returns (bool);
-function depositsComplete() public;
-</code></pre>
-<h3 id="isdeposit"><a class="header" href="#isdeposit"><code>isDeposit()</code></a></h3>
-<p>Returns true if the current execution occurs in a <a href="./derivation.html#deposit-context">deposit context</a>.</p>
-<p>Only the <code>CrossL2Inbox</code> is authorized to call <code>isDeposit</code>.
-This is done to prevent apps from easily detecting and censoring deposits.</p>
-<h4 id="depositscomplete"><a class="header" href="#depositscomplete"><code>depositsComplete()</code></a></h4>
-<p>Called after processing the first L1 Attributes transaction and user deposits to destroy the deposit context.</p>
-<p>Only the <code>DEPOSITOR_ACCOUNT</code> is authorized to call <code>depositsComplete()</code>.</p>
 <h2 id="optimismmintableerc20factory"><a class="header" href="#optimismmintableerc20factory">OptimismMintableERC20Factory</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000012</code></td></tr>
