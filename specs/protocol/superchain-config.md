@@ -10,7 +10,7 @@
   - [Pause Deputy](#pause-deputy)
   - [Pause Identifier](#pause-identifier)
   - [Withdrawal Liveness](#withdrawal-liveness)
-- [Withdrawal Safety](#withdrawal-safety)
+  - [Withdrawal Safety](#withdrawal-safety)
   - [Pause Mechanism](#pause-mechanism)
 - [Invariants](#invariants)
   - [iSUPC-001: The Guardian can only cause a Withdrawal Liveness failure](#isupc-001-the-guardian-can-only-cause-a-withdrawal-liveness-failure)
@@ -80,7 +80,7 @@ Withdrawal Liveness in the context of the `OptimismPortal` and the rest of the S
 because this is where a majority of the ETH/tokens in the system live. However, this also applies
 to bonds deposited into dispute game contracts (and ultimately into the `DelayedWETH` contract).
 
-## Withdrawal Safety
+### Withdrawal Safety
 
 **Withdrawal Safety** is the condition that users are *not* able to execute *invalid* withdrawals
 out of any contract that stores ETH or tokens within an OP Chain's set of smart contracts.
@@ -101,12 +101,8 @@ it will expire, the system will automatically become unpaused, and the system ca
 again.
 
 The Pause Mechanism can be applied globally or to individual systems. Which level the pause applies
-to is determined by an identifier provided when executing or checking pause status. This identifier
-is an address parameter. To support the ability to pause individual chains or the entire Superchain
-interop set with a single mechanism, this address is expected to be an `ETHLockbox` address (namely
-because the Superchain interop set shares a single `ETHLockbox`). If the provided identifier is the
-zero address, the Guardian will trigger the pause for all chains that share the common
-SuperchainConfig contract.
+to is determined by the [Pause Identifier](#pause-identifier) provided when executing or checking
+pause status.
 
 Chains using the Standard Configuration of the OP Stack use a pause expiry of **6 months**. Because
 the Pause Mechanism can be applied to both local and global scopes, the pause could be chained to,
@@ -218,26 +214,18 @@ of the pausable status of the global pause (zero address identifier).
 ### paused
 
 Allows any user to check if the system is currently paused for a specific
-[Pause Identifier](#pause-identifier). A system is considered paused if EITHER its specific
-identifier OR the global identifier (zero address) is paused and not expired. This means that the
-maximum time that a system can be paused before the pause must be reset is actually *double* the
-expiry time. This can be achieved if, for instance, the individual system is paused and then the
-global system is paused near the end of the expiry of the individual system.
+[Pause Identifier](#pause-identifier).
 
 - MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
   (current time < pause timestamp + expiry duration).
-- MUST return true if the pause timestamp for the zero address identifier (global pause) is
-  non-zero AND not expired, regardless of the status of the specific identifier.
-- MUST return false if the pause timestamp is 0 for both the given identifier and the zero address.
+- MUST return false if the pause timestamp is 0 for the given identifier.
 - MUST return false if the pause has expired (current time > pause timestamp + expiry duration) for
-  both the given identifier and the zero address.
+  the given identifier.
 
 ### expiration
 
 Returns the timestamp at which the pause for a given [Pause Identifier](#pause-identifier) will
-expire. This function only returns the expiration for the specific identifier provided. To
-determine when a system will be fully unpaused, both the specific identifier and the global
-identifier (zero address) expirations must be considered.
+expire. This function only returns the expiration for the specific identifier provided.
 
 - MUST return the pause timestamp plus the configured expiry duration if the pause timestamp is non-zero.
 - MUST return 0 if the pause timestamp is 0 (system is not paused) for the given identifier.

@@ -64,14 +64,14 @@ achieve Stage 1.
 
 1. **The Guardian Safe:** This Safe controls any code paths which impact a users ability to
    exit the system. It is extended with the
-   [Deputy Guardian Module](./safe-extensions.md#deputy-guardian-module).
+   [Deputy Pause Module](./deputy-pause-module.md).
 
    Accordingly, this Safe is authorized to call the following functions:
       - `SuperchainConfig.pause()`
       - `SuperchainConfig.unpause()`
-      - `OptimismPortal2.setRespectedGameType()`
-      - `OptimismPortal2.blacklistDisputeGame()`
-      - `AnchorStateRegistry.setAnchorState()`
+      - `SuperchainConfig.reset()`
+      - `AnchorStateRegistry.updateRetirementTimestamp()`
+      - `AnchorStateRegistry.blacklistDisputeGame()`
 
    This Safe has a threshold of 1 and is owned by the Security Council Safe.
 
@@ -86,11 +86,6 @@ achieve Stage 1.
    It is also able to update the recommended and required versions on the `ProtocolVersions`
    contract. Given that observing the state of this contract is optional, this is not considered to
    affect safety and can therefore be managed the Foundation Upgrades Safe.
-
-1. **The Foundation Operations Safe:** This Safe acts as the Deputy Guardian, meaning that (via the
-   Guardian Safe's `DeputyGuardianModule`) it can call any functions in the system which impacts
-   liveness. It is extended with the `DeputyPauseModule` to allow a signing key to execute the
-   pause function quickly.
 
 ## Ownership model diagram
 
@@ -125,11 +120,7 @@ flowchart LR
    subgraph GuardianSystem[Guardian System]
       subgraph GuardianSafe[Guardian Safe]
          GS[Guardian Safe]
-         DGM[Deputy Guardian Module]
-      end
-      subgraph FndOpsSafe[Foundation Ops Safe]
-         FndOps[Foundation Ops Safe]
-         DPM[Deputy Pause Module]
+         DGM[Deputy Pause Module]
       end
    end
 

@@ -436,8 +436,8 @@ respected game type in the `OptimismPortal`.<br/>
 **Requirement:**
 [0x09f7150D8c019BeF34450d6920f6B3608ceFdAf2](https://etherscan.io/address/0x09f7150D8c019BeF34450d6920f6B3608ceFdAf2)<br/>
 **Notes:** A 1/1 Safe owned by the Security Council Safe, with
-the [Deputy Guardian Module](../protocol/safe-extensions.md#deputy-guardian-module) enabled to allow the Optimism
-Foundation to act as Guardian.<br/>
+the [Deputy Pause Module](./deputy-pause-module.md) enabled to allow the Optimism
+Foundation to act as [Pause Deputy](./superchain-config.md#pause-deputy).<br/>
 
 ### [Proposer address](https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/PermissionedDisputeGame.sol#L20)
 

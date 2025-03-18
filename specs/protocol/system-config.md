@@ -233,7 +233,8 @@ using the chain's `ETHLockbox` address as the
 [Pause Identifier](./superchain-config.md#pause-identifier). Returns the current pause state of the
 system by checking if the `SuperchainConfig` is paused for this chain's `ETHLockbox`.
 
-- MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns true.
+- MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns true OR if
+  `SuperchainConfig.paused(address(0))` returns true.
 - MUST return false otherwise.
 
 ### superchainConfig
