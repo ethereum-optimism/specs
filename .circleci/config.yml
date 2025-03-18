@@ -35,6 +35,9 @@ jobs:
       - run:
           name: markdown toc
           command: just lint-specs-toc-check
+      - run: 
+          name: spellcheck
+          command: just lint-specs-spelling-check
 
   lint-links:
     executor: default
