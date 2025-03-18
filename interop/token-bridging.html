@@ -187,7 +187,7 @@
 </li>
 </ul>
 </li>
-<li><a href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></li>
+<li><a href="#superchaintokenbridge"><code>SuperchainTokenBridge</code></a></li>
 <li><a href="#diagram">Diagram</a></li>
 <li><a href="#implementation">Implementation</a></li>
 <li><a href="#future-considerations">Future Considerations</a>
@@ -201,8 +201,8 @@
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
-Superchain using the official <code>SuperchainERC20Bridge</code>.
-The <code>SuperchainERC20Bridge</code> is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.</p>
+Superchain using the official <code>SuperchainTokenBridge</code>.
+The <code>SuperchainTokenBridge</code> is a predeploy that builds on the messaging protocol as the most trust-minimized bridging solution.</p>
 <h2 id="superchainerc20-standard"><a class="header" href="#superchainerc20-standard"><code>SuperchainERC20</code> standard</a></h2>
 <h3 id="properties"><a class="header" href="#properties">Properties</a></h3>
 <p>The standard will build on top of ERC20, implement the
@@ -211,17 +211,17 @@ interface, and include the following properties:</p>
 <ol>
 <li>Implement the <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> interface</li>
 <li>Implement the <a href="https://github.com/ethereum/ERCs/pull/692"><code>ERC7802</code></a> interface</li>
-<li>Allow <a href="./predeploys.html#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a> to call
+<li>Allow <a href="./predeploys.html#superchaintokenbridge"><code>SuperchainTokenBridge</code></a> to call
 <a href="#crosschainmint"><code>crosschainMint</code></a> and <a href="#crosschainburn"><code>crosschainBurn</code></a>.</li>
 <li>Be deployed at the same address on every chain in the Superchain.</li>
 </ol>
-<p>The third property will allow the <code>SuperchainERC20Bridge</code> to have a liquidity guarantee,
+<p>The third property will allow the <code>SuperchainTokenBridge</code> to have a liquidity guarantee,
 which would not be possible in a model based on lock/unlock.
 Liquidity availability is fundamental to achieving fungibility.</p>
-<p>SuperchainERC20Bridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>;
+<p>SuperchainTokenBridge does not have to be the exclusive caller of <code>crosschainMint</code> and <code>crosschainBurn</code>;
 other addresses may also be permitted to call these functions.</p>
 <p>The fourth property removes the need for cross-chain access control lists.
-Otherwise, the <code>SuperchainERC20Bridge</code> would need a way to verify if the tokens it mints on
+Otherwise, the <code>SuperchainTokenBridge</code> would need a way to verify if the tokens it mints on
 destination correspond to the tokens that were burned on source.
 Same address abstracts away cross-chain validation.</p>
 <p>One way to guarantee the same address across the Superchain (and also bind it to the same <code>init_code</code>
@@ -253,23 +253,23 @@ that includes two external functions and two events:</p>
 <p>MUST trigger when <code>crosschainBurn</code> is called</p>
 <pre><code class="language-solidity">event CrosschainBurn(address indexed _from, uint256 _amount, address indexed _sender)
 </code></pre>
-<h2 id="superchainerc20bridge"><a class="header" href="#superchainerc20bridge"><code>SuperchainERC20Bridge</code></a></h2>
-<p>The <code>SuperchainERC20Bridge</code> is a predeploy that works as an abstraction
+<h2 id="superchaintokenbridge"><a class="header" href="#superchaintokenbridge"><code>SuperchainTokenBridge</code></a></h2>
+<p>The <code>SuperchainTokenBridge</code> is a predeploy that works as an abstraction
 on top of the <a href="./predeploys.html#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
 for token bridging.
 The <code>L2ToL2CrossDomainMessenger</code> is used for replay protection,
 domain binding and access to additional message information.
-The <code>SuperchainERC20Bridge</code> includes two functions for bridging:</p>
+The <code>SuperchainTokenBridge</code> includes two functions for bridging:</p>
 <ul>
 <li><code>sendERC20</code>: initializes a cross-chain transfer of a <code>SuperchainERC20</code>
-by burning the tokens locally and sending a message to the <code>SuperchainERC20Bridge</code>
+by burning the tokens locally and sending a message to the <code>SuperchainTokenBridge</code>
 on the target chain using the <code>L2toL2CrossDomainMessenger</code>.
 Additionally, it returns the <code>msgHash_</code> crafted by the <code>L2toL2CrossDomainMessenger</code>.</li>
 <li><code>relayERC20</code>: processes incoming messages from the <code>L2toL2CrossDomainMessenger</code>
 and mints the corresponding amount of the <code>SuperchainERC20</code>.</li>
 </ul>
 <p>The full specifications and invariants are detailed
-in the <a href="./predeploys.html#superchainerc20bridge">predeploys spec</a>.</p>
+in the <a href="./predeploys.html#superchaintokenbridge">predeploys spec</a>.</p>
 <h2 id="diagram"><a class="header" href="#diagram">Diagram</a></h2>
 <p>The following diagram depicts a cross-chain transfer.</p>
 <pre class="mermaid">---
@@ -279,12 +279,12 @@ config:
 ---
 sequenceDiagram
   participant from
-  participant L2SBA as SuperchainERC20Bridge (Chain A)
+  participant L2SBA as SuperchainTokenBridge (Chain A)
   participant SuperERC20_A as SuperchainERC20 (Chain A)
   participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
   participant Inbox as CrossL2Inbox
   participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as SuperchainERC20Bridge (Chain B)
+  participant L2SBB as SuperchainTokenBridge (Chain B)
   participant SuperERC20_B as SuperchainERC20 (Chain B)
 
   from-&gt;&gt;L2SBA: sendERC20(tokenAddr, to, amount, chainID)
