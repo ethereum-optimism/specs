@@ -488,6 +488,7 @@ and errno (`$a3`) registers.
 | 5217 | timer_settime      |
 | 5220 | timer_delete       |
 <!-- cspell:enable -->
+
 ## I/O
 
 The VM does not support Linux open(2). However, the VM can read from and write to a predefined set of file descriptors.
