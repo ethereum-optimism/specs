@@ -40,6 +40,7 @@
 - [Syscalls](#syscalls)
   - [Supported Syscalls](#supported-syscalls)
   - [Noop Syscalls](#noop-syscalls)
+- [I/O](#io)
   - [Standard Streams](#standard-streams)
   - [Hint Communication](#hint-communication)
   - [Pre-image Communication](#pre-image-communication)
