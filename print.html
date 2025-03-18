@@ -10072,7 +10072,7 @@ when the <code>L2 Timestamp &gt;= activation time</code>.</p>
 </ul>
 <p>Note that <code>extraData</code> has a maximum capacity of 32 bytes (to fit in the L1 beacon-chain <code>extraData</code> data-type) and its
 format may be modified/extended by future upgrades.</p>
-<p>Note also that if the chain had Holocene genesis, the genesis block must have an above-formated <code>extraData</code> representing
+<p>Note also that if the chain had Holocene genesis, the genesis block must have an above-formatted <code>extraData</code> representing
 the initial parameters to be used by the chain.</p>
 <h3 id="eip-1559-parameters-in-payloadattributesv3"><a class="header" href="#eip-1559-parameters-in-payloadattributesv3">EIP-1559 Parameters in <code>PayloadAttributesV3</code></a></h3>
 <p>The <a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#payloadattributesv3"><code>PayloadAttributesV3</code></a>
@@ -10236,7 +10236,7 @@ For L2 blocks with an L1 origin less than the hard fork timestamp, the Cancun bl
 <p>If the hardfork activation timestamp is nil, the blob base fee update rules which are active
 at any given L1 block will apply to the L1 Attributes Deposited Transaction.</p>
 <h2 id="motivation-and-rationale"><a class="header" href="#motivation-and-rationale">Motivation and Rationale</a></h2>
-<p>Due to a consensus layer bug, OPStack chains on Holesky and Sepolia running oficially released op-node software
+<p>Due to a consensus layer bug, OPStack chains on Holesky and Sepolia running officially released op-node software
 did not update their blob base fee update fraction (for L1 Attributes Deposited Transaction)
 in tandem with the Prague upgrade on L1.</p>
 <p>These chains, or any OPStack chain with a sequencer running
@@ -10489,7 +10489,7 @@ available to the EVM/application layer.</p>
 <h4 id="p2p"><a class="header" href="#p2p">P2P</a></h4>
 <p>During sync, we expect the withdrawals list in the block body to be empty (OP stack does not make
 use of the withdrawals list) and hence the hash of the withdrawals list to be the MPT root of an empty list.
-When verifying the header chain using the final header that is synced, the header timesetamp is used to
+When verifying the header chain using the final header that is synced, the header timestamp is used to
 determine whether Isthmus is active at the said block. If it is, we expect that the header <code>withdrawalsRoot</code>
 MPT hash can be any non-null value (since it is expected to contain the <code>L2ToL1MessagePasser</code>'s storage root).</p>
 <h4 id="backwards-compatibility-considerations"><a class="header" href="#backwards-compatibility-considerations">Backwards Compatibility Considerations</a></h4>
@@ -10703,7 +10703,7 @@ make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
 </code></pre>
 <h2 id="operator-fee-vault-deployment"><a class="header" href="#operator-fee-vault-deployment">Operator fee vault deployment</a></h2>
-<p>A new <code>OperatorFeeVault</code> contract has been created to recieve the operator fees. The contract is created
+<p>A new <code>OperatorFeeVault</code> contract has been created to receive the operator fees. The contract is created
 with the following arguments:</p>
 <ul>
 <li>Recipient address: The base fee vault</li>
@@ -14086,7 +14086,7 @@ ensure that such future contracts do not break this invariant.</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
-<p>New derivation rules are added to guaranteee integrity of cross chain messages.
+<p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
 <h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
@@ -14173,7 +14173,7 @@ needing to execute increasingly long chain histories.</p>
 <h3 id="expiry-window-1"><a class="header" href="#expiry-window-1">Expiry Window</a></h3>
 <p>The expiry window ensures that the proof can execute in a reasonable amount of time.
 There is currently no way to prove old history with a sublinear proof size. The proof
-program needs to walk back and reexecute to reproduce the consumed logs. This means
+program needs to walk back and re-execute to reproduce the consumed logs. This means
 that very old logs are more expensive to prove.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="transaction-pool"><a class="header" href="#transaction-pool">Transaction pool</a></h1>
@@ -15421,6 +15421,7 @@ The VM must not modify any register other than <code>$v0</code> and <code>$a3</c
 <p>The following tables summarize supported syscalls and their behaviors.
 If an unsupported syscall is encountered, the VM will raise an exception.</p>
 <h3 id="supported-syscalls"><a class="header" href="#supported-syscalls">Supported Syscalls</a></h3>
+<!-- cspell:disable -->
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th><th>$a0</th><th>$a1</th><th>$a2</th><th>$a3</th><th>Effect</th></tr></thead><tbody>
 <tr><td>5009</td><td>mmap</td><td>uint64 addr</td><td>uint64 len</td><td>🚫</td><td>🚫</td><td>Allocates a page from the heap. See <a href="experimental/cannon-fault-proof-vm-mt.html#heap">heap</a> for details.</td></tr>
 <tr><td>5012</td><td>brk</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns a fixed address for the program break at <code>ProgramBreakAddress</code></td></tr>
@@ -15438,8 +15439,9 @@ If an unsupported syscall is encountered, the VM will raise an exception.</p>
 <tr><td>5222</td><td>clock_gettime</td><td>uint64 clock_id</td><td>uint64 addr</td><td>🚫</td><td>🚫</td><td>Supports <code>clock_id</code>'s <code>REALTIME</code>(0) and <code>MONOTONIC</code>(1). For other <code>clock_id</code>'s, sets errno to <code>0x16</code>.  Calculates a deterministic time value based on the state's <code>step</code> field and a constant <code>HZ</code> (10,000,000) where <code>HZ</code> represents the approximate clock rate (steps / second) of the FPVM:<br/><br/><code>seconds = step/HZ</code><br/><code>nsecs = (step % HZ) * 10^9/HZ</code><br/><br/>Seconds are set at memory address <code>addr</code> and nsecs are set at <code>addr + WordSize</code>.</td></tr>
 <tr><td>5038</td><td>getpid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns 0.</td></tr>
 </tbody></table>
-</div>
+</div><!-- cspell:enable -->
 <h3 id="noop-syscalls"><a class="header" href="#noop-syscalls">Noop Syscalls</a></h3>
+<!-- cspell:disable -->
 <p>For the following noop syscalls, the VM must do nothing except to zero out the syscall return (<code>$v0</code>)
 and errno (<code>$a3</code>) registers.</p>
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th></tr></thead><tbody>
@@ -15475,7 +15477,7 @@ and errno (<code>$a3</code>) registers.</p>
 <tr><td>5217</td><td>timer_settime</td></tr>
 <tr><td>5220</td><td>timer_delete</td></tr>
 </tbody></table>
-</div>
+</div><!-- cspell:enable -->
 <h2 id="io-1"><a class="header" href="#io-1">I/O</a></h2>
 <p>The VM does not support Linux open(2). However, the VM can read from and write to a predefined set of file descriptors.</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>File descriptor</th><th>Description</th></tr></thead><tbody>

@@ -577,6 +577,7 @@ The VM must not modify any register other than <code>$v0</code> and <code>$a3</c
 <p>The following tables summarize supported syscalls and their behaviors.
 If an unsupported syscall is encountered, the VM will raise an exception.</p>
 <h3 id="supported-syscalls"><a class="header" href="#supported-syscalls">Supported Syscalls</a></h3>
+<!-- cspell:disable -->
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th><th>$a0</th><th>$a1</th><th>$a2</th><th>$a3</th><th>Effect</th></tr></thead><tbody>
 <tr><td>5009</td><td>mmap</td><td>uint64 addr</td><td>uint64 len</td><td>🚫</td><td>🚫</td><td>Allocates a page from the heap. See <a href="#heap">heap</a> for details.</td></tr>
 <tr><td>5012</td><td>brk</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns a fixed address for the program break at <code>ProgramBreakAddress</code></td></tr>
@@ -594,8 +595,9 @@ If an unsupported syscall is encountered, the VM will raise an exception.</p>
 <tr><td>5222</td><td>clock_gettime</td><td>uint64 clock_id</td><td>uint64 addr</td><td>🚫</td><td>🚫</td><td>Supports <code>clock_id</code>'s <code>REALTIME</code>(0) and <code>MONOTONIC</code>(1). For other <code>clock_id</code>'s, sets errno to <code>0x16</code>.  Calculates a deterministic time value based on the state's <code>step</code> field and a constant <code>HZ</code> (10,000,000) where <code>HZ</code> represents the approximate clock rate (steps / second) of the FPVM:<br/><br/><code>seconds = step/HZ</code><br/><code>nsecs = (step % HZ) * 10^9/HZ</code><br/><br/>Seconds are set at memory address <code>addr</code> and nsecs are set at <code>addr + WordSize</code>.</td></tr>
 <tr><td>5038</td><td>getpid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns 0.</td></tr>
 </tbody></table>
-</div>
+</div><!-- cspell:enable -->
 <h3 id="noop-syscalls"><a class="header" href="#noop-syscalls">Noop Syscalls</a></h3>
+<!-- cspell:disable -->
 <p>For the following noop syscalls, the VM must do nothing except to zero out the syscall return (<code>$v0</code>)
 and errno (<code>$a3</code>) registers.</p>
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th></tr></thead><tbody>
@@ -631,7 +633,7 @@ and errno (<code>$a3</code>) registers.</p>
 <tr><td>5217</td><td>timer_settime</td></tr>
 <tr><td>5220</td><td>timer_delete</td></tr>
 </tbody></table>
-</div>
+</div><!-- cspell:enable -->
 <h2 id="io"><a class="header" href="#io">I/O</a></h2>
 <p>The VM does not support Linux open(2). However, the VM can read from and write to a predefined set of file descriptors.</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>File descriptor</th><th>Description</th></tr></thead><tbody>

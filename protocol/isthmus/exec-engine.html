@@ -281,7 +281,7 @@ available to the EVM/application layer.</p>
 <h4 id="p2p"><a class="header" href="#p2p">P2P</a></h4>
 <p>During sync, we expect the withdrawals list in the block body to be empty (OP stack does not make
 use of the withdrawals list) and hence the hash of the withdrawals list to be the MPT root of an empty list.
-When verifying the header chain using the final header that is synced, the header timesetamp is used to
+When verifying the header chain using the final header that is synced, the header timestamp is used to
 determine whether Isthmus is active at the said block. If it is, we expect that the header <code>withdrawalsRoot</code>
 MPT hash can be any non-null value (since it is expected to contain the <code>L2ToL1MessagePasser</code>'s storage root).</p>
 <h4 id="backwards-compatibility-considerations"><a class="header" href="#backwards-compatibility-considerations">Backwards Compatibility Considerations</a></h4>
