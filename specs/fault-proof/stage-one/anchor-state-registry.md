@@ -42,6 +42,8 @@
   - [iASR-004: Invalidation functions operate correctly](#iasr-004-invalidation-functions-operate-correctly)
     - [Impact](#impact-3)
     - [Dependencies](#dependencies-3)
+  - [iASR-005: The Anchor Game is recent enough to be fault provable](#iasr-005-the-anchor-game-is-recent-enough-to-be-fault-provable)
+    - [Impact](#impact-4)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [initialize](#initialize)
@@ -372,6 +374,20 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 #### Dependencies
 
 - [aASR-003](#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
+
+### iASR-005: The Anchor Game is recent enough to be fault provable
+
+We require that the Anchor Game corresponds to an L2 block with an L1 origin timestamp that is no
+older than 6 months from the current timestamp. This time constraint is necessary because the fault
+proof VM must walk backwards through L1 blocks to verify derivation, and processing 7 months worth
+of L1 blocks approaches the maximum time available to challengers in the dispute game process.
+
+#### Impact
+
+**Severity: High**
+
+If this invariant is broken, challengers will be unable to participate in fault proofs within the
+allotted response time, and resolution would require intervention from the Proxy Admin Owner.
 
 ## Function Specification
 

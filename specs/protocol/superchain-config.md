@@ -104,10 +104,10 @@ The Pause Mechanism can be applied globally or to individual systems. Which leve
 to is determined by the [Pause Identifier](#pause-identifier) provided when executing or checking
 pause status.
 
-Chains using the Standard Configuration of the OP Stack use a pause expiry of **6 months**. Because
+Chains using the Standard Configuration of the OP Stack use a pause expiry of **3 months**. Because
 the Pause Mechanism can be applied to both local and global scopes, the pause could be chained to,
 for instance, pause the local system first and then the global system shortly before the local
-pause expires. The total potential pause time is therefore double the expiry period (12 months).
+pause expires. The total potential pause time is therefore double the expiry period (6 months).
 
 The Guardian may explicitly unpause the system rather than waiting for the pause to expire. If this
 happens, the pause is automatically reset such that it can be used again. The Guardian can reset
