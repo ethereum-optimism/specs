@@ -14246,12 +14246,13 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#eth-management">ETH Management</a>
 <ul>
 <li><a href="interop/optimism-portal.html#migrateliquidity"><code>migrateLiquidity</code></a></li>
+<li><a href="interop/optimism-portal.html#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
-<li><a href="interop/optimism-portal.html#internal-eth-functions">Internal ETH Functions</a>
+<li><a href="interop/optimism-portal.html#internal-eth-functionality">Internal ETH functionality</a>
 <ul>
-<li><a href="interop/optimism-portal.html#_locketh"><code>_lockETH</code></a></li>
-<li><a href="interop/optimism-portal.html#_unlocketh"><code>_unlockETH</code></a></li>
+<li><a href="interop/optimism-portal.html#locking-eth">Locking ETH</a></li>
+<li><a href="interop/optimism-portal.html#unlocking-eth">Unlocking ETH</a></li>
 </ul>
 </li>
 </ul>
@@ -14285,18 +14286,22 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <li>MUST transfer all ETH balance to the <code>ETHLockbox</code></li>
 <li>MUST emit an <code>ETHMigrated</code> event with the amount transferred</li>
 </ul>
-<h3 id="internal-eth-functions"><a class="header" href="#internal-eth-functions">Internal ETH Functions</a></h3>
-<h4 id="_locketh"><a class="header" href="#_locketh"><code>_lockETH</code></a></h4>
+<h4 id="proxyadminowner"><a class="header" href="#proxyadminowner"><code>proxyAdminOwner</code></a></h4>
+<p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
+<pre><code class="language-solidity">function proxyAdminOwner() external view returns (address);
+</code></pre>
+<h3 id="internal-eth-functionality"><a class="header" href="#internal-eth-functionality">Internal ETH functionality</a></h3>
+<h4 id="locking-eth"><a class="header" href="#locking-eth">Locking ETH</a></h4>
 <p>Called during deposit transactions to handle ETH locking.</p>
-<pre><code class="language-solidity">function _lockETH() internal;
+<pre><code class="language-solidity">if (msg.value &gt; 0) ethLockbox.lockETH{ value: msg.value }();
 </code></pre>
 <ul>
 <li>MUST be invoked during <code>depositTransaction</code> when there is ETH value</li>
 <li>MUST lock any ETH value in the <code>ETHLockbox</code></li>
 </ul>
-<h4 id="_unlocketh"><a class="header" href="#_unlocketh"><code>_unlockETH</code></a></h4>
+<h4 id="unlocking-eth"><a class="header" href="#unlocking-eth">Unlocking ETH</a></h4>
 <p>Called during withdrawal finalization to handle ETH unlocking.</p>
-<pre><code class="language-solidity">function _unlockETH(uint256 _amount) internal;
+<pre><code class="language-solidity">if (_tx.value &gt; 0) ethLockbox.unlockETH(_tx.value);
 </code></pre>
 <ul>
 <li>MUST be invoked during withdrawal finalization when there is ETH value</li>
@@ -14343,7 +14348,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <li><a href="interop/eth-lockbox.html#authorizelockbox"><code>authorizeLockbox</code></a></li>
 <li><a href="interop/eth-lockbox.html#migrateliquidity"><code>migrateLiquidity</code></a></li>
 <li><a href="interop/eth-lockbox.html#receiveliquidity"><code>receiveLiquidity</code></a></li>
-<li><a href="interop/eth-lockbox.html#adminowner"><code>adminOwner</code></a></li>
+<li><a href="interop/eth-lockbox.html#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
 <li><a href="interop/eth-lockbox.html#events">Events</a>
@@ -14414,8 +14419,8 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <ul>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the <code>OptimismPortal</code> must be the same as the <code>ProxyAdmin</code> owner of the <code>ETHLockbox</code>.</li>
+<li>The <code>OptimismPortal</code> and <code>ETHLockbox</code> MUST share the same <code>SuperchainConfig</code> address</li>
 <li>The function MUST emit the <code>PortalAuthorized</code> event with the <code>portal</code>.</li>
-<li>The function MUST NOT allow the same <code>OptimismPortal</code> to be authorized more than once.</li>
 </ul>
 <pre><code class="language-solidity">function authorizePortal(address _portal) external;
 </code></pre>
@@ -14425,7 +14430,6 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
 <li>The function MUST emit the <code>LockboxAuthorized</code> event with the <code>lockbox</code> that is being authorized.</li>
-<li>The function MUST NOT allow the same <code>ETHLockbox</code> to be authorized more than once.</li>
 </ul>
 <pre><code class="language-solidity">function authorizeLockbox(address _lockbox) external;
 </code></pre>
@@ -14447,9 +14451,9 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 </ul>
 <pre><code class="language-solidity">function receiveLiquidity() external payable;
 </code></pre>
-<h4 id="adminowner"><a class="header" href="#adminowner"><code>adminOwner</code></a></h4>
+<h4 id="proxyadminowner-1"><a class="header" href="#proxyadminowner-1"><code>proxyAdminOwner</code></a></h4>
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
-<pre><code class="language-solidity">function adminOwner() external view returns (address);
+<pre><code class="language-solidity">function proxyAdminOwner() external view returns (address);
 </code></pre>
 <h3 id="events-4"><a class="header" href="#events-4">Events</a></h3>
 <h4 id="ethlocked"><a class="header" href="#ethlocked"><code>ETHLocked</code></a></h4>

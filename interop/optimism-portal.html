@@ -183,12 +183,13 @@
 <li><a href="#eth-management">ETH Management</a>
 <ul>
 <li><a href="#migrateliquidity"><code>migrateLiquidity</code></a></li>
+<li><a href="#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
-<li><a href="#internal-eth-functions">Internal ETH Functions</a>
+<li><a href="#internal-eth-functionality">Internal ETH functionality</a>
 <ul>
-<li><a href="#_locketh"><code>_lockETH</code></a></li>
-<li><a href="#_unlocketh"><code>_unlockETH</code></a></li>
+<li><a href="#locking-eth">Locking ETH</a></li>
+<li><a href="#unlocking-eth">Unlocking ETH</a></li>
 </ul>
 </li>
 </ul>
@@ -222,18 +223,22 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <li>MUST transfer all ETH balance to the <code>ETHLockbox</code></li>
 <li>MUST emit an <code>ETHMigrated</code> event with the amount transferred</li>
 </ul>
-<h3 id="internal-eth-functions"><a class="header" href="#internal-eth-functions">Internal ETH Functions</a></h3>
-<h4 id="_locketh"><a class="header" href="#_locketh"><code>_lockETH</code></a></h4>
+<h4 id="proxyadminowner"><a class="header" href="#proxyadminowner"><code>proxyAdminOwner</code></a></h4>
+<p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
+<pre><code class="language-solidity">function proxyAdminOwner() external view returns (address);
+</code></pre>
+<h3 id="internal-eth-functionality"><a class="header" href="#internal-eth-functionality">Internal ETH functionality</a></h3>
+<h4 id="locking-eth"><a class="header" href="#locking-eth">Locking ETH</a></h4>
 <p>Called during deposit transactions to handle ETH locking.</p>
-<pre><code class="language-solidity">function _lockETH() internal;
+<pre><code class="language-solidity">if (msg.value &gt; 0) ethLockbox.lockETH{ value: msg.value }();
 </code></pre>
 <ul>
 <li>MUST be invoked during <code>depositTransaction</code> when there is ETH value</li>
 <li>MUST lock any ETH value in the <code>ETHLockbox</code></li>
 </ul>
-<h4 id="_unlocketh"><a class="header" href="#_unlocketh"><code>_unlockETH</code></a></h4>
+<h4 id="unlocking-eth"><a class="header" href="#unlocking-eth">Unlocking ETH</a></h4>
 <p>Called during withdrawal finalization to handle ETH unlocking.</p>
-<pre><code class="language-solidity">function _unlockETH(uint256 _amount) internal;
+<pre><code class="language-solidity">if (_tx.value &gt; 0) ethLockbox.unlockETH(_tx.value);
 </code></pre>
 <ul>
 <li>MUST be invoked during withdrawal finalization when there is ETH value</li>

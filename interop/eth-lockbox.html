@@ -184,7 +184,7 @@
 <li><a href="#authorizelockbox"><code>authorizeLockbox</code></a></li>
 <li><a href="#migrateliquidity"><code>migrateLiquidity</code></a></li>
 <li><a href="#receiveliquidity"><code>receiveLiquidity</code></a></li>
-<li><a href="#adminowner"><code>adminOwner</code></a></li>
+<li><a href="#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
 <li><a href="#events">Events</a>
@@ -255,8 +255,8 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <ul>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the <code>OptimismPortal</code> must be the same as the <code>ProxyAdmin</code> owner of the <code>ETHLockbox</code>.</li>
+<li>The <code>OptimismPortal</code> and <code>ETHLockbox</code> MUST share the same <code>SuperchainConfig</code> address</li>
 <li>The function MUST emit the <code>PortalAuthorized</code> event with the <code>portal</code>.</li>
-<li>The function MUST NOT allow the same <code>OptimismPortal</code> to be authorized more than once.</li>
 </ul>
 <pre><code class="language-solidity">function authorizePortal(address _portal) external;
 </code></pre>
@@ -266,7 +266,6 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
 <li>The function MUST emit the <code>LockboxAuthorized</code> event with the <code>lockbox</code> that is being authorized.</li>
-<li>The function MUST NOT allow the same <code>ETHLockbox</code> to be authorized more than once.</li>
 </ul>
 <pre><code class="language-solidity">function authorizeLockbox(address _lockbox) external;
 </code></pre>
@@ -288,9 +287,9 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 </ul>
 <pre><code class="language-solidity">function receiveLiquidity() external payable;
 </code></pre>
-<h4 id="adminowner"><a class="header" href="#adminowner"><code>adminOwner</code></a></h4>
+<h4 id="proxyadminowner"><a class="header" href="#proxyadminowner"><code>proxyAdminOwner</code></a></h4>
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
-<pre><code class="language-solidity">function adminOwner() external view returns (address);
+<pre><code class="language-solidity">function proxyAdminOwner() external view returns (address);
 </code></pre>
 <h3 id="events"><a class="header" href="#events">Events</a></h3>
 <h4 id="ethlocked"><a class="header" href="#ethlocked"><code>ETHLocked</code></a></h4>
