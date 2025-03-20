@@ -20,7 +20,7 @@
 
 # Network upgrade automation transactions
 
-The Isthumus hardfork activation block contains the following transactions, in this order:
+The Isthmus hardfork activation block contains the following transactions, in this order:
 
 - L1 Attributes Transaction
 - User deposits from L1
@@ -135,7 +135,7 @@ cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artif
 
 ## Operator fee vault deployment
 
-A new `OperatorFeeVault` contract has been created to recieve the operator fees. The contract is created
+A new `OperatorFeeVault` contract has been created to receive the operator fees. The contract is created
 with the following arguments:
 
 - Recipient address: The base fee vault

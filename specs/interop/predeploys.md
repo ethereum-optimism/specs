@@ -6,6 +6,10 @@
 
 - [Overview](#overview)
 - [CrossL2Inbox](#crossl2inbox)
+  - [Access-list](#access-list)
+    - [type 1: Lookup identity](#type-1-lookup-identity)
+    - [type 2: Chain-ID extension](#type-2-chain-id-extension)
+    - [type 3: Checksum](#type-3-checksum)
   - [Functions](#functions)
     - [validateMessage](#validatemessage)
   - [`ExecutingMessage` Event](#executingmessage-event)
@@ -33,11 +37,6 @@
   - [Deployment Flow](#deployment-flow)
 - [OptimismSuperchainERC20Beacon](#optimismsuperchainerc20beacon)
   - [Overview](#overview-2)
-- [L1Block](#l1block)
-  - [L1 Atributes Transaction](#l1-atributes-transaction)
-  - [Deposit Context](#deposit-context)
-  - [`isDeposit()`](#isdeposit)
-    - [`depositsComplete()`](#depositscomplete)
 - [OptimismMintableERC20Factory](#optimismmintableerc20factory)
   - [OptimismMintableERC20](#optimismmintableerc20)
   - [Updates](#updates)
@@ -86,6 +85,105 @@ To ensure safety of the protocol, the [Message Invariants](./messaging.md#messag
 
 [`Identifier`]: ./messaging.md#message-identifier
 
+### Access-list
+
+Execution of messages is statically pre-declared in transactions,
+to ensure the cross-chain validity can be verified outside the single-chain EVM environment constraints.
+
+After pre-verification of the access-list, the `CrossL2Inbox` can allow messages
+to execute when there is a matching pre-verified access-list entry.
+
+Each executing message is declared with 3 typed access-list entries:
+
+- 1: Lookup identity
+- 2: Chain-ID extension
+- 3: Checksum
+
+The type of entry is encoded in the first byte.
+Type 0 is reserved, so valid access-list entries are always non-zero.
+
+Note that the access-list entries may be de-duplicated:
+the same message may be executed multiple times.
+
+The access-list content might not always be a multiple of 3.
+
+The access-list content is ordered:
+
+- after type 1, a type 2 or 3 entry is expected.
+- after type 2, a type 3 entry is expected.
+
+Note that type 1 and 2 are only enforced out-of-protocol:
+these provide a hint, for viable block-building,
+to lookup data to determine the validity of the checksum without prior transaction execution.
+
+Not every access-list entry may be executed:
+access-list content must not be used by applications to interpret results of transactions,
+the `ExecutingMessage` event describes in detail what is executed.
+
+To prevent cross-contamination of access-list contents,
+the checksum entry commits to the contents of the other entries.
+The checksum will be invalid if the wrong entries are interpreted with it.
+
+The `CrossL2Inbox` only checks the checksum is present in the access-list:
+the presence of other needed entries is enforced during pre-validation.
+
+#### type 1: Lookup identity
+
+Packed attributes for message lookup.
+This type of entry serves as hint of the message identity,
+for verification of the `checksum` and is not verified in the protocol state-transition or fork-choice.
+
+```text
+0..1: type byte, always 0x01
+1..4: reserved, zeroed by default
+4..12: big-endian uint64 chain ID
+12..16: big-endian uint64, block number
+16..24: big-endian uint64, timestamp
+24..32: big-endian uint32, log index
+```
+
+Chain IDs larger than `uint64` are supported, with an additional chain-ID-extension entry.
+The lower 64 bits of the chain-ID are always encoded in the lookup entry.
+
+#### type 2: Chain-ID extension
+
+Large `uint256` Chain IDs are represented with an extension entry,
+included right after the lookup identity entry.
+Like the lookup identity entry, this entry-type is not verified in the protocol state-transition or fork-choice.
+
+This extension entry does not have to be included for chain-IDs that fit in `uint64`.
+
+```text
+0..1: type byte, always 0x02
+1..8: zero bytes
+8..32: upper 24 bytes of big-endian uint256 chain-ID
+```
+
+#### type 3: Checksum
+
+The checksum is a versioned hash, committing to implied attributes.
+These implied attributes are compared against the full version
+of the executing message by recomputing the checksum from the full version.
+The full version is retrieved based on the preceding lookup entry and optional chain-ID extension.
+
+The checksum is iteratively constructed:
+this allows services to work with intermediate implied data.
+E.g. the supervisor does not persist the `origin` or `msgHash`,
+but does store a `logHash`.
+
+```text
+# Syntax:
+#   H(bytes): keccak256 hash function
+#   ++: bytes concatenation
+logHash = H(bytes20(idOrigin) ++ msgHash)
+# This matches the trailing part of the lookupID
+idPacked = bytes12(0) ++ idBlockNumber ++ idTimestamp ++ idLogIndex
+idLogHash = H(logHash ++ idPacked)
+bareChecksum = H(idLogHash ++ idChainID)
+typeByte = 0x03
+checksum = typeByte ++ bareChecksum[1:]
+```
+
 ### Functions
 
 #### validateMessage
@@ -95,10 +193,10 @@ Emits the `ExecutingMessage` event to signal the transaction has a cross chain m
 
 The following fields are required for validating a cross chain message:
 
-| Name       | Type       | Description                                                                |
-| ---------- | ---------- | -------------------------------------------------------------------------- |
-| `_id`      | Identifier | A [`Identifier`] pointing to the initiating message.                       |
-| `_msgHash` | `bytes32`  | The keccak256 hash of the message payload matching the initiating message. |
+| Name       | Type         | Description                                                                |
+| ---------- | ------------ | -------------------------------------------------------------------------- |
+| `_id`      | `Identifier` | A [`Identifier`] pointing to the initiating message.                       |
+| `_msgHash` | `bytes32`    | The keccak256 hash of the message payload matching the initiating message. |
 
 ```solidity
 function validateMessage(Identifier calldata _id, bytes32 _msgHash)
@@ -130,14 +228,22 @@ hash comparison.
 A simple implementation of the `validateMessage` function is included below.
 
 ```solidity
-    function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
-        // We need to know if this is being called on a depositTx
-        if (IL1BlockInterop(Predeploys.L1_BLOCK_ATTRIBUTES).isDeposit()) revert NoExecutingDeposits();
+function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
+  bytes32 checksum = calculateChecksum(_id, _msgHash);
 
-        emit ExecutingMessage(_msgHash, _id);
-    }
+  (bool _isSlotWarm,) = _isWarm(checksum);
+
+  if (!_isSlotWarm) revert NonDeclaredExecutingMessage();
+
+  emit ExecutingMessage(_msgHash, _id);
 }
 ```
+
+`calculateChecksum` implements the checksum computation (including type-byte) as defined
+in the [access-list checksum computation](#type-3-checksum) spec.
+
+`_isWarm` checks that the access-list prepared the `checksum` storage key to be warm.
+**No other contract function may warm up this storage without message validation.**
 
 An example of a custom entrypoint utilizing `validateMessage` to consume a known
 event. Note that in this example, the contract is consuming its own event
@@ -253,7 +359,7 @@ In both cases, the source chain's chain id is required for security. Executing m
 assume the identity of an account because `msg.sender` will never be the identity that initiated the message,
 it will be the `L2ToL2CrossDomainMessenger` and users will need to callback to get the initiator of the message.
 
-The `_destination` MUST NOT be the chainid of the local chain and a locally defined `nonce` MUST increment on
+The `_destination` MUST NOT be the chain-ID of the local chain and a locally defined `nonce` MUST increment on
 every call to `sendMessage`.
 
 Note that `sendMessage` is not `payable`.
@@ -445,58 +551,6 @@ The Beacon Contract implements the interface defined
 in [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967).
 
 The implementation address gets deduced similarly to the `GasPriceOracle` address in Ecotone and Fjord updates.
-
-## L1Block
-
-| Constant            | Value                                        |
-| ------------------- | -------------------------------------------- |
-| Address             | `0x4200000000000000000000000000000000000015` |
-| `DEPOSITOR_ACCOUNT` | `0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001` |
-
-### L1 Atributes Transaction
-
-A new entrypoint on the `L1Block` contract is added that is used to open the [deposit context](./derivation.md#deposit-context).
-
-```solidity
-function setL1AttributesInterop() external;
-```
-
-WARNING: the function name is subject to change depending on the name of the network upgrade.
-
-| Input arg         | Type    | Calldata bytes | Segment |
-| ----------------- | ------- | -------------- | ------- |
-| {0xfe8f4eaf}      |         | 0-3            | n/a     |
-| baseFeeScalar     | uint32  | 4-7            | 1       |
-| blobBaseFeeScalar | uint32  | 8-11           |         |
-| sequenceNumber    | uint64  | 12-19          |         |
-| l1BlockTimestamp  | uint64  | 20-27          |         |
-| l1BlockNumber     | uint64  | 28-35          |         |
-| basefee           | uint256 | 36-67          | 2       |
-| blobBaseFee       | uint256 | 68-99          | 3       |
-| l1BlockHash       | bytes32 | 100-131        | 4       |
-| batcherHash       | bytes32 | 132-163        | 5       |
-
-### Deposit Context
-
-New methods will be added on the `L1Block` contract to interact with [deposit contexts](./derivation.md#deposit-context).
-
-```solidity
-function isDeposit() public view returns (bool);
-function depositsComplete() public;
-```
-
-### `isDeposit()`
-
-Returns true if the current execution occurs in a [deposit context](./derivation.md#deposit-context).
-
-Only the `CrossL2Inbox` is authorized to call `isDeposit`.
-This is done to prevent apps from easily detecting and censoring deposits.
-
-#### `depositsComplete()`
-
-Called after processing the first L1 Attributes transaction and user deposits to destroy the deposit context.
-
-Only the `DEPOSITOR_ACCOUNT` is authorized to call `depositsComplete()`.
 
 ## OptimismMintableERC20Factory
 

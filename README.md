@@ -65,6 +65,8 @@ just serve
 
 ### Linting
 
+Please see the relevant commands [in the justfile](./Justfile) for more information.
+
 [doctoc](https://github.com/thlorenz/doctoc) is used to automatically add a table of contents.
 
 To check the table of contents:
@@ -145,3 +147,23 @@ Justification for linting rules in
 - _no-blanks-blockquote_: enable multiple consecutive blockquotes separated by white lines
 - _single-title_: enable reusing `<h1>` for content
 - _no-emphasis-as-heading_: enable emphasized paragraphs
+
+#### Precommit hook
+
+There is a precommit hook in the repo which you can enable (optionally) to fix linting issues and perform a spellcheck on each commit. Enable like so:
+
+```
+git config core.hooksPath .githooks
+```
+
+This makes committing a little slow, but does mean you will know about problems without having to wait for CI. You may disable like so
+
+```
+git config --unset core.hooksPath
+```
+
+or temporarily commit without the hook like so
+
+```
+git commit --no-verify
+```
