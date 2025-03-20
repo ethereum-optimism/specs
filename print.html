@@ -6392,6 +6392,11 @@ struct SuperOutput {
   OutputRootWithChainid[] outputRoots;
 }
 </code></pre>
+<p>The output root for each chain in the super root MUST be for the block with a timestamp where
+<span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">im</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05764em;">S</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7335em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">Bl</span><span class="mord mathnormal">oc</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">im</span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">im</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">im</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05764em;">S</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">im</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05764em;">S</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is the super root timestamp, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">Bl</span><span class="mord mathnormal">oc</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">im</span><span class="mord mathnormal">e</span></span></span></span> is the chain block time
+and <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">im</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is the block timestamp. That is the output root must be from the last possible block at or before the super
+root timestamp.</p>
+<p>The output roots in the super root MUST be sorted by chain ID ascending.</p>
 <h3 id="super-root"><a class="header" href="#super-root">Super Root</a></h3>
 <p>A <strong>Super Root</strong> is a commitment to a <a href="fault-proof/stage-one/optimism-portal.html#super-output">Super Output</a>, computed as:</p>
 <pre><code class="language-solidity">keccak256(encodeSuperRoot(SuperRoot))
@@ -13676,20 +13681,102 @@ Malformed access-lists result in an RPC error.</p>
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/fault-proof.html#cascading-dependencies">Cascading dependencies</a></li>
+<li><a href="interop/fault-proof.html#overview">Overview</a></li>
+<li><a href="interop/fault-proof.html#super-root-state-transition">Super Root State Transition</a>
+<ul>
+<li><a href="interop/fault-proof.html#transition-state">Transition State</a></li>
+<li><a href="interop/fault-proof.html#invalid-state">Invalid State</a></li>
+<li><a href="interop/fault-proof.html#local-safe-block-derivation">Local Safe Block Derivation</a></li>
+<li><a href="interop/fault-proof.html#consolidation">Consolidation</a></li>
+</ul>
+</li>
+<li><a href="interop/fault-proof.html#fault-proof-program-state-transition">Fault Proof Program State Transition</a></li>
 <li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>The fault proof design is not complete, but the following docs show high level overviews of the direction:</p>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<p>Interop introduces the Super Fault Dispute Game as a
+new <a href="interop/../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
+pre-interop <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
 <ul>
-<li><a href="https://oplabs.notion.site/External-Interop-Fault-Dispute-Game-Notes-1537bf9fad054bcfb2245dea88d48d16">Notes 1</a></li>
-<li><a href="https://oplabs.notion.site/External-Interop-Fault-Proofs-spec-WORK-IN-PROGRESS-29cfaae285994870b3fa51254d0391f2">Notes 2</a></li>
+<li>Claims at and above the split depth are commitments to the state within the super root state transition described
+below instead of output roots.</li>
+<li>The L2 block number is replaced by the timestamp of the proposed super root.
+<ul>
+<li>The <code>l2BlockNumber()</code> method has been renamed <code>l2SequenceNumber()</code> in <code>IDisputeGame</code> interface to reflect that this
+is an arbitrary identifier within the fully ordered sequence of chain states.</li>
 </ul>
-<h2 id="cascading-dependencies"><a class="header" href="#cascading-dependencies">Cascading dependencies</a></h2>
-<p>Deposits are a special case, synchronous with derivation, at enforced cross-L2 delay.
-Thus deposits cannot reference each other's events intra-block.</p>
-<p>No changes to the dispute game bisection are required. The only changes required are to the fault proof program itself.
-The insight is that the fault proof program can be a superset of the state transition function.</p>
+</li>
+<li>The <a href="interop/../fault-proof/stage-one/fault-dispute-game.html#l2-block-number-challenge">L2 block number challenge</a> is removed.
+The super root state transition is now able to invalidate all proposals with an incorrect proposal timestamp as part
+of the state transition.</li>
+<li>While claims in the bottom half of the game still commit to the state of the FPVM, the fault proof program being
+executed changes to verify the disputed step of the super root state transition instead of the application of a
+disputed L2 block.</li>
+<li>The L2 block number preimage oracle local key now always provides the timestamp of the proposal.</li>
+<li>The L2 chain ID preimage oracle local key is no longer used and is never populated by the dispute game.</li>
+</ul>
+<h2 id="super-root-state-transition"><a class="header" href="#super-root-state-transition">Super Root State Transition</a></h2>
+<p>The super fault dispute game defines a state transition from the current anchor state super root to the canonical super
+root at the game's proposal timestamp, if one can be derived from the available L1 data or the invalid state if not.</p>
+<p>As the valid state transition always extends to the game proposal's timestamp, proposing a super root with a timestamp
+less than or greater than game's proposal timestamp will be found to be invalid. Similarly any root claim that is the
+hash of a <code>TransitionState</code> will be found to be invalid.</p>
+<p>To reduce the amount of processing required in a single invocation of the FPVM, the state transition breaks the
+transition from the super root at one timestamp to the super root at the next timestamp into 128 steps. The claims for
+these intermediate steps are <code>keccak256</code> hash of a <a href="interop/fault-proof.html#transition-state">transition state</a>. These 128 steps repeat to
+transition between the super root at each timestamp from the anchor state until the proposal time is reached.</p>
+<h3 id="transition-state"><a class="header" href="#transition-state">Transition State</a></h3>
+<p>A transition state is RLP encoded data consisting of:</p>
+<ul>
+<li><code>SuperOutput []byte</code> - the encoded super output at the immediately prior timestamp. This is the super root that is
+being transformed <em>from</em>.</li>
+<li><code>PendingProgress []LocalSafeBlock</code> - the next block derived for each chain from L1 batch data, prior to validating
+executing messages.
+<ul>
+<li><code>LocalSafeBlock</code> is two <code>bytes32</code> RLP encoded, the first being the block hash and the second the output root for
+the block.</li>
+</ul>
+</li>
+<li><code>Step</code> a <code>uint64</code> recording the number of steps applied to this <code>TransitionState</code> since the <code>SuperOutput</code>.</li>
+</ul>
+<h3 id="invalid-state"><a class="header" href="#invalid-state">Invalid State</a></h3>
+<p>The invalid state is defined as <code>keccak256(utf8("invalid"))</code>. This state is used to indicate a state transition where
+there is no possible valid proposal. The dispute game contract MUST prevent a game from being created where the root
+claim is the invalid state.</p>
+<p>When the prestate is the invalid state, the post state is also the invalid state.</p>
+<h3 id="local-safe-block-derivation"><a class="header" href="#local-safe-block-derivation">Local Safe Block Derivation</a></h3>
+<p>The first 127 steps derive the next local safe block for one chain in the super root using
+the <a href="interop/../protocol/derivation.html">derivation process</a>. Chains are processed in the order they appear in the super root
+(ascending order of chain ID). The <code>Step</code> is incremented after each step.</p>
+<p>For each step, the valid post state <code>TransitionState</code> is calculated by the algorithm:</p>
+<ul>
+<li>If the prestate is a SuperRoot, convert it to a <code>TransitionState</code> with <code>Step = 0</code> and <code>PendingProgress</code> an empty
+array.</li>
+<li>If <code>Step</code> is less than the number of chains included in <code>SuperOutput</code>, derive the next local safe block for the chain
+at
+index <code>Step</code> in the <code>SuperRoot</code> using the <a href="interop/../protocol/derivation.html">derivation process</a>. Executing messages are not
+checked at this stage.
+<ul>
+<li>No block is derived if <code>Step</code> is greater than the number of chains in the super root.</li>
+<li>If the derivation process is unable to derive the next L1 block because the L1 head is reached, the post state is
+the <a href="interop/fault-proof.html#invalid-state">invalid state</a></li>
+</ul>
+</li>
+<li>Increment <code>Step</code></li>
+</ul>
+<p>Since one step is required per chain in the dependency set, the current dispute game can support a maximum of 127 chains
+in the dependency set. If a greater number of chains are required in the future the number of steps can be increased.</p>
+<h3 id="consolidation"><a class="header" href="#consolidation">Consolidation</a></h3>
+<p>When the prestate is a <code>TransitionState</code> with <code>Step = 127</code>, the validity of executing messages is checked and any
+local safe blocks found to contain invalid executing messages are replaced with deposit only blocks. This includes
+recursively replacing any blocks with executing messages that became invalid because of another block being replaced.</p>
+<p>The post state is defined as a super output where <code>timestamp</code> is the <code>SuperOutput</code> timestamp + 1, and the output roots
+are set to the output roots of the validated blocks (including any required replacements).</p>
+<h2 id="fault-proof-program-state-transition"><a class="header" href="#fault-proof-program-state-transition">Fault Proof Program State Transition</a></h2>
+<p>Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
+<a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a>. A single <strong>ABSOLUTE_PRESTATE</strong> continues to be used, with the fault proof
+program identifying the type of step to perform based on the agreed prestate.</p>
 <h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
@@ -13725,7 +13812,7 @@ The insight is that the fault proof program can be a superset of the state trans
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainTokenBridge</code>.
@@ -14127,7 +14214,7 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
@@ -14233,7 +14320,7 @@ that very old logs are more expensive to prove.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -14307,7 +14394,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -14419,7 +14506,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -14693,7 +14780,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -14991,7 +15078,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -15155,7 +15242,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
+<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
