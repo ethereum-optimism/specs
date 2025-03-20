@@ -27,3 +27,4 @@ op-contracts-manager.md @mds1 @maurelian
 # Fault Proofs
 /specs/fault-proof @ajsutton @clabby @inphi @refcell @mbaxter
 /specs/experimental/cannon-fault-proof-vm-mt.md @ajsutton @inphi @mbaxter
+/specs/interop/fault-proof.md @ajsutton @clabby @inphi @refcell @mbaxter
