@@ -213,7 +213,11 @@
 <ul>
 <li><a href="#operator-fee">Operator Fee</a>
 <ul>
-<li><a href="#configuring-parameters">Configuring Parameters</a></li>
+<li><a href="#fee-formula">Fee Formula</a></li>
+<li><a href="#deposit-operator-fees">Deposit Operator Fees</a></li>
+<li><a href="#evm-fee-semantics">EVM Fee Semantics</a></li>
+<li><a href="#transaction-pool-changes">Transaction Pool Changes</a></li>
+<li><a href="#configuring-operator-fee-parameters">Configuring Operator Fee Parameters</a></li>
 </ul>
 </li>
 <li><a href="#fee-vaults">Fee Vaults</a></li>
@@ -350,15 +354,50 @@ pricing model. To enable more customizable fee structures, Isthmus adds a new co
 calculation: the <code>operatorFee</code>, which is parameterized by two scalars: the <code>operatorFeeScalar</code>
 and the <code>operatorFeeConstant</code>.</p>
 <h3 id="operator-fee"><a class="header" href="#operator-fee">Operator Fee</a></h3>
-<p>The operator fee, is set as follows:</p>
-<p><code>operatorFee = (gasUsed * operatorFeeScalar / 1e6) + operatorFeeConstant</code></p>
+<p>The operator fee is integrated directly into the EVM, alongside the standard gas fee and the OP Stack specific L1 data
+fee. This fee follows the same semantics of existing fees charged in the EVM<sup class="footnote-reference"><a href="#1">1</a></sup>, just with a new fee beneficiary account.</p>
+<h4 id="fee-formula"><a class="header" href="#fee-formula">Fee Formula</a></h4>
+<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">operatorFee</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord text"><span class="mord">gas</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">operatorFeeScalar</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">÷</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.1141em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">6</span></span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">operatorFeeConstant</span></span></span></span></span></span></p>
 <p>Where:</p>
 <ul>
-<li><code>gasUsed</code> is amount of gas used by the transaction.</li>
+<li><code>gas</code> is the amount of gas that the transaction used. When calculating the amount of gas that is bought at the
+beginning of the transaction, this should be the <code>gas_limit</code>. When determining how much gas should be refunded,
+based off of how much of the <code>gas_limit</code> the transaction used, this should be the <code>gas_used</code>.</li>
 <li><code>operatorFeeScalar</code> is a <code>uint32</code> scalar set by the chain operator, scaled by <code>1e6</code>.</li>
 <li><code>operatorFeeConstant</code> is a <code>uint64</code> scalar set by the chain operator.</li>
 </ul>
-<h4 id="configuring-parameters"><a class="header" href="#configuring-parameters">Configuring Parameters</a></h4>
+<h4 id="deposit-operator-fees"><a class="header" href="#deposit-operator-fees">Deposit Operator Fees</a></h4>
+<p>Deposit transactions do not get charged operator fees. For all deposit transactions, regardless of the operator fee
+parameter configuration, the operator fee should be <strong>zero</strong>. Deposit transactions also do not receive operator fee gas
+refunds, since they never buy the operator fee gas to begin with.</p>
+<h4 id="evm-fee-semantics"><a class="header" href="#evm-fee-semantics">EVM Fee Semantics</a></h4>
+<p>Like other fees in the EVM, the operator fee should be charged following the pattern below:</p>
+<ol>
+<li>During pre-execution validation, the account must have enough ETH to cover the existing worst-case gas + L1 data fees
+<em>as well as</em> the worst-case operator fee (for deposits, the worst-case fee is <code>0</code>). To compute this value, use the
+<a href="#fee-formula">fee formula</a> with <code>gas</code> set to the <code>gas_limit</code> of the transaction, and add it to the existing
+worst-case transaction fee.</li>
+<li>When buying gas prior to execution, charge the account the worst-case operator fee. To compute this value, use the
+<a href="#fee-formula">fee formula</a> with <code>gas</code> set to the <code>gas_limit</code> of the transaction.</li>
+<li>After execution, when issuing refunds, transactions that bought operator fee gas should be refunded the operator fee
+gas that was unused (i.e., the caller should only be charged the <em>effective</em> operator fee.) The refund should be
+calculated as <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">opFeeRefund</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">opFeeWorstCase</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">opFeeActual</span></span></span></span></span>, where:
+<ul>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">opFeeWorstCase</span></span></span></span></span> is as described in #1 + #2.</li>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">opFeeActual</span></span></span></span></span> is the amount of the operator fee that was actually used. This value is computed using the
+<a href="#fee-formula">fee formula</a> with <code>gas</code> set to the <code>gas_limit - gas_used + refunded_gas</code>. <code>refunded_gas</code> is as
+described in <a href="https://eips.ethereum.org/EIPS/eip-3529">EIP-3529</a>.</li>
+</ul>
+</li>
+<li>After execution, when rewarding the fee beneficiaries, send the <em>spent operator fee</em> to the
+<a href="#fee-vaults">operator fee vault</a>. This value is exactly <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">opFeeActual</span></span></span></span></span> as described above.</li>
+</ol>
+<p>Implementations must ensure ETH is neither minted nor destroyed as a result of the operator fee.</p>
+<h4 id="transaction-pool-changes"><a class="header" href="#transaction-pool-changes">Transaction Pool Changes</a></h4>
+<p>To account for the additional fee factored into transaction validity mentioned above, the transaction pool must reject
+transactions that do not have enough balance to cover the worst-case cost of the transaction fee. This worst-case cost
+of a transaction now includes the worst-case operator fee.</p>
+<h4 id="configuring-operator-fee-parameters"><a class="header" href="#configuring-operator-fee-parameters">Configuring Operator Fee Parameters</a></h4>
 <p><code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are loaded in a similar way to the <code>baseFeeScalar</code> and
 <code>blobBaseFeeScalar</code> used in the <a href="../../protocol/exec-engine.html#ecotone-l1-cost-fee-changes-eip-4844-da"><code>L1Fee</code></a>.
 calculation. In more detail, these parameters can be accessed in two interchangable ways.</p>
@@ -383,6 +422,9 @@ The proxy is backed by a vault contract deployment, based on <code>FeeVault</cod
 <h3 id="receipts"><a class="header" href="#receipts">Receipts</a></h3>
 <p>After Isthmus activation, 2 new fields <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are added to transaction receipts
 if and only if at least one of them is non zero.</p>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>Wood, G., &amp; Ethereum Contributors. (n.d.-a). Ethereum Yellow Paper. <a href="https://ethereum.github.io/yellowpaper/paper.pdf">https://ethereum.github.io/yellowpaper/paper.pdf</a> Page 8, section 5: "Gas and Payment"</p>
+</div>
 
                     </main>
 
