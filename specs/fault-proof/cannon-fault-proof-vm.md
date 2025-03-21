@@ -125,7 +125,7 @@ behavior in typical MIPS implementations, FPVM must raise an exception when step
 
 ## Syscalls
 
-Syscalls work similar to [Linux/MIPS](https://www.linux-mips.org/wiki/Syscall), including the
+Syscalls work similar to [Linux/MIPS](https://en.wikipedia.org/wiki/System_call), including the
 syscall calling conventions and general syscall handling behavior.
 However, the FPVM supports a subset of Linux/MIPS syscalls with slightly different behaviors.
 The following table list summarizes the supported syscalls and their behaviors.
