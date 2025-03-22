@@ -120,7 +120,7 @@ flowchart LR
    subgraph GuardianSystem[Guardian System]
       subgraph GuardianSafe[Guardian Safe]
          GS[Guardian Safe]
-         DGM[Deputy Pause Module]
+         DPM[Deputy Pause Module]
       end
    end
 
@@ -128,11 +128,10 @@ flowchart LR
     FndUp --> POA
     Council --> POA
     Council --> GS
-    FndOps -->|pause\nunpause\nsetRespectedGameType\nblackListDisputeGame| DGM
-    DPM -->|execTransactionFromModule| FndOps
+    FndOps -->|pause| DPM
     FndUp -->|set versions|PV
     LM -->|execTransactionFromModule| Council
-    DGM -->|execTransactionFromModule| GS
+    DPM -->|execTransactionFromModule| GS
     GS -->|controls| Exit
 
    %% Declare a class to make the outer boxes somewhat transparent to provide some contrast

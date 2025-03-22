@@ -46,10 +46,10 @@ protocol. In the Superchain, the Guardian role is held by the Optimism Security 
 
 ### Pause Deputy
 
-The **Pause Deputy** is a dedicated role managed assigned by the [Guardian](#guardian) that can
-execute the [Pause Mechanism](#pause-mechanism). An OP Chain does not necessarily need to assign a
-Pause Deputy. The Pause Deputy is capable of triggering the Pause Mechanism but does not have the
-ability to reset the mechanism or unpause the system.
+The **Pause Deputy** is a dedicated role managed by the [Guardian](#guardian) that can execute the
+[Pause Mechanism](#pause-mechanism). An OP Chain does not necessarily need to assign a Pause
+Deputy. The Pause Deputy is capable of triggering the Pause Mechanism but does not have the ability
+to reset the mechanism or unpause the system.
 
 The Pause Deputy is an optional role within an OP Chain and can be configured if the Guardian is
 a [Safe][safe-docs] that installs the [Deputy Pause Module](./deputy-pause-module.md).
@@ -64,9 +64,9 @@ identifier determines which systems or chains are affected by the pause:
 - When the identifier is a non-zero address, the pause applies specifically to the chain or set of
   chains associated with that identifier.
 
-The identifier is typically expected to be an `ETHLockbox` address, as chains within the Superchain
-interop set share a common `ETHLockbox`. This allows for targeted pausing of either specific chains
-or the entire Superchain interop set at the same time.
+The identifier must be an `ETHLockbox` address or `address(0)`. This allows for targeted pausing of
+either specific chains, the interop set (which shares an `ETHLockbox` contract), or the all chains
+that share the same `SuperchainConfig` when `address(0)` is used as the identifier.
 
 OP Chains are expected to integrate with the `SuperchainConfig` via their `SystemConfig` contract,
 which will check for the status of the pause by passing along the address of the `ETHLockbox`
@@ -144,11 +144,9 @@ the [iSUPC-001][iSUPC-001] which allows the [Guardian](#guardian) to cause an in
 
 **Severity: High**
 
-If this invariant were broken, the Pause Deputy would be able to cause a
-[Withdrawal Safety](#withdrawal-safety) failure, which would be a violation of the definition of
-Stage 1 as of [January 2025][stage-1]. Because the Pause Deputy is generally assumed to be a
-trusted party and is unlikely to exploit these conditions, this invariant is considered a High but
-not Critical impact condition.
+If this invariant were broken, the Pause Deputy could be able to cause either a
+[Withdrawal Safety](#withdrawal-safety) failure or a permanent Withdrawal Liveness failure. Either
+failure mode would be a violation of the definition of Stage 1 as of [January 2025][stage-1].
 
 ### iSUPC-003: The Guardian can revoke the Pause Deputy role at any time
 
