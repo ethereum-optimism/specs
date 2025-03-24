@@ -10175,8 +10175,12 @@ from the block header.</p>
 <li><code>emit ConfigUpdate.FEE_SCALARS</code></li>
 <li><code>emit ConfigUpdate.GAS_LIMIT</code></li>
 <li><code>emit ConfigUpdate.UNSAFE_BLOCK_SIGNER</code></li>
-<li><code>emit ConfigUpdate.EIP_1559_PARAMS</code></li>
 </ul>
+<p>Intentionally absent from this is <code>emit ConfigUpdate.EIP_1559_PARAMS</code>.
+As long as these values are unset, the default values will be used.
+Requiring 1559 parameters to be set during initialization would add a strict requirement
+that the L2 hardforks before the L1 contracts, and this is complicated to manage in a
+world of many chains.</p>
 <h3 id="modifying-eip-1559-parameters"><a class="header" href="#modifying-eip-1559-parameters">Modifying EIP-1559 Parameters</a></h3>
 <p>A new <code>SystemConfig</code> <code>UpdateType</code> is introduced that enables the modification of
 <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> parameters. This allows for the chain
