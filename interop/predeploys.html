@@ -291,7 +291,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
-an update to the <code>L1Block</code>, <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
+an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000022</code></td></tr>
@@ -441,11 +441,10 @@ from another chain, however <strong>any</strong> event emitted from <strong>any<
 }
 </code></pre>
 <h3 id="deposit-handling"><a class="header" href="#deposit-handling">Deposit Handling</a></h3>
-<p>Any call to the <code>CrossL2Inbox</code> that would emit an <code>ExecutingMessage</code> event will reverts
-if the call is made in a <a href="./derivation.html#deposit-context">deposit context</a>.
-The deposit context status can be determined by calling <code>isDeposit</code> on the <code>L1Block</code> contract.</p>
-<p>In the future, deposit handling will be modified to be more permissive.
-It will revert only in specific cases where interop dependency resolution is not feasible.</p>
+<p>Any call to the <code>CrossL2Inbox</code> that would emit an <code>ExecutingMessage</code> event will revert if the
+transaction did not declare an access list including the message checksum, as
+<a href="#type-3-checksum">described above</a>. Because deposit transactions do not have access lists,
+all calls to the <code>CrossL2Inbox</code> originating within a deposit transaction will revert.</p>
 <h3 id="identifier-getters"><a class="header" href="#identifier-getters"><code>Identifier</code> Getters</a></h3>
 <p>The <code>Identifier</code> MUST be exposed via <code>public</code> getters so that contracts can call back to authenticate
 properties about the <code>_msg</code>.</p>

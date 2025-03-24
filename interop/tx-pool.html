@@ -205,8 +205,6 @@ to demote messages which are invalid but can still technically become valid.</p>
 <p>Transactions with invalid message-dependencies MUST NOT be included in block-building,
 and should thus be dropped from the transaction-pool.</p>
 <h2 id="system-deposits-transaction-margin"><a class="header" href="#system-deposits-transaction-margin">System deposits transaction margin</a></h2>
-<p>The <a href="./derivation.html#closing-the-deposit-context">Deposit context closing transaction</a> requires
-a small margin of additional EVM gas to be available for system operations.</p>
 <p>The transaction-pool should filter out L2 transactions that spend more than the
 gas limit, minus the gas spent on system transactions.
 This ensures that the transaction can be included in a valid L2 block,
