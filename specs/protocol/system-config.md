@@ -228,10 +228,10 @@ Returns the block number at which the op-node can start searching for logs.
 
 ### paused
 
-This function integrates with the [Pause Mechanism](./superchain-config.md#pause-mechanism) by
-using the chain's `ETHLockbox` address as the
-[Pause Identifier](./superchain-config.md#pause-identifier). Returns the current pause state of the
-system by checking if the `SuperchainConfig` is paused for this chain's `ETHLockbox`.
+This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by using the
+chain's `ETHLockbox` address as the [Pause Identifier](./stage-1.md#pause-identifier). Returns the
+current pause state of the system by checking if the `SuperchainConfig` is paused for this chain's
+`ETHLockbox`.
 
 - MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns true OR if
   `SuperchainConfig.paused(address(0))` returns true.

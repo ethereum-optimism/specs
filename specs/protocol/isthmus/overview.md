@@ -37,6 +37,6 @@ This document is not finalized and should be considered experimental.
 
 ## Smart Contracts
 
-- [SuperchainConfig](./superchain-config.md)
+- [SuperchainConfig](./)
 - [Predeploys](./predeploys.md)
 - [L1 Block Attributes](./l1-attributes.md)

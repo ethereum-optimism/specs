@@ -5,20 +5,11 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Definitions](#definitions)
-  - [Guardian](#guardian)
-  - [Pause Deputy](#pause-deputy)
-  - [Pause Identifier](#pause-identifier)
-  - [Withdrawal Liveness](#withdrawal-liveness)
-  - [Withdrawal Safety](#withdrawal-safety)
-  - [Pause Mechanism](#pause-mechanism)
 - [Invariants](#invariants)
-  - [iSUPC-001: The Guardian can only cause a Withdrawal Liveness failure](#isupc-001-the-guardian-can-only-cause-a-withdrawal-liveness-failure)
+  - [iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism](#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism)
     - [Impact](#impact)
-  - [iSUPC-002: The Pause Deputy can only cause a temporary Withdrawal Liveness failure](#isupc-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure)
+  - [iSUPC-002: The Guardian must be able to reset or undo the Pause Mechanism](#isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism)
     - [Impact](#impact-1)
-  - [iSUPC-003: The Guardian can revoke the Pause Deputy role at any time](#isupc-003-the-guardian-can-revoke-the-pause-deputy-role-at-any-time)
-    - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [guardian](#guardian)
@@ -36,133 +27,35 @@
 The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains
 within a single Superchain network.
 
-## Definitions
-
-### Guardian
-
-The **Guardian** is a dedicated role that in the OP Stack that is permitted to trigger certain
-actions to maintain the security of an OP Chain or set of OP Chains in case of a bug in the
-protocol. In the Superchain, the Guardian role is held by the Optimism Security Council.
-
-### Pause Deputy
-
-The **Pause Deputy** is a dedicated role managed by the [Guardian](#guardian) that can execute the
-[Pause Mechanism](#pause-mechanism). An OP Chain does not necessarily need to assign a Pause
-Deputy. The Pause Deputy is capable of triggering the Pause Mechanism but does not have the ability
-to reset the mechanism or unpause the system.
-
-The Pause Deputy is an optional role within an OP Chain and can be configured if the Guardian is
-a [Safe][safe-docs] that installs the [Deputy Pause Module](./deputy-pause-module.md).
-
-### Pause Identifier
-
-The **Pause Identifier** is an address parameter used to specify the scope of a pause action. This
-identifier determines which systems or chains are affected by the pause:
-
-- When the identifier is the zero address (`0x0000000000000000000000000000000000000000`), the pause
-  applies globally to all chains sharing the `SuperchainConfig` contract.
-- When the identifier is a non-zero address, the pause applies specifically to the chain or set of
-  chains associated with that identifier.
-
-The identifier must be an `ETHLockbox` address or `address(0)`. This allows for targeted pausing of
-either specific chains, the interop set (which shares an `ETHLockbox` contract), or the all chains
-that share the same `SuperchainConfig` when `address(0)` is used as the identifier.
-
-OP Chains are expected to integrate with the `SuperchainConfig` via their `SystemConfig` contract,
-which will check for the status of the pause by passing along the address of the `ETHLockbox`
-being used within that system as the Pause Identifier.
-
-### Withdrawal Liveness
-
-**Withdrawal Liveness** is the ability for users to execute valid withdrawals out of any contract
-that stores ETH or tokens within an OP Chain's set of smart contracts. We tend to refer to
-Withdrawal Liveness in the context of the `OptimismPortal` and the rest of the Standard Bridge
-because this is where a majority of the ETH/tokens in the system live. However, this also applies
-to bonds deposited into dispute game contracts (and ultimately into the `DelayedWETH` contract).
-
-### Withdrawal Safety
-
-**Withdrawal Safety** is the condition that users are *not* able to execute *invalid* withdrawals
-out of any contract that stores ETH or tokens within an OP Chain's set of smart contracts.
-Generally speaking "liveness" means nothing gets bricked and "safety" means nothing gets stolen.
-
-### Pause Mechanism
-
-The **Pause Mechanism** is a tool that permits the [Guardian](#guardian) or the
-[Pause Deputy](#pause-deputy) to pause the execution of certain actions on one or more OP Chains.
-Broadly speaking, the Pause Mechanism is designed to impact the liveness of the system such that
-an attack on the system is unable to actually remove ETH or ERC-20 tokens from the bridge or any
-other contract that stores ETH and/or tokens.
-
-The Pause Mechanism is temporary and is active up to a fixed maximum amount of time before
-expiring. A pause cannot be triggered again unless the mechanism is explicitly reset by the
-[Guardian](#guardian). That is, if the Pause Mechanism is triggered and not reset by the Guardian,
-it will expire, the system will automatically become unpaused, and the system cannot be paused
-again.
-
-The Pause Mechanism can be applied globally or to individual systems. Which level the pause applies
-to is determined by the [Pause Identifier](#pause-identifier) provided when executing or checking
-pause status.
-
-Chains using the Standard Configuration of the OP Stack use a pause expiry of **3 months**. Because
-the Pause Mechanism can be applied to both local and global scopes, the pause could be chained to,
-for instance, pause the local system first and then the global system shortly before the local
-pause expires. The total potential pause time is therefore double the expiry period (6 months).
-
-The Guardian may explicitly unpause the system rather than waiting for the pause to expire. If this
-happens, the pause is automatically reset such that it can be used again. The Guardian can reset
-the pause at any time so that it can be used again, even if the pause is currently active. If the
-pause is reset when it is currently active, the pause can be triggered again, thereby resetting
-the 6 month expiry timer (on a per address identifier basis).
-
 ## Invariants
 
-### iSUPC-001: The Guardian can only cause a Withdrawal Liveness failure
+### iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism
 
-We require that any action that the [Guardian](#guardian) can take in the system can only cause a
-[Withdrawal Liveness](#withdrawal-liveness) failure. The Guardian must not be able to take any
-action that can unilaterially (**without coordination with any other priviledged party**) cause a
-[Withdrawal Safety](#withdrawal-safety) failure.
-
-#### Impact
-
-**Severity: High**
-
-If this invariant were broken, the Guardian would be able to cause a
-[Withdrawal Safety](#withdrawal-safety) failure, which would be a violation of the definition of
-Stage 1 as of [January 2025][stage-1]. Because the Guardian is generally assumed to be a trusted
-party and is unlikely to exploit these conditions, this invariant is considered a High but not
-Critical impact condition.
-
-### iSUPC-002: The Pause Deputy can only cause a temporary Withdrawal Liveness failure
-
-We require that any action that the [Pause Deputy](#pause-deputy) can take in the system can
-only cause a *temporary* [Withdrawal Liveness](#withdrawal-liveness) failure. This is distinct from
-the [iSUPC-001][iSUPC-001] which allows the [Guardian](#guardian) to cause an indefinite liveness failure.
+We require that the `SuperchainConfig` is constructed such that both the
+[Guardian](./stage-1.md#guardian) and the [Pause Deputy](./stage-1.md#pause-deputy) must be able to
+trigger the [Pause Mechanism](./stage-1.md#pause-mechanism) at any time.
 
 #### Impact
 
 **Severity: High**
 
-If this invariant were broken, the Pause Deputy could be able to cause either a
-[Withdrawal Safety](#withdrawal-safety) failure or a permanent Withdrawal Liveness failure. Either
-failure mode would be a violation of the definition of Stage 1 as of [January 2025][stage-1].
+Existing recovery runbooks would not function as expected if the `SuperchainConfig` prevented one
+of these actors from triggering the pause as needed.
 
-### iSUPC-003: The Guardian can revoke the Pause Deputy role at any time
+### iSUPC-002: The Guardian must be able to reset or undo the Pause Mechanism
 
-We require that the [Guardian](#guardian) be able to revoke the [Pause Deputy](#pause-deputy) role
-at any time. This condition is necessary to prevent a misbehaving Pause Deputy from continuing to
-trigger the [Pause Mechanism](#pause-mechanism) when this would not be desired by the Guardian
-itself.
+We require that the `SuperchainConfig` is constructed such that the
+[Guardian](./stage-1.md#guardian) must be able to reset or unpause the
+[Pause Mechanism](./stage-1.md#pause-mechanism) at any time.
 
 #### Impact
 
-**Severity: High**
+**Severity: Medium**
 
-If this invariant were broken, assuming that [iSUPC-002][iSUPC-002] the Pause Deputy would
-potentially be able to repeatedly trigger the Pause Mechanism even if the Guardian does not want
-this to happen. We consider this to be a High severity condition because the Guardian can choose
-not to renew the pause to allow the system to operate if truly necessary.
+If the Pause Mechanism cannot be reset then it cannot be used again without intervention from the
+[Upgrade Controller](./stage-1.md#upgrade-controller). We consider this to be a Medium severity
+issue because the Upgrade Controller will have several months to coordinate such a fix assuming
+that [iSUPC-001][iSUPC-001] holds.
 
 ## Function Specification
 
@@ -174,12 +67,13 @@ not to renew the pause to allow the system to operate if truly necessary.
 
 ### guardian
 
-Returns the address of the current [Guardian](#guardian).
+Returns the address of the current [Guardian](./stage-1.md#guardian).
 
 ### pause
 
-Allows the [Guardian](#guardian) to trigger the [Pause Mechanism](#pause-mechanism). `pause` takes
-an address [Pause Identifier](#pause-identifier) as an input. This identifier determines which
+Allows the [Guardian](./stage-1.md#guardian) to trigger the
+[Pause Mechanism](./stage-1.md#pause-mechanism). `pause` takes an address
+[Pause Identifier](./stage-1.md#pause-identifier) as an input. This identifier determines which
 systems or chains are affected by the pause.
 
 - MUST revert if called by an address other than the Guardian.
@@ -190,10 +84,11 @@ systems or chains are affected by the pause.
 
 ### unpause
 
-Allows the [Guardian](#guardian) to explicitly unpause the system for a given
-[Pause Identifier](#pause-identifier) rather than waiting for the pause to expire. Unpausing a
-specific identifier does NOT unpause the global pause (zero address identifier). If the global
-pause is active, all systems will remain paused even if their specific identifiers are unpaused.
+Allows the [Guardian](./stage-1.md#guardian) to explicitly unpause the system for a given
+[Pause Identifier](./stage-1.md#pause-identifier) rather than waiting for the pause to expire.
+Unpausing a specific identifier does NOT unpause the global pause (zero address identifier). If the
+global pause is active, all systems will remain paused even if their specific identifiers are
+unpaused.
 
 - MUST revert if called by an address other than the Guardian.
 - MUST set the pause timestamp for the given identifier to 0, representing "not paused".
@@ -202,9 +97,9 @@ pause is active, all systems will remain paused even if their specific identifie
 
 ### pausable
 
-Allows any user to check if the [Pause Mechanism](#pause-mechanism) can be triggered for a specific
-[Pause Identifier](#pause-identifier). The pausable status of a specific identifier is independent
-of the pausable status of the global pause (zero address identifier).
+Allows any user to check if the [Pause Mechanism](./stage-1.md#pause-mechanism) can be triggered
+for a specific [Pause Identifier](./stage-1.md#pause-identifier). The pausable status of a specific
+identifier is independent of the pausable status of the global pause (zero address identifier).
 
 - MUST return true if the pausable flag for the given identifier is 0 (ready to pause).
 - MUST return false if the pausable flag for the given identifier is 1 (used/unavailable).
@@ -212,7 +107,7 @@ of the pausable status of the global pause (zero address identifier).
 ### paused
 
 Allows any user to check if the system is currently paused for a specific
-[Pause Identifier](#pause-identifier).
+[Pause Identifier](./stage-1.md#pause-identifier).
 
 - MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
   (current time < pause timestamp + expiry duration).
@@ -222,16 +117,17 @@ Allows any user to check if the system is currently paused for a specific
 
 ### expiration
 
-Returns the timestamp at which the pause for a given [Pause Identifier](#pause-identifier) will
-expire. This function only returns the expiration for the specific identifier provided.
+Returns the timestamp at which the pause for a given
+[Pause Identifier](./stage-1.md#pause-identifier) will expire. This function only returns the
+expiration for the specific identifier provided.
 
 - MUST return the pause timestamp plus the configured expiry duration if the pause timestamp is non-zero.
 - MUST return 0 if the pause timestamp is 0 (system is not paused) for the given identifier.
 
 ### reset
 
-Allows the [Guardian](#guardian) to reset the pause mechanism for a given
-[Pause Identifier](#pause-identifier), allowing it to be used again.
+Allows the [Guardian](./stage-1.md#guardian) to reset the pause mechanism for a given
+[Pause Identifier](./stage-1.md#pause-identifier), allowing it to be used again.
 
 - MUST revert if called by an address other than the Guardian.
 - MUST set the pausable flag for the given identifier to 0 (ready to pause).
@@ -241,7 +137,4 @@ Allows the [Guardian](#guardian) to reset the pause mechanism for a given
   expires.
 
 <!-- references -->
-[safe-docs]: https://docs.safe.global/home/what-is-safe
-[stage-1]: https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338
-[iSUPC-001]: #isupc-001-the-guardian-can-only-cause-a-withdrawal-liveness-failure
-[iSUPC-002]: #isupc-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure
+[iSUPC-001]: #isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism
