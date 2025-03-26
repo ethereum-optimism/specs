@@ -137,4 +137,5 @@ Allows the [Guardian](./stage-1.md#guardian) to reset the pause mechanism for a 
   expires.
 
 <!-- references -->
+
 [iSUPC-001]: #isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism

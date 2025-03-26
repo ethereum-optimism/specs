@@ -50,7 +50,7 @@ to bonds deposited into dispute game contracts (and ultimately into the `Delayed
 
 ### Withdrawal Safety
 
-**Withdrawal Safety** is the condition that users are *not* able to execute *invalid* withdrawals
+**Withdrawal Safety** is the condition that users are _not_ able to execute _invalid_ withdrawals
 out of any contract that stores ETH or tokens within an OP Chain's set of smart contracts.
 Generally speaking "liveness" means nothing gets bricked and "safety" means nothing gets stolen.
 
@@ -143,7 +143,7 @@ Stack chain.
 
 ### Permissionless Fault Proofs
 
-A Stage 1 OP Stack chain must operate a *permissionless* Fault Proof system.
+A Stage 1 OP Stack chain must operate a _permissionless_ Fault Proof system.
 
 ### Security Council
 
@@ -192,7 +192,7 @@ failure as well as [Withdrawal Safety](#withdrawal-safety) failures. This is ali
 ### Pause Deputy
 
 The [Pause Deputy](#pause-deputy) is a role that can be assigned by the Guardian. The Pause Deputy
-is explicitly permitted to cause a *temporary* [Withdrawal Liveness](#withdrawal-liveness) failure.
+is explicitly permitted to cause a _temporary_ [Withdrawal Liveness](#withdrawal-liveness) failure.
 Because the Pause Deputy can only cause a temporary Withdrawal Liveness failure, the Guardian can
 assign this role to any actor it deems fit to utilize the role without violating any
 [invariants](#invariants).
@@ -269,7 +269,7 @@ assumption that no such bugs exist.
 
 **Severity: High/Critical**
 
-If broken, it must be assumed that *some* other actor has the ability to cause a permanent
+If broken, it must be assumed that _some_ other actor has the ability to cause a permanent
 [Withdrawal Liveness](#withdrawal-liveness) or [Withdrawal Safety](#withdrawal-safety) failure. We
 consider any violation of this invariant to be a High severity issue, but this issue potentially
 becomes Critical if the actor that has this ability is not another reasonably trusted entity.
@@ -277,7 +277,7 @@ becomes Critical if the actor that has this ability is not another reasonably tr
 ### iS1-002: The Pause Deputy can only cause a temporary Withdrawal Liveness failure
 
 We require that any action that the [Pause Deputy](#pause-deputy) can take in the system can
-only cause a *temporary* [Withdrawal Liveness](#withdrawal-liveness) failure. This is required
+only cause a _temporary_ [Withdrawal Liveness](#withdrawal-liveness) failure. This is required
 because the Security Council must explicitly trigger any action that results either an indefinite
 Withdrawal Liveness failure or a [Withdrawal Safety](#withdrawal-safety) failure.
 
@@ -306,6 +306,7 @@ happen. We consider this to be a High severity condition because the Guardian ca
 renew the pause to allow the system to operate if truly necessary.
 
 <!-- references -->
+
 [stage-1]: https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338
 [security-council]: https://medium.com/l2beat/stages-update-security-council-requirements-4c79cea8ef52
 [safe-docs]: https://docs.safe.global/home/what-is-safe

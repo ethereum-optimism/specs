@@ -77,7 +77,7 @@ bytes32(address(batcher))
 ```
 
 Where `batcher` is the address of the account that sends transactions to the Batch Inbox. Put
-simply, the V0 hash identifies a *single* address whose transaction batches will be recognized by
+simply, the V0 hash identifies a _single_ address whose transaction batches will be recognized by
 L2 clients. This hash is versioned so that it could, for instance, be repurposed to be a commitment
 to a list of permitted accounts or some other form of batcher identification.
 
@@ -89,18 +89,21 @@ parameters are also known as Gas Price Oracle (GPO) parameters.
 #### Pre-Ecotone Parameters
 
 Before the Ecotone upgrade, these include:
+
 - **Scalar**: A multiplier applied to the L1 base fee, interpreted as a big-endian `uint256`
 - **Overhead**: A constant gas overhead, interpreted as a big-endian `uint256`
 
 #### Post-Ecotone Parameters
 
 After the Ecotone upgrade:
+
 - The **Scalar** attribute encodes additional scalar information in a versioned encoding scheme
 - The **Overhead** value is ignored and does not affect the L2 state-transition output
 
 #### Post-Ecotone Scalar Encoding
 
 The Scalar is encoded as big-endian `uint256`, interpreted as `bytes32`, and composed as follows:
+
 - Byte `0`: scalar-version byte
 - Bytes `[1, 32)`: depending on scalar-version:
   - Scalar-version `0`:
