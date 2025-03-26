@@ -27,7 +27,7 @@
   - [aDPM-008: Deputy key is capable of creating signatures](#adpm-008-deputy-key-is-capable-of-creating-signatures)
     - [Mitigations](#mitigations-6)
 - [System Invariants](#system-invariants)
-  - [iSCP-001: Pause can be activated within a short bounded time of authorization](#iscp-001-pause-can-be-activated-within-a-short-bounded-time-of-authorization)
+  - [iSCP-001: Pause can be activated within 30 minutes of authorization](#iscp-001-pause-can-be-activated-within-30-minutes-of-authorization)
     - [Impact](#impact)
     - [Dependencies](#dependencies)
   - [iSCP-002: Pause is not activated outside of the standard process](#iscp-002-pause-is-not-activated-outside-of-the-standard-process)
@@ -99,12 +99,16 @@ replaced.
 ### aSCP-001: Pause authorization process is well-defined
 
 We assume that the process by which a pause can be authorized is well-defined such that the cases
-in which the pause should and should not be triggered are apparent.
+in which the pause should and should not be triggered are apparent. This assumption dictates that
+the cases in which the pause should be used are clearly enumerated and well known to all
+participants.
 
 ### aSCP-002: Pause authorization process is robust
 
 We assume that the process by which a pause can be authorized correctly accounts for all cases in
-which such a pause would be necessary.
+which such a pause would be necessary. In other words, we assume that there are no situations where
+the pause *should* be used to protect the system but the defined protocol for triggering the pause
+would not require the pause to be triggered.
 
 ### aSCP-003: Pause authorization process is fast
 
@@ -183,11 +187,12 @@ We assume that the Deputy key configured is actually capable of creating signatu
 
 ## System Invariants
 
-### iSCP-001: Pause can be activated within a short bounded time of authorization
+### iSCP-001: Pause can be activated within 30 minutes of authorization
 
 It is an important system-level invariant that the pause functionality can be activated within a
-short, bounded amount of time of its authorization by the standard process that approves the usage
-of this pause.
+short, bounded amount of time (30 minutes) of its authorization by the standard process that
+approves the usage of this pause. That is, after the pause is authorized, it should be possible to
+execute the pause in under 30 minutes under all circumstances.
 
 #### Impact
 

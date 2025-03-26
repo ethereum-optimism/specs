@@ -146,8 +146,9 @@ Changes to the L2 gas limit are fully applied in the first L2 block with the L1 
 introduced the change, as opposed to the 1/1024 adjustments towards a target as seen in limit
 updates of L1 blocks.
 
-The gas limit may not be set to a value larger than `200,000,000`. This is to ensure that L2 blocks
-are fault provable and of reasonable size to be processed by the client software.
+The gas limit may not be set to a value larger than the
+[maximum gas limit](./configurability.md#gas-limit). This is to ensure that L2 blocks are fault
+provable and of reasonable size to be processed by the client software.
 
 ## Functionality
 
@@ -187,7 +188,7 @@ the sum of the maximum resource limit and the system transaction maximum gas.
 
 ### maximumGasLimit
 
-Returns the maximum L2 gas limit that can be safely set for the system to operate (200,000,000).
+Returns the maximum L2 gas limit that can be safely set for the system to operate.
 
 ### unsafeBlockSigner
 

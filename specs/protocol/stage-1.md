@@ -45,8 +45,9 @@ requirements.
 **Withdrawal Liveness** is the ability for users to execute valid withdrawals out of any contract
 that stores ETH or tokens within an OP Chain's set of smart contracts. We tend to refer to
 Withdrawal Liveness in the context of the `OptimismPortal` and the rest of the Standard Bridge
-because this is where a majority of the ETH/tokens in the system live. However, this also applies
-to bonds deposited into dispute game contracts (and ultimately into the `DelayedWETH` contract).
+system (i.e., the `StandardBridge` and `CrossDomainMessenger` contracts) because this is where a
+majority of the ETH/tokens in the system live. However, this also applies to bonds deposited into
+dispute game contracts (and ultimately into the `DelayedWETH` contract).
 
 ### Withdrawal Safety
 

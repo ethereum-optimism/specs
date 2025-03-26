@@ -111,9 +111,7 @@ Allows any user to check if the system is currently paused for a specific
 
 - MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
   (current time < pause timestamp + expiry duration).
-- MUST return false if the pause timestamp is 0 for the given identifier.
-- MUST return false if the pause has expired (current time > pause timestamp + expiry duration) for
-  the given identifier.
+- MUST return false otherwise.
 
 ### expiration
 
