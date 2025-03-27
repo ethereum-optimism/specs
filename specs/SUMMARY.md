@@ -80,7 +80,7 @@
     - [Fault Proof](./interop/fault-proof.md)
     - [Upgrade](./interop/upgrade.md)
     - [Token Bridging](./interop/token-bridging.md)
-    - [SuperchainWETH](./interop/superchain-weth.md)
+    - [ETH Bridging](./interop/eth-bridging.md)
     - [Derivation](./interop/derivation.md)
     - [Transaction Pool](./interop/tx-pool.md)
     - [OptimismPortal](./interop/optimism-portal.md)
