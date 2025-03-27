@@ -88,7 +88,8 @@ Allows the [Guardian](./stage-1.md#guardian) to explicitly unpause the system fo
 [Pause Identifier](./stage-1.md#pause-identifier) rather than waiting for the pause to expire.
 Unpausing a specific identifier does NOT unpause the global pause (zero address identifier). If the
 global pause is active, all systems will remain paused even if their specific identifiers are
-unpaused.
+unpaused. Note that `unpause` will not revert if the pause is not currently active which would
+cause `unpause` to act like a call to `reset`.
 
 - MUST revert if called by an address other than the Guardian.
 - MUST set the pause timestamp for the given identifier to 0, representing "not paused".
@@ -125,7 +126,8 @@ expiration for the specific identifier provided.
 ### reset
 
 Allows the [Guardian](./stage-1.md#guardian) to reset the pause mechanism for a given
-[Pause Identifier](./stage-1.md#pause-identifier), allowing it to be used again.
+[Pause Identifier](./stage-1.md#pause-identifier), allowing it to be used again. Note that `reset`
+will not revert if the pausable flag is already set to zero.
 
 - MUST revert if called by an address other than the Guardian.
 - MUST set the pausable flag for the given identifier to 0 (ready to pause).
