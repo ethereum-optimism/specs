@@ -20,7 +20,6 @@
   - [`relayMessage` Invariants](#relaymessage-invariants)
   - [`sendMessage` Invariants](#sendmessage-invariants)
   - [Message Versioning](#message-versioning)
-  - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
   - [Interfaces](#interfaces)
     - [Sending Messages](#sending-messages)
     - [Relaying Messages](#relaying-messages)
@@ -53,16 +52,39 @@
     - [`Converted`](#converted)
   - [Invariants](#invariants)
   - [Conversion Flow](#conversion-flow)
-- [SuperchainTokenBridge](#superchaintokenbridge)
+- [SuperchainETHBridge](#superchainethbridge)
   - [Overview](#overview-3)
   - [Functions](#functions-3)
-    - [`sendERC20`](#senderc20)
-    - [`relayERC20`](#relayerc20)
+    - [`sendETH`](#sendeth)
+    - [`relayETH`](#relayeth)
   - [Events](#events-2)
-    - [`SentERC20`](#senterc20)
-    - [`RelayedERC20`](#relayederc20)
+    - [`SendETH`](#sendeth)
+    - [`RelayETH`](#relayeth)
   - [Diagram](#diagram)
   - [Invariants](#invariants-1)
+    - [`sendETH`](#sendeth-1)
+    - [`relayETH`](#relayeth-1)
+- [ETHLiquidity](#ethliquidity)
+  - [Overview](#overview-4)
+  - [Functions](#functions-4)
+    - [`burn`](#burn)
+    - [`mint`](#mint)
+  - [Events](#events-3)
+    - [`LiquidityBurned`](#liquidityburned)
+    - [`LiquidityMinted`](#liquidityminted)
+  - [Invariants](#invariants-2)
+    - [`burn`](#burn-1)
+    - [`mint`](#mint-1)
+- [SuperchainTokenBridge](#superchaintokenbridge)
+  - [Overview](#overview-5)
+  - [Functions](#functions-5)
+    - [`sendERC20`](#senderc20)
+    - [`relayERC20`](#relayerc20)
+  - [Events](#events-4)
+    - [`SentERC20`](#senterc20)
+    - [`RelayedERC20`](#relayederc20)
+  - [Diagram](#diagram-1)
+  - [Invariants](#invariants-3)
 - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -318,12 +340,6 @@ function messageNonce() public view returns (uint256) {
     return Encoding.encodeVersionedNonce(nonce, MESSAGE_VERSION);
 }
 ```
-
-### No Native Support for Cross Chain Ether Sends
-
-To enable interoperability between chains that use a custom gas token, there is no native support for
-sending `ether` between chains. `ether` must first be wrapped into WETH before sending between chains.
-See [SuperchainWETH](./superchain-weth.md) for more information.
 
 ### Interfaces
 
@@ -723,6 +739,204 @@ sequenceDiagram
   L2StandardBridge->>SuperERC20: IERC20(to).mint(Alice, amount)
   L2StandardBridge-->L2StandardBridge: emit Converted(from, to, Alice, amount)
 ```
+
+## SuperchainETHBridge
+
+| Constant | Value                                        |
+| -------- | -------------------------------------------- |
+| Address  | `0x4200000000000000000000000000000000000024` |
+
+### Overview
+
+The `SuperchainETHBridge` is a predeploy that is an abstraction on top of the
+`L2toL2CrossDomainMessenger` that facilitates cross-chain ETH bridging using interop.
+`SuperchainETHBridge` integrates with the `ETHLiquidity` contract to manage native ETH liquidity
+across chains, ensuring seamless cross-chain transfers of native ETH.
+
+### Functions
+
+#### `sendETH`
+
+Deposits the `msg.value` of ETH into the `ETHLiquidity` contract and sends a cross-chain message
+to the specified `_chainId` to call `relayETH` with the `_to` address as the recipient and the
+`msg.value` as the amount.
+
+```solidity
+function sendETH(address _to, uint256 _chainId) external payable returns (bytes32 msgHash_);
+```
+
+#### `relayETH`
+
+Withdraws ETH from the `ETHLiquidity` contract equal to the `_amount` and sends it to the `_to` address.
+
+```solidity
+function relayETH(address _from, address _to, uint256 _amount) external;
+```
+
+### Events
+
+#### `SendETH`
+
+MUST be triggered when `sendETH` is called.
+
+```solidity
+event SendETH(address indexed from, address indexed to, uint256 amount, uint256 destination);
+```
+
+#### `RelayETH`
+
+MUST be triggered when `relayETH` is called.
+
+```solidity
+event RelayETH(address indexed from, address indexed to, uint256 amount, uint256 source);
+```
+
+### Diagram
+
+The following diagram depicts a cross-chain ETH transfer.
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+sequenceDiagram
+  participant from as from (Chain A)
+  participant L2SBA as SuperchainETHBridge (Chain A)
+  participant ETHLiquidity_A as ETHLiquidity (Chain A)
+  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
+  participant Inbox as CrossL2Inbox
+  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as SuperchainETHBridge (Chain B)
+  participant ETHLiquidity_B as ETHLiquidity (Chain B)
+  participant recipient as recipient (Chain B)
+
+  from->>L2SBA: sendETH{value: amount}(to, chainId)
+  L2SBA->>ETHLiquidity_A: burn{value: amount}()
+  ETHLiquidity_A-->ETHLiquidity_A: emit LiquidityBurned(from, amount)
+  L2SBA->>Messenger_A: sendMessage(chainId, message)
+  Messenger_A->>L2SBA: return msgHash_
+  L2SBA-->L2SBA: emit SendETH(from, to, amount, destination)
+  L2SBA->>from: return msgHash_
+  Inbox->>Messenger_B: relayMessage()
+  Messenger_B->>L2SBB: relayETH(from, to, amount)
+  L2SBB->>ETHLiquidity_B: mint(amount)
+  ETHLiquidity_B-->ETHLiquidity_B: emit LiquidityMinted(SuperchainETHBridge address, amount)
+  L2SBB->>recipient: new SafeSend{value: amount}(to)
+  L2SBB-->L2SBB: emit RelayETH(from, to, amount, source)
+```
+
+### Invariants
+
+#### `sendETH`
+
+- It MUST revert if the `msg.sender`'s balance is less than the `msg.value` being sent
+
+- It MUST revert if the `_to` address is the zero address.
+
+- It MUST create a cross-chain message to send ETH to the recipient on the destination chain equal to the `msg.value`.
+  - Note: if the target chain is not in the initiating chain dependency set,
+    funds will be locked, similar to sending funds to the wrong address.
+    If the target chain includes it later, these could be unlocked.
+
+- It MUST transfer `msg.value` of ETH from the `msg.sender` to the `ETHLiquidity` contract.
+
+- It MUST emit:
+
+  - A `SendETH` event with details about the sender, recipient, amount, and destination chain.
+
+#### `relayETH`
+
+- It MUST revert if called by any address other than the `L2ToL2CrossDomainMessenger`.
+
+- It MUST revert if the cross-domain sender is not the `SuperchainETHBridge` contract on the source chain.
+
+- It MUST transfer the `_amount` of ETH to the `_to` address.
+
+- The minted `amount` in `relayETH()` MUST match the `amount` that was burnt in `sendETH()`.
+
+- It MUST emit:
+
+  - A `RelayETH` event with details about the sender, recipient, amount, and source chain.
+
+## ETHLiquidity
+
+| Constant | Value                                        |
+| -------- | -------------------------------------------- |
+| Address  | `0x4200000000000000000000000000000000000025` |
+
+### Overview
+
+The `ETHLiquidity` contract is a predeploy that allows the `SuperchainETHBridge` contract to access
+ETH liquidity without needing to modify the EVM to generate new ETH. The `ETHLiquidity` contract
+comes "pre-loaded" with `uint248.max` balance to prevent liquidity shortages.
+
+### Functions
+
+#### `burn`
+
+Locks ETH into the `ETHLiquidity` contract.
+
+```solidity
+function burn() external payable;
+```
+
+#### `mint`
+
+Withdraws ETH from the `ETHLiquidity` contract equal to the `_amount` and sends it to the `msg.sender`.
+
+```solidity
+function mint(uint256 _amount) external
+```
+
+### Events
+
+#### `LiquidityBurned`
+
+MUST be triggered when `burn` is called.
+
+```solidity
+event LiquidityBurned(address indexed caller, uint256 value);
+```
+
+#### `LiquidityMinted`
+
+MUST be triggered when `mint` is called.
+
+```solidity
+event LiquidityMinted(address indexed caller, uint256 value);
+```
+
+### Invariants
+
+#### `burn`
+
+- It MUST never be callable such that balance would increase beyond `type(uint256).max`.
+  - This is an invariant and NOT a revert.
+  - Maintained by considering total available ETH supply and the initial balance of `ETHLiquidity`.
+
+- It MUST revert if called by any address other than the `SuperchainETHBridge` contract.
+
+- It MUST accept ETH value.
+
+- It MUST emit:
+
+  - A `LiquidityBurned` event including the address that triggered the burn and the burned ETH value.
+
+#### `mint`
+
+- It MUST never be callable such that balance would decrease below `0`.
+  - This is an invariant and NOT a revert.
+  - Maintained by considering total available ETH supply and the initial balance of `ETHLiquidity`.
+
+- It MUST revert if called by any address other than the `SuperchainETHBridge`.
+
+- It MUST transfer the requested ETH value to the sending address.
+
+- It MUST emit:
+
+  - A `LiquidityMinted` event including the address that triggered the mint and the minted ETH value.
 
 ## SuperchainTokenBridge
 
