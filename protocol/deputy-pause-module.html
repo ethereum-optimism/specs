@@ -1,0 +1,616 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Deputy Pause Module - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/deputy-pause-module.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="deputypausemodule"><a class="header" href="#deputypausemodule">DeputyPauseModule</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#status">Status</a></li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#context">Context</a></li>
+<li><a href="#upgradeability">Upgradeability</a></li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#ascp-001-pause-authorization-process-is-well-defined">aSCP-001: Pause authorization process is well-defined</a></li>
+<li><a href="#ascp-002-pause-authorization-process-is-robust">aSCP-002: Pause authorization process is robust</a></li>
+<li><a href="#ascp-003-pause-authorization-process-is-fast">aSCP-003: Pause authorization process is fast</a></li>
+<li><a href="#adpm-001-contract-is-configured-correctly">aDPM-001: Contract is configured correctly</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#adpm-002-deputy-key-is-not-compromised">aDPM-002: Deputy key is not compromised</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#adpm-003-deputy-key-is-not-deleted">aDPM-003: Deputy key is not deleted</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time">aDPM-004: Ethereum will not censor transactions for extended periods of time</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005: OpenZeppelin ECDSA and EIP712 contracts are free of critical bugs</a>
+<ul>
+<li><a href="#mitigations-4">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#adpm-006-safe-contracts-are-free-of-critical-bugs">aDPM-006: Safe contracts are free of critical bugs</a>
+<ul>
+<li><a href="#mitigations-5">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#adpm-008-deputy-key-is-capable-of-creating-signatures">aDPM-008: Deputy key is capable of creating signatures</a>
+<ul>
+<li><a href="#mitigations-6">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#system-invariants">System Invariants</a>
+<ul>
+<li><a href="#iscp-001-pause-can-be-activated-within-30-minutes-of-authorization">iSCP-001: Pause can be activated within 30 minutes of authorization</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#iscp-002-pause-is-not-activated-outside-of-the-standard-process">iSCP-002: Pause is not activated outside of the standard process</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+<li><a href="#dependencies-1">Dependencies</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#component-invariants">Component Invariants</a>
+<ul>
+<li><a href="#idpm-001-only-the-deputy-may-act-through-the-module">iDPM-001: Only the Deputy may act through the module</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+<li><a href="#mitigations-7">Mitigations</a></li>
+<li><a href="#dependencies-2">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#idpm-002-deputy-must-only-be-able-to-trigger-the-pause">iDPM-002: Deputy must only be able to trigger the pause</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+<li><a href="#mitigations-8">Mitigations</a></li>
+<li><a href="#dependencies-3">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#idpm-003-deputy-must-always-be-able-to-act-through-the-module">iDPM-003: Deputy must always be able to act through the module</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+<li><a href="#mitigations-9">Mitigations</a></li>
+<li><a href="#dependencies-4">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#idpm-004-deputy-authorizations-must-not-be-replayable">iDPM-004: Deputy authorizations must not be replayable</a>
+<ul>
+<li><a href="#impact-5">Impact</a></li>
+<li><a href="#mitigations-10">Mitigations</a></li>
+<li><a href="#dependencies-5">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily">iDPM-005: Foundation Safe must be able to change the Deputy account easily</a></li>
+<li><a href="#impact-6">Impact</a></li>
+<li><a href="#mitigations-11">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#implementation-spec">Implementation Spec</a>
+<ul>
+<li><a href="#constructor">constructor</a></li>
+<li><a href="#pause">pause</a></li>
+<li><a href="#setdeputy">setDeputy</a></li>
+<li><a href="#foundationsafe">foundationSafe</a></li>
+<li><a href="#superchainconfig">superchainConfig</a></li>
+<li><a href="#deputy">deputy</a></li>
+<li><a href="#pausemessagetypehash">pauseMessageTypehash</a></li>
+<li><a href="#deputyauthmessagetypehash">deputyAuthMessageTypehash</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="status"><a class="header" href="#status">Status</a></h2>
+<p>Proposed</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>DeputyPauseModule</code> is a <a href="https://docs.safe.global/advanced/smart-account-modules">Safe Module</a> designed to be installed into the Security
+Council Guardian Safe that allows a dedicated Deputy address to create an ECDSA signature that
+authorizes the execution of the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a>. The
+<code>DeputyPauseModule</code> assumes that the Security Council Guardian Safe is the Guardian
+that is permitted to act within the <a href="./superchain-config.html">SuperchainConfig</a>.</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>Additional context and motivation for this component can be found in the corresponding
+<a href="https://github.com/ethereum-optimism/design-docs/blob/85c0f822/protocol/deputy-pause-module.md">design document</a>.</p>
+<h2 id="upgradeability"><a class="header" href="#upgradeability">Upgradeability</a></h2>
+<p>The <code>DeputyPauseModule</code> is not expected to change frequently and is therefore not a proxied
+contract. The <code>DeputyPauseModule</code> allows basic parameters to be modified by the Operations Safe
+directly without needing to deploy a new instance of the contract. Additionally, the address of the
+module itself is only utilized within the Optimism Foundation Operations Safe and can be safely
+replaced.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<blockquote>
+<p><strong>NOTE</strong>: Assumptions are utilized by specific invariants and do not apply globally. Invariants
+typically only rely on a subset of the following assumptions. Different invariants may rely on
+different assumptions. Refer to individual invariants for their dependencies.</p>
+</blockquote>
+<h3 id="ascp-001-pause-authorization-process-is-well-defined"><a class="header" href="#ascp-001-pause-authorization-process-is-well-defined">aSCP-001: Pause authorization process is well-defined</a></h3>
+<p>We assume that the process by which a pause can be authorized is well-defined such that the cases
+in which the pause should and should not be triggered are apparent. This assumption dictates that
+the cases in which the pause should be used are clearly enumerated and well known to all
+participants.</p>
+<h3 id="ascp-002-pause-authorization-process-is-robust"><a class="header" href="#ascp-002-pause-authorization-process-is-robust">aSCP-002: Pause authorization process is robust</a></h3>
+<p>We assume that the process by which a pause can be authorized correctly accounts for all cases in
+which such a pause would be necessary. In other words, we assume that there are no situations where
+the pause <em>should</em> be used to protect the system but the defined protocol for triggering the pause
+would not require the pause to be triggered.</p>
+<h3 id="ascp-003-pause-authorization-process-is-fast"><a class="header" href="#ascp-003-pause-authorization-process-is-fast">aSCP-003: Pause authorization process is fast</a></h3>
+<p>We assume that the process by which a pause can be authorized is fast acting such that it can make
+the decision to trigger the pause within a short period of time of any situation that would require
+such a pause.</p>
+<h3 id="adpm-001-contract-is-configured-correctly"><a class="header" href="#adpm-001-contract-is-configured-correctly">aDPM-001: Contract is configured correctly</a></h3>
+<p>We assume that all inputs to the contract are configured correctly including:</p>
+<ul>
+<li>Address of the Operations Safe.</li>
+<li>Address of the <code>SuperchainConfig</code> contract.</li>
+<li>Address of the Deputy account.</li>
+</ul>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Verify a signature from the Deputy in the contract constructor.</li>
+<li>Verify the configured values in the deployment script.</li>
+<li>Generate and test a signature on testnet.</li>
+</ul>
+<h3 id="adpm-002-deputy-key-is-not-compromised"><a class="header" href="#adpm-002-deputy-key-is-not-compromised">aDPM-002: Deputy key is not compromised</a></h3>
+<p>We assume that the Deputy key is maintained securely and is not compromised by a malicious actor.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Enforce strong access control around the Deputy key.</li>
+<li>Monitoring for any usage of the Deputy key.</li>
+<li>Regular rotation of the Deputy key.</li>
+</ul>
+<h3 id="adpm-003-deputy-key-is-not-deleted"><a class="header" href="#adpm-003-deputy-key-is-not-deleted">aDPM-003: Deputy key is not deleted</a></h3>
+<p>We assume that the Deputy key has not been deleted by a malicious actor.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>Maintain duplicate copies of the key in multiple secure locations.</li>
+</ul>
+<h3 id="adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time"><a class="header" href="#adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time">aDPM-004: Ethereum will not censor transactions for extended periods of time</a></h3>
+<p>We assume that Ethereum will not censor transactions for an extended period of time and that any
+transaction submitted to the network can be processed within a reasonable time bound (e.g., 1h).</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>Extremely high priority fee if necessary.</li>
+</ul>
+<h3 id="adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs"><a class="header" href="#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005: OpenZeppelin ECDSA and EIP712 contracts are free of critical bugs</a></h3>
+<p>We assume that both the <code>ECDSA</code> library and the <code>EIP712</code> contract provided by OpenZeppelin V4 at
+commit <a href="https://github.com/OpenZeppelin/openzeppelin-contracts/tree/ecd2ca2c">ecd2ca2c</a> (v4.7.3) are free of any critical bugs that would cause their
+behaviors to diverge from their specified behaviors.</p>
+<h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
+<ul>
+<li>Existing audits/safety processes for OpenZeppelin V4.</li>
+</ul>
+<h3 id="adpm-006-safe-contracts-are-free-of-critical-bugs"><a class="header" href="#adpm-006-safe-contracts-are-free-of-critical-bugs">aDPM-006: Safe contracts are free of critical bugs</a></h3>
+<p>We assume that the Safe contract implementations used by the Security Council Safe and Optimism
+Foundation Operations Safe are free of any critical bugs that would cause their behaviors to
+diverge from their specified behaviors.</p>
+<h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
+<ul>
+<li>Existing audits/safety processes for Safe.</li>
+</ul>
+<h3 id="adpm-008-deputy-key-is-capable-of-creating-signatures"><a class="header" href="#adpm-008-deputy-key-is-capable-of-creating-signatures">aDPM-008: Deputy key is capable of creating signatures</a></h3>
+<p>We assume that the Deputy key configured is actually capable of creating signatures.</p>
+<h4 id="mitigations-6"><a class="header" href="#mitigations-6">Mitigations</a></h4>
+<ul>
+<li>Signature verification when changing Deputy key.</li>
+</ul>
+<h2 id="system-invariants"><a class="header" href="#system-invariants">System Invariants</a></h2>
+<h3 id="iscp-001-pause-can-be-activated-within-30-minutes-of-authorization"><a class="header" href="#iscp-001-pause-can-be-activated-within-30-minutes-of-authorization">iSCP-001: Pause can be activated within 30 minutes of authorization</a></h3>
+<p>It is an important system-level invariant that the pause functionality can be activated within a
+short, bounded amount of time (30 minutes) of its authorization by the standard process that
+approves the usage of this pause. That is, after the pause is authorized, it should be possible to
+execute the pause in under 30 minutes under all circumstances.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: High (estimated)</strong></p>
+<p>If this invariant is broken, various recovery options that rely on fast activation of the pause may
+fail. We estimate the severity of this invariant being broken to be high but final severity will
+depend on the formalization of other invariants that rely on this one.</p>
+<h4 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h4>
+<ul>
+<li><a href="#ascp-002-pause-authorization-process-is-robust">aSCP-002</a></li>
+<li><a href="#ascp-003-pause-authorization-process-is-fast">aSCP-003</a></li>
+<li><a href="#idpm-003-deputy-must-always-be-able-to-act-through-the-module">iDPM-003</a></li>
+<li><a href="#adpm-001-contract-is-configured-correctly">aDPM-001</a></li>
+</ul>
+<h3 id="iscp-002-pause-is-not-activated-outside-of-the-standard-process"><a class="header" href="#iscp-002-pause-is-not-activated-outside-of-the-standard-process">iSCP-002: Pause is not activated outside of the standard process</a></h3>
+<p>We must maintain that the pause is not activated outside of the standard process that approves the
+usage of the pause.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, all components that rely on the pause would be placed into a paused
+state unexpectedly. This would cause a temporary liveness failure for withdrawals through the
+Standard Bridge system and would negatively impact users until liveness could be restored by the
+Guardian.</p>
+<h4 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h4>
+<ul>
+<li><a href="#ascp-001-pause-authorization-process-is-well-defined">aSCP-001</a></li>
+<li><a href="#idpm-001-only-the-deputy-may-act-through-the-module">iDPM-001</a></li>
+<li><a href="#idpm-004-deputy-authorizations-must-not-be-replayable">iDPM-004</a></li>
+<li><a href="#adpm-002-deputy-key-is-not-compromised">aDPM-002</a></li>
+</ul>
+<h2 id="component-invariants"><a class="header" href="#component-invariants">Component Invariants</a></h2>
+<h3 id="idpm-001-only-the-deputy-may-act-through-the-module"><a class="header" href="#idpm-001-only-the-deputy-may-act-through-the-module">iDPM-001: Only the Deputy may act through the module</a></h3>
+<p>The Deputy account must be the only address that can act through the module. Other accounts can
+execute an action on behalf of the Deputy if the account has a valid authorization signature from
+the Deputy for that action. No account may act through the module other than with the explicit
+authorization of the Deputy.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, accounts other than the Deputy would be able to carry out the actions
+allowed by this module. Assuming that
+<a href="#idpm-002-deputy-must-only-be-able-to-trigger-the-pause">iDPM-002</a> holds, this
+means that an account other than the Deputy would be able to trigger the pause, presumably without
+the authorization of the social consensus process that typically triggers this pause.</p>
+<h4 id="mitigations-7"><a class="header" href="#mitigations-7">Mitigations</a></h4>
+<ul>
+<li>Signature verification on the pause action.</li>
+<li>Monitoring for pause triggering actions.</li>
+</ul>
+<h4 id="dependencies-2"><a class="header" href="#dependencies-2">Dependencies</a></h4>
+<ul>
+<li><a href="#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005</a></li>
+</ul>
+<h3 id="idpm-002-deputy-must-only-be-able-to-trigger-the-pause"><a class="header" href="#idpm-002-deputy-must-only-be-able-to-trigger-the-pause">iDPM-002: Deputy must only be able to trigger the pause</a></h3>
+<p>The Deputy must only be able to trigger the pause action by causing the module to call the <code>pause</code>
+function on the <code>SuperchainConfig</code>. The Deputy must not be able to trigger any other priviledged
+action on behalf of the Guardian.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, the Deputy would be able to cause the Optimism Foundation Operations
+Safe to execute some unknown set of possible actions. We would treat this as a critical risk.</p>
+<h4 id="mitigations-8"><a class="header" href="#mitigations-8">Mitigations</a></h4>
+<ul>
+<li>Strict auditing and verification of the <code>DeputyPauseModule</code>.</li>
+</ul>
+<h4 id="dependencies-3"><a class="header" href="#dependencies-3">Dependencies</a></h4>
+<ul>
+<li><a href="#adpm-006-safe-contracts-are-free-of-critical-bugs">aDPM-006</a></li>
+</ul>
+<h3 id="idpm-003-deputy-must-always-be-able-to-act-through-the-module"><a class="header" href="#idpm-003-deputy-must-always-be-able-to-act-through-the-module">iDPM-003: Deputy must always be able to act through the module</a></h3>
+<p>The Deputy account must always be able to act through the module, even if the Deputy account
+private key is compromised. Other than the total deletion of the Deputy key, there should not be
+any condition in the contract itself that would prevent the key from being able to quickly and
+efficiently execute the pause action.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, we would not be able to provide the system-level invariant that the
+Deputy account can always be used to trigger the pause within a bounded amount of time of the
+decision being made to carry out this action.</p>
+<h4 id="mitigations-9"><a class="header" href="#mitigations-9">Mitigations</a></h4>
+<ul>
+<li>Signature-based verification to bypass draining attacks.</li>
+<li>Strict auditing and verification of the <code>DeputyPauseModule</code>.</li>
+</ul>
+<h4 id="dependencies-4"><a class="header" href="#dependencies-4">Dependencies</a></h4>
+<ul>
+<li><a href="#adpm-001-contract-is-configured-correctly">aDPM-001</a></li>
+<li><a href="#adpm-003-deputy-key-is-not-deleted">aDPM-003</a></li>
+<li><a href="#adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time">aDPM-004</a></li>
+<li><a href="#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005</a></li>
+<li><a href="#adpm-008-deputy-key-is-capable-of-creating-signatures">aDPM-008</a></li>
+</ul>
+<h3 id="idpm-004-deputy-authorizations-must-not-be-replayable"><a class="header" href="#idpm-004-deputy-authorizations-must-not-be-replayable">iDPM-004: Deputy authorizations must not be replayable</a></h3>
+<p>A Deputy authorization must apply to a specific <code>DeputyPauseModule</code> on a specific blockchain as
+identified by its chain ID. An authorization created for one <code>DeputyPauseModule</code> must not be
+reusable on any other <code>DeputyPauseModule</code>. An authorization must be usable once and the same
+authorization must not be usable again in any <code>DeputyPauseModule</code>.</p>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, a Deputy authorization created by the same Deputy address for
+another <code>DeputyPauseModule</code> or a previous authorization for the same module could be reused and
+would result in the pause being triggered outside of the standard process by which such a pause is
+approved.</p>
+<h4 id="mitigations-10"><a class="header" href="#mitigations-10">Mitigations</a></h4>
+<ul>
+<li>EIP-712 signature verification including a specific contract address and chain ID.</li>
+<li>Enforce unique nonces on signatures to prevent signature reuse within the same contract.</li>
+<li>Utilize unique Deputy accounts for each module instance or network.</li>
+</ul>
+<h4 id="dependencies-5"><a class="header" href="#dependencies-5">Dependencies</a></h4>
+<ul>
+<li><a href="#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005</a></li>
+</ul>
+<h3 id="idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily"><a class="header" href="#idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily">iDPM-005: Foundation Safe must be able to change the Deputy account easily</a></h3>
+<p>The Foundation Safe must be able to change the address of the Deputy account without significant
+operational overhead.</p>
+<h3 id="impact-6"><a class="header" href="#impact-6">Impact</a></h3>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is broken, it would not be possible for the Safe account to easily rotate the
+Deputy account if the account is compromised. This creates operational overhead but is not a
+security risk as we assume that the Safe code does not have bugs and therefore the Safe can always
+remove the module if necessary.</p>
+<h3 id="mitigations-11"><a class="header" href="#mitigations-11">Mitigations</a></h3>
+<ul>
+<li>Authorized function to change the Deputy address.</li>
+</ul>
+<h2 id="implementation-spec"><a class="header" href="#implementation-spec">Implementation Spec</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<ul>
+<li>Sets the EIP-712 domain name to "DeputyPauseModule".</li>
+<li>Sets the EIP-712 domain version to "1".</li>
+<li>Takes the address of the Operations Safe as an authorized input.</li>
+<li>Takes the address of the <code>SuperchainConfig</code> as an authorized input.</li>
+<li>Takes the address of the Deputy as an authorized input.</li>
+<li>Takes a signature from the Deputy over a known EIP-712 message.</li>
+<li>Must verify that the signature was produced by the provided Deputy address.</li>
+</ul>
+<h3 id="pause"><a class="header" href="#pause">pause</a></h3>
+<ul>
+<li>Takes a nonce as an untrusted input.</li>
+<li>Takes a <a href="./stage-1.html#pause-identifier">Pause Identifier</a> as an untrusted input.</li>
+<li>Takes a signature as an untrusted input.</li>
+<li>Callable by any address.</li>
+<li>Must verify that the nonce has not been used.</li>
+<li>Must verify that the signature is over an EIP-712 message that commits to the nonce and the pause
+identifier and was produced by the private key corresponding to the Deputy address.</li>
+<li>Must mark the nonce as used.</li>
+<li>Must trigger the pause on the <code>SuperchainConfig</code> function with the provided pause identifier.</li>
+<li>Must revert if the call to the pause function failed.</li>
+<li>Must revert if the call succeeded but the <code>SuperchainConfig</code> contract was not paused.</li>
+</ul>
+<h3 id="setdeputy"><a class="header" href="#setdeputy">setDeputy</a></h3>
+<ul>
+<li>Takes a deputy address as an authorized input.</li>
+<li>Takes a deputy auth signature as an authorized input.</li>
+<li>Can only be called by the Foundation Safe as configured in the constructor.</li>
+<li>Must verify that the signature was produced by the provided Deputy address.</li>
+</ul>
+<h3 id="foundationsafe"><a class="header" href="#foundationsafe">foundationSafe</a></h3>
+<ul>
+<li>Returns the address of the Operations Safe as set in the constructor.</li>
+</ul>
+<h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
+<ul>
+<li>Returns the address of the <code>SuperchainConfig</code> contract as set in the constructor.</li>
+</ul>
+<h3 id="deputy"><a class="header" href="#deputy">deputy</a></h3>
+<ul>
+<li>Returns the address of the Deputy account as set in the constructor.</li>
+</ul>
+<h3 id="pausemessagetypehash"><a class="header" href="#pausemessagetypehash">pauseMessageTypehash</a></h3>
+<ul>
+<li>Returns the typehash that corresponds to <code>struct PauseMessage { bytes32 nonce }</code>.</li>
+</ul>
+<h3 id="deputyauthmessagetypehash"><a class="header" href="#deputyauthmessagetypehash">deputyAuthMessageTypehash</a></h3>
+<ul>
+<li>Returns the typehash that corresponds to <code>struct DeputyAuthMessage { address deputy }</code>.</li>
+</ul>
+<!-- References -->
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/stage-1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../protocol/regolith/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/stage-1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../protocol/regolith/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>

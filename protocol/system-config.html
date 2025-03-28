@@ -174,158 +174,266 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#system-config-contents-version-0">System config contents (version 0)</a>
+<li><a href="#definitions">Definitions</a>
 <ul>
-<li><a href="#batcherhash-bytes32"><code>batcherHash</code> (<code>bytes32</code>)</a></li>
-<li><a href="#scalars">Scalars</a>
+<li><a href="#batch-inbox">Batch Inbox</a></li>
+<li><a href="#batcher-hash">Batcher Hash</a></li>
+<li><a href="#fee-scalars">Fee Scalars</a>
 <ul>
-<li><a href="#pre-ecotone-scalar-overhead-uint256uint256">Pre-Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>)</a></li>
-<li><a href="#ecotone-scalar-overhead-uint256uint256-change">Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>) change</a></li>
+<li><a href="#pre-ecotone-parameters">Pre-Ecotone Parameters</a></li>
+<li><a href="#post-ecotone-parameters">Post-Ecotone Parameters</a></li>
+<li><a href="#post-ecotone-scalar-encoding">Post-Ecotone Scalar Encoding</a></li>
 </ul>
 </li>
-<li><a href="#gaslimit-uint64"><code>gasLimit</code> (<code>uint64</code>)</a></li>
-<li><a href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></li>
+<li><a href="#unsafe-block-signer">Unsafe Block Signer</a></li>
+<li><a href="#l2-gas-limit">L2 Gas Limit</a></li>
 </ul>
 </li>
-<li><a href="#writing-the-system-config">Writing the system config</a></li>
-<li><a href="#reading-the-system-config">Reading the system config</a></li>
+<li><a href="#functionality">Functionality</a>
+<ul>
+<li><a href="#system-config-updates">System Config Updates</a></li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#minimumgaslimit">minimumGasLimit</a></li>
+<li><a href="#maximumgaslimit">maximumGasLimit</a></li>
+<li><a href="#unsafeblocksigner">unsafeBlockSigner</a></li>
+<li><a href="#l1crossdomainmessenger">l1CrossDomainMessenger</a></li>
+<li><a href="#l1erc721bridge">l1ERC721Bridge</a></li>
+<li><a href="#l1standardbridge">l1StandardBridge</a></li>
+<li><a href="#disputegamefactory">disputeGameFactory</a></li>
+<li><a href="#optimismportal">optimismPortal</a></li>
+<li><a href="#optimismmintableerc20factory">optimismMintableERC20Factory</a></li>
+<li><a href="#getaddresses">getAddresses</a></li>
+<li><a href="#batchinbox">batchInbox</a></li>
+<li><a href="#startblock">startBlock</a></li>
+<li><a href="#paused">paused</a></li>
+<li><a href="#superchainconfig">superchainConfig</a></li>
+<li><a href="#setunsafeblocksigner">setUnsafeBlockSigner</a></li>
+<li><a href="#setbatcherhash">setBatcherHash</a></li>
+<li><a href="#setgasconfig">setGasConfig</a></li>
+<li><a href="#setgasconfigecotone">setGasConfigEcotone</a></li>
+<li><a href="#setgaslimit">setGasLimit</a></li>
+<li><a href="#seteip1559params">setEIP1559Params</a></li>
+<li><a href="#setoperatorfeescalars">setOperatorFeeScalars</a></li>
+<li><a href="#resourceconfig">resourceConfig</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>SystemConfig</code> is a contract on L1 that can emit rollup configuration changes as log events.
-The rollup <a href="derivation.html">block derivation process</a> picks up on these log events and applies the changes.</p>
-<h2 id="system-config-contents-version-0"><a class="header" href="#system-config-contents-version-0">System config contents (version 0)</a></h2>
-<p>Version 0 of the system configuration contract defines the following parameters:</p>
-<h3 id="batcherhash-bytes32"><a class="header" href="#batcherhash-bytes32"><code>batcherHash</code> (<code>bytes32</code>)</a></h3>
-<p>A versioned hash of the current authorized batcher sender(s), to rotate keys as batch-submitter.
-The first byte identifies the version.</p>
-<p>Version <code>0</code> embeds the current batch submitter ethereum address (<code>bytes20</code>) in the last 20 bytes of the versioned hash.</p>
-<p>In the future this versioned hash may become a commitment to a more extensive configuration,
-to enable more extensive redundancy and/or rotation configurations.</p>
-<h3 id="scalars"><a class="header" href="#scalars">Scalars</a></h3>
-<p>The L1 fee parameters, also known as Gas Price Oracle (GPO) parameters, are used to compute the L1
-data fee applied to an L2 transaction. The specific parameters used depend on the upgrades that
-are active.</p>
-<p>Fee parameter updates are signaled to L2 through the <code>GAS_CONFIG</code> log-event of the <code>SystemConfig</code>.</p>
-<h4 id="pre-ecotone-scalar-overhead-uint256uint256"><a class="header" href="#pre-ecotone-scalar-overhead-uint256uint256">Pre-Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>)</a></h4>
-<p>The <code>overhead</code> and <code>scalar</code> are consulted and passed to the L2 via L1 attribute info.</p>
-<p>The values are interpreted as big-endian <code>uint256</code>.</p>
-<h4 id="ecotone-scalar-overhead-uint256uint256-change"><a class="header" href="#ecotone-scalar-overhead-uint256uint256-change">Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>) change</a></h4>
-<p>After Ecotone activation:</p>
+The rollup <a href="derivation.html">block derivation process</a> picks up on these log events and applies the
+changes. <code>SystemConfig</code> generally acts as the source of truth for configuration values within an
+OP Stack chain.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="batch-inbox"><a class="header" href="#batch-inbox">Batch Inbox</a></h3>
+<p>The <strong>Batch Inbox</strong> is the address that Sequencer transaction batches are published to. Sequencers
+publish transactions to the Batch Inbox by setting it as the <code>to</code> address on a transaction
+containing batched L2 transactions either in calldata or as blobdata.</p>
+<h3 id="batcher-hash"><a class="header" href="#batcher-hash">Batcher Hash</a></h3>
+<p>The <strong>Batcher Hash</strong> identifies the sender(s) whose transactions to the <a href="#batch-inbox">Batch Inbox</a>
+will be recognized by the L2 clients for a given OP Chain.</p>
+<p>The Batcher Hash is versioned by the first byte of the hash. The structure of the V0 Batcher Hash
+is a 32 byte hash defined as follows:</p>
+<div class="table-wrapper"><table><thead><tr><th>1 byte</th><th>11 bytes</th><th>20 bytes</th></tr></thead><tbody>
+<tr><td>version (0x00)</td><td>empty</td><td>address</td></tr>
+</tbody></table>
+</div>
+<p>This can also be understood as:</p>
+<pre><code class="language-solidity">bytes32(address(batcher))
+</code></pre>
+<p>Where <code>batcher</code> is the address of the account that sends transactions to the Batch Inbox. Put
+simply, the V0 hash identifies a <em>single</em> address whose transaction batches will be recognized by
+L2 clients. This hash is versioned so that it could, for instance, be repurposed to be a commitment
+to a list of permitted accounts or some other form of batcher identification.</p>
+<h3 id="fee-scalars"><a class="header" href="#fee-scalars">Fee Scalars</a></h3>
+<p>The <strong>Fee Scalars</strong> are parameters used to calculate the L1 data fee for L2 transactions. These
+parameters are also known as Gas Price Oracle (GPO) parameters.</p>
+<h4 id="pre-ecotone-parameters"><a class="header" href="#pre-ecotone-parameters">Pre-Ecotone Parameters</a></h4>
+<p>Before the Ecotone upgrade, these include:</p>
 <ul>
-<li>The <code>scalar</code> attribute encodes additional scalar information, in a versioned encoding scheme.</li>
-<li>The <code>overhead</code> value is ignored: it does not affect the L2 state-transition output.</li>
+<li><strong>Scalar</strong>: A multiplier applied to the L1 base fee, interpreted as a big-endian <code>uint256</code></li>
+<li><strong>Overhead</strong>: A constant gas overhead, interpreted as a big-endian <code>uint256</code></li>
 </ul>
-<p>The <code>scalar</code> is encoded as big-endian <code>uint256</code>, interpreted as <code>bytes32</code>, and composed as following:</p>
-<p>*Byte ranges are indicated with <code>[</code> (inclusive) and <code>)</code> (exclusive).</p>
+<h4 id="post-ecotone-parameters"><a class="header" href="#post-ecotone-parameters">Post-Ecotone Parameters</a></h4>
+<p>After the Ecotone upgrade:</p>
 <ul>
-<li><code>0</code>: scalar-version byte</li>
-<li><code>[1, 32)</code>: depending scalar-version:
+<li>The <strong>Scalar</strong> attribute encodes additional scalar information in a versioned encoding scheme</li>
+<li>The <strong>Overhead</strong> value is ignored and does not affect the L2 state-transition output</li>
+</ul>
+<h4 id="post-ecotone-scalar-encoding"><a class="header" href="#post-ecotone-scalar-encoding">Post-Ecotone Scalar Encoding</a></h4>
+<p>The Scalar is encoded as big-endian <code>uint256</code>, interpreted as <code>bytes32</code>, and composed as follows:</p>
+<ul>
+<li>Byte <code>0</code>: scalar-version byte</li>
+<li>Bytes <code>[1, 32)</code>: depending on scalar-version:
 <ul>
 <li>Scalar-version <code>0</code>:
 <ul>
-<li><code>[1, 28)</code>: padding, should be zero.</li>
-<li><code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the L1-fee <code>baseFeeScalar</code></li>
-<li>This version implies the L1-fee <code>blobBaseFeeScalar</code> is set to 0.</li>
-<li>In the event there are non-zero bytes in the padding area, <code>baseFeeScalar</code> must be set to MaxUint32.</li>
-<li>This version is compatible with the pre-Ecotone <code>scalar</code> value (assuming a <code>uint32</code> range).</li>
+<li>Bytes <code>[1, 28)</code>: padding, should be zero</li>
+<li>Bytes <code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the L1-fee <code>baseFeeScalar</code></li>
+<li>This version implies the L1-fee <code>blobBaseFeeScalar</code> is set to 0</li>
+<li>If there are non-zero bytes in the padding area, <code>baseFeeScalar</code> must be set to MaxUint32</li>
 </ul>
 </li>
 <li>Scalar-version <code>1</code>:
 <ul>
-<li><code>[1, 24)</code>: padding, must be zero.</li>
-<li><code>[24, 28)</code>: big-endian <code>uint32</code>, encoding the <code>blobBaseFeeScalar</code></li>
-<li><code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the <code>baseFeeScalar</code></li>
-<li>This version is meant to configure the EIP-4844 blob fee component, once blobs are used for data-availability.</li>
-</ul>
-</li>
-<li>Other scalar-version values: unrecognized.
-OP-Stack forks are recommended to utilize the <code>&gt;= 128</code> scalar-version range and document their <code>scalar</code> encoding.</li>
+<li>Bytes <code>[1, 24)</code>: padding, must be zero</li>
+<li>Bytes <code>[24, 28)</code>: big-endian <code>uint32</code>, encoding the <code>blobBaseFeeScalar</code></li>
+<li>Bytes <code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the <code>baseFeeScalar</code></li>
 </ul>
 </li>
 </ul>
-<p>Invalid and unrecognized scalar event-data should be ignored,
-and the last valid configuration should continue to be utilized.</p>
-<p>The <code>baseFeeScalar</code> and <code>blobBaseFeeScalar</code> are incorporated into the L2 through the
-<a href="deposits.html#l1-attributes---ecotone">Ecotone L1 attributes deposit transaction calldata</a>.</p>
-<p>Future upgrades of the <code>SystemConfig</code> contract may provide additional typed getters/setters
-for the versioned scalar information.</p>
-<p>In Ecotone the existing <code>setGasConfig</code> function, and <code>scalar</code> and <code>overhead</code> getters, continue to function.</p>
-<p>When the batch-submitter utilizes EIP-4844 blob data for data-availability
-it can adjust the scalars to accurately price the resources:</p>
-<ul>
-<li>
-<p><code>baseFeeScalar</code> to correspond to the share of the user-transaction (per byte)
-in the total regular L1 EVM gas usage consumed by the data-transaction of the batch-submitter.
-For blob transactions this is the fixed intrinsic gas cost of the L1 transaction.</p>
-</li>
-<li>
-<p><code>blobBaseFeeScalar</code> to correspond to share of a user-transaction (per byte)
-in the total Blob data that is introduced by the data-transaction of the batch-submitter.</p>
 </li>
 </ul>
-<h3 id="gaslimit-uint64"><a class="header" href="#gaslimit-uint64"><code>gasLimit</code> (<code>uint64</code>)</a></h3>
-<p>The gas limit of the L2 blocks is configured through the system config.
-Changes to the L2 gas limit are fully applied in the first L2 block with the L1 origin that introduced the change,
-as opposed to the 1/1024 adjustments towards a target as seen in limit updates of L1 blocks.</p>
-<p>The gas limit may not be set to a value larger than <code>200_000_000</code>. This is to ensure that the L2 blocks are fault
-provable and of reasonable size to be processed by the client software. Over time, this value will be increased.</p>
-<h3 id="unsafeblocksigner-address"><a class="header" href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></h3>
-<p>Blocks are gossiped around the p2p network before they are made available on L1.
-To prevent denial of service on the p2p layer, these unsafe blocks must be
-signed with a particular key to be accepted as "canonical" unsafe blocks.
-The address corresponding to this key is the <code>unsafeBlockSigner</code>. To ensure
-that its value can be fetched with a storage proof in a storage layout independent
+<p>The <code>baseFeeScalar</code> corresponds to the share of the user-transaction (per byte) in the total
+regular L1 EVM gas usage consumed by the data-transaction of the batch-submitter. For blob
+transactions, this is the fixed intrinsic gas cost of the L1 transaction.</p>
+<p>The <code>blobBaseFeeScalar</code> corresponds to the share of a user-transaction (per byte) in the total
+blobdata that is introduced by the data-transaction of the batch-submitter.</p>
+<h3 id="unsafe-block-signer"><a class="header" href="#unsafe-block-signer">Unsafe Block Signer</a></h3>
+<p>The <strong>Unsafe Block Signer</strong> is an Ethereum address whose corresponding private key is used to sign
+"unsafe" blocks before they are published to L1. This signature allows nodes in the P2P network to
+recognize these blocks as the canonical unsafe blocks, preventing denial of service attacks on the
+P2P layer.</p>
+<p>To ensure that its value can be fetched with a storage proof in a storage layout independent
 manner, it is stored at a special storage slot corresponding to
 <code>keccak256("systemconfig.unsafeblocksigner")</code>.</p>
-<p>Unlike the other values, the <code>unsafeBlockSigner</code> only operates on blockchain
-policy. It is not a consensus level parameter.</p>
-<h2 id="writing-the-system-config"><a class="header" href="#writing-the-system-config">Writing the system config</a></h2>
-<p>The <code>SystemConfig</code> contract applies authentication to all writing contract functions,
-the configuration management can be configured to be any type of ethereum account or contract.</p>
-<p>On a write, an event is emitted for the change to be picked up by the L2 system,
-and a copy of the new written configuration variable is retained in L1 state to read with L1 contracts.</p>
-<h2 id="reading-the-system-config"><a class="header" href="#reading-the-system-config">Reading the system config</a></h2>
-<p>A rollup node initializes its derivation process by finding a starting point based on its past L2 chain:</p>
+<p>Unlike other system config parameters, the Unsafe Block Signer only operates on blockchain policy
+and is not a consensus level parameter.</p>
+<h3 id="l2-gas-limit"><a class="header" href="#l2-gas-limit">L2 Gas Limit</a></h3>
+<p>The <strong>L2 Gas Limit</strong> defines the maximum amount of gas that can be used in a single L2 block.
+This parameter ensures that L2 blocks remain of reasonable size to be processed and proven.</p>
+<p>Changes to the L2 gas limit are fully applied in the first L2 block with the L1 origin that
+introduced the change, as opposed to the 1/1024 adjustments towards a target as seen in limit
+updates of L1 blocks.</p>
+<p>The gas limit may not be set to a value larger than the
+<a href="./configurability.html#gas-limit">maximum gas limit</a>. This is to ensure that L2 blocks are fault
+provable and of reasonable size to be processed by the client software.</p>
+<h2 id="functionality"><a class="header" href="#functionality">Functionality</a></h2>
+<h3 id="system-config-updates"><a class="header" href="#system-config-updates">System Config Updates</a></h3>
+<p>System config updates are signaled through the <code>ConfigUpdate(uint256,uint8,bytes)</code> event. The event
+structure includes:</p>
 <ul>
-<li>When started from L2 genesis, the initial system configuration is retrieved from the rollup chain configuration.</li>
-<li>When started from an existing L2 chain, a previously included L1 block is determined as derivation starting point,
-and the system config can thus be retrieved from the last L2 block that referenced the L1 block as L1 origin:
+<li>The first topic determines the version (unknown versions are critical derivation errors)</li>
+<li>The second topic determines the type of update (unknown types are critical derivation errors)</li>
+<li>The remaining event data encodes the configuration update</li>
+</ul>
+<p>In version <code>0</code>, the following update types are supported:</p>
 <ul>
-<li>If the chain state precedes the Ecotone upgrade, <code>batcherHash</code>, <code>overhead</code> and <code>scalar</code> are
-retrieved from the L1 block info transaction. Otherwise, <code>batcherHash</code>, <code>baseFeeScalar</code>, and
-<code>blobBaseFeeScalar</code> are retrieved instead.</li>
-<li><code>gasLimit</code> is retrieved from the L2 block header.</li>
-<li>other future variables may also be retrieved from other contents of the L2 block, such as the header.</li>
+<li>Type <code>0</code>: <code>batcherHash</code> overwrite, as <code>bytes32</code> payload</li>
+<li>Type <code>1</code>: Pre-Ecotone, <code>overhead</code> and <code>scalar</code> overwrite, as two packed <code>uint256</code> entries. After
+Ecotone upgrade, <code>overhead</code> is ignored and <code>scalar</code> is interpreted as a versioned encoding that
+updates <code>baseFeeScalar</code> and <code>blobBaseFeeScalar</code></li>
+<li>Type <code>2</code>: <code>gasLimit</code> overwrite, as <code>uint64</code> payload</li>
+<li>Type <code>3</code>: <code>unsafeBlockSigner</code> overwrite, as <code>address</code> payload</li>
 </ul>
-</li>
-</ul>
-<p>After preparing the initial system configuration for the given L1 starting input,
-the system configuration is updated by processing all receipts from each new L1 block.</p>
-<p>Logs are derived from transactions following the future-proof best-effort process described in
-[On Future-Proof Transaction Log Derivation][derivation.md#on-future-proof-transaction-log-derivation]</p>
-<p>The contained log events are filtered and processed as follows:</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
-<li>the log event contract address must match the rollup <code>SystemConfig</code> deployment</li>
-<li>the first log event topic must match the ABI hash of <code>ConfigUpdate(uint256,uint8,bytes)</code></li>
-<li>the second topic determines the version. Unknown versions are critical derivation errors.</li>
-<li>the third topic determines the type of update. Unknown types are critical derivation errors.</li>
-<li>the remaining event data is opaque, encoded as ABI bytes (i.e. includes offset and length data),
-and encodes the configuration update. In version <code>0</code> the following types are supported:
+<li>MUST only be triggerable once.</li>
+<li>MUST set the owner of the contract to the provided <code>_owner</code> address.</li>
+<li>MUST set the SuperchainConfig contract address.</li>
+<li>MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config, batch
+inbox, L1 contract addresses, and L2 chain ID.</li>
+<li>MUST set the start block to the current block number if it hasn't been set already.</li>
+</ul>
+<h3 id="minimumgaslimit"><a class="header" href="#minimumgaslimit">minimumGasLimit</a></h3>
+<p>Returns the minimum L2 gas limit that can be safely set for the system to operate, calculated as
+the sum of the maximum resource limit and the system transaction maximum gas.</p>
+<h3 id="maximumgaslimit"><a class="header" href="#maximumgaslimit">maximumGasLimit</a></h3>
+<p>Returns the maximum L2 gas limit that can be safely set for the system to operate.</p>
+<h3 id="unsafeblocksigner"><a class="header" href="#unsafeblocksigner">unsafeBlockSigner</a></h3>
+<p>Returns the address of the <a href="#unsafe-block-signer">Unsafe Block Signer</a>.</p>
+<h3 id="l1crossdomainmessenger"><a class="header" href="#l1crossdomainmessenger">l1CrossDomainMessenger</a></h3>
+<p>Returns the address of the L1CrossDomainMessenger contract.</p>
+<h3 id="l1erc721bridge"><a class="header" href="#l1erc721bridge">l1ERC721Bridge</a></h3>
+<p>Returns the address of the L1ERC721Bridge contract.</p>
+<h3 id="l1standardbridge"><a class="header" href="#l1standardbridge">l1StandardBridge</a></h3>
+<p>Returns the address of the L1StandardBridge contract.</p>
+<h3 id="disputegamefactory"><a class="header" href="#disputegamefactory">disputeGameFactory</a></h3>
+<p>Returns the address of the DisputeGameFactory contract, derived from the OptimismPortal.</p>
+<h3 id="optimismportal"><a class="header" href="#optimismportal">optimismPortal</a></h3>
+<p>Returns the address of the OptimismPortal contract.</p>
+<h3 id="optimismmintableerc20factory"><a class="header" href="#optimismmintableerc20factory">optimismMintableERC20Factory</a></h3>
+<p>Returns the address of the OptimismMintableERC20Factory contract.</p>
+<h3 id="getaddresses"><a class="header" href="#getaddresses">getAddresses</a></h3>
+<p>Returns a consolidated struct containing all the L1 contract addresses.</p>
+<h3 id="batchinbox"><a class="header" href="#batchinbox">batchInbox</a></h3>
+<p>Returns the address of the <a href="#batch-inbox">Batch Inbox</a>.</p>
+<h3 id="startblock"><a class="header" href="#startblock">startBlock</a></h3>
+<p>Returns the block number at which the op-node can start searching for logs.</p>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>This function integrates with the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> by using the
+chain's <code>ETHLockbox</code> address as the <a href="./stage-1.html#pause-identifier">Pause Identifier</a>. Returns the
+current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for this chain's
+<code>ETHLockbox</code>.</p>
 <ul>
-<li>type <code>0</code>: <code>batcherHash</code> overwrite, as <code>bytes32</code> payload.</li>
-<li>type <code>1</code>: Pre-Ecotone, <code>overhead</code> and <code>scalar</code> overwrite, as two packed <code>uint256</code>
-entries. After Ecotone upgrade, <code>overhead</code> is ignored and <code>scalar</code> interpreted as a <a href="#ecotone-scalar-overhead-uint256uint256-change">versioned
-encoding</a> that updates <code>baseFeeScalar</code> and
-<code>blobBaseFeeScalar</code>.</li>
-<li>type <code>2</code>: <code>gasLimit</code> overwrite, as <code>uint64</code> payload.</li>
-<li>type <code>3</code>: <code>unsafeBlockSigner</code> overwrite, as <code>address</code> payload.</li>
+<li>MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns true OR if
+<code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>MUST return false otherwise.</li>
 </ul>
-</li>
+<h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
+<p>Returns the address of the SuperchainConfig contract that manages the pause state.</p>
+<h3 id="setunsafeblocksigner"><a class="header" href="#setunsafeblocksigner">setUnsafeBlockSigner</a></h3>
+<p>Allows the owner to update the <a href="#unsafe-block-signer">Unsafe Block Signer</a> address.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the unsafe block signer address.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.UNSAFE_BLOCK_SIGNER type.</li>
 </ul>
-<p>Note that individual derivation stages may be processing different L1 blocks,
-and should thus maintain individual system configuration copies,
-and apply the event-based changes as the stage traverses to the next L1 block.</p>
+<h3 id="setbatcherhash"><a class="header" href="#setbatcherhash">setBatcherHash</a></h3>
+<p>Allows the owner to update the <a href="#batcher-hash">Batcher Hash</a>.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the batcher hash.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.BATCHER type.</li>
+</ul>
+<h3 id="setgasconfig"><a class="header" href="#setgasconfig">setGasConfig</a></h3>
+<p>Allows the owner to update the gas configuration parameters (pre-Ecotone).</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST revert if the scalar exceeds the maximum allowed value.</li>
+<li>MUST update the overhead and scalar values.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.FEE_SCALARS type.</li>
+</ul>
+<h3 id="setgasconfigecotone"><a class="header" href="#setgasconfigecotone">setGasConfigEcotone</a></h3>
+<p>Allows the owner to update the gas configuration parameters (post-Ecotone).</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the basefeeScalar and blobbasefeeScalar values.</li>
+<li>MUST update the scalar value with the versioned encoding.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.FEE_SCALARS type.</li>
+</ul>
+<h3 id="setgaslimit"><a class="header" href="#setgaslimit">setGasLimit</a></h3>
+<p>Allows the owner to update the <a href="#l2-gas-limit">L2 Gas Limit</a>.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST revert if the gas limit is less than the minimum gas limit.</li>
+<li>MUST revert if the gas limit is greater than the maximum gas limit.</li>
+<li>MUST update the gas limit.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.GAS_LIMIT type.</li>
+</ul>
+<h3 id="seteip1559params"><a class="header" href="#seteip1559params">setEIP1559Params</a></h3>
+<p>Allows the owner to update the EIP-1559 parameters of the chain.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST revert if the denominator is less than 1.</li>
+<li>MUST revert if the elasticity is less than 1.</li>
+<li>MUST update the eip1559Denominator and eip1559Elasticity values.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.EIP_1559_PARAMS type.</li>
+</ul>
+<h3 id="setoperatorfeescalars"><a class="header" href="#setoperatorfeescalars">setOperatorFeeScalars</a></h3>
+<p>Allows the owner to update the operator fee parameters.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the operatorFeeScalar and operatorFeeConstant values.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.OPERATOR_FEE_PARAMS type.</li>
+</ul>
+<h3 id="resourceconfig"><a class="header" href="#resourceconfig">resourceConfig</a></h3>
+<p>Returns the current resource metering configuration.</p>
 
                     </main>
 

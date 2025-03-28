@@ -4506,6 +4506,11 @@ withdrawals on L1.</p>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#dependencies-3">Dependencies</a></li>
 </ul>
 </li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#iasr-005-the-anchor-game-is-recent-enough-to-be-fault-provable">iASR-005: The Anchor Game is recent enough to be fault provable</a>
+<ul>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#impact-4">Impact</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#function-specification">Function Specification</a>
@@ -4594,18 +4599,19 @@ Challenger.</p>
 <p>A Dispute Game that is <strong>NOT</strong> a Proper Game can also be referred to as an <strong>Improper Game</strong> for
 brevity. A Dispute Game can go from being a Proper Game to later <em>not</em> being an <strong>Improper Game</strong>
 if it is invalidated by being <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklisted</a> or <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">retired</a>.</p>
-<p><strong>ALL</strong> Dispute Games <strong>TEMPORARILY</strong> become Improper Games while the Superchain-wide pause
-mechanism is active. However, this is a <em>temporary</em> condition such that Registered Games that are
-not invalidated by <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklisting</a> or <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">retirement</a> will become
-Proper Games again once the pause is lifted. The Superchain-wide pause is therefore a way to
-<em>temporarily</em> prevent Dispute Games from being used by consumers like the <code>OptimismPortal</code> while
-relevant parties coordinate the use of some other invalidation mechanism.</p>
+<p><strong>ALL</strong> Dispute Games <strong>TEMPORARILY</strong> become Improper Games while the
+<a href="fault-proof/stage-one/../../protocol/stage-1.html#pause-mechanism">Pause Mechanism</a> is active. However, this is
+a <em>temporary</em> condition such that Registered Games that are not invalidated by
+<a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklisting</a> or <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">retirement</a> will become Proper Games again
+once the pause is lifted. The Pause Mechanism is therefore a way to <em>temporarily</em> prevent Dispute
+Games from being used by consumers like the <code>OptimismPortal</code> while relevant parties coordinate the
+use of some other invalidation mechanism.</p>
 <p>A Game is considered to be a Proper Game if all of the following are true:</p>
 <ul>
 <li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#registered-game">Registered Game</a></li>
 <li>The game is <strong>NOT</strong> a <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">Blacklisted Game</a></li>
 <li>The game is <strong>NOT</strong> a <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">Retired Game</a></li>
-<li>The Superchain-wide pause is not active</li>
+<li>The <a href="fault-proof/stage-one/../../protocol/stage-1.html#pause-mechanism">Pause Mechanism</a> is not active</li>
 </ul>
 <h3 id="resolved-game"><a class="header" href="#resolved-game">Resolved Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Resolved Game</strong> if the game has resolved a result in favor
@@ -4686,10 +4692,10 @@ created.</p>
 have <a href="fault-proof/stage-one/anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
 <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has elapsed UNLESS the
-Superchain-wide pause mechanism is active. Therefore, in the absence of the Superchain-wide pause
-mechanism, parties responsible for game invalidation have exactly the Dispute Game Finality Delay
-to invalidate a withdrawal after it resolves incorrectly. If the Superchain-wide pause is active,
-then any incorrectly resolving games must be invalidated before the pause is deactivated.</p>
+Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism, parties responsible
+for game invalidation have exactly the Dispute Game Finality Delay to invalidate a withdrawal after
+it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
+must be invalidated before the pause is deactivated.</p>
 <h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
@@ -4773,6 +4779,15 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 <ul>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003</a></li>
 </ul>
+<h3 id="iasr-005-the-anchor-game-is-recent-enough-to-be-fault-provable"><a class="header" href="#iasr-005-the-anchor-game-is-recent-enough-to-be-fault-provable">iASR-005: The Anchor Game is recent enough to be fault provable</a></h3>
+<p>We require that the Anchor Game corresponds to an L2 block with an L1 origin timestamp that is no
+older than 6 months from the current timestamp. This time constraint is necessary because the fault
+proof VM must walk backwards through L1 blocks to verify derivation, and processing 7 months worth
+of L1 blocks approaches the maximum time available to challengers in the dispute game process.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, challengers will be unable to participate in fault proofs within the
+allotted response time, and resolution would require intervention from the Proxy Admin Owner.</p>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
 <ul>
@@ -4781,7 +4796,7 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
 <li>MUST only be triggerable once.</li>
-<li>MUST set the value of the <code>SuperchainConfig</code> contract that stores the address of the Guardian.</li>
+<li>MUST set the value of the <code>SystemConfig</code> contract that stores the address of the Guardian.</li>
 <li>MUST set the value of the <code>DisputeGameFactory</code> contract that creates Dispute Game instances.</li>
 <li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#starting-anchor-state">Starting Anchor State</a>.</li>
 <li>MUST set the value of the initial <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</li>
@@ -4793,7 +4808,7 @@ the legacy blacklisting/retirement mechanisms within the <code>OptimismPortal</c
 slate.</li>
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
-<p>Returns the value of the Superchain-wide <code>paused()</code> flag in the <code>SuperchainConfig</code> contract.</p>
+<p>Returns the value of <code>paused()</code> from the <code>SystemConfig</code> contract.</p>
 <h3 id="respectedgametype"><a class="header" href="#respectedgametype">respectedGameType</a></h3>
 <p>Returns the value of the currently <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</p>
 <h3 id="retirementtimestamp"><a class="header" href="#retirementtimestamp">retirementTimestamp</a></h3>
@@ -6451,11 +6466,10 @@ created.</p>
 <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
 <a href="fault-proof/stage-one/./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has
-elapsed UNLESS the Superchain-wide pause mechanism is active. Therefore, in the absence of the
-Superchain-wide pause mechanism, parties responsible for game invalidation have exactly the Dispute
-Game Finality Delay to invalidate a withdrawal after it resolves incorrectly. If the
-Superchain-wide pause is active, then any incorrectly resolving games must be invalidated before
-the pause is deactivated.</p>
+elapsed UNLESS the Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism,
+parties responsible for game invalidation have exactly the Dispute Game Finality Delay to
+invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
+incorrectly resolving games must be invalidated before the pause is deactivated.</p>
 <h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
@@ -6471,14 +6485,14 @@ the pause is deactivated.</p>
 <h3 id="iop-001-invalid-withdrawals-can-never-be-finalized"><a class="header" href="#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a></h3>
 <p>We require that <a href="fault-proof/stage-one/optimism-portal.html#invalid-withdrawal">Invalid Withdrawals</a> can never be
 <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a> for any reason.</p>
-<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, any number of arbitrarily bad outcomes could happen. Most obviously,
 we would expect all bridge systems relying on the <code>OptimismPortal</code> to be immediately compromised.</p>
 <h3 id="iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time"><a class="header" href="#iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time">iOP-002: Valid Withdrawals can always be finalized in bounded time</a></h3>
 <p>We require that <a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawals</a> can always be
 <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a> within some reasonable, bounded amount of time.</p>
-<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<h4 id="impact-6"><a class="header" href="#impact-6">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, we would expect that users are unable to withdraw bridged assets. We
 see this as a critical system risk.</p>
@@ -6492,7 +6506,6 @@ see this as a critical system risk.</p>
 <li>MUST only be triggerable once.</li>
 <li>MUST set the value of the <code>DisputeGameFactory</code> contract.</li>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
-<li>MUST set the value of the <code>SuperchainConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
 <li>MUST set <code>superRootsActive</code> to either <code>true</code> or <code>false</code>.</li>
 <li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
@@ -6500,9 +6513,9 @@ value if the value is not set already.</li>
 <li>MUST initialize the resource metering configuration.</li>
 </ul>
 <h3 id="paused-1"><a class="header" href="#paused-1">paused</a></h3>
-<p>Returns the current state of the <code>SuperchainConfig.paused()</code> function.</p>
+<p>Returns the current state of the <code>SystemConfig.paused()</code> function.</p>
 <h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
-<p>Returns the address of the Guardian as per <code>SuperchainConfig.guardian()</code>.</p>
+<p>Returns the address of the Guardian as per <code>SystemConfig.guardian()</code>.</p>
 <h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
 <p>Returns the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
 <h3 id="superrootsactive"><a class="header" href="#superrootsactive">superRootsActive</a></h3>
@@ -6820,7 +6833,7 @@ has been hardcoded to 6.</p>
 <li>decimals</li>
 </ul>
 <p>These new scalar values are managed by the <code>SystemConfig</code> contract on the L1 by introducing a
-backwards compatible <a href="protocol/system-config.html#ecotone-scalar-overhead-uint256uint256-change">versioned encoding scheme</a> of its <code>scalars</code> storage
+backwards compatible <a href="protocol/system-config.html#post-ecotone-parameters">versioned encoding scheme</a> of its <code>scalars</code> storage
 slot. The <code>decimals</code> remains hardcoded to 6, and the <code>overhead</code> value is ignored.</p>
 <h2 id="l1block"><a class="header" href="#l1block">L1Block</a></h2>
 <p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L1Block.sol">Implementation</a></p>
@@ -7057,56 +7070,127 @@ which is explicitly not <code>EntryPoint</code> itself.</p>
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="protocol/superchain-config.html#overview">Overview</a></li>
-<li><a href="protocol/superchain-config.html#configurable-values">Configurable values</a></li>
-<li><a href="protocol/superchain-config.html#configuration-data-flow">Configuration data flow</a>
+<li><a href="protocol/superchain-config.html#invariants">Invariants</a>
 <ul>
-<li><a href="protocol/superchain-config.html#pausability">Pausability</a>
+<li><a href="protocol/superchain-config.html#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a>
 <ul>
-<li><a href="protocol/superchain-config.html#paused-identifiers">Paused identifiers</a></li>
-<li><a href="protocol/superchain-config.html#scope-of-pausability">Scope of pausability</a></li>
+<li><a href="protocol/superchain-config.html#impact">Impact</a></li>
 </ul>
 </li>
+<li><a href="protocol/superchain-config.html#isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism">iSUPC-002: The Guardian must be able to reset or undo the Pause Mechanism</a>
+<ul>
+<li><a href="protocol/superchain-config.html#impact-1">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="protocol/superchain-config.html#function-specification">Function Specification</a>
+<ul>
+<li><a href="protocol/superchain-config.html#initialize">initialize</a></li>
+<li><a href="protocol/superchain-config.html#guardian">guardian</a></li>
+<li><a href="protocol/superchain-config.html#pause">pause</a></li>
+<li><a href="protocol/superchain-config.html#unpause">unpause</a></li>
+<li><a href="protocol/superchain-config.html#pausable">pausable</a></li>
+<li><a href="protocol/superchain-config.html#paused">paused</a></li>
+<li><a href="protocol/superchain-config.html#expiration">expiration</a></li>
+<li><a href="protocol/superchain-config.html#reset">reset</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-24"><a class="header" href="#overview-24">Overview</a></h2>
-<p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains within
-a single Superchain network.</p>
-<h2 id="configurable-values"><a class="header" href="#configurable-values">Configurable values</a></h2>
-<p>The <code>SuperchainConfig</code> contract manages the following configuration values:</p>
+<p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains
+within a single Superchain network.</p>
+<h2 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h2>
+<h3 id="isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism"><a class="header" href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a></h3>
+<p>We require that the <code>SuperchainConfig</code> is constructed such that both the
+<a href="protocol/./stage-1.html#guardian">Guardian</a> and the <a href="protocol/./stage-1.html#pause-deputy">Pause Deputy</a> must be able to
+trigger the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> at any time.</p>
+<h4 id="impact-7"><a class="header" href="#impact-7">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Existing recovery runbooks would not function as expected if the <code>SuperchainConfig</code> prevented one
+of these actors from triggering the pause as needed.</p>
+<h3 id="isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism"><a class="header" href="#isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism">iSUPC-002: The Guardian must be able to reset or undo the Pause Mechanism</a></h3>
+<p>We require that the <code>SuperchainConfig</code> is constructed such that the
+<a href="protocol/./stage-1.html#guardian">Guardian</a> must be able to reset or unpause the
+<a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> at any time.</p>
+<h4 id="impact-8"><a class="header" href="#impact-8">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If the Pause Mechanism cannot be reset then it cannot be used again without intervention from the
+<a href="protocol/./stage-1.html#upgrade-controller">Upgrade Controller</a>. We consider this to be a Medium severity
+issue because the Upgrade Controller will have several months to coordinate such a fix assuming
+that <a href="protocol/superchain-config.html#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001</a> holds.</p>
+<h2 id="function-specification-2"><a class="header" href="#function-specification-2">Function Specification</a></h2>
+<h3 id="initialize-2"><a class="header" href="#initialize-2">initialize</a></h3>
 <ul>
-<li><code>PAUSED_SLOT</code>: A boolean value indicating whether the Superchain is paused.</li>
-<li><code>GUARDIAN_SLOT</code>: The address of the guardian, which can pause and unpause the system.</li>
+<li>MUST only be triggerable once.</li>
+<li>MUST set the value of the Guardian role.</li>
+<li>MUST set the value of the pause expiry period.</li>
 </ul>
-<h2 id="configuration-data-flow"><a class="header" href="#configuration-data-flow">Configuration data flow</a></h2>
-<p>All contracts which read from the <code>SuperchainConfig</code> contract hold its address as storage values
-in the proxy account, and call directly to it when reading configuration data.</p>
-<pre class="mermaid">flowchart TD
-StandardBridge --&gt; SuperchainConfig
-L1ERC721Bridge --&gt; SuperchainConfig
-L1CrossDomainMessenger --&gt; SuperchainConfig
-OptimismPortal --&gt; SuperchainConfig
-</pre>
-<h3 id="pausability"><a class="header" href="#pausability">Pausability</a></h3>
-<p>The Superchain pause feature is a safety mechanism designed to temporarily halt withdrawals from the system in
-an emergency situation. The Guardian role is authorized to pause and unpause the system.</p>
-<h4 id="paused-identifiers"><a class="header" href="#paused-identifiers">Paused identifiers</a></h4>
-<p>When the system is paused the <code>Paused(string identifier)</code> event is emitted. This allows for the
-caller to provide additional information to be used during incident response.</p>
-<h4 id="scope-of-pausability"><a class="header" href="#scope-of-pausability">Scope of pausability</a></h4>
-<p>The pause applies specifically to withdrawals of assets from the L1 bridge contracts. The L2 bridge contracts
-are not pausable, on the basis that issues on L2 can be addressed more easily by a hard fork in the consensus
-layer.</p>
-<p>When the Pause is activated, the following methods are disabled:</p>
-<ol>
-<li><code>OptimismPortal.proveWithdrawalTransaction()</code></li>
-<li><code>OptimismPortal.finalizeWithdrawalTransaction()</code></li>
-<li><code>L1CrossDomainMessenger.relayMessage()</code></li>
-<li><code>StandardBridge.finalizeBridgeERC20()</code></li>
-<li><code>StandardBridge.finalizeBridgeETH()</code></li>
-<li><code>L1ERC721Bridge.finalizeBridgeERC721()</code></li>
-</ol>
+<h3 id="guardian-1"><a class="header" href="#guardian-1">guardian</a></h3>
+<p>Returns the address of the current <a href="protocol/./stage-1.html#guardian">Guardian</a>.</p>
+<h3 id="pause"><a class="header" href="#pause">pause</a></h3>
+<p>Allows the <a href="protocol/./stage-1.html#guardian">Guardian</a> to trigger the
+<a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a>. <code>pause</code> takes an address
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a> as an input. This identifier determines which
+systems or chains are affected by the pause.</p>
+<ul>
+<li>MUST revert if called by an address other than the Guardian.</li>
+<li>MUST revert if the pausable flag for the given identifier is set to 1 (used/unavailable).</li>
+<li>MUST set the pause timestamp for the given identifier to the current block timestamp.</li>
+<li>MUST set the pausable flag for the given identifier to 1 (used/unavailable) to prevent repeated
+pauses without a reset.</li>
+</ul>
+<h3 id="unpause"><a class="header" href="#unpause">unpause</a></h3>
+<p>Allows the <a href="protocol/./stage-1.html#guardian">Guardian</a> to explicitly unpause the system for a given
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a> rather than waiting for the pause to expire.
+Unpausing a specific identifier does NOT unpause the global pause (zero address identifier). If the
+global pause is active, all systems will remain paused even if their specific identifiers are
+unpaused. Note that <code>unpause</code> will not revert if the pause is not currently active which would
+cause <code>unpause</code> to act like a call to <code>reset</code>.</p>
+<ul>
+<li>MUST revert if called by an address other than the Guardian.</li>
+<li>MUST set the pause timestamp for the given identifier to 0, representing "not paused".</li>
+<li>MUST set the pausable flag for the given identifier to 0 (ready to pause), allowing the pause
+mechanism to be used again.</li>
+</ul>
+<h3 id="pausable"><a class="header" href="#pausable">pausable</a></h3>
+<p>Allows any user to check if the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> can be triggered
+for a specific <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>. The pausable status of a specific
+identifier is independent of the pausable status of the global pause (zero address identifier).</p>
+<ul>
+<li>MUST return true if the pausable flag for the given identifier is 0 (ready to pause).</li>
+<li>MUST return false if the pausable flag for the given identifier is 1 (used/unavailable).</li>
+</ul>
+<h3 id="paused-2"><a class="header" href="#paused-2">paused</a></h3>
+<p>Allows any user to check if the system is currently paused for a specific
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
+<ul>
+<li>MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
+(current time &lt; pause timestamp + expiry duration).</li>
+<li>MUST return false otherwise.</li>
+</ul>
+<h3 id="expiration"><a class="header" href="#expiration">expiration</a></h3>
+<p>Returns the timestamp at which the pause for a given
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a> will expire. This function only returns the
+expiration for the specific identifier provided.</p>
+<ul>
+<li>MUST return the pause timestamp plus the configured expiry duration if the pause timestamp is non-zero.</li>
+<li>MUST return 0 if the pause timestamp is 0 (system is not paused) for the given identifier.</li>
+</ul>
+<h3 id="reset"><a class="header" href="#reset">reset</a></h3>
+<p>Allows the <a href="protocol/./stage-1.html#guardian">Guardian</a> to reset the pause mechanism for a given
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>, allowing it to be used again. Note that <code>reset</code>
+will not revert if the pausable flag is already set to zero.</p>
+<ul>
+<li>MUST revert if called by an address other than the Guardian.</li>
+<li>MUST set the pausable flag for the given identifier to 0 (ready to pause).</li>
+<li>MUST NOT modify the pause timestamp for the given identifier.</li>
+<li>NOTE: Resetting the pausable flag for a specific identifier does not affect the pause status. If
+a system is currently paused, it will remain paused until explicitly unpaused or until the pause
+expires.</li>
+</ul>
+<!-- references -->
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="superchain-upgrades"><a class="header" href="#superchain-upgrades">Superchain Upgrades</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -7341,158 +7425,266 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="protocol/system-config.html#overview">Overview</a></li>
-<li><a href="protocol/system-config.html#system-config-contents-version-0">System config contents (version 0)</a>
+<li><a href="protocol/system-config.html#definitions">Definitions</a>
 <ul>
-<li><a href="protocol/system-config.html#batcherhash-bytes32"><code>batcherHash</code> (<code>bytes32</code>)</a></li>
-<li><a href="protocol/system-config.html#scalars">Scalars</a>
+<li><a href="protocol/system-config.html#batch-inbox">Batch Inbox</a></li>
+<li><a href="protocol/system-config.html#batcher-hash">Batcher Hash</a></li>
+<li><a href="protocol/system-config.html#fee-scalars">Fee Scalars</a>
 <ul>
-<li><a href="protocol/system-config.html#pre-ecotone-scalar-overhead-uint256uint256">Pre-Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>)</a></li>
-<li><a href="protocol/system-config.html#ecotone-scalar-overhead-uint256uint256-change">Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>) change</a></li>
+<li><a href="protocol/system-config.html#pre-ecotone-parameters">Pre-Ecotone Parameters</a></li>
+<li><a href="protocol/system-config.html#post-ecotone-parameters">Post-Ecotone Parameters</a></li>
+<li><a href="protocol/system-config.html#post-ecotone-scalar-encoding">Post-Ecotone Scalar Encoding</a></li>
 </ul>
 </li>
-<li><a href="protocol/system-config.html#gaslimit-uint64"><code>gasLimit</code> (<code>uint64</code>)</a></li>
-<li><a href="protocol/system-config.html#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></li>
+<li><a href="protocol/system-config.html#unsafe-block-signer">Unsafe Block Signer</a></li>
+<li><a href="protocol/system-config.html#l2-gas-limit">L2 Gas Limit</a></li>
 </ul>
 </li>
-<li><a href="protocol/system-config.html#writing-the-system-config">Writing the system config</a></li>
-<li><a href="protocol/system-config.html#reading-the-system-config">Reading the system config</a></li>
+<li><a href="protocol/system-config.html#functionality">Functionality</a>
+<ul>
+<li><a href="protocol/system-config.html#system-config-updates">System Config Updates</a></li>
+</ul>
+</li>
+<li><a href="protocol/system-config.html#function-specification">Function Specification</a>
+<ul>
+<li><a href="protocol/system-config.html#initialize">initialize</a></li>
+<li><a href="protocol/system-config.html#minimumgaslimit">minimumGasLimit</a></li>
+<li><a href="protocol/system-config.html#maximumgaslimit">maximumGasLimit</a></li>
+<li><a href="protocol/system-config.html#unsafeblocksigner">unsafeBlockSigner</a></li>
+<li><a href="protocol/system-config.html#l1crossdomainmessenger">l1CrossDomainMessenger</a></li>
+<li><a href="protocol/system-config.html#l1erc721bridge">l1ERC721Bridge</a></li>
+<li><a href="protocol/system-config.html#l1standardbridge">l1StandardBridge</a></li>
+<li><a href="protocol/system-config.html#disputegamefactory">disputeGameFactory</a></li>
+<li><a href="protocol/system-config.html#optimismportal">optimismPortal</a></li>
+<li><a href="protocol/system-config.html#optimismmintableerc20factory">optimismMintableERC20Factory</a></li>
+<li><a href="protocol/system-config.html#getaddresses">getAddresses</a></li>
+<li><a href="protocol/system-config.html#batchinbox">batchInbox</a></li>
+<li><a href="protocol/system-config.html#startblock">startBlock</a></li>
+<li><a href="protocol/system-config.html#paused">paused</a></li>
+<li><a href="protocol/system-config.html#superchainconfig">superchainConfig</a></li>
+<li><a href="protocol/system-config.html#setunsafeblocksigner">setUnsafeBlockSigner</a></li>
+<li><a href="protocol/system-config.html#setbatcherhash">setBatcherHash</a></li>
+<li><a href="protocol/system-config.html#setgasconfig">setGasConfig</a></li>
+<li><a href="protocol/system-config.html#setgasconfigecotone">setGasConfigEcotone</a></li>
+<li><a href="protocol/system-config.html#setgaslimit">setGasLimit</a></li>
+<li><a href="protocol/system-config.html#seteip1559params">setEIP1559Params</a></li>
+<li><a href="protocol/system-config.html#setoperatorfeescalars">setOperatorFeeScalars</a></li>
+<li><a href="protocol/system-config.html#resourceconfig">resourceConfig</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-26"><a class="header" href="#overview-26">Overview</a></h2>
 <p>The <code>SystemConfig</code> is a contract on L1 that can emit rollup configuration changes as log events.
-The rollup <a href="protocol/derivation.html">block derivation process</a> picks up on these log events and applies the changes.</p>
-<h2 id="system-config-contents-version-0"><a class="header" href="#system-config-contents-version-0">System config contents (version 0)</a></h2>
-<p>Version 0 of the system configuration contract defines the following parameters:</p>
-<h3 id="batcherhash-bytes32"><a class="header" href="#batcherhash-bytes32"><code>batcherHash</code> (<code>bytes32</code>)</a></h3>
-<p>A versioned hash of the current authorized batcher sender(s), to rotate keys as batch-submitter.
-The first byte identifies the version.</p>
-<p>Version <code>0</code> embeds the current batch submitter ethereum address (<code>bytes20</code>) in the last 20 bytes of the versioned hash.</p>
-<p>In the future this versioned hash may become a commitment to a more extensive configuration,
-to enable more extensive redundancy and/or rotation configurations.</p>
-<h3 id="scalars"><a class="header" href="#scalars">Scalars</a></h3>
-<p>The L1 fee parameters, also known as Gas Price Oracle (GPO) parameters, are used to compute the L1
-data fee applied to an L2 transaction. The specific parameters used depend on the upgrades that
-are active.</p>
-<p>Fee parameter updates are signaled to L2 through the <code>GAS_CONFIG</code> log-event of the <code>SystemConfig</code>.</p>
-<h4 id="pre-ecotone-scalar-overhead-uint256uint256"><a class="header" href="#pre-ecotone-scalar-overhead-uint256uint256">Pre-Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>)</a></h4>
-<p>The <code>overhead</code> and <code>scalar</code> are consulted and passed to the L2 via L1 attribute info.</p>
-<p>The values are interpreted as big-endian <code>uint256</code>.</p>
-<h4 id="ecotone-scalar-overhead-uint256uint256-change"><a class="header" href="#ecotone-scalar-overhead-uint256uint256-change">Ecotone <code>scalar</code>, <code>overhead</code> (<code>uint256,uint256</code>) change</a></h4>
-<p>After Ecotone activation:</p>
+The rollup <a href="protocol/derivation.html">block derivation process</a> picks up on these log events and applies the
+changes. <code>SystemConfig</code> generally acts as the source of truth for configuration values within an
+OP Stack chain.</p>
+<h2 id="definitions-3"><a class="header" href="#definitions-3">Definitions</a></h2>
+<h3 id="batch-inbox"><a class="header" href="#batch-inbox">Batch Inbox</a></h3>
+<p>The <strong>Batch Inbox</strong> is the address that Sequencer transaction batches are published to. Sequencers
+publish transactions to the Batch Inbox by setting it as the <code>to</code> address on a transaction
+containing batched L2 transactions either in calldata or as blobdata.</p>
+<h3 id="batcher-hash"><a class="header" href="#batcher-hash">Batcher Hash</a></h3>
+<p>The <strong>Batcher Hash</strong> identifies the sender(s) whose transactions to the <a href="protocol/system-config.html#batch-inbox">Batch Inbox</a>
+will be recognized by the L2 clients for a given OP Chain.</p>
+<p>The Batcher Hash is versioned by the first byte of the hash. The structure of the V0 Batcher Hash
+is a 32 byte hash defined as follows:</p>
+<div class="table-wrapper"><table><thead><tr><th>1 byte</th><th>11 bytes</th><th>20 bytes</th></tr></thead><tbody>
+<tr><td>version (0x00)</td><td>empty</td><td>address</td></tr>
+</tbody></table>
+</div>
+<p>This can also be understood as:</p>
+<pre><code class="language-solidity">bytes32(address(batcher))
+</code></pre>
+<p>Where <code>batcher</code> is the address of the account that sends transactions to the Batch Inbox. Put
+simply, the V0 hash identifies a <em>single</em> address whose transaction batches will be recognized by
+L2 clients. This hash is versioned so that it could, for instance, be repurposed to be a commitment
+to a list of permitted accounts or some other form of batcher identification.</p>
+<h3 id="fee-scalars"><a class="header" href="#fee-scalars">Fee Scalars</a></h3>
+<p>The <strong>Fee Scalars</strong> are parameters used to calculate the L1 data fee for L2 transactions. These
+parameters are also known as Gas Price Oracle (GPO) parameters.</p>
+<h4 id="pre-ecotone-parameters"><a class="header" href="#pre-ecotone-parameters">Pre-Ecotone Parameters</a></h4>
+<p>Before the Ecotone upgrade, these include:</p>
 <ul>
-<li>The <code>scalar</code> attribute encodes additional scalar information, in a versioned encoding scheme.</li>
-<li>The <code>overhead</code> value is ignored: it does not affect the L2 state-transition output.</li>
+<li><strong>Scalar</strong>: A multiplier applied to the L1 base fee, interpreted as a big-endian <code>uint256</code></li>
+<li><strong>Overhead</strong>: A constant gas overhead, interpreted as a big-endian <code>uint256</code></li>
 </ul>
-<p>The <code>scalar</code> is encoded as big-endian <code>uint256</code>, interpreted as <code>bytes32</code>, and composed as following:</p>
-<p>*Byte ranges are indicated with <code>[</code> (inclusive) and <code>)</code> (exclusive).</p>
+<h4 id="post-ecotone-parameters"><a class="header" href="#post-ecotone-parameters">Post-Ecotone Parameters</a></h4>
+<p>After the Ecotone upgrade:</p>
 <ul>
-<li><code>0</code>: scalar-version byte</li>
-<li><code>[1, 32)</code>: depending scalar-version:
+<li>The <strong>Scalar</strong> attribute encodes additional scalar information in a versioned encoding scheme</li>
+<li>The <strong>Overhead</strong> value is ignored and does not affect the L2 state-transition output</li>
+</ul>
+<h4 id="post-ecotone-scalar-encoding"><a class="header" href="#post-ecotone-scalar-encoding">Post-Ecotone Scalar Encoding</a></h4>
+<p>The Scalar is encoded as big-endian <code>uint256</code>, interpreted as <code>bytes32</code>, and composed as follows:</p>
+<ul>
+<li>Byte <code>0</code>: scalar-version byte</li>
+<li>Bytes <code>[1, 32)</code>: depending on scalar-version:
 <ul>
 <li>Scalar-version <code>0</code>:
 <ul>
-<li><code>[1, 28)</code>: padding, should be zero.</li>
-<li><code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the L1-fee <code>baseFeeScalar</code></li>
-<li>This version implies the L1-fee <code>blobBaseFeeScalar</code> is set to 0.</li>
-<li>In the event there are non-zero bytes in the padding area, <code>baseFeeScalar</code> must be set to MaxUint32.</li>
-<li>This version is compatible with the pre-Ecotone <code>scalar</code> value (assuming a <code>uint32</code> range).</li>
+<li>Bytes <code>[1, 28)</code>: padding, should be zero</li>
+<li>Bytes <code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the L1-fee <code>baseFeeScalar</code></li>
+<li>This version implies the L1-fee <code>blobBaseFeeScalar</code> is set to 0</li>
+<li>If there are non-zero bytes in the padding area, <code>baseFeeScalar</code> must be set to MaxUint32</li>
 </ul>
 </li>
 <li>Scalar-version <code>1</code>:
 <ul>
-<li><code>[1, 24)</code>: padding, must be zero.</li>
-<li><code>[24, 28)</code>: big-endian <code>uint32</code>, encoding the <code>blobBaseFeeScalar</code></li>
-<li><code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the <code>baseFeeScalar</code></li>
-<li>This version is meant to configure the EIP-4844 blob fee component, once blobs are used for data-availability.</li>
-</ul>
-</li>
-<li>Other scalar-version values: unrecognized.
-OP-Stack forks are recommended to utilize the <code>&gt;= 128</code> scalar-version range and document their <code>scalar</code> encoding.</li>
+<li>Bytes <code>[1, 24)</code>: padding, must be zero</li>
+<li>Bytes <code>[24, 28)</code>: big-endian <code>uint32</code>, encoding the <code>blobBaseFeeScalar</code></li>
+<li>Bytes <code>[28, 32)</code>: big-endian <code>uint32</code>, encoding the <code>baseFeeScalar</code></li>
 </ul>
 </li>
 </ul>
-<p>Invalid and unrecognized scalar event-data should be ignored,
-and the last valid configuration should continue to be utilized.</p>
-<p>The <code>baseFeeScalar</code> and <code>blobBaseFeeScalar</code> are incorporated into the L2 through the
-<a href="protocol/deposits.html#l1-attributes---ecotone">Ecotone L1 attributes deposit transaction calldata</a>.</p>
-<p>Future upgrades of the <code>SystemConfig</code> contract may provide additional typed getters/setters
-for the versioned scalar information.</p>
-<p>In Ecotone the existing <code>setGasConfig</code> function, and <code>scalar</code> and <code>overhead</code> getters, continue to function.</p>
-<p>When the batch-submitter utilizes EIP-4844 blob data for data-availability
-it can adjust the scalars to accurately price the resources:</p>
-<ul>
-<li>
-<p><code>baseFeeScalar</code> to correspond to the share of the user-transaction (per byte)
-in the total regular L1 EVM gas usage consumed by the data-transaction of the batch-submitter.
-For blob transactions this is the fixed intrinsic gas cost of the L1 transaction.</p>
-</li>
-<li>
-<p><code>blobBaseFeeScalar</code> to correspond to share of a user-transaction (per byte)
-in the total Blob data that is introduced by the data-transaction of the batch-submitter.</p>
 </li>
 </ul>
-<h3 id="gaslimit-uint64"><a class="header" href="#gaslimit-uint64"><code>gasLimit</code> (<code>uint64</code>)</a></h3>
-<p>The gas limit of the L2 blocks is configured through the system config.
-Changes to the L2 gas limit are fully applied in the first L2 block with the L1 origin that introduced the change,
-as opposed to the 1/1024 adjustments towards a target as seen in limit updates of L1 blocks.</p>
-<p>The gas limit may not be set to a value larger than <code>200_000_000</code>. This is to ensure that the L2 blocks are fault
-provable and of reasonable size to be processed by the client software. Over time, this value will be increased.</p>
-<h3 id="unsafeblocksigner-address"><a class="header" href="#unsafeblocksigner-address"><code>unsafeBlockSigner</code> (<code>address</code>)</a></h3>
-<p>Blocks are gossiped around the p2p network before they are made available on L1.
-To prevent denial of service on the p2p layer, these unsafe blocks must be
-signed with a particular key to be accepted as "canonical" unsafe blocks.
-The address corresponding to this key is the <code>unsafeBlockSigner</code>. To ensure
-that its value can be fetched with a storage proof in a storage layout independent
+<p>The <code>baseFeeScalar</code> corresponds to the share of the user-transaction (per byte) in the total
+regular L1 EVM gas usage consumed by the data-transaction of the batch-submitter. For blob
+transactions, this is the fixed intrinsic gas cost of the L1 transaction.</p>
+<p>The <code>blobBaseFeeScalar</code> corresponds to the share of a user-transaction (per byte) in the total
+blobdata that is introduced by the data-transaction of the batch-submitter.</p>
+<h3 id="unsafe-block-signer"><a class="header" href="#unsafe-block-signer">Unsafe Block Signer</a></h3>
+<p>The <strong>Unsafe Block Signer</strong> is an Ethereum address whose corresponding private key is used to sign
+"unsafe" blocks before they are published to L1. This signature allows nodes in the P2P network to
+recognize these blocks as the canonical unsafe blocks, preventing denial of service attacks on the
+P2P layer.</p>
+<p>To ensure that its value can be fetched with a storage proof in a storage layout independent
 manner, it is stored at a special storage slot corresponding to
 <code>keccak256("systemconfig.unsafeblocksigner")</code>.</p>
-<p>Unlike the other values, the <code>unsafeBlockSigner</code> only operates on blockchain
-policy. It is not a consensus level parameter.</p>
-<h2 id="writing-the-system-config"><a class="header" href="#writing-the-system-config">Writing the system config</a></h2>
-<p>The <code>SystemConfig</code> contract applies authentication to all writing contract functions,
-the configuration management can be configured to be any type of ethereum account or contract.</p>
-<p>On a write, an event is emitted for the change to be picked up by the L2 system,
-and a copy of the new written configuration variable is retained in L1 state to read with L1 contracts.</p>
-<h2 id="reading-the-system-config"><a class="header" href="#reading-the-system-config">Reading the system config</a></h2>
-<p>A rollup node initializes its derivation process by finding a starting point based on its past L2 chain:</p>
+<p>Unlike other system config parameters, the Unsafe Block Signer only operates on blockchain policy
+and is not a consensus level parameter.</p>
+<h3 id="l2-gas-limit"><a class="header" href="#l2-gas-limit">L2 Gas Limit</a></h3>
+<p>The <strong>L2 Gas Limit</strong> defines the maximum amount of gas that can be used in a single L2 block.
+This parameter ensures that L2 blocks remain of reasonable size to be processed and proven.</p>
+<p>Changes to the L2 gas limit are fully applied in the first L2 block with the L1 origin that
+introduced the change, as opposed to the 1/1024 adjustments towards a target as seen in limit
+updates of L1 blocks.</p>
+<p>The gas limit may not be set to a value larger than the
+<a href="protocol/./configurability.html#gas-limit">maximum gas limit</a>. This is to ensure that L2 blocks are fault
+provable and of reasonable size to be processed by the client software.</p>
+<h2 id="functionality"><a class="header" href="#functionality">Functionality</a></h2>
+<h3 id="system-config-updates"><a class="header" href="#system-config-updates">System Config Updates</a></h3>
+<p>System config updates are signaled through the <code>ConfigUpdate(uint256,uint8,bytes)</code> event. The event
+structure includes:</p>
 <ul>
-<li>When started from L2 genesis, the initial system configuration is retrieved from the rollup chain configuration.</li>
-<li>When started from an existing L2 chain, a previously included L1 block is determined as derivation starting point,
-and the system config can thus be retrieved from the last L2 block that referenced the L1 block as L1 origin:
+<li>The first topic determines the version (unknown versions are critical derivation errors)</li>
+<li>The second topic determines the type of update (unknown types are critical derivation errors)</li>
+<li>The remaining event data encodes the configuration update</li>
+</ul>
+<p>In version <code>0</code>, the following update types are supported:</p>
 <ul>
-<li>If the chain state precedes the Ecotone upgrade, <code>batcherHash</code>, <code>overhead</code> and <code>scalar</code> are
-retrieved from the L1 block info transaction. Otherwise, <code>batcherHash</code>, <code>baseFeeScalar</code>, and
-<code>blobBaseFeeScalar</code> are retrieved instead.</li>
-<li><code>gasLimit</code> is retrieved from the L2 block header.</li>
-<li>other future variables may also be retrieved from other contents of the L2 block, such as the header.</li>
+<li>Type <code>0</code>: <code>batcherHash</code> overwrite, as <code>bytes32</code> payload</li>
+<li>Type <code>1</code>: Pre-Ecotone, <code>overhead</code> and <code>scalar</code> overwrite, as two packed <code>uint256</code> entries. After
+Ecotone upgrade, <code>overhead</code> is ignored and <code>scalar</code> is interpreted as a versioned encoding that
+updates <code>baseFeeScalar</code> and <code>blobBaseFeeScalar</code></li>
+<li>Type <code>2</code>: <code>gasLimit</code> overwrite, as <code>uint64</code> payload</li>
+<li>Type <code>3</code>: <code>unsafeBlockSigner</code> overwrite, as <code>address</code> payload</li>
 </ul>
-</li>
-</ul>
-<p>After preparing the initial system configuration for the given L1 starting input,
-the system configuration is updated by processing all receipts from each new L1 block.</p>
-<p>Logs are derived from transactions following the future-proof best-effort process described in
-[On Future-Proof Transaction Log Derivation][derivation.md#on-future-proof-transaction-log-derivation]</p>
-<p>The contained log events are filtered and processed as follows:</p>
+<h2 id="function-specification-3"><a class="header" href="#function-specification-3">Function Specification</a></h2>
+<h3 id="initialize-3"><a class="header" href="#initialize-3">initialize</a></h3>
 <ul>
-<li>the log event contract address must match the rollup <code>SystemConfig</code> deployment</li>
-<li>the first log event topic must match the ABI hash of <code>ConfigUpdate(uint256,uint8,bytes)</code></li>
-<li>the second topic determines the version. Unknown versions are critical derivation errors.</li>
-<li>the third topic determines the type of update. Unknown types are critical derivation errors.</li>
-<li>the remaining event data is opaque, encoded as ABI bytes (i.e. includes offset and length data),
-and encodes the configuration update. In version <code>0</code> the following types are supported:
+<li>MUST only be triggerable once.</li>
+<li>MUST set the owner of the contract to the provided <code>_owner</code> address.</li>
+<li>MUST set the SuperchainConfig contract address.</li>
+<li>MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config, batch
+inbox, L1 contract addresses, and L2 chain ID.</li>
+<li>MUST set the start block to the current block number if it hasn't been set already.</li>
+</ul>
+<h3 id="minimumgaslimit"><a class="header" href="#minimumgaslimit">minimumGasLimit</a></h3>
+<p>Returns the minimum L2 gas limit that can be safely set for the system to operate, calculated as
+the sum of the maximum resource limit and the system transaction maximum gas.</p>
+<h3 id="maximumgaslimit"><a class="header" href="#maximumgaslimit">maximumGasLimit</a></h3>
+<p>Returns the maximum L2 gas limit that can be safely set for the system to operate.</p>
+<h3 id="unsafeblocksigner"><a class="header" href="#unsafeblocksigner">unsafeBlockSigner</a></h3>
+<p>Returns the address of the <a href="protocol/system-config.html#unsafe-block-signer">Unsafe Block Signer</a>.</p>
+<h3 id="l1crossdomainmessenger"><a class="header" href="#l1crossdomainmessenger">l1CrossDomainMessenger</a></h3>
+<p>Returns the address of the L1CrossDomainMessenger contract.</p>
+<h3 id="l1erc721bridge"><a class="header" href="#l1erc721bridge">l1ERC721Bridge</a></h3>
+<p>Returns the address of the L1ERC721Bridge contract.</p>
+<h3 id="l1standardbridge"><a class="header" href="#l1standardbridge">l1StandardBridge</a></h3>
+<p>Returns the address of the L1StandardBridge contract.</p>
+<h3 id="disputegamefactory"><a class="header" href="#disputegamefactory">disputeGameFactory</a></h3>
+<p>Returns the address of the DisputeGameFactory contract, derived from the OptimismPortal.</p>
+<h3 id="optimismportal-1"><a class="header" href="#optimismportal-1">optimismPortal</a></h3>
+<p>Returns the address of the OptimismPortal contract.</p>
+<h3 id="optimismmintableerc20factory-1"><a class="header" href="#optimismmintableerc20factory-1">optimismMintableERC20Factory</a></h3>
+<p>Returns the address of the OptimismMintableERC20Factory contract.</p>
+<h3 id="getaddresses"><a class="header" href="#getaddresses">getAddresses</a></h3>
+<p>Returns a consolidated struct containing all the L1 contract addresses.</p>
+<h3 id="batchinbox"><a class="header" href="#batchinbox">batchInbox</a></h3>
+<p>Returns the address of the <a href="protocol/system-config.html#batch-inbox">Batch Inbox</a>.</p>
+<h3 id="startblock"><a class="header" href="#startblock">startBlock</a></h3>
+<p>Returns the block number at which the op-node can start searching for logs.</p>
+<h3 id="paused-3"><a class="header" href="#paused-3">paused</a></h3>
+<p>This function integrates with the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> by using the
+chain's <code>ETHLockbox</code> address as the <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>. Returns the
+current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for this chain's
+<code>ETHLockbox</code>.</p>
 <ul>
-<li>type <code>0</code>: <code>batcherHash</code> overwrite, as <code>bytes32</code> payload.</li>
-<li>type <code>1</code>: Pre-Ecotone, <code>overhead</code> and <code>scalar</code> overwrite, as two packed <code>uint256</code>
-entries. After Ecotone upgrade, <code>overhead</code> is ignored and <code>scalar</code> interpreted as a <a href="protocol/system-config.html#ecotone-scalar-overhead-uint256uint256-change">versioned
-encoding</a> that updates <code>baseFeeScalar</code> and
-<code>blobBaseFeeScalar</code>.</li>
-<li>type <code>2</code>: <code>gasLimit</code> overwrite, as <code>uint64</code> payload.</li>
-<li>type <code>3</code>: <code>unsafeBlockSigner</code> overwrite, as <code>address</code> payload.</li>
+<li>MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns true OR if
+<code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>MUST return false otherwise.</li>
 </ul>
-</li>
+<h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
+<p>Returns the address of the SuperchainConfig contract that manages the pause state.</p>
+<h3 id="setunsafeblocksigner"><a class="header" href="#setunsafeblocksigner">setUnsafeBlockSigner</a></h3>
+<p>Allows the owner to update the <a href="protocol/system-config.html#unsafe-block-signer">Unsafe Block Signer</a> address.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the unsafe block signer address.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.UNSAFE_BLOCK_SIGNER type.</li>
 </ul>
-<p>Note that individual derivation stages may be processing different L1 blocks,
-and should thus maintain individual system configuration copies,
-and apply the event-based changes as the stage traverses to the next L1 block.</p>
+<h3 id="setbatcherhash"><a class="header" href="#setbatcherhash">setBatcherHash</a></h3>
+<p>Allows the owner to update the <a href="protocol/system-config.html#batcher-hash">Batcher Hash</a>.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the batcher hash.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.BATCHER type.</li>
+</ul>
+<h3 id="setgasconfig"><a class="header" href="#setgasconfig">setGasConfig</a></h3>
+<p>Allows the owner to update the gas configuration parameters (pre-Ecotone).</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST revert if the scalar exceeds the maximum allowed value.</li>
+<li>MUST update the overhead and scalar values.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.FEE_SCALARS type.</li>
+</ul>
+<h3 id="setgasconfigecotone"><a class="header" href="#setgasconfigecotone">setGasConfigEcotone</a></h3>
+<p>Allows the owner to update the gas configuration parameters (post-Ecotone).</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the basefeeScalar and blobbasefeeScalar values.</li>
+<li>MUST update the scalar value with the versioned encoding.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.FEE_SCALARS type.</li>
+</ul>
+<h3 id="setgaslimit"><a class="header" href="#setgaslimit">setGasLimit</a></h3>
+<p>Allows the owner to update the <a href="protocol/system-config.html#l2-gas-limit">L2 Gas Limit</a>.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST revert if the gas limit is less than the minimum gas limit.</li>
+<li>MUST revert if the gas limit is greater than the maximum gas limit.</li>
+<li>MUST update the gas limit.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.GAS_LIMIT type.</li>
+</ul>
+<h3 id="seteip1559params"><a class="header" href="#seteip1559params">setEIP1559Params</a></h3>
+<p>Allows the owner to update the EIP-1559 parameters of the chain.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST revert if the denominator is less than 1.</li>
+<li>MUST revert if the elasticity is less than 1.</li>
+<li>MUST update the eip1559Denominator and eip1559Elasticity values.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.EIP_1559_PARAMS type.</li>
+</ul>
+<h3 id="setoperatorfeescalars"><a class="header" href="#setoperatorfeescalars">setOperatorFeeScalars</a></h3>
+<p>Allows the owner to update the operator fee parameters.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the operatorFeeScalar and operatorFeeConstant values.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.OPERATOR_FEE_PARAMS type.</li>
+</ul>
+<h3 id="resourceconfig"><a class="header" href="#resourceconfig">resourceConfig</a></h3>
+<p>Returns the current resource metering configuration.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="op-stack-configurability"><a class="header" href="#op-stack-configurability">OP Stack Configurability</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -7591,7 +7783,7 @@ see <a href="protocol/../glossary.html#batcher-transaction">Batcher Transaction<
 <code>versionByte || keccak256(bytes32(chainId))[:19]</code>, where <code>||</code> denotes
 concatenation, <code>versionByte</code> is <code>0x00</code>, and <code>chainId</code> is a <code>uint256</code>.<br/>
 <strong>Notes:</strong> It is recommended, but not required, to follow this convention.</p>
-<h3 id="batcher-hash"><a class="header" href="#batcher-hash"><a href="protocol/./system-config.html#batcherhash-bytes32">Batcher Hash</a></a></h3>
+<h3 id="batcher-hash-1"><a class="header" href="#batcher-hash-1"><a href="protocol/./system-config.html#batcher-hash">Batcher Hash</a></a></h3>
 <p><strong>Description:</strong> A versioned hash of the current authorized batcher sender(s).<br/>
 <strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">System Config Owner</a><br/>
 <strong>Requirement:</strong> <code>bytes32(uint256(uint160(batchSubmitterAddress)))</code><br/>
@@ -7688,7 +7880,7 @@ using fault proofs from genesis.<br/></p>
 <p><strong>Description:</strong> Markup on transactions compared to the raw L1 data cost.<br/>
 <strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">System Config Owner</a><br/>
 <strong>Requirement:</strong> Set such that Fee Margin is between 0 and 50%.<br/></p>
-<h3 id="gas-limit"><a class="header" href="#gas-limit"><a href="protocol/./system-config.html#gaslimit-uint64">Gas Limit</a></a></h3>
+<h3 id="gas-limit"><a class="header" href="#gas-limit"><a href="protocol/./system-config.html#l2-gas-limit">Gas Limit</a></a></h3>
 <p><strong>Description:</strong> Gas limit of the L2 blocks is configured through the system config.<br/>
 <strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">System Config Owner</a><br/>
 <strong>Requirement:</strong> No higher than 200_000_000 gas<br/>
@@ -7862,8 +8054,8 @@ respected game type in the <code>OptimismPortal</code>.<br/>
 <strong>Requirement:</strong>
 <a href="https://etherscan.io/address/0x09f7150D8c019BeF34450d6920f6B3608ceFdAf2">0x09f7150D8c019BeF34450d6920f6B3608ceFdAf2</a><br/>
 <strong>Notes:</strong> A 1/1 Safe owned by the Security Council Safe, with
-the <a href="protocol/../protocol/safe-extensions.html#deputy-guardian-module">Deputy Guardian Module</a> enabled to allow the Optimism
-Foundation to act as Guardian.<br/></p>
+the <a href="protocol/./deputy-pause-module.html">Deputy Pause Module</a> enabled to allow the Optimism
+Foundation to act as <a href="protocol/./stage-1.html#pause-deputy">Pause Deputy</a>.<br/></p>
 <h3 id="proposer-address"><a class="header" href="#proposer-address"><a href="https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/PermissionedDisputeGame.sol#L20">Proposer address</a></a></h3>
 <p><strong>Description:</strong> Account which can create and interact
 with <a href="protocol/../fault-proof/stage-one/bridge-integration.html#permissioned-faultdisputegame">permissioned dispute games</a> on
@@ -7888,12 +8080,6 @@ configuration of the permissioned dispute game.<br/></p>
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="protocol/safe-extensions.html#guardian-safe">Guardian Safe</a>
-<ul>
-<li><a href="protocol/safe-extensions.html#deputy-guardian-module">Deputy Guardian Module</a></li>
-<li><a href="protocol/safe-extensions.html#deputy-guardian-module-security-properties">Deputy Guardian Module Security Properties</a></li>
-</ul>
-</li>
 <li><a href="protocol/safe-extensions.html#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a>
 <ul>
 <li><a href="protocol/safe-extensions.html#the-liveness-guard">The Liveness Guard</a></li>
@@ -7938,66 +8124,6 @@ auth conditions internally.</li>
 </ol>
 <p>For more information about the Security Council and Guardian roles, refer to the
 <a href="protocol/./stage-1.html">Stage One Roles and Requirements</a> document.</p>
-<h2 id="guardian-safe"><a class="header" href="#guardian-safe">Guardian Safe</a></h2>
-<p>The Guardian Safe is extended by the Deputy Guardian Module.</p>
-<h3 id="deputy-guardian-module"><a class="header" href="#deputy-guardian-module">Deputy Guardian Module</a></h3>
-<p>As the sole owner of the Guardian Safe, the Security Council acts as the Guardian, which is
-authorized to activate the <a href="protocol/../protocol/superchain-config.html#pausability">Superchain Pause</a>
-functionality.</p>
-<p>However the Security Council cannot be expected to react quickly in an emergency situation.
-Therefore the Deputy Guardian module enables the Security Council to share this authorization with
-another account.</p>
-<p>The module has the following minimal interface:</p>
-<pre><code class="language-solidity">interface DeputyGuardianModule {
-   /// @dev The address of the Security Council Safe
-   function safe() external view returns(address);
-
-   /// @dev The address of the account which can pause superchain withdrawals by calling this module
-   function deputyGuardian() external view returns(address);
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `pause()` on the `SuperchainConfig` contract.
-   ///      Only the deputy guardian can call this function.
-   function pause() external;
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `unpause()` on the `SuperchainConfig` contract.
-   ///      Only the deputy guardian can call this function.
-   function unpause() external;
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `blacklistDisputeGame()` on the `OptimismPortal2` contract.
-   ///      Only the deputy guardian can call this function.
-   /// @param _portal The `OptimismPortal2` contract instance.
-   /// @param _game The `IDisputeGame` contract instance.
-   function blacklistDisputeGame(address _portal, address _game) external;
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `setRespectedGameType()` on the `OptimismPortal2` contract.
-   ///      Only the deputy guardian can call this function.
-   /// @param _portal The `OptimismPortal2` contract instance.
-   /// @param _gameType The `GameType` to set as the respected game type
-   function setRespectedGameType(address _portal, uint32 _gameType) external;
-}
-</code></pre>
-<p>For simplicity, the <code>DeputyGuardianModule</code> module does not have functions for updating the <code>safe</code>
-and <code>deputyGuardian</code> addresses. If necessary these can be modified by swapping out with a new
-module.</p>
-<h3 id="deputy-guardian-module-security-properties"><a class="header" href="#deputy-guardian-module-security-properties">Deputy Guardian Module Security Properties</a></h3>
-<p>The following security properties must be upheld by the <code>DeputyGuardianModule</code>:</p>
-<ol>
-<li>The module must correctly enforce access controls so that only the Deputy Guardian can call state
-modifying functions on the <code>DeputyGuardianModule</code>.</li>
-<li>The module must be able to cause the Safe to make calls to all of the functions which the
-Guardian role is authorized to make.</li>
-<li>The module must not be able to cause the Safe to make calls to functions which the Guardian role
-is not authorized to make.</li>
-<li>The module must be safely removable.</li>
-<li>The module must not introduce any possibility of disabling the Safe so that it can no longer
-forward transactions.</li>
-<li>The module must format calldata correctly such that the target it calls performs the expected
-action.</li>
-</ol>
 <h2 id="security-council-liveness-checking-extensions"><a class="header" href="#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a></h2>
 <p>The Security Council Safe is extended by the Liveness Checking Module and Guard. These extensions
 are intended to ensure that any loss of access to a signer's keys is identified and addressed
@@ -8136,95 +8262,177 @@ according to the steps in the <a href="protocol/safe-extensions.html#deploying-t
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="protocol/stage-1.html#overview">Overview</a></li>
+<li><a href="protocol/stage-1.html#definitions">Definitions</a>
+<ul>
+<li><a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a></li>
+<li><a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a></li>
+<li><a href="protocol/stage-1.html#upgrade-controller">Upgrade Controller</a></li>
+<li><a href="protocol/stage-1.html#guardian">Guardian</a></li>
+<li><a href="protocol/stage-1.html#pause-deputy">Pause Deputy</a></li>
+<li><a href="protocol/stage-1.html#pause-mechanism">Pause Mechanism</a></li>
+<li><a href="protocol/stage-1.html#pause-identifier">Pause Identifier</a></li>
+<li><a href="protocol/stage-1.html#stage-1-rollup">Stage 1 Rollup</a></li>
+</ul>
+</li>
+<li><a href="protocol/stage-1.html#op-stack-stage-1-design">OP Stack Stage 1 Design</a>
+<ul>
 <li><a href="protocol/stage-1.html#permissionless-fault-proofs">Permissionless Fault Proofs</a></li>
-<li><a href="protocol/stage-1.html#roles-for-stage-1">Roles for Stage 1</a></li>
-<li><a href="protocol/stage-1.html#configuration-of-safes">Configuration of Safes</a></li>
-<li><a href="protocol/stage-1.html#ownership-model-diagram">Ownership model diagram</a></li>
+<li><a href="protocol/stage-1.html#security-council">Security Council</a></li>
+<li><a href="protocol/stage-1.html#upgrade-controller-1">Upgrade Controller</a></li>
+<li><a href="protocol/stage-1.html#guardian-1">Guardian</a></li>
+<li><a href="protocol/stage-1.html#pause-deputy-1">Pause Deputy</a></li>
+<li><a href="protocol/stage-1.html#architecture-diagram">Architecture Diagram</a></li>
+</ul>
+</li>
+<li><a href="protocol/stage-1.html#invariants">Invariants</a>
+<ul>
+<li><a href="protocol/stage-1.html#is1-001-a-permanent-withdrawal-liveness-or-withdrawal-safety-failure-requires-75%25-of-the-security-council-wo-bugs">iS1-001: A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs)</a></li>
+<li><a href="protocol/stage-1.html#impact">Impact</a></li>
+<li><a href="protocol/stage-1.html#is1-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure">iS1-002: The Pause Deputy can only cause a temporary Withdrawal Liveness failure</a>
+<ul>
+<li><a href="protocol/stage-1.html#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="protocol/stage-1.html#is1-003-the-guardian-can-revoke-the-pause-deputy-role-at-any-time">iS1-003: The Guardian can revoke the Pause Deputy role at any time</a>
+<ul>
+<li><a href="protocol/stage-1.html#impact-2">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
-<p>This document outlines configuration requirements (including roles and other parameters)
-for an implementation of the OP Stack to satisfy the Stage 1 decentralization requirements as defined
-by
-L2 Beat [<a href="https://medium.com/l2beat/introducing-stages-a-framework-to-evaluate-rollups-maturity-d290bb22befe">1</a>, <a href="https://medium.com/l2beat/stages-update-security-council-requirements-4c79cea8ef52">2</a>].</p>
-<h2 id="permissionless-fault-proofs"><a class="header" href="#permissionless-fault-proofs">Permissionless Fault Proofs</a></h2>
-<p>Stage 1 requires a chain to be operating with Fault Proofs.</p>
-<h2 id="roles-for-stage-1"><a class="header" href="#roles-for-stage-1">Roles for Stage 1</a></h2>
-<p>Within the context of an OP Stack, the following roles are required for Stage 1:</p>
-<ol>
-<li>
-<p><strong>Upgrade Controller:</strong> Although named for its ability to perform an upgrade, more generally this
-account MUST control any action which has an impact on the determination of a valid L2 state,
-or the custody and settlement of bridged assets.</p>
-<p>This includes upgrading L1 contracts, modifying the implementation of the dispute game, and
-any other safety-critical functions.</p>
-</li>
-<li>
-<p><strong>Guardian:</strong> This account MUST control any action which may delay a users ability to
-exit the system to L1. Such delays may result from anything that impacts the finalization of
-L2 states and the resulting settlement on L1.</p>
-<p>This includes but is not limited to pausing code paths related to withdrawals.</p>
-</li>
-</ol>
-<p>There may be additional <a href="protocol/./configurability.html#admin-roles">roles</a> in the system, however they MUST
-not be able to perform any actions which have an impact on either the validity of L2 states, or the
-users ability to exit the system.</p>
-<h2 id="configuration-of-safes"><a class="header" href="#configuration-of-safes">Configuration of Safes</a></h2>
-<p>This list outlines the various Safes, their extensions, and other configuration details necessary to
-achieve Stage 1.</p>
-<ol>
-<li>
-<p><strong>The L1 ProxyAdmin Owner Safe:</strong> This Safe acts as the Upgrade Controller. Accordingly, it is
-authorized to call the following functions:</p>
+<p>This document describes the requirements necessary for an OP Stack implementation to satisfy the
+Stage 1 decentralization requirements <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">as defined by L2BEAT</a>. It also defines the specific
+roles and capabilities for an OP Stack chain in the standard configuration that will satisfy these
+requirements.</p>
+<h2 id="definitions-4"><a class="header" href="#definitions-4">Definitions</a></h2>
+<h3 id="withdrawal-liveness"><a class="header" href="#withdrawal-liveness">Withdrawal Liveness</a></h3>
+<p><strong>Withdrawal Liveness</strong> is the ability for users to execute valid withdrawals out of any contract
+that stores ETH or tokens within an OP Chain's set of smart contracts. We tend to refer to
+Withdrawal Liveness in the context of the <code>OptimismPortal</code> and the rest of the Standard Bridge
+system (i.e., the <code>StandardBridge</code> and <code>CrossDomainMessenger</code> contracts) because this is where a
+majority of the ETH/tokens in the system live. However, this also applies to bonds deposited into
+dispute game contracts (and ultimately into the <code>DelayedWETH</code> contract).</p>
+<h3 id="withdrawal-safety"><a class="header" href="#withdrawal-safety">Withdrawal Safety</a></h3>
+<p><strong>Withdrawal Safety</strong> is the condition that users are <em>not</em> able to execute <em>invalid</em> withdrawals
+out of any contract that stores ETH or tokens within an OP Chain's set of smart contracts.
+Generally speaking "liveness" means nothing gets bricked and "safety" means nothing gets stolen.</p>
+<h3 id="upgrade-controller"><a class="header" href="#upgrade-controller">Upgrade Controller</a></h3>
+<p>The <strong>Upgrade Controller</strong> is a dedicated role in the OP Stack that is permitted to upgrade the
+contracts that make up an OP Stack chain's onchain footprint. In the Superchain, the Upgrade
+Controller role is held jointly in a 2/2 of the Optimism Security Council and the Optimism
+Foundation.</p>
+<h3 id="guardian-2"><a class="header" href="#guardian-2">Guardian</a></h3>
+<p>The <strong>Guardian</strong> is a dedicated role in the OP Stack that is permitted to trigger certain actions
+to maintain the security of an OP Chain or set of OP Chains in case of a bug in the protocol. In
+the Superchain, the Guardian role is held by the Optimism Security Council.</p>
+<h3 id="pause-deputy"><a class="header" href="#pause-deputy">Pause Deputy</a></h3>
+<p>The <strong>Pause Deputy</strong> is a dedicated role managed by the <a href="protocol/stage-1.html#guardian">Guardian</a> that can execute the
+<a href="protocol/stage-1.html#pause-mechanism">Pause Mechanism</a>. An OP Chain does not necessarily need to assign a Pause
+Deputy. The Pause Deputy is capable of triggering the Pause Mechanism but does not have the ability
+to reset the mechanism or unpause the system.</p>
+<p>The Pause Deputy is an optional role within an OP Chain and can be configured if the Guardian is
+a <a href="https://docs.safe.global/home/what-is-safe">Safe</a> that installs the <a href="protocol/./deputy-pause-module.html">Deputy Pause Module</a>.</p>
+<h3 id="pause-mechanism"><a class="header" href="#pause-mechanism">Pause Mechanism</a></h3>
+<p>The <strong>Pause Mechanism</strong> is a tool that permits the <a href="protocol/stage-1.html#guardian">Guardian</a> or the
+<a href="protocol/stage-1.html#pause-deputy">Pause Deputy</a> to pause the execution of certain actions on one or more OP Chains.
+Broadly speaking, the Pause Mechanism is designed to impact the liveness of the system such that
+an attack on the system is unable to actually remove ETH or ERC-20 tokens from the bridge or any
+other contract that stores ETH and/or tokens.</p>
+<p>The Pause Mechanism is temporary and is active up to a fixed maximum amount of time before
+expiring. A pause cannot be triggered again unless the mechanism is explicitly reset by the
+<a href="protocol/stage-1.html#guardian">Guardian</a>. That is, if the Pause Mechanism is triggered and not reset by the Guardian,
+it will expire, the system will automatically become unpaused, and the system cannot be paused
+again.</p>
+<p>The Pause Mechanism can be applied globally or to individual systems. Which level the pause applies
+to is determined by the <a href="protocol/stage-1.html#pause-identifier">Pause Identifier</a> provided when executing or checking
+pause status.</p>
+<p>Chains using the Standard Configuration of the OP Stack use a pause expiry of <strong>3 months</strong>. Because
+the Pause Mechanism can be applied to both local and global scopes, the pause could be chained to,
+for instance, pause the local system first and then the global system shortly before the local
+pause expires. The total potential pause time is therefore double the expiry period (6 months).</p>
+<p>The Guardian may explicitly unpause the system rather than waiting for the pause to expire. If this
+happens, the pause is automatically reset such that it can be used again. The Guardian can reset
+the pause at any time so that it can be used again, even if the pause is currently active. If the
+pause is reset when it is currently active, the pause can be triggered again, thereby resetting
+the 6 month expiry timer (on a per address identifier basis).</p>
+<h3 id="pause-identifier"><a class="header" href="#pause-identifier">Pause Identifier</a></h3>
+<p>The <strong>Pause Identifier</strong> is an address parameter used to specify the scope of a pause action. This
+identifier determines which systems or chains are affected by the pause:</p>
 <ul>
-<li>All <code>ProxyAdmin</code> <code>onlyOwner</code> functions.</li>
-<li>All <code>DisputeGameFactory</code> <code>onlyOwner</code> functions.</li>
-<li>All <code>DelayedWETH</code> <code>onlyOwner</code> functions.</li>
+<li>When the identifier is the zero address (<code>0x0000000000000000000000000000000000000000</code>), the pause
+applies globally to all chains sharing the <code>SuperchainConfig</code> contract.</li>
+<li>When the identifier is a non-zero address, the pause applies specifically to the chain or set of
+chains associated with that identifier.</li>
 </ul>
-<p>This safe has a threshold of 2, and is owned by two other Safes:</p>
-<ol>
-<li>The Security Council Safe.</li>
-<li>The Optimism Foundation Upgrades Safe.</li>
-</ol>
-<p>In general, the threshold and number of owners MUST be configured such that an upgrade
-or other safety-critical action can NOT be performed without the cooperation of the Security Council.</p>
-</li>
-<li>
-<p><strong>The Guardian Safe:</strong> This Safe controls any code paths which impact a users ability to
-exit the system. It is extended with the
-<a href="protocol/./safe-extensions.html#deputy-guardian-module">Deputy Guardian Module</a>.</p>
-<p>Accordingly, this Safe is authorized to call the following functions:</p>
+<p>The identifier must be an <code>ETHLockbox</code> address or <code>address(0)</code>. This allows for targeted pausing of
+either specific chains, the interop set (which shares an <code>ETHLockbox</code> contract), or the all chains
+that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is used as the identifier.</p>
+<p>OP Chains are expected to integrate with the <code>SuperchainConfig</code> via their <code>SystemConfig</code> contract,
+which will check for the status of the pause by passing along the address of the <code>ETHLockbox</code>
+being used within that system as the Pause Identifier.</p>
+<h3 id="stage-1-rollup"><a class="header" href="#stage-1-rollup">Stage 1 Rollup</a></h3>
+<p>L2BEAT defines that a system can be considered a "Stage 1 Rollup" system if it has the following
+property:</p>
+<ul>
+<li>If the System has a Security Council (<a href="https://medium.com/l2beat/stages-update-security-council-requirements-4c79cea8ef52">as defined by L2BEAT</a>) the only way
+(excluding bugs) for the System to experience an indefinite
+<a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> failure or any
+<a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failure is through a malicious majority of at least 75%
+of the Security Council.</li>
+</ul>
+<h2 id="op-stack-stage-1-design"><a class="header" href="#op-stack-stage-1-design">OP Stack Stage 1 Design</a></h2>
+<p>The above definitions and requirements have a number of concrete implications for the Standard
+Configuration of the OP Stack. We therefore specify the following architecture for a Stage 1 OP
+Stack chain.</p>
+<h3 id="permissionless-fault-proofs"><a class="header" href="#permissionless-fault-proofs">Permissionless Fault Proofs</a></h3>
+<p>A Stage 1 OP Stack chain must operate a <em>permissionless</em> Fault Proof system.</p>
+<h3 id="security-council"><a class="header" href="#security-council">Security Council</a></h3>
+<p>A Stage 1 OP Stack chain must have a Security Council.</p>
+<h3 id="upgrade-controller-1"><a class="header" href="#upgrade-controller-1">Upgrade Controller</a></h3>
+<p>The <a href="protocol/stage-1.html#upgrade-controller">Upgrade Controller</a> role in the OP Stack is a priviledged role that is
+allowed to upgrade the smart contracts that make up an OP Stack chain's onchain footprint. This
+role must require sign-off from the Security Council. This specifically means that the role can
+either be entirely held by the Security Council or by some other configuration as long as the
+Security Council is a required signatory (e.g., a 2/2 multisig).</p>
+<p>In addition to the ability to upgrade all smart contracts, the Upgrade Controller is the only
+address authorized to perform the following actions:</p>
+<ul>
+<li><code>DisputeGameFactory.setImplementation</code></li>
+<li><code>DisputeGameFactory.setInitBond</code></li>
+<li><code>DelayedWETH.hold</code></li>
+<li><code>DelayedWETH.recover</code></li>
+</ul>
+<p>The Upgrade Controller can theoretically cause an indefinite
+<a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> failure as well as
+<a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failures. This is aligned with the Stage 1 definition
+because the Security Council is a required signatory on this role.</p>
+<h3 id="guardian-3"><a class="header" href="#guardian-3">Guardian</a></h3>
+<p>The <a href="protocol/stage-1.html#guardian">Guardian</a> role in the OP Stack is a priviledged role that is allowed to execute
+certain safety-net actions in the case that a bug exists in the OP Stack smart contracts. This role
+must be held by the Security Council in the form of a 1/1 Safe owned by the Security Council.</p>
+<p>The Guardian is the only address that is permitted to execute the following actions:</p>
 <ul>
 <li><code>SuperchainConfig.pause()</code></li>
 <li><code>SuperchainConfig.unpause()</code></li>
-<li><code>OptimismPortal2.setRespectedGameType()</code></li>
-<li><code>OptimismPortal2.blacklistDisputeGame()</code></li>
-<li><code>AnchorStateRegistry.setAnchorState()</code></li>
+<li><code>SuperchainConfig.reset()</code></li>
+<li><code>AnchorStateRegistry.setRespectedGameType()</code></li>
+<li><code>AnchorStateRegistry.updateRetirementTimestamp()</code></li>
+<li><code>AnchorStateRegistry.blacklistDisputeGame()</code></li>
 </ul>
-<p>This Safe has a threshold of 1 and is owned by the Security Council Safe.</p>
-</li>
-<li>
-<p><strong>The Security Council Safe:</strong> This Safe is one of the two owners of the <code>ProxyAdminOwner</code> Safe.
-It is extended with the <a href="protocol/./safe-extensions.html#liveness-checking-system">Liveness Checking system</a>,
-although Liveness Checking is not required for Stage 1, it is an additional safety feature used
-to prevent any loss of liveness on the Security Council Safe.</p>
-<p>The threshold and owner set on the Safe MUST meet L2Beat's Stage 1 requirements.</p>
-</li>
-<li>
-<p><strong>The Foundation Upgrades Safe:</strong> This Safe is one of the two owners of the <code>ProxyAdminOwner</code> Safe.
-It is also able to update the recommended and required versions on the <code>ProtocolVersions</code>
-contract. Given that observing the state of this contract is optional, this is not considered to
-affect safety and can therefore be managed the Foundation Upgrades Safe.</p>
-</li>
-<li>
-<p><strong>The Foundation Operations Safe:</strong> This Safe acts as the Deputy Guardian, meaning that (via the
-Guardian Safe's <code>DeputyGuardianModule</code>) it can call any functions in the system which impacts
-liveness. It is extended with the <code>DeputyPauseModule</code> to allow a signing key to execute the
-Superchain-wide pause function quickly.</p>
-</li>
-</ol>
-<h2 id="ownership-model-diagram"><a class="header" href="#ownership-model-diagram">Ownership model diagram</a></h2>
-<p>The following diagram outlines the control relationships between the contracts in the system.</p>
+<p>The Guardian can theoretically cause an indefinite <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a>
+failure as well as <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failures. This is aligned with the Stage
+1 definition because the Security Council holds this role.</p>
+<h3 id="pause-deputy-1"><a class="header" href="#pause-deputy-1">Pause Deputy</a></h3>
+<p>The <a href="protocol/stage-1.html#pause-deputy">Pause Deputy</a> is a role that can be assigned by the Guardian. The Pause Deputy
+is explicitly permitted to cause a <em>temporary</em> <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> failure.
+Because the Pause Deputy can only cause a temporary Withdrawal Liveness failure, the Guardian can
+assign this role to any actor it deems fit to utilize the role without violating any
+<a href="protocol/stage-1.html#invariants">invariants</a>.</p>
+<h3 id="architecture-diagram"><a class="header" href="#architecture-diagram">Architecture Diagram</a></h3>
+<p>The following diagram outlines the control relationships between the contracts in the system:</p>
 <pre class="mermaid">flowchart LR
    subgraph SuperchainSystem[Superchain System]
       subgraph Exit[User Exit Controls]
@@ -8243,9 +8451,9 @@ Superchain-wide pause function quickly.</p>
 
    subgraph UpgradeSystem[Upgrade System]
       FndUp[Foundation Upgrade Safe]
-      POA[ProxyAdminOwner Safe]
+      UC[Upgrade Controller Safe]
       subgraph Security Council Safe
-         Council[Security Council Safe\n+ LivenessGuard]
+         Council[Security Council Safe + LivenessGuard]
          LM[Liveness Module]
       end
    end
@@ -8253,33 +8461,456 @@ Superchain-wide pause function quickly.</p>
    subgraph GuardianSystem[Guardian System]
       subgraph GuardianSafe[Guardian Safe]
          GS[Guardian Safe]
-         DGM[Deputy Guardian Module]
-      end
-      subgraph FndOpsSafe[Foundation Ops Safe]
-         FndOps[Foundation Ops Safe]
          DPM[Deputy Pause Module]
       end
    end
 
-    POA --&gt;|controls| Safety
-    FndUp --&gt; POA
-    Council --&gt; POA
+    UC --&gt;|controls| Safety
+    FndUp --&gt; UC
+    Council --&gt; UC
     Council --&gt; GS
-    FndOps --&gt;|pause\nunpause\nsetRespectedGameType\nblackListDisputeGame| DGM
-    DPM --&gt;|execTransactionFromModule| FndOps
+    FndOps[Foundation Operations Safe] --&gt;|pause| DPM
     FndUp --&gt;|set versions|PV
     LM --&gt;|execTransactionFromModule| Council
-    DGM --&gt;|execTransactionFromModule| GS
+    DPM --&gt;|execTransactionFromModule| GS
     GS --&gt;|controls| Exit
 
    %% Declare a class to make the outer boxes somewhat transparent to provide some contrast
    classDef outer fill:#ffffff44
    class SuperchainSystem,GuardianSystem,UpgradeSystem outer
 </pre>
-<p>Note: in the diagram above, the <a href="protocol/../protocol/superchain-upgrades.html#protocolversions-l1-contract"><code>ProtocolVersions</code>
-contract</a> is listed as "Out of
-Protocol", because the decision to follow the version signals in the contract is optional. It is
-included here for completeness, but is not considered as either Safety or Liveness affecting.</p>
+<p>Note: in the diagram above, the
+<a href="protocol/../protocol/superchain-upgrades.html#protocolversions-l1-contract"><code>ProtocolVersions</code>contract</a> is
+listed as "Out of Protocol", because the decision to follow the version signals in the contract is
+optional. It is included here for completeness, but it does not impact
+<a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> or <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a>.</p>
+<h2 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h2>
+<h3 id="is1-001-a-permanent-withdrawal-liveness-or-withdrawal-safety-failure-requires-75-of-the-security-council-wo-bugs"><a class="header" href="#is1-001-a-permanent-withdrawal-liveness-or-withdrawal-safety-failure-requires-75-of-the-security-council-wo-bugs">iS1-001: A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs)</a></h3>
+<p>This is the core invariant for Stage 1 and aligns with <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">the definition by L2BEAT</a> from
+January 2025. We can define additional properties about roles specific to the OP Stack as long as
+they align with this invariant. Note that this invariant does NOT consider the impact of bugs in
+smart contracts on the rest of the protocol. That is, this invariant only holds strongly under the
+assumption that no such bugs exist.</p>
+<h3 id="impact-9"><a class="header" href="#impact-9">Impact</a></h3>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If broken, it must be assumed that <em>some</em> other actor has the ability to cause a permanent
+<a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> or <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failure. We
+consider any violation of this invariant to be a High severity issue, but this issue potentially
+becomes Critical if the actor that has this ability is not another reasonably trusted entity.</p>
+<h3 id="is1-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure"><a class="header" href="#is1-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure">iS1-002: The Pause Deputy can only cause a temporary Withdrawal Liveness failure</a></h3>
+<p>We require that any action that the <a href="protocol/stage-1.html#pause-deputy">Pause Deputy</a> can take in the system can
+only cause a <em>temporary</em> <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> failure. This is required
+because the Security Council must explicitly trigger any action that results either an indefinite
+Withdrawal Liveness failure or a <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failure.</p>
+<h4 id="impact-10"><a class="header" href="#impact-10">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant were broken, the Pause Deputy could be able to cause either a
+<a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failure or a permanent Withdrawal Liveness failure. Either
+failure mode would be a violation of the definition of Stage 1 as of <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">January 2025</a>.</p>
+<h3 id="is1-003-the-guardian-can-revoke-the-pause-deputy-role-at-any-time"><a class="header" href="#is1-003-the-guardian-can-revoke-the-pause-deputy-role-at-any-time">iS1-003: The Guardian can revoke the Pause Deputy role at any time</a></h3>
+<p>We require that the <a href="protocol/stage-1.html#guardian">Guardian</a> be able to revoke the <a href="protocol/stage-1.html#pause-deputy">Pause Deputy</a> role
+at any time. This condition is necessary to prevent a misbehaving Pause Deputy from continuing to
+trigger the <a href="protocol/stage-1.html#pause-mechanism">Pause Mechanism</a> when this would not be desired by the Guardian
+itself.</p>
+<h4 id="impact-11"><a class="header" href="#impact-11">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant were broken, assuming that <a href="protocol/stage-1.html#is1-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure">iS1-002</a> the Pause Deputy would potentially
+be able to repeatedly trigger the Pause Mechanism even if the Guardian does not want this to
+happen. We consider this to be a High severity condition because the Guardian can choose not to
+renew the pause to allow the system to operate if truly necessary.</p>
+<!-- references -->
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="deputypausemodule"><a class="header" href="#deputypausemodule">DeputyPauseModule</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#status">Status</a></li>
+<li><a href="protocol/deputy-pause-module.html#overview">Overview</a></li>
+<li><a href="protocol/deputy-pause-module.html#context">Context</a></li>
+<li><a href="protocol/deputy-pause-module.html#upgradeability">Upgradeability</a></li>
+<li><a href="protocol/deputy-pause-module.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#ascp-001-pause-authorization-process-is-well-defined">aSCP-001: Pause authorization process is well-defined</a></li>
+<li><a href="protocol/deputy-pause-module.html#ascp-002-pause-authorization-process-is-robust">aSCP-002: Pause authorization process is robust</a></li>
+<li><a href="protocol/deputy-pause-module.html#ascp-003-pause-authorization-process-is-fast">aSCP-003: Pause authorization process is fast</a></li>
+<li><a href="protocol/deputy-pause-module.html#adpm-001-contract-is-configured-correctly">aDPM-001: Contract is configured correctly</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#adpm-002-deputy-key-is-not-compromised">aDPM-002: Deputy key is not compromised</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#adpm-003-deputy-key-is-not-deleted">aDPM-003: Deputy key is not deleted</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time">aDPM-004: Ethereum will not censor transactions for extended periods of time</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005: OpenZeppelin ECDSA and EIP712 contracts are free of critical bugs</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#mitigations-4">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#adpm-006-safe-contracts-are-free-of-critical-bugs">aDPM-006: Safe contracts are free of critical bugs</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#mitigations-5">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#adpm-008-deputy-key-is-capable-of-creating-signatures">aDPM-008: Deputy key is capable of creating signatures</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#mitigations-6">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#system-invariants">System Invariants</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#iscp-001-pause-can-be-activated-within-30-minutes-of-authorization">iSCP-001: Pause can be activated within 30 minutes of authorization</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#impact">Impact</a></li>
+<li><a href="protocol/deputy-pause-module.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#iscp-002-pause-is-not-activated-outside-of-the-standard-process">iSCP-002: Pause is not activated outside of the standard process</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#impact-1">Impact</a></li>
+<li><a href="protocol/deputy-pause-module.html#dependencies-1">Dependencies</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#component-invariants">Component Invariants</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#idpm-001-only-the-deputy-may-act-through-the-module">iDPM-001: Only the Deputy may act through the module</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#impact-2">Impact</a></li>
+<li><a href="protocol/deputy-pause-module.html#mitigations-7">Mitigations</a></li>
+<li><a href="protocol/deputy-pause-module.html#dependencies-2">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#idpm-002-deputy-must-only-be-able-to-trigger-the-pause">iDPM-002: Deputy must only be able to trigger the pause</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#impact-3">Impact</a></li>
+<li><a href="protocol/deputy-pause-module.html#mitigations-8">Mitigations</a></li>
+<li><a href="protocol/deputy-pause-module.html#dependencies-3">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#idpm-003-deputy-must-always-be-able-to-act-through-the-module">iDPM-003: Deputy must always be able to act through the module</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#impact-4">Impact</a></li>
+<li><a href="protocol/deputy-pause-module.html#mitigations-9">Mitigations</a></li>
+<li><a href="protocol/deputy-pause-module.html#dependencies-4">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#idpm-004-deputy-authorizations-must-not-be-replayable">iDPM-004: Deputy authorizations must not be replayable</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#impact-5">Impact</a></li>
+<li><a href="protocol/deputy-pause-module.html#mitigations-10">Mitigations</a></li>
+<li><a href="protocol/deputy-pause-module.html#dependencies-5">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily">iDPM-005: Foundation Safe must be able to change the Deputy account easily</a></li>
+<li><a href="protocol/deputy-pause-module.html#impact-6">Impact</a></li>
+<li><a href="protocol/deputy-pause-module.html#mitigations-11">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="protocol/deputy-pause-module.html#implementation-spec">Implementation Spec</a>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#constructor">constructor</a></li>
+<li><a href="protocol/deputy-pause-module.html#pause">pause</a></li>
+<li><a href="protocol/deputy-pause-module.html#setdeputy">setDeputy</a></li>
+<li><a href="protocol/deputy-pause-module.html#foundationsafe">foundationSafe</a></li>
+<li><a href="protocol/deputy-pause-module.html#superchainconfig">superchainConfig</a></li>
+<li><a href="protocol/deputy-pause-module.html#deputy">deputy</a></li>
+<li><a href="protocol/deputy-pause-module.html#pausemessagetypehash">pauseMessageTypehash</a></li>
+<li><a href="protocol/deputy-pause-module.html#deputyauthmessagetypehash">deputyAuthMessageTypehash</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="status"><a class="header" href="#status">Status</a></h2>
+<p>Proposed</p>
+<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
+<p>The <code>DeputyPauseModule</code> is a <a href="https://docs.safe.global/advanced/smart-account-modules">Safe Module</a> designed to be installed into the Security
+Council Guardian Safe that allows a dedicated Deputy address to create an ECDSA signature that
+authorizes the execution of the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a>. The
+<code>DeputyPauseModule</code> assumes that the Security Council Guardian Safe is the Guardian
+that is permitted to act within the <a href="protocol/./superchain-config.html">SuperchainConfig</a>.</p>
+<h2 id="context"><a class="header" href="#context">Context</a></h2>
+<p>Additional context and motivation for this component can be found in the corresponding
+<a href="https://github.com/ethereum-optimism/design-docs/blob/85c0f822/protocol/deputy-pause-module.md">design document</a>.</p>
+<h2 id="upgradeability"><a class="header" href="#upgradeability">Upgradeability</a></h2>
+<p>The <code>DeputyPauseModule</code> is not expected to change frequently and is therefore not a proxied
+contract. The <code>DeputyPauseModule</code> allows basic parameters to be modified by the Operations Safe
+directly without needing to deploy a new instance of the contract. Additionally, the address of the
+module itself is only utilized within the Optimism Foundation Operations Safe and can be safely
+replaced.</p>
+<h2 id="assumptions-2"><a class="header" href="#assumptions-2">Assumptions</a></h2>
+<blockquote>
+<p><strong>NOTE</strong>: Assumptions are utilized by specific invariants and do not apply globally. Invariants
+typically only rely on a subset of the following assumptions. Different invariants may rely on
+different assumptions. Refer to individual invariants for their dependencies.</p>
+</blockquote>
+<h3 id="ascp-001-pause-authorization-process-is-well-defined"><a class="header" href="#ascp-001-pause-authorization-process-is-well-defined">aSCP-001: Pause authorization process is well-defined</a></h3>
+<p>We assume that the process by which a pause can be authorized is well-defined such that the cases
+in which the pause should and should not be triggered are apparent. This assumption dictates that
+the cases in which the pause should be used are clearly enumerated and well known to all
+participants.</p>
+<h3 id="ascp-002-pause-authorization-process-is-robust"><a class="header" href="#ascp-002-pause-authorization-process-is-robust">aSCP-002: Pause authorization process is robust</a></h3>
+<p>We assume that the process by which a pause can be authorized correctly accounts for all cases in
+which such a pause would be necessary. In other words, we assume that there are no situations where
+the pause <em>should</em> be used to protect the system but the defined protocol for triggering the pause
+would not require the pause to be triggered.</p>
+<h3 id="ascp-003-pause-authorization-process-is-fast"><a class="header" href="#ascp-003-pause-authorization-process-is-fast">aSCP-003: Pause authorization process is fast</a></h3>
+<p>We assume that the process by which a pause can be authorized is fast acting such that it can make
+the decision to trigger the pause within a short period of time of any situation that would require
+such a pause.</p>
+<h3 id="adpm-001-contract-is-configured-correctly"><a class="header" href="#adpm-001-contract-is-configured-correctly">aDPM-001: Contract is configured correctly</a></h3>
+<p>We assume that all inputs to the contract are configured correctly including:</p>
+<ul>
+<li>Address of the Operations Safe.</li>
+<li>Address of the <code>SuperchainConfig</code> contract.</li>
+<li>Address of the Deputy account.</li>
+</ul>
+<h4 id="mitigations-6"><a class="header" href="#mitigations-6">Mitigations</a></h4>
+<ul>
+<li>Verify a signature from the Deputy in the contract constructor.</li>
+<li>Verify the configured values in the deployment script.</li>
+<li>Generate and test a signature on testnet.</li>
+</ul>
+<h3 id="adpm-002-deputy-key-is-not-compromised"><a class="header" href="#adpm-002-deputy-key-is-not-compromised">aDPM-002: Deputy key is not compromised</a></h3>
+<p>We assume that the Deputy key is maintained securely and is not compromised by a malicious actor.</p>
+<h4 id="mitigations-7"><a class="header" href="#mitigations-7">Mitigations</a></h4>
+<ul>
+<li>Enforce strong access control around the Deputy key.</li>
+<li>Monitoring for any usage of the Deputy key.</li>
+<li>Regular rotation of the Deputy key.</li>
+</ul>
+<h3 id="adpm-003-deputy-key-is-not-deleted"><a class="header" href="#adpm-003-deputy-key-is-not-deleted">aDPM-003: Deputy key is not deleted</a></h3>
+<p>We assume that the Deputy key has not been deleted by a malicious actor.</p>
+<h4 id="mitigations-8"><a class="header" href="#mitigations-8">Mitigations</a></h4>
+<ul>
+<li>Maintain duplicate copies of the key in multiple secure locations.</li>
+</ul>
+<h3 id="adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time"><a class="header" href="#adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time">aDPM-004: Ethereum will not censor transactions for extended periods of time</a></h3>
+<p>We assume that Ethereum will not censor transactions for an extended period of time and that any
+transaction submitted to the network can be processed within a reasonable time bound (e.g., 1h).</p>
+<h4 id="mitigations-9"><a class="header" href="#mitigations-9">Mitigations</a></h4>
+<ul>
+<li>Extremely high priority fee if necessary.</li>
+</ul>
+<h3 id="adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs"><a class="header" href="#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005: OpenZeppelin ECDSA and EIP712 contracts are free of critical bugs</a></h3>
+<p>We assume that both the <code>ECDSA</code> library and the <code>EIP712</code> contract provided by OpenZeppelin V4 at
+commit <a href="https://github.com/OpenZeppelin/openzeppelin-contracts/tree/ecd2ca2c">ecd2ca2c</a> (v4.7.3) are free of any critical bugs that would cause their
+behaviors to diverge from their specified behaviors.</p>
+<h4 id="mitigations-10"><a class="header" href="#mitigations-10">Mitigations</a></h4>
+<ul>
+<li>Existing audits/safety processes for OpenZeppelin V4.</li>
+</ul>
+<h3 id="adpm-006-safe-contracts-are-free-of-critical-bugs"><a class="header" href="#adpm-006-safe-contracts-are-free-of-critical-bugs">aDPM-006: Safe contracts are free of critical bugs</a></h3>
+<p>We assume that the Safe contract implementations used by the Security Council Safe and Optimism
+Foundation Operations Safe are free of any critical bugs that would cause their behaviors to
+diverge from their specified behaviors.</p>
+<h4 id="mitigations-11"><a class="header" href="#mitigations-11">Mitigations</a></h4>
+<ul>
+<li>Existing audits/safety processes for Safe.</li>
+</ul>
+<h3 id="adpm-008-deputy-key-is-capable-of-creating-signatures"><a class="header" href="#adpm-008-deputy-key-is-capable-of-creating-signatures">aDPM-008: Deputy key is capable of creating signatures</a></h3>
+<p>We assume that the Deputy key configured is actually capable of creating signatures.</p>
+<h4 id="mitigations-12"><a class="header" href="#mitigations-12">Mitigations</a></h4>
+<ul>
+<li>Signature verification when changing Deputy key.</li>
+</ul>
+<h2 id="system-invariants"><a class="header" href="#system-invariants">System Invariants</a></h2>
+<h3 id="iscp-001-pause-can-be-activated-within-30-minutes-of-authorization"><a class="header" href="#iscp-001-pause-can-be-activated-within-30-minutes-of-authorization">iSCP-001: Pause can be activated within 30 minutes of authorization</a></h3>
+<p>It is an important system-level invariant that the pause functionality can be activated within a
+short, bounded amount of time (30 minutes) of its authorization by the standard process that
+approves the usage of this pause. That is, after the pause is authorized, it should be possible to
+execute the pause in under 30 minutes under all circumstances.</p>
+<h4 id="impact-12"><a class="header" href="#impact-12">Impact</a></h4>
+<p><strong>Severity: High (estimated)</strong></p>
+<p>If this invariant is broken, various recovery options that rely on fast activation of the pause may
+fail. We estimate the severity of this invariant being broken to be high but final severity will
+depend on the formalization of other invariants that rely on this one.</p>
+<h4 id="dependencies-5"><a class="header" href="#dependencies-5">Dependencies</a></h4>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#ascp-002-pause-authorization-process-is-robust">aSCP-002</a></li>
+<li><a href="protocol/deputy-pause-module.html#ascp-003-pause-authorization-process-is-fast">aSCP-003</a></li>
+<li><a href="protocol/deputy-pause-module.html#idpm-003-deputy-must-always-be-able-to-act-through-the-module">iDPM-003</a></li>
+<li><a href="protocol/deputy-pause-module.html#adpm-001-contract-is-configured-correctly">aDPM-001</a></li>
+</ul>
+<h3 id="iscp-002-pause-is-not-activated-outside-of-the-standard-process"><a class="header" href="#iscp-002-pause-is-not-activated-outside-of-the-standard-process">iSCP-002: Pause is not activated outside of the standard process</a></h3>
+<p>We must maintain that the pause is not activated outside of the standard process that approves the
+usage of the pause.</p>
+<h4 id="impact-13"><a class="header" href="#impact-13">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, all components that rely on the pause would be placed into a paused
+state unexpectedly. This would cause a temporary liveness failure for withdrawals through the
+Standard Bridge system and would negatively impact users until liveness could be restored by the
+Guardian.</p>
+<h4 id="dependencies-6"><a class="header" href="#dependencies-6">Dependencies</a></h4>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#ascp-001-pause-authorization-process-is-well-defined">aSCP-001</a></li>
+<li><a href="protocol/deputy-pause-module.html#idpm-001-only-the-deputy-may-act-through-the-module">iDPM-001</a></li>
+<li><a href="protocol/deputy-pause-module.html#idpm-004-deputy-authorizations-must-not-be-replayable">iDPM-004</a></li>
+<li><a href="protocol/deputy-pause-module.html#adpm-002-deputy-key-is-not-compromised">aDPM-002</a></li>
+</ul>
+<h2 id="component-invariants"><a class="header" href="#component-invariants">Component Invariants</a></h2>
+<h3 id="idpm-001-only-the-deputy-may-act-through-the-module"><a class="header" href="#idpm-001-only-the-deputy-may-act-through-the-module">iDPM-001: Only the Deputy may act through the module</a></h3>
+<p>The Deputy account must be the only address that can act through the module. Other accounts can
+execute an action on behalf of the Deputy if the account has a valid authorization signature from
+the Deputy for that action. No account may act through the module other than with the explicit
+authorization of the Deputy.</p>
+<h4 id="impact-14"><a class="header" href="#impact-14">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, accounts other than the Deputy would be able to carry out the actions
+allowed by this module. Assuming that
+<a href="protocol/deputy-pause-module.html#idpm-002-deputy-must-only-be-able-to-trigger-the-pause">iDPM-002</a> holds, this
+means that an account other than the Deputy would be able to trigger the pause, presumably without
+the authorization of the social consensus process that typically triggers this pause.</p>
+<h4 id="mitigations-13"><a class="header" href="#mitigations-13">Mitigations</a></h4>
+<ul>
+<li>Signature verification on the pause action.</li>
+<li>Monitoring for pause triggering actions.</li>
+</ul>
+<h4 id="dependencies-7"><a class="header" href="#dependencies-7">Dependencies</a></h4>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005</a></li>
+</ul>
+<h3 id="idpm-002-deputy-must-only-be-able-to-trigger-the-pause"><a class="header" href="#idpm-002-deputy-must-only-be-able-to-trigger-the-pause">iDPM-002: Deputy must only be able to trigger the pause</a></h3>
+<p>The Deputy must only be able to trigger the pause action by causing the module to call the <code>pause</code>
+function on the <code>SuperchainConfig</code>. The Deputy must not be able to trigger any other priviledged
+action on behalf of the Guardian.</p>
+<h4 id="impact-15"><a class="header" href="#impact-15">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, the Deputy would be able to cause the Optimism Foundation Operations
+Safe to execute some unknown set of possible actions. We would treat this as a critical risk.</p>
+<h4 id="mitigations-14"><a class="header" href="#mitigations-14">Mitigations</a></h4>
+<ul>
+<li>Strict auditing and verification of the <code>DeputyPauseModule</code>.</li>
+</ul>
+<h4 id="dependencies-8"><a class="header" href="#dependencies-8">Dependencies</a></h4>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#adpm-006-safe-contracts-are-free-of-critical-bugs">aDPM-006</a></li>
+</ul>
+<h3 id="idpm-003-deputy-must-always-be-able-to-act-through-the-module"><a class="header" href="#idpm-003-deputy-must-always-be-able-to-act-through-the-module">iDPM-003: Deputy must always be able to act through the module</a></h3>
+<p>The Deputy account must always be able to act through the module, even if the Deputy account
+private key is compromised. Other than the total deletion of the Deputy key, there should not be
+any condition in the contract itself that would prevent the key from being able to quickly and
+efficiently execute the pause action.</p>
+<h4 id="impact-16"><a class="header" href="#impact-16">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, we would not be able to provide the system-level invariant that the
+Deputy account can always be used to trigger the pause within a bounded amount of time of the
+decision being made to carry out this action.</p>
+<h4 id="mitigations-15"><a class="header" href="#mitigations-15">Mitigations</a></h4>
+<ul>
+<li>Signature-based verification to bypass draining attacks.</li>
+<li>Strict auditing and verification of the <code>DeputyPauseModule</code>.</li>
+</ul>
+<h4 id="dependencies-9"><a class="header" href="#dependencies-9">Dependencies</a></h4>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#adpm-001-contract-is-configured-correctly">aDPM-001</a></li>
+<li><a href="protocol/deputy-pause-module.html#adpm-003-deputy-key-is-not-deleted">aDPM-003</a></li>
+<li><a href="protocol/deputy-pause-module.html#adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time">aDPM-004</a></li>
+<li><a href="protocol/deputy-pause-module.html#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005</a></li>
+<li><a href="protocol/deputy-pause-module.html#adpm-008-deputy-key-is-capable-of-creating-signatures">aDPM-008</a></li>
+</ul>
+<h3 id="idpm-004-deputy-authorizations-must-not-be-replayable"><a class="header" href="#idpm-004-deputy-authorizations-must-not-be-replayable">iDPM-004: Deputy authorizations must not be replayable</a></h3>
+<p>A Deputy authorization must apply to a specific <code>DeputyPauseModule</code> on a specific blockchain as
+identified by its chain ID. An authorization created for one <code>DeputyPauseModule</code> must not be
+reusable on any other <code>DeputyPauseModule</code>. An authorization must be usable once and the same
+authorization must not be usable again in any <code>DeputyPauseModule</code>.</p>
+<h4 id="impact-17"><a class="header" href="#impact-17">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, a Deputy authorization created by the same Deputy address for
+another <code>DeputyPauseModule</code> or a previous authorization for the same module could be reused and
+would result in the pause being triggered outside of the standard process by which such a pause is
+approved.</p>
+<h4 id="mitigations-16"><a class="header" href="#mitigations-16">Mitigations</a></h4>
+<ul>
+<li>EIP-712 signature verification including a specific contract address and chain ID.</li>
+<li>Enforce unique nonces on signatures to prevent signature reuse within the same contract.</li>
+<li>Utilize unique Deputy accounts for each module instance or network.</li>
+</ul>
+<h4 id="dependencies-10"><a class="header" href="#dependencies-10">Dependencies</a></h4>
+<ul>
+<li><a href="protocol/deputy-pause-module.html#adpm-005-openzeppelin-ecdsa-and-eip712-contracts-are-free-of-critical-bugs">aDPM-005</a></li>
+</ul>
+<h3 id="idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily"><a class="header" href="#idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily">iDPM-005: Foundation Safe must be able to change the Deputy account easily</a></h3>
+<p>The Foundation Safe must be able to change the address of the Deputy account without significant
+operational overhead.</p>
+<h3 id="impact-18"><a class="header" href="#impact-18">Impact</a></h3>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is broken, it would not be possible for the Safe account to easily rotate the
+Deputy account if the account is compromised. This creates operational overhead but is not a
+security risk as we assume that the Safe code does not have bugs and therefore the Safe can always
+remove the module if necessary.</p>
+<h3 id="mitigations-17"><a class="header" href="#mitigations-17">Mitigations</a></h3>
+<ul>
+<li>Authorized function to change the Deputy address.</li>
+</ul>
+<h2 id="implementation-spec"><a class="header" href="#implementation-spec">Implementation Spec</a></h2>
+<h3 id="constructor-2"><a class="header" href="#constructor-2">constructor</a></h3>
+<ul>
+<li>Sets the EIP-712 domain name to "DeputyPauseModule".</li>
+<li>Sets the EIP-712 domain version to "1".</li>
+<li>Takes the address of the Operations Safe as an authorized input.</li>
+<li>Takes the address of the <code>SuperchainConfig</code> as an authorized input.</li>
+<li>Takes the address of the Deputy as an authorized input.</li>
+<li>Takes a signature from the Deputy over a known EIP-712 message.</li>
+<li>Must verify that the signature was produced by the provided Deputy address.</li>
+</ul>
+<h3 id="pause-1"><a class="header" href="#pause-1">pause</a></h3>
+<ul>
+<li>Takes a nonce as an untrusted input.</li>
+<li>Takes a <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a> as an untrusted input.</li>
+<li>Takes a signature as an untrusted input.</li>
+<li>Callable by any address.</li>
+<li>Must verify that the nonce has not been used.</li>
+<li>Must verify that the signature is over an EIP-712 message that commits to the nonce and the pause
+identifier and was produced by the private key corresponding to the Deputy address.</li>
+<li>Must mark the nonce as used.</li>
+<li>Must trigger the pause on the <code>SuperchainConfig</code> function with the provided pause identifier.</li>
+<li>Must revert if the call to the pause function failed.</li>
+<li>Must revert if the call succeeded but the <code>SuperchainConfig</code> contract was not paused.</li>
+</ul>
+<h3 id="setdeputy"><a class="header" href="#setdeputy">setDeputy</a></h3>
+<ul>
+<li>Takes a deputy address as an authorized input.</li>
+<li>Takes a deputy auth signature as an authorized input.</li>
+<li>Can only be called by the Foundation Safe as configured in the constructor.</li>
+<li>Must verify that the signature was produced by the provided Deputy address.</li>
+</ul>
+<h3 id="foundationsafe"><a class="header" href="#foundationsafe">foundationSafe</a></h3>
+<ul>
+<li>Returns the address of the Operations Safe as set in the constructor.</li>
+</ul>
+<h3 id="superchainconfig-1"><a class="header" href="#superchainconfig-1">superchainConfig</a></h3>
+<ul>
+<li>Returns the address of the <code>SuperchainConfig</code> contract as set in the constructor.</li>
+</ul>
+<h3 id="deputy"><a class="header" href="#deputy">deputy</a></h3>
+<ul>
+<li>Returns the address of the Deputy account as set in the constructor.</li>
+</ul>
+<h3 id="pausemessagetypehash"><a class="header" href="#pausemessagetypehash">pauseMessageTypehash</a></h3>
+<ul>
+<li>Returns the typehash that corresponds to <code>struct PauseMessage { bytes32 nonce }</code>.</li>
+</ul>
+<h3 id="deputyauthmessagetypehash"><a class="header" href="#deputyauthmessagetypehash">deputyAuthMessageTypehash</a></h3>
+<ul>
+<li>Returns the typehash that corresponds to <code>struct DeputyAuthMessage { address deputy }</code>.</li>
+</ul>
+<!-- References -->
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="regolith"><a class="header" href="#regolith">Regolith</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -8289,7 +8920,7 @@ included here for completeness, but is not considered as either Safety or Livene
 <li><a href="protocol/regolith/overview.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
+<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
 <p>The Regolith upgrade, named after a material best described as "deposited dust on top of a layer of bedrock",
 implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
 the Bedrock Optimism Goerli testnet.</p>
@@ -9154,7 +9785,7 @@ when a user already submitted the EIP transaction before the upgrade.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
+<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
 <p>On the Ecotone activation block, and if Ecotone is not activated at Genesis,
 the L1 Attributes Transaction includes a call to <code>setL1BlockValues()</code>
 because the L1 Attributes transaction precedes the <a href="protocol/ecotone/derivation.html#network-upgrade-automation-transactions">Ecotone Upgrade Transactions</a>,
@@ -10054,7 +10685,7 @@ search any further back, so we go back a channel timeout before the finalized L2
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
+<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
 <p>The EIP-1559 parameters are encoded in the block header's <code>extraData</code> field and can be configured dynamically through
 the <code>SystemConfig</code>.</p>
 <h2 id="timestamp-activation-1"><a class="header" href="#timestamp-activation-1">Timestamp Activation</a></h2>
@@ -10154,7 +10785,7 @@ contract values to the block builder via <code>PayloadAttributesV3</code> parame
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
+<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
 <p>The <code>SystemConfig</code> is updated to allow for dynamic EIP-1559 parameters.</p>
 <h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
 <p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
@@ -10187,7 +10818,7 @@ world of many chains.</p>
 operator to modify the <code>BASE_FEE_MAX_CHANGE_DENOMINATOR</code> and the <code>ELASTICITY_MULTIPLIER</code>.</p>
 <h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
 <h4 id="eip-1559-params"><a class="header" href="#eip-1559-params">EIP-1559 Params</a></h4>
-<h5 id="seteip1559params"><a class="header" href="#seteip1559params"><code>setEIP1559Params</code></a></h5>
+<h5 id="seteip1559params-1"><a class="header" href="#seteip1559params-1"><code>setEIP1559Params</code></a></h5>
 <p>This function MUST only be callable by the chain governor.</p>
 <pre><code class="language-solidity">function setEIP1559Params(uint32 _denominator, uint32 _elasticity)
 </code></pre>
@@ -10340,7 +10971,7 @@ or later before Pectra activates on L1.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
+<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
 <p>The SystemConfig is updated.</p>
 <h2 id="systemconfig"><a class="header" href="#systemconfig"><code>SystemConfig</code></a></h2>
 <h3 id="configupdate-1"><a class="header" href="#configupdate-1"><code>ConfigUpdate</code></a></h3>
@@ -10378,7 +11009,7 @@ the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <
 <p>This function returns the currently configured operator fee constant.</p>
 <pre><code class="language-solidity">function operatorFeeConstant()(uint64)
 </code></pre>
-<h5 id="setoperatorfeescalars"><a class="header" href="#setoperatorfeescalars"><code>setOperatorFeeScalars</code></a></h5>
+<h5 id="setoperatorfeescalars-1"><a class="header" href="#setoperatorfeescalars-1"><code>setOperatorFeeScalars</code></a></h5>
 <p>This function sets the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>.</p>
 <p>This function MUST only be callable by the <code>SystemConfig</code> owner.</p>
 <pre><code class="language-solidity">function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)
@@ -10443,7 +11074,7 @@ the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
-<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
+<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
 <p>The storage root of the <code>L2ToL1MessagePasser</code> is included in the block header's
 <code>withdrawalRoot</code> field.</p>
 <h2 id="timestamp-activation-2"><a class="header" href="#timestamp-activation-2">Timestamp Activation</a></h2>
@@ -10945,7 +11576,7 @@ the Isthmus activation time.</p>
 <li><a href="protocol/isthmus/l1-attributes.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
+<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
 <p>The L1 block attributes transaction is updated to include the operator fee parameters.</p>
 <div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
 <tr><td>{0x098999be}</td><td></td><td>0-3</td><td>n/a</td></tr>
@@ -10996,7 +11627,7 @@ and also set the following new attributes:</p>
 <li><a href="protocol/isthmus/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
+<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
 <h3 id="l1block-1"><a class="header" href="#l1block-1">L1Block</a></h3>
 <h4 id="interface-3"><a class="header" href="#interface-3">Interface</a></h4>
 <h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
@@ -11037,7 +11668,7 @@ No special logic is needed in order to insert or withdraw funds.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
+<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -11170,7 +11801,7 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
+<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
 <p>Custom gas token is also known as "custom L2 native asset". It allows for an L1-native ERC20 token to collateralize
 and act as the gas token on L2. The native asset is used to buy gas which is used to pay for resources on the network
 and is represented by EVM opcodes such as <code>CALLVALUE</code> (<code>msg.value</code>).</p>
@@ -11276,7 +11907,7 @@ but do not expose anything as part of their ABI that indicates awareness.</p>
 <li><code>L2CrossDomainMessenger</code></li>
 <li><code>OptimismPortal</code></li>
 </ul>
-<h3 id="optimismportal-1"><a class="header" href="#optimismportal-1">OptimismPortal</a></h3>
+<h3 id="optimismportal-2"><a class="header" href="#optimismportal-2">OptimismPortal</a></h3>
 <p>The <code>OptimismPortal</code> is updated with a new interface specifically for depositing custom tokens.</p>
 <h4 id="depositerc20transaction"><a class="header" href="#depositerc20transaction"><code>depositERC20Transaction</code></a></h4>
 <p>The <code>depositERC20Transaction</code> function is useful for sending custom gas tokens to L2. It is broken out into its
@@ -11361,7 +11992,7 @@ a tuple of the address and decimals of the custom gas token.</p>
 <h3 id="systemconfig-1"><a class="header" href="#systemconfig-1">SystemConfig</a></h3>
 <p>The <code>SystemConfig</code> is the source of truth for the address of the custom gas token. It does on chain validation,
 stores information about the token and well as passes the information to L2.</p>
-<h4 id="initialize-2"><a class="header" href="#initialize-2">initialize</a></h4>
+<h4 id="initialize-4"><a class="header" href="#initialize-4">initialize</a></h4>
 <p>The <code>SystemConfig</code> is modified to allow the address of the custom gas paying token to be set during the call
 to <code>initialize</code>. Using a custom gas token is indicated by passing an address other than <code>ETHER_TOKEN_ADDRESS</code>
 or <code>address(0)</code>. If <code>address(0)</code> is used for initialization, it MUST be mapped into <code>ETHER_TOKEN_ADDRESS</code>
@@ -11643,7 +12274,7 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
+<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
 <h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
@@ -11704,7 +12335,7 @@ Each of these functions should be <code>public</code> and only callable by the c
 <h5 id="setsequencerfeevaultconfig"><a class="header" href="#setsequencerfeevaultconfig"><code>setSequencerFeeVaultConfig</code></a></h5>
 <pre><code class="language-solidity">function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
 </code></pre>
-<h2 id="optimismportal-2"><a class="header" href="#optimismportal-2"><code>OptimismPortal</code></a></h2>
+<h2 id="optimismportal-3"><a class="header" href="#optimismportal-3"><code>OptimismPortal</code></a></h2>
 <p>The <code>OptimismPortal</code> is updated to emit a special system <code>TransactionDeposited</code> event.</p>
 <h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
 <h4 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h4>
@@ -11739,7 +12370,7 @@ in the <a href="experimental/standard-l2-genesis.html#superchainconfig"><code>Su
 <li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
 is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is the data passed into <code>upgrade</code>.</li>
 </ul>
-<h2 id="superchainconfig"><a class="header" href="#superchainconfig">SuperchainConfig</a></h2>
+<h2 id="superchainconfig-2"><a class="header" href="#superchainconfig-2">SuperchainConfig</a></h2>
 <p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
 to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
 that call the L2 <code>ProxyAdmin</code>.</p>
@@ -11917,7 +12548,7 @@ a future hardfork.</p>
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
+<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -12604,7 +13235,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
+<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -12888,7 +13519,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-41"><a class="header" href="#overview-41">Overview</a></h3>
+<h3 id="overview-42"><a class="header" href="#overview-42">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -12955,14 +13586,14 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-42"><a class="header" href="#overview-42">Overview</a></h3>
+<h3 id="overview-43"><a class="header" href="#overview-43">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
 <p>The Beacon Contract implements the interface defined
 in <a href="https://eips.ethereum.org/EIPS/eip-1967">EIP-1967</a>.</p>
 <p>The implementation address gets deduced similarly to the <code>GasPriceOracle</code> address in Ecotone and Fjord updates.</p>
-<h2 id="optimismmintableerc20factory-1"><a class="header" href="#optimismmintableerc20factory-1">OptimismMintableERC20Factory</a></h2>
+<h2 id="optimismmintableerc20factory-2"><a class="header" href="#optimismmintableerc20factory-2">OptimismMintableERC20Factory</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000012</code></td></tr>
 </tbody></table>
@@ -13053,7 +13684,7 @@ with <code>convert</code>.</p>
 </code></pre>
 <p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
 <code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
-<h3 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h3>
+<h3 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h3>
 <p>The <code>convert</code> function conserves the following invariants:</p>
 <ul>
 <li>Conservation of amount:
@@ -13099,7 +13730,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-43"><a class="header" href="#overview-43">Overview</a></h3>
+<h3 id="overview-44"><a class="header" href="#overview-44">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -13171,7 +13802,7 @@ sequenceDiagram
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h3 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h3>
+<h3 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h3>
 <p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -13246,7 +13877,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -13484,7 +14115,7 @@ inclusion.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
 <p>The supervisor is an implementation detail of OP Stack native interop and is not the only
 architecture that can be used to implement it. The supervisor is responsible for indexing
 data from all of the chains in a cluster so that the <a href="interop/./verifier.html#safety">safety level</a>
@@ -13696,7 +14327,7 @@ Malformed access-lists result in an RPC error.</p>
 <li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <p>Interop introduces the Super Fault Dispute Game as a
 new <a href="interop/../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
 pre-interop <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
@@ -13814,7 +14445,7 @@ program identifying the type of step to perform based on the agreed prestate.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainTokenBridge</code>.
@@ -14090,7 +14721,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 </div>
 <h2 id="superchainweth"><a class="header" href="#superchainweth">SuperchainWETH</a></h2>
 <!-- TODO (https://github.com/ethereum-optimism/specs/issues/479) re-write invariants to use imperative form -->
-<h3 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h3>
+<h3 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h3>
 <h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
 <ul>
 <li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
@@ -14150,7 +14781,7 @@ but does not preclude a protocol-layer solution as long as we minimize implement
 <li>Emits a <code>RelayETH</code> event with details about the sender, recipient, amount, and source chain.</li>
 </ul>
 <h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
-<h3 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h3>
+<h3 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h3>
 <h4 id="global-invariants"><a class="header" href="#global-invariants">Global Invariants</a></h4>
 <ul>
 <li>Initial balance must be set to <code>type(uint248).max</code> (wei).
@@ -14216,11 +14847,11 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
-<h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
+<h2 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h2>
 <ul>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
@@ -14322,7 +14953,7 @@ that very old logs are more expensive to prove.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -14394,7 +15025,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -14442,7 +15073,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">event ETHMigrated(uint256 amount);
 </code></pre>
-<h2 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h2>
+<h2 id="invariants-10"><a class="header" href="#invariants-10">Invariants</a></h2>
 <ul>
 <li>
 <p>Deposits MUST lock the ETH in the <code>ETHLockbox</code></p>
@@ -14506,7 +15137,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -14609,7 +15240,7 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
 <pre><code class="language-solidity">event LiquidityReceived(address indexed lockbox);
 </code></pre>
-<h2 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h2>
+<h2 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h2>
 <h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>
 <ul>
 <li>
@@ -14780,7 +15411,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -15078,7 +15709,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
+<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -15242,7 +15873,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
+<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
@@ -15255,7 +15886,7 @@ that executes a single instruction. We say the VM is a function <span class="kat
 single instruction encoded in the state to produce a new state <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span>.
 <span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">re</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></span></p>
 <p>Thus, the trace of a program executed by the FPVM is an ordered set of VM states.</p>
-<h3 id="definitions-3"><a class="header" href="#definitions-3">Definitions</a></h3>
+<h3 id="definitions-5"><a class="header" href="#definitions-5">Definitions</a></h3>
 <h4 id="concepts"><a class="header" href="#concepts">Concepts</a></h4>
 <h5 id="natural-alignment"><a class="header" href="#natural-alignment">Natural Alignment</a></h5>
 <p>A memory address is said to be "naturally aligned" in the context of some data type

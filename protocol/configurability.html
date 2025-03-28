@@ -265,7 +265,7 @@ see <a href="../glossary.html#batcher-transaction">Batcher Transaction</a>).<br/
 <code>versionByte || keccak256(bytes32(chainId))[:19]</code>, where <code>||</code> denotes
 concatenation, <code>versionByte</code> is <code>0x00</code>, and <code>chainId</code> is a <code>uint256</code>.<br/>
 <strong>Notes:</strong> It is recommended, but not required, to follow this convention.</p>
-<h3 id="batcher-hash"><a class="header" href="#batcher-hash"><a href="./system-config.html#batcherhash-bytes32">Batcher Hash</a></a></h3>
+<h3 id="batcher-hash"><a class="header" href="#batcher-hash"><a href="./system-config.html#batcher-hash">Batcher Hash</a></a></h3>
 <p><strong>Description:</strong> A versioned hash of the current authorized batcher sender(s).<br/>
 <strong>Administrator:</strong> <a href="#admin-roles">System Config Owner</a><br/>
 <strong>Requirement:</strong> <code>bytes32(uint256(uint160(batchSubmitterAddress)))</code><br/>
@@ -362,7 +362,7 @@ using fault proofs from genesis.<br/></p>
 <p><strong>Description:</strong> Markup on transactions compared to the raw L1 data cost.<br/>
 <strong>Administrator:</strong> <a href="#admin-roles">System Config Owner</a><br/>
 <strong>Requirement:</strong> Set such that Fee Margin is between 0 and 50%.<br/></p>
-<h3 id="gas-limit"><a class="header" href="#gas-limit"><a href="./system-config.html#gaslimit-uint64">Gas Limit</a></a></h3>
+<h3 id="gas-limit"><a class="header" href="#gas-limit"><a href="./system-config.html#l2-gas-limit">Gas Limit</a></a></h3>
 <p><strong>Description:</strong> Gas limit of the L2 blocks is configured through the system config.<br/>
 <strong>Administrator:</strong> <a href="#admin-roles">System Config Owner</a><br/>
 <strong>Requirement:</strong> No higher than 200_000_000 gas<br/>
@@ -536,8 +536,8 @@ respected game type in the <code>OptimismPortal</code>.<br/>
 <strong>Requirement:</strong>
 <a href="https://etherscan.io/address/0x09f7150D8c019BeF34450d6920f6B3608ceFdAf2">0x09f7150D8c019BeF34450d6920f6B3608ceFdAf2</a><br/>
 <strong>Notes:</strong> A 1/1 Safe owned by the Security Council Safe, with
-the <a href="../protocol/safe-extensions.html#deputy-guardian-module">Deputy Guardian Module</a> enabled to allow the Optimism
-Foundation to act as Guardian.<br/></p>
+the <a href="./deputy-pause-module.html">Deputy Pause Module</a> enabled to allow the Optimism
+Foundation to act as <a href="./stage-1.html#pause-deputy">Pause Deputy</a>.<br/></p>
 <h3 id="proposer-address"><a class="header" href="#proposer-address"><a href="https://github.com/ethereum-optimism/optimism/blob/op-contracts/v1.5.0/packages/contracts-bedrock/src/dispute/PermissionedDisputeGame.sol#L20">Proposer address</a></a></h3>
 <p><strong>Description:</strong> Account which can create and interact
 with <a href="../fault-proof/stage-one/bridge-integration.html#permissioned-faultdisputegame">permissioned dispute games</a> on

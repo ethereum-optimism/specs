@@ -173,12 +173,6 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#guardian-safe">Guardian Safe</a>
-<ul>
-<li><a href="#deputy-guardian-module">Deputy Guardian Module</a></li>
-<li><a href="#deputy-guardian-module-security-properties">Deputy Guardian Module Security Properties</a></li>
-</ul>
-</li>
 <li><a href="#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a>
 <ul>
 <li><a href="#the-liveness-guard">The Liveness Guard</a></li>
@@ -223,66 +217,6 @@ auth conditions internally.</li>
 </ol>
 <p>For more information about the Security Council and Guardian roles, refer to the
 <a href="./stage-1.html">Stage One Roles and Requirements</a> document.</p>
-<h2 id="guardian-safe"><a class="header" href="#guardian-safe">Guardian Safe</a></h2>
-<p>The Guardian Safe is extended by the Deputy Guardian Module.</p>
-<h3 id="deputy-guardian-module"><a class="header" href="#deputy-guardian-module">Deputy Guardian Module</a></h3>
-<p>As the sole owner of the Guardian Safe, the Security Council acts as the Guardian, which is
-authorized to activate the <a href="../protocol/superchain-config.html#pausability">Superchain Pause</a>
-functionality.</p>
-<p>However the Security Council cannot be expected to react quickly in an emergency situation.
-Therefore the Deputy Guardian module enables the Security Council to share this authorization with
-another account.</p>
-<p>The module has the following minimal interface:</p>
-<pre><code class="language-solidity">interface DeputyGuardianModule {
-   /// @dev The address of the Security Council Safe
-   function safe() external view returns(address);
-
-   /// @dev The address of the account which can pause superchain withdrawals by calling this module
-   function deputyGuardian() external view returns(address);
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `pause()` on the `SuperchainConfig` contract.
-   ///      Only the deputy guardian can call this function.
-   function pause() external;
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `unpause()` on the `SuperchainConfig` contract.
-   ///      Only the deputy guardian can call this function.
-   function unpause() external;
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `blacklistDisputeGame()` on the `OptimismPortal2` contract.
-   ///      Only the deputy guardian can call this function.
-   /// @param _portal The `OptimismPortal2` contract instance.
-   /// @param _game The `IDisputeGame` contract instance.
-   function blacklistDisputeGame(address _portal, address _game) external;
-
-   /// @dev Calls the Security Council Safe's `execTransactionFromModule()`, with the arguments
-   ///      necessary to call `setRespectedGameType()` on the `OptimismPortal2` contract.
-   ///      Only the deputy guardian can call this function.
-   /// @param _portal The `OptimismPortal2` contract instance.
-   /// @param _gameType The `GameType` to set as the respected game type
-   function setRespectedGameType(address _portal, uint32 _gameType) external;
-}
-</code></pre>
-<p>For simplicity, the <code>DeputyGuardianModule</code> module does not have functions for updating the <code>safe</code>
-and <code>deputyGuardian</code> addresses. If necessary these can be modified by swapping out with a new
-module.</p>
-<h3 id="deputy-guardian-module-security-properties"><a class="header" href="#deputy-guardian-module-security-properties">Deputy Guardian Module Security Properties</a></h3>
-<p>The following security properties must be upheld by the <code>DeputyGuardianModule</code>:</p>
-<ol>
-<li>The module must correctly enforce access controls so that only the Deputy Guardian can call state
-modifying functions on the <code>DeputyGuardianModule</code>.</li>
-<li>The module must be able to cause the Safe to make calls to all of the functions which the
-Guardian role is authorized to make.</li>
-<li>The module must not be able to cause the Safe to make calls to functions which the Guardian role
-is not authorized to make.</li>
-<li>The module must be safely removable.</li>
-<li>The module must not introduce any possibility of disabling the Safe so that it can no longer
-forward transactions.</li>
-<li>The module must format calldata correctly such that the target it calls performs the expected
-action.</li>
-</ol>
 <h2 id="security-council-liveness-checking-extensions"><a class="header" href="#security-council-liveness-checking-extensions">Security Council Liveness Checking Extensions</a></h2>
 <p>The Security Council Safe is extended by the Liveness Checking Module and Guard. These extensions
 are intended to ensure that any loss of access to a signer's keys is identified and addressed

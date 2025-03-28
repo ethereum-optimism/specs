@@ -239,6 +239,11 @@
 <li><a href="#dependencies-3">Dependencies</a></li>
 </ul>
 </li>
+<li><a href="#iasr-005-the-anchor-game-is-recent-enough-to-be-fault-provable">iASR-005: The Anchor Game is recent enough to be fault provable</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#function-specification">Function Specification</a>
@@ -327,18 +332,19 @@ Challenger.</p>
 <p>A Dispute Game that is <strong>NOT</strong> a Proper Game can also be referred to as an <strong>Improper Game</strong> for
 brevity. A Dispute Game can go from being a Proper Game to later <em>not</em> being an <strong>Improper Game</strong>
 if it is invalidated by being <a href="#blacklisted-game">blacklisted</a> or <a href="#retired-game">retired</a>.</p>
-<p><strong>ALL</strong> Dispute Games <strong>TEMPORARILY</strong> become Improper Games while the Superchain-wide pause
-mechanism is active. However, this is a <em>temporary</em> condition such that Registered Games that are
-not invalidated by <a href="#blacklisted-game">blacklisting</a> or <a href="#retired-game">retirement</a> will become
-Proper Games again once the pause is lifted. The Superchain-wide pause is therefore a way to
-<em>temporarily</em> prevent Dispute Games from being used by consumers like the <code>OptimismPortal</code> while
-relevant parties coordinate the use of some other invalidation mechanism.</p>
+<p><strong>ALL</strong> Dispute Games <strong>TEMPORARILY</strong> become Improper Games while the
+<a href="../../protocol/stage-1.html#pause-mechanism">Pause Mechanism</a> is active. However, this is
+a <em>temporary</em> condition such that Registered Games that are not invalidated by
+<a href="#blacklisted-game">blacklisting</a> or <a href="#retired-game">retirement</a> will become Proper Games again
+once the pause is lifted. The Pause Mechanism is therefore a way to <em>temporarily</em> prevent Dispute
+Games from being used by consumers like the <code>OptimismPortal</code> while relevant parties coordinate the
+use of some other invalidation mechanism.</p>
 <p>A Game is considered to be a Proper Game if all of the following are true:</p>
 <ul>
 <li>The game is a <a href="#registered-game">Registered Game</a></li>
 <li>The game is <strong>NOT</strong> a <a href="#blacklisted-game">Blacklisted Game</a></li>
 <li>The game is <strong>NOT</strong> a <a href="#retired-game">Retired Game</a></li>
-<li>The Superchain-wide pause is not active</li>
+<li>The <a href="../../protocol/stage-1.html#pause-mechanism">Pause Mechanism</a> is not active</li>
 </ul>
 <h3 id="resolved-game"><a class="header" href="#resolved-game">Resolved Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Resolved Game</strong> if the game has resolved a result in favor
@@ -419,10 +425,10 @@ created.</p>
 have <a href="#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
 <a href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has elapsed UNLESS the
-Superchain-wide pause mechanism is active. Therefore, in the absence of the Superchain-wide pause
-mechanism, parties responsible for game invalidation have exactly the Dispute Game Finality Delay
-to invalidate a withdrawal after it resolves incorrectly. If the Superchain-wide pause is active,
-then any incorrectly resolving games must be invalidated before the pause is deactivated.</p>
+Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism, parties responsible
+for game invalidation have exactly the Dispute Game Finality Delay to invalidate a withdrawal after
+it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
+must be invalidated before the pause is deactivated.</p>
 <h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
@@ -506,6 +512,15 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 <ul>
 <li><a href="#aasr-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims">aASR-003</a></li>
 </ul>
+<h3 id="iasr-005-the-anchor-game-is-recent-enough-to-be-fault-provable"><a class="header" href="#iasr-005-the-anchor-game-is-recent-enough-to-be-fault-provable">iASR-005: The Anchor Game is recent enough to be fault provable</a></h3>
+<p>We require that the Anchor Game corresponds to an L2 block with an L1 origin timestamp that is no
+older than 6 months from the current timestamp. This time constraint is necessary because the fault
+proof VM must walk backwards through L1 blocks to verify derivation, and processing 7 months worth
+of L1 blocks approaches the maximum time available to challengers in the dispute game process.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, challengers will be unable to participate in fault proofs within the
+allotted response time, and resolution would require intervention from the Proxy Admin Owner.</p>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
 <ul>
@@ -514,7 +529,7 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
 <li>MUST only be triggerable once.</li>
-<li>MUST set the value of the <code>SuperchainConfig</code> contract that stores the address of the Guardian.</li>
+<li>MUST set the value of the <code>SystemConfig</code> contract that stores the address of the Guardian.</li>
 <li>MUST set the value of the <code>DisputeGameFactory</code> contract that creates Dispute Game instances.</li>
 <li>MUST set the value of the <a href="#starting-anchor-state">Starting Anchor State</a>.</li>
 <li>MUST set the value of the initial <a href="#respected-game-type">Respected Game Type</a>.</li>
@@ -526,7 +541,7 @@ the legacy blacklisting/retirement mechanisms within the <code>OptimismPortal</c
 slate.</li>
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
-<p>Returns the value of the Superchain-wide <code>paused()</code> flag in the <code>SuperchainConfig</code> contract.</p>
+<p>Returns the value of <code>paused()</code> from the <code>SystemConfig</code> contract.</p>
 <h3 id="respectedgametype"><a class="header" href="#respectedgametype">respectedGameType</a></h3>
 <p>Returns the value of the currently <a href="#respected-game-type">Respected Game Type</a>.</p>
 <h3 id="retirementtimestamp"><a class="header" href="#retirementtimestamp">retirementTimestamp</a></h3>

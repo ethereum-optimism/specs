@@ -389,11 +389,10 @@ created.</p>
 <a href="./anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
 <a href="./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has
-elapsed UNLESS the Superchain-wide pause mechanism is active. Therefore, in the absence of the
-Superchain-wide pause mechanism, parties responsible for game invalidation have exactly the Dispute
-Game Finality Delay to invalidate a withdrawal after it resolves incorrectly. If the
-Superchain-wide pause is active, then any incorrectly resolving games must be invalidated before
-the pause is deactivated.</p>
+elapsed UNLESS the Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism,
+parties responsible for game invalidation have exactly the Dispute Game Finality Delay to
+invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
+incorrectly resolving games must be invalidated before the pause is deactivated.</p>
 <h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
@@ -430,7 +429,6 @@ see this as a critical system risk.</p>
 <li>MUST only be triggerable once.</li>
 <li>MUST set the value of the <code>DisputeGameFactory</code> contract.</li>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
-<li>MUST set the value of the <code>SuperchainConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
 <li>MUST set <code>superRootsActive</code> to either <code>true</code> or <code>false</code>.</li>
 <li>MUST set the value of the <a href="#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
@@ -438,9 +436,9 @@ value if the value is not set already.</li>
 <li>MUST initialize the resource metering configuration.</li>
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
-<p>Returns the current state of the <code>SuperchainConfig.paused()</code> function.</p>
+<p>Returns the current state of the <code>SystemConfig.paused()</code> function.</p>
 <h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
-<p>Returns the address of the Guardian as per <code>SuperchainConfig.guardian()</code>.</p>
+<p>Returns the address of the Guardian as per <code>SystemConfig.guardian()</code>.</p>
 <h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
 <p>Returns the value of the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</p>
 <h3 id="superrootsactive"><a class="header" href="#superrootsactive">superRootsActive</a></h3>

@@ -174,56 +174,127 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#configurable-values">Configurable values</a></li>
-<li><a href="#configuration-data-flow">Configuration data flow</a>
+<li><a href="#invariants">Invariants</a>
 <ul>
-<li><a href="#pausability">Pausability</a>
+<li><a href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a>
 <ul>
-<li><a href="#paused-identifiers">Paused identifiers</a></li>
-<li><a href="#scope-of-pausability">Scope of pausability</a></li>
+<li><a href="#impact">Impact</a></li>
 </ul>
 </li>
+<li><a href="#isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism">iSUPC-002: The Guardian must be able to reset or undo the Pause Mechanism</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#guardian">guardian</a></li>
+<li><a href="#pause">pause</a></li>
+<li><a href="#unpause">unpause</a></li>
+<li><a href="#pausable">pausable</a></li>
+<li><a href="#paused">paused</a></li>
+<li><a href="#expiration">expiration</a></li>
+<li><a href="#reset">reset</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains within
-a single Superchain network.</p>
-<h2 id="configurable-values"><a class="header" href="#configurable-values">Configurable values</a></h2>
-<p>The <code>SuperchainConfig</code> contract manages the following configuration values:</p>
+<p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains
+within a single Superchain network.</p>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism"><a class="header" href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a></h3>
+<p>We require that the <code>SuperchainConfig</code> is constructed such that both the
+<a href="./stage-1.html#guardian">Guardian</a> and the <a href="./stage-1.html#pause-deputy">Pause Deputy</a> must be able to
+trigger the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> at any time.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Existing recovery runbooks would not function as expected if the <code>SuperchainConfig</code> prevented one
+of these actors from triggering the pause as needed.</p>
+<h3 id="isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism"><a class="header" href="#isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism">iSUPC-002: The Guardian must be able to reset or undo the Pause Mechanism</a></h3>
+<p>We require that the <code>SuperchainConfig</code> is constructed such that the
+<a href="./stage-1.html#guardian">Guardian</a> must be able to reset or unpause the
+<a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> at any time.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If the Pause Mechanism cannot be reset then it cannot be used again without intervention from the
+<a href="./stage-1.html#upgrade-controller">Upgrade Controller</a>. We consider this to be a Medium severity
+issue because the Upgrade Controller will have several months to coordinate such a fix assuming
+that <a href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001</a> holds.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
-<li><code>PAUSED_SLOT</code>: A boolean value indicating whether the Superchain is paused.</li>
-<li><code>GUARDIAN_SLOT</code>: The address of the guardian, which can pause and unpause the system.</li>
+<li>MUST only be triggerable once.</li>
+<li>MUST set the value of the Guardian role.</li>
+<li>MUST set the value of the pause expiry period.</li>
 </ul>
-<h2 id="configuration-data-flow"><a class="header" href="#configuration-data-flow">Configuration data flow</a></h2>
-<p>All contracts which read from the <code>SuperchainConfig</code> contract hold its address as storage values
-in the proxy account, and call directly to it when reading configuration data.</p>
-<pre class="mermaid">flowchart TD
-StandardBridge --&gt; SuperchainConfig
-L1ERC721Bridge --&gt; SuperchainConfig
-L1CrossDomainMessenger --&gt; SuperchainConfig
-OptimismPortal --&gt; SuperchainConfig
-</pre>
-<h3 id="pausability"><a class="header" href="#pausability">Pausability</a></h3>
-<p>The Superchain pause feature is a safety mechanism designed to temporarily halt withdrawals from the system in
-an emergency situation. The Guardian role is authorized to pause and unpause the system.</p>
-<h4 id="paused-identifiers"><a class="header" href="#paused-identifiers">Paused identifiers</a></h4>
-<p>When the system is paused the <code>Paused(string identifier)</code> event is emitted. This allows for the
-caller to provide additional information to be used during incident response.</p>
-<h4 id="scope-of-pausability"><a class="header" href="#scope-of-pausability">Scope of pausability</a></h4>
-<p>The pause applies specifically to withdrawals of assets from the L1 bridge contracts. The L2 bridge contracts
-are not pausable, on the basis that issues on L2 can be addressed more easily by a hard fork in the consensus
-layer.</p>
-<p>When the Pause is activated, the following methods are disabled:</p>
-<ol>
-<li><code>OptimismPortal.proveWithdrawalTransaction()</code></li>
-<li><code>OptimismPortal.finalizeWithdrawalTransaction()</code></li>
-<li><code>L1CrossDomainMessenger.relayMessage()</code></li>
-<li><code>StandardBridge.finalizeBridgeERC20()</code></li>
-<li><code>StandardBridge.finalizeBridgeETH()</code></li>
-<li><code>L1ERC721Bridge.finalizeBridgeERC721()</code></li>
-</ol>
+<h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
+<p>Returns the address of the current <a href="./stage-1.html#guardian">Guardian</a>.</p>
+<h3 id="pause"><a class="header" href="#pause">pause</a></h3>
+<p>Allows the <a href="./stage-1.html#guardian">Guardian</a> to trigger the
+<a href="./stage-1.html#pause-mechanism">Pause Mechanism</a>. <code>pause</code> takes an address
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a> as an input. This identifier determines which
+systems or chains are affected by the pause.</p>
+<ul>
+<li>MUST revert if called by an address other than the Guardian.</li>
+<li>MUST revert if the pausable flag for the given identifier is set to 1 (used/unavailable).</li>
+<li>MUST set the pause timestamp for the given identifier to the current block timestamp.</li>
+<li>MUST set the pausable flag for the given identifier to 1 (used/unavailable) to prevent repeated
+pauses without a reset.</li>
+</ul>
+<h3 id="unpause"><a class="header" href="#unpause">unpause</a></h3>
+<p>Allows the <a href="./stage-1.html#guardian">Guardian</a> to explicitly unpause the system for a given
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a> rather than waiting for the pause to expire.
+Unpausing a specific identifier does NOT unpause the global pause (zero address identifier). If the
+global pause is active, all systems will remain paused even if their specific identifiers are
+unpaused. Note that <code>unpause</code> will not revert if the pause is not currently active which would
+cause <code>unpause</code> to act like a call to <code>reset</code>.</p>
+<ul>
+<li>MUST revert if called by an address other than the Guardian.</li>
+<li>MUST set the pause timestamp for the given identifier to 0, representing "not paused".</li>
+<li>MUST set the pausable flag for the given identifier to 0 (ready to pause), allowing the pause
+mechanism to be used again.</li>
+</ul>
+<h3 id="pausable"><a class="header" href="#pausable">pausable</a></h3>
+<p>Allows any user to check if the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> can be triggered
+for a specific <a href="./stage-1.html#pause-identifier">Pause Identifier</a>. The pausable status of a specific
+identifier is independent of the pausable status of the global pause (zero address identifier).</p>
+<ul>
+<li>MUST return true if the pausable flag for the given identifier is 0 (ready to pause).</li>
+<li>MUST return false if the pausable flag for the given identifier is 1 (used/unavailable).</li>
+</ul>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>Allows any user to check if the system is currently paused for a specific
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
+<ul>
+<li>MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
+(current time &lt; pause timestamp + expiry duration).</li>
+<li>MUST return false otherwise.</li>
+</ul>
+<h3 id="expiration"><a class="header" href="#expiration">expiration</a></h3>
+<p>Returns the timestamp at which the pause for a given
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a> will expire. This function only returns the
+expiration for the specific identifier provided.</p>
+<ul>
+<li>MUST return the pause timestamp plus the configured expiry duration if the pause timestamp is non-zero.</li>
+<li>MUST return 0 if the pause timestamp is 0 (system is not paused) for the given identifier.</li>
+</ul>
+<h3 id="reset"><a class="header" href="#reset">reset</a></h3>
+<p>Allows the <a href="./stage-1.html#guardian">Guardian</a> to reset the pause mechanism for a given
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a>, allowing it to be used again. Note that <code>reset</code>
+will not revert if the pausable flag is already set to zero.</p>
+<ul>
+<li>MUST revert if called by an address other than the Guardian.</li>
+<li>MUST set the pausable flag for the given identifier to 0 (ready to pause).</li>
+<li>MUST NOT modify the pause timestamp for the given identifier.</li>
+<li>NOTE: Resetting the pausable flag for a specific identifier does not affect the pause status. If
+a system is currently paused, it will remain paused until explicitly unpaused or until the pause
+expires.</li>
+</ul>
+<!-- references -->
 
                     </main>
 
