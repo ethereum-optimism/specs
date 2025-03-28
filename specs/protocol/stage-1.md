@@ -34,7 +34,7 @@
 ## Overview
 
 This document describes the requirements necessary for an OP Stack implementation to satisfy the
-Stage 1 decentralization requirements [as defined by L2Beat][stage-1]. It also defines the specific
+Stage 1 decentralization requirements [as defined by L2BEAT][stage-1]. It also defines the specific
 roles and capabilities for an OP Stack chain in the standard configuration that will satisfy these
 requirements.
 
@@ -127,11 +127,11 @@ being used within that system as the Pause Identifier.
 
 ### Stage 1 Rollup
 
-L2Beat defines that a system can be considered a "Stage 1 Rollup" system if it has the following
-properties:
+L2BEAT defines that a system can be considered a "Stage 1 Rollup" system if it has the following
+property:
 
-- The system has a Security Council ([as defined by L2Beat][security-council]).
-- The only way (excluding bugs) for the System to experience an indefinite
+- If the System has a Security Council ([as defined by L2BEAT][security-council]) the only way
+  (excluding bugs) for the System to experience an indefinite
   [Withdrawal Liveness](#withdrawal-liveness) failure or any
   [Withdrawal Safety](#withdrawal-safety) failure is through a malicious majority of at least 75%
   of the Security Council.
@@ -260,7 +260,7 @@ optional. It is included here for completeness, but it does not impact
 
 ### iS1-001: A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs)
 
-This is the core invariant for Stage 1 and aligns with [the definition by L2Beat][stage-1] from
+This is the core invariant for Stage 1 and aligns with [the definition by L2BEAT][stage-1] from
 January 2025. We can define additional properties about roles specific to the OP Stack as long as
 they align with this invariant. Note that this invariant does NOT consider the impact of bugs in
 smart contracts on the rest of the protocol. That is, this invariant only holds strongly under the
@@ -311,6 +311,4 @@ renew the pause to allow the system to operate if truly necessary.
 [stage-1]: https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338
 [security-council]: https://medium.com/l2beat/stages-update-security-council-requirements-4c79cea8ef52
 [safe-docs]: https://docs.safe.global/home/what-is-safe
-[iS1-001]: #is1-001-a-permanent-withdrawal-liveness-or-withdrawal-safety-failure-requires-75-of-the-security-council-wo-bugs
 [iS1-002]: #is1-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure
-[iS1-003]: #is1-003-the-guardian-can-revoke-the-pause-deputy-role-at-any-time
