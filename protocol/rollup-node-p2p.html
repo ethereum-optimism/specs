@@ -442,8 +442,8 @@ the above needs to be compressed after encoding, and decompressed before decodin
 <li><code>payload_hash</code> is <code>keccak256(payload)</code>, where <code>payload</code> is:
 <ul>
 <li>the <code>payload</code> in V1 and V2,</li>
-<li><code>parentBeaconBlockRoot ++ payload</code> in V3.</li>
-<li><code>parentBeaconBlockRoot ++  withdrawalsRoot ++ payload</code> in V4.</li>
+<li><code>parentBeaconBlockRoot ++ payload</code> in V3 + V4 (<em>NOTE</em>: In V4, <code>payload</code> is extended to include the
+<code>withdrawalsRoot</code>).</li>
 </ul>
 </li>
 </ul>
@@ -466,7 +466,8 @@ the above needs to be compressed after encoding, and decompressed before decodin
 <li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and has an excess blob gas value that is not zero</li>
 <li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and the parent beacon block root is not nil</li>
 <li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and the parent beacon block root is nil</li>
-<li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and the l2 withdrawals root is nil</li>
+<li><code>[REJECT]</code> if the block is on a topic &lt;= V3 and the l2 withdrawals root is not nil</li>
+<li><code>[REJECT]</code> if the block is on a topic &gt;= V4 and the l2 withdrawals root is nil</li>
 <li><code>[REJECT]</code> if more than 5 different blocks have been seen with the same block height</li>
 <li><code>[IGNORE]</code> if the block has already been seen</li>
 <li><code>[REJECT]</code> if the signature by the sequencer is not valid</li>
