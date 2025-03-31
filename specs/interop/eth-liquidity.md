@@ -13,12 +13,12 @@
 - [Assumptions](#assumptions)
   - [aEL-001: Only authorized contracts can call mint and burn](#ael-001-only-authorized-contracts-can-call-mint-and-burn)
     - [Mitigations](#mitigations)
-  - [aEL-002: Initial balance is sufficient for all operations](#ael-002-initial-balance-is-sufficient-for-all-operations)
+  - [aEL-002: contract balance is sufficient for all operations](#ael-002-contract-balance-is-sufficient-for-all-operations)
     - [Mitigations](#mitigations-1)
   - [aEL-003: SafeSend correctly transfers ETH to recipients](#ael-003-safesend-correctly-transfers-eth-to-recipients)
     - [Mitigations](#mitigations-2)
 - [Invariants](#invariants)
-  - [iEL-001: ETH balance is always sufficient for minting](#iel-001-eth-balance-is-always-sufficient-for-minting)
+  - [iEL-001: ETH balance is always sufficient for minting / burning](#iel-001-eth-balance-is-always-sufficient-for-minting--burning)
     - [Impact](#impact)
     - [Dependencies](#dependencies)
   - [iEL-002: Only authorized contracts can call mint and burn](#iel-002-only-authorized-contracts-can-call-mint-and-burn)
@@ -73,14 +73,15 @@ We assume that only authorized contracts (specifically the `SuperchainETHBridge`
 
 - Access control checks in the `mint` and `burn` functions
 
-### aEL-002: Initial balance is sufficient for all operations
+### aEL-002: contract balance is sufficient for all operations
 
-We assume that the initial balance of the `ETHLiquidity` contract (`type(uint248).max` wei) is sufficient to handle all legitimate minting operations.
+We assume that the initial balance of the `ETHLiquidity` contract (`type(uint248).max` wei) is sufficient to handle all legitimate minting and burning operations.
 
 #### Mitigations
 
 - Contract is initialized with `type(uint248).max` wei, which is significantly larger than the total ETH supply
 - The gap between the initial balance (`type(uint248).max`) and the contract max (`type(uint256).max`), provides a substantial buffer for handling cross-chain deposits
+- The invariant that avoids overflow is maintained by `SuperchainETHBridge`, but could theoretically be broken by some future contract that is allowed to integrate with `ETHLiquidity`. Maintainers should be careful to ensure that such future contracts do not break this invariant.
 
 ### aEL-003: SafeSend correctly transfers ETH to recipients
 
@@ -93,9 +94,9 @@ We assume that the `SafeSend` mechanism correctly transfers ETH to recipients wi
 
 ## Invariants
 
-### iEL-001: ETH balance is always sufficient for minting
+### iEL-001: ETH balance is always sufficient for minting / burning
 
-The `ETHLiquidity` contract must always have enough ETH to fulfill all legitimate minting requests.
+The `ETHLiquidity` contract must always have enough ETH to fulfill all legitimate minting / burning requests.
 
 #### Impact
 
