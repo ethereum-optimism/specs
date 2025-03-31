@@ -81,6 +81,8 @@
     - [Fault Proof](./interop/fault-proof.md)
     - [Upgrade](./interop/upgrade.md)
     - [Token Bridging](./interop/token-bridging.md)
+    - [ETH Liquidity](./interop/eth-liquidity.md)
+    - [Superchain ETH Bridge](./interop/superchain-eth-bridge.md)
     - [ETH Bridging](./interop/eth-bridging.md)
     - [Derivation](./interop/derivation.md)
     - [Transaction Pool](./interop/tx-pool.md)
