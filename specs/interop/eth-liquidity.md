@@ -38,9 +38,15 @@
 
 ## Overview
 
-The `ETHLiquidity` contract is a predeploy that manages native ETH liquidity for cross-chain transfers within the Superchain interop set. It works in conjunction with the `SuperchainETHBridge` to facilitate the movement of ETH between chains without requiring modifications to the EVM to generate new ETH.
+The `ETHLiquidity` contract is a predeploy that manages native ETH liquidity for cross-chain
+transfers within the Superchain interop set. It works in conjunction with the
+`SuperchainETHBridge` to facilitate the movement of ETH between chains without requiring
+modifications to the EVM to generate new ETH.
 
-The contract is initialized with a very large balance (`type(uint248).max` wei) to ensure it can handle all legitimate minting operations. This design allows the `SuperchainETHBridge` to have a guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH transfer mechanism.
+The contract is initialized with a very large balance (`type(uint248).max` wei) to ensure it can
+handle all legitimate minting operations. This design allows the `SuperchainETHBridge` to have a
+guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
+transfer mechanism.
 
 ## Constants
 
@@ -53,21 +59,28 @@ The contract is initialized with a very large balance (`type(uint248).max` wei) 
 
 ### ETH Liquidity
 
-ETH Liquidity refers to the availability of native ETH on a particular chain. The `ETHLiquidity` contract manages this liquidity by providing a mechanism to burn and mint ETH as needed for cross-chain transfers.
+ETH Liquidity refers to the availability of native ETH on a particular chain. The `ETHLiquidity`
+contract manages this liquidity by providing a mechanism to burn and mint ETH as needed for
+cross-chain transfers.
 
 ### Liquidity Minting
 
-Liquidity Minting is the process of withdrawing ETH from the `ETHLiquidity` contract. This operation is performed when ETH needs to be sent to a recipient on a destination chain as part of a cross-chain transfer.
+Liquidity Minting is the process of withdrawing ETH from the `ETHLiquidity` contract. This
+operation is performed when ETH needs to be sent to a recipient on a destination chain as part of
+a cross-chain transfer.
 
 ### Liquidity Burning
 
-Liquidity Burning is the process of depositing ETH into the `ETHLiquidity` contract. This operation is performed when ETH is being sent from a source chain to a destination chain as part of a cross-chain transfer.
+Liquidity Burning is the process of depositing ETH into the `ETHLiquidity` contract. This operation
+is performed when ETH is being sent from a source chain to a destination chain as part of a
+cross-chain transfer.
 
 ## Assumptions
 
 ### aEL-001: Only authorized contracts can call mint and burn
 
-We assume that only authorized contracts (specifically the `SuperchainETHBridge`) can call the `mint` and `burn` functions of the `ETHLiquidity` contract.
+We assume that only authorized contracts (specifically the `SuperchainETHBridge`) can call the
+`mint` and `burn` functions of the `ETHLiquidity` contract.
 
 #### Mitigations
 
@@ -75,17 +88,23 @@ We assume that only authorized contracts (specifically the `SuperchainETHBridge`
 
 ### aEL-002: contract balance is sufficient for all operations
 
-We assume that the initial balance of the `ETHLiquidity` contract (`type(uint248).max` wei) is sufficient to handle all legitimate minting and burning operations.
+We assume that the initial balance of the `ETHLiquidity` contract (`type(uint248).max` wei) is
+sufficient to handle all legitimate minting and burning operations.
 
 #### Mitigations
 
-- Contract is initialized with `type(uint248).max` wei, which is significantly larger than the total ETH supply
-- The gap between the initial balance (`type(uint248).max`) and the contract max (`type(uint256).max`), provides a substantial buffer for handling cross-chain deposits
-- The invariant that avoids overflow is maintained by `SuperchainETHBridge`, but could theoretically be broken by some future contract that is allowed to integrate with `ETHLiquidity`. Maintainers should be careful to ensure that such future contracts do not break this invariant.
+- Contract is initialized with `type(uint248).max` wei, which is significantly larger than the
+total ETH supply
+- The gap between the initial balance (`type(uint248).max`) and the contract max
+(`type(uint256).max`), provides a substantial buffer for handling cross-chain deposits
+- The invariant that avoids overflow is maintained by `SuperchainETHBridge`, but could
+theoretically be broken by some future contract that is allowed to integrate with `ETHLiquidity`.
+Maintainers should be careful to ensure that such future contracts do not break this invariant.
 
 ### aEL-003: SafeSend correctly transfers ETH to recipients
 
-We assume that the `SafeSend` mechanism correctly transfers ETH to recipients without reverting for valid addresses.
+We assume that the `SafeSend` mechanism correctly transfers ETH to recipients without reverting
+for valid addresses.
 
 #### Mitigations
 
@@ -96,13 +115,15 @@ We assume that the `SafeSend` mechanism correctly transfers ETH to recipients wi
 
 ### iEL-001: ETH balance is always sufficient for minting / burning
 
-The `ETHLiquidity` contract must always have enough ETH to fulfill all legitimate minting / burning requests.
+The `ETHLiquidity` contract must always have enough ETH to fulfill all legitimate minting / burning
+requests.
 
 #### Impact
 
 **Severity: Critical**
 
-If this invariant is broken, the cross-chain ETH transfer mechanism would fail, potentially leading to users being unable to receive their ETH on destination chains.
+If this invariant is broken, the cross-chain ETH transfer mechanism would fail, potentially leading
+to users being unable to receive their ETH on destination chains.
 
 #### Dependencies
 
@@ -110,13 +131,15 @@ If this invariant is broken, the cross-chain ETH transfer mechanism would fail, 
 
 ### iEL-002: Only authorized contracts can call mint and burn
 
-The `mint` and `burn` functions must only be callable by authorized contracts (specifically the `SuperchainETHBridge`).
+The `mint` and `burn` functions must only be callable by authorized contracts (specifically the
+`SuperchainETHBridge`).
 
 #### Impact
 
 **Severity: Critical**
 
-If this invariant is broken, unauthorized parties could mint ETH without burning an equivalent amount on a source chain, leading to inflation.
+If this invariant is broken, unauthorized parties could mint ETH without burning an equivalent
+amount on a source chain, leading to inflation.
 
 #### Dependencies
 
@@ -130,7 +153,8 @@ The `ETHLiquidity` contract's balance must never overflow due to excessive burni
 
 **Severity: High**
 
-If this invariant is broken, the contract could reach an invalid state, potentially disrupting the cross-chain ETH transfer mechanism.
+If this invariant is broken, the contract could reach an invalid state, potentially disrupting the
+cross-chain ETH transfer mechanism.
 
 #### Dependencies
 
@@ -140,7 +164,8 @@ If this invariant is broken, the contract could reach an invalid state, potentia
 
 ### mint
 
-Withdraws ETH from the `ETHLiquidity` contract equal to the `_amount` and sends it to the `msg.sender`.
+Withdraws ETH from the `ETHLiquidity` contract equal to the `_amount` and sends it to the
+`msg.sender`.
 
 ```solidity
 function mint(uint256 _amount) external
