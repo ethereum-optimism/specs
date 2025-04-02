@@ -196,6 +196,7 @@ reposted
 returndata
 Rollups
 rollups
+runbooks
 Sched
 sched
 secp
@@ -216,6 +217,7 @@ subgame
 Subgames
 subgames
 sublinear
+SUPC
 Superchain
 superchain
 superfactory
