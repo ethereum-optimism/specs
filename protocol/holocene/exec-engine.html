@@ -225,7 +225,7 @@ the initial parameters to be used by the chain.</p>
 type is extended with an additional value, <code>eip1559Params</code>:</p>
 <pre><code class="language-rs">PayloadAttributesV3: {
     timestamp: QUANTITY
-    random: DATA (32 bytes)
+    prevRandao: DATA (32 bytes)
     suggestedFeeRecipient: DATA (20 bytes)
     withdrawals: array of WithdrawalV1
     parentBeaconBlockRoot: DATA (32 bytes)
@@ -260,9 +260,9 @@ were <a href="../exec-engine.html#1559-parameters">constants</a>.</p>
 <p>With the Holocene upgrade, these parameters are instead determined as follows:</p>
 <ul>
 <li>if Holocene is not active in <code>parent_header.timestamp</code>, the <a href="../exec-engine.html#1559-parameters">prior EIP-1559
-constants</a> constants are used. While <code>parent_header.extraData</code> is typically empty
-prior to Holocene, there are some legacy cases where it may be set arbitrarily, so it must not be assumed to be empty.</li>
-<li>if Holocene is active in <code>parent_header.timestamp</code>, then the parameters from <code>parent_header.extraData</code> are used.</li>
+constants</a> are used. Note that <code>parent_header.extraData</code> is empty
+prior to Holocene, except possibly for the genesis block.</li>
+<li>if Holocene is active at <code>parent_header.timestamp</code>, then the parameters from <code>parent_header.extraData</code> are used.</li>
 </ul>
 <h3 id="rationale"><a class="header" href="#rationale">Rationale</a></h3>
 <p>Placing the EIP-1559 parameters within the L2 block header allows us to retain the purity of the function that computes

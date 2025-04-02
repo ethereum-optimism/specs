@@ -174,6 +174,7 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#1559-parameters">1559 Parameters</a></li>
+<li><a href="#extra-data">Extra Data</a></li>
 <li><a href="#deposited-transaction-processing">Deposited transaction processing</a>
 <ul>
 <li><a href="#deposited-transaction-boundaries">Deposited transaction boundaries</a></li>
@@ -234,7 +235,12 @@
 <p>The execution engine must be able to take a per chain configuration which specifies the EIP-1559 Denominator
 and EIP-1559 elasticity. After Canyon it should also take a new value <code>EIP1559DenominatorCanyon</code> and use that as
 the denominator in the 1559 formula rather than the prior denominator.</p>
-<p>The formula for EIP-1559 is not otherwise modified.</p>
+<p>The formula for EIP-1559 is otherwise not modified.</p>
+<p>Starting with Holocene, the EIP-1559 parameters become <a href="holocene/exec-engine.html#dynamic-eip-1559-parameters">dynamically configurable</a>.</p>
+<h2 id="extra-data"><a class="header" href="#extra-data">Extra Data</a></h2>
+<p>Before Holocene, the genesis block may contain an arbitrary <code>extraData</code> value whereas all normal
+blocks must have an <strong>empty</strong> <code>extraData</code> field.</p>
+<p>With Holocene, the <code>extraData</code> field <a href="holocene/exec-engine.html#dynamic-eip-1559-parameters">encodes the EIP-1559 parameters</a>.</p>
 <h2 id="deposited-transaction-processing"><a class="header" href="#deposited-transaction-processing">Deposited transaction processing</a></h2>
 <p>The Engine interfaces abstract away transaction types with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</p>
 <p>To support rollup functionality, processing of a new Deposit <a href="https://eips.ethereum.org/EIPS/eip-2718#transactions"><code>TransactionType</code></a>
@@ -384,7 +390,7 @@ to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad6657180
 <p><a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#PayloadAttributesV2"><code>PayloadAttributesV2</code></a> is extended to:</p>
 <pre><code class="language-js">PayloadAttributesV2: {
     timestamp: QUANTITY
-    random: DATA (32 bytes)
+    prevRandao: DATA (32 bytes)
     suggestedFeeRecipient: DATA (20 bytes)
     withdrawals: array of WithdrawalV1
     transactions: array of DATA
@@ -426,19 +432,22 @@ to <a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03
 <p><a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#payloadattributesv3"><code>PayloadAttributesV3</code></a> is extended to:</p>
 <pre><code class="language-js">PayloadAttributesV3: {
     timestamp: QUANTITY
-    random: DATA (32 bytes)
+    prevRandao: DATA (32 bytes)
     suggestedFeeRecipient: DATA (20 bytes)
     withdrawals: array of WithdrawalV1
     parentBeaconBlockRoot: DATA (32 bytes)
     transactions: array of DATA
     noTxPool: bool
     gasLimit: QUANTITY or null
+    eip1559Params: DATA (8 bytes) or null
 }
 </code></pre>
 <p>The requirements of this object are the same as extended <a href="#extended-payloadattributesv2"><code>PayloadAttributesV2</code></a> with
 the addition of <code>parentBeaconBlockRoot</code> which is the parent beacon block root from the L1 origin block of the L2 block.</p>
 <p>Starting at Ecotone, the <code>parentBeaconBlockRoot</code> must be set to the L1 origin <code>parentBeaconBlockRoot</code>,
 or a zero <code>bytes32</code> if the Dencun functionality with <code>parentBeaconBlockRoot</code> is not active on L1.</p>
+<p>Starting with Holocene, the <code>eip1559Params</code> field must encode the EIP1559 parameters. It must be <code>null</code> before.
+See <a href="holocene/exec-engine.html#dynamic-eip-1559-parameters">Dynamic EIP-1559 Parameters</a> for details.</p>
 <h3 id="engine_newpayloadv2"><a class="header" href="#engine_newpayloadv2"><code>engine_newPayloadV2</code></a></h3>
 <p>No modifications to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_newpayloadv2"><code>engine_newPayloadV2</code></a>.
 Applies a L2 block to the engine state.</p>
