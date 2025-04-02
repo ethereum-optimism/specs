@@ -114,6 +114,7 @@ inputbytes
 interchangable
 invis
 IPFS
+iSUPC
 IWANT
 justfile
 katex
@@ -196,6 +197,7 @@ reposted
 returndata
 Rollups
 rollups
+runbooks
 Sched
 sched
 secp
