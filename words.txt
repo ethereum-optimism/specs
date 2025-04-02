@@ -114,6 +114,7 @@ inputbytes
 interchangable
 invis
 IPFS
+iSUPC
 IWANT
 justfile
 katex
