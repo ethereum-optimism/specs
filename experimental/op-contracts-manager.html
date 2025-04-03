@@ -242,7 +242,7 @@ for each new release of the OP Stack contracts.</p>
 <li>Upgrade the contracts for an existing OP chain from the previous release to the new release.</li>
 <li>Orchestrate adding a new game type on a per-chain basis</li>
 </ol>
-<p>Upgrades must be performed by the <a href="../protocol/stage-1.html#roles-for-stage-1">Upgrade Controller</a> Safe for a chain.</p>
+<p>Upgrades must be performed by the <a href="../protocol/stage-1.html#roles-for-stage-1">Proxy Admin Owner</a> Safe for a chain.</p>
 <h2 id="getter-methods"><a class="header" href="#getter-methods">Getter Methods</a></h2>
 <p>The following interface defines the available getter methods:</p>
 <pre><code class="language-solidity">/// @notice Returns the release string with the format `op-contracts/vX.Y.Z`. 
@@ -362,7 +362,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
 <h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
 <h4 id="upgrade"><a class="header" href="#upgrade"><code>upgrade</code></a></h4>
-<p>The <code>upgrade</code> method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
+<p>The <code>upgrade</code> method is used by the Proxy Admin Owner to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
 <p>It has the following interface:</p>
 <pre><code class="language-solidity">/// @notice The input required to identify a chain for upgrading, along with new prestate hashes
@@ -374,7 +374,7 @@ struct OpChainConfig {
 
 /// @notice Upgrades a set of chains to the latest implementation contracts
 /// @param _opChainConfigs Array of OpChain structs, one per chain to upgrade
-/// @dev This function is intended to be called via DELEGATECALL from the Upgrade Controller Safe
+/// @dev This function is intended to be called via DELEGATECALL from the Proxy Admin Owner Safe
 function upgrade(OpChainConfig[] memory _opChainConfigs) external
 </code></pre>
 <p>For each chain successfully upgraded, the following event is emitted:</p>
@@ -384,7 +384,7 @@ function upgrade(OpChainConfig[] memory _opChainConfigs) external
 <h3 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h3>
 <p>The high level logic of the upgrade method is as follows:</p>
 <ol>
-<li>The Upgrade Controller Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
+<li>The Proxy Admin Owner Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
 <li>The SuperchainConfig contract will be upgraded, if not yet done.</li>
 <li>The ProtocolVersions contract will be upgraded, if not yet done.</li>
 <li>For each <code>_systemConfig</code>, the list of addresses in the chain is retrieved.</li>
@@ -500,7 +500,7 @@ to ensure admin privileges are sufficiently secured.</p>
 critical that no storage writes occur. This should be enforced in multiple ways, including:</p>
 <ul>
 <li>By static analysis of the <code>upgrade()</code> and <code>addGameType()</code> methods during the development process.</li>
-<li>By simulating and verifying the state changes which occur in the Upgrade Controller Safe prior to execution.</li>
+<li>By simulating and verifying the state changes which occur in the Proxy Admin Owner Safe prior to execution.</li>
 </ul>
 <h3 id="atomicity-of-upgrades"><a class="header" href="#atomicity-of-upgrades">Atomicity of upgrades</a></h3>
 <p>Although atomicity of a superchain upgrade is not essential for many types of upgrade, it will

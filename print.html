@@ -7127,8 +7127,8 @@ of these actors from triggering the pause as needed.</p>
 <h4 id="impact-8"><a class="header" href="#impact-8">Impact</a></h4>
 <p><strong>Severity: Medium</strong></p>
 <p>If the Pause Mechanism cannot be reset then it cannot be used again without intervention from the
-<a href="protocol/./stage-1.html#upgrade-controller">Upgrade Controller</a>. We consider this to be a Medium severity
-issue because the Upgrade Controller will have several months to coordinate such a fix assuming
+<a href="protocol/./stage-1.html#proxy-admin-owner">Proxy Admin Owner</a>. We consider this to be a Medium severity
+issue because the Proxy Admin Owner will have several months to coordinate such a fix assuming
 that <a href="protocol/superchain-config.html#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001</a> holds.</p>
 <h2 id="function-specification-2"><a class="header" href="#function-specification-2">Function Specification</a></h2>
 <h3 id="initialize-2"><a class="header" href="#initialize-2">initialize</a></h3>
@@ -8276,7 +8276,7 @@ according to the steps in the <a href="protocol/safe-extensions.html#deploying-t
 <ul>
 <li><a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a></li>
 <li><a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a></li>
-<li><a href="protocol/stage-1.html#upgrade-controller">Upgrade Controller</a></li>
+<li><a href="protocol/stage-1.html#proxy-admin-owner">Proxy Admin Owner</a></li>
 <li><a href="protocol/stage-1.html#guardian">Guardian</a></li>
 <li><a href="protocol/stage-1.html#pause-deputy">Pause Deputy</a></li>
 <li><a href="protocol/stage-1.html#pause-mechanism">Pause Mechanism</a></li>
@@ -8288,7 +8288,7 @@ according to the steps in the <a href="protocol/safe-extensions.html#deploying-t
 <ul>
 <li><a href="protocol/stage-1.html#permissionless-fault-proofs">Permissionless Fault Proofs</a></li>
 <li><a href="protocol/stage-1.html#security-council">Security Council</a></li>
-<li><a href="protocol/stage-1.html#upgrade-controller-1">Upgrade Controller</a></li>
+<li><a href="protocol/stage-1.html#proxy-admin-owner-1">Proxy Admin Owner</a></li>
 <li><a href="protocol/stage-1.html#guardian-1">Guardian</a></li>
 <li><a href="protocol/stage-1.html#pause-deputy-1">Pause Deputy</a></li>
 <li><a href="protocol/stage-1.html#architecture-diagram">Architecture Diagram</a></li>
@@ -8329,8 +8329,8 @@ dispute game contracts (and ultimately into the <code>DelayedWETH</code> contrac
 <p><strong>Withdrawal Safety</strong> is the condition that users are <em>not</em> able to execute <em>invalid</em> withdrawals
 out of any contract that stores ETH or tokens within an OP Chain's set of smart contracts.
 Generally speaking "liveness" means nothing gets bricked and "safety" means nothing gets stolen.</p>
-<h3 id="upgrade-controller"><a class="header" href="#upgrade-controller">Upgrade Controller</a></h3>
-<p>The <strong>Upgrade Controller</strong> is a dedicated role in the OP Stack that is permitted to upgrade the
+<h3 id="proxy-admin-owner"><a class="header" href="#proxy-admin-owner">Proxy Admin Owner</a></h3>
+<p>The <strong>Proxy Admin Owner</strong> is a dedicated role in the OP Stack that is permitted to upgrade the
 contracts that make up an OP Stack chain's onchain footprint. In the Superchain, the Upgrade
 Controller role is held jointly in a 2/2 of the Optimism Security Council and the Optimism
 Foundation.</p>
@@ -8401,13 +8401,13 @@ Stack chain.</p>
 <p>A Stage 1 OP Stack chain must operate a <em>permissionless</em> Fault Proof system.</p>
 <h3 id="security-council"><a class="header" href="#security-council">Security Council</a></h3>
 <p>A Stage 1 OP Stack chain must have a Security Council.</p>
-<h3 id="upgrade-controller-1"><a class="header" href="#upgrade-controller-1">Upgrade Controller</a></h3>
-<p>The <a href="protocol/stage-1.html#upgrade-controller">Upgrade Controller</a> role in the OP Stack is a privileged role that is
+<h3 id="proxy-admin-owner-1"><a class="header" href="#proxy-admin-owner-1">Proxy Admin Owner</a></h3>
+<p>The <a href="protocol/stage-1.html#proxy-admin-owner">Proxy Admin Owner</a> role in the OP Stack is a privileged role that is
 allowed to upgrade the smart contracts that make up an OP Stack chain's onchain footprint. This
 role must require sign-off from the Security Council. This specifically means that the role can
 either be entirely held by the Security Council or by some other configuration as long as the
 Security Council is a required signatory (e.g., a 2/2 multisig).</p>
-<p>In addition to the ability to upgrade all smart contracts, the Upgrade Controller is the only
+<p>In addition to the ability to upgrade all smart contracts, the Proxy Admin Owner is the only
 address authorized to perform the following actions:</p>
 <ul>
 <li><code>DisputeGameFactory.setImplementation</code></li>
@@ -8415,7 +8415,7 @@ address authorized to perform the following actions:</p>
 <li><code>DelayedWETH.hold</code></li>
 <li><code>DelayedWETH.recover</code></li>
 </ul>
-<p>The Upgrade Controller can theoretically cause an indefinite
+<p>The Proxy Admin Owner can theoretically cause an indefinite
 <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> failure as well as
 <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failures. This is aligned with the Stage 1 definition
 because the Security Council is a required signatory on this role.</p>
@@ -8461,7 +8461,7 @@ assign this role to any actor it deems fit to utilize the role without violating
 
    subgraph UpgradeSystem[Upgrade System]
       FndUp[Foundation Upgrade Safe]
-      UC[Upgrade Controller Safe]
+      PAO[Proxy Admin Owner Safe]
       subgraph Security Council Safe
          Council[Security Council Safe + LivenessGuard]
          LM[Liveness Module]
@@ -8475,9 +8475,9 @@ assign this role to any actor it deems fit to utilize the role without violating
       end
    end
 
-    UC --&gt;|controls| Safety
-    FndUp --&gt; UC
-    Council --&gt; UC
+    PAO --&gt;|controls| Safety
+    FndUp --&gt; PAO
+    Council --&gt; PAO
     Council --&gt; GS
     FndOps[Foundation Operations Safe] --&gt;|pause| DPM
     FndUp --&gt;|set versions|PV
@@ -15433,7 +15433,7 @@ for each new release of the OP Stack contracts.</p>
 <li>Upgrade the contracts for an existing OP chain from the previous release to the new release.</li>
 <li>Orchestrate adding a new game type on a per-chain basis</li>
 </ol>
-<p>Upgrades must be performed by the <a href="experimental/../protocol/stage-1.html#roles-for-stage-1">Upgrade Controller</a> Safe for a chain.</p>
+<p>Upgrades must be performed by the <a href="experimental/../protocol/stage-1.html#roles-for-stage-1">Proxy Admin Owner</a> Safe for a chain.</p>
 <h2 id="getter-methods"><a class="header" href="#getter-methods">Getter Methods</a></h2>
 <p>The following interface defines the available getter methods:</p>
 <pre><code class="language-solidity">/// @notice Returns the release string with the format `op-contracts/vX.Y.Z`. 
@@ -15553,7 +15553,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
 <h3 id="interface-13"><a class="header" href="#interface-13">Interface</a></h3>
 <h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
-<p>The <code>upgrade</code> method is used by the Upgrade Controller to upgrade the full set of L1 contracts for
+<p>The <code>upgrade</code> method is used by the Proxy Admin Owner to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
 <p>It has the following interface:</p>
 <pre><code class="language-solidity">/// @notice The input required to identify a chain for upgrading, along with new prestate hashes
@@ -15565,7 +15565,7 @@ struct OpChainConfig {
 
 /// @notice Upgrades a set of chains to the latest implementation contracts
 /// @param _opChainConfigs Array of OpChain structs, one per chain to upgrade
-/// @dev This function is intended to be called via DELEGATECALL from the Upgrade Controller Safe
+/// @dev This function is intended to be called via DELEGATECALL from the Proxy Admin Owner Safe
 function upgrade(OpChainConfig[] memory _opChainConfigs) external
 </code></pre>
 <p>For each chain successfully upgraded, the following event is emitted:</p>
@@ -15575,7 +15575,7 @@ function upgrade(OpChainConfig[] memory _opChainConfigs) external
 <h3 id="implementation-2"><a class="header" href="#implementation-2">Implementation</a></h3>
 <p>The high level logic of the upgrade method is as follows:</p>
 <ol>
-<li>The Upgrade Controller Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
+<li>The Proxy Admin Owner Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
 <li>The SuperchainConfig contract will be upgraded, if not yet done.</li>
 <li>The ProtocolVersions contract will be upgraded, if not yet done.</li>
 <li>For each <code>_systemConfig</code>, the list of addresses in the chain is retrieved.</li>
@@ -15682,7 +15682,7 @@ chain IDs up to <code>4503599627370476</code>, well below the max allowable 256-
 <p>OP Contracts Manager does not consider factors such as these. The EVM supports
 256-bit chain IDs, so OP Contracts Manager sticks with the full 256-bit range to
 maximize compatibility.</p>
-<h3 id="proxy-admin-owner"><a class="header" href="#proxy-admin-owner">Proxy Admin Owner</a></h3>
+<h3 id="proxy-admin-owner-2"><a class="header" href="#proxy-admin-owner-2">Proxy Admin Owner</a></h3>
 <p>The proxy admin owner is a very powerful role, as it allows upgrading protocol
 contracts. When choosing the initial proxy admin owner, a Safe is recommended
 to ensure admin privileges are sufficiently secured.</p>
@@ -15691,7 +15691,7 @@ to ensure admin privileges are sufficiently secured.</p>
 critical that no storage writes occur. This should be enforced in multiple ways, including:</p>
 <ul>
 <li>By static analysis of the <code>upgrade()</code> and <code>addGameType()</code> methods during the development process.</li>
-<li>By simulating and verifying the state changes which occur in the Upgrade Controller Safe prior to execution.</li>
+<li>By simulating and verifying the state changes which occur in the Proxy Admin Owner Safe prior to execution.</li>
 </ul>
 <h3 id="atomicity-of-upgrades"><a class="header" href="#atomicity-of-upgrades">Atomicity of upgrades</a></h3>
 <p>Although atomicity of a superchain upgrade is not essential for many types of upgrade, it will

@@ -178,7 +178,7 @@
 <ul>
 <li><a href="#withdrawal-liveness">Withdrawal Liveness</a></li>
 <li><a href="#withdrawal-safety">Withdrawal Safety</a></li>
-<li><a href="#upgrade-controller">Upgrade Controller</a></li>
+<li><a href="#proxy-admin-owner">Proxy Admin Owner</a></li>
 <li><a href="#guardian">Guardian</a></li>
 <li><a href="#pause-deputy">Pause Deputy</a></li>
 <li><a href="#pause-mechanism">Pause Mechanism</a></li>
@@ -190,7 +190,7 @@
 <ul>
 <li><a href="#permissionless-fault-proofs">Permissionless Fault Proofs</a></li>
 <li><a href="#security-council">Security Council</a></li>
-<li><a href="#upgrade-controller-1">Upgrade Controller</a></li>
+<li><a href="#proxy-admin-owner-1">Proxy Admin Owner</a></li>
 <li><a href="#guardian-1">Guardian</a></li>
 <li><a href="#pause-deputy-1">Pause Deputy</a></li>
 <li><a href="#architecture-diagram">Architecture Diagram</a></li>
@@ -231,8 +231,8 @@ dispute game contracts (and ultimately into the <code>DelayedWETH</code> contrac
 <p><strong>Withdrawal Safety</strong> is the condition that users are <em>not</em> able to execute <em>invalid</em> withdrawals
 out of any contract that stores ETH or tokens within an OP Chain's set of smart contracts.
 Generally speaking "liveness" means nothing gets bricked and "safety" means nothing gets stolen.</p>
-<h3 id="upgrade-controller"><a class="header" href="#upgrade-controller">Upgrade Controller</a></h3>
-<p>The <strong>Upgrade Controller</strong> is a dedicated role in the OP Stack that is permitted to upgrade the
+<h3 id="proxy-admin-owner"><a class="header" href="#proxy-admin-owner">Proxy Admin Owner</a></h3>
+<p>The <strong>Proxy Admin Owner</strong> is a dedicated role in the OP Stack that is permitted to upgrade the
 contracts that make up an OP Stack chain's onchain footprint. In the Superchain, the Upgrade
 Controller role is held jointly in a 2/2 of the Optimism Security Council and the Optimism
 Foundation.</p>
@@ -303,13 +303,13 @@ Stack chain.</p>
 <p>A Stage 1 OP Stack chain must operate a <em>permissionless</em> Fault Proof system.</p>
 <h3 id="security-council"><a class="header" href="#security-council">Security Council</a></h3>
 <p>A Stage 1 OP Stack chain must have a Security Council.</p>
-<h3 id="upgrade-controller-1"><a class="header" href="#upgrade-controller-1">Upgrade Controller</a></h3>
-<p>The <a href="#upgrade-controller">Upgrade Controller</a> role in the OP Stack is a privileged role that is
+<h3 id="proxy-admin-owner-1"><a class="header" href="#proxy-admin-owner-1">Proxy Admin Owner</a></h3>
+<p>The <a href="#proxy-admin-owner">Proxy Admin Owner</a> role in the OP Stack is a privileged role that is
 allowed to upgrade the smart contracts that make up an OP Stack chain's onchain footprint. This
 role must require sign-off from the Security Council. This specifically means that the role can
 either be entirely held by the Security Council or by some other configuration as long as the
 Security Council is a required signatory (e.g., a 2/2 multisig).</p>
-<p>In addition to the ability to upgrade all smart contracts, the Upgrade Controller is the only
+<p>In addition to the ability to upgrade all smart contracts, the Proxy Admin Owner is the only
 address authorized to perform the following actions:</p>
 <ul>
 <li><code>DisputeGameFactory.setImplementation</code></li>
@@ -317,7 +317,7 @@ address authorized to perform the following actions:</p>
 <li><code>DelayedWETH.hold</code></li>
 <li><code>DelayedWETH.recover</code></li>
 </ul>
-<p>The Upgrade Controller can theoretically cause an indefinite
+<p>The Proxy Admin Owner can theoretically cause an indefinite
 <a href="#withdrawal-liveness">Withdrawal Liveness</a> failure as well as
 <a href="#withdrawal-safety">Withdrawal Safety</a> failures. This is aligned with the Stage 1 definition
 because the Security Council is a required signatory on this role.</p>
@@ -363,7 +363,7 @@ assign this role to any actor it deems fit to utilize the role without violating
 
    subgraph UpgradeSystem[Upgrade System]
       FndUp[Foundation Upgrade Safe]
-      UC[Upgrade Controller Safe]
+      PAO[Proxy Admin Owner Safe]
       subgraph Security Council Safe
          Council[Security Council Safe + LivenessGuard]
          LM[Liveness Module]
@@ -377,9 +377,9 @@ assign this role to any actor it deems fit to utilize the role without violating
       end
    end
 
-    UC --&gt;|controls| Safety
-    FndUp --&gt; UC
-    Council --&gt; UC
+    PAO --&gt;|controls| Safety
+    FndUp --&gt; PAO
+    Council --&gt; PAO
     Council --&gt; GS
     FndOps[Foundation Operations Safe] --&gt;|pause| DPM
     FndUp --&gt;|set versions|PV
