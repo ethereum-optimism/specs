@@ -315,7 +315,7 @@ as well as domain binding, i.e. the executing transaction can only be valid on a
 
 ### `reEmitMessage` Invariants
 
-- It MUST NOT be possible to re-emit a message that has not been sent
+- It MUST NOT be possible to re-emit a `SentMessage` event that has not been sent
 - It MUST emit the `SentMessage` event
 
 ### Message Versioning
