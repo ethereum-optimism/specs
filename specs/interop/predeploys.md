@@ -2,68 +2,72 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Overview](#overview)
-- [CrossL2Inbox](#crossl2inbox)
-  - [Access-list](#access-list)
-    - [type 1: Lookup identity](#type-1-lookup-identity)
-    - [type 2: Chain-ID extension](#type-2-chain-id-extension)
-    - [type 3: Checksum](#type-3-checksum)
-  - [Functions](#functions)
-    - [validateMessage](#validatemessage)
-  - [`ExecutingMessage` Event](#executingmessage-event)
-  - [Reference implementation](#reference-implementation)
-  - [Deposit Handling](#deposit-handling)
-  - [`Identifier` Getters](#identifier-getters)
-- [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
-  - [`relayMessage` Invariants](#relaymessage-invariants)
-  - [`sendMessage` Invariants](#sendmessage-invariants)
-  - [Message Versioning](#message-versioning)
-  - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
-  - [Interfaces](#interfaces)
-    - [Sending Messages](#sending-messages)
-    - [Relaying Messages](#relaying-messages)
-- [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
-  - [OptimismSuperchainERC20](#optimismsuperchainerc20)
-  - [Overview](#overview-1)
-    - [Proxy](#proxy)
-    - [Beacon Pattern](#beacon-pattern)
-    - [Deployment history](#deployment-history)
-  - [Functions](#functions-1)
-    - [`deploy`](#deploy)
-  - [Events](#events)
-    - [`OptimismSuperchainERC20Created`](#optimismsuperchainerc20created)
-  - [Deployment Flow](#deployment-flow)
-- [OptimismSuperchainERC20Beacon](#optimismsuperchainerc20beacon)
-  - [Overview](#overview-2)
-- [OptimismMintableERC20Factory](#optimismmintableerc20factory)
-  - [OptimismMintableERC20](#optimismmintableerc20)
-  - [Updates](#updates)
-  - [Functions](#functions-2)
-    - [`createOptimismMintableERC20WithDecimals`](#createoptimismmintableerc20withdecimals)
-    - [`createOptimismMintableERC20`](#createoptimismmintableerc20)
-    - [`createStandardL2Token`](#createstandardl2token)
-  - [Events](#events-1)
-    - [`OptimismMintableERC20Created`](#optimismmintableerc20created)
-    - [`StandardL2TokenCreated`](#standardl2tokencreated)
-- [L2StandardBridge](#l2standardbridge)
-  - [Updates](#updates-1)
-    - [convert](#convert)
-    - [`Converted`](#converted)
-  - [Invariants](#invariants)
-  - [Conversion Flow](#conversion-flow)
-- [SuperchainTokenBridge](#superchaintokenbridge)
-  - [Overview](#overview-3)
-  - [Functions](#functions-3)
-    - [`sendERC20`](#senderc20)
-    - [`relayERC20`](#relayerc20)
-  - [Events](#events-2)
-    - [`SentERC20`](#senterc20)
-    - [`RelayedERC20`](#relayederc20)
-  - [Diagram](#diagram)
-  - [Invariants](#invariants-1)
-- [Security Considerations](#security-considerations)
+- [Predeploys](#predeploys)
+  - [Overview](#overview)
+  - [CrossL2Inbox](#crossl2inbox)
+    - [Access-list](#access-list)
+      - [type 1: Lookup identity](#type-1-lookup-identity)
+      - [type 2: Chain-ID extension](#type-2-chain-id-extension)
+      - [type 3: Checksum](#type-3-checksum)
+    - [Functions](#functions)
+      - [validateMessage](#validatemessage)
+    - [`ExecutingMessage` Event](#executingmessage-event)
+    - [Reference implementation](#reference-implementation)
+    - [Deposit Handling](#deposit-handling)
+    - [`Identifier` Getters](#identifier-getters)
+  - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
+    - [`relayMessage` Invariants](#relaymessage-invariants)
+    - [`sendMessage` Invariants](#sendmessage-invariants)
+    - [`reEmitMessage` Invariants](#reemitmessage-invariants)
+    - [Message Versioning](#message-versioning)
+    - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
+    - [Interfaces](#interfaces)
+      - [Sending Messages](#sending-messages)
+    - [Re-emitting Messages](#re-emitting-messages)
+      - [Relaying Messages](#relaying-messages)
+  - [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
+    - [OptimismSuperchainERC20](#optimismsuperchainerc20)
+    - [Overview](#overview-1)
+      - [Proxy](#proxy)
+      - [Beacon Pattern](#beacon-pattern)
+      - [Deployment history](#deployment-history)
+    - [Functions](#functions-1)
+      - [`deploy`](#deploy)
+    - [Events](#events)
+      - [`OptimismSuperchainERC20Created`](#optimismsuperchainerc20created)
+    - [Deployment Flow](#deployment-flow)
+  - [OptimismSuperchainERC20Beacon](#optimismsuperchainerc20beacon)
+    - [Overview](#overview-2)
+  - [OptimismMintableERC20Factory](#optimismmintableerc20factory)
+    - [OptimismMintableERC20](#optimismmintableerc20)
+    - [Updates](#updates)
+    - [Functions](#functions-2)
+      - [`createOptimismMintableERC20WithDecimals`](#createoptimismmintableerc20withdecimals)
+      - [`createOptimismMintableERC20`](#createoptimismmintableerc20)
+      - [`createStandardL2Token`](#createstandardl2token)
+    - [Events](#events-1)
+      - [`OptimismMintableERC20Created`](#optimismmintableerc20created)
+      - [`StandardL2TokenCreated`](#standardl2tokencreated)
+  - [L2StandardBridge](#l2standardbridge)
+    - [Updates](#updates-1)
+      - [convert](#convert)
+      - [`Converted`](#converted)
+    - [Invariants](#invariants)
+    - [Conversion Flow](#conversion-flow)
+  - [SuperchainTokenBridge](#superchaintokenbridge)
+    - [Overview](#overview-3)
+    - [Functions](#functions-3)
+      - [`sendERC20`](#senderc20)
+      - [`relayERC20`](#relayerc20)
+    - [Events](#events-2)
+      - [`SentERC20`](#senterc20)
+      - [`RelayedERC20`](#relayederc20)
+    - [Diagram](#diagram)
+    - [Invariants](#invariants-1)
+  - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -306,7 +310,13 @@ as well as domain binding, i.e. the executing transaction can only be valid on a
 ### `sendMessage` Invariants
 
 - Sent Messages MUST be uniquely identifiable
-- It must emit the `SentMessage` event
+- It MUST store the message hash in the `sentMessages` mapping
+- It MUST emit the `SentMessage` event
+
+### `reEmitMessage` Invariants
+
+- It MUST NOT be possible to re-emit a message that has not been sent
+- It MUST emit the `SentMessage` event
 
 ### Message Versioning
 
@@ -361,6 +371,23 @@ The `_destination` MUST NOT be the chain-ID of the local chain and a locally def
 every call to `sendMessage`.
 
 Note that `sendMessage` is not `payable`.
+
+### Re-emitting Messages
+
+The `reEmitMessage` function is used to re-emit a the `SentMessage` event for a message that has already been sent.
+It will calculate the message hash using the inputs, and check that the message hash is stored in the `sentMessages`
+mapping prior to emitting the `SentMessage` event.
+
+```solidity
+    function reEmitMessageSent(
+        uint256 _destination,
+        uint256 _nonce,
+        address _sender,
+        address _target,
+        bytes calldata _message
+    )
+        external;
+```
 
 #### Relaying Messages
 
