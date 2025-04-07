@@ -4328,10 +4328,11 @@ That is, where <span class="katex"><span class="katex-html" aria-hidden="true"><
 Otherwise, there would be two consecutive delay slots. While this is considered "undefined"
 behavior in typical MIPS implementations, FPVM must raise an exception when stepping on such states.</p>
 <h2 id="syscalls"><a class="header" href="#syscalls">Syscalls</a></h2>
-<p>Syscalls work similar to <a href="https://www.linux-mips.org/wiki/Syscall">Linux/MIPS</a>, including the
-syscall calling conventions and general syscall handling behavior.
-However, the FPVM supports a subset of Linux/MIPS syscalls with slightly different behaviors.
-The following table list summarizes the supported syscalls and their behaviors.</p>
+<p>Syscalls work similar to<br />
+<a href="https://web.archive.org/web/20220529105937/https://www.linux-mips.org/wiki/Syscall">Linux/MIPS</a>,<br />
+including the syscall calling conventions and general syscall handling behavior.<br />
+However, the FPVM supports a subset of Linux/MIPS syscalls with slightly different behaviors.<br />
+The following table summarizes the supported syscalls and their behaviors.</p>
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th><th>$a0</th><th>$a1</th><th>$a2</th><th>Effect</th></tr></thead><tbody>
 <tr><td>4090</td><td>mmap</td><td>uint32 addr</td><td>uint32 len</td><td>🚫</td><td>Allocates a page from the heap. See <a href="fault-proof/cannon-fault-proof-vm.html#heap">heap</a> for details.</td></tr>
 <tr><td>4045</td><td>brk</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns a fixed address for the program break at <code>0x40000000</code></td></tr>
