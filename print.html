@@ -3831,11 +3831,11 @@ so special care may have to be taken to not duplicate data submissions.</p>
 <li><a href="fault-proof/index.html#l1-transactions-blockhash"><code>l1-transactions &lt;blockhash&gt;</code></a></li>
 <li><a href="fault-proof/index.html#l1-receipts-blockhash"><code>l1-receipts &lt;blockhash&gt;</code></a></li>
 <li><a href="fault-proof/index.html#l1-precompile-precompile--inputbytes"><code>l1-precompile &lt;precompile ++ inputbytes&gt;</code></a></li>
-<li><a href="fault-proof/index.html#l2-block-header-blockhash"><code>l2-block-header &lt;blockhash&gt;</code></a></li>
-<li><a href="fault-proof/index.html#l2-transactions-blockhash"><code>l2-transactions &lt;blockhash&gt;</code></a></li>
-<li><a href="fault-proof/index.html#l2-code-codehash"><code>l2-code &lt;codehash&gt;</code></a></li>
-<li><a href="fault-proof/index.html#l2-state-node-nodehash"><code>l2-state-node &lt;nodehash&gt;</code></a></li>
-<li><a href="fault-proof/index.html#l2-output-outputroot"><code>l2-output &lt;outputroot&gt;</code></a></li>
+<li><a href="fault-proof/index.html#l2-block-header-blockhash-chainid"><code>l2-block-header &lt;blockhash&gt; &lt;chainID&gt;?</code></a></li>
+<li><a href="fault-proof/index.html#l2-transactions-blockhash-chainid"><code>l2-transactions &lt;blockhash&gt; &lt;chainID&gt;?</code></a></li>
+<li><a href="fault-proof/index.html#l2-code-codehash-chainid"><code>l2-code &lt;codehash&gt; &lt;chainID&gt;?</code></a></li>
+<li><a href="fault-proof/index.html#l2-state-node-nodehash-chainid"><code>l2-state-node &lt;nodehash&gt; &lt;chainID&gt;?</code></a></li>
+<li><a href="fault-proof/index.html#l2-output-outputroot-chainid"><code>l2-output &lt;outputroot&gt; &lt;chainID&gt;?</code></a></li>
 <li><a href="fault-proof/index.html#l2-payload-witness-payload_attributes"><code>l2-payload-witness &lt;payload_attributes&gt;</code></a></li>
 <li><a href="fault-proof/index.html#l2-account-proof-blockhash_and_address"><code>l2-account-proof &lt;blockhash_and_address&gt;</code></a></li>
 </ul>
@@ -4147,25 +4147,36 @@ prepare the RLP pre-images of each of them, including receipts-list MPT nodes.</
 <p>Requests the host to prepare the result of an L1 call to the <code>precompile</code> address given
 <code>&lt;inputbytes&gt;</code> as the input. The host also prepares a <a href="fault-proof/index.html#type-2-global-keccak256-key">global keccak256 preimage</a>
 of the hint data <code>&lt;precompile ++ inputbytes&gt;</code>.</p>
-<h4 id="l2-block-header-blockhash"><a class="header" href="#l2-block-header-blockhash"><code>l2-block-header &lt;blockhash&gt;</code></a></h4>
+<h4 id="l2-block-header-blockhash-chainid"><a class="header" href="#l2-block-header-blockhash-chainid"><code>l2-block-header &lt;blockhash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 block header RLP pre-image of the block <code>&lt;blockhash&gt;</code>.</p>
-<h4 id="l2-transactions-blockhash"><a class="header" href="#l2-transactions-blockhash"><code>l2-transactions &lt;blockhash&gt;</code></a></h4>
+<p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+<h4 id="l2-transactions-blockhash-chainid"><a class="header" href="#l2-transactions-blockhash-chainid"><code>l2-transactions &lt;blockhash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the list of transactions of the L2 block with <code>&lt;blockhash&gt;</code>:
 prepare the RLP pre-images of each of them, including transactions-list MPT nodes.</p>
-<h4 id="l2-code-codehash"><a class="header" href="#l2-code-codehash"><code>l2-code &lt;codehash&gt;</code></a></h4>
+<p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+<h4 id="l2-code-codehash-chainid"><a class="header" href="#l2-code-codehash-chainid"><code>l2-code &lt;codehash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 smart-contract code with the given <code>&lt;codehash&gt;</code>.</p>
-<h4 id="l2-state-node-nodehash"><a class="header" href="#l2-state-node-nodehash"><code>l2-state-node &lt;nodehash&gt;</code></a></h4>
+<p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+<h4 id="l2-state-node-nodehash-chainid"><a class="header" href="#l2-state-node-nodehash-chainid"><code>l2-state-node &lt;nodehash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 MPT node preimage with the given <code>&lt;nodehash&gt;</code>.</p>
-<h4 id="l2-output-outputroot"><a class="header" href="#l2-output-outputroot"><code>l2-output &lt;outputroot&gt;</code></a></h4>
+<p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+<h4 id="l2-output-outputroot-chainid"><a class="header" href="#l2-output-outputroot-chainid"><code>l2-output &lt;outputroot&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 Output at the l2 output root <code>&lt;outputroot&gt;</code>.
 The L2 Output is the preimage of a
 <a href="fault-proof/../protocol/proposals.html#l2-output-commitment-construction">computed output root</a>.</p>
+<p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
 <h4 id="l2-payload-witness-payload_attributes"><a class="header" href="#l2-payload-witness-payload_attributes"><code>l2-payload-witness &lt;payload_attributes&gt;</code></a></h4>
 <p>Requests the host to prepare all preimages used in the building of the payload specified by <code>&lt;payload_attributes&gt;</code>.
-<code>&lt;payload_attributes&gt;</code> is a JSON object with the fields <code>parentBlockHash</code> and <code>payloadAttributes</code>.</p>
+<code>&lt;payload_attributes&gt;</code> is a JSON object with the fields <code>parentBlockHash</code>, <code>payloadAttributes</code> and optionally <code>chainID</code>.
+The <code>chainID</code> must be specific when the interop hard fork is active.</p>
 <h4 id="l2-account-proof-blockhash_and_address"><a class="header" href="#l2-account-proof-blockhash_and_address"><code>l2-account-proof &lt;blockhash_and_address&gt;</code></a></h4>
 <p>Requests the host send account proof for a certain block hash and address. <code>&lt;blockhash_and_address&gt;</code> is hex
-encoded: 32-byte block hash + 20-byte address.</p>
+encoded: 32-byte block hash + 20-byte address + 8 byte big endian chain ID.</p>
 <p><code>l2-payload-witness</code> and <code>l2-account-proof</code> hints are preferred over the more granular <code>l2-code</code> and <code>l2-state-node</code>,
 and they should be sent before the more granular hints to ensure proper handling.</p>
 <h3 id="precompile-accelerators"><a class="header" href="#precompile-accelerators">Precompile Accelerators</a></h3>
