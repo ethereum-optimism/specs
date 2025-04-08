@@ -115,7 +115,10 @@ The `ETHLiquidity` contract's balance must never overflow due to excessive burni
 **Severity: High**
 
 If this invariant is broken, the contract could reach an invalid state, potentially disrupting the
-cross-chain ETH transfer mechanism.
+cross-chain ETH transfer mechanism. The invariant that avoids overflow is maintained by
+`SuperchainETHBridge`, but could theoretically be broken by some future contract that is allowed to
+integrate with `ETHLiquidity`. Maintainers should be careful to ensure that such future contracts
+do not break this invariant.
 
 ## Function Specification
 
