@@ -372,7 +372,7 @@ Note that `sendMessage` is not `payable`.
 
 ### Re-sending Messages
 
-The `resendMessage` function is used to re-emit a the `SentMessage` event for a message that has already been sent.
+The `resendMessage` function is used to re-emit a `SentMessage` event for a message that has already been sent.
 It will calculate the message hash using the inputs, and check that the message hash is stored in the `sentMessages`
 mapping prior to emitting the `SentMessage` event.
 
