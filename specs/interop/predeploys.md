@@ -21,12 +21,12 @@
   - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
     - [`relayMessage` Invariants](#relaymessage-invariants)
     - [`sendMessage` Invariants](#sendmessage-invariants)
-    - [`reEmitMessage` Invariants](#reemitmessage-invariants)
+    - [`resendMessage` Invariants](#resendmessage-invariants)
     - [Message Versioning](#message-versioning)
     - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
     - [Interfaces](#interfaces)
       - [Sending Messages](#sending-messages)
-    - [Re-emitting Messages](#re-emitting-messages)
+    - [Re-sending Messages](#re-sending-messages)
       - [Relaying Messages](#relaying-messages)
   - [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
     - [OptimismSuperchainERC20](#optimismsuperchainerc20)
@@ -313,7 +313,7 @@ as well as domain binding, i.e. the executing transaction can only be valid on a
 - It MUST store the message hash in the `sentMessages` mapping
 - It MUST emit the `SentMessage` event
 
-### `reEmitMessage` Invariants
+### `resendMessage` Invariants
 
 - It MUST NOT be possible to re-emit a `SentMessage` event that has not been sent
 - It MUST emit the `SentMessage` event
@@ -372,14 +372,14 @@ every call to `sendMessage`.
 
 Note that `sendMessage` is not `payable`.
 
-### Re-emitting Messages
+### Re-sending Messages
 
-The `reEmitMessage` function is used to re-emit a the `SentMessage` event for a message that has already been sent.
+The `resendMessage` function is used to re-emit a the `SentMessage` event for a message that has already been sent.
 It will calculate the message hash using the inputs, and check that the message hash is stored in the `sentMessages`
 mapping prior to emitting the `SentMessage` event.
 
 ```solidity
-    function reEmitMessageSent(
+    function resendMessage(
         uint256 _destination,
         uint256 _nonce,
         address _sender,
