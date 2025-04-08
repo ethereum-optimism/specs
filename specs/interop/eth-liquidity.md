@@ -77,31 +77,7 @@ cross-chain transfer.
 
 ## Assumptions
 
-### aEL-001: Only authorized contracts can call mint and burn
-
-We assume that only authorized contracts (specifically the `SuperchainETHBridge`) can call the
-`mint` and `burn` functions of the `ETHLiquidity` contract.
-
-#### Mitigations
-
-- Access control checks in the `mint` and `burn` functions
-
-### aEL-002: contract balance is sufficient for all operations
-
-We assume that the initial balance of the `ETHLiquidity` contract (`type(uint248).max` wei) is
-sufficient to handle all legitimate minting and burning operations.
-
-#### Mitigations
-
-- Contract is initialized with `type(uint248).max` wei, which is significantly larger than the
-total ETH supply
-- The gap between the initial balance (`type(uint248).max`) and the contract max
-(`type(uint256).max`), provides a substantial buffer for handling cross-chain deposits
-- The invariant that avoids overflow is maintained by `SuperchainETHBridge`, but could
-theoretically be broken by some future contract that is allowed to integrate with `ETHLiquidity`.
-Maintainers should be careful to ensure that such future contracts do not break this invariant.
-
-### aEL-003: SafeSend correctly transfers ETH to recipients
+### aEL-001: SafeSend correctly transfers ETH to recipients
 
 We assume that the `SafeSend` mechanism correctly transfers ETH to recipients without reverting
 for valid addresses.
@@ -125,10 +101,6 @@ requests.
 If this invariant is broken, the cross-chain ETH transfer mechanism would fail, potentially leading
 to users being unable to receive their ETH on destination chains.
 
-#### Dependencies
-
-- [aEL-002](#ael-002-initial-balance-is-sufficient-for-all-operations)
-
 ### iEL-002: Only authorized contracts can call mint and burn
 
 The `mint` and `burn` functions must only be callable by authorized contracts (specifically the
@@ -141,10 +113,6 @@ The `mint` and `burn` functions must only be callable by authorized contracts (s
 If this invariant is broken, unauthorized parties could mint ETH without burning an equivalent
 amount on a source chain, leading to inflation.
 
-#### Dependencies
-
-- [aEL-001](#ael-001-only-authorized-contracts-can-call-mint-and-burn)
-
 ### iEL-003: Contract balance never overflows
 
 The `ETHLiquidity` contract's balance must never overflow due to excessive burning operations.
@@ -155,10 +123,6 @@ The `ETHLiquidity` contract's balance must never overflow due to excessive burni
 
 If this invariant is broken, the contract could reach an invalid state, potentially disrupting the
 cross-chain ETH transfer mechanism.
-
-#### Dependencies
-
-- [aEL-002](#ael-002-initial-balance-is-sufficient-for-all-operations)
 
 ## Function Specification
 
