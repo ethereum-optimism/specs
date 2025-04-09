@@ -199,7 +199,6 @@
 <li><a href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
 <li><a href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></li>
 <li><a href="#message-versioning">Message Versioning</a></li>
-<li><a href="#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></li>
 <li><a href="#interfaces">Interfaces</a>
 <ul>
 <li><a href="#sending-messages">Sending Messages</a></li>
@@ -267,6 +266,8 @@
 <li><a href="#conversion-flow">Conversion Flow</a></li>
 </ul>
 </li>
+<li><a href="#superchainethbridge">SuperchainETHBridge</a></li>
+<li><a href="#ethliquidity">ETHLiquidity</a></li>
 <li><a href="#superchaintokenbridge">SuperchainTokenBridge</a>
 <ul>
 <li><a href="#overview-3">Overview</a></li>
@@ -476,10 +477,6 @@ the <code>CrossDomainMessenger</code>.</p>
     return Encoding.encodeVersionedNonce(nonce, MESSAGE_VERSION);
 }
 </code></pre>
-<h3 id="no-native-support-for-cross-chain-ether-sends"><a class="header" href="#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></h3>
-<p>To enable interoperability between chains that use a custom gas token, there is no native support for
-sending <code>ether</code> between chains. <code>ether</code> must first be wrapped into WETH before sending between chains.
-See <a href="./superchain-weth.html">SuperchainWETH</a> for more information.</p>
 <h3 id="interfaces"><a class="header" href="#interfaces">Interfaces</a></h3>
 <p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code>, but
 the <code>_minGasLimit</code> is removed to prevent complexity around EVM gas introspection and the <code>_destination</code>
@@ -779,6 +776,18 @@ sequenceDiagram
   L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
   L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
 </pre>
+<h2 id="superchainethbridge"><a class="header" href="#superchainethbridge">SuperchainETHBridge</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
+</tbody></table>
+</div>
+<p>See the <a href="./superchain-eth-bridge.html">SuperchainETHBridge</a> spec for the design of the <code>SuperchainETHBridge</code> predeploy.</p>
+<h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
+</tbody></table>
+</div>
+<p>See the <a href="./eth-liquidity.html">ETHLiquidity</a> spec for the design of the <code>ETHLiquidity</code> contract.</p>
 <h2 id="superchaintokenbridge"><a class="header" href="#superchaintokenbridge">SuperchainTokenBridge</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>

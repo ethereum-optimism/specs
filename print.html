@@ -12863,7 +12863,9 @@ depth.</p>
 <li><a href="interop/./supervisor.html">Supervisor</a>: API for validating messages.</li>
 <li><a href="interop/./fault-proof.html">Fault Proof</a>: modifications to prove interop functionality in the fault-proof.</li>
 <li><a href="interop/./token-bridging.html">Token Bridging</a>: sending ERC20 tokens between chains</li>
-<li><a href="interop/./superchain-weth.html">Superchain WETH</a>: Making ETH interoperable.</li>
+<li><a href="interop/./eth-liquidity.html">ETH Liquidity</a>: ETH liquidity management.</li>
+<li><a href="interop/./superchain-eth-bridge.html">Superchain ETH Bridge</a>: sending ETH between chains.</li>
+<li><a href="interop/./eth-bridging.html">ETH Bridging</a>: sending ETH between chains.</li>
 <li><a href="interop/./derivation.html">Derivation</a>: Changes to derivation of block-attributes.</li>
 <li><a href="interop/./tx-pool.html">Transaction Pool</a>: Transaction-pool validation of transactions.</li>
 </ul>
@@ -13170,7 +13172,6 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
 <li><a href="interop/predeploys.html#sendmessage-invariants"><code>sendMessage</code> Invariants</a></li>
 <li><a href="interop/predeploys.html#message-versioning">Message Versioning</a></li>
-<li><a href="interop/predeploys.html#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></li>
 <li><a href="interop/predeploys.html#interfaces">Interfaces</a>
 <ul>
 <li><a href="interop/predeploys.html#sending-messages">Sending Messages</a></li>
@@ -13238,6 +13239,8 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#conversion-flow">Conversion Flow</a></li>
 </ul>
 </li>
+<li><a href="interop/predeploys.html#superchainethbridge">SuperchainETHBridge</a></li>
+<li><a href="interop/predeploys.html#ethliquidity">ETHLiquidity</a></li>
 <li><a href="interop/predeploys.html#superchaintokenbridge">SuperchainTokenBridge</a>
 <ul>
 <li><a href="interop/predeploys.html#overview-3">Overview</a></li>
@@ -13447,10 +13450,6 @@ the <code>CrossDomainMessenger</code>.</p>
     return Encoding.encodeVersionedNonce(nonce, MESSAGE_VERSION);
 }
 </code></pre>
-<h3 id="no-native-support-for-cross-chain-ether-sends"><a class="header" href="#no-native-support-for-cross-chain-ether-sends">No Native Support for Cross Chain Ether Sends</a></h3>
-<p>To enable interoperability between chains that use a custom gas token, there is no native support for
-sending <code>ether</code> between chains. <code>ether</code> must first be wrapped into WETH before sending between chains.
-See <a href="interop/./superchain-weth.html">SuperchainWETH</a> for more information.</p>
 <h3 id="interfaces"><a class="header" href="#interfaces">Interfaces</a></h3>
 <p>The <code>L2ToL2CrossDomainMessenger</code> uses a similar interface to the <code>L2CrossDomainMessenger</code>, but
 the <code>_minGasLimit</code> is removed to prevent complexity around EVM gas introspection and the <code>_destination</code>
@@ -13750,6 +13749,18 @@ sequenceDiagram
   L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
   L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
 </pre>
+<h2 id="superchainethbridge"><a class="header" href="#superchainethbridge">SuperchainETHBridge</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
+</tbody></table>
+</div>
+<p>See the <a href="interop/./superchain-eth-bridge.html">SuperchainETHBridge</a> spec for the design of the <code>SuperchainETHBridge</code> predeploy.</p>
+<h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
+</tbody></table>
+</div>
+<p>See the <a href="interop/./eth-liquidity.html">ETHLiquidity</a> spec for the design of the <code>ETHLiquidity</code> contract.</p>
 <h2 id="superchaintokenbridge"><a class="header" href="#superchaintokenbridge">SuperchainTokenBridge</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
@@ -14670,180 +14681,421 @@ However, it would also introduce additional risks for cross-chain fund transfers
 Specifically, an incorrectly formatted call could burn funds on the initiating chain,
 but revert on the destination chain, and could never be successfully replayed.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="superchain-weth"><a class="header" href="#superchain-weth">Superchain WETH</a></h1>
+<h1 id="ethliquidity-1"><a class="header" href="#ethliquidity-1">ETHLiquidity</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/superchain-weth.html#motivation-and-constraints">Motivation and Constraints</a>
+<li><a href="interop/eth-liquidity.html#overview">Overview</a></li>
+<li><a href="interop/eth-liquidity.html#constants">Constants</a></li>
+<li><a href="interop/eth-liquidity.html#definitions">Definitions</a>
 <ul>
-<li><a href="interop/superchain-weth.html#handling-native-assets-other-than-eth">Handling native assets other than ETH</a></li>
-<li><a href="interop/superchain-weth.html#minimizing-protocol-complexity">Minimizing protocol complexity</a></li>
+<li><a href="interop/eth-liquidity.html#eth-liquidity">ETH Liquidity</a></li>
+<li><a href="interop/eth-liquidity.html#liquidity-minting">Liquidity Minting</a></li>
+<li><a href="interop/eth-liquidity.html#liquidity-burning">Liquidity Burning</a></li>
 </ul>
 </li>
-<li><a href="interop/superchain-weth.html#constants">Constants</a></li>
-<li><a href="interop/superchain-weth.html#superchainweth">SuperchainWETH</a>
+<li><a href="interop/eth-liquidity.html#assumptions">Assumptions</a>
 <ul>
-<li><a href="interop/superchain-weth.html#invariants">Invariants</a>
+<li><a href="interop/eth-liquidity.html#ael-001-safesend-correctly-transfers-eth-to-recipients">aEL-001: SafeSend correctly transfers ETH to recipients</a>
 <ul>
-<li><a href="interop/superchain-weth.html#deposit"><code>deposit</code></a></li>
-<li><a href="interop/superchain-weth.html#withdraw"><code>withdraw</code></a></li>
-<li><a href="interop/superchain-weth.html#crosschainburn"><code>crosschainBurn</code></a></li>
-<li><a href="interop/superchain-weth.html#crosschainmint"><code>crosschainMint</code></a></li>
-<li><a href="interop/superchain-weth.html#sendeth"><code>sendETH</code></a></li>
-<li><a href="interop/superchain-weth.html#relayeth"><code>relayETH</code></a></li>
+<li><a href="interop/eth-liquidity.html#mitigations">Mitigations</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="interop/superchain-weth.html#ethliquidity">ETHLiquidity</a>
+<li><a href="interop/eth-liquidity.html#invariants">Invariants</a>
 <ul>
-<li><a href="interop/superchain-weth.html#invariants-1">Invariants</a>
+<li><a href="interop/eth-liquidity.html#iel-001-eth-balance-is-always-sufficient-for-minting--burning">iEL-001: ETH balance is always sufficient for minting / burning</a>
 <ul>
-<li><a href="interop/superchain-weth.html#global-invariants">Global Invariants</a></li>
-<li><a href="interop/superchain-weth.html#burn"><code>burn</code></a></li>
-<li><a href="interop/superchain-weth.html#mint"><code>mint</code></a></li>
+<li><a href="interop/eth-liquidity.html#impact">Impact</a></li>
 </ul>
 </li>
+<li><a href="interop/eth-liquidity.html#iel-002-only-authorized-contracts-can-call-mint-and-burn">iEL-002: Only authorized contracts can call mint and burn</a>
+<ul>
+<li><a href="interop/eth-liquidity.html#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="interop/eth-liquidity.html#iel-003-contract-balance-never-overflows">iEL-003: Contract balance never overflows</a>
+<ul>
+<li><a href="interop/eth-liquidity.html#impact-2">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="interop/eth-liquidity.html#function-specification">Function Specification</a>
+<ul>
+<li><a href="interop/eth-liquidity.html#mint">mint</a></li>
+<li><a href="interop/eth-liquidity.html#burn">burn</a></li>
+</ul>
+</li>
+<li><a href="interop/eth-liquidity.html#events">Events</a>
+<ul>
+<li><a href="interop/eth-liquidity.html#liquidityminted">LiquidityMinted</a></li>
+<li><a href="interop/eth-liquidity.html#liquidityburned">LiquidityBurned</a></li>
 </ul>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>Superchain WETH is an enhanced version of the standard WETH contract, enabling ETH interoperability across the
-Superchain. The Superchain WETH contract serves two primary functions:</p>
-<ol>
-<li><strong>Native ETH Transfers</strong>: It provides the <code>sendETH</code> and <code>relayETH</code> functions to transfer <strong>native ETH</strong> directly
-between interoperable chains that both use ETH as their native token. If the destination chain does not use ETH as
-its native asset, the transferred ETH is converted into the <strong>SuperchainWETH</strong> ERC20 token on the destination chain
-instead.</li>
-<li><strong>ERC20 Token</strong>: It extends the <strong>ERC20</strong> contract, allowing ETH to be wrapped into the <strong>SuperchainWETH</strong> ERC20
-token. This wrapped token can be transferred across interoperable chains via the
-<a href="interop/./predeploys.html#superchaintokenbridge">SuperchainTokenBridge</a>, serving as the entry point for ERC20 token
-interoperability.</li>
-</ol>
-<p>Superchain WETH integrates with the <code>ETHLiquidity</code> contract to manage native ETH liquidity across chains, ensuring
-seamless cross-chain transfers of ETH in both its native and ERC20 forms.</p>
-<h2 id="motivation-and-constraints"><a class="header" href="#motivation-and-constraints">Motivation and Constraints</a></h2>
-<p>ETH is the native asset of Ethereum and has by extension also become the native asset of many Ethereum L2 blockchains.
-In its role as a native asset, ETH can be used to pay for transaction fees and can be transferred from account to
-account via calls with attached value. ETH plays a significant role in the economics of most L2s and any protocol that
-enables interoperability between chains must be able to account for ETH.</p>
-<h3 id="handling-native-assets-other-than-eth"><a class="header" href="#handling-native-assets-other-than-eth">Handling native assets other than ETH</a></h3>
-<p>Not all chains using the OP Stack use ETH as the native asset. We would like these chains to be able to interoperate
-with chains that <em>do</em> use ETH as a native asset. Certain solutions that might work when all chains use ETH as a native
-asset begin to break down when alternative native assets are introduced. For example, a protocol that burns the native
-asset on one chain and mints it on another will work if both chains use the same native asset but will obviously fail if
-either chain uses a different native asset.</p>
-<h3 id="minimizing-protocol-complexity"><a class="header" href="#minimizing-protocol-complexity">Minimizing protocol complexity</a></h3>
-<p>Support for native ETH opens the door to unnecessary complexity. Any solution to this problem should aim to minimize the
-amount of protocol code required to support native ETH. This generally points towards an app-layer solution if possible
-but does not preclude a protocol-layer solution as long as we minimize implementation size.</p>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<p>The <code>ETHLiquidity</code> contract is a predeploy that manages native ETH liquidity for cross-chain
+transfers within the Superchain interop set. It works in conjunction with the
+<code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
+modifications to the EVM to generate new ETH.</p>
+<p>The contract is initialized with a very large balance (<code>type(uint248).max</code> wei) to ensure it can
+handle all legitimate minting operations. This design allows the <code>SuperchainETHBridge</code> to have a
+guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
+transfer mechanism.</p>
 <h2 id="constants-4"><a class="header" href="#constants-4">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
-<tr><td><code>SuperchainWETH</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
+<tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
+<tr><td>Initial Balance</td><td><code>type(uint248).max</code> wei</td></tr>
+</tbody></table>
+</div>
+<h2 id="definitions-5"><a class="header" href="#definitions-5">Definitions</a></h2>
+<h3 id="eth-liquidity"><a class="header" href="#eth-liquidity">ETH Liquidity</a></h3>
+<p>ETH Liquidity refers to the availability of native ETH on a particular chain. The <code>ETHLiquidity</code>
+contract manages this liquidity by providing a mechanism to burn and mint ETH as needed for
+cross-chain transfers.</p>
+<h3 id="liquidity-minting"><a class="header" href="#liquidity-minting">Liquidity Minting</a></h3>
+<p>Liquidity Minting is the process of withdrawing ETH from the <code>ETHLiquidity</code> contract. This
+operation is performed when ETH needs to be sent to a recipient on a destination chain as part of
+a cross-chain transfer.</p>
+<h3 id="liquidity-burning"><a class="header" href="#liquidity-burning">Liquidity Burning</a></h3>
+<p>Liquidity Burning is the process of depositing ETH into the <code>ETHLiquidity</code> contract. This operation
+is performed when ETH is being sent from a source chain to a destination chain as part of a
+cross-chain transfer.</p>
+<h2 id="assumptions-3"><a class="header" href="#assumptions-3">Assumptions</a></h2>
+<h3 id="ael-001-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#ael-001-safesend-correctly-transfers-eth-to-recipients">aEL-001: SafeSend correctly transfers ETH to recipients</a></h3>
+<p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
+for valid addresses.</p>
+<h4 id="mitigations-18"><a class="header" href="#mitigations-18">Mitigations</a></h4>
+<ul>
+<li>Extensive testing of the <code>SafeSend</code> mechanism</li>
+<li>Audits of the ETH transfer logic</li>
+</ul>
+<h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
+<h3 id="iel-001-eth-balance-is-always-sufficient-for-minting--burning"><a class="header" href="#iel-001-eth-balance-is-always-sufficient-for-minting--burning">iEL-001: ETH balance is always sufficient for minting / burning</a></h3>
+<p>The <code>ETHLiquidity</code> contract must always have enough ETH to fulfill all legitimate minting / burning
+requests.</p>
+<h4 id="impact-19"><a class="header" href="#impact-19">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, the cross-chain ETH transfer mechanism would fail, potentially leading
+to users being unable to receive their ETH on destination chains.</p>
+<h3 id="iel-002-only-authorized-contracts-can-call-mint-and-burn"><a class="header" href="#iel-002-only-authorized-contracts-can-call-mint-and-burn">iEL-002: Only authorized contracts can call mint and burn</a></h3>
+<p>The <code>mint</code> and <code>burn</code> functions must only be callable by authorized contracts (specifically the
+<code>SuperchainETHBridge</code>).</p>
+<h4 id="impact-20"><a class="header" href="#impact-20">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, unauthorized parties could mint ETH without burning an equivalent
+amount on a source chain, leading to inflation.</p>
+<h3 id="iel-003-contract-balance-never-overflows"><a class="header" href="#iel-003-contract-balance-never-overflows">iEL-003: Contract balance never overflows</a></h3>
+<p>The <code>ETHLiquidity</code> contract's balance must never overflow due to excessive burning operations.</p>
+<h4 id="impact-21"><a class="header" href="#impact-21">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, the contract could reach an invalid state, potentially disrupting the
+cross-chain ETH transfer mechanism. The invariant that avoids overflow is maintained by
+<code>SuperchainETHBridge</code>, but could theoretically be broken by some future contract that is allowed to
+integrate with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that such future contracts
+do not break this invariant.</p>
+<h2 id="function-specification-4"><a class="header" href="#function-specification-4">Function Specification</a></h2>
+<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
+<p>Withdraws ETH from the <code>ETHLiquidity</code> contract equal to the <code>_amount</code> and sends it to the
+<code>msg.sender</code>.</p>
+<pre><code class="language-solidity">function mint(uint256 _amount) external
+</code></pre>
+<ul>
+<li>MUST revert if called by any address other than the <code>SuperchainETHBridge</code>.</li>
+<li>MUST transfer the <code>_amount</code> of ETH to the <code>msg.sender</code> using <code>SafeSend</code>.</li>
+<li>MUST emit a <code>LiquidityMinted</code> event with the <code>msg.sender</code> and <code>_amount</code>.</li>
+</ul>
+<h3 id="burn"><a class="header" href="#burn">burn</a></h3>
+<p>Locks ETH into the <code>ETHLiquidity</code> contract.</p>
+<pre><code class="language-solidity">function burn() external payable;
+</code></pre>
+<ul>
+<li>MUST accept ETH via <code>msg.value</code>.</li>
+<li>MUST revert if called by any address other than the <code>SuperchainETHBridge</code>.</li>
+<li>MUST emit a <code>LiquidityBurned</code> event with the <code>msg.sender</code> and <code>msg.value</code>.</li>
+</ul>
+<h2 id="events-3"><a class="header" href="#events-3">Events</a></h2>
+<h3 id="liquidityminted"><a class="header" href="#liquidityminted">LiquidityMinted</a></h3>
+<p>MUST be triggered when <code>mint</code> is called.</p>
+<pre><code class="language-solidity">event LiquidityMinted(address indexed caller, uint256 value);
+</code></pre>
+<h3 id="liquidityburned"><a class="header" href="#liquidityburned">LiquidityBurned</a></h3>
+<p>MUST be triggered when <code>burn</code> is called.</p>
+<pre><code class="language-solidity">event LiquidityBurned(address indexed caller, uint256 value);
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="superchainethbridge-1"><a class="header" href="#superchainethbridge-1">SuperchainETHBridge</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#overview">Overview</a></li>
+<li><a href="interop/superchain-eth-bridge.html#constants">Constants</a></li>
+<li><a href="interop/superchain-eth-bridge.html#definitions">Definitions</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#eth-bridging">ETH Bridging</a></li>
+<li><a href="interop/superchain-eth-bridge.html#eth-liquidity">ETH Liquidity</a></li>
+<li><a href="interop/superchain-eth-bridge.html#cross-chain-message">Cross-Chain Message</a></li>
+<li><a href="interop/superchain-eth-bridge.html#source-chain">Source Chain</a></li>
+<li><a href="interop/superchain-eth-bridge.html#destination-chain">Destination Chain</a></li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001: L2ToL2CrossDomainMessenger properly delivers messages</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002: <code>ETHLiquidity</code> contract maintains sufficient liquidity</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#aseb-003-safesend-correctly-transfers-eth-to-recipients">aSEB-003: <code>SafeSend</code> correctly transfers ETH to recipients</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#invariants">Invariants</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#iseb-001-eth-sent-equals-eth-received">iSEB-001: ETH sent equals ETH received</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#impact">Impact</a></li>
+<li><a href="interop/superchain-eth-bridge.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#iseb-002-only-authorized-contracts-can-call-relayeth">iSEB-002: Only authorized contracts can call <code>relayETH</code></a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#impact-1">Impact</a></li>
+<li><a href="interop/superchain-eth-bridge.html#dependencies-1">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#iseb-003-eth-cannot-be-sent-to-the-zero-address">iSEB-003: ETH cannot be sent to the zero address</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#impact-2">Impact</a></li>
+<li><a href="interop/superchain-eth-bridge.html#dependencies-2">Dependencies</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#function-specification">Function Specification</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#sendeth">sendETH</a></li>
+<li><a href="interop/superchain-eth-bridge.html#relayeth">relayETH</a></li>
+</ul>
+</li>
+<li><a href="interop/superchain-eth-bridge.html#events">Events</a>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#sendeth">SendETH</a></li>
+<li><a href="interop/superchain-eth-bridge.html#relayeth">RelayETH</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<p>The <code>SuperchainETHBridge</code> is a predeploy contract that facilitates cross-chain ETH bridging within
+the Superchain interop set. It serves as an abstraction layer on top of the
+<code>L2toL2CrossDomainMessenger</code> specifically designed for native ETH transfers between chains. The
+contract integrates with the <code>ETHLiquidity</code> contract to manage native ETH liquidity across chains,
+ensuring seamless cross-chain transfers of native ETH.</p>
+<p>The <code>SuperchainETHBridge</code> only handles native ETH cross-chain transfers. For interoperable ETH
+withdrawals, see the <a href="interop/./eth-lockbox.html"><code>ETHLockbox</code></a> specification.</p>
+<h2 id="constants-5"><a class="header" href="#constants-5">Constants</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>SuperchainETHBridge</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="definitions-6"><a class="header" href="#definitions-6">Definitions</a></h2>
+<h3 id="eth-bridging"><a class="header" href="#eth-bridging">ETH Bridging</a></h3>
+<p>ETH Bridging refers to the process of transferring native ETH from one chain to another within the
+Superchain interop set. This process involves burning ETH on the source chain and minting an
+equivalent amount on the destination chain.</p>
+<h3 id="eth-liquidity-1"><a class="header" href="#eth-liquidity-1">ETH Liquidity</a></h3>
+<p>ETH Liquidity refers to the availability of native ETH on a particular chain. The <code>ETHLiquidity</code>
+contract manages this liquidity by providing a mechanism to burn and mint ETH as needed for
+cross-chain transfers.</p>
+<h3 id="cross-chain-message"><a class="header" href="#cross-chain-message">Cross-Chain Message</a></h3>
+<p>A Cross-Chain Message is a message sent from one chain to another using the
+<code>L2ToL2CrossDomainMessenger</code>. In the context of the <code>SuperchainETHBridge</code>, these messages contain
+instructions to relay ETH to a recipient on the destination chain.</p>
+<h3 id="source-chain"><a class="header" href="#source-chain">Source Chain</a></h3>
+<p>The Source Chain is the chain from which a user initiates an ETH transfer. On this chain, ETH is
+burned from the user's account and a cross-chain message is sent to the destination chain.</p>
+<h3 id="destination-chain"><a class="header" href="#destination-chain">Destination Chain</a></h3>
+<p>The Destination Chain is the chain to which ETH is being transferred. On this chain, ETH is sent
+to the recipient's account based on the cross-chain message received from the source chain.</p>
+<h2 id="assumptions-4"><a class="header" href="#assumptions-4">Assumptions</a></h2>
+<h3 id="aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages"><a class="header" href="#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001: L2ToL2CrossDomainMessenger properly delivers messages</a></h3>
+<p>We assume that the <code>L2ToL2CrossDomainMessenger</code> contract properly and faithfully delivers messages
+between chains, maintaining the integrity and authenticity of the message contents.</p>
+<h4 id="mitigations-19"><a class="header" href="#mitigations-19">Mitigations</a></h4>
+<ul>
+<li>Extensive testing of the <code>L2ToL2CrossDomainMessenger</code> contract</li>
+<li>Audits of the messaging protocol</li>
+<li>Monitoring of cross-chain message delivery</li>
+</ul>
+<h3 id="aseb-002-ethliquidity-contract-maintains-sufficient-liquidity"><a class="header" href="#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002: <code>ETHLiquidity</code> contract maintains sufficient liquidity</a></h3>
+<p>We assume that the <code>ETHLiquidity</code> contract maintains sufficient liquidity to fulfill all valid ETH
+minting requests. This is ensured by initializing the contract with <code>type(uint248).max</code> wei.</p>
+<h4 id="mitigations-20"><a class="header" href="#mitigations-20">Mitigations</a></h4>
+<ul>
+<li>Total ETH supply is much less than the initial balance of the <code>ETHLiquidity</code> contract</li>
+<li>Contract is initially initialized with <code>type(uint248).max</code> wei and can hold up to
+<code>type(uint256).max</code> wei to prevent balance overflow</li>
+</ul>
+<h3 id="aseb-003-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#aseb-003-safesend-correctly-transfers-eth-to-recipients">aSEB-003: <code>SafeSend</code> correctly transfers ETH to recipients</a></h3>
+<p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
+for valid addresses.</p>
+<h4 id="mitigations-21"><a class="header" href="#mitigations-21">Mitigations</a></h4>
+<ul>
+<li>Extensive testing of the <code>SafeSend</code> mechanism</li>
+<li>Audits of the ETH transfer logic</li>
+</ul>
+<h2 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h2>
+<h3 id="iseb-001-eth-sent-equals-eth-received"><a class="header" href="#iseb-001-eth-sent-equals-eth-received">iSEB-001: ETH sent equals ETH received</a></h3>
+<p>The amount of ETH sent from the source chain must equal the amount of ETH received on the
+destination chain for any given cross-chain transfer.</p>
+<h4 id="impact-22"><a class="header" href="#impact-22">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, users could receive more or less ETH than they sent, leading to
+inflation or loss of funds.</p>
+<h4 id="dependencies-11"><a class="header" href="#dependencies-11">Dependencies</a></h4>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001</a></li>
+<li><a href="interop/superchain-eth-bridge.html#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002</a></li>
+</ul>
+<h3 id="iseb-002-only-authorized-contracts-can-call-relayeth"><a class="header" href="#iseb-002-only-authorized-contracts-can-call-relayeth">iSEB-002: Only authorized contracts can call <code>relayETH</code></a></h3>
+<p>The <code>relayETH</code> function must only be callable by the <code>L2ToL2CrossDomainMessenger</code> contract, and the
+cross-domain sender must be the <code>SuperchainETHBridge</code> contract on the source chain.</p>
+<h4 id="impact-23"><a class="header" href="#impact-23">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, unauthorized parties could mint ETH on the destination chain without
+burning an equivalent amount on the source chain, leading to inflation.</p>
+<h4 id="dependencies-12"><a class="header" href="#dependencies-12">Dependencies</a></h4>
+<ul>
+<li><a href="interop/superchain-eth-bridge.html#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001</a></li>
+</ul>
+<h3 id="iseb-003-eth-cannot-be-sent-to-the-zero-address"><a class="header" href="#iseb-003-eth-cannot-be-sent-to-the-zero-address">iSEB-003: ETH cannot be sent to the zero address</a></h3>
+<p>The <code>sendETH</code> function must revert if the recipient address is the zero address.</p>
+<h4 id="impact-24"><a class="header" href="#impact-24">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, ETH could be sent to the zero address, effectively burning it without
+the possibility of recovery.</p>
+<h4 id="dependencies-13"><a class="header" href="#dependencies-13">Dependencies</a></h4>
+<p>None</p>
+<h2 id="function-specification-5"><a class="header" href="#function-specification-5">Function Specification</a></h2>
+<h3 id="sendeth"><a class="header" href="#sendeth">sendETH</a></h3>
+<p>Deposits the <code>msg.value</code> of ETH into the <code>ETHLiquidity</code> contract and sends a cross-chain message
+to the specified <code>_chainId</code> to call <code>relayETH</code> with the <code>_to</code> address as the recipient and the
+<code>msg.value</code> as the amount.</p>
+<pre><code class="language-solidity">function sendETH(address _to, uint256 _chainId) external payable returns (bytes32 msgHash_);
+</code></pre>
+<ul>
+<li>MUST accept ETH via <code>msg.value</code>.</li>
+<li>MUST revert if the <code>_to</code> address is the zero address.</li>
+<li>MUST transfer <code>msg.value</code> of ETH from the <code>msg.sender</code> to the <code>ETHLiquidity</code> contract by calling
+<code>ETHLiquidity.burn{value: msg.value}()</code>.</li>
+<li>MUST create a cross-chain message to the <code>SuperchainETHBridge</code> contract on the destination chain
+with the following parameters:
+<ul>
+<li><code>_chainId</code>: The destination chain ID.</li>
+<li><code>message</code>: An encoded call to <code>relayETH(msg.sender, _to, msg.value)</code>.</li>
+</ul>
+</li>
+<li>MUST return the message hash <code>msgHash_</code> generated by the <code>L2ToL2CrossDomainMessenger</code>.</li>
+<li>MUST emit a <code>SendETH</code> event with the <code>msg.sender</code>, <code>_to</code>, <code>msg.value</code>, and <code>_chainId</code>.</li>
+</ul>
+<h3 id="relayeth"><a class="header" href="#relayeth">relayETH</a></h3>
+<p>Withdraws ETH from the <code>ETHLiquidity</code> contract equal to the <code>_amount</code> and sends it to the <code>_to</code> address.</p>
+<pre><code class="language-solidity">function relayETH(address _from, address _to, uint256 _amount) external;
+</code></pre>
+<ul>
+<li>MUST revert if called by any address other than the <code>L2ToL2CrossDomainMessenger</code>.</li>
+<li>MUST revert if the cross-domain sender is not the <code>SuperchainETHBridge</code> contract on the source
+chain.</li>
+<li>MUST withdraw <code>_amount</code> of ETH from the <code>ETHLiquidity</code> contract by calling
+<code>ETHLiquidity.mint(_amount)</code>.</li>
+<li>MUST transfer the <code>_amount</code> of ETH to the <code>_to</code> address using
+<code>new SafeSend{value: _amount}(_to)</code>.</li>
+<li>MUST emit a <code>RelayETH</code> event with the <code>_from</code> address, <code>_to</code> address, <code>_amount</code>, and source chain
+ID.</li>
+</ul>
+<h2 id="events-4"><a class="header" href="#events-4">Events</a></h2>
+<h3 id="sendeth-1"><a class="header" href="#sendeth-1">SendETH</a></h3>
+<p>MUST be triggered when <code>sendETH</code> is called.</p>
+<pre><code class="language-solidity">event SendETH(address indexed from, address indexed to, uint256 amount, uint256 destination);
+</code></pre>
+<h3 id="relayeth-1"><a class="header" href="#relayeth-1">RelayETH</a></h3>
+<p>MUST be triggered when <code>relayETH</code> is called.</p>
+<pre><code class="language-solidity">event RelayETH(address indexed from, address indexed to, uint256 amount, uint256 source);
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="eth-bridging-1"><a class="header" href="#eth-bridging-1">ETH Bridging</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="interop/eth-bridging.html#overview">Overview</a></li>
+<li><a href="interop/eth-bridging.html#constants">Constants</a></li>
+<li><a href="interop/eth-bridging.html#design">Design</a>
+<ul>
+<li><a href="interop/eth-bridging.html#diagram">Diagram</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<p>ETH is bridged between chains within the Superchain interop set by using the <code>SuperchainETHBridge</code>
+predeploy for message passing and the <code>ETHLiquidity</code> contract for supplying native ETH liquidity.</p>
+<h2 id="constants-6"><a class="header" href="#constants-6">Constants</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>SuperchainETHBridge</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
 <tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="superchainweth"><a class="header" href="#superchainweth">SuperchainWETH</a></h2>
-<!-- TODO (https://github.com/ethereum-optimism/specs/issues/479) re-write invariants to use imperative form -->
-<h3 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h3>
-<h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
-<ul>
-<li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
-</ul>
-<h4 id="withdraw"><a class="header" href="#withdraw"><code>withdraw</code></a></h4>
-<ul>
-<li>Reverts if triggered on a chain that does not use ETH as a native token.</li>
-</ul>
-<h4 id="crosschainburn-2"><a class="header" href="#crosschainburn-2"><code>crosschainBurn</code></a></h4>
-<ul>
-<li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
-<li>Reverts if attempting to send more than the sender's available balance.</li>
-<li>Reduces the sender's balance by the sent amount.</li>
-<li>Emits a transfer event from sender to null address for the sent amount.</li>
-<li>Burns liquidity by sending the sent amount of ETH into the <code>ETHLiquidity</code> contract if native token is ETH.
-<ul>
-<li>Must not revert.</li>
-</ul>
-</li>
-<li>Emits a <code>CrosschainBurn</code> event.</li>
-</ul>
-<h4 id="crosschainmint-2"><a class="header" href="#crosschainmint-2"><code>crosschainMint</code></a></h4>
-<ul>
-<li>Reverts if called by any address other than the <code>SuperchainTokenBridge</code>.</li>
-<li>Mints liquidity from the <code>ETHLiquidity</code> contract if native token is ETH.
-<ul>
-<li>Must not revert.</li>
-</ul>
-</li>
-<li>Increases the recipient's balance by the sent amount.</li>
-<li>Emits a transfer event from null address to recipient for the sent amount.</li>
-<li>Emits a <code>CrosschainMint</code> event.</li>
-</ul>
-<h4 id="sendeth"><a class="header" href="#sendeth"><code>sendETH</code></a></h4>
-<ul>
-<li>Reverts if the <code>msg.sender</code>'s balance is less than the <code>msg.value</code> being sent.</li>
-<li>Reverts if the <code>to</code> address is the zero address.</li>
-<li>Reverts if the native token on the source chain is not ETH.</li>
-<li>Transfers <code>msg.value</code> of ETH from the <code>msg.sender</code> to the <code>ETHLiquidity</code> contract.</li>
-<li>Sends a cross-chain message to the destination chain to call <code>relayETH</code>.</li>
-<li>Emits a <code>SendETH</code> event with details about the sender, recipient, amount, and destination chain.</li>
-</ul>
-<h4 id="relayeth"><a class="header" href="#relayeth"><code>relayETH</code></a></h4>
-<ul>
-<li>Reverts if called by any address other than the <code>L2ToL2CrossDomainMessenger</code>.</li>
-<li>Reverts if the cross-domain sender is not <code>SuperchainWETH</code> on the source chain.</li>
-<li>If the destination chain uses ETH as its native token:
-<ul>
-<li>Transfers the relayed ETH to the recipient.</li>
-</ul>
-</li>
-<li>If the destination chain uses a custom gas token:
-<ul>
-<li>Mints <strong>SuperchainWETH</strong> ERC-20 tokens to the recipient.</li>
-</ul>
-</li>
-<li>Emits a <code>RelayETH</code> event with details about the sender, recipient, amount, and source chain.</li>
-</ul>
-<h2 id="ethliquidity"><a class="header" href="#ethliquidity">ETHLiquidity</a></h2>
-<h3 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h3>
-<h4 id="global-invariants"><a class="header" href="#global-invariants">Global Invariants</a></h4>
-<ul>
-<li>Initial balance must be set to <code>type(uint248).max</code> (wei).
-The purpose for using <code>type(uint248).max</code> is to guarantee that
-the balance will be sufficient to credit all use within the <code>SuperchainWETH</code> contract,
-but will never overflow on calls to <code>burn</code> because there is not enough ETH
-in the total ETH supply to cause such an overflow.
-The invariant that avoids overflow is maintained by  <code>SuperchainWETH</code>, but could theoretically
-be broken by some future contract that is allowed to integrate with <code>ETHLiquidity</code>. Maintainers should be careful to
-ensure that such future contracts do not break this invariant.</li>
-</ul>
-<h4 id="burn"><a class="header" href="#burn"><code>burn</code></a></h4>
-<ul>
-<li>Must never be callable such that balance would increase beyond <code>type(uint256).max</code>.
-<ul>
-<li>This is an invariant and NOT a revert.</li>
-<li>Maintained by considering total available ETH supply and the initial balance of <code>ETHLiquidity</code>.</li>
-</ul>
-</li>
-<li>Reverts if called by any address other than <code>SuperchainWETH</code>.</li>
-<li>Reverts if called on a chain that does not use ETH as a native token.</li>
-<li>Accepts ETH value.</li>
-<li>Emits an event including address that triggered the burn and the burned ETH value.</li>
-</ul>
-<h4 id="mint"><a class="header" href="#mint"><code>mint</code></a></h4>
-<ul>
-<li>Must never be callable such that balance would decrease below <code>0</code>.
-<ul>
-<li>This is an invariant and NOT a revert.</li>
-<li>Maintained by considering total available ETH supply and the initial balance of <code>ETHLiquidity</code>.</li>
-</ul>
-</li>
-<li>Reverts if called by any address other than <code>SuperchainWETH</code>.</li>
-<li>Reverts if called on a chain that does not use ETH as a native token.</li>
-<li>Transfers requested ETH value to the sending address.</li>
-<li>Emits an event including address that triggered the mint and the minted ETH value.</li>
-</ul>
+<h2 id="design"><a class="header" href="#design">Design</a></h2>
+<p>See the <a href="interop/./superchain-eth-bridge.html">SuperchainETHBridge</a> spec for the design of the
+<code>SuperchainETHBridge</code> predeploy and the <a href="interop/./eth-liquidity.html">ETHLiquidity</a> spec for
+the design of the <code>ETHLiquidity</code> contract.</p>
+<h3 id="diagram-2"><a class="header" href="#diagram-2">Diagram</a></h3>
+<p>The following diagram depicts a cross-chain ETH transfer.</p>
+<pre class="mermaid">---
+config:
+  theme: dark
+  fontSize: 48
+---
+sequenceDiagram
+  participant from as from (Chain A)
+  participant L2SBA as SuperchainETHBridge (Chain A)
+  participant ETHLiquidity_A as ETHLiquidity (Chain A)
+  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
+  participant Inbox as CrossL2Inbox
+  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
+  participant L2SBB as SuperchainETHBridge (Chain B)
+  participant ETHLiquidity_B as ETHLiquidity (Chain B)
+  participant recipient as recipient (Chain B)
+
+  from-&gt;&gt;L2SBA: sendETH{value: amount}(to, chainId)
+  L2SBA-&gt;&gt;ETHLiquidity_A: burn{value: amount}()
+  ETHLiquidity_A--&gt;ETHLiquidity_A: emit LiquidityBurned(from, amount)
+  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
+  Messenger_A-&gt;&gt;L2SBA: return msgHash_
+  L2SBA--&gt;L2SBA: emit SendETH(from, to, amount, destination)
+  L2SBA-&gt;&gt;from: return msgHash_
+  Inbox-&gt;&gt;Messenger_B: relayMessage()
+  Messenger_B-&gt;&gt;L2SBB: relayETH(from, to, amount)
+  L2SBB-&gt;&gt;ETHLiquidity_B: mint(amount)
+  ETHLiquidity_B--&gt;ETHLiquidity_B: emit LiquidityMinted(SuperchainETHBridge address, amount)
+  L2SBB-&gt;&gt;recipient: new SafeSend{value: amount}(to)
+  L2SBB--&gt;L2SBB: emit RelayETH(from, to, amount, source)
+</pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="derivation-3"><a class="header" href="#derivation-3">Derivation</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -14872,7 +15124,7 @@ ensure that such future contracts do not break this invariant.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
@@ -14978,7 +15230,7 @@ that very old logs are more expensive to prove.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -15050,7 +15302,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -15093,7 +15345,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <li>MUST unlock the withdrawal value from the <code>ETHLockbox</code></li>
 <li>MUST revert if withdrawal target is the <code>ETHLockbox</code></li>
 </ul>
-<h2 id="events-3"><a class="header" href="#events-3">Events</a></h2>
+<h2 id="events-5"><a class="header" href="#events-5">Events</a></h2>
 <h3 id="ethmigrated"><a class="header" href="#ethmigrated"><code>ETHMigrated</code></a></h3>
 <p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">event ETHMigrated(uint256 amount);
@@ -15162,14 +15414,14 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
+<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
 The <code>ETHLockbox</code> improves the Superchain's interoperable ETH withdrawal user experience and avoids this issue.
 To do so, it unifies ETH L1 liquidity in a single contract (<code>ETHLockbox</code>), enabling seamless withdrawals of ETH
 from any OP chain in the Superchain, regardless of where the ETH was initially deposited.</p>
-<h2 id="design"><a class="header" href="#design">Design</a></h2>
+<h2 id="design-1"><a class="header" href="#design-1">Design</a></h2>
 <p>The <code>ETHLockbox</code> contract is designed to manage the unified ETH liquidity for the Superchain.
 It implements two main functions: <code>lockETH</code> for depositing ETH into the lockbox,
 and <code>unlockETH</code> for withdrawing ETH from the lockbox.</p>
@@ -15240,7 +15492,7 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">function proxyAdminOwner() external view returns (address);
 </code></pre>
-<h3 id="events-4"><a class="header" href="#events-4">Events</a></h3>
+<h3 id="events-6"><a class="header" href="#events-6">Events</a></h3>
 <h4 id="ethlocked"><a class="header" href="#ethlocked"><code>ETHLocked</code></a></h4>
 <p>MUST be triggered when <code>lockETH</code> is called</p>
 <pre><code class="language-solidity">event ETHLocked(address indexed portal, uint256 amount);
@@ -15436,7 +15688,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
+<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -15734,7 +15986,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
+<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -15898,7 +16150,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
+<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
@@ -15911,7 +16163,7 @@ that executes a single instruction. We say the VM is a function <span class="kat
 single instruction encoded in the state to produce a new state <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span>.
 <span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">re</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">os</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></span></p>
 <p>Thus, the trace of a program executed by the FPVM is an ordered set of VM states.</p>
-<h3 id="definitions-5"><a class="header" href="#definitions-5">Definitions</a></h3>
+<h3 id="definitions-7"><a class="header" href="#definitions-7">Definitions</a></h3>
 <h4 id="concepts"><a class="header" href="#concepts">Concepts</a></h4>
 <h5 id="natural-alignment"><a class="header" href="#natural-alignment">Natural Alignment</a></h5>
 <p>A memory address is said to be "naturally aligned" in the context of some data type
@@ -15930,7 +16182,7 @@ For example, to align the address <code>0x1002</code> targeting a 32-bit value:
 <li><code>UInt64</code> - A 64-bit unsigned integer value.</li>
 <li><code>Word</code> - A 64-bit value.</li>
 </ul>
-<h4 id="constants-5"><a class="header" href="#constants-5">Constants</a></h4>
+<h4 id="constants-7"><a class="header" href="#constants-7">Constants</a></h4>
 <ul>
 <li><code>EBADF</code> - A Linux error number indicating a bad file descriptor: <code>0x9</code>.</li>
 <li><code>MaxWord</code> - A <code>Word</code> with all bits set to 1: <code>0xFFFFFFFFFFFFFFFF</code>.
