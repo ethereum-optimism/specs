@@ -198,10 +198,15 @@
 <ul>
 <li><a href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
 <li><a href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></li>
+<li><a href="#resendmessage-invariants"><code>resendMessage</code> Invariants</a></li>
 <li><a href="#message-versioning">Message Versioning</a></li>
 <li><a href="#interfaces">Interfaces</a>
 <ul>
 <li><a href="#sending-messages">Sending Messages</a></li>
+</ul>
+</li>
+<li><a href="#re-sending-messages">Re-sending Messages</a>
+<ul>
 <li><a href="#relaying-messages">Relaying Messages</a></li>
 </ul>
 </li>
@@ -468,7 +473,13 @@ as well as domain binding, i.e. the executing transaction can only be valid on a
 <h3 id="sendmessage-invariants"><a class="header" href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></h3>
 <ul>
 <li>Sent Messages MUST be uniquely identifiable</li>
-<li>It must emit the <code>SentMessage</code> event</li>
+<li>It MUST store the message hash in the <code>sentMessages</code> mapping</li>
+<li>It MUST emit the <code>SentMessage</code> event</li>
+</ul>
+<h3 id="resendmessage-invariants"><a class="header" href="#resendmessage-invariants"><code>resendMessage</code> Invariants</a></h3>
+<ul>
+<li>It MUST NOT be possible to re-emit a <code>SentMessage</code> event that has not been sent</li>
+<li>It MUST emit the <code>SentMessage</code> event</li>
 </ul>
 <h3 id="message-versioning"><a class="header" href="#message-versioning">Message Versioning</a></h3>
 <p>Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
@@ -501,6 +512,19 @@ it will be the <code>L2ToL2CrossDomainMessenger</code> and users will need to ca
 <p>The <code>_destination</code> MUST NOT be the chain-ID of the local chain and a locally defined <code>nonce</code> MUST increment on
 every call to <code>sendMessage</code>.</p>
 <p>Note that <code>sendMessage</code> is not <code>payable</code>.</p>
+<h3 id="re-sending-messages"><a class="header" href="#re-sending-messages">Re-sending Messages</a></h3>
+<p>The <code>resendMessage</code> function is used to re-emit a <code>SentMessage</code> event for a message that has already been sent.
+It will calculate the message hash using the inputs, and check that the message hash is stored in the <code>sentMessages</code>
+mapping prior to emitting the <code>SentMessage</code> event.</p>
+<pre><code class="language-solidity">    function resendMessage(
+        uint256 _destination,
+        uint256 _nonce,
+        address _sender,
+        address _target,
+        bytes calldata _message
+    )
+        external;
+</code></pre>
 <h4 id="relaying-messages"><a class="header" href="#relaying-messages">Relaying Messages</a></h4>
 <p>The following diagram shows the flow for sending a cross chain message using the <code>L2ToL2CrossDomainMessenger</code>.
 Each subsequent call is labeled with a number.</p>
