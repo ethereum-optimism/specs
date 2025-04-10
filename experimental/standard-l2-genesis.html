@@ -174,7 +174,7 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#constants">Constants</a>
+<li><a href="#chain-constants-on-l1">Chain Constants on L1</a>
 <ul>
 <li><a href="#configtype"><code>ConfigType</code></a></li>
 </ul>
@@ -208,14 +208,14 @@
 </li>
 <li><a href="#superchainconfig">SuperchainConfig</a>
 <ul>
-<li><a href="#constants-1">Constants</a></li>
+<li><a href="#superchainconfig-constants">SuperchainConfig Constants</a></li>
 <li><a href="#interface-2">Interface</a></li>
 <li><a href="#initialization-1">Initialization</a></li>
 </ul>
 </li>
-<li><a href="#predeploys">Predeploys</a></li>
-<li><a href="#constants-2">Constants</a></li>
-<li><a href="#predeploys-1">Predeploys</a>
+<li><a href="#deterministic-genesis-state">Deterministic genesis state</a></li>
+<li><a href="#chain-constants-on-l2">Chain Constants on L2</a></li>
+<li><a href="#predeploys">Predeploys</a>
 <ul>
 <li><a href="#proxyadmin">ProxyAdmin</a>
 <ul>
@@ -271,7 +271,7 @@
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
-<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
+<h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
 <h3 id="configtype"><a class="header" href="#configtype"><code>ConfigType</code></a></h3>
 <p>The <code>ConfigType</code> enum represents configuration that can be modified.</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody>
@@ -368,7 +368,7 @@ is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <
 <p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
 to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
 that call the L2 <code>ProxyAdmin</code>.</p>
-<h3 id="constants-1"><a class="header" href="#constants-1">Constants</a></h3>
+<h3 id="superchainconfig-constants"><a class="header" href="#superchainconfig-constants">SuperchainConfig Constants</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
 <tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
 </tbody></table>
@@ -378,12 +378,12 @@ that call the L2 <code>ProxyAdmin</code>.</p>
 </code></pre>
 <h3 id="initialization-1"><a class="header" href="#initialization-1">Initialization</a></h3>
 <p>The <code>upgrader</code> can only be set during initialization.</p>
-<h2 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h2>
+<h2 id="deterministic-genesis-state"><a class="header" href="#deterministic-genesis-state">Deterministic genesis state</a></h2>
 <p>This upgrade enables a deterministic L2 genesis state by moving all network
 specific configuration out of the initial L2 genesis state. All network specific
 configuration is sourced from deposit transactions during the initialization
 of the <code>SystemConfig</code>.</p>
-<h2 id="constants-2"><a class="header" href="#constants-2">Constants</a></h2>
+<h2 id="chain-constants-on-l2"><a class="header" href="#chain-constants-on-l2">Chain Constants on L2</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
 <tr><td><code>ConfigType</code></td><td><code>uint8</code></td><td>An enum representing the type of config being set</td></tr>
 <tr><td><code>WithdrawalNetwork</code></td><td><code>uint8(0)</code> or <code>uint8(1)</code></td><td><code>0</code> means withdraw to L1, <code>1</code> means withdraw to L2</td></tr>
@@ -399,7 +399,7 @@ of the <code>SystemConfig</code>.</p>
 <tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>bytes32(uint256(keccak256("opstack.remotechainid")) - 1)</code></td><td>Chain ID of the remote chain</td></tr>
 </tbody></table>
 </div>
-<h2 id="predeploys-1"><a class="header" href="#predeploys-1">Predeploys</a></h2>
+<h2 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h2>
 <p>All network specific configuration is moved to a single contract, the <code>L1Block</code> predeploy.
 All predeploys make calls to the <code>L1Block</code> contract to fetch network specific configuration
 rather than reading it from local state.</p>

@@ -3724,7 +3724,7 @@ sequencer batch.</li>
 Refer to the <a href="protocol/deposits.html#deposit-contract"><strong>deposit contract specification</strong></a> for details on how deposits are encoded as log
 entries.</p>
 <p>Logs are derived from transactions following the future-proof best-effort process described in
-[On Future-Proof Transaction Log Derivation][#on-future-proof-transaction-log-derivation]</p>
+<a href="protocol/derivation.html#on-future-proof-transaction-log-derivation">On Future Proof Transaction Log Derivation</a></p>
 <h3 id="network-upgrade-automation-transactions"><a class="header" href="#network-upgrade-automation-transactions">Network upgrade automation transactions</a></h3>
 <p>Some network upgrades require automated contract changes or deployments at specific blocks.
 To automate these, without adding persistent changes to the execution-layer,
@@ -8308,7 +8308,7 @@ according to the steps in the <a href="protocol/safe-extensions.html#deploying-t
 </li>
 <li><a href="protocol/stage-1.html#invariants">Invariants</a>
 <ul>
-<li><a href="protocol/stage-1.html#is1-001-a-permanent-withdrawal-liveness-or-withdrawal-safety-failure-requires-75%25-of-the-security-council-wo-bugs">iS1-001: A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs)</a></li>
+<li><a href="protocol/stage-1.html#is1-001">iS1-001</a></li>
 <li><a href="protocol/stage-1.html#impact">Impact</a></li>
 <li><a href="protocol/stage-1.html#is1-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure">iS1-002: The Pause Deputy can only cause a temporary Withdrawal Liveness failure</a>
 <ul>
@@ -8507,7 +8507,8 @@ listed as "Out of Protocol", because the decision to follow the version signals 
 optional. It is included here for completeness, but it does not impact
 <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> or <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a>.</p>
 <h2 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h2>
-<h3 id="is1-001-a-permanent-withdrawal-liveness-or-withdrawal-safety-failure-requires-75-of-the-security-council-wo-bugs"><a class="header" href="#is1-001-a-permanent-withdrawal-liveness-or-withdrawal-safety-failure-requires-75-of-the-security-council-wo-bugs">iS1-001: A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs)</a></h3>
+<h3 id="is1-001"><a class="header" href="#is1-001">iS1-001</a></h3>
+<p>A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs).</p>
 <p>This is the core invariant for Stage 1 and aligns with <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">the definition by L2BEAT</a> from
 January 2025. We can define additional properties about roles specific to the OP Stack as long as
 they align with this invariant. Note that this invariant does NOT consider the impact of bugs in
@@ -10883,7 +10884,7 @@ if it is not nil, and then <em>deactivated</em> at the hard fork timestamp.</p>
 <ul>
 <li><a href="protocol/pectra-blob-schedule/derivation.html#if-enabled">If enabled</a></li>
 <li><a href="protocol/pectra-blob-schedule/derivation.html#if-disabled-default">If disabled (default)</a></li>
-<li><a href="protocol/pectra-blob-schedule/derivation.html#motivation-and%C2%A0rationale">Motivation and Rationale</a></li>
+<li><a href="protocol/pectra-blob-schedule/derivation.html#motivation-and-rationale">Motivation and Rationale</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="if-enabled"><a class="header" href="#if-enabled">If enabled</a></h2>
@@ -10897,7 +10898,7 @@ For L2 blocks with an L1 origin less than the hard fork timestamp, the Cancun bl
 <h2 id="if-disabled-default"><a class="header" href="#if-disabled-default">If disabled (default)</a></h2>
 <p>If the hardfork activation timestamp is nil, the blob base fee update rules which are active
 at any given L1 block will apply to the L1 Attributes Deposited Transaction.</p>
-<h2 id="motivation-and-rationale"><a class="header" href="#motivation-and-rationale">Motivation and Rationale</a></h2>
+<h2 id="motivation-and-rationale"><a class="header" href="#motivation-and-rationale">Motivation and Rationale</a></h2>
 <p>Due to a consensus layer bug, OPStack chains on Holesky and Sepolia running officially released op-node software
 did not update their blob base fee update fraction (for L1 Attributes Deposited Transaction)
 in tandem with the Prague upgrade on L1.</p>
@@ -12205,7 +12206,7 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="experimental/standard-l2-genesis.html#overview">Overview</a></li>
-<li><a href="experimental/standard-l2-genesis.html#constants">Constants</a>
+<li><a href="experimental/standard-l2-genesis.html#chain-constants-on-l1">Chain Constants on L1</a>
 <ul>
 <li><a href="experimental/standard-l2-genesis.html#configtype"><code>ConfigType</code></a></li>
 </ul>
@@ -12239,14 +12240,14 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 </li>
 <li><a href="experimental/standard-l2-genesis.html#superchainconfig">SuperchainConfig</a>
 <ul>
-<li><a href="experimental/standard-l2-genesis.html#constants-1">Constants</a></li>
+<li><a href="experimental/standard-l2-genesis.html#superchainconfig-constants">SuperchainConfig Constants</a></li>
 <li><a href="experimental/standard-l2-genesis.html#interface-2">Interface</a></li>
 <li><a href="experimental/standard-l2-genesis.html#initialization-1">Initialization</a></li>
 </ul>
 </li>
-<li><a href="experimental/standard-l2-genesis.html#predeploys">Predeploys</a></li>
-<li><a href="experimental/standard-l2-genesis.html#constants-2">Constants</a></li>
-<li><a href="experimental/standard-l2-genesis.html#predeploys-1">Predeploys</a>
+<li><a href="experimental/standard-l2-genesis.html#deterministic-genesis-state">Deterministic genesis state</a></li>
+<li><a href="experimental/standard-l2-genesis.html#chain-constants-on-l2">Chain Constants on L2</a></li>
+<li><a href="experimental/standard-l2-genesis.html#predeploys">Predeploys</a>
 <ul>
 <li><a href="experimental/standard-l2-genesis.html#proxyadmin">ProxyAdmin</a>
 <ul>
@@ -12302,7 +12303,7 @@ not wrapped <code>ether</code>. Portable and fungible <code>ether</code> across 
 <h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
-<h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
+<h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
 <h3 id="configtype"><a class="header" href="#configtype"><code>ConfigType</code></a></h3>
 <p>The <code>ConfigType</code> enum represents configuration that can be modified.</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody>
@@ -12399,7 +12400,7 @@ is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <
 <p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
 to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
 that call the L2 <code>ProxyAdmin</code>.</p>
-<h3 id="constants-2"><a class="header" href="#constants-2">Constants</a></h3>
+<h3 id="superchainconfig-constants"><a class="header" href="#superchainconfig-constants">SuperchainConfig Constants</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
 <tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
 </tbody></table>
@@ -12409,12 +12410,12 @@ that call the L2 <code>ProxyAdmin</code>.</p>
 </code></pre>
 <h3 id="initialization-3"><a class="header" href="#initialization-3">Initialization</a></h3>
 <p>The <code>upgrader</code> can only be set during initialization.</p>
-<h2 id="predeploys-3"><a class="header" href="#predeploys-3">Predeploys</a></h2>
+<h2 id="deterministic-genesis-state"><a class="header" href="#deterministic-genesis-state">Deterministic genesis state</a></h2>
 <p>This upgrade enables a deterministic L2 genesis state by moving all network
 specific configuration out of the initial L2 genesis state. All network specific
 configuration is sourced from deposit transactions during the initialization
 of the <code>SystemConfig</code>.</p>
-<h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
+<h2 id="chain-constants-on-l2"><a class="header" href="#chain-constants-on-l2">Chain Constants on L2</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
 <tr><td><code>ConfigType</code></td><td><code>uint8</code></td><td>An enum representing the type of config being set</td></tr>
 <tr><td><code>WithdrawalNetwork</code></td><td><code>uint8(0)</code> or <code>uint8(1)</code></td><td><code>0</code> means withdraw to L1, <code>1</code> means withdraw to L2</td></tr>
@@ -12430,7 +12431,7 @@ of the <code>SystemConfig</code>.</p>
 <tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>bytes32(uint256(keccak256("opstack.remotechainid")) - 1)</code></td><td>Chain ID of the remote chain</td></tr>
 </tbody></table>
 </div>
-<h2 id="predeploys-4"><a class="header" href="#predeploys-4">Predeploys</a></h2>
+<h2 id="predeploys-3"><a class="header" href="#predeploys-3">Predeploys</a></h2>
 <p>All network specific configuration is moved to a single contract, the <code>L1Block</code> predeploy.
 All predeploys make calls to the <code>L1Block</code> contract to fetch network specific configuration
 rather than reading it from local state.</p>
@@ -13141,7 +13142,7 @@ dependencies are thus said to be transitive.
 Without validating the transitive dependencies,
 the verifier relies on the verification work of the nodes that it sources its direct dependencies from.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="predeploys-5"><a class="header" href="#predeploys-5">Predeploys</a></h1>
+<h1 id="predeploys-4"><a class="header" href="#predeploys-4">Predeploys</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -13318,9 +13319,9 @@ for verification of the <code>checksum</code> and is not verified in the protoco
 <pre><code class="language-text">0..1: type byte, always 0x01
 1..4: reserved, zeroed by default
 4..12: big-endian uint64 chain ID
-12..16: big-endian uint64, block number
-16..24: big-endian uint64, timestamp
-24..32: big-endian uint32, log index
+12..20: big-endian uint64, block number
+20..28: big-endian uint64, timestamp
+28..32: big-endian uint32, log index
 </code></pre>
 <p>Chain IDs larger than <code>uint64</code> are supported, with an additional chain-ID-extension entry.
 The lower 64 bits of the chain-ID are always encoded in the lookup entry.</p>
@@ -14770,7 +14771,7 @@ modifications to the EVM to generate new ETH.</p>
 handle all legitimate minting operations. This design allows the <code>SuperchainETHBridge</code> to have a
 guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
 transfer mechanism.</p>
-<h2 id="constants-4"><a class="header" href="#constants-4">Constants</a></h2>
+<h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
 <tr><td>Initial Balance</td><td><code>type(uint248).max</code> wei</td></tr>
@@ -14931,7 +14932,7 @@ contract integrates with the <code>ETHLiquidity</code> contract to manage native
 ensuring seamless cross-chain transfers of native ETH.</p>
 <p>The <code>SuperchainETHBridge</code> only handles native ETH cross-chain transfers. For interoperable ETH
 withdrawals, see the <a href="interop/./eth-lockbox.html"><code>ETHLockbox</code></a> specification.</p>
-<h2 id="constants-5"><a class="header" href="#constants-5">Constants</a></h2>
+<h2 id="constants-2"><a class="header" href="#constants-2">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>SuperchainETHBridge</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
 </tbody></table>
@@ -15078,7 +15079,7 @@ ID.</li>
 <h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>ETH is bridged between chains within the Superchain interop set by using the <code>SuperchainETHBridge</code>
 predeploy for message passing and the <code>ETHLiquidity</code> contract for supplying native ETH liquidity.</p>
-<h2 id="constants-6"><a class="header" href="#constants-6">Constants</a></h2>
+<h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>SuperchainETHBridge</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
 <tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
@@ -16206,7 +16207,7 @@ For example, to align the address <code>0x1002</code> targeting a 32-bit value:
 <li><code>UInt64</code> - A 64-bit unsigned integer value.</li>
 <li><code>Word</code> - A 64-bit value.</li>
 </ul>
-<h4 id="constants-7"><a class="header" href="#constants-7">Constants</a></h4>
+<h4 id="constants-4"><a class="header" href="#constants-4">Constants</a></h4>
 <ul>
 <li><code>EBADF</code> - A Linux error number indicating a bad file descriptor: <code>0x9</code>.</li>
 <li><code>MaxWord</code> - A <code>Word</code> with all bits set to 1: <code>0xFFFFFFFFFFFFFFFF</code>.
