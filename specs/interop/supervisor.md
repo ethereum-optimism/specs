@@ -292,102 +292,102 @@ The Supervisor RPC API uses standard JSON-RPC error codes along with specific ap
 
 ##### `-32700`
 
-- Parse error: Invalid JSON
+- `Parse error`: Invalid JSON
 
 ##### `-32600`
 
-- Invalid request: This can happen when your request is malformed. Additionally, some of the provides use this code to signal that a particular method is not available or requires switching to a paid tier.
+- `Invalid request`: This can happen when your request is malformed. Additionally, some of the provides use this code to signal that a particular method is not available or requires switching to a paid tier.
 
 ##### `-32601`
 
-- Method not found: This usually happens when the method is not available with a given provider. If you need to use a specific method that's not supported by the provider, try changing the provider or consider switching to a more expensive tier.
+- `Method not found`: This usually happens when the method is not available with a given provider. If you need to use a specific method that's not supported by the provider, try changing the provider or consider switching to a more expensive tier.
 
 ##### `-32602`
 
-- Invalid params: This happens when the request parameters are invalid. To fix, double check the parameters that you pass with the request and make sure they comply with the spec.
+- `Invalid params`: This happens when the request parameters are invalid. To fix, double check the parameters that you pass with the request and make sure they comply with the spec.
 
 ##### `-32603`
 
-- Internal error: This might happen when the node reverts during the request execution. This can also happen if the request is malformed or invalid.
+- `Internal error`: This might happen when the node reverts during the request execution. This can also happen if the request is malformed or invalid.
 
 ##### `-32000`
 
-- Invalid input: Missing or invalid parameters
+- `Invalid input`: Missing or invalid parameters
 
 ##### `-32001`
 
-- Resource not found: This usually happens when calling a method that's not supported. Try using a different method or switch providers.
+- `Resource not found`: This usually happens when calling a method that's not supported. Try using a different method or switch providers.
 
 ##### `-32002`
 
-- Resource unavailable: Requested resource not available
+- `Resource unavailable`: Requested resource not available
 
 ##### `-32003`
 
-- Transaction rejected: Transaction creation failed
+- `Transaction rejected`: Transaction creation failed
 
 ##### `-32004`
 
-- Method not supported: Method is not implemented
+- `Method not supported`: Method is not implemented
 
 ##### `-32005`
 
-- Limit exceeded: Request exceeds defined limit
+- `Limit exceeded`: Request exceeds defined limit
 
 ##### `-32006`
 
-- JSON-RPC version not supported: Version of JSON-RPC protocol is not supported
+- `JSON-RPC version not supported`: Version of JSON-RPC protocol is not supported
 
 #### Protocol Specific Error Codes
 
 ##### `-32100`
 
-- unknown chain: happens when a chain is unknown, not in the dependency set.
+- `unknown chain`: happens when a chain is unknown, not in the dependency set.
 
 ##### `-32101`
 
-- uninitialized chain database: Happens when a chain database is not initialized yet
+- `uninitialized chain database`: Happens when a chain database is not initialized yet
 
 ##### `-32102`
 
-- out of scope: Data access is not allowed because of a limited scope.
+- `out of scope`: Data access is not allowed because of a limited scope.
 
 ##### `-32110`
 
-- skipped data: Happens when data is just not yet available.
+- `skipped data`: Happens when data is just not yet available.
 
 ##### `-32111`
 
-- data out of order: Happens when you try to add data to the DB, but it does not actually fit onto the latest data (by being too old or new).
+- `data out of order`: Happens when you try to add data to the DB, but it does not actually fit onto the latest data (by being too old or new).
 
 ##### `-32112`
 
-- future data: Happens when data is just not yet available.
+- `future data`: Happens when data is just not yet available.
 
 ##### `-32113`
 
-- missed data: Happens when we try to retrieve data that is not available (pruned)
+- `missed data`: Happens when we try to retrieve data that is not available (pruned)
 
 ##### `-32114`
 
-- conflicting data: Happens when we know for sure that there is different canonical data
+- `conflicting data`: Happens when we know for sure that there is different canonical data
 
 ##### `-32115`
 
-- awaiting replacement block: Happens when we know for sure that a replacement block is needed before progress can be made.
+- `awaiting replacement block`: Happens when we know for sure that a replacement block is needed before progress can be made.
 
 ##### `-32116`
 
-- ineffective data: Happens when data is accepted as compatible, but did not change anything. This happens when a node is deriving an L2 block we already know of being derived from the given source, but without path to skip forward to newer source blocks without doing the known derivation work first.
+- `ineffective data`: Happens when data is accepted as compatible, but did not change anything. This happens when a node is deriving an L2 block we already know of being derived from the given source, but without path to skip forward to newer source blocks without doing the known derivation work first.
 
 ##### `-32117`
 
-- data corruption: happens when the underlying DB has some I/O issue
+- `data corruption`: happens when the underlying DB has some I/O issue
 
 ##### `-32118`
 
-- iter stop: Happens when data is accessed, but access is not allowed, because of a limited scope. E.g. when limiting scope to L2 blocks derived from a specific subset of the L1 chain.
+- `iter stop`: Happens when data is accessed, but access is not allowed, because of a limited scope. E.g. when limiting scope to L2 blocks derived from a specific subset of the L1 chain.
 
 ##### `-32119`
 
-- cannot get parent of first block in the database: Happens when you try to get the previous block of the first block. E.g. when calling PreviousDerivedFrom on the first L1 block in the DB.
+- `cannot get parent of first block in the database`: Happens when you try to get the previous block of the first block. E.g. when calling PreviousDerivedFrom on the first L1 block in the DB.
