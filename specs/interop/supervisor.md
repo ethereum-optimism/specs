@@ -37,7 +37,32 @@
       - [`supervisor_checkAccessList` contents](#supervisor_checkaccesslist-contents)
   - [Errors](#errors)
     - [Standard JSON-RPC Error Codes](#standard-json-rpc-error-codes)
+      - [`-32700`](#-32700)
+      - [`-32600`](#-32600)
+      - [`-32601`](#-32601)
+      - [`-32602`](#-32602)
+      - [`-32603`](#-32603)
+      - [`-32000`](#-32000)
+      - [`-32001`](#-32001)
+      - [`-32002`](#-32002)
+      - [`-32003`](#-32003)
+      - [`-32004`](#-32004)
+      - [`-32005`](#-32005)
+      - [`-32006`](#-32006)
     - [Protocol Specific Error Codes](#protocol-specific-error-codes)
+      - [`-32100`](#-32100)
+      - [`-32101`](#-32101)
+      - [`-32102`](#-32102)
+      - [`-32110`](#-32110)
+      - [`-32111`](#-32111)
+      - [`-32112`](#-32112)
+      - [`-32113`](#-32113)
+      - [`-32114`](#-32114)
+      - [`-32115`](#-32115)
+      - [`-32116`](#-32116)
+      - [`-32117`](#-32117)
+      - [`-32118`](#-32118)
+      - [`-32119`](#-32119)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -58,6 +83,7 @@ The identifier of a message.
 Corresponds to an [Identifier](./messaging.md#message-identifier).
 
 Object:
+
 - `origin`: `Address`
 - `blockNumber`: `HexUint64`
 - `logIndex`: `HexUint64`
@@ -69,6 +95,7 @@ Object:
 Describes an initiating message.
 
 Object:
+
 - `identifier`: `Identifier` - identifier of the message
 - `payloadHash`: `Hash` - `keccak256` hash of the message-payload bytes
 
@@ -78,6 +105,7 @@ Describes the context for message verification.
 Specifically, this helps apply message-expiry rules on message checks.
 
 Object:
+
 - `timestamp`: `HexUint64` - expected timestamp during message execution.
 - `timeout`: `HexUint64` - optional, requests verification to still hold at `timestamp+timeout` (inclusive).
   The message expiry-window may invalidate messages.
@@ -114,6 +142,7 @@ representing a bytes list, prefixed with `0x`.
 Describes a block.
 
 `OBJECT`:
+
 - `hash`: `HASH` - block hash
 - `number`: `Int` - block number
 
@@ -122,6 +151,7 @@ Describes a block.
 Describes a block.
 
 `OBJECT`:
+
 - `hash`: `Hash` - block hash
 - `number`: `Int` - block number
 - `parentHash`: `Hash` - block parent-hash
@@ -132,6 +162,7 @@ Describes a block.
 #### `ChainRootInfo`
 
 `OBJECT`:
+
 - `chainId`: `HexUint64` - The chain ID (Note: this is changing to `ChainID` soon)
 - `canonical`: `Hash` - output root at the latest canonical block
 - `pending`: `Bytes` - output root preimage
@@ -139,6 +170,7 @@ Describes a block.
 #### `SuperRootResponse`
 
 `OBJECT`:
+
 - `crossSafeDerivedFrom`: `BlockID` - common derived-from where all chains are cross-safe
 - `timestamp`: `Int` - The timestamp of the super root
 - `superRoot`: `Hash` - The root of the super root
@@ -151,6 +183,7 @@ The safety level of the message.
 Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 
 `STRING`, one of:
+
 - `invalid`
 - `unsafe`: equivalent to safety of the `latest` RPC label.
 - `cross-unsafe`
@@ -163,6 +196,7 @@ Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 #### `supervisor_crossDerivedToSource`
 
 Parameters:
+
 - `chainID`: `ChainID`
 - `derived`: `BlockID`
 
@@ -171,6 +205,7 @@ Returns: derivedFrom `BlockRef`
 #### `supervisor_localUnsafe`
 
 Parameters:
+
 - `chainID`: `ChainID`
 
 Returns: `BlockID`
@@ -178,6 +213,7 @@ Returns: `BlockID`
 #### `supervisor_crossSafe`
 
 Parameters:
+
 - `chainID`: `ChainID`
 
 Returns: `DerivedIDPair`
@@ -185,6 +221,7 @@ Returns: `DerivedIDPair`
 #### `supervisor_finalized`
 
 Parameters:
+
 - `chainID`: `ChainID`
 
 Returns: `BlockID`
@@ -201,6 +238,7 @@ Retrieves the super root state at the specified timestamp,
 which represents the global state across all monitored chains.
 
 Parameters:
+
 - `timestamp`: `HexUint64`
 
 Returns: `SuperRootResponse`
@@ -216,9 +254,11 @@ Returns: `SupervisorSyncStatus`
 Returns the last derived block for each chain, from the given L1 block.
 
 Parameters:
+
 - `derivedFrom`: `BlockID`
 
 Returns: derived blocks, mapped in a `OBJECT`:
+
 - key: `ChainID`
 - value: `BlockID`
 
@@ -269,6 +309,7 @@ Advanced block-builders may still choose to include these messages by verifying 
 ##### `supervisor_checkAccessList` contents
 
 Parameters:
+
 - `inboxEntries`: `ARRAY` of `Hash` - statically declared `CrossL2Inbox` access entries.
 - `minSafety`: `SafetyLevel` - minimum required safety, one of:
   - `unsafe`: the message exists.
