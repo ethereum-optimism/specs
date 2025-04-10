@@ -36,7 +36,8 @@
       - [Access-list checks](#access-list-checks)
       - [`supervisor_checkAccessList` contents](#supervisor_checkaccesslist-contents)
   - [Errors](#errors)
-    - [Error Codes](#error-codes)
+    - [Standard JSON-RPC Error Codes](#standard-json-rpc-error-codes)
+    - [Protocol Specific Error Codes](#protocol-specific-error-codes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -394,7 +395,7 @@ Happens when we know for sure that there is different canonical data
 ##### -32115
 
 awaiting replacement block  
-Happens when we know for sure that a replacement block is needed before progress can be made
+Happens when we know for sure that a replacement block is needed before progress can be made.
 
 ##### -32116
 
@@ -413,5 +414,5 @@ Happens when data is accessed, but access is not allowed, because of a limited s
 
 ##### -32119
 
-cannot get parent of first block in the database
+cannot get parent of first block in the database  
 Happens when you try to get the previous block of the first block. E.g. when calling PreviousDerivedFrom on the first L1 block in the DB.
