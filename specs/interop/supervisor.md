@@ -242,7 +242,6 @@ Parameters:
 - `derivedFrom`: `BlockID`
 
 Returns: derived blocks, mapped in a `OBJECT`:
-
 - key: `ChainID`
 - value: `BlockID`
 
