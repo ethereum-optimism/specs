@@ -483,9 +483,11 @@ Game as the starting state for new Dispute Game instances. Notably, given the al
 all Truly Valid Claims are Valid Claims, this invariant does not imply that the Anchor Game is a
 Valid Claim.</p>
 <p>We allow retired games to be used as the Anchor Game because the retirement mechanism is broad in a
-way that commonly causes Truly Valid Claims to no longer be considered Valid Claims. However, we
-explicitly disallow blacklisted games from being used as the Anchor Game. If a game is blacklisted,
-it should no longer be used as the Anchor Game.</p>
+way that commonly causes Truly Valid Claims to no longer be considered Valid Claims. We allow both
+blacklisted games and retired games to remain the Anchor Game if they are already the Anchor Game.
+This is because we assume games that become the Anchor Game would be invalidated <em>before</em> becoming
+the Anchor Game. After the game becomes the Anchor Game, it would be possible to use that game to
+execute withdrawals from the system, which would already be a critical bug in the system.</p>
 <h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, an invalid Anchor Game could be used as the starting state for new
