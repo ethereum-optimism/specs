@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -36,7 +37,7 @@
       - [Access-list checks](#access-list-checks)
       - [`supervisor_checkAccessList` contents](#supervisor_checkaccesslist-contents)
   - [Errors](#errors)
-    - [Standard JSON-RPC Error Codes](#standard-json-rpc-error-codes)
+    - [JSON-RPC Error Codes](#json-rpc-error-codes)
     - [Error Code Structure](#error-code-structure)
     - [Protocol Specific Error Codes](#protocol-specific-error-codes)
       - [`-320400` - DEADLINE_EXCEEDED errors](#-320400---deadline_exceeded-errors)
@@ -73,6 +74,7 @@ The identifier of a message.
 Corresponds to an [Identifier](./messaging.md#message-identifier).
 
 Object:
+
 - `origin`: `Address`
 - `blockNumber`: `HexUint64`
 - `logIndex`: `HexUint64`
@@ -84,6 +86,7 @@ Object:
 Describes an initiating message.
 
 Object:
+
 - `identifier`: `Identifier` - identifier of the message
 - `payloadHash`: `Hash` - `keccak256` hash of the message-payload bytes
 
@@ -93,6 +96,7 @@ Describes the context for message verification.
 Specifically, this helps apply message-expiry rules on message checks.
 
 Object:
+
 - `timestamp`: `HexUint64` - expected timestamp during message execution.
 - `timeout`: `HexUint64` - optional, requests verification to still hold at `timestamp+timeout` (inclusive).
   The message expiry-window may invalidate messages.
@@ -129,6 +133,7 @@ representing a bytes list, prefixed with `0x`.
 Describes a block.
 
 `OBJECT`:
+
 - `hash`: `HASH` - block hash
 - `number`: `Int` - block number
 
@@ -137,6 +142,7 @@ Describes a block.
 Describes a block.
 
 `OBJECT`:
+
 - `hash`: `Hash` - block hash
 - `number`: `Int` - block number
 - `parentHash`: `Hash` - block parent-hash
@@ -147,6 +153,7 @@ Describes a block.
 #### `ChainRootInfo`
 
 `OBJECT`:
+
 - `chainId`: `HexUint64` - The chain ID (Note: this is changing to `ChainID` soon)
 - `canonical`: `Hash` - output root at the latest canonical block
 - `pending`: `Bytes` - output root preimage
@@ -154,6 +161,7 @@ Describes a block.
 #### `SuperRootResponse`
 
 `OBJECT`:
+
 - `crossSafeDerivedFrom`: `BlockID` - common derived-from where all chains are cross-safe
 - `timestamp`: `Int` - The timestamp of the super root
 - `superRoot`: `Hash` - The root of the super root
@@ -166,6 +174,7 @@ The safety level of the message.
 Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 
 `STRING`, one of:
+
 - `invalid`
 - `unsafe`: equivalent to safety of the `latest` RPC label.
 - `cross-unsafe`
@@ -178,6 +187,7 @@ Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 #### `supervisor_crossDerivedToSource`
 
 Parameters:
+
 - `chainID`: `ChainID`
 - `derived`: `BlockID`
 
@@ -186,6 +196,7 @@ Returns: derivedFrom `BlockRef`
 #### `supervisor_localUnsafe`
 
 Parameters:
+
 - `chainID`: `ChainID`
 
 Returns: `BlockID`
@@ -193,6 +204,7 @@ Returns: `BlockID`
 #### `supervisor_crossSafe`
 
 Parameters:
+
 - `chainID`: `ChainID`
 
 Returns: `DerivedIDPair`
@@ -200,6 +212,7 @@ Returns: `DerivedIDPair`
 #### `supervisor_finalized`
 
 Parameters:
+
 - `chainID`: `ChainID`
 
 Returns: `BlockID`
@@ -215,6 +228,7 @@ Retrieves the super root state at the specified timestamp,
 which represents the global state across all monitored chains.
 
 Parameters:
+
 - `timestamp`: `HexUint64`
 
 Returns: `SuperRootResponse`
@@ -229,6 +243,7 @@ Returns: `SupervisorSyncStatus`
 Returns the last derived block for each chain, from the given L1 block.
 
 Parameters:
+
 - `derivedFrom`: `BlockID`
 
 Returns: derived blocks, mapped in a `OBJECT`:
@@ -301,9 +316,12 @@ Malformed access-lists result in an RPC error.
 
 ### Errors
 
-The Supervisor RPC API uses a 6-digit error code system that extends standard JSON-RPC error codes while providing additional categorization based on gRPC status codes.
+The Supervisor RPC API uses a 6-digit error code system that extends standard JSON-RPC error codes
+while providing additional categorization based on gRPC status codes.
 
 For standard JSON-RPC error codes, refer to [Ethereum JSON-RPC Error Reference](https://ethereum-json-rpc.com/errors).
+
+#### JSON-RPC Error Codes
 
 #### Error Code Structure
 
@@ -323,7 +341,8 @@ For gRPC status codes reference, see [gRPC Status Codes](https://grpc.io/docs/gu
 
 ##### `-320500` - NOT_FOUND errors
 
-- `SKIPPED_DATA`: Happens when we try to retrieve data that is not available (pruned). It may also happen if we erroneously skip data, that was not considered a conflict, if the DB is corrupted.
+- `SKIPPED_DATA`: Happens when we try to retrieve data that is not available (pruned).
+  It may also happen if we erroneously skip data, that was not considered a conflict, if the DB is corrupted.
 
 ##### `-320501`
 
@@ -331,7 +350,8 @@ For gRPC status codes reference, see [gRPC Status Codes](https://grpc.io/docs/gu
 
 ##### `-321200` - UNIMPLEMENTED errors
 
-- `CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB`: Happens when you try to get the previous block of the first block. E.g. when trying to determine the previous source block for the first L1 block in the database.
+- `CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB`: Happens when you try to get the previous block of the first block.
+  E.g. when trying to determine the previous source block for the first L1 block in the database.
 
 ##### `-320600` - ALREADY_EXISTS errors
 
@@ -339,11 +359,14 @@ For gRPC status codes reference, see [gRPC Status Codes](https://grpc.io/docs/gu
 
 ##### `-320601`
 
-- `INEFFECTIVE_DATA`: Happens when data is accepted as compatible, but did not change anything. This happens when a node is deriving an L2 block we already know of being derived from the given source, but without path to skip forward to newer source blocks without doing the known derivation work first.
+- `INEFFECTIVE_DATA`: Happens when data is accepted as compatible, but did not change anything.
+  This happens when a node is deriving an L2 block we already know of being derived from the given source,
+  but without path to skip forward to newer source blocks without doing the known derivation work first.
 
 ##### `-320900` - FAILED_PRECONDITION errors
 
-- `OUT_OF_ORDER`: Happens when you try to add data to the DB, but it does not actually fit onto the latest data (by being too old or new).
+- `OUT_OF_ORDER`: Happens when you try to add data to the DB, but it does not actually fit onto the latest data
+  (by being too old or new).
 
 ##### `-320901`
 
@@ -351,11 +374,13 @@ For gRPC status codes reference, see [gRPC Status Codes](https://grpc.io/docs/gu
 
 ##### `-321100` - OUT_OF_RANGE errors
 
-- `OUT_OF_SCOPE`: Happens when data is accessed, but access is not allowed, because of a limited scope. E.g. when limiting scope to L2 blocks derived from a specific subset of the L1 chain.
+- `OUT_OF_SCOPE`: Happens when data is accessed, but access is not allowed, because of a limited scope.
+  E.g. when limiting scope to L2 blocks derived from a specific subset of the L1 chain.
 
 ##### `-321000` - ABORTED errors
 
-- `ITER_STOP`: Happens in iterator to indicate iteration has to stop. This error might only be used internally and not sent over the network.
+- `ITER_STOP`: Happens in iterator to indicate iteration has to stop.
+  This error might only be used internally and not sent over the network.
 
 ##### `-321400` - UNAVAILABLE errors
 
