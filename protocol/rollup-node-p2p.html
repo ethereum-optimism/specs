@@ -462,9 +462,9 @@ the above needs to be compressed after encoding, and decompressed before decodin
 <li><code>[REJECT]</code> if the block is on a topic &gt;= V2 and does not have an empty withdrawals list</li>
 <li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and has a blob gas-used value set</li>
 <li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and has an excess blob gas value set</li>
+<li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and the parent beacon block root is not nil</li>
 <li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and has a blob gas-used value that is not zero</li>
 <li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and has an excess blob gas value that is not zero</li>
-<li><code>[REJECT]</code> if the block is on a topic &lt;= V2 and the parent beacon block root is not nil</li>
 <li><code>[REJECT]</code> if the block is on a topic &gt;= V3 and the parent beacon block root is nil</li>
 <li><code>[REJECT]</code> if the block is on a topic &lt;= V3 and the l2 withdrawals root is not nil</li>
 <li><code>[REJECT]</code> if the block is on a topic &gt;= V4 and the l2 withdrawals root is nil</li>
