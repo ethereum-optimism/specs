@@ -445,9 +445,9 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
 }
 ```
 
-Upon successful delivery, an event is emmitted with useful information. Notably the `returnData` that can be
-used to continue callback execution for anyone that depends on it without needing an explicit callback message
-to be sent back.
+Upon successful delivery, an event is emitted with useful information. Notably the hash of the `returnData` that
+can be used to continue execution for anyone that depends on it without needing an explicit callback message to
+be sent back.
 
 ```solidity
 event RelayedMessage(uint256 indexed source, uint256 indexed messageNonce, bytes32 indexed messageHash, bytes32 returnDataHash);
