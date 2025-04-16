@@ -576,8 +576,13 @@ event along with its corresponding <a href="./messaging.html#message-payload">me
     (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
-    emit RelayedMessage(_source, _nonce, messageHash);
+    emit RelayedMessage(_source, _nonce, messageHash, keccack256(returnData_));
 }
+</code></pre>
+<p>Upon successful delivery, an event is emitted with useful information. Notably the hash of the <code>returnData</code> that
+can be used to continue execution for anyone that depends on it without needing an explicit callback message to
+be sent back.</p>
+<pre><code class="language-solidity">event RelayedMessage(uint256 indexed source, uint256 indexed messageNonce, bytes32 indexed messageHash, bytes32 returnDataHash);
 </code></pre>
 <p>Note that the <code>relayMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
 <p>To enable cross chain authorization patterns, both the <code>_sender</code> and the <code>_source</code> MUST be exposed via <code>public</code>
