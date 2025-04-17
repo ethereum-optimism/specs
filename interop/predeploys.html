@@ -183,6 +183,13 @@
 <li><a href="#type-3-checksum">type 3: Checksum</a></li>
 </ul>
 </li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#gas-schedule-dependencies">Gas Schedule Dependencies</a></li>
+<li><a href="#storage-slot-calculation">Storage Slot Calculation</a></li>
+<li><a href="#evm-warming-behavior">EVM Warming Behavior</a></li>
+</ul>
+</li>
 <li><a href="#functions">Functions</a>
 <ul>
 <li><a href="#validatemessage">validateMessage</a></li>
@@ -380,6 +387,41 @@ bareChecksum = H(idLogHash ++ idChainID)
 typeByte = 0x03
 checksum = typeByte ++ bareChecksum[1:]
 </code></pre>
+<h3 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h3>
+<h4 id="gas-schedule-dependencies"><a class="header" href="#gas-schedule-dependencies">Gas Schedule Dependencies</a></h4>
+<p>The <code>CrossL2Inbox</code> contract's validation mechanism relies on precise gas cost calculations for storage operations.</p>
+<p><code>SLOAD</code> operations cost 2100 gas for cold access and 100 gas for warm access.</p>
+<p>The contract uses these gas costs to implement its validation mechanism through gas introspection.
+The <code>WARM_READ_THRESHOLD</code> is set to 1000 gas, providing a safe buffer between warm (100 gas) and cold (2100 gas) access costs.</p>
+<h4 id="storage-slot-calculation"><a class="header" href="#storage-slot-calculation">Storage Slot Calculation</a></h4>
+<p>Storage slots are calculated using a 248-bit hash space (31 bytes), providing cryptographically secure collision resistance.
+The slot calculation follows this process:</p>
+<ol>
+<li>The checksum is derived from the message identifier and content</li>
+<li>The first byte is reserved for the type (0x03)</li>
+<li>The remaining 31 bytes form the storage slot key</li>
+</ol>
+<p>This design ensures there are no collisions between different message types, provides deterministic slot assignment,
+enables efficient slot lookup, and guarantees secure message validation.</p>
+<h4 id="evm-warming-behavior"><a class="header" href="#evm-warming-behavior">EVM Warming Behavior</a></h4>
+<p>The <code>CrossL2Inbox</code> contract relies on specific EVM behavior regarding storage slot warming.</p>
+<ul>
+<li>
+<p>Per-transaction warming ensures storage warming is scoped to individual transactions.
+Warm slots from previous transactions do not affect the current transaction,
+and each transaction's access list operates independently.</p>
+</li>
+<li>
+<p>When a transaction reverts, all warm slots are rolled back.
+Failed transactions do not persist any warm slots,
+and all access list entries are cleared on revert.</p>
+</li>
+<li>
+<p>The access list is the exclusive mechanism for warming slots.
+No other contract function may warm up storage without message validation,
+and warm slots cannot be created through alternative means.</p>
+</li>
+</ul>
 <h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
 <h4 id="validatemessage"><a class="header" href="#validatemessage">validateMessage</a></h4>
 <p>A helper to enable contracts to provide their own public entrypoints for cross chain interactions.
@@ -737,13 +779,13 @@ This event exists for backward compatibility with legacy version.</p>
 </tbody></table>
 </div>
 <h3 id="updates-1"><a class="header" href="#updates-1">Updates</a></h3>
-<p>The <code>OptimismMintableERC20</code> and <code>L2StandardToken</code> tokens (<em>legacy tokens</em>),
+<p>The <code>OptimismMintableERC20</code> and <code>L2StandardToken</code> tokens (<em>legacy tokens</em>),
 which correspond to locked liquidity in L1, are incompatible with interop.
 Legacy token owners must convert into a <code>OptimismSuperchainERC20</code> representation that implements the <a href="token-bridging.html">standard</a>,
 to move across the Superchain.</p>
-<p>The conversion method uses the <code>L2StandardBridge</code> mint/burn rights
+<p>The conversion method uses the <code>L2StandardBridge</code> mint/burn rights
 over the legacy tokens to allow easy migration to and from the
-corresponding <code>OptimismSuperchainERC20</code>.</p>
+corresponding <code>OptimismSuperchainERC20</code>.</p>
 <h4 id="convert"><a class="header" href="#convert">convert</a></h4>
 <p>The <code>L2StandardBridge</code> SHOULD add a <code>convert</code> public function that
 converts <code>_amount</code> of <code>_from</code> token to <code>_amount</code> of <code>_to</code> token,
