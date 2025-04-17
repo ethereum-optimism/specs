@@ -206,6 +206,7 @@ sequencerfeevault
 sequencerfeevaultconfig
 Shapella
 Singlethreaded
+SLOAD
 standardbridge
 standardbridgeaddress
 statelessly
