@@ -9,7 +9,7 @@
 
 ## OP Stack Specification
 
-This repository contains the [Specs Book](https://static.optimism.io/specs).
+This repository contains the [Specs Book](https://specs.optimism.io).
 
 Please chat with us on the [discussion board](https://github.com/ethereum-optimism/specs/discussions).
 
