@@ -14,7 +14,6 @@
 - [Security Considerations](#security-considerations)
   - [Depositing an Executing Message](#depositing-an-executing-message)
   - [Reliance on History](#reliance-on-history)
-  - [Expiry Window](#expiry-window-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -105,7 +104,11 @@ The expiry window is the time period after which an initiating message is no lon
 
 | Constant | Value |
 | -------- | ----- |
-| `EXPIRY_WINDOW` | `TODO` |
+| `EXPIRY_WINDOW` | `2592000` (30 days) |
+
+The expiry window ensures that the proof can execute in a reasonable amount of time.
+The proof program needs to walk back and re-execute to reproduce the consumed logs. This means
+that very old logs are more expensive to prove.
 
 ## Security Considerations
 
@@ -123,10 +126,3 @@ When fully executing historical blocks, a dependency on historical receipts from
 needing to execute increasingly long chain histories.
 
 [eip-4444]: https://eips.ethereum.org/EIPS/eip-4444
-
-### Expiry Window
-
-The expiry window ensures that the proof can execute in a reasonable amount of time.
-There is currently no way to prove old history with a sublinear proof size. The proof
-program needs to walk back and re-execute to reproduce the consumed logs. This means
-that very old logs are more expensive to prove.
