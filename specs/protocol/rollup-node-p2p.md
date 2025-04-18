@@ -35,6 +35,7 @@
   - [Block signatures](#block-signatures)
   - [Block validation](#block-validation)
     - [Block processing](#block-processing)
+    - [Branch selection](#branch-selection)
     - [Block topic scoring parameters](#block-topic-scoring-parameters)
 - [Req-Resp](#req-resp)
   - [`payload_by_number`](#payload_by_number)
