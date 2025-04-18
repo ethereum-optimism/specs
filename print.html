@@ -13853,7 +13853,7 @@ as described in the <a href="interop/./token-bridging.html">token bridging spec<
 in the target address <code>_to</code> at <code>_chainId</code> and emit the <code>SentERC20</code> event including the <code>msg.sender</code> as parameter.</p>
 <p>To burn the token, the <code>sendERC20</code> function
 calls <code>crosschainBurn</code> in the token contract,
-which is included as part of the the
+which is included as part of the
 <a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
 implemented by the <code>SuperchainERC20</code> standard.</p>
 <p>Returns the <code>msgHash_</code> crafted by the <code>L2ToL2CrossChainMessenger</code>.</p>
@@ -13868,7 +13868,7 @@ and emit an event including the <code>_tokenAddress</code>, the <code>_from</cod
 <code>source</code> chain, where <code>_from</code> is the <code>msg.sender</code> of <code>sendERC20</code>.</p>
 <p>To mint the token, the <code>relayERC20</code> function
 calls <code>crosschainMint</code> in the token contract,
-which is included as part of the the
+which is included as part of the
 <a href="https://github.com/ethereum/ERCs/pull/692"><code>IERC7802</code> interface</a>
 implemented by the <code>SuperchainERC20</code> standard.</p>
 <pre><code class="language-solidity">function relayERC20(address _tokenAddress, address _from, address _to, uint256 _amount)
