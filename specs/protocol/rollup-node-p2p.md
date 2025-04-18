@@ -348,6 +348,21 @@ A node may apply the block to their local engine ahead of L1 availability, if it
 - The subsequent forkchoice-update ensures this block is recognized as "unsafe"
   (see [fork choice updated](derivation.md#engine-api-usage))
 
+#### Branch selection
+
+There is no consensus rule for selecting branches when multiple blocks of the same height are available.
+All nodes accept the first valid block which extends their chain. This means that if there are multiple valid
+blocks available on the network, the unsafe chain will not have consensus until one of the branches is
+made available for Safe Chain Derivation from the L1, at which point all nodes will sync to the Safe Chain,
+and will continue their unsafe chains from that point.
+
+Because the data which is posted to the L1 is determined by the Batcher, this means that the winning branch
+will be selected by whatever Node the Batcher reads from. This is most relevant when the Sequencer attempts
+to reorg the chain be reissuing new block for an old height - if Nodes hae already processed the old block,
+they will reject the reorg until the L1 corrects them. If the Batcher is not listening to the Sequencer,
+the Sequencer's reorg will be ineffective, as it will be set back to the original chain when the L1 data
+corrects them.
+
 #### Block topic scoring parameters
 
 TODO: GossipSub per-topic scoring to fine-tune incentives for ideal propagation delay and bandwidth usage.
