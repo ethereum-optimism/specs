@@ -359,7 +359,7 @@ and will continue their Unsafe Chains from that point.
 
 Because the data which is posted to the L1 is determined by the Batcher, this means that the winning branch
 will be selected by whatever Node the Batcher reads from. This is most relevant when the Sequencer attempts
-to reorg the chain by reissuing new block for an old height - if Nodes hae already processed the old block,
+to reorg the chain by reissuing new block for an old height - if Nodes have already processed the old block,
 they will reject the reorg until the L1 corrects them. If the Batcher is not listening to the Sequencer,
 the Sequencer's reorg will be ineffective, as it will be set back to the original chain when the L1 data
 affirms the original branch.
