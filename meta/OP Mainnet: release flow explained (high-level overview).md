@@ -2,7 +2,7 @@
 
 ## 1. Governance threshold check
 
-- As you first step, you will need to look into governance threshold to know will your feature pass and understand the all the governance needs for your proposal.
+- As your first step, you will need to look into governance threshold to know will your feature pass and understand the all the governance needs for your proposal.
     
     *Good reads on the topic can be found: [OPerating manual](https://github.com/ethereum-optimism/OPerating-manual/tree/main?tab=readme-ov-file), [Optimism Agora](https://vote.optimism.io/)*
     
@@ -215,7 +215,7 @@ Some useful tips for writing your governance post:
 - In the Security Considerations section, use the FMA and the [audit framework](https://gov.optimism.io/t/op-labs-audit-framework-when-to-get-external-security-review-and-how-to-prepare-for-it/6864) to describe why we do or do not need an audit, and how we secured the system.
 - In the Action Plan section make sure to describe activation times, software versions, and which testnets the changes are deployed to.
 - In the Action Plan section make sure to link out to the monorepo commit hash being deployed.
-- If relevant, link out to the specifications that you use fro your development, in order to showcase a full picture of your path to mainnet.
+- If relevant, link out to the specifications that you use for your development, in order to showcase a full picture of your path to mainnet.
 - Include any relevant data to show the impact of the proposal.
 
 ### Upcoming Change: Blockspace Charters
