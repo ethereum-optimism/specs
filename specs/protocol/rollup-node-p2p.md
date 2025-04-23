@@ -351,18 +351,13 @@ A node may apply the block to their local engine ahead of L1 availability, if it
 
 #### Branch selection
 
-There is no consensus rule for selecting branches when multiple blocks of the same height are available.
-All nodes accept the first valid block which extends their chain. This means that if there are multiple valid
-blocks available on the network, the unsafe chain will not have consensus until one of the branches is
-made available for Safe Chain Derivation from the L1, at which point all nodes will sync to the Safe Chain,
-and will continue their Unsafe Chains from that point.
+Nodes expect that the sequencer will not equivocate, and therefore the fork choice rule for unsafe blocks
+is a "first block wins" model, where the unsafe chain will not change once it has been extended, unless
+invalidated by safe data published to the L1.
 
-Because the data which is posted to the L1 is determined by the Batcher, this means that the winning branch
-will be selected by whatever Node the Batcher reads from. This is most relevant when the Sequencer attempts
-to reorg the chain by reissuing new block for an old height - if Nodes have already processed the old block,
-they will reject the reorg until the L1 corrects them. If the Batcher is not listening to the Sequencer,
-the Sequencer's reorg will be ineffective, as it will be set back to the original chain when the L1 data
-affirms the original branch.
+Nodes who see a different initial unsafe block will not reach consensus until the L1 is published,
+which resolves the disagreement. Because the L1 published data depends on the batcher's view of the data,
+the safe head will be based on whatever the batcher's source's unsafe head is.
 
 #### Block topic scoring parameters
 
