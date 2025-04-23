@@ -123,7 +123,8 @@ even if a `withdrawalsRoot` is present and a MPT root is present in the header, 
 Any implementation that calculates output root should be careful not to use the header `withdrawalsRoot`.
 
 After Isthmus activation, if there was never any withdrawal contract storage, a MPT root of an empty list
-can be set as the `withdrawalsRoot`
+can be set as the `withdrawalsRoot`. Note that by default there _is_ nonzero storage in
+the [`L2ToL1MessagePasser`][l2-to-l1-mp] at genesis, so the `withdrawalsRoot` will not be the MPT root of an empty list.
 
 #### Forwards Compatibility Considerations
 
