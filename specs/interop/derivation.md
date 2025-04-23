@@ -106,10 +106,6 @@ The expiry window is the time period after which an initiating message is no lon
 | -------- | ----- |
 | `EXPIRY_WINDOW` | `2592000` (30 days) |
 
-The expiry window ensures that the proof can execute in a reasonable amount of time.
-The proof program needs to walk back and re-execute to reproduce the consumed logs. This means
-that very old logs are more expensive to prove.
-
 ## Security Considerations
 
 ### Depositing an Executing Message
