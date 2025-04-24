@@ -204,8 +204,7 @@ The `_destination` is the chain id of the remote chain to call.  The `_target` i
 The `_message` is the calldata to call the contract with.
 
 It returns the hash of the message being sent, which is used to track whether the message has successfully been relayed.
-It MUST emits `SentMessage` event with the necessary metadata to authorize the execution of the message when relayed on the destination chain.
-
+It MUST emit `SentMessage` event with the necessary metadata to authorize the execution of the message when relayed on the destination chain.
 ```solidity
 event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
 ```
