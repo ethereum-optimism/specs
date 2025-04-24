@@ -11167,8 +11167,10 @@ same root as an empty storage root. The withdrawals are captured in the L2 state
 they are not reflected in the <code>withdrawalsRoot</code>. Hence, prior to Isthmus activation,
 even if a <code>withdrawalsRoot</code> is present and a MPT root is present in the header, it should not be used.
 Any implementation that calculates output root should be careful not to use the header <code>withdrawalsRoot</code>.</p>
-<p>After Isthmus activation, if there was never any withdrawal contract storage, a MPT root of an empty list
-can be set as the <code>withdrawalsRoot</code></p>
+<p>Note that there is always nonzero storage in the <a href="protocol/isthmus/../../protocol/predeploys.html#L2ToL1MessagePasser"><code>L2ToL1MessagePasser</code></a>,
+because it is a <a href="protocol/isthmus/../../protocol/predeploys.html">proxied predeploy</a> -- from genesis it
+stores an implementation address and owner address. So from Isthmus,
+the <code>withdrawalsRoot</code> will always be non-nil and never be the MPT root of an empty list.</p>
 <h4 id="forwards-compatibility-considerations"><a class="header" href="#forwards-compatibility-considerations">Forwards Compatibility Considerations</a></h4>
 <p>As it stands, the <code>withdrawalsRoot</code> field is unused within the OP Stack's header consensus format, and will never be
 used for other reasons that are currently planned. Setting this value to the account storage root of the withdrawal
