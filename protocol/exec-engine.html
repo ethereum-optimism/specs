@@ -398,7 +398,7 @@ to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad6657180
     gasLimit: QUANTITY or null
 }
 </code></pre>
-<p>The type notation used here refers to the <a href="https://eth.wiki/json-rpc/API#hex-value-encoding">HEX value encoding</a> used by the <a href="https://github.com/ethereum/execution-apis">Ethereum JSON-RPC API
+<p>The type notation used here refers to the <a href="https://ethereum.org/en/developers/docs/apis/json-rpc/#hex-encoding">HEX value encoding</a> used by the <a href="https://github.com/ethereum/execution-apis">Ethereum JSON-RPC API
 specification</a>, as this structure will need to be sent over JSON-RPC. <code>array</code> refers
 to a JSON array.</p>
 <p>Each item of the <code>transactions</code> array is a byte list encoding a transaction: <code>TransactionType || TransactionPayload</code> or <code>LegacyTransaction</code>, as defined in <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.
