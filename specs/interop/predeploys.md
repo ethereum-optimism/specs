@@ -245,7 +245,7 @@ The `_sentMessage` is the [message payload](./messaging.md#message-payload) of t
 function relayMessage(Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_);
 ```
 
-This needs to made into its own section!
+This needs to be made into its own section!
 The `relayMessage` function is `payable` to enable relayers to earn for relaying messages.
 
 To enable cross chain authorization patterns, both the `_sender` and the `_source` MUST be exposed via `public`
