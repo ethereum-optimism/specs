@@ -269,8 +269,7 @@ Ecotone blocks are broadcast on `/optimism/<chainId>/2/blocks`.
 
 ### `blocksv4`
 
-Isthmus blocks are broadcast on `/optimism/<chainId>/3/blocks`, except for the special case of
-when the `withdrawalsRoot` is the MPT root of an empty list (such blocks are broadcast on `/optimism/<chainId>/2/blocks`).
+Isthmus blocks are broadcast on `/optimism/<chainId>/3/blocks`.
 
 ### Block encoding
 
