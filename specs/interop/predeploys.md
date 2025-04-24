@@ -70,8 +70,7 @@
 
 ## Overview
 
-Interop introduces new predeploys that faciliate cross chain messaging and token bridging.
-
+Interop introduces new predeploys that facilitate cross chain messaging and token bridging.
 ### Predeploy Addresses
 
 These predeploys are added or modified as part of the interop network upgrade.
