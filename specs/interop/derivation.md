@@ -13,6 +13,7 @@
 - [Expiry Window](#expiry-window)
 - [Security Considerations](#security-considerations)
   - [Depositing an Executing Message](#depositing-an-executing-message)
+  - [Expiry Window](#expiry-window-1)
   - [Reliance on History](#reliance-on-history)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -115,10 +116,19 @@ It is possible to deposit an invalid executing message, forcing the sequencer to
 be fairly cheap to continuously deposit invalid executing messages through L1 and cause L2 liveness
 instability. A future upgrade will enable deposits to trigger executing messages.
 
+### Expiry Window
+
+The expiry window ensures that the proof can execute in a reasonable amount of time. [`EIP-2935`][eip-2935] introduced
+the capability to traverse history with sub-linear complexity, however deep lookups remain expensive. App developers and
+users, in the event that they encounter a message that has expired but has yet to be relayed, can
+[resend the message][resend-msg] in order to complete the process.
+
 ### Reliance on History
 
 When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
 [EIP-4444][eip-4444] will eventually provide a solution for making historical receipts available without
 needing to execute increasingly long chain histories.
 
+[eip-2935]: https://eips.ethereum.org/EIPS/eip-2935
 [eip-4444]: https://eips.ethereum.org/EIPS/eip-4444
+[resend-msg]: https://github.com/ethereum-optimism/design-docs/blob/25ef5537e39b63cddf1c83479cee9f0e02431dce/protocol/resend-messages.md#L4
