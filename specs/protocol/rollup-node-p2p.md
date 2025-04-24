@@ -257,42 +257,20 @@ Listed below are the topics for distributing blocks to other nodes faster than p
 
 ### `blocksv1`
 
-Blocks which have payloads with:
-
-- either a nil or empty (MPT of empty list) `WithdrawalsRoot` field,
-- a nil `ExcessBlobGas` and nil `BlobGasUsed` field, and
-- a nil `Withdrawals` field
-
-are broadcast on `/optimism/<chainId>/0/blocks`.
+Pre-Canyon/Shanghai blocks are broadcast on `/optimism/<chainId>/0/blocks`.
 
 ### `blocksv2`
 
-Blocks which have payloads with:
-
-- either a nil or empty (MPT of empty list) `WithdrawalsRoot` field,
-- a nil `ExcessBlobGas` and nil `BlobGasUsed` field,
-- and a non-nil `Withdrawals` field
-
-and are broadcast on `/optimism/<chainId>/1/blocks`.
+Canyon/Delta blocks are broadcast on `/optimism/<chainId>/1/blocks`.
 
 ### `blocksv3`
 
-Blocks which have payloads with:
-
-- non-nil `ExcessBlobGas` and non-nil `BlobGasUsed` fields and
-- either a nil or empty (MPT of empty list) `WithdrawalsRoot` field
-
-are broadcast on `/optimism/<chainId>/2/blocks`. Note that this could
-in principle include Isthmus blocks since they can have
-empty (MPT of empty list) `WithdrawalsRoot` field in certain edge cases.
+Ecotone blocks are broadcast on `/optimism/<chainId>/2/blocks`.
 
 ### `blocksv4`
 
-Blocks which have payloads with:
-
-- a non-nil, non-empty `WithdrawalsRoot` field
-
-are broadcast on `/optimism/<chainId>/3/blocks`.
+Isthmus blocks are broadcast on `/optimism/<chainId>/3/blocks`, except for the special case of
+when the `withdrawalsRoot` is the MPT root of an empty list (such blocks are broadcast on `/optimism/<chainId>/2/blocks`).
 
 ### Block encoding
 
