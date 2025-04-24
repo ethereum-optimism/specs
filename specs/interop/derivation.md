@@ -104,7 +104,7 @@ The expiry window is the time period after which an initiating message is no lon
 
 | Constant | Value |
 | -------- | ----- |
-| `EXPIRY_WINDOW` | `2592000` (30 days) |
+| `EXPIRY_WINDOW` | `2592000 secs` (30 days) |
 
 ## Security Considerations
 
