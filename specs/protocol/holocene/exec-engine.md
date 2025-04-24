@@ -49,7 +49,7 @@ Additionally,
 Note that `extraData` has a maximum capacity of 32 bytes (to fit in the L1 beacon-chain `extraData` data-type) and its
 format may be modified/extended by future upgrades.
 
-Note also that if the chain had Holocene genesis, the genesis block must have an above-formated `extraData` representing
+Note also that if the chain had Holocene genesis, the genesis block must have an above-formatted `extraData` representing
 the initial parameters to be used by the chain.
 
 ### EIP-1559 Parameters in `PayloadAttributesV3`
@@ -60,7 +60,7 @@ type is extended with an additional value, `eip1559Params`:
 ```rs
 PayloadAttributesV3: {
     timestamp: QUANTITY
-    random: DATA (32 bytes)
+    prevRandao: DATA (32 bytes)
     suggestedFeeRecipient: DATA (20 bytes)
     withdrawals: array of WithdrawalV1
     parentBeaconBlockRoot: DATA (32 bytes)
@@ -106,9 +106,9 @@ were [constants](../exec-engine.md#1559-parameters).
 With the Holocene upgrade, these parameters are instead determined as follows:
 
 - if Holocene is not active in `parent_header.timestamp`, the [prior EIP-1559
-  constants](../exec-engine.md#1559-parameters) constants are used. While `parent_header.extraData` is typically empty
-  prior to Holocene, there are some legacy cases where it may be set arbitrarily, so it must not be assumed to be empty.
-- if Holocene is active in `parent_header.timestamp`, then the parameters from `parent_header.extraData` are used.
+  constants](../exec-engine.md#1559-parameters) are used. Note that `parent_header.extraData` is empty
+  prior to Holocene, except possibly for the genesis block.
+- if Holocene is active at `parent_header.timestamp`, then the parameters from `parent_header.extraData` are used.
 
 ### Rationale
 

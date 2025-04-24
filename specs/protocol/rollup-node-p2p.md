@@ -285,8 +285,9 @@ A block is structured as the concatenation of:
 - V4 topic
   - `signature`: A `secp256k1` signature, always 65 bytes, `r (uint256), s (uint256), y_parity (uint8)`
   - `parentBeaconBlockRoot`: L1 origin parent beacon block root, always 32 bytes
-  - `withdrawalsRoot`: L2 withdrawals root, always 32 bytes.
   - `payload`: A SSZ-encoded `ExecutionPayload`, always the remaining bytes.
+    - _Note_ - the `ExecutionPayload` is modified for the first time in Isthmus. See
+      ["Update to `ExecutionPayload`"](./isthmus/exec-engine.md#update-to-executionpayload) in the Isthmus spec.
 
 All topics use Snappy block-compression (i.e. no snappy frames):
 the above needs to be compressed after encoding, and decompressed before decoding.
@@ -300,8 +301,8 @@ The `signature` is a `secp256k1` signature, and signs over a message:
 - `chain_id` is a big-endian encoded `uint256`.
 - `payload_hash` is `keccak256(payload)`, where `payload` is:
   - the `payload` in V1 and V2,
-  - `parentBeaconBlockRoot ++ payload` in V3.
-  - `parentBeaconBlockRoot ++  withdrawalsRoot ++ payload` in V4.
+  - `parentBeaconBlockRoot ++ payload` in V3 + V4 (_NOTE_: In V4, `payload` is extended to include the
+    `withdrawalsRoot`).
 
 The `secp256k1` signature must have `y_parity = 1 or 0`, the `chain_id` is already signed over.
 
@@ -320,11 +321,12 @@ An [extended-validator] checks the incoming messages as follows, in order of ope
 - `[REJECT]` if the block is on a topic >= V2 and does not have an empty withdrawals list
 - `[REJECT]` if the block is on a topic <= V2 and has a blob gas-used value set
 - `[REJECT]` if the block is on a topic <= V2 and has an excess blob gas value set
+- `[REJECT]` if the block is on a topic <= V2 and the parent beacon block root is not nil
 - `[REJECT]` if the block is on a topic >= V3 and has a blob gas-used value that is not zero
 - `[REJECT]` if the block is on a topic >= V3 and has an excess blob gas value that is not zero
-- `[REJECT]` if the block is on a topic <= V2 and the parent beacon block root is not nil
 - `[REJECT]` if the block is on a topic >= V3 and the parent beacon block root is nil
-- `[REJECT]` if the block is on a topic >= V3 and the l2 withdrawals root is nil
+- `[REJECT]` if the block is on a topic <= V3 and the l2 withdrawals root is not nil
+- `[REJECT]` if the block is on a topic >= V4 and the l2 withdrawals root is nil
 - `[REJECT]` if more than 5 different blocks have been seen with the same block height
 - `[IGNORE]` if the block has already been seen
 - `[REJECT]` if the signature by the sequencer is not valid

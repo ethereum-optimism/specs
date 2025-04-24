@@ -1028,7 +1028,7 @@ entries.
 [deposit-contract-spec]: deposits.md#deposit-contract
 
 Logs are derived from transactions following the future-proof best-effort process described in
-[On Future-Proof Transaction Log Derivation][#on-future-proof-transaction-log-derivation]
+[On Future Proof Transaction Log Derivation](#on-future-proof-transaction-log-derivation)
 
 ### Network upgrade automation transactions
 
@@ -1062,7 +1062,7 @@ As described in [L1 Retrieval](#l1-retrieval), batcher transactions' types are r
 However, we want to allow deposit transactions and `SystemConfig` update events to get derived even from receipts of
 future transaction types, as long as the receipts can be decoded following a best-effort process:
 
-As long as a future transaction type follows the [EIP-2718][https://eips.ethereum.org/EIPS/eip-2718] specification, the
+As long as a future transaction type follows the [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) specification, the
 type can be decoded from the first byte of the transaction's (or its receipt's) binary encoding. We can then proceed as
 follows to get the logs of such a future transaction, or discard the transaction's receipt as invalid.
 

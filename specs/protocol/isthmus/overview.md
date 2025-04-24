@@ -10,8 +10,6 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-This document is not finalized and should be considered experimental.
-
 ## Execution Layer
 
 - [Pectra](https://eips.ethereum.org/EIPS/eip-7600) (Execution Layer):
@@ -37,6 +35,5 @@ This document is not finalized and should be considered experimental.
 
 ## Smart Contracts
 
-- [SuperchainConfig](./superchain-config.md)
 - [Predeploys](./predeploys.md)
 - [L1 Block Attributes](./l1-attributes.md)

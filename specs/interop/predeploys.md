@@ -6,6 +6,14 @@
 
 - [Overview](#overview)
 - [CrossL2Inbox](#crossl2inbox)
+  - [Access-list](#access-list)
+    - [type 1: Lookup identity](#type-1-lookup-identity)
+    - [type 2: Chain-ID extension](#type-2-chain-id-extension)
+    - [type 3: Checksum](#type-3-checksum)
+  - [Assumptions](#assumptions)
+    - [Gas Schedule Dependencies](#gas-schedule-dependencies)
+    - [Storage Slot Calculation](#storage-slot-calculation)
+    - [EVM Warming Behavior](#evm-warming-behavior)
   - [Functions](#functions)
     - [validateMessage](#validatemessage)
   - [`ExecutingMessage` Event](#executingmessage-event)
@@ -15,10 +23,11 @@
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
   - [`sendMessage` Invariants](#sendmessage-invariants)
+  - [`resendMessage` Invariants](#resendmessage-invariants)
   - [Message Versioning](#message-versioning)
-  - [No Native Support for Cross Chain Ether Sends](#no-native-support-for-cross-chain-ether-sends)
   - [Interfaces](#interfaces)
     - [Sending Messages](#sending-messages)
+  - [Re-sending Messages](#re-sending-messages)
     - [Relaying Messages](#relaying-messages)
 - [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
   - [OptimismSuperchainERC20](#optimismsuperchainerc20)
@@ -33,11 +42,6 @@
   - [Deployment Flow](#deployment-flow)
 - [OptimismSuperchainERC20Beacon](#optimismsuperchainerc20beacon)
   - [Overview](#overview-2)
-- [L1Block](#l1block)
-  - [L1 Atributes Transaction](#l1-atributes-transaction)
-  - [Deposit Context](#deposit-context)
-  - [`isDeposit()`](#isdeposit)
-    - [`depositsComplete()`](#depositscomplete)
 - [OptimismMintableERC20Factory](#optimismmintableerc20factory)
   - [OptimismMintableERC20](#optimismmintableerc20)
   - [Updates](#updates)
@@ -54,6 +58,8 @@
     - [`Converted`](#converted)
   - [Invariants](#invariants)
   - [Conversion Flow](#conversion-flow)
+- [SuperchainETHBridge](#superchainethbridge)
+- [ETHLiquidity](#ethliquidity)
 - [SuperchainTokenBridge](#superchaintokenbridge)
   - [Overview](#overview-3)
   - [Functions](#functions-3)
@@ -71,7 +77,7 @@
 ## Overview
 
 Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
-an update to the `L1Block`, `OptimismMintableERC20Factory` and `L2StandardBridge` contracts with additional functionalities.
+an update to the `OptimismMintableERC20Factory` and `L2StandardBridge` contracts with additional functionalities.
 
 ## CrossL2Inbox
 
@@ -86,6 +92,144 @@ To ensure safety of the protocol, the [Message Invariants](./messaging.md#messag
 
 [`Identifier`]: ./messaging.md#message-identifier
 
+### Access-list
+
+Execution of messages is statically pre-declared in transactions,
+to ensure the cross-chain validity can be verified outside the single-chain EVM environment constraints.
+
+After pre-verification of the access-list, the `CrossL2Inbox` can allow messages
+to execute when there is a matching pre-verified access-list entry.
+
+Each executing message is declared with 3 typed access-list entries:
+
+- 1: Lookup identity
+- 2: Chain-ID extension
+- 3: Checksum
+
+The type of entry is encoded in the first byte.
+Type 0 is reserved, so valid access-list entries are always non-zero.
+
+Note that the access-list entries may be de-duplicated:
+the same message may be executed multiple times.
+
+The access-list content might not always be a multiple of 3.
+
+The access-list content is ordered:
+
+- after type 1, a type 2 or 3 entry is expected.
+- after type 2, a type 3 entry is expected.
+
+Note that type 1 and 2 are only enforced out-of-protocol:
+these provide a hint, for viable block-building,
+to lookup data to determine the validity of the checksum without prior transaction execution.
+
+Not every access-list entry may be executed:
+access-list content must not be used by applications to interpret results of transactions,
+the `ExecutingMessage` event describes in detail what is executed.
+
+To prevent cross-contamination of access-list contents,
+the checksum entry commits to the contents of the other entries.
+The checksum will be invalid if the wrong entries are interpreted with it.
+
+The `CrossL2Inbox` only checks the checksum is present in the access-list:
+the presence of other needed entries is enforced during pre-validation.
+
+#### type 1: Lookup identity
+
+Packed attributes for message lookup.
+This type of entry serves as hint of the message identity,
+for verification of the `checksum` and is not verified in the protocol state-transition or fork-choice.
+
+```text
+0..1: type byte, always 0x01
+1..4: reserved, zeroed by default
+4..12: big-endian uint64 chain ID
+12..20: big-endian uint64, block number
+20..28: big-endian uint64, timestamp
+28..32: big-endian uint32, log index
+```
+
+Chain IDs larger than `uint64` are supported, with an additional chain-ID-extension entry.
+The lower 64 bits of the chain-ID are always encoded in the lookup entry.
+
+#### type 2: Chain-ID extension
+
+Large `uint256` Chain IDs are represented with an extension entry,
+included right after the lookup identity entry.
+Like the lookup identity entry, this entry-type is not verified in the protocol state-transition or fork-choice.
+
+This extension entry does not have to be included for chain-IDs that fit in `uint64`.
+
+```text
+0..1: type byte, always 0x02
+1..8: zero bytes
+8..32: upper 24 bytes of big-endian uint256 chain-ID
+```
+
+#### type 3: Checksum
+
+The checksum is a versioned hash, committing to implied attributes.
+These implied attributes are compared against the full version
+of the executing message by recomputing the checksum from the full version.
+The full version is retrieved based on the preceding lookup entry and optional chain-ID extension.
+
+The checksum is iteratively constructed:
+this allows services to work with intermediate implied data.
+E.g. the supervisor does not persist the `origin` or `msgHash`,
+but does store a `logHash`.
+
+```text
+# Syntax:
+#   H(bytes): keccak256 hash function
+#   ++: bytes concatenation
+logHash = H(bytes20(idOrigin) ++ msgHash)
+# This matches the trailing part of the lookupID
+idPacked = bytes12(0) ++ idBlockNumber ++ idTimestamp ++ idLogIndex
+idLogHash = H(logHash ++ idPacked)
+bareChecksum = H(idLogHash ++ idChainID)
+typeByte = 0x03
+checksum = typeByte ++ bareChecksum[1:]
+```
+
+### Assumptions
+
+#### Gas Schedule Dependencies
+
+The `CrossL2Inbox` contract's validation mechanism relies on precise gas cost calculations for storage operations.
+
+`SLOAD` operations cost 2100 gas for cold access and 100 gas for warm access.
+
+The contract uses these gas costs to implement its validation mechanism through gas introspection.
+The `WARM_READ_THRESHOLD` is set to 1000 gas, providing a safe buffer between warm (100 gas) and cold (2100 gas) access costs.
+
+#### Storage Slot Calculation
+
+Storage slots are calculated using a 248-bit hash space (31 bytes), providing cryptographically secure collision resistance.
+The slot calculation follows this process:
+
+1. The checksum is derived from the message identifier and content
+2. The first byte is reserved for the type (0x03)
+3. The remaining 31 bytes form the storage slot key
+
+This design ensures there are no collisions between different message types, provides deterministic slot assignment,
+enables efficient slot lookup, and guarantees secure message validation.
+
+#### EVM Warming Behavior
+
+The `CrossL2Inbox` contract relies on specific EVM behavior regarding storage slot warming.
+
+- Per-transaction warming ensures storage warming is scoped to individual transactions.
+  Warm slots from previous transactions do not affect the current transaction,
+  and each transaction's access list operates independently.
+
+- When a transaction reverts, all warm slots are rolled back.
+  Failed transactions do not persist any warm slots,
+  and all access list entries are cleared on revert.
+
+- The access list is the exclusive mechanism for warming slots.
+  No other contract function may warm up storage without message validation,
+  and warm slots cannot be created through alternative means.
+
 ### Functions
 
 #### validateMessage
@@ -95,9 +239,9 @@ Emits the `ExecutingMessage` event to signal the transaction has a cross chain m
 
 The following fields are required for validating a cross chain message:
 
-| Name     | Type       | Description                                                                |
-| -------- | ---------- | -------------------------------------------------------------------------- |
-| `_id`      | Identifier | A [`Identifier`] pointing to the initiating message.                         |
+| Name       | Type         | Description                                                                |
+| ---------- | ------------ | -------------------------------------------------------------------------- |
+| `_id`      | `Identifier` | A [`Identifier`] pointing to the initiating message.                       |
 | `_msgHash` | `bytes32`    | The keccak256 hash of the message payload matching the initiating message. |
 
 ```solidity
@@ -130,14 +274,22 @@ hash comparison.
 A simple implementation of the `validateMessage` function is included below.
 
 ```solidity
-    function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
-        // We need to know if this is being called on a depositTx
-        if (IL1BlockInterop(Predeploys.L1_BLOCK_ATTRIBUTES).isDeposit()) revert NoExecutingDeposits();
+function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
+  bytes32 checksum = calculateChecksum(_id, _msgHash);
 
-        emit ExecutingMessage(_msgHash, _id);
-    }
+  (bool _isSlotWarm,) = _isWarm(checksum);
+
+  if (!_isSlotWarm) revert NonDeclaredExecutingMessage();
+
+  emit ExecutingMessage(_msgHash, _id);
 }
 ```
+
+`calculateChecksum` implements the checksum computation (including type-byte) as defined
+in the [access-list checksum computation](#type-3-checksum) spec.
+
+`_isWarm` checks that the access-list prepared the `checksum` storage key to be warm.
+**No other contract function may warm up this storage without message validation.**
 
 An example of a custom entrypoint utilizing `validateMessage` to consume a known
 event. Note that in this example, the contract is consuming its own event
@@ -169,12 +321,10 @@ contract MyCrossChainApp {
 
 ### Deposit Handling
 
-Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event will reverts
-if the call is made in a [deposit context](./derivation.md#deposit-context).
-The deposit context status can be determined by calling `isDeposit` on the `L1Block` contract.
-
-In the future, deposit handling will be modified to be more permissive.
-It will revert only in specific cases where interop dependency resolution is not feasible.
+Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event will revert if the
+transaction did not declare an access list including the message checksum, as
+[described above](#type-3-checksum). Because deposit transactions do not have access lists,
+all calls to the `CrossL2Inbox` originating within a deposit transaction will revert.
 
 ### `Identifier` Getters
 
@@ -202,7 +352,13 @@ as well as domain binding, i.e. the executing transaction can only be valid on a
 ### `sendMessage` Invariants
 
 - Sent Messages MUST be uniquely identifiable
-- It must emit the `SentMessage` event
+- It MUST store the message hash in the `sentMessages` mapping
+- It MUST emit the `SentMessage` event
+
+### `resendMessage` Invariants
+
+- It MUST NOT be possible to re-emit a `SentMessage` event that has not been sent
+- It MUST emit the `SentMessage` event
 
 ### Message Versioning
 
@@ -214,12 +370,6 @@ function messageNonce() public view returns (uint256) {
     return Encoding.encodeVersionedNonce(nonce, MESSAGE_VERSION);
 }
 ```
-
-### No Native Support for Cross Chain Ether Sends
-
-To enable interoperability between chains that use a custom gas token, there is no native support for
-sending `ether` between chains. `ether` must first be wrapped into WETH before sending between chains.
-See [SuperchainWETH](./superchain-weth.md) for more information.
 
 ### Interfaces
 
@@ -253,10 +403,27 @@ In both cases, the source chain's chain id is required for security. Executing m
 assume the identity of an account because `msg.sender` will never be the identity that initiated the message,
 it will be the `L2ToL2CrossDomainMessenger` and users will need to callback to get the initiator of the message.
 
-The `_destination` MUST NOT be the chainid of the local chain and a locally defined `nonce` MUST increment on
+The `_destination` MUST NOT be the chain-ID of the local chain and a locally defined `nonce` MUST increment on
 every call to `sendMessage`.
 
 Note that `sendMessage` is not `payable`.
+
+### Re-sending Messages
+
+The `resendMessage` function is used to re-emit a `SentMessage` event for a message that has already been sent.
+It will calculate the message hash using the inputs, and check that the message hash is stored in the `sentMessages`
+mapping prior to emitting the `SentMessage` event.
+
+```solidity
+    function resendMessage(
+        uint256 _destination,
+        uint256 _nonce,
+        address _sender,
+        address _target,
+        bytes calldata _message
+    )
+        external;
+```
 
 #### Relaying Messages
 
@@ -317,8 +484,16 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
-    emit RelayedMessage(_source, _nonce, messageHash);
+    emit RelayedMessage(_source, _nonce, messageHash, keccack256(returnData_));
 }
+```
+
+Upon successful delivery, an event is emitted with useful information. Notably the hash of the `returnData` that
+can be used to continue execution for anyone that depends on it without needing an explicit callback message to
+be sent back.
+
+```solidity
+event RelayedMessage(uint256 indexed source, uint256 indexed messageNonce, bytes32 indexed messageHash, bytes32 returnDataHash);
 ```
 
 Note that the `relayMessage` function is `payable` to enable relayers to earn in the gas paying asset.
@@ -446,58 +621,6 @@ in [EIP-1967](https://eips.ethereum.org/EIPS/eip-1967).
 
 The implementation address gets deduced similarly to the `GasPriceOracle` address in Ecotone and Fjord updates.
 
-## L1Block
-
-| Constant            | Value                                        |
-| ------------------- | -------------------------------------------- |
-| Address             | `0x4200000000000000000000000000000000000015` |
-| `DEPOSITOR_ACCOUNT` | `0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001` |
-
-### L1 Atributes Transaction
-
-A new entrypoint on the `L1Block` contract is added that is used to open the [deposit context](./derivation.md#deposit-context).
-
-```solidity
-function setL1AttributesInterop() external;
-```
-
-WARNING: the function name is subject to change depending on the name of the network upgrade.
-
-| Input arg         | Type    | Calldata bytes | Segment |
-| ----------------- | ------- | -------------- | ------- |
-| {0xfe8f4eaf}      |         | 0-3            | n/a     |
-| baseFeeScalar     | uint32  | 4-7            | 1       |
-| blobBaseFeeScalar | uint32  | 8-11           |         |
-| sequenceNumber    | uint64  | 12-19          |         |
-| l1BlockTimestamp  | uint64  | 20-27          |         |
-| l1BlockNumber     | uint64  | 28-35          |         |
-| basefee           | uint256 | 36-67          | 2       |
-| blobBaseFee       | uint256 | 68-99          | 3       |
-| l1BlockHash       | bytes32 | 100-131        | 4       |
-| batcherHash       | bytes32 | 132-163        | 5       |
-
-### Deposit Context
-
-New methods will be added on the `L1Block` contract to interact with [deposit contexts](./derivation.md#deposit-context).
-
-```solidity
-function isDeposit() public view returns (bool);
-function depositsComplete() public;
-```
-
-### `isDeposit()`
-
-Returns true if the current execution occurs in a [deposit context](./derivation.md#deposit-context).
-
-Only the `CrossL2Inbox` is authorized to call `isDeposit`.
-This is done to prevent apps from easily detecting and censoring deposits.
-
-#### `depositsComplete()`
-
-Called after processing the first L1 Attributes transaction and user deposits to destroy the deposit context.
-
-Only the `DEPOSITOR_ACCOUNT` is authorized to call `depositsComplete()`.
-
 ## OptimismMintableERC20Factory
 
 | Constant | Value                                        |
@@ -592,14 +715,14 @@ event StandardL2TokenCreated(address indexed remoteToken, address indexed localT
 
 ### Updates
 
-The `OptimismMintableERC20` and `L2StandardToken` tokens (_legacy tokens_),
+The `OptimismMintableERC20` and `L2StandardToken` tokens (_legacy tokens_),
 which correspond to locked liquidity in L1, are incompatible with interop.
 Legacy token owners must convert into a `OptimismSuperchainERC20` representation that implements the [standard](token-bridging.md),
 to move across the Superchain.
 
-The conversion method uses the `L2StandardBridge` mint/burn rights
+The conversion method uses the `L2StandardBridge` mint/burn rights
 over the legacy tokens to allow easy migration to and from the
-corresponding `OptimismSuperchainERC20`.
+corresponding `OptimismSuperchainERC20`.
 
 #### convert
 
@@ -672,6 +795,22 @@ sequenceDiagram
   L2StandardBridge-->L2StandardBridge: emit Converted(from, to, Alice, amount)
 ```
 
+## SuperchainETHBridge
+
+| Constant | Value                                        |
+| -------- | -------------------------------------------- |
+| Address  | `0x4200000000000000000000000000000000000024` |
+
+See the [SuperchainETHBridge](./superchain-eth-bridge.md) spec for the design of the `SuperchainETHBridge` predeploy.
+
+## ETHLiquidity
+
+| Constant | Value                                        |
+| -------- | -------------------------------------------- |
+| Address  | `0x4200000000000000000000000000000000000025` |
+
+See the [ETHLiquidity](./eth-liquidity.md) spec for the design of the `ETHLiquidity` contract.
+
 ## SuperchainTokenBridge
 
 | Constant | Value                                        |
@@ -697,7 +836,7 @@ in the target address `_to` at `_chainId` and emit the `SentERC20` event includi
 
 To burn the token, the `sendERC20` function
 calls `crosschainBurn` in the token contract,
-which is included as part of the the
+which is included as part of the
 [`IERC7802` interface](https://github.com/ethereum/ERCs/pull/692)
 implemented by the `SuperchainERC20` standard.
 
@@ -718,7 +857,7 @@ and emit an event including the `_tokenAddress`, the `_from` and chain id from t
 
 To mint the token, the `relayERC20` function
 calls `crosschainMint` in the token contract,
-which is included as part of the the
+which is included as part of the
 [`IERC7802` interface](https://github.com/ethereum/ERCs/pull/692)
 implemented by the `SuperchainERC20` standard.
 
@@ -768,9 +907,9 @@ sequenceDiagram
   L2SBA->>SuperERC20_A: crosschainBurn(from, amount)
   SuperERC20_A-->SuperERC20_A: emit CrosschainBurn(from, amount)
   L2SBA->>Messenger_A: sendMessage(chainId, message)
-  Messenger_A->>L2SBA: return msgHash_ 
+  Messenger_A->>L2SBA: return msgHash_
   L2SBA-->L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
-  L2SBA->>from: return msgHash_ 
+  L2SBA->>from: return msgHash_
   Inbox->>Messenger_B: relayMessage()
   Messenger_B->>L2SBB: relayERC20(tokenAddr, from, to, amount)
   L2SBB->>SuperERC20_B: crosschainMint(to, amount)
@@ -801,7 +940,7 @@ The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require
   to the same address on the target chain.
   Similarly, the `relayERC20()` function should only process messages originating from the same address.
   - Note: The [`Create2Deployer` preinstall](../protocol/preinstalls.md#create2deployer)
-  and the custom Factory will ensure same address deployment.
+    and the custom Factory will ensure same address deployment.
 - Locally initiated: The bridging action should be initialized
   from the chain where funds are located only.
   - This is because the same address might correspond to different users cross-chain.

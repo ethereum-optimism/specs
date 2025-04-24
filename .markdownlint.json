@@ -14,5 +14,6 @@
   "single-title": false,
   "no-emphasis-as-heading": false,
   "no-duplicate-header": false,
-  "no-inline-html": false
+  "no-inline-html": false,
+  "blanks-around-lists": false
 }

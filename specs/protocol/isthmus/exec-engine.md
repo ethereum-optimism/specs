@@ -20,14 +20,20 @@
 - [Deposit Requests](#deposit-requests)
 - [Block Body Withdrawals List](#block-body-withdrawals-list)
 - [EVM Changes](#evm-changes)
+  - [BLS Precompiles](#bls-precompiles)
 - [Block Sealing](#block-sealing)
 - [Engine API Updates](#engine-api-updates)
   - [Update to `ExecutionPayload`](#update-to-executionpayload)
   - [`engine_newPayloadV4` API](#engine_newpayloadv4-api)
 - [Fees](#fees)
   - [Operator Fee](#operator-fee)
-    - [Configuring Parameters](#configuring-parameters)
+    - [Fee Formula](#fee-formula)
+    - [Deposit Operator Fees](#deposit-operator-fees)
+    - [EVM Fee Semantics](#evm-fee-semantics)
+    - [Transaction Pool Changes](#transaction-pool-changes)
+    - [Configuring Operator Fee Parameters](#configuring-operator-fee-parameters)
   - [Fee Vaults](#fee-vaults)
+  - [Receipts](#receipts)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -65,11 +71,11 @@ Prior to isthmus activation:
 After Isthmus activation, an L2 block header is valid iff:
 
 1. The `withdrawalsRoot` field
-    1. Is 32 bytes in length.
-    1. Matches the [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root,
-    as committed to in the `storageRoot` within the block header
+   1. Is 32 bytes in length.
+   1. Matches the [`L2ToL1MessagePasser`][l2-to-l1-mp] account storage root,
+      as committed to in the `storageRoot` within the block header
 1. The `requestsHash` field is equal to `sha256('') = 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
-indicating no requests in the block.
+   indicating no requests in the block.
 
 ### Header Withdrawals Root
 
@@ -103,7 +109,7 @@ available to the EVM/application layer.
 
 During sync, we expect the withdrawals list in the block body to be empty (OP stack does not make
 use of the withdrawals list) and hence the hash of the withdrawals list to be the MPT root of an empty list.
-When verifying the header chain using the final header that is synced, the header timesetamp is used to
+When verifying the header chain using the final header that is synced, the header timestamp is used to
 determine whether Isthmus is active at the said block. If it is, we expect that the header `withdrawalsRoot`
 MPT hash can be any non-null value (since it is expected to contain the `L2ToL1MessagePasser`'s storage root).
 
@@ -116,8 +122,10 @@ they are not reflected in the `withdrawalsRoot`. Hence, prior to Isthmus activat
 even if a `withdrawalsRoot` is present and a MPT root is present in the header, it should not be used.
 Any implementation that calculates output root should be careful not to use the header `withdrawalsRoot`.
 
-After Isthmus activation, if there was never any withdrawal contract storage, a MPT root of an empty list
-can be set as the `withdrawalsRoot`
+Note that there is always nonzero storage in the [`L2ToL1MessagePasser`][l2-to-l1-mp],
+because it is a [proxied predeploy](../../protocol/predeploys.md) -- from genesis it
+stores an implementation address and owner address. So from Isthmus,
+the `withdrawalsRoot` will always be non-nil and never be the MPT root of an empty list.
 
 #### Forwards Compatibility Considerations
 
@@ -156,6 +164,8 @@ Withdrawals list in the block body is encoded as an empty RLP list.
 
 ## EVM Changes
 
+### BLS Precompiles
+
 Similar to the `bn256Pairing` precompile in the [granite hardfork](../granite/exec-engine.md),
 [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) introduces a BLS
 precompile that short-circuits depending on input size in the EVM.
@@ -173,10 +183,15 @@ programs so they call out to the L1 instead of calculating the result inside the
 
 ## Block Sealing
 
-[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces new request type `0x02`, the `CONSOLIDATION_REQUEST_TYPE`.
-Typed request envelopes debut in Pectra [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685). Execution layer requests
-continue to be ignored in Isthmus, including those of new type `0x02`. Note, this does not need to activate after any
-specific hardfork as this type does not exist pre-Pectra.
+In the OP Stack, `EIP-7685` is no-op'd, and the `requestsHash` is always set to `sha256('')` (as noted in
+[header validity rules](#header-validity-rules)). As such, [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110),
+[EIP-7002](https://eips.ethereum.org/EIPS/eip-7002), and [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) are not
+enabled either. The OP Stack execution layer must ensure that the post-block filtering of events in the deposit contract
+(EIP-6110) as well as the `EIP-7002` + `EIP-7251` system calls are _not invoked_ during the block sealing process after
+Isthmus activation.
+
+Users of the OP Stack may still permissionlessly deploy these smart contracts, but they will not be treated as special
+by the OP Stack execution layer, and the system calls introduced in L1's Pectra hardfork are not considered.
 
 ## Engine API Updates
 
@@ -199,17 +214,67 @@ and the `operatorFeeConstant`.
 
 ### Operator Fee
 
-The operator fee, is set as follows:
+The operator fee is integrated directly into the EVM, alongside the standard gas fee and the OP Stack specific L1 data
+fee. This fee follows the same semantics of existing fees charged in the EVM[^1], just with a new fee beneficiary account.
 
-`operatorFee = (gasUsed * operatorFeeScalar / 1e6) + operatorFeeConstant`
+#### Fee Formula
+
+$$
+\text{operatorFee} = (\text{gas} \times \text{operatorFeeScalar} \div 10^6) + \text{operatorFeeConstant}
+$$
 
 Where:
 
-- `gasUsed` is amount of gas used by the transaction.
+- `gas` is the amount of gas that the transaction used. When calculating the amount of gas that is bought at the
+  beginning of the transaction, this should be the `gas_limit`. When determining how much gas should be refunded,
+  based off of how much of the `gas_limit` the transaction used, this should be the `gas_used`.
 - `operatorFeeScalar` is a `uint32` scalar set by the chain operator, scaled by `1e6`.
 - `operatorFeeConstant` is a `uint64` scalar set by the chain operator.
 
-#### Configuring Parameters
+Note that the operator fee's maximum value has 77 bits, which can be calculated from the maximum input parameters:
+
+$$
+\text{operatorFee}_{\text{max}} = (\text{uint64}_{\text{max}} \times \text{uint32}_{\text{max}} \div 10^6) +
+\text{uint64}_{\text{max}} \approx 7.924660923989131 \times 10^{22}
+$$
+
+So implementations don't need to check for overflows if they perform the calculations with `uint256` types.
+
+#### Deposit Operator Fees
+
+Deposit transactions do not get charged operator fees. For all deposit transactions, regardless of the operator fee
+parameter configuration, the operator fee should be **zero**. Deposit transactions also do not receive operator fee gas
+refunds, since they never buy the operator fee gas to begin with.
+
+#### EVM Fee Semantics
+
+Like other fees in the EVM, the operator fee should be charged following the pattern below:
+
+1. During pre-execution validation, the account must have enough ETH to cover the existing worst-case gas + L1 data fees
+   _as well as_ the worst-case operator fee (for deposits, the worst-case fee is `0`). To compute this value, use the
+   [fee formula](#fee-formula) with `gas` set to the `gas_limit` of the transaction, and add it to the existing
+   worst-case transaction fee.
+1. When buying gas prior to execution, charge the account the worst-case operator fee. To compute this value, use the
+   [fee formula](#fee-formula) with `gas` set to the `gas_limit` of the transaction.
+1. After execution, when issuing refunds, transactions that bought operator fee gas should be refunded the operator fee
+   gas that was unused (i.e., the caller should only be charged the _effective_ operator fee.) The refund should be
+   calculated as $\text{opFeeRefund} = \text{opFeeWorstCase} - \text{opFeeActual}$, where:
+   - $\text{opFeeWorstCase}$ is as described in #1 + #2.
+   - $\text{opFeeActual}$ is the amount of the operator fee that was actually used. This value is computed using the
+     [fee formula](#fee-formula) with `gas` set to the `gas_limit - gas_used + refunded_gas`. `refunded_gas` is as
+     described in [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529).
+1. After execution, when rewarding the fee beneficiaries, send the _spent operator fee_ to the
+   [operator fee vault](#fee-vaults). This value is exactly $\text{opFeeActual}$ as described above.
+
+Implementations must ensure ETH is neither minted nor destroyed as a result of the operator fee.
+
+#### Transaction Pool Changes
+
+To account for the additional fee factored into transaction validity mentioned above, the transaction pool must reject
+transactions that do not have enough balance to cover the worst-case cost of the transaction fee. This worst-case cost
+of a transaction now includes the worst-case operator fee.
+
+#### Configuring Operator Fee Parameters
 
 `operatorFeeScalar` and `operatorFeeConstant` are loaded in a similar way to the `baseFeeScalar` and
 `blobBaseFeeScalar` used in the [`L1Fee`](../../protocol/exec-engine.md#ecotone-l1-cost-fee-changes-eip-4844-da).
@@ -228,3 +293,10 @@ These collected fees are sent to a new vault for the `operatorFee`: the [`Operat
 
 Like the existing vaults, this is a hardcoded address, pointing at a pre-deployed proxy contract.
 The proxy is backed by a vault contract deployment, based on `FeeVault`, to route vault funds to L1 securely.
+
+### Receipts
+
+After Isthmus activation, 2 new fields `operatorFeeScalar` and `operatorFeeConstant` are added to transaction receipts
+if and only if at least one of them is non zero.
+
+[^1]: Wood, G., & Ethereum Contributors. (n.d.-a). Ethereum Yellow Paper. [https://ethereum.github.io/yellowpaper/paper.pdf](https://ethereum.github.io/yellowpaper/paper.pdf) Page 8, section 5: "Gas and Payment"
