@@ -125,7 +125,7 @@ Any implementation that calculates output root should be careful not to use the 
 Note that there is always nonzero storage in the [`L2ToL1MessagePasser`][l2-to-l1-mp],
 because it is a [proxied predeploy](../../protocol/predeploys.md) -- from genesis it
 stores an implementation address and owner address. So from Isthmus,
-the `withdrawalsRoot` will not always be non-nil and never be the MPT root of an empty list.
+the `withdrawalsRoot` will always be non-nil and never be the MPT root of an empty list.
 
 #### Forwards Compatibility Considerations
 
