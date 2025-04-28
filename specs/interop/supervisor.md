@@ -303,9 +303,9 @@ Parameters:
 - `executingDescriptor`: `ExecutingDescriptor` - applies as execution-context to all messages.
 
 Returns: void if all `inboxEntries` meet `minSafety`, otherwise RPC error. (Protocol specific errors of this method
-are exhaustively coded)(#protocol-specific-error-codes). Examples of protocol errors are, errors due to `minSafety`
-not being met by one or more of the access entries, or, the `inboxEntries` list may be incomplete or malformed w.r.t.
-the list of messages it should map to.
+are exhaustively coded)(#json-rpc-error-codes). Examples of protocol errors are, errors due to `minSafety` not being
+met by one or more of the access entries, or, the `inboxEntries` list may be incomplete or malformed w.r.t. the list
+of messages it should map to.
 
 ### Errors
 
