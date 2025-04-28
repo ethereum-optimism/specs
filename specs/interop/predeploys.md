@@ -44,7 +44,6 @@
   - [Overview](#overview-2)
 - [OptimismMintableERC20Factory](#optimismmintableerc20factory)
   - [OptimismMintableERC20](#optimismmintableerc20)
-  - [Updates](#updates)
   - [Functions](#functions-2)
     - [`createOptimismMintableERC20WithDecimals`](#createoptimismmintableerc20withdecimals)
     - [`createOptimismMintableERC20`](#createoptimismmintableerc20)
