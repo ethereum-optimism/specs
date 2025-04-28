@@ -247,7 +247,7 @@ block number in the past from the <code>GovernanceDelegation</code> contract.</l
 the past from the <code>GovernanceDelegation</code> contract.</li>
 </ul>
 <h3 id="delegation"><a class="header" href="#delegation">Delegation</a></h3>
-<p>Vote power can be delegated either by calling the <code>delegate(address)</code> function directly (to delegate as the <code>msg.sender</code>)
+<p>Voting power can be delegated either by calling the <code>delegate(address)</code> function directly (to delegate as the <code>msg.sender</code>)
 or by providing a signature to be used with function <code>delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)</code>,
 as inherited from <code>ERC20Votes</code>. These functions are modified to forward the calls to the <code>GovernanceDelegation</code> contract
 which implements the required logic.</p>
