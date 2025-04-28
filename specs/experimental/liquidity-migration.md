@@ -1,14 +1,12 @@
-# OptimismMintableERC20Factory
-
-### Updates
+# `OptimismMintableERC20Factory` Updates
 
 The `OptimismMintableERC20Factory` is updated to include a `deployments` mapping
 that stores the `remoteToken` address for each deployed `OptimismMintableERC20`.
 This is essential for the liquidity migration process defined in the liquidity migration spec.
 
-### Functions
+## Functions
 
-#### `createOptimismMintableERC20WithDecimals`
+### `createOptimismMintableERC20WithDecimals`
 
 **Invariants**
 
