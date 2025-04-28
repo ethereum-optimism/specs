@@ -218,6 +218,7 @@
 <li><a href="#block-validation">Block validation</a>
 <ul>
 <li><a href="#block-processing">Block processing</a></li>
+<li><a href="#branch-selection">Branch selection</a></li>
 <li><a href="#block-topic-scoring-parameters">Block topic scoring parameters</a></li>
 </ul>
 </li>
@@ -486,6 +487,13 @@ Hence, calling into the execution engine with a block lookup every propagation s
 <li>The subsequent forkchoice-update ensures this block is recognized as "unsafe"
 (see <a href="derivation.html#engine-api-usage">fork choice updated</a>)</li>
 </ul>
+<h4 id="branch-selection"><a class="header" href="#branch-selection">Branch selection</a></h4>
+<p>Nodes expect that the sequencer will not equivocate, and therefore the fork choice rule for unsafe blocks
+is a "first block wins" model, where the unsafe chain will not change once it has been extended, unless
+invalidated by safe data published to the L1.</p>
+<p>Nodes who see a different initial unsafe block will not reach consensus until the L1 is published,
+which resolves the disagreement. Because the L1 published data depends on the batcher's view of the data,
+the safe head will be based on whatever the batcher's source's unsafe head is.</p>
 <h4 id="block-topic-scoring-parameters"><a class="header" href="#block-topic-scoring-parameters">Block topic scoring parameters</a></h4>
 <p>TODO: GossipSub per-topic scoring to fine-tune incentives for ideal propagation delay and bandwidth usage.</p>
 <h2 id="req-resp"><a class="header" href="#req-resp">Req-Resp</a></h2>
