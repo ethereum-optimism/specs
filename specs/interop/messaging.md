@@ -130,10 +130,19 @@ do not count as executing messages.
 ### Timestamp Invariant
 
 The timestamp invariant ensures that initiating messages have a timestamp greater than the Interop upgrade timestamp
-and cannot come from a future block than the block of its executing message. This means that messages can only be
-initiated in blocks that come after the block with the Interop upgrade timestamp. Messages in the block with the
-Interop upgrade timestamp itself cannot be initiated. Note that since all transactions in a block have the same
-timestamp, it is possible for an executing transaction to be ordered before the initiating message in the same block.
+and cannot come from a future block than the block of its executing message.
+
+This means that messages can only be initiated in blocks that come after the block with the Interop upgrade timestamp.
+Contract log events in the block with the upgrade timestamp are thus not valid initiating messages.
+
+This same block with the upgrade timestamp only includes deposit-type transactions
+(from the system, and possibly from L1): this block can thus not include executing messages,
+even if only executing the initiating messages of previously Interop-activated chains.
+
+Note that since all transactions in a block have the same timestamp, it is possible for an executing transaction
+to be ordered before the initiating message in the same block.
+However, cyclic message dependencies are not allowed and
+this is verified with rules complementary to the timestamp invariant.
 
 ### ChainID Invariant
 
