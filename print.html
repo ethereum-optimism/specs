@@ -15699,13 +15699,13 @@ because it includes invalid executing messages MUST be replaced by a deposits on
 block height. This guarantees progression of the chain, ensuring that an infinite loop of processing
 the same block in the proof system is not possible.</p>
 <h2 id="omit-user-transactions-in-fork-activation-block"><a class="header" href="#omit-user-transactions-in-fork-activation-block">Omit User Transactions in Fork Activation Block</a></h2>
-<p>With the interop hardfork, fork activation blocks no longer include any user transactions. Sequencers, when building
+<p>With the interop upgrade, fork activation blocks no longer include any user transactions. Sequencers, when building
 the fork activation block, MUST set <code>noTxPool</code> to <code>true</code> in the execution payload attributes for this block, instructing
 the builder to exclude user transactions.</p>
 <p>The derivation pipeline MUST enforce that the sequencer has not included any user transactions in the batch covering
-the hardfork's activation block. If the sequencer does include any user transactions within the hardfork activation
-block, that batch, and the remaining span batch it originated from, MUST be dropped per the
-<a href="interop/../protocol/holocene/derivation.html">rules defined in the holocene hardfork</a>.</p>
+the upgrade's activation block. If the sequencer does include any user transactions within the upgrade activation
+block, that batch, and the remaining span batch it originated from, MUST be dropped following the
+batch-dropping rules introduced in the <a href="interop/../protocol/holocene/derivation.html#span-batches">Holocene upgrade</a>.</p>
 <h2 id="replacing-invalid-blocks"><a class="header" href="#replacing-invalid-blocks">Replacing Invalid Blocks</a></h2>
 <p>When the <a href="interop/./messaging.html#resolving-cross-chain-safety">cross chain dependency resolution</a> determines
 that a block contains an <a href="interop/./messaging.html#invalid-messages">invalid message</a>, the block is replaced
