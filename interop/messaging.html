@@ -276,16 +276,23 @@ do not count as executing messages.</p>
 <h2 id="messaging-invariants"><a class="header" href="#messaging-invariants">Messaging Invariants</a></h2>
 <ul>
 <li><a href="#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the initiating message MUST
-be less than or equal to the timestamp of the executing message as well as greater than or equal to the Interop Start Timestamp.</li>
+be less than or equal to the timestamp of the executing message as well as greater than the Interop Start Timestamp.</li>
 <li><a href="#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
 <li><a href="#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
 message MUST be lower than the initiating message timestamp (as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
-<p>The timestamp invariant ensures that initiating messages have at least the same timestamp as the Interop upgrade timestamp
-and cannot come from a future block than the block of its executing message. Note that since
-all transactions in a block have the same timestamp, it is possible for an executing transaction to be
-ordered before the initiating message in the same block.</p>
+<p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Interop upgrade timestamp
+and cannot come from a future block than the block of its executing message.</p>
+<p>This means that messages can only be initiated in blocks that come after the block with the Interop upgrade timestamp.
+Contract log events in the block with the upgrade timestamp are thus not valid initiating messages.</p>
+<p>This same block with the upgrade timestamp only includes deposit-type transactions
+(from the system, and possibly from L1): this block can thus not include executing messages,
+even if only executing the initiating messages of previously Interop-activated chains.</p>
+<p>Note that since all transactions in a block have the same timestamp, it is possible for an executing transaction
+to be ordered before the initiating message in the same block.
+However, cyclic message dependencies are not allowed and
+this is verified with rules complementary to the timestamp invariant.</p>
 <h3 id="chainid-invariant"><a class="header" href="#chainid-invariant">ChainID Invariant</a></h3>
 <p>Without a guarantee on the set of dependencies of a chain, it may be impossible for the derivation
 pipeline to know which chain to source the initiating message from. This also allows for chain operators
