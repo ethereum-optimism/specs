@@ -69,7 +69,6 @@
   - [Governance Token](./governance/gov-token.md)
 - [Experimental]()
   - [Standard L2 Genesis](./experimental/standard-l2-genesis.md)
-  - [Alt-DA](./experimental/alt-da.md)
   - [Interoperability](./interop/overview.md)
     - [Dependency Set](./interop/dependency-set.md)
     - [Messaging](./interop/messaging.md)
