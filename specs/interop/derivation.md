@@ -52,7 +52,9 @@ This block has several special properties and constraints:
 
 - It MUST NOT include any user transactions and the execution payload MUST set `noTxPool` to `true`.
 - Messages MAY NOT be initiated or executed in this block.
-- The derivation pipeline MUST enforce that the sequencer has not included any user transactions in the batch covering the upgrade's activation block. If the sequencer includes any user transactions within the activation block, that batch and the remaining span batch it originated from MUST be dropped.
+- The derivation pipeline MUST enforce that the sequencer has not included any user transactions in
+the batch covering the upgrade's activation block. If the sequencer includes any user transactions
+within the activation block, that batch and the remaining span batch it originated from MUST be dropped.
 
 ## Omit User Transactions in Fork Activation Block
 
@@ -107,7 +109,6 @@ combined with the [L2 output root] of the optimistic block that was invalidated.
 
 The source-hash is thus computed as:
 `keccak256(bytes32(uint256(4)), outputRoot))`.
-
 
 ## Network Upgrade Transactions
 
