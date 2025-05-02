@@ -284,9 +284,9 @@ message MUST be lower than the initiating message timestamp (as defined in the <
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
 <p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Interop upgrade timestamp
 and cannot come from a future block than the block of its executing message.</p>
-<p>This means that messages can only be initiated in blocks that come after the block with the Interop upgrade timestamp.
-Contract log events in the block with the upgrade timestamp are thus not valid initiating messages.</p>
-<p>This same block with the upgrade timestamp only includes deposit-type transactions
+<p>This means that messages can only be initiated in blocks that come after the <a href="./derivation.html#activation-block">activation block</a>.
+Contract log events in the activation block are not valid initiating messages.</p>
+<p>This same activation block only includes deposit-type transactions
 (from the system, and possibly from L1): this block can thus not include executing messages,
 even if only executing the initiating messages of previously Interop-activated chains.</p>
 <p>Note that since all transactions in a block have the same timestamp, it is possible for an executing transaction
