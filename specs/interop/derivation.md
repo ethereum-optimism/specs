@@ -345,7 +345,7 @@ Deposit transactions (force inclusion transactions) give censorship resistance t
 If it were possible to deposit an invalid executing message, this would force the sequencer to reorg. It would
 be fairly cheap to continuously deposit invalid executing messages through L1 and cause L2 liveness
 instability, therefore deposits are prevented from triggering executing messages.
-A future upgrade will enable deposits to trigger executing messages.
+A future upgrade may enable deposits to trigger executing messages.
 
 ### Expiry Window
 
