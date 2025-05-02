@@ -7,7 +7,6 @@
 - [Overview](#overview)
 - [Invariants](#invariants)
 - [Activation Block](#activation-block)
-- [Omit User Transactions in Fork Activation Block](#omit-user-transactions-in-fork-activation-block)
 - [Replacing Invalid Blocks](#replacing-invalid-blocks)
   - [Optimistic Block Deposited Transaction](#optimistic-block-deposited-transaction)
     - [Optimistic Block Source-hash](#optimistic-block-source-hash)
@@ -35,9 +34,11 @@ executing messages.
 - An executing message MUST have a corresponding initiating message
 - The initiating message referenced in an executing message MUST come from a chain in its dependency set
 - A block MUST be considered invalid if it is built with any invalid executing messages
-- The timestamp of the identifier MUST be greater than the interop network upgrade timestamp (see [Activation Block](#activation-block))
-- The timestamp of the identifier MUST be less than or equal to the timestamp of the block that includes it
-- The timestamp of the identifier MUST be greater than timestamp of the block that includes it minus the expiry window
+- The block number `n` is `>` the activation block number, see [Activation Block](#activation-block).
+- The timestamp `t` of the identifier MUST be:
+  - `t <= execution_timestamp`, where `execution_timestamp` is the timestamp of the block
+    that includes the executing message.
+  - `t > execution_timestamp - expiry_window`, where `expiry_window` is the expiry window in seconds.
 
 L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
 They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
@@ -47,26 +48,26 @@ the same block in the proof system is not possible.
 
 ## Activation Block
 
-The activation block is the block that has a timestamp equal to the interop network upgrade timestamp.
-This block has several special properties and constraints:
+The activation block is the first block that has a timestamp higher or equal to the
+interop network upgrade timestamp.
+The activation block timestamp may not exactly match the upgrade timestamp.
 
-- It MUST NOT include any user transactions and the execution payload MUST set `noTxPool` to `true`.
-- Messages MAY NOT be initiated or executed in this block.
+The genesis block is not technically considered an activation-block, as forks are already active.
+However, the genesis block does not contain transactions, and thus also meets the activation criteria.
+
+The activation block has several special properties and constraints:
+
+- It MUST NOT include any non-deposit-type transactions.
+  Sequencers, when building the fork activation block, MUST set `noTxPool` to `true`
+  in the execution payload attributes for this block, instructing the builder to exclude user transactions.
+- Messages MUST NOT be executed in this block. This is implemented by only processing deposit-type transactions.
+- Any contract log events MUST NOT count as valid initiating messages.
+  Verifiers may use the activation block as an anchor point, without indexing the block-contents.
 - The derivation pipeline MUST enforce that the sequencer has not included any user transactions in
-the batch covering the upgrade's activation block. If the sequencer includes any user transactions
-within the activation block, that batch and the remaining span batch it originated from MUST be dropped.
-
-## Omit User Transactions in Fork Activation Block
-
-With the interop upgrade, fork activation blocks no longer include any user transactions, as specified in the
-[Activation Block](#activation-block) section. Sequencers, when building the fork activation block, MUST set
-`noTxPool` to `true` in the execution payload attributes for this block, instructing the builder to exclude user
-transactions.
-
-The derivation pipeline MUST enforce that the sequencer has not included any user transactions in the batch covering
-the upgrade's activation block. If the sequencer does include any user transactions within the upgrade activation
-block, that batch, and the remaining span batch it originated from, MUST be dropped following the
-batch-dropping rules introduced in the [Holocene upgrade](../protocol/holocene/derivation.md#span-batches).
+  the batch covering the upgrade's activation block. If the sequencer includes any user transactions
+  within the activation block, this block and the remaining span batch it originated from MUST be dropped,
+  following the batch-dropping rules introduced in the
+  [Holocene upgrade span-batch rules](../protocol/holocene/derivation.md#span-batches).
 
 ## Replacing Invalid Blocks
 
@@ -130,10 +131,21 @@ The upgrade transaction details below are based on a nightly release at commit
 hash `71c460ec7c7c05791ddd841b97bcb664a1f0c753`, and will be updated once a
 contracts release is made.
 
-<!-- To regenerate the deploy/upgrade tx docs below, run `./scripts/upgrades/gen_interop_upgrade_tx_specs.sh | pbcopy` and then paste here -->
+<!-- To regenerate the deploy/upgrade tx docs below,
+run `./scripts/upgrades/gen_interop_upgrade_tx_specs.sh | pbcopy` and then paste here -->
 
 ### CrossL2Inbox Deployment
-<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../optimism --fork-name Interop --contract-name CrossL2Inbox --from-address 0x4220000000000000000000000000000000000000 --from-address-nonce 0 --git-commit-hash 71c460ec7c7c05791ddd841b97bcb664a1f0c753 --eth-rpc-url https://optimism.rpc.subquery.network/public --proxy-address 0x4200000000000000000000000000000000000022 --copy-contract-bytecode true -->
+
+<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh
+--optimism-repo-path ../optimism
+--fork-name Interop
+--contract-name CrossL2Inbox
+--from-address 0x4220000000000000000000000000000000000000
+--from-address-nonce 0
+--git-commit-hash 71c460ec7c7c05791ddd841b97bcb664a1f0c753
+--eth-rpc-url https://optimism.rpc.subquery.network/public
+--proxy-address 0x4200000000000000000000000000000000000022
+--copy-contract-bytecode true -->
 
 The `CrossL2Inbox` contract is deployed.
 
@@ -214,7 +226,16 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 ```
 
 ### L2ToL2CrossDomainMessenger Deployment
-<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../optimism --fork-name Interop --contract-name L2ToL2CrossDomainMessenger --from-address 0x4220000000000000000000000000000000000001 --from-address-nonce 0 --git-commit-hash 71c460ec7c7c05791ddd841b97bcb664a1f0c753 --eth-rpc-url https://optimism.rpc.subquery.network/public --proxy-address 0x4200000000000000000000000000000000000023 --copy-contract-bytecode true -->
+<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh
+--optimism-repo-path ../optimism
+--fork-name Interop
+--contract-name L2ToL2CrossDomainMessenger
+--from-address 0x4220000000000000000000000000000000000001
+--from-address-nonce 0
+--git-commit-hash 71c460ec7c7c05791ddd841b97bcb664a1f0c753
+--eth-rpc-url https://optimism.rpc.subquery.network/public
+--proxy-address 0x4200000000000000000000000000000000000023
+--copy-contract-bytecode true -->
 
 The `L2ToL2CrossDomainMessenger` contract is deployed.
 
