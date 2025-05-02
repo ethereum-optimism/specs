@@ -87,6 +87,6 @@
     - [Transaction Pool](./interop/tx-pool.md)
     - [OptimismPortal](./interop/optimism-portal.md)
     - [ETH Lockbox](./interop/eth-lockbox.md)
-  - [OP Contracts Manager](./experimental/op-contracts-manager.md)
+  - [OP Contracts Manager](./protocol/op-contracts-manager.md)
   - [Governance Token](./experimental/gov-token.md)
 - [Glossary](./glossary.md)
