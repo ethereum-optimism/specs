@@ -15,6 +15,7 @@
   - [CrossL2Inbox Proxy Update](#crossl2inbox-proxy-update)
   - [L2ToL2CrossDomainMessenger Deployment](#l2tol2crossdomainmessenger-deployment)
   - [L2ToL2CrossDomainMessenger Proxy Update](#l2tol2crossdomainmessenger-proxy-update)
+  - [L2 Gas Limit Requirements](#l2-gas-limit-requirements)
 - [Expiry Window](#expiry-window)
 - [Security Considerations](#security-considerations)
   - [Depositing an Executing Message](#depositing-an-executing-message)
@@ -65,7 +66,8 @@ The activation block has several special properties and constraints:
   Verifiers may use the activation block as an anchor point, without indexing the block-contents.
 - The derivation pipeline MUST enforce that the sequencer has not included any user transactions in
   the batch covering the upgrade's activation block. If the sequencer includes any user transactions
-  within the activation block, this block and the remaining span batch it originated from (if part of a span batch) MUST be dropped,
+  within the activation block, this block and the remaining span batch it originated from
+  (if part of a span batch) MUST be dropped,
   following the batch-dropping rules introduced in the
   [Holocene upgrade span-batch rules](../protocol/holocene/derivation.md#span-batches).
 
