@@ -118,16 +118,6 @@ The source-hash is thus computed as:
 The interop network upgrade timestamp defines the timestamp at which all functionality in this document is considered
 the consensus rules for an OP Stack based network.
 
-This upgrade requires `3_320_000` in gas. In order to upgrade successfully the following invariant MUST be maintained:
-
-```plaintext
-MaxResourceLimit + SystemTxMaxGas + UpgradeGasUsage ≤ L2GasLimit
-```
-
-With MaxResourceLimit set to `20_000_000` and SystemTxMaxGas set to `1_000_000`,
-this mean every upgrading chain MUST have their L2GasLimit set to greater than
-`24_320_000`.
-
 The upgrade transaction details below are based on a nightly release at commit
 hash `71c460ec7c7c05791ddd841b97bcb664a1f0c753`, and will be updated once a
 contracts release is made.
