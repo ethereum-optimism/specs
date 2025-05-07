@@ -314,29 +314,25 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 ## EIP-2935 Contract Deployment
 
 [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) requires a contract to be deployed. To deploy this contract,
-a deposit transaction is created with attributes matching the EIP:
+a type 0 (legacy) transaction is created with attributes matching the EIP:
 
-- `from`: `0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10`
-- `to`: `null`,
-- `mint`: `0`
-- `value`: `0`
-- `gasLimit`: `250,000`
-- `data`: `0x60538060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500`,
-- `sourceHash`: `0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a`
-  computed with the "Upgrade-deposited" type, with `intent = "Isthmus: EIP-2935 Contract Deployment"
+- `type`: `0x0`
+- `nonce`: `0x0`
+- `to`: `null`
+- `gas`: `0x3d090`,
+- `gasPrice`: `0xe8d4a51000`
+- `value`: `0x0`
+- `data`: `0x60538060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500`
+- `v`: `0x1b`
+- `r`: `0x539`
+- `s`: `0xaa12693182426612186309f02cfe8a80a0000`
+- `hash`: `0x67139a552b0d3fffc30c0fa7d0c20d42144138c8fe07fc5691f09c1cce632e15`
 
-This results in the EIP-2935 contract being deployed to `0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC`, to verify:
-
-```bash
-cast compute-address --nonce=0 0xE9f0662359Bb2c8111840eFFD73B9AFA77CbDE10
-Computed Address: 0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC
-```
-
-Verify `sourceHash`:
+This results in the EIP-2935 contract being deployed to `0x0000F90827F1C53a10cb7A02335B175320002935`, to verify:
 
 ```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Isthmus: EIP-2935 Contract Deployment"))
-# 0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a
+cast compute-address --nonce=0 0x3462413Af4609098e1E27A490f554f260213D685
+Computed Address: 0x0000F90827F1C53a10cb7A02335B175320002935
 ```
 
 This transaction MUST deploy a contract with the following code hash
