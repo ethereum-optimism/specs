@@ -314,7 +314,7 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 ## EIP-2935 Contract Deployment
 
 [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) requires a contract to be deployed. To deploy this contract,
-a desposit transaction is created with attributes matching the EIP:
+a deposit transaction is created with attributes matching the EIP:
 
 - `from`: `0x3462413Af4609098e1E27A490f554f260213D685`
 - `to`: `null`
