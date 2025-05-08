@@ -320,7 +320,7 @@ a deposit transaction is created with attributes matching the EIP:
 - `to`: `null`
 - `mint`: `0`
 - `value`: `0`
-- `gasLimit`: `250,000`,
+- `gasLimit`: `250,000`
 - `data`: `0x60538060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500`
 - `sourceHash`: `0xbfb734dae514c5974ddf803e54c1bc43d5cdb4a48ae27e1d9b875a5a150b553a`
 
