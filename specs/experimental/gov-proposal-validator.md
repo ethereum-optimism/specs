@@ -267,20 +267,20 @@ mapping(uint256 => VotingCycleData) public votingCycles;
 A mapping that stores each submitted proposals’ data based on its `proposalHash`. The proposal hash is produced by hashing the ABI encoded `targets` array, the `values` array, the `calldatas` array and the `description`
 
 ```solidity
-mapping(bytes32 => ProposalData) private _proposals;
+mapping(bytes32 => ProposalSubmissionData) private _proposals;
 ```
 
-`_proposalRequiredApprovals` 
+`_proposaTypesData` 
 
-A mapping that stores the number of approvals each proposal type requires in order to be able to move for voting.
+A mapping that stores data related to each proposal type.
 
 ```solidity
-mapping(ProposalType => uint256) private _proposalRequiredApprovals;
+mapping(ProposalType => ProposalTypeData) private _proposaTypesData;
 ```
 
 ### Structs
 
-`ProposalData`
+`ProposalSubmissionData`
 
 A struct that holds all the data for a single proposal. Consists of:
 
@@ -292,13 +292,27 @@ A struct that holds all the data for a single proposal. Consists of:
 - `approvalsCounter`: The number of approvals the specific proposal has received
 
 ```solidity
-struct ProposalData {
+struct ProposalSubmissionData {
   address proposer;
   ProposalType proposalType;
   uint8 proposalTypeConfigurator;
   bool inVoting;
   mapping(address => bool) delegateApprovals;
   uint256 approvalsCounter;
+}
+```
+
+`ProposalTypeData`
+
+A struct that holds data for each proposal type.
+
+- `requiredApprovals`:  The number of approvals each proposal type requires in order to be able to move for voting.
+- `proposalTypeConfigurator`: The accepted proposal type configurators that can be used for each proposal type.
+
+```solidity
+struct ProposalTypeData {
+	uint256 requiredApprovals;
+	uint8[] proposalTypeConfigurator;
 }
 ```
 
@@ -418,7 +432,7 @@ keccak256(abi.encode(targets, values, calldatas, keccak256(bytes(description))))
 This hash serves as a unique identifier for the proposal. The contract stores submitted proposals in:
 
 ```solidity
-mapping(bytes32 => ProposalData) private _proposals;
+mapping(bytes32 => ProposalSubmissionData) private _proposals;
 ```
 
 When a new proposal is submitted, the contract checks that `_proposals[proposalHash]` is empty (e.g., `proposer == address(0)`). If data exists at that key, the proposal is rejected as a duplicate.
