@@ -2,10 +2,10 @@
 
 [Optimism Monorepo releases]: https://github.com/ethereum-optimism/optimism/releases
 [contract releases]: https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/meta/VERSIONING.md
-[standard configuration]: ../protocol/configurability.md
+[standard configuration]: ./configurability.md
 [superchain registry]: https://github.com/ethereum-optimism/superchain-registry
 [ethereum-lists/chains]: https://github.com/ethereum-lists/chains
-[Batch Inbox]: ../protocol/configurability.md#consensus-parameters
+[Batch Inbox]: ./configurability.md#consensus-parameters
 
 The OP Contracts Manager is a contract that deploys the L1 contracts for an OP Stack chain in a single
 transaction. It provides a minimal set of user-configurable parameters to ensure that the resulting
@@ -58,7 +58,7 @@ The OP Contracts Manager corresponding to each release can be used to:
 2. Upgrade the contracts for an existing OP chain from the previous release to the new release.
 3. Orchestrate adding a new game type on a per-chain basis
 
-Upgrades must be performed by the [Proxy Admin Owner](../protocol/stage-1.md#roles-for-stage-1) Safe for a chain.
+Upgrades must be performed by the [Proxy Admin Owner](./stage-1.md#roles-for-stage-1) Safe for a chain.
 
 ## Getter Methods
 
