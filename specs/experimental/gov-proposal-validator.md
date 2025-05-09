@@ -307,12 +307,12 @@ struct ProposalSubmissionData {
 A struct that holds data for each proposal type.
 
 - `requiredApprovals`:  The number of approvals each proposal type requires in order to be able to move for voting.
-- `proposalTypeConfigurator`: The accepted proposal type configurators that can be used for each proposal type.
+- `validProposalTypeConfigurators`: The accepted proposal type configurators that can be used for each proposal type.
 
 ```solidity
 struct ProposalTypeData {
 	uint256 requiredApprovals;
-	uint8[] proposalTypeConfigurator;
+	mapping(uint8 => bool) validProposalTypeConfigurators;
 }
 ```
 
