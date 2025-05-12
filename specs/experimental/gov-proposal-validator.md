@@ -34,7 +34,7 @@ The `ProposalValidator` manages the proposal lifecycle through three main functi
 - `approveProposal`: Handles proposal approvals
 - `moveToVote`: Transitions approved proposals to voting phase
 
-The contract also integrates with EAS (Ethereum Attestation Service) to verify authorized proposers for specific proposal types. For detailed flows of each proposal, see [Design Document Link].
+The contract also integrates with EAS (Ethereum Attestation Service) to verify authorized proposers for specific proposal types. For detailed flows of each proposal, see https://github.com/ethereum-optimism/design-docs/pull/260.
 
 ## Roles
 
@@ -50,10 +50,9 @@ The contract has a single `owner` role (Optimism Foundation) with permissions to
 
 `submitProposal`
 
-Submits a proposal for approval and voting. Based on the `ProposalType` provided this will require different validation checks.
+Submits a proposal for approval and voting. Based on the `ProposalType` provided this will require different validation checks and actions.
 
-For `ProtocolOrGovernorUpgrade` , `MaintenanceUpgradeProposals`, and `CouncilMemberElections` types:
-
+- MUST only be called for `ProtocolOrGovernorUpgrade` , `MaintenanceUpgradeProposals`, or `CouncilMemberElections` types
 - MUST be called by an approved address
 - MUST check if the proposal is a duplicate
 - MUST provide a valid proposal type configurator
@@ -82,8 +81,9 @@ Note: `MaintenanceUpgradeProposals`type can move straight to voting if all submi
 
 `submitFundingProposal`
 
-Submits a `GovernanceFund` or `CouncilBudget` proposal type that transfers OP tokens.
+Submits a `GovernanceFund` or `CouncilBudget` proposal type that transfers OP tokens for approval and voting.
 
+- MUST only be called for `GovernanceFund` or `CouncilBudget` proposal type
 - CAN be called by anyone
 - MUST check if the proposal is a duplicate
 - MUST provide a valid proposal type configurator
@@ -122,21 +122,21 @@ Checks if the provided proposal is ready to move for voting. Based on the Propos
 
 For `ProtocolOrGovernorUpgrade`:
 
-- MUST check if provided data produce the same `proposalHash`
-- proposal MUST have gathered X amount of approvals by top delegates
+- MUST check if provided data produces a valid `proposalHash`
+- Proposal MUST have gathered X amount of approvals by top delegates
 - MUST check if proposal has already moved for voting
 - MUST emit `ProposalMovedToVote` event
 
 For `MaintenanceUpgradeProposals`:
 
-- This type does not require any checks and is being forwarded to the Governor contracts, this should happen atomic.
+- This type does not require any checks and is being forwarded to the Governor contracts, this should happen atomically.
 - MUST emit `ProposalMovedToVote` event
 
 For `CouncilMemberElections`, `GovernanceFund` and `CouncilBudget`:
 
 - MUST check if provided data produce the same `proposalHash`
-- proposal MUST have gathered X amount of approvals by top delegates
-- proposal MUST be moved to vote during a valid voting cycle
+- Proposal MUST have gathered X amount of approvals by top delegates
+- Proposal MUST be moved to vote during a valid voting cycle
 - MUST check if proposal has already moved for voting
 - MUST check if the total amount of tokens that can possible be distributed during this voting cycle does not go over the `VotingCycleData.votingCycleDistributionLimit`
 - MUST emit `ProposalMovedToVote` event
@@ -183,16 +183,16 @@ Sets the start and the duration of a voting cycle.
 - MUST NOT change an existing voting cycle
 - MUST emit `VotingCycleSet` event
 
-`setDistributionThreshold`
-
 ```solidity
 function setVotingCycleData(uint256 _cycleNumber, uint256 _startBlock, uint256 _duration, uint256 _distributionLimit) external
 ```
 
+`setDistributionThreshold`
+
 Sets the maximum distribution threshold a proposal can request.
 
 - MUST only be called by the owner of the contract
-- MUST change the previous threshold to the new
+- MUST change the previous threshold to the new one
 - MUST emit `DistributionThresholdSet` event
 
 ```solidity
@@ -204,7 +204,7 @@ function setDistributionThreshold(uint256 _threshold) external
 Sets the number of approvals a specific proposal type should have before being able to move for voting.
 
 - MUST only be called by the owner of the contract
-- MUST change the previous value to the new
+- MUST change the previous value to the new one
 - MUST emit `ProposalTypeApprovalThresholdSet` event
 
 ```solidity
@@ -215,7 +215,7 @@ function setProposalTypeApprovalThreshold(uint8 _proposalTypeId, uint256 _approv
 
 `ATTESTATION_SCHEMA_UID`
 
-The schema UID that is used to verify attestation for approved addresses that can submit proposals for specific `ProposalTypes`. 
+The EAS' schema UID that is used to verify attestation for approved addresses that can submit proposals for specific `ProposalTypes`.
 
 ```solidity
 /// Schema { approvedProposer: address, proposalType: uint8 }
@@ -224,7 +224,7 @@ bytes32 public immutable ATTESTATION_SCHEMA_UID;
 
 `TRANSFER_SIGNATURE`
 
-The 4byte signature of ERC20.transfer, will be used for creating the calldata for funding proposals
+The 4bytes signature of ERC20.transfer, will be used for creating the calldata for funding proposals
 
 ```solidity
 bytes4 public constant TRANSFER_SIGNATURE = 0xa9059cbb;
@@ -270,12 +270,12 @@ A mapping that stores each submitted proposals’ data based on its `proposalHas
 mapping(bytes32 => ProposalSubmissionData) private _proposals;
 ```
 
-`_proposaTypesData` 
+`_proposalTypesData`
 
 A mapping that stores data related to each proposal type.
 
 ```solidity
-mapping(ProposalType => ProposalTypeData) private _proposaTypesData;
+mapping(ProposalType => ProposalTypeData) private _proposalTypesData;
 ```
 
 ### Structs
@@ -307,7 +307,7 @@ struct ProposalSubmissionData {
 A struct that holds data for each proposal type.
 
 - `requiredApprovals`:  The number of approvals each proposal type requires in order to be able to move for voting.
-- `validProposalTypeConfigurators`: The accepted proposal type configurators that can be used for each proposal type.
+- `validProposalTypeConfigurators` : The accepted proposal type configurators that can be used for each proposal type.
 
 ```solidity
 struct ProposalTypeData {
@@ -392,7 +392,7 @@ event ProposalMovedToVote(uint256 indexed proposalHash, address indexed executor
 
 ## EAS Integration
 
-`ProposalValidator` integrates Ethereum Attestation Service (EAS) to handle proposer authorization for specific `ProposalType`s. This removes the need for maintaining separate allowlists or custom registries, reducing contract complexity and offloading identity tracking to a proven system.
+`ProposalValidator` integrates Ethereum Attestation Service (EAS) to handle proposer authorization for specific `ProposalType`s, removing the need for adding custom logic to the contract.
 
 ### Why EAS?
 
@@ -426,7 +426,7 @@ A proposal is uniquely identified by the tuple:
 These elements are ABI-encoded and hashed:
 
 ```solidity
-keccak256(abi.encode(targets, values, calldatas, keccak256(bytes(description))));
+keccak256(abi.encode(targets, values, calldatas, description));
 ```
 
 This hash serves as a unique identifier for the proposal. The contract stores submitted proposals in:
@@ -441,9 +441,9 @@ This mechanism guarantees that proposals with the same intent and execution logi
 
 ## Invariants
 
-- It MUST allow only the `owner` to set the `minimumVotingPower`, `votingCycle` and `distributionThreshold`
-- It MUST allow only eligible addresses to approve a proposal
-- It MUST allow only authorizeds addresses to submit proposals for types `ProtocolOrGovernorUpgrade`, `MaintenanceUpgradeProposals`, and `CouncilMemberElections`
+- It MUST allow only the `owner` to set the `minimumVotingPower`, `votingCycleData,` `distributionThreshold`, and `proposalTypeApprovalThreshold`
+- It MUST only allow eligible addresses to approve a proposal
+- It MUST only allow authorizeds addresses to submit proposals for types `ProtocolOrGovernorUpgrade`, `MaintenanceUpgradeProposals`, and `CouncilMemberElections`
 - It MUST NOT transfer any tokens or ETH for `ProtocolOrGovernorUpgrade`, `MaintenanceUpgradeProposals`, and `CouncilMemberElections` proposal types
 - It MUST emit the following events:
     - `ProposalSubmitted`
