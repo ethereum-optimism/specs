@@ -390,7 +390,7 @@ which is used to track whether the message has successfully been relayed.
 It also emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
 
 ```solidity
-event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message);
+event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message, bytes context);
 ```
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
@@ -406,6 +406,8 @@ it will be the `L2ToL2CrossDomainMessenger` and users will need to callback to g
 The `_destination` MUST NOT be the chain-ID of the local chain and a locally defined `nonce` MUST increment on
 every call to `sendMessage`.
 
+Messages might also contain some internal context with metadata, analogous to headers with HTTP requests.
+
 Note that `sendMessage` is not `payable`.
 
 ### Re-sending Messages
@@ -420,7 +422,8 @@ mapping prior to emitting the `SentMessage` event.
         uint256 _nonce,
         address _sender,
         address _target,
-        bytes calldata _message
+        bytes calldata _message,
+        bytes calldata _context
     )
         external;
 ```
