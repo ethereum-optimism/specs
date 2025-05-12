@@ -71,7 +71,7 @@ Note: `MaintenanceUpgradeProposals`type can move straight to voting if all submi
  function submitProposal(
     address[] memory _targets,
     uint256[] memory _values,
-    bytes[] memory _calldata,
+    bytes[] memory _calldatas,
     string memory _description,
     ProposalType _proposalType,
     uint8 _proposalTypeConfiguration,
@@ -97,7 +97,7 @@ function submitFundingProposal(
 	address _to,
 	uint256 _amount,
 	string memory _description,
-  ProposalType _proposalType,
+    ProposalType _proposalType,
 	uint8 _proposalTypeConfiguration
 ) external returns (bytes32 proposalHash_);
 ```
