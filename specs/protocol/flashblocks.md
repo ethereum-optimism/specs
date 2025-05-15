@@ -1,4 +1,4 @@
-*Authors: [Ferran](https://github.com/ferranbt), [Shana](https://github.com/avalonche), [Dmarz](https://github.com/dmarzzz), [0xkitsune](https://github.com/0xkitsune), [Joshua](https://github.com/trianglesphere)*
+*Authors: [Ferran](https://github.com/ferranbt), [Dmarz](https://github.com/dmarzzz), [Shana](https://github.com/avalonche), [0xkitsune](https://github.com/0xkitsune), [protolambda](https://github.com/protolambda), [Anton](https://github.com/0x416e746f6e), [Joshua](https://github.com/trianglesphere)*
 
 **Table of Contents**
 - [Abstract](#abstract)
