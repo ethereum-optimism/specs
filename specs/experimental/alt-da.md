@@ -201,7 +201,7 @@ However, a challenge is only valid if the commitment and block number pairing ma
 and its L1 origin block number during derivation. Challenges associated with an illegal commitment
 or block number will be ignored during derivation and have no impact on the state of the chain.
 
-The contract is deployed behind upgradable proxy so the address can be hardcoded in the rollup config
+The contract is deployed behind an upgradable proxy so the address can be hardcoded in the rollup config
 file and does not need to change. A future upgrade can add custom resolver functions to be chosen
 dynamically when a user calls the resolve function to support other alt DA solutions.
 
@@ -212,7 +212,7 @@ when using the alt DA source are limited to wrapping the L1 based `DataAvailabil
 in the pipeline with a module that enables pulling the data from the offchain DA source once
 we've extracted the commitment from L1 DA.
 
-Similarly to L1 based DA, for each L1 block we open a calldata source to retrieve the input commitments
+Similar to L1 based DA, for each L1 block we open a calldata source to retrieve the input commitments
 from the transactions and use each commitment with its l1 origin block number to resolve
 the input data from the storage service. To enable smooth transition between alt-da and rollup mode, any L1 data
 retrieved from the batcher inbox that is not prefixed with `txDataVersion1` is forwarded downstream
