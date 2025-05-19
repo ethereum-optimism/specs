@@ -59,7 +59,7 @@ checks and actions.
 - MUST only be called for `ProtocolOrGovernorUpgrade`, `MaintenanceUpgradeProposals`, or `CouncilMemberElections` types
 - MUST be called by an approved address
 - MUST check if the proposal is a duplicate
-- MUST provide a valid proposal type configurator
+- MUST use the correct proposal type configurator from the `_proposalTypesData`
 - MUST provide a valid attestation UID
 - MUST NOT transfer any tokens or change any allowances
 - MUST emit `ProposalSubmitted` event
@@ -70,7 +70,7 @@ For `GovernanceFund` and `CouncilBudget` types:
 - The user MUST use the `submitFundingProposal` that uses specific `calldata` pre-defined by the owner
 
 Note: `MaintenanceUpgradeProposals` type can move straight to voting if all submission checks pass, unlike the rest of the
-proposal where they need to collect a number of approvals by top delegates in order to move to vote. This call should be
+proposals where they need to collect a number of approvals by top delegates in order to move to vote. This call should be
 atomic.
 
 ```solidity
@@ -80,7 +80,6 @@ function submitProposal(
     bytes[] memory _calldatas,
     string memory _description,
     ProposalType _proposalType,
-    uint8 _proposalTypeConfiguration,
     bytes32 _attestationUid
 ) external returns (bytes32 proposalHash_);
 ```
@@ -92,7 +91,7 @@ Submits a `GovernanceFund` or `CouncilBudget` proposal type that transfers OP to
 - MUST only be called for `GovernanceFund` or `CouncilBudget` proposal type
 - CAN be called by anyone
 - MUST check if the proposal is a duplicate
-- MUST provide a valid proposal type configurator
+- MUST use the correct proposal type configurator from the `_proposalTypesData`
 - MUST use the `Predeploys.GOVERNANCE_TOKEN` and `TRANSFER_SIGNATURE` to create the `calldata`
 - MUST NOT request to transfer more than `distributionThreshold` tokens
 - MUST emit `ProposalSubmitted` event
@@ -104,7 +103,6 @@ function submitFundingProposal(
     uint256 _amount,
     string memory _description,
     ProposalType _proposalType,
-    uint8 _proposalTypeConfiguration
 ) external returns (bytes32 proposalHash_);
 ```
 
@@ -305,7 +303,6 @@ A struct that holds all the data for a single proposal. Consists of:
 
 - `proposer`: The address that submitted the proposal
 - `proposalType`: The type of the proposal
-- `proposalTypeConfigurator`: The voting type for the proposal
 - `inVoting`: Returns true if the proposal has already been submitted for voting
 - `delegateApprovals`: Mapping of addresses that approved the specific proposal
 - `approvalsCounter`: The number of approvals the specific proposal has received
@@ -314,7 +311,6 @@ A struct that holds all the data for a single proposal. Consists of:
 struct ProposalSubmissionData {
     address proposer;
     ProposalType proposalType;
-    uint8 proposalTypeConfigurator;
     bool inVoting;
     mapping(address => bool) delegateApprovals;
     uint256 approvalsCounter;
@@ -326,12 +322,13 @@ struct ProposalSubmissionData {
 A struct that holds data for each proposal type.
 
 - `requiredApprovals`: The number of approvals each proposal type requires in order to be able to move for voting.
-- `validProposalTypeConfigurators`: The accepted proposal type configurators that can be used for each proposal type.
+- `proposalTypeConfigurator`: The proposal type configurator that can be used for each proposal type. This
+is set by the owner on initiallize.
 
 ```solidity
 struct ProposalTypeData {
     uint256 requiredApprovals;
-    mapping(uint8 => bool) validProposalTypeConfigurators;
+    uint8 proposalTypeConfigurator;
 }
 ```
 
@@ -443,7 +440,7 @@ event ProposalMovedToVote(uint256 indexed proposalHash, address indexed executor
 To prevent duplicate proposals, the contract enforces uniqueness by hashing the defining parameters of each proposal and
 checking against a registry of previously submitted proposals.
 
-A proposal is uniquely identified by the tuple:
+A proposal is uniquely identified by a tuple:
 
 - `targets[]`: array of addresses the proposal will call
 - `values[]`: array of ETH values to send with each call
