@@ -154,6 +154,13 @@ Describes a block.
 
 #### `DerivedIDPair`
 
+A pair of block identifiers, linking an L2 block (`derived`) to the L1 block (`source`) from which it was derived.
+
+`OBJECT`:
+
+-   `source`: `BlockID` - The L1 block ID from which the L2 block is derived.
+-   `derived`: `BlockID` - The L2 block ID derived from the source L1 block.
+
 #### `ChainRootInfo`
 
 `OBJECT`:
