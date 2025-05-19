@@ -26,7 +26,7 @@
 
 This document specifies the `ProposalValidator` contract, designed to enable permissionless proposals in the Optimism
 governance system. The contract allows proposal submissions based on predefined rules and automated checks, removing the
-need for manual gatekeeping.
+need for manual gate keeping.
 
 ## Design
 
@@ -323,7 +323,7 @@ A struct that holds data for each proposal type.
 
 - `requiredApprovals`: The number of approvals each proposal type requires in order to be able to move for voting.
 - `proposalTypeConfigurator`: The proposal type configurator that can be used for each proposal type. This
-is set by the owner on initiallize.
+is set by the owner on initialize.
 
 ```solidity
 struct ProposalTypeData {
