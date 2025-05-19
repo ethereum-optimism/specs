@@ -139,7 +139,7 @@ representing a bytes list, prefixed with `0x`.
 Describes a block.
 
 `OBJECT`:
-- `hash`: `HASH` - block hash
+- `hash`: `Hash` - block hash
 - `number`: `Int` - block number
 
 #### `BlockRef`
