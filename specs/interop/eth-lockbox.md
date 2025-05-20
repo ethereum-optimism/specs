@@ -170,7 +170,7 @@ Returns the `ProxyAdmin` owner that manages the `ETHLockbox`.
 MUST be triggered when `lockETH` is called
 
 ```solidity
-event ETHLocked(IOptimismPortal indexed portal, uint256 amount);
+event ETHLocked(OptimismPortal indexed portal, uint256 amount);
 ```
 
 #### `ETHUnlocked`
@@ -178,7 +178,7 @@ event ETHLocked(IOptimismPortal indexed portal, uint256 amount);
 MUST be triggered when `unlockETH` is called
 
 ```solidity
-event ETHUnlocked(IOptimismPortal indexed portal, uint256 amount);
+event ETHUnlocked(OptimismPortal indexed portal, uint256 amount);
 ```
 
 #### `PortalAuthorized`
@@ -186,7 +186,7 @@ event ETHUnlocked(IOptimismPortal indexed portal, uint256 amount);
 MUST be triggered when `authorizePortal` is called
 
 ```solidity
-event PortalAuthorized(IOptimismPortal indexed portal);
+event PortalAuthorized(OptimismPortal indexed portal);
 ```
 
 #### `LockboxAuthorized`
@@ -194,7 +194,7 @@ event PortalAuthorized(IOptimismPortal indexed portal);
 MUST be triggered when `authorizeLockbox` is called
 
 ```solidity
-event LockboxAuthorized(IETHLockbox indexed lockbox);
+event LockboxAuthorized(ETHLockbox indexed lockbox);
 ```
 
 #### `LiquidityMigrated`
@@ -202,7 +202,7 @@ event LockboxAuthorized(IETHLockbox indexed lockbox);
 MUST be triggered when `migrateLiquidity` is called
 
 ```solidity
-event LiquidityMigrated(IETHLockbox indexed lockbox, uint256 amount);
+event LiquidityMigrated(ETHLockbox indexed lockbox, uint256 amount);
 ```
 
 #### `LiquidityReceived`
@@ -210,7 +210,7 @@ event LiquidityMigrated(IETHLockbox indexed lockbox, uint256 amount);
 MUST be triggered when `receiveLiquidity` is called
 
 ```solidity
-event LiquidityReceived(IETHLockbox indexed lockbox, uint256 amount);
+event LiquidityReceived(ETHLockbox indexed lockbox, uint256 amount);
 ```
 
 ## Invariants
