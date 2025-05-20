@@ -197,6 +197,7 @@
 <li><a href="#function-specification">Function Specification</a>
 <ul>
 <li><a href="#initialize">initialize</a></li>
+<li><a href="#upgrade">upgrade</a></li>
 <li><a href="#minimumgaslimit">minimumGasLimit</a></li>
 <li><a href="#maximumgaslimit">maximumGasLimit</a></li>
 <li><a href="#unsafeblocksigner">unsafeBlockSigner</a></li>
@@ -219,6 +220,7 @@
 <li><a href="#seteip1559params">setEIP1559Params</a></li>
 <li><a href="#setoperatorfeescalars">setOperatorFeeScalars</a></li>
 <li><a href="#resourceconfig">resourceConfig</a></li>
+<li><a href="#guardian">guardian</a></li>
 </ul>
 </li>
 </ul>
@@ -329,16 +331,27 @@ Ecotone upgrade, <code>overhead</code> is ignored and <code>scalar</code> is int
 updates <code>baseFeeScalar</code> and <code>blobBaseFeeScalar</code></li>
 <li>Type <code>2</code>: <code>gasLimit</code> overwrite, as <code>uint64</code> payload</li>
 <li>Type <code>3</code>: <code>unsafeBlockSigner</code> overwrite, as <code>address</code> payload</li>
+<li>Type <code>4</code>: <code>eip1559Params</code> overwrite, as <code>uint256</code> payload encoding denomination and elasticity</li>
+<li>Type <code>5</code>: <code>operatorFeeParams</code> overwrite, as <code>uint256</code> payload encoding scalar and constant</li>
 </ul>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
+<li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST only be triggerable once.</li>
 <li>MUST set the owner of the contract to the provided <code>_owner</code> address.</li>
 <li>MUST set the SuperchainConfig contract address.</li>
 <li>MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config, batch
 inbox, L1 contract addresses, and L2 chain ID.</li>
 <li>MUST set the start block to the current block number if it hasn't been set already.</li>
+<li>MUST validate the resource configuration parameters against system constraints.</li>
+</ul>
+<h3 id="upgrade"><a class="header" href="#upgrade">upgrade</a></h3>
+<ul>
+<li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
+<li>MUST set the L2 chain ID to the provided value.</li>
+<li>MUST set the SuperchainConfig contract address to the provided value.</li>
+<li>MUST clear the old dispute game factory address from storage (now derived from OptimismPortal).</li>
 </ul>
 <h3 id="minimumgaslimit"><a class="header" href="#minimumgaslimit">minimumGasLimit</a></h3>
 <p>Returns the minimum L2 gas limit that can be safely set for the system to operate, calculated as
@@ -395,7 +408,7 @@ current pause state of the system by checking if the <code>SuperchainConfig</cod
 <p>Allows the owner to update the gas configuration parameters (pre-Ecotone).</p>
 <ul>
 <li>MUST revert if called by an address other than the owner.</li>
-<li>MUST revert if the scalar exceeds the maximum allowed value.</li>
+<li>MUST revert if the scalar exceeds the maximum allowed value (no upper 8 bits should be set).</li>
 <li>MUST update the overhead and scalar values.</li>
 <li>MUST emit a ConfigUpdate event with the UpdateType.FEE_SCALARS type.</li>
 </ul>
@@ -434,6 +447,22 @@ current pause state of the system by checking if the <code>SuperchainConfig</cod
 </ul>
 <h3 id="resourceconfig"><a class="header" href="#resourceconfig">resourceConfig</a></h3>
 <p>Returns the current resource metering configuration.</p>
+<ul>
+<li>MUST perform validation checks when setting the resource config:
+<ul>
+<li>Minimum base fee must be less than or equal to maximum base fee</li>
+<li>Base fee change denominator must be greater than 1</li>
+<li>Max resource limit plus system transaction gas must be less than or equal to the L2 gas limit</li>
+<li>Elasticity multiplier must be greater than 0</li>
+<li>No precision loss when computing target resource limit</li>
+</ul>
+</li>
+</ul>
+<h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
+<p>Returns the address of the guardian from the SuperchainConfig contract.</p>
+<ul>
+<li>MUST return the result of a call to <code>superchainConfig.guardian()</code>.</li>
+</ul>
 
                     </main>
 

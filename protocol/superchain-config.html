@@ -191,13 +191,15 @@
 <li><a href="#function-specification">Function Specification</a>
 <ul>
 <li><a href="#initialize">initialize</a></li>
+<li><a href="#upgrade">upgrade</a></li>
 <li><a href="#guardian">guardian</a></li>
+<li><a href="#pauseexpiry">pauseExpiry</a></li>
 <li><a href="#pause">pause</a></li>
 <li><a href="#unpause">unpause</a></li>
+<li><a href="#extend">extend</a></li>
 <li><a href="#pausable">pausable</a></li>
 <li><a href="#paused">paused</a></li>
 <li><a href="#expiration">expiration</a></li>
-<li><a href="#reset">reset</a></li>
 </ul>
 </li>
 </ul>
@@ -216,7 +218,7 @@ trigger the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> at any 
 of these actors from triggering the pause as needed.</p>
 <h3 id="isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism"><a class="header" href="#isupc-002-the-guardian-must-be-able-to-reset-or-undo-the-pause-mechanism">iSUPC-002: The Guardian must be able to reset or undo the Pause Mechanism</a></h3>
 <p>We require that the <code>SuperchainConfig</code> is constructed such that the
-<a href="./stage-1.html#guardian">Guardian</a> must be able to reset or unpause the
+<a href="./stage-1.html#guardian">Guardian</a> must be able to unpause or extend the
 <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> at any time.</p>
 <h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
 <p><strong>Severity: Medium</strong></p>
@@ -227,12 +229,22 @@ that <a href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-t
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
+<li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST only be triggerable once.</li>
 <li>MUST set the value of the Guardian role.</li>
-<li>MUST set the value of the pause expiry period.</li>
+<li>MUST emit a ConfigUpdate event with the Guardian address.</li>
+</ul>
+<h3 id="upgrade"><a class="header" href="#upgrade">upgrade</a></h3>
+<ul>
+<li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
+<li>MUST migrate the guardian from old storage to new storage.</li>
+<li>MUST clear old storage slots.</li>
+<li>MUST maintain contract version information.</li>
 </ul>
 <h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
 <p>Returns the address of the current <a href="./stage-1.html#guardian">Guardian</a>.</p>
+<h3 id="pauseexpiry"><a class="header" href="#pauseexpiry">pauseExpiry</a></h3>
+<p>Returns the duration after which a pause expires, which is a hardcoded constant of 7,884,000 seconds (approximately 3 months).</p>
 <h3 id="pause"><a class="header" href="#pause">pause</a></h3>
 <p>Allows the <a href="./stage-1.html#guardian">Guardian</a> to trigger the
 <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a>. <code>pause</code> takes an address
@@ -240,31 +252,38 @@ that <a href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-t
 systems or chains are affected by the pause.</p>
 <ul>
 <li>MUST revert if called by an address other than the Guardian.</li>
-<li>MUST revert if the pausable flag for the given identifier is set to 1 (used/unavailable).</li>
+<li>MUST revert if the pause timestamp for the given identifier is non-zero (already paused).</li>
 <li>MUST set the pause timestamp for the given identifier to the current block timestamp.</li>
-<li>MUST set the pausable flag for the given identifier to 1 (used/unavailable) to prevent repeated
-pauses without a reset.</li>
+<li>MUST emit a Paused event with the identifier.</li>
 </ul>
 <h3 id="unpause"><a class="header" href="#unpause">unpause</a></h3>
 <p>Allows the <a href="./stage-1.html#guardian">Guardian</a> to explicitly unpause the system for a given
 <a href="./stage-1.html#pause-identifier">Pause Identifier</a> rather than waiting for the pause to expire.
 Unpausing a specific identifier does NOT unpause the global pause (zero address identifier). If the
 global pause is active, all systems will remain paused even if their specific identifiers are
-unpaused. Note that <code>unpause</code> will not revert if the pause is not currently active which would
-cause <code>unpause</code> to act like a call to <code>reset</code>.</p>
+unpaused.</p>
 <ul>
 <li>MUST revert if called by an address other than the Guardian.</li>
 <li>MUST set the pause timestamp for the given identifier to 0, representing "not paused".</li>
-<li>MUST set the pausable flag for the given identifier to 0 (ready to pause), allowing the pause
-mechanism to be used again.</li>
+<li>MUST emit an Unpaused event with the identifier.</li>
+<li>Will not revert if the system is not already paused for the given identifier.</li>
+</ul>
+<h3 id="extend"><a class="header" href="#extend">extend</a></h3>
+<p>Allows the <a href="./stage-1.html#guardian">Guardian</a> to extend an active pause by resetting the pause
+timestamp to the current block timestamp, effectively restarting the expiry timer.</p>
+<ul>
+<li>MUST revert if called by an address other than the Guardian.</li>
+<li>MUST revert if the pause timestamp for the given identifier is zero (not currently paused).</li>
+<li>MUST set the pause timestamp for the given identifier to the current block timestamp.</li>
+<li>MUST emit a Paused event with the identifier.</li>
 </ul>
 <h3 id="pausable"><a class="header" href="#pausable">pausable</a></h3>
 <p>Allows any user to check if the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> can be triggered
 for a specific <a href="./stage-1.html#pause-identifier">Pause Identifier</a>. The pausable status of a specific
 identifier is independent of the pausable status of the global pause (zero address identifier).</p>
 <ul>
-<li>MUST return true if the pausable flag for the given identifier is 0 (ready to pause).</li>
-<li>MUST return false if the pausable flag for the given identifier is 1 (used/unavailable).</li>
+<li>MUST return true if the pause timestamp for the given identifier is 0 (not currently paused).</li>
+<li>MUST return false if the pause timestamp for the given identifier is non-zero (currently paused).</li>
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
 <p>Allows any user to check if the system is currently paused for a specific
@@ -273,6 +292,7 @@ identifier is independent of the pausable status of the global pause (zero addre
 <li>MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
 (current time &lt; pause timestamp + expiry duration).</li>
 <li>MUST return false otherwise.</li>
+<li>When called without parameters, MUST check the pause status for the global identifier (address(0)).</li>
 </ul>
 <h3 id="expiration"><a class="header" href="#expiration">expiration</a></h3>
 <p>Returns the timestamp at which the pause for a given
@@ -281,18 +301,6 @@ expiration for the specific identifier provided.</p>
 <ul>
 <li>MUST return the pause timestamp plus the configured expiry duration if the pause timestamp is non-zero.</li>
 <li>MUST return 0 if the pause timestamp is 0 (system is not paused) for the given identifier.</li>
-</ul>
-<h3 id="reset"><a class="header" href="#reset">reset</a></h3>
-<p>Allows the <a href="./stage-1.html#guardian">Guardian</a> to reset the pause mechanism for a given
-<a href="./stage-1.html#pause-identifier">Pause Identifier</a>, allowing it to be used again. Note that <code>reset</code>
-will not revert if the pausable flag is already set to zero.</p>
-<ul>
-<li>MUST revert if called by an address other than the Guardian.</li>
-<li>MUST set the pausable flag for the given identifier to 0 (ready to pause).</li>
-<li>MUST NOT modify the pause timestamp for the given identifier.</li>
-<li>NOTE: Resetting the pausable flag for a specific identifier does not affect the pause status. If
-a system is currently paused, it will remain paused until explicitly unpaused or until the pause
-expires.</li>
 </ul>
 <!-- references -->
 

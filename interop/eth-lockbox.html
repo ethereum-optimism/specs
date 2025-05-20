@@ -178,12 +178,15 @@
 <ul>
 <li><a href="#interface-and-properties">Interface and properties</a>
 <ul>
+<li><a href="#initialize"><code>initialize</code></a></li>
 <li><a href="#locketh"><code>lockETH</code></a></li>
 <li><a href="#unlocketh"><code>unlockETH</code></a></li>
 <li><a href="#authorizeportal"><code>authorizePortal</code></a></li>
 <li><a href="#authorizelockbox"><code>authorizeLockbox</code></a></li>
 <li><a href="#migrateliquidity"><code>migrateLiquidity</code></a></li>
 <li><a href="#receiveliquidity"><code>receiveLiquidity</code></a></li>
+<li><a href="#paused"><code>paused</code></a></li>
+<li><a href="#superchainconfig"><code>superchainConfig</code></a></li>
 <li><a href="#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
@@ -229,6 +232,14 @@ when making deposits or finalizing withdrawals.</p>
 <p>Authorization of <code>OptimismPortal</code>s is managed by the <code>ProxyAdmin</code> owner.
 The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>ProxyAdmin</code>.</p>
 <h3 id="interface-and-properties"><a class="header" href="#interface-and-properties">Interface and properties</a></h3>
+<h4 id="initialize"><a class="header" href="#initialize"><code>initialize</code></a></h4>
+<p>Initializes the ETHLockbox contract.</p>
+<ul>
+<li>MUST only be callable by the ProxyAdmin or its owner.</li>
+<li>MUST set the SystemConfig contract.</li>
+<li>MUST authorize all portals provided in the initialization array.</li>
+<li>MUST check that all portals have the same SuperchainConfig as the ETHLockbox.</li>
+</ul>
 <h4 id="locketh"><a class="header" href="#locketh"><code>lockETH</code></a></h4>
 <p>Deposits and locks ETH into the lockbox's liquidity pool.</p>
 <ul>
@@ -236,6 +247,7 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <li>Only authorized <code>OptimismPortal</code> addresses MUST be allowed to interact.</li>
 <li>The function MUST NOT revert when called by an authorized <code>OptimismPortal</code></li>
 <li>The function MUST emit the <code>ETHLocked</code> event with the <code>portal</code> that called it and the <code>amount</code>.</li>
+<li>The function CAN be called by an OptimismPortal while it is executing a withdrawal transaction.</li>
 </ul>
 <pre><code class="language-solidity">function lockETH() external payable;
 </code></pre>
@@ -244,9 +256,12 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <ul>
 <li>Only authorized <code>OptimismPortal</code> addresses MUST be allowed to interact.</li>
 <li>The function MUST NOT revert when called by an authorized <code>OptimismPortal</code> unless paused.</li>
+<li>The function MUST check if the ETHLockbox has sufficient balance to fulfill the withdrawal.</li>
 <li>The function MUST emit the <code>ETHUnlocked</code> event with the <code>portal</code> that called it and the <code>amount</code>.</li>
 <li>The function MUST use <code>donateETH</code> when sending ETH to avoid triggering deposits.</li>
 <li>The function MUST NOT allow to be called as part of a withdrawal transaction (<code>OptimismPortal.l2Sender()</code> MUST be the <code>DEFAULT_L2_SENDER</code>).</li>
+<li>The function MUST revert if an OptimismPortal attempts to call it while executing a
+withdrawal transaction.</li>
 </ul>
 <pre><code class="language-solidity">function unlockETH(uint256 _value) external;
 </code></pre>
@@ -265,6 +280,7 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <ul>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
+<li>Once a lockbox is authorized, it cannot be removed from the authorized list.</li>
 <li>The function MUST emit the <code>LockboxAuthorized</code> event with the <code>lockbox</code> that is being authorized.</li>
 </ul>
 <pre><code class="language-solidity">function authorizeLockbox(address _lockbox) external;
@@ -274,8 +290,12 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <ul>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
-<li>The function MUST call <code>receiveLiquidity</code> from the destination <code>ETHLockbox</code>.</li>
-<li>The function MUST emit the <code>LiquidityMigrated</code> event with the <code>lockbox</code> that is being migrated to.</li>
+<li>The function MUST call <code>receiveLiquidity</code> from the destination <code>ETHLockbox</code> with the entire ETH balance.</li>
+<li>SHOULD be called atomically with <code>OptimismPortal.migrateToSuperRoots()</code> in the same transaction
+batch, or otherwise the <code>OptimismPortal</code> may not be able to unlock ETH from the ETHLockbox on
+finalized withdrawals.</li>
+<li>The function MUST emit the <code>LiquidityMigrated</code> event with the <code>lockbox</code> that is being migrated to
+and the amount of ETH migrated.</li>
 </ul>
 <pre><code class="language-solidity">function migrateLiquidity(address _lockbox) external;
 </code></pre>
@@ -283,38 +303,41 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <p>Receives the ETH liquidity from another <code>ETHLockbox</code>.</p>
 <ul>
 <li>Only an authorized <code>ETHLockbox</code> can call the function.</li>
-<li>The function MUST emit the <code>LiquidityReceived</code> event with the <code>lockbox</code> that is being received from.</li>
+<li>The function MUST emit the <code>LiquidityReceived</code> event with the <code>lockbox</code> that is being received
+from and the amount of ETH received.</li>
 </ul>
 <pre><code class="language-solidity">function receiveLiquidity() external payable;
 </code></pre>
+<h4 id="paused"><a class="header" href="#paused"><code>paused</code></a></h4>
+<p>Returns whether the contract is paused, delegating to the SystemConfig.</p>
+<h4 id="superchainconfig"><a class="header" href="#superchainconfig"><code>superchainConfig</code></a></h4>
+<p>Returns the SuperchainConfig contract from the SystemConfig.</p>
 <h4 id="proxyadminowner"><a class="header" href="#proxyadminowner"><code>proxyAdminOwner</code></a></h4>
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
-<pre><code class="language-solidity">function proxyAdminOwner() external view returns (address);
-</code></pre>
 <h3 id="events"><a class="header" href="#events">Events</a></h3>
 <h4 id="ethlocked"><a class="header" href="#ethlocked"><code>ETHLocked</code></a></h4>
 <p>MUST be triggered when <code>lockETH</code> is called</p>
-<pre><code class="language-solidity">event ETHLocked(address indexed portal, uint256 amount);
+<pre><code class="language-solidity">event ETHLocked(OptimismPortal indexed portal, uint256 amount);
 </code></pre>
 <h4 id="ethunlocked"><a class="header" href="#ethunlocked"><code>ETHUnlocked</code></a></h4>
 <p>MUST be triggered when <code>unlockETH</code> is called</p>
-<pre><code class="language-solidity">event ETHUnlocked(address indexed portal, uint256 amount);
+<pre><code class="language-solidity">event ETHUnlocked(OptimismPortal indexed portal, uint256 amount);
 </code></pre>
 <h4 id="portalauthorized"><a class="header" href="#portalauthorized"><code>PortalAuthorized</code></a></h4>
 <p>MUST be triggered when <code>authorizePortal</code> is called</p>
-<pre><code class="language-solidity">event PortalAuthorized(address indexed portal);
+<pre><code class="language-solidity">event PortalAuthorized(OptimismPortal indexed portal);
 </code></pre>
 <h4 id="lockboxauthorized"><a class="header" href="#lockboxauthorized"><code>LockboxAuthorized</code></a></h4>
 <p>MUST be triggered when <code>authorizeLockbox</code> is called</p>
-<pre><code class="language-solidity">event LockboxAuthorized(address indexed lockbox);
+<pre><code class="language-solidity">event LockboxAuthorized(ETHLockbox indexed lockbox);
 </code></pre>
 <h4 id="liquiditymigrated"><a class="header" href="#liquiditymigrated"><code>LiquidityMigrated</code></a></h4>
 <p>MUST be triggered when <code>migrateLiquidity</code> is called</p>
-<pre><code class="language-solidity">event LiquidityMigrated(address indexed lockbox);
+<pre><code class="language-solidity">event LiquidityMigrated(ETHLockbox indexed lockbox, uint256 amount);
 </code></pre>
 <h4 id="liquidityreceived"><a class="header" href="#liquidityreceived"><code>LiquidityReceived</code></a></h4>
 <p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
-<pre><code class="language-solidity">event LiquidityReceived(address indexed lockbox);
+<pre><code class="language-solidity">event LiquidityReceived(ETHLockbox indexed lockbox, uint256 amount);
 </code></pre>
 <h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
 <h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>

@@ -230,6 +230,7 @@
 <li><a href="#guardian">guardian</a></li>
 <li><a href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></li>
 <li><a href="#superrootsactive">superRootsActive</a></li>
+<li><a href="#disputegamefactory">disputeGameFactory</a></li>
 <li><a href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
 <li><a href="#respectedgametype">respectedGameType</a></li>
 <li><a href="#respectedgametypeupdatedat">respectedGameTypeUpdatedAt</a></li>
@@ -238,6 +239,12 @@
 <li><a href="#provewithdrawaltransaction-output-roots">proveWithdrawalTransaction (Output Roots)</a></li>
 <li><a href="#checkwithdrawal">checkWithdrawal</a></li>
 <li><a href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></li>
+<li><a href="#migrateliquidity">migrateLiquidity</a></li>
+<li><a href="#migratetosuperroots">migrateToSuperRoots</a></li>
+<li><a href="#donateeth">donateETH</a></li>
+<li><a href="#finalizewithdrawaltransactionexternalproof">finalizeWithdrawalTransactionExternalProof</a></li>
+<li><a href="#numproofsubmitters">numProofSubmitters</a></li>
+<li><a href="#deposittransaction">depositTransaction</a></li>
 </ul>
 </li>
 </ul>
@@ -426,10 +433,11 @@ see this as a critical system risk.</p>
 </ul>
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
+<li>MUST only be callable by the ProxyAdmin or its owner.</li>
 <li>MUST only be triggerable once.</li>
-<li>MUST set the value of the <code>DisputeGameFactory</code> contract.</li>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
+<li>MUST set the value of the <code>ETHLockbox</code> contract.</li>
 <li>MUST set <code>superRootsActive</code> to either <code>true</code> or <code>false</code>.</li>
 <li>MUST set the value of the <a href="#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
 value if the value is not set already.</li>
@@ -444,6 +452,8 @@ value if the value is not set already.</li>
 <h3 id="superrootsactive"><a class="header" href="#superrootsactive">superRootsActive</a></h3>
 <p>Returns the value of the <code>superRootsActive</code> variable which determines if the <code>OptimismPortal</code> will
 use the standard Output Root proof or the Super Root proof.</p>
+<h3 id="disputegamefactory"><a class="header" href="#disputegamefactory">disputeGameFactory</a></h3>
+<p>Returns the DisputeGameFactory contract from the AnchorStateRegistry contract.</p>
 <h3 id="disputegamefinalitydelayseconds"><a class="header" href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></h3>
 <p><strong>Legacy Function</strong></p>
 <p>Returns the value of the
@@ -469,6 +479,7 @@ has not been initialized then this value will be <code>address(0)</code> and sho
 that uses dispute games that argue over <a href="#super-root">Super Roots</a>.</p>
 <ul>
 <li>MUST revert if the withdrawal target is the address of the <code>OptimismPortal</code> itself.</li>
+<li>MUST revert if the withdrawal target is the address of the <code>ETHLockbox</code> contract.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
 <a href="./anchor-state-registry.html#proper-game">Proper Game</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
@@ -489,12 +500,16 @@ claim of the provided dispute game is invalid.</li>
 <li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
 withdrawal, the address of the game against which it was proven, and the block timestamp at which
 the proof transaction was submitted.</li>
+<li>MUST add the proof submitter to the list of submitters for this withdrawal hash.</li>
+<li>MUST emit a <code>WithdrawalProven</code> event with the withdrawal hash, sender, and target.</li>
+<li>MUST emit a <code>WithdrawalProvenExtension1</code> event with the withdrawal hash and proof submitter address.</li>
 </ul>
 <h3 id="provewithdrawaltransaction-output-roots"><a class="header" href="#provewithdrawaltransaction-output-roots">proveWithdrawalTransaction (Output Roots)</a></h3>
 <p>Allows a user to <a href="#proven-withdrawal">prove</a> a withdrawal transaction within an <code>OptimismPortal</code>
 that uses dispute games that argue over <a href="#output-root">Output Roots</a>.</p>
 <ul>
 <li>MUST revert if the withdrawal target is the address of the <code>OptimismPortal</code> itself.</li>
+<li>MUST revert if the withdrawal target is the address of the <code>ETHLockbox</code> contract.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
 <a href="./anchor-state-registry.html#proper-game">Proper Game</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
@@ -510,14 +525,19 @@ claim of the provided dispute game is invalid.</li>
 <li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
 withdrawal, the address of the game against which it was proven, and the block timestamp at which
 the proof transaction was submitted.</li>
+<li>MUST add the proof submitter to the list of submitters for this withdrawal hash.</li>
+<li>MUST emit a <code>WithdrawalProven</code> event with the withdrawal hash, sender, and target.</li>
+<li>MUST emit a <code>WithdrawalProvenExtension1</code> event with the withdrawal hash and proof submitter address.</li>
 </ul>
 <h3 id="checkwithdrawal"><a class="header" href="#checkwithdrawal">checkWithdrawal</a></h3>
 <p>Checks that a withdrawal transaction can be <a href="#finalized-withdrawal">finalized</a>.</p>
 <ul>
 <li>MUST revert if the withdrawal being finalized has already been finalized.</li>
 <li>MUST revert if the withdrawal being finalized has not been proven.</li>
-<li>MUST revert if the withdrawal was proven at a timestamp less than the creation timestamp of the
-dispute game it was proven against, which would signal an unexpected proving bug.</li>
+<li>MUST revert if the withdrawal was proven at a timestamp less than or equal to the creation
+timestamp of the dispute game it was proven against, which would signal an unexpected proving
+bug. Note that prevents withdrawals from being proven in the same block that a dispute game is
+created.</li>
 <li>MUST revert if the withdrawal being finalized has been proven less than
 <a href="#proof-maturity-delay">Proof Maturity Delay</a> seconds ago.</li>
 <li>MUST revert if the withdrawal being finalized was proven against a game that does not have a
@@ -530,10 +550,80 @@ dispute game it was proven against, which would signal an unexpected proving bug
 <li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code>.</li>
 <li>MUST mark the withdrawal as finalized.</li>
 <li>MUST set the L2 Withdrawal Sender variable correctly.</li>
+<li>MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.</li>
 <li>MUST execute the withdrawal transaction by executing a contract call to the target address with
 the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
 specified by the withdrawal.</li>
 <li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
+<li>MUST emit a <code>WithdrawalFinalized</code> event with the withdrawal hash and success status.</li>
+<li>MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails.</li>
+</ul>
+<h3 id="migrateliquidity"><a class="header" href="#migrateliquidity">migrateLiquidity</a></h3>
+<p>Allows the ProxyAdmin owner to migrate the total ETH balance to the ETHLockbox contract.</p>
+<ul>
+<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
+<li>MUST transfer the entire ETH balance of the OptimismPortal to the ETHLockbox contract.</li>
+<li>MUST emit an ETHMigrated event with the ETHLockbox address and the migrated ETH amount.</li>
+<li>MAY be called even if the system is paused.</li>
+</ul>
+<h3 id="migratetosuperroots"><a class="header" href="#migratetosuperroots">migrateToSuperRoots</a></h3>
+<p>Allows the ProxyAdmin owner to migrate the OptimismPortal to use a new ETHLockbox, point at a new
+AnchorStateRegistry, and start using the Super Roots proof method.</p>
+<ul>
+<li>MUST revert if the system is paused.</li>
+<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
+<li>MUST revert if the new AnchorStateRegistry is the same as the current one.</li>
+<li>MUST update the ETHLockbox address to the provided new ETHLockbox address.</li>
+<li>MUST update the AnchorStateRegistry address to the provided new AnchorStateRegistry address.</li>
+<li>MUST set the superRootsActive flag to true, enabling Super Roots proof method.</li>
+<li>MUST emit a PortalMigrated event with the old and new ETHLockbox and AnchorStateRegistry
+addresses.</li>
+</ul>
+<h3 id="donateeth"><a class="header" href="#donateeth">donateETH</a></h3>
+<p>Allows any address to donate ETH to the contract without triggering a deposit to L2.</p>
+<ul>
+<li>MUST accept ETH payments via the payable modifier.</li>
+<li>MUST not perform any state-changing operations.</li>
+<li>MUST not trigger a deposit transaction to L2.</li>
+</ul>
+<h3 id="finalizewithdrawaltransactionexternalproof"><a class="header" href="#finalizewithdrawaltransactionexternalproof">finalizeWithdrawalTransactionExternalProof</a></h3>
+<p>Allows a user to <a href="#finalized-withdrawal">finalize</a> a withdrawal transaction using a proof submitted
+by another address.</p>
+<ul>
+<li>MUST revert if the system is paused.</li>
+<li>MUST revert if the function is called while a previous withdrawal is being executed.</li>
+<li>MUST revert if the target address is the OptimismPortal or the ETHLockbox. Note that the target
+address is permitted to be the address of <em>another</em> OptimismPortal contract but it cannot be the
+address if this contract.</li>
+<li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code> when using the specified proof submitter.</li>
+<li>MUST mark the withdrawal as finalized.</li>
+<li>MUST set the L2 Withdrawal Sender variable correctly.</li>
+<li>MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.</li>
+<li>MUST execute the withdrawal transaction by executing a contract call to the target address with
+the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
+specified by the withdrawal.</li>
+<li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
+<li>MUST emit a <code>WithdrawalFinalized</code> event with the withdrawal hash and success status.</li>
+<li>MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails.</li>
+</ul>
+<h3 id="numproofsubmitters"><a class="header" href="#numproofsubmitters">numProofSubmitters</a></h3>
+<p>Returns the number of proof submitters for a given withdrawal hash.</p>
+<ul>
+<li>MUST return the length of the proofSubmitters array for the specified withdrawal hash.</li>
+<li>MUST NOT change state.</li>
+</ul>
+<h3 id="deposittransaction"><a class="header" href="#deposittransaction">depositTransaction</a></h3>
+<p>Accepts deposits of ETH and data, and emits a TransactionDeposited event for use in
+deriving deposit transactions. Note that if a deposit is made by a contract, its
+address will be aliased when retrieved using <code>tx.origin</code> or <code>msg.sender</code>. Consider
+using the CrossDomainMessenger contracts for a simpler developer experience.</p>
+<ul>
+<li>MUST lock any ETH value (msg.value) in the ETHLockbox contract.</li>
+<li>MUST revert if the target address is not address(0) for contract creations.</li>
+<li>MUST revert if the gas limit provided is too low based on the calldata size.</li>
+<li>MUST revert if the calldata is too large (&gt; 120,000 bytes).</li>
+<li>MUST transform the sender address to its alias if the caller is a contract.</li>
+<li>MUST emit a TransactionDeposited event with the from address, to address, deposit version, and opaque data.</li>
 </ul>
 
                     </main>

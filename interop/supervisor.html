@@ -190,6 +190,8 @@
 <li><a href="#blockref"><code>BlockRef</code></a></li>
 <li><a href="#derivedidpair"><code>DerivedIDPair</code></a></li>
 <li><a href="#chainrootinfo"><code>ChainRootInfo</code></a></li>
+<li><a href="#supervisorsyncstatus"><code>SupervisorSyncStatus</code></a></li>
+<li><a href="#supervisorchainsyncstatus"><code>SupervisorChainSyncStatus</code></a></li>
 <li><a href="#superrootresponse"><code>SuperRootResponse</code></a></li>
 <li><a href="#safetylevel"><code>SafetyLevel</code></a></li>
 </ul>
@@ -351,6 +353,25 @@ representing a bytes list, prefixed with <code>0x</code>.</p>
 <li><code>chainId</code>: <code>HexUint64</code> - The chain ID (Note: this is changing to <code>ChainID</code> soon)</li>
 <li><code>canonical</code>: <code>Hash</code> - output root at the latest canonical block</li>
 <li><code>pending</code>: <code>Bytes</code> - output root preimage</li>
+</ul>
+<h4 id="supervisorsyncstatus"><a class="header" href="#supervisorsyncstatus"><code>SupervisorSyncStatus</code></a></h4>
+<p>Describes the sync status of the Supervisor component.</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>minSyncedL1</code>: <code>BlockRef</code> - block ref to the synced L1 block</li>
+<li><code>safeTimestamp</code>: <code>Int</code> - safe timestamp</li>
+<li><code>finalizedTimestamp</code>: <code>Int</code> - finalized timestamp</li>
+<li><code>chains</code>: <code>OBJECT</code> with <code>ChainID</code> keys and <code>SupervisorChainSyncStatus</code> values</li>
+</ul>
+<h4 id="supervisorchainsyncstatus"><a class="header" href="#supervisorchainsyncstatus"><code>SupervisorChainSyncStatus</code></a></h4>
+<p>Describes the sync status for a specific chain</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>localUnsafe</code>: <code>BlockRef</code> - local-unsafe ref for the given chain</li>
+<li><code>localSafe</code>: <code>BlockID</code> - local-safe ref for the given chain</li>
+<li><code>crossUnsafe</code>: <code>BlockID</code> - cross-unsafe ref for the given chain</li>
+<li><code>safe</code>: <code>BlockID</code> - cross-safe ref for the given chain</li>
+<li><code>finalized</code>: <code>BlockID</code> - finalized ref for the given chain</li>
 </ul>
 <h4 id="superrootresponse"><a class="header" href="#superrootresponse"><code>SuperRootResponse</code></a></h4>
 <p><code>OBJECT</code>:</p>
