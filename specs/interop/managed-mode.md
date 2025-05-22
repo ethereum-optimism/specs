@@ -46,12 +46,12 @@ RPC using web sockets.
 
 Supervisor [initiates the connection](https://github.com/ethereum-optimism/optimism/issues/13182) to the node in order
 to manage it. As supervisor does the dial in, for our context, it is the client and the node is the server. For the web
-socket authentication, only the initial request is authenticated and a live socket is opened. Subsequent requests need
-not have the authentication parameter.
+socket authentication, only the initial request is authenticated and a live socket is opened.
+No re-authentication is needed during the lifetime of this socket.
 
 The authentication is performed using `JWT`. The construction of jwt is similar to the one
 [used in Engine API](https://github.com/ethereum/execution-apis/blob/main/src/engine/authentication.md). The path of
-the file containing the jwt secret should be provided as part of the L2 config parameter. If no input is provided, a new
+the file containing the jwt secret should be provided to the supervisor instance. If no input is provided, a new
 jwt should be generated and stored in hex encoded format.
 
 ## Node `->` Supervisor
@@ -96,7 +96,7 @@ New L2 unsafe block was processed, updating local-unsafe head.
 
 ```javascript
 DerivationUpdate: DerivedBlockRefPair {
-    Source: L1BlockRef
+    Source: BlockRef  //L1 
     Derived: BlockRef //Last L2 BlockRef
 }
 ```
@@ -106,16 +106,17 @@ Signals that an L2 block is considered local-safe.
 ### DerivationOriginUpdate
 
 ```javascript
-DerivationOriginUpdate: L1BlockRef
+DerivationOriginUpdate: BlockRef
 ```
 
-Signals that an L2 block is now local-safe because of L1 traversal. This would be accompanied with `DerivationUpdate`.
+Signals that an L2 block is now local-safe because of the given L1 traversal. This would be accompanied with
+`DerivationUpdate`.
 
 ### ExhaustL1
 
 ```javascript
 ExhaustL1: DerivedBlockRefPair {
-    Source: L1BlockRef
+    Source: BlockRef  //Last L1
     Derived: BlockRef //Last L2 BlockRef
 }
 ```
@@ -235,7 +236,7 @@ Fetches all transaction receipts in a given L2 block.
 #### interop_l2BlockRefByTimestamp
 
 ```javascript
-payload: uint64 -> L2BlockRef
+payload: uint64 -> BlockRef
 ```
 
 Fetches L2 BlockRef of the block that occurred at given timestamp
@@ -277,32 +278,30 @@ Returns the optimistic output of the invalidated block from replacement
 ## Types
 
 ```javascript
-Hash: keccack256 hash
+Hash: 0x prefixed, hex encoded, fixed-length string representing 32 bytes
 
 BlockID {
-    Hash: 32 Bytes
+    Hash: Hash
     Number: uint64
 }
 
 BlockSeal {
-    Hash: 32 Bytes
+    Hash: Hash
     Number: uint64
     Timestamp: uint64
 }
 
 BlockRef {
-    Hash: 32 Bytes
+    Hash: Hash
     Number: uint64
-    ParentHash: 32 Bytes
+    ParentHash: Hash
     Time: uint64
 }
 
-L1BlockRef = BlockRef
-
 L2BlockRef {
-    Hash: 32 Bytes
+    Hash: Hash
     Number: uint64
-    ParentHash: 32 Bytes
+    ParentHash: Hash
     Time: uint64
     L1Origin: BlockID
     SequenceNumber: uint64 //distance to first block of epoch
@@ -315,7 +314,7 @@ DerivedBlockRefPair {
 
 BlockReplacement {
     Replacement: BlockRef
-    Invalidated: 32 Bytes
+    Invalidated: Hash
 }
 
 Receipts -> []Receipt
@@ -323,8 +322,8 @@ Receipts -> []Receipt
 Receipt -> op-geth/core/types/receipt
 
 OutputV0 {
-    StateRoot: Bytes32
-    MessagePasserStorageRoot Bytes32
-    BlockHash: 32 Bytes
+    StateRoot: Hash
+    MessagePasserStorageRoot: Hash
+    BlockHash: Hash
 }
 ```
