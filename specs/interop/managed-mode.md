@@ -15,7 +15,7 @@
 - [Supervisor `->` Node](#supervisor---node)
   - [Control Signals](#control-signals)
     - [interop_pullEvent](#interop_pullevent)
-    - [interop_anchorPoint](#interop_anchorpoint)
+    - [interop_anchorPoint (Soon to be deprecated)](#interop_anchorpoint-soon-to-be-deprecated)
     - [interop_invalidateBlock](#interop_invalidateblock)
     - [interop_provideL1](#interop_providel1)
     - [interop_reset](#interop_reset)
