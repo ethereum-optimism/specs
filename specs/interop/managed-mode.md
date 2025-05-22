@@ -152,7 +152,7 @@ payload: none -> One of the event from node events (previous section).
 
 When websocket is not available, supervisor can use this method to get the next event from node.
 
-#### interop_anchorPoint
+#### interop_anchorPoint (Soon to be deprecated)
 
 ```javascript
 payload: none -> DerivedBlockRefPair {
@@ -162,6 +162,8 @@ payload: none -> DerivedBlockRefPair {
 ```
 
 Returns the genesis block ref for L1 and L2 that the current node used as anchor point.
+This method will soon be removed in favor of fetching the information from a supervisor specific rollup config.
+(Once a spec is created about [this](https://github.com/ethereum-optimism/optimism/pull/16038) PR.)
 
 #### interop_invalidateBlock
 
