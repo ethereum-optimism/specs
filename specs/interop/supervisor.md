@@ -154,7 +154,7 @@ Describes a block.
 
 #### `DerivedIDPair`
 
-A pair of block identifiers, linking an `derived` block (typically an L2 block) to the `source` (typically an L1 block) from which it was derived.
+A pair of block identifiers, linking a `derived` block (typically an L2 block) to the `source` (typically an L1 block) from which it was derived.
 
 `OBJECT`:
 
