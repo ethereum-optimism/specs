@@ -77,7 +77,7 @@ Standard Chain within the superchain.
 These requirements are currently a draft, pending governance approval.
 
 The recommended way to deploy L1 contracts for an OP chain that meet the standard configuration will be with the
-[OP Contracts Manager](../experimental/op-contracts-manager.md).
+[OP Contracts Manager](./op-contracts-manager.md).
 
 ## Consensus Parameters
 
