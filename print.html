@@ -15048,6 +15048,246 @@ E.g. when trying to determine the previous source block for the first L1 block i
 <h6 id="-321501-data_corruption"><a class="header" href="#-321501-data_corruption"><code>-321501</code> <code>DATA_CORRUPTION</code></a></h6>
 <p>Happens when the underlying DB has some I/O issue.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="control-flow-between-supervisor-and-managed-node"><a class="header" href="#control-flow-between-supervisor-and-managed-node">Control flow between Supervisor and Managed node</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="interop/managed-mode.html#authentication">Authentication</a></li>
+<li><a href="interop/managed-mode.html#node---supervisor">Node <code>-&gt;</code> Supervisor</a>
+<ul>
+<li><a href="interop/managed-mode.html#reset">Reset</a></li>
+<li><a href="interop/managed-mode.html#unsafeblock">UnsafeBlock</a></li>
+<li><a href="interop/managed-mode.html#derivationupdate">DerivationUpdate</a></li>
+<li><a href="interop/managed-mode.html#derivationoriginupdate">DerivationOriginUpdate</a></li>
+<li><a href="interop/managed-mode.html#exhaustl1">ExhaustL1</a></li>
+<li><a href="interop/managed-mode.html#replaceblock">ReplaceBlock</a></li>
+</ul>
+</li>
+<li><a href="interop/managed-mode.html#supervisor---node">Supervisor <code>-&gt;</code> Node</a>
+<ul>
+<li><a href="interop/managed-mode.html#control-signals">Control Signals</a>
+<ul>
+<li><a href="interop/managed-mode.html#interop_pullevent">interop_pullEvent</a></li>
+<li><a href="interop/managed-mode.html#interop_anchorpoint-soon-to-be-deprecated">interop_anchorPoint (Soon to be deprecated)</a></li>
+<li><a href="interop/managed-mode.html#interop_invalidateblock">interop_invalidateBlock</a></li>
+<li><a href="interop/managed-mode.html#interop_providel1">interop_provideL1</a></li>
+<li><a href="interop/managed-mode.html#interop_reset">interop_reset</a></li>
+</ul>
+</li>
+<li><a href="interop/managed-mode.html#db">DB</a>
+<ul>
+<li><a href="interop/managed-mode.html#interop_updatecrosssafe">interop_updateCrossSafe</a></li>
+<li><a href="interop/managed-mode.html#interop_updatecrossunsafe">interop_updateCrossUnsafe</a></li>
+<li><a href="interop/managed-mode.html#interop_updatefinalized">interop_updateFinalized</a></li>
+</ul>
+</li>
+<li><a href="interop/managed-mode.html#sync-methods">Sync Methods</a>
+<ul>
+<li><a href="interop/managed-mode.html#interop_fetchreceipts">interop_fetchReceipts</a></li>
+<li><a href="interop/managed-mode.html#interop_l2blockrefbytimestamp">interop_l2BlockRefByTimestamp</a></li>
+<li><a href="interop/managed-mode.html#interop_blockrefbynumber">interop_blockRefByNumber</a></li>
+<li><a href="interop/managed-mode.html#interop_chainid">interop_chainID</a></li>
+<li><a href="interop/managed-mode.html#interop_outputv0attimestamp">interop_outputV0AtTimestamp</a></li>
+<li><a href="interop/managed-mode.html#interop_pendingoutputv0attimestamp">interop_pendingOutputV0AtTimestamp</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="interop/managed-mode.html#types">Types</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>This section is based on the control flow between <code>managed</code> node and <code>supervisor</code>, described
+<a href="https://github.com/ethereum-optimism/optimism/blob/develop/op-supervisor/README.md">here</a>.</p>
+<p>Whether the node and supervisor use a <code>pubsub</code> pattern or pulling events over HTTP is up to the implementation detail.
+Both cases should be handled because <code>op-node</code> and <code>op-supervisor</code> can be using different client implementations.
+In both the case, we use <code>event</code> based signaling of new information. Ideally, this should be done using bi-directional
+RPC using web sockets.</p>
+<h2 id="authentication"><a class="header" href="#authentication">Authentication</a></h2>
+<p>Supervisor <a href="https://github.com/ethereum-optimism/optimism/issues/13182">initiates the connection</a> to the node in order
+to manage it. As supervisor does the dial in, for our context, it is the client and the node is the server. For the web
+socket authentication, only the initial request is authenticated and a live socket is opened.
+No re-authentication is needed during the lifetime of this socket.</p>
+<p>The authentication is performed using <code>JWT</code>. The construction of jwt is similar to the one
+<a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/authentication.md">used in Engine API</a>. The path of
+the file containing the jwt secret should be provided to the supervisor instance. If no input is provided, a new
+jwt should be generated and stored in hex encoded format.</p>
+<h2 id="node---supervisor"><a class="header" href="#node---supervisor">Node <code>-&gt;</code> Supervisor</a></h2>
+<p>Events that a supervisor should subscribe to, originating from the node, handled by the supervisor. For the used types,
+refer <a href="interop/managed-mode.html#Types">this</a> section.</p>
+<p>Every event sent from the node is of type <code>ManagedEvent</code> whose fields are populated with the events that occurred. All
+non-null events are sent at once. The other fields are omitted.</p>
+<pre><code class="language-javascript">ManagedEvent {
+    Reset,
+    UnsafeBlock,
+    DerivationUpdate,
+    DerivationOriginUpdate,
+    ExhaustL1,
+    ReplaceBlock
+}
+</code></pre>
+<p>Each field item is an event of the type as described below:</p>
+<h3 id="reset"><a class="header" href="#reset">Reset</a></h3>
+<pre><code class="language-javascript">Reset: string
+</code></pre>
+<p>This is emitted when the node has completed resetting its chain, after it received <code>interop_reset</code> event from
+supervisor.</p>
+<h3 id="unsafeblock"><a class="header" href="#unsafeblock">UnsafeBlock</a></h3>
+<pre><code class="language-javascript">UnsafeBlock: BlockRef //L2's BlockRef
+</code></pre>
+<p>New L2 unsafe block was processed, updating local-unsafe head.</p>
+<h3 id="derivationupdate"><a class="header" href="#derivationupdate">DerivationUpdate</a></h3>
+<pre><code class="language-javascript">DerivationUpdate: DerivedBlockRefPair {
+    Source: BlockRef  //L1 
+    Derived: BlockRef //Last L2 BlockRef
+}
+</code></pre>
+<p>Signals that an L2 block is considered local-safe.</p>
+<h3 id="derivationoriginupdate"><a class="header" href="#derivationoriginupdate">DerivationOriginUpdate</a></h3>
+<pre><code class="language-javascript">DerivationOriginUpdate: BlockRef
+</code></pre>
+<p>Signals that an L2 block is now local-safe because of the given L1 traversal. This would be accompanied with
+<code>DerivationUpdate</code>.</p>
+<h3 id="exhaustl1"><a class="header" href="#exhaustl1">ExhaustL1</a></h3>
+<pre><code class="language-javascript">ExhaustL1: DerivedBlockRefPair {
+    Source: BlockRef  //Last L1
+    Derived: BlockRef //Last L2 BlockRef
+}
+</code></pre>
+<p>Emitted when no more L1 Blocks are available. Ready to take new L1 blocks from supervisor.</p>
+<h3 id="replaceblock"><a class="header" href="#replaceblock">ReplaceBlock</a></h3>
+<pre><code class="language-javascript">ReplaceBlock: BlockReplacement
+</code></pre>
+<p>Emitted when a block gets replaced for any reason.</p>
+<h2 id="supervisor---node"><a class="header" href="#supervisor---node">Supervisor <code>-&gt;</code> Node</a></h2>
+<p>Messages that a node should watch for, originating from supervisor, handled by node. This also includes control signals
+that the supervisor can ask the node to perform. For the used types, refer <a href="interop/managed-mode.html#types">this</a> section.</p>
+<p><em>Note: Headings represent the actual name of the methods over RPC, payload is the serialized version of the given type.</em></p>
+<p><code>-&gt; indicates return</code></p>
+<h3 id="control-signals"><a class="header" href="#control-signals">Control Signals</a></h3>
+<p>RPC calls that are relevant to managing the node via supervisor. These are directly called by the supervisor.</p>
+<h4 id="interop_pullevent"><a class="header" href="#interop_pullevent">interop_pullEvent</a></h4>
+<pre><code class="language-javascript">payload: none -&gt; One of the event from node events (previous section).
+</code></pre>
+<p>When websocket is not available, supervisor can use this method to get the next event from node.</p>
+<h4 id="interop_anchorpoint-soon-to-be-deprecated"><a class="header" href="#interop_anchorpoint-soon-to-be-deprecated">interop_anchorPoint (Soon to be deprecated)</a></h4>
+<pre><code class="language-javascript">payload: none -&gt; DerivedBlockRefPair {
+    Source: L1 BlockRef that rollup starts after (no derived transaction)
+    Derived: L2 BlockRef that rollup starts from (no txn, pre-configuration state)
+}
+</code></pre>
+<p>Returns the genesis block ref for L1 and L2 that the current node used as anchor point.
+This method will soon be removed in favor of fetching the information from a supervisor specific rollup config.
+(Once a spec is created about <a href="https://github.com/ethereum-optimism/optimism/pull/16038">this</a> PR.)</p>
+<h4 id="interop_invalidateblock"><a class="header" href="#interop_invalidateblock">interop_invalidateBlock</a></h4>
+<pre><code class="language-javascript">payload: BlockSeal //L2's Block
+</code></pre>
+<p>Based on some dependency or L1 changes, supervisor can instruct the L2 to invalidate a specific block.</p>
+<p><em>(Suggestion: BlockSeal can be replaced with Hash, as only that is being used in op-node.)</em></p>
+<h4 id="interop_providel1"><a class="header" href="#interop_providel1">interop_provideL1</a></h4>
+<pre><code class="language-javascript">payload: BlockRef //L1 Block
+</code></pre>
+<p>Supervisor sends the next L1 block to the node. Ideally sent after the node emits <code>exhausted-l1</code>.</p>
+<h4 id="interop_reset"><a class="header" href="#interop_reset">interop_reset</a></h4>
+<pre><code class="language-javascript">payload: (lUnsafe, xUnsafe, lSafe, xSafe, finalized: BlockID)
+</code></pre>
+<p>Forces a reset to a specific local-unsafe/local-safe/finalized starting point only if the blocks did exist. Resets may
+override local-unsafe, to reset the very end of the chain. Resets may override local-safe, since post-interop we need
+the local-safe block derivation to continue.</p>
+<h3 id="db"><a class="header" href="#db">DB</a></h3>
+<p>RPC calls that a node should watch for, originating from supervisor that is called on DB updates for relevant block
+safety info for a given chain and block.</p>
+<h4 id="interop_updatecrosssafe"><a class="header" href="#interop_updatecrosssafe">interop_updateCrossSafe</a></h4>
+<pre><code class="language-javascript">payload: (derived: BlockID, derivedFrom: BlockID)
+</code></pre>
+<p>Signal that a block can be promoted to cross-safe.</p>
+<h4 id="interop_updatecrossunsafe"><a class="header" href="#interop_updatecrossunsafe">interop_updateCrossUnsafe</a></h4>
+<pre><code class="language-javascript">payload: BlockID
+</code></pre>
+<p>Signal that a block can be promoted to cross-unsafe.</p>
+<h4 id="interop_updatefinalized"><a class="header" href="#interop_updatefinalized">interop_updateFinalized</a></h4>
+<pre><code class="language-javascript">payload: BlockID
+</code></pre>
+<p>Signal that a block can be marked as finalized.</p>
+<h3 id="sync-methods"><a class="header" href="#sync-methods">Sync Methods</a></h3>
+<p>RPC methods that are relevant for syncing the supervisor. These are directly called by the supervisor for fetching L2
+data.</p>
+<h4 id="interop_fetchreceipts"><a class="header" href="#interop_fetchreceipts">interop_fetchReceipts</a></h4>
+<pre><code class="language-javascript">payload: Hash -&gt; Receipts //L2 block hash
+</code></pre>
+<p>Fetches all transaction receipts in a given L2 block.</p>
+<h4 id="interop_l2blockrefbytimestamp"><a class="header" href="#interop_l2blockrefbytimestamp">interop_l2BlockRefByTimestamp</a></h4>
+<pre><code class="language-javascript">payload: uint64 -&gt; BlockRef
+</code></pre>
+<p>Fetches L2 BlockRef of the block that occurred at given timestamp</p>
+<h4 id="interop_blockrefbynumber"><a class="header" href="#interop_blockrefbynumber">interop_blockRefByNumber</a></h4>
+<pre><code class="language-javascript">payload: uint64 -&gt; BlockRef
+</code></pre>
+<p>Fetches the BlockRef from a given L2 block number</p>
+<h4 id="interop_chainid"><a class="header" href="#interop_chainid">interop_chainID</a></h4>
+<pre><code class="language-javascript">payload: none -&gt; uint256
+</code></pre>
+<p>Returns chainID of the L2</p>
+<h4 id="interop_outputv0attimestamp"><a class="header" href="#interop_outputv0attimestamp">interop_outputV0AtTimestamp</a></h4>
+<pre><code class="language-javascript">payload: uint64 -&gt; OutputV0
+</code></pre>
+<p>Returns the state root, storage root and block hash for a given timestamp</p>
+<h4 id="interop_pendingoutputv0attimestamp"><a class="header" href="#interop_pendingoutputv0attimestamp">interop_pendingOutputV0AtTimestamp</a></h4>
+<pre><code class="language-javascript">payload: uint64 -&gt; OutputV0
+</code></pre>
+<p>Returns the optimistic output of the invalidated block from replacement</p>
+<p><strong>Note:</strong> All events should return relevant error(s) in case of unsuccessful calls.</p>
+<h2 id="types-1"><a class="header" href="#types-1">Types</a></h2>
+<pre><code class="language-javascript">Hash: 0x prefixed, hex encoded, fixed-length string representing 32 bytes
+
+BlockID {
+    Hash: Hash
+    Number: uint64
+}
+
+BlockSeal {
+    Hash: Hash
+    Number: uint64
+    Timestamp: uint64
+}
+
+BlockRef {
+    Hash: Hash
+    Number: uint64
+    ParentHash: Hash
+    Time: uint64
+}
+
+L2BlockRef {
+    Hash: Hash
+    Number: uint64
+    ParentHash: Hash
+    Time: uint64
+    L1Origin: BlockID
+    SequenceNumber: uint64 //distance to first block of epoch
+}
+
+DerivedBlockRefPair {
+    Source: BlockRef
+    Derived: BlockRef
+}
+
+BlockReplacement {
+    Replacement: BlockRef
+    Invalidated: Hash
+}
+
+Receipts -&gt; []Receipt
+
+Receipt -&gt; op-geth/core/types/receipt
+
+OutputV0 {
+    StateRoot: Hash
+    MessagePasserStorageRoot: Hash
+    BlockHash: Hash
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
