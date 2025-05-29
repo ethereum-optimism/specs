@@ -390,7 +390,7 @@ which is used to track whether the message has successfully been relayed.
 It also emits a `SentMessage` event with the necessary metadata to execute when relayed on the destination chain.
 
 ```solidity
-event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message, bytes context);
+event SentMessage(uint256 indexed destination, address indexed target, uint256 indexed messageNonce, address sender, bytes message, bytes originContext);
 ```
 
 An explicit `_destination` chain and `nonce` are used to ensure that the message can only be played on a single remote
@@ -423,7 +423,7 @@ mapping prior to emitting the `SentMessage` event.
         address _sender,
         address _target,
         bytes calldata _message,
-        bytes calldata _context
+        bytes calldata _originContext
     )
         external;
 ```
