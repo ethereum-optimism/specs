@@ -5450,6 +5450,12 @@ interface IDisputeGameFactory {
     /// @return bond_ The required bond for initializing a dispute game of the given type.
     function initBonds(GameType _gameType) external view returns (uint256 bond_);
 
+    /// @notice Returns the chain-specific configuration arguments for a given game type's implementation.
+    /// @dev These arguments are typically passed to the game implementation during proxy creation using CWIA.
+    /// @param _gameType The type of the dispute game.
+    /// @return args_ The chain-specific configuration arguments.
+    function gameArgs(GameType _gameType) external view returns (bytes memory args_);
+
     /// @notice Creates a new DisputeGame proxy contract.
     /// @param _gameType The type of the DisputeGame - used to decide the proxy implementation.
     /// @param _rootClaim The root claim of the DisputeGame.
@@ -5468,7 +5474,8 @@ interface IDisputeGameFactory {
     /// @dev May only be called by the `owner`.
     /// @param _gameType The type of the DisputeGame.
     /// @param _impl The implementation contract for the given `GameType`.
-    function setImplementation(GameType _gameType, IDisputeGame _impl) external;
+    /// @param _args The chain-specific configuration arguments for this game type's implementation.
+    function setImplementation(GameType _gameType, IDisputeGame _impl, bytes calldata _args) external;
 
     /// @notice Sets the bond (in wei) for initializing a game type.
     /// @dev May only be called by the `owner`.
@@ -7334,7 +7341,7 @@ and implement the interface required by the <code>StandardBridge</code> to just 
 <p>Each ERC20 contract that is created by the <code>OptimismMintableERC20Factory</code> allows for the <code>L2StandardBridge</code> to mint
 and burn tokens, depending on if the user is depositing from L1 to L2 or withdrawing from L2 to L1.</p>
 <h2 id="optimismmintableerc721factory"><a class="header" href="#optimismmintableerc721factory">OptimismMintableERC721Factory</a></h2>
-<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/OptimismMintableERC721Factory.sol">Implementation</a></p>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/OptimismMintableERC721Factory.sol">Implementation</a></p>
 <p>Address: <code>0x4200000000000000000000000000000000000017</code></p>
 <p>The <code>OptimismMintableERC721Factory</code> is responsible for creating ERC721 contracts on L2 that can be used for
 depositing native L1 NFTs into.</p>
