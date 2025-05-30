@@ -23,6 +23,8 @@
     - [`SupervisorChainSyncStatus`](#supervisorchainsyncstatus)
     - [`SuperRootResponse`](#superrootresponse)
     - [`SafetyLevel`](#safetylevel)
+    - [`ChainIndex`](#chainindex)
+    - [`DependencySetConfig`](#dependencysetconfig)
   - [Methods](#methods)
     - [`supervisor_crossDerivedToSource`](#supervisor_crossderivedtosource)
     - [`supervisor_localUnsafe`](#supervisor_localunsafe)
@@ -31,6 +33,7 @@
     - [`supervisor_finalizedL1`](#supervisor_finalizedl1)
     - [`supervisor_superRootAtTimestamp`](#supervisor_superrootattimestamp)
     - [`supervisor_syncStatus`](#supervisor_syncstatus)
+    - [`supervisor_dependencySet`](#supervisor_dependencyset)
     - [`supervisor_allSafeDerivedAt`](#supervisor_allsafederivedat)
     - [`supervisor_checkAccessList`](#supervisor_checkaccesslist)
       - [Access-list contents](#access-list-contents)
@@ -204,6 +207,30 @@ Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 - `safe`: matching cross-safe, named `safe` to match the RPC label.
 - `finalized`
 
+#### `ChainIndex`
+
+`STRING`:
+Decimal number, representing a `uint32`.
+
+A unique short identifier for a chain, within the dependency set.
+
+#### `DependencySetConfig`
+
+Defines an interop dependency set.
+Includes information to determine the active set of chains at any particular block time.
+
+`OBJECT`:
+- `dependencies`: `MAP`:
+  - key: `ChainID`
+  - value: `ConfigDependency`: `OBJECT`:
+    - `chainIndex`: `ChainIndex`: the unique short identifier of this chain.
+    - `activationTime`: `uint64`: when the chain becomes part of the dependency set.
+      This is the minimum timestamp of the inclusion of an executing message.
+    - `historyMinTime`: `uint64`: the lower bound of data to store.
+      This is the minimum timestamp of an initiating message to be accessible to others.
+      This is set to 0 when all data since genesis is executable.
+- `overrideMessageExpiryWindow`: `uint64`: changes the default protocol expiry window time.
+
 ### Methods
 
 #### `supervisor_crossDerivedToSource`
@@ -256,6 +283,16 @@ Returns: `SuperRootResponse`
 Parameters: (none)
 
 Returns: `SupervisorSyncStatus`
+
+#### `supervisor_dependencySet`
+
+Retrieves the full dependency set configuration,
+to determine which chains are available at any particular block.
+The returned configuration may change with new chain upgrades. 
+
+Parameters: (none)
+
+Returns: `DependencySetConfig`
 
 #### `supervisor_allSafeDerivedAt`
 
