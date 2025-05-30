@@ -26,7 +26,7 @@
 
 This document specifies the `ProposalValidator` contract, designed to enable permissionless proposals in the Optimism
 governance system. The contract allows proposal submissions based on predefined rules and automated checks, removing the
-need for manual gatekeeping.
+need for manual gate-keeping.
 
 ## Design
 
@@ -44,6 +44,7 @@ types. For detailed flows of each proposal, see [design docs](https://github.com
 The contract has a single `owner` role (Optimism Foundation) with permissions to:
 
 - Set minimum voting power threshold for delegate approvals
+- Set the minimum approvals for each supported proposal type
 - Configure voting cycle parameters
 - Set maximum token distribution limits for proposals
 
@@ -58,19 +59,17 @@ Submits a Protocol or Governor Upgrade proposal for approval and voting.
 - MUST be called by an approved address
 - MUST check if the proposal is a duplicate
 - MUST use the `Approval` Voting Module
+- MUST use "Threshold" criteria type for the Voting Module
 - MUST provide a valid attestation UID
-- MUST NOT do any operations
+- MUST NOT execute any operations
 - MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
 - MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
-- MUST store the timestamp of submission
-- MUST use "Threshold" criteria type
 
 ```solidity
 function submitProtocolOrGovernorUpgradeProposal(
     uint128 _criteriaValue,
     string[] memory _optionDescriptions,
-    string memory _description,
-    ProposalType _proposalType,
+    string memory _proposalDescription,
     bytes32 _attestationUid
 ) external returns (bytes32 proposalHash_);
 ```
@@ -81,13 +80,11 @@ Protocol or Governor Upgrade proposals use the `Approval` voting module.
 This requires the user who submits the proposal to provide some additional data related to the proposal.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint8 criteria`: The Propocol or Governor Upgrade proposal accepts only "Threshold" passing criteria type
-for the approval voting module. This will be value will be fixed and defined in the contract.
-- `uint128 criteriaValue`: Based on the passing criteria type this can either be a threshold percentage that
-the proposal needs to reach to pass or the number of top choices that can pass the voting.
+- `uint128 criteriaValue`: Since the passing criteria type is always "Threshold" for this proposal type
+this will be the amount of votes that the proposal need to gather to pass.
 
 For the `ProposalOptions` of the voting module, these are:
-- `string[] descriptions`: The strings of the different options that can be voted.
+- `string[] optionDescriptions`: The strings of the different options that can be voted.
 
 `submitMaintenanceUpgradeProposal`
 
@@ -100,7 +97,7 @@ atomic.
 - MUST check if the proposal is a duplicate
 - MUST use the `Optimistic` Voting Module
 - MUST provide a valid attestation UID
-- MUST NOT do any operations
+- MUST NOT execute any operations
 - MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
 - MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
 
@@ -108,8 +105,7 @@ atomic.
 function submitMaintenanceUpgradeProposal(
     uint248 _againstThreshold,
     bool _isRelativeToVotableSupply,
-    string memory _description,
-    ProposalType _proposalType,
+    string memory _proposalDescription,
     bytes32 _attestationUid
 ) external returns (bytes32 proposalHash_);
 ```
@@ -130,19 +126,17 @@ Submits a Council Member Elections proposal for approval and voting.
 - MUST be called by an approved address
 - MUST check if the proposal is a duplicate
 - MUST use the `Approval` Voting Module
+- MUST use "TopChoices" criteria type for the Voting Module
 - MUST provide a valid attestation UID
-- MUST NOT do any operations
+- MUST NOT execute any operations
 - MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
 - MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
-- MUST store the timestamp of submission
-- MUST use "TopChoices" criteria type
 
 ```solidity
 function submitCouncilMemberElectionsProposal(
     uint128 _criteriaValue,
     string[] _optionDescriptions,
-    string memory _description,
-    ProposalType _proposalType,
+    string memory _proposalDescription,
     bytes32 _attestationUid
 ) external returns (bytes32 proposalHash_);
 ```
@@ -153,11 +147,11 @@ Council Member Elections proposals use the `Approval` voting module.
 This requires the user who submits the proposal to provide some additional data related to the proposal.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint8 criteria`: The passing criteria type for this proposal type is always "TopChoices".
-- `uint128 criteriaValue`: The number of top choices that can pass the voting.
+- `uint128 criteriaValue`: Since the passing criteria type is "TopChoices" this number represents the amount
+of top choices that can pass the voting.
 
 For the `ProposalOptions` of the voting module, these are:
-- `string[] descriptions`: The strings of the different options that can be voted.
+- `string[] optionDescriptions`: The strings of the different options that can be voted.
 
 `submitFundingProposal`
 
@@ -167,19 +161,19 @@ Submits a `GovernanceFund` or `CouncilBudget` proposal type that transfers OP to
 - CAN be called by anyone
 - MUST check if the proposal is a duplicate
 - MUST use the `Approval` Voting Module
+- MUST use "Threshold" criteria type for the Voting Module
 - MUST use the `Predeploys.GOVERNANCE_TOKEN` and `IERC20.transfer` signature to create the `calldata`
-- MUST NOT request to transfer more than `distributionThreshold` tokens
+for each option
+- MUST NOT request to transfer more than `proposalDistributionThreshold` tokens
 - MUST emit `ProposalSubmitted` event
 - MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
-- MUST store the timestamp of submission
-- MUST use "Threshold" criteria type
 
 ```solidity
 function submitFundingProposal(
     uint128 _criteriaValue,
-    string[] _optionDescriptions,
-    address[] _recipients,
-    uint256[] _amounts,
+    string[] _optionsDescriptions,
+    address[] _optionsRecipients,
+    uint256[] _optionsAmounts,
     string memory _description,
     ProposalType _proposalType,
 ) external returns (bytes32 proposalHash_);
@@ -192,16 +186,13 @@ funding proposals need to execute token transfers.
 This requires the user who submits the proposal to provide some additional data related to the proposal.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint8 criteria`: The funding proposals accept only "Threshold" passing criteria type for the approval
-voting module.
-for the approval voting module. This will be value will be fixed and defined in the contract.
-- `uint128 criteriaValue`: Based on the passing criteria type this can either be a threshold percentage that
-the proposal needs to reach to pass or the number of top choices that can pass the voting.
+- `uint128 criteriaValue`: Since the passing criteria type is always "Threshold" for this proposal type
+this will be the amount of votes that the proposal need to gather to pass.
 
 For the `ProposalOptions` of the voting module, these are:
-- `string[] descriptions`: The strings of the different options that can be voted.
-- `address[] recipients`: An address for each option to transfer funds to in case the option passes the voting.
-- `uint256[] amounts`: The amount to transfer for each option.
+- `string[] optionsDescriptions`: The strings of the different options that can be voted.
+- `address[] optionsRecipients`: An address for each option to transfer funds to in case the option passes the voting.
+- `uint256[] optionsAmounts`: The amount to transfer for each option in case the option passes the voting.
 
 `approveProposal`
 
@@ -226,36 +217,39 @@ by the Agora's UI.
 `moveToVote`
 
 Checks if the provided proposal is ready to move for voting. Based on the Proposal Type different checks are being
-validated. If all checks pass then `OptimismGovernor.propose` is being called to forward the proposal for voting. This
-function can be called by anyone.
+validated. If all checks pass then `OptimismGovernor.proposeWithModule` is being called to forward the proposal for voting.
 
-For `ProtocolOrGovernorUpgrade`:
-
-- MUST check if the `proposalHash` exists and is valid
-- Proposal MUST have gathered X amount of approvals by top delegates
+- MUST create the `proposalHash` and check if it exists and is valid
+- Proposal MUST have gathered equal or more than the `requiredApprovals` defined for that type
 - MUST check if proposal has already moved for voting
 - MUST emit `ProposalMovedToVote` event
 
-For `MaintenanceUpgradeProposals`:
+For `ProtocolOrGovernorUpgrade` type:
+
+- MUST also check that is called by the proposer that submitted the proposal
+- `_optionsRecipients` and `_optionsAmounts` MUST be empty
+
+For `MaintenanceUpgradeProposals` type:
 
 - This type does not require any checks and is being forwarded to the Governor contracts, this should happen atomically.
-- MUST emit `ProposalMovedToVote` event
 
-For `CouncilMemberElections`, `GovernanceFund` and `CouncilBudget`:
+For `CouncilMemberElections`, `GovernanceFund` and `CouncilBudget` types:
 
-- MUST check if the `proposalHash` exists and is valid
-- Proposal MUST have gathered X amount of approvals by top delegates
 - Proposal MUST be moved to vote during a valid voting cycle
-- MUST check if proposal has already moved for voting
 - MUST check if the total amount of tokens that can possible be distributed during this voting cycle does not go over the
   `VotingCycleData.votingCycleDistributionLimit`
-- MUST emit `ProposalMovedToVote` event
 
 ```solidity
-function moveToVote(bytes memory proposalHash_) external returns (uint256 governorProposalId_)
+function moveToVote(
+    uint128 _criteriaValue,
+    address[] memory _optionsRecipients,
+    uint256[] memory _optionsAmounts,
+    string[] memory _optionDescriptions,
+    string memory _proposalDescription
+) external returns (uint256 proposalHash_)
 ```
 
-`canSignOff`
+`canApproveProposal`
 
 Returns true if a delegate address has enough voting power to approve a proposal.
 
@@ -263,7 +257,7 @@ Returns true if a delegate address has enough voting power to approve a proposal
 - MUST return TRUE if the delegates' voting power is above the `minimumVotingPower`
 
 ```solidity
-function canSignOff(address _delegate) public view returns (bool canSignOff_)
+function canApproveProposal(address _delegate) public view returns (bool canSignOff_)
 ```
 
 `setMinimumVotingPower`
@@ -280,7 +274,7 @@ function setMinimumVotingPower(uint256 _minimumVotingPower) external
 
 `setVotingCycleData`
 
-Sets the start and the duration of a voting cycle.
+Sets the voting cycle data.
 
 - MUST only be called by the owner of the contract
 - MUST NOT change an existing voting cycle
@@ -295,16 +289,16 @@ function setVotingCycleData(
 ) external
 ```
 
-`setDistributionThreshold`
+`setProposalDistributionThreshold`
 
-Sets the maximum distribution threshold a proposal can request.
+Sets the maximum distribution amount a proposal can request.
 
 - MUST only be called by the owner of the contract
-- MUST change the previous threshold to the new one
-- MUST emit `DistributionThresholdSet` event
+- MUST change the previous amount to the new one
+- MUST emit `ProposalDistributionThresholdSet` event
 
 ```solidity
-function setDistributionThreshold(uint256 _threshold) external
+function setProposalDistributionThreshold(uint256 _threshold) external
 ```
 
 `setProposalTypeApprovalThreshold`
@@ -334,14 +328,6 @@ The EAS' schema UID that is used to verify attestation for approved addresses th
 bytes32 public immutable ATTESTATION_SCHEMA_UID;
 ```
 
-`TRANSFER_SIGNATURE`
-
-The 4bytes signature of ERC20.transfer, will be used for creating the calldata for funding proposals.
-
-```solidity
-bytes4 public constant TRANSFER_SIGNATURE = 0xa9059cbb;
-```
-
 `GOVERNOR`
 
 The address of the Optimism Governor contract.
@@ -358,12 +344,12 @@ The minimum voting power a delegate must have in order to be eligible for approv
 uint256 public minimumVotingPower;
 ```
 
-`distributionThreshold`
+`proposalDistributionThreshold`
 
 The maximum amount of tokens a proposal can request.
 
 ```solidity
-uint256 public distributionThreshold;
+uint256 public proposalDistributionThreshold;
 ```
 
 `votingCycles`
@@ -402,7 +388,6 @@ A struct that holds all the data for a single proposal. Consists of:
 - `inVoting`: Returns true if the proposal has already been submitted for voting
 - `delegateApprovals`: Mapping of addresses that approved the specific proposal
 - `approvalsCounter`: The number of approvals the specific proposal has received
-- `votingModuleData`: Encoded data that are required for the voting modules
 - `timestamp`: The timestamp of the proposal submission
 
 ```solidity
@@ -412,7 +397,6 @@ struct ProposalSubmissionData {
     bool inVoting;
     mapping(address => bool) delegateApprovals;
     uint256 approvalsCounter;
-    bytes votingModuleData;
     uint256 timestamp;
 }
 ```
@@ -422,19 +406,19 @@ struct ProposalSubmissionData {
 A struct that holds data for each proposal type.
 
 - `requiredApprovals`: The number of approvals each proposal type requires in order to be able to move for voting.
-- `proposalTypeConfigurator`: The proposal type configurator that can be used for each proposal type. This
-is set by the owner on initiallize.
+- `proposalVotingModule`: The voting module (proposal type configurator) that can be used for each proposal type. This
+is set by the owner on initialize.
 
 ```solidity
 struct ProposalTypeData {
     uint256 requiredApprovals;
-    uint8 proposalTypeConfigurator;
+    uint8 proposalVotingModule;
 }
 ```
 
 `VotingCycleData`
 
-A struct that stores the start block of a voting cycle and it's duration.
+A struct that stores data related to the voting cycle.
 
 - `startingBlock`: The block number/timestamp that the voting cycle starts
 - `duration`: The duration of the specific voting cycle
@@ -573,7 +557,7 @@ maintaining proposal integrity and preventing spam.
 
 ## Invariants
 
-- It MUST allow only the `owner` to set the `minimumVotingPower`, `votingCycleData`, `distributionThreshold`, and
+- It MUST allow only the `owner` to set the `minimumVotingPower`, `votingCycleData`, `proposalDistributionThreshold`, and
   `proposalTypeApprovalThreshold`
 - It MUST only allow eligible addresses to approve a proposal
 - It MUST only allow authorized addresses to submit proposals for types `ProtocolOrGovernorUpgrade`,
