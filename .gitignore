@@ -3,3 +3,4 @@ book/
 
 node_modules/**
 /.idea
+.venv/
