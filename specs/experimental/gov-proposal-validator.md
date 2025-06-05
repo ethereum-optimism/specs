@@ -47,16 +47,17 @@ The contract has a single `owner` role (Optimism Foundation) with permissions to
 - Set the minimum approvals for each supported proposal type
 - Configure voting cycle parameters
 - Set maximum token distribution limits for proposals
+- Checks the address of the attester for the submit proposal attestations with the address of the owner
 
 ## Interface
 
 ### Public Functions
 
-`submitProtocolOrGovernorUpgradeProposal`
+`submitUpgradeProposal`
 
 Submits a Protocol or Governor Upgrade proposal for approval and voting.
 
-- MUST be called by an approved address
+- MUST be called by an `owner` approved address
 - MUST check if the proposal is a duplicate
 - MUST use the `Approval` Voting Module
 - MUST use "Threshold" criteria type for the Voting Module
@@ -66,25 +67,25 @@ Submits a Protocol or Governor Upgrade proposal for approval and voting.
 - MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
 
 ```solidity
-function submitProtocolOrGovernorUpgradeProposal(
+function submitUpgradeProposal(
     uint128 _criteriaValue,
-    string[] memory _optionDescriptions,
     string memory _proposalDescription,
     bytes32 _attestationUid
 ) external returns (bytes32 proposalHash_);
 ```
 
-Approval Voting Module
+**Approval Voting Module**
 
 Protocol or Governor Upgrade proposals use the `Approval` voting module.
 This requires the user who submits the proposal to provide some additional data related to the proposal.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint128 criteriaValue`: Since the passing criteria type is always "Threshold" for this proposal type
-this will be the amount of votes that the proposal need to gather to pass.
+- `uint128 criteriaValue`: Since the passing criteria type is always "Threshold", for this proposal type,
+this value will be the percentage that will be used to calculate the fraction of the votable supply that
+the proposal will need in votes in order to pass.
 
-For the `ProposalOptions` of the voting module, these are:
-- `string[] optionDescriptions`: The strings of the different options that can be voted.
+For the `ProposalOptions` of the voting module, the specific proposal type only accepts "Yes"/"No" options
+which are defined in the contract.
 
 `submitMaintenanceUpgradeProposal`
 
@@ -93,7 +94,7 @@ straight to voting if all submission checks pass, unlike the rest of the proposa
 need to collect a number of approvals by top delegates in order to move to vote. This call should be
 atomic.
 
-- MUST be called by an approved address
+- MUST be called by an `owner` approved address
 - MUST check if the proposal is a duplicate
 - MUST use the `Optimistic` Voting Module
 - MUST provide a valid attestation UID
@@ -103,27 +104,26 @@ atomic.
 
 ```solidity
 function submitMaintenanceUpgradeProposal(
-    uint248 _againstThreshold,
-    bool _isRelativeToVotableSupply,
     string memory _proposalDescription,
     bytes32 _attestationUid
 ) external returns (bytes32 proposalHash_);
 ```
 
-Optimistic Voting Module
+**Optimistic Voting Module**
 
 Maintenance Upgrade proposals use the `Optimistic` voting module.
-This requires the user who submits the proposal to provide some additional data related to the proposal.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint248 againstThreshold`: The threshold of the against option.
-- `bool isRelativeToVotableSupply`: True if the against threshold should be relative to the votable supply.
+- `uint248 againstThreshold`: Should always be `12%`.
+- `bool isRelativeToVotableSupply`: Should always be `true`.
+
+Since these values are static they are defined in the contract and does not need a user to provide them.
 
 `submitCouncilMemberElectionsProposal`
 
 Submits a Council Member Elections proposal for approval and voting.
 
-- MUST be called by an approved address
+- MUST be called by an `owner` approved address
 - MUST check if the proposal is a duplicate
 - MUST use the `Approval` Voting Module
 - MUST use "TopChoices" criteria type for the Voting Module
@@ -141,7 +141,7 @@ function submitCouncilMemberElectionsProposal(
 ) external returns (bytes32 proposalHash_);
 ```
 
-Approval Voting Module
+**Approval Voting Module**
 
 Council Member Elections proposals use the `Approval` voting module.
 This requires the user who submits the proposal to provide some additional data related to the proposal.
@@ -179,15 +179,16 @@ function submitFundingProposal(
 ) external returns (bytes32 proposalHash_);
 ```
 
-Approval Voting Module
+**Approval Voting Module**
 
 Funding proposals use the `Approval` voting module but unlike the Protocol or Governor upgrade proposals,
 funding proposals need to execute token transfers.
 This requires the user who submits the proposal to provide some additional data related to the proposal.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint128 criteriaValue`: Since the passing criteria type is always "Threshold" for this proposal type
-this will be the amount of votes that the proposal need to gather to pass.
+- `uint128 criteriaValue`: Since the passing criteria type is always "Threshold", for this proposal type,
+this value will be the percentage that will be used to calculate the fraction of the votable supply that
+the proposal will need in votes in order to pass.
 
 For the `ProposalOptions` of the voting module, these are:
 - `string[] optionsDescriptions`: The strings of the different options that can be voted.
@@ -233,7 +234,13 @@ For `MaintenanceUpgradeProposals` type:
 
 - This type does not require any checks and is being forwarded to the Governor contracts, this should happen atomically.
 
-For `CouncilMemberElections`, `GovernanceFund` and `CouncilBudget` types:
+For `CouncilMemberElections` type:
+
+- MUST also check that is called by the proposer that submitted the proposal
+- `_optionsRecipients` and `_optionsAmounts` MUST be empty
+- Proposal MUST be moved to vote during a valid voting cycle
+
+For `GovernanceFund` and `CouncilBudget` types:
 
 - Proposal MUST be moved to vote during a valid voting cycle
 - MUST check if the total amount of tokens that can possible be distributed during this voting cycle does not go over the
