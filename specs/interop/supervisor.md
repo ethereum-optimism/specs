@@ -23,7 +23,7 @@
     - [`SupervisorChainSyncStatus`](#supervisorchainsyncstatus)
     - [`SuperRootResponse`](#superrootresponse)
     - [`SafetyLevel`](#safetylevel)
-    - [`DependencySetConfig`](#dependencysetconfig)
+    - [`DependencySetConfigV1`](#dependencysetconfigv1)
   - [Methods](#methods)
     - [`supervisor_crossDerivedToSource`](#supervisor_crossderivedtosource)
     - [`supervisor_localUnsafe`](#supervisor_localunsafe)
@@ -32,7 +32,7 @@
     - [`supervisor_finalizedL1`](#supervisor_finalizedl1)
     - [`supervisor_superRootAtTimestamp`](#supervisor_superrootattimestamp)
     - [`supervisor_syncStatus`](#supervisor_syncstatus)
-    - [`supervisor_dependencySet`](#supervisor_dependencyset)
+    - [`supervisor_dependencySetV1`](#supervisor_dependencysetv1)
     - [`supervisor_allSafeDerivedAt`](#supervisor_allsafederivedat)
     - [`supervisor_checkAccessList`](#supervisor_checkaccesslist)
       - [Access-list contents](#access-list-contents)
@@ -207,10 +207,12 @@ Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 - `safe`: matching cross-safe, named `safe` to match the RPC label.
 - `finalized`
 
-#### `DependencySetConfig`
+#### `DependencySetConfigV1`
 
 Defines an interop dependency set.
 Includes information to determine the active set of chains at any particular block time.
+
+This type is versioned: the format of this configuration may change over time.
 
 `OBJECT`:
 - `dependencies`: `MAP`:
@@ -271,15 +273,15 @@ Parameters: (none)
 
 Returns: `SupervisorSyncStatus`
 
-#### `supervisor_dependencySet`
+#### `supervisor_dependencySetV1`
 
 Retrieves the full dependency set configuration,
 to determine which chains are available at any particular block.
-The returned configuration may change with new chain upgrades. 
+The returned configuration may change with new chain upgrades.
 
 Parameters: (none)
 
-Returns: `DependencySetConfig`
+Returns: `DependencySetConfigV1`
 
 #### `supervisor_allSafeDerivedAt`
 
