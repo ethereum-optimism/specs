@@ -55,48 +55,16 @@ The contract has a single `owner` role (Optimism Foundation) with permissions to
 
 `submitUpgradeProposal`
 
-Submits a Protocol or Governor Upgrade proposal for approval and voting.
+Submits a Protocol/Governor Upgrade or a Maintenance Upgrade proposal to move for voting.
 
-- MUST be called by an `owner` approved address
-- MUST check if the proposal is a duplicate
-- MUST use the `Approval` Voting Module
-- MUST use "Threshold" criteria type for the Voting Module
-- MUST provide a valid attestation UID
-- MUST NOT execute any operations
-- MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
-- MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
-
-```solidity
-function submitUpgradeProposal(
-    uint128 _criteriaValue,
-    string memory _proposalDescription,
-    bytes32 _attestationUid
-) external returns (bytes32 proposalHash_);
-```
-
-**Approval Voting Module**
-
-Protocol or Governor Upgrade proposals use the `Approval` voting module.
-This requires the user who submits the proposal to provide some additional data related to the proposal.
-
-For the `ProposalSettings` of the voting module, these are:
-- `uint128 criteriaValue`: Since the passing criteria type is always "Threshold", for this proposal type,
-this value will be the percentage that will be used to calculate the fraction of the votable supply that
-the proposal will need in votes in order to pass.
-
-For the `ProposalOptions` of the voting module, the specific proposal type only accepts "Yes"/"No" options
-which are defined in the contract.
-
-`submitMaintenanceUpgradeProposal`
-
-Submits a Maintenance Upgrade proposal to move for voting. `MaintenanceUpgradeProposals` type can move
-straight to voting if all submission checks pass, unlike the rest of the proposals where they
-need to collect a number of approvals by top delegates in order to move to vote. This call should be
-atomic.
+`MaintenanceUpgradeProposals` type can move straight to voting if all submission checks pass, unlike
+the rest of the proposals where they need to collect a number of approvals by top delegates in order
+to move to vote. This call should be atomic.
 
 - MUST be called by an `owner` approved address
 - MUST check if the proposal is a duplicate
 - MUST use the `Optimistic` Voting Module
+- MUST provide a valid againstThreshold
 - MUST provide a valid attestation UID
 - MUST NOT execute any operations
 - MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
@@ -104,6 +72,7 @@ atomic.
 
 ```solidity
 function submitMaintenanceUpgradeProposal(
+    uint248 _againstThreshold,
     string memory _proposalDescription,
     bytes32 _attestationUid
 ) external returns (bytes32 proposalHash_);
@@ -114,10 +83,10 @@ function submitMaintenanceUpgradeProposal(
 Maintenance Upgrade proposals use the `Optimistic` voting module.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint248 againstThreshold`: Should always be `12%`.
+- `uint248 againstThreshold`: Should be provided by the proposer. This value will be the percentage
+that will be used to calculate the fraction of the votable supply that the proposal will need in votes in order
+to pass.
 - `bool isRelativeToVotableSupply`: Should always be `true`.
-
-Since these values are static they are defined in the contract and does not need a user to provide them.
 
 `submitCouncilMemberElectionsProposal`
 
