@@ -228,10 +228,9 @@ RPC using web sockets.</p>
 to manage it. As supervisor does the dial in, for our context, it is the client and the node is the server. For the web
 socket authentication, only the initial request is authenticated and a live socket is opened.
 No re-authentication is needed during the lifetime of this socket.</p>
-<p>The authentication is performed using <code>JWT</code>. The construction of jwt is similar to the one
+<p>The authentication is performed using <code>JWT</code>. The construction of jwt is the same to the one
 <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/authentication.md">used in Engine API</a>. The path of
-the file containing the jwt secret should be provided to the supervisor instance. If no input is provided, a new
-jwt should be generated and stored in hex encoded format.</p>
+the file containing the jwt secret should be provided to the supervisor instance.</p>
 <h2 id="node---supervisor"><a class="header" href="#node---supervisor">Node <code>-&gt;</code> Supervisor</a></h2>
 <p>Events that a supervisor should subscribe to, originating from the node, handled by the supervisor. For the used types,
 refer <a href="#Types">this</a> section.</p>
@@ -250,16 +249,16 @@ non-null events are sent at once. The other fields are omitted.</p>
 <h3 id="reset"><a class="header" href="#reset">Reset</a></h3>
 <pre><code class="language-javascript">Reset: string
 </code></pre>
-<p>This is emitted when the node has completed resetting its chain, after it received <code>interop_reset</code> event from
-supervisor.</p>
+<p>This is emitted when the node has determined that it needs a reset. It tells the supervisor to send the
+<a href="#interop_reset">interop_reset</a> event with the required parameters.</p>
 <h3 id="unsafeblock"><a class="header" href="#unsafeblock">UnsafeBlock</a></h3>
 <pre><code class="language-javascript">UnsafeBlock: BlockRef //L2's BlockRef
 </code></pre>
 <p>New L2 unsafe block was processed, updating local-unsafe head.</p>
 <h3 id="derivationupdate"><a class="header" href="#derivationupdate">DerivationUpdate</a></h3>
 <pre><code class="language-javascript">DerivationUpdate: DerivedBlockRefPair {
-    Source: BlockRef  //L1 
-    Derived: BlockRef //Last L2 BlockRef
+    source: BlockRef  //L1 
+    derived: BlockRef //Last L2 BlockRef
 }
 </code></pre>
 <p>Signals that an L2 block is considered local-safe.</p>
@@ -270,8 +269,8 @@ supervisor.</p>
 <code>DerivationUpdate</code>.</p>
 <h3 id="exhaustl1"><a class="header" href="#exhaustl1">ExhaustL1</a></h3>
 <pre><code class="language-javascript">ExhaustL1: DerivedBlockRefPair {
-    Source: BlockRef  //Last L1
-    Derived: BlockRef //Last L2 BlockRef
+    source: BlockRef  //Last L1
+    derived: BlockRef //Last L2 BlockRef
 }
 </code></pre>
 <p>Emitted when no more L1 Blocks are available. Ready to take new L1 blocks from supervisor.</p>
@@ -287,29 +286,29 @@ that the supervisor can ask the node to perform. For the used types, refer <a hr
 <h3 id="control-signals"><a class="header" href="#control-signals">Control Signals</a></h3>
 <p>RPC calls that are relevant to managing the node via supervisor. These are directly called by the supervisor.</p>
 <h4 id="interop_pullevent"><a class="header" href="#interop_pullevent">interop_pullEvent</a></h4>
-<pre><code class="language-javascript">payload: none -&gt; One of the event from node events (previous section).
+<pre><code class="language-javascript">payload() -&gt; One of the event from node events (previous section).
 </code></pre>
 <p>When websocket is not available, supervisor can use this method to get the next event from node.</p>
 <h4 id="interop_anchorpoint-soon-to-be-deprecated"><a class="header" href="#interop_anchorpoint-soon-to-be-deprecated">interop_anchorPoint (Soon to be deprecated)</a></h4>
-<pre><code class="language-javascript">payload: none -&gt; DerivedBlockRefPair {
-    Source: L1 BlockRef that rollup starts after (no derived transaction)
-    Derived: L2 BlockRef that rollup starts from (no txn, pre-configuration state)
+<pre><code class="language-javascript">payload() -&gt; DerivedBlockRefPair {
+    source: L1 BlockRef that rollup starts after (no derived transaction)
+    derived: L2 BlockRef that rollup starts from (no txn, pre-configuration state)
 }
 </code></pre>
 <p>Returns the genesis block ref for L1 and L2 that the current node used as anchor point.
 This method will soon be removed in favor of fetching the information from a supervisor specific rollup config.
 (Once a spec is created about <a href="https://github.com/ethereum-optimism/optimism/pull/16038">this</a> PR.)</p>
 <h4 id="interop_invalidateblock"><a class="header" href="#interop_invalidateblock">interop_invalidateBlock</a></h4>
-<pre><code class="language-javascript">payload: BlockSeal //L2's Block
+<pre><code class="language-javascript">payload (BlockSeal)  //L2's Block
 </code></pre>
 <p>Based on some dependency or L1 changes, supervisor can instruct the L2 to invalidate a specific block.</p>
 <p><em>(Suggestion: BlockSeal can be replaced with Hash, as only that is being used in op-node.)</em></p>
 <h4 id="interop_providel1"><a class="header" href="#interop_providel1">interop_provideL1</a></h4>
-<pre><code class="language-javascript">payload: BlockRef //L1 Block
+<pre><code class="language-javascript">payload (BlockRef) //L1 Block
 </code></pre>
 <p>Supervisor sends the next L1 block to the node. Ideally sent after the node emits <code>exhausted-l1</code>.</p>
 <h4 id="interop_reset"><a class="header" href="#interop_reset">interop_reset</a></h4>
-<pre><code class="language-javascript">payload: (lUnsafe, xUnsafe, lSafe, xSafe, finalized: BlockID)
+<pre><code class="language-javascript">payload (lUnsafe, xUnsafe, lSafe, xSafe, finalized: BlockID)
 </code></pre>
 <p>Forces a reset to a specific local-unsafe/local-safe/finalized starting point only if the blocks did exist. Resets may
 override local-unsafe, to reset the very end of the chain. Resets may override local-safe, since post-interop we need
@@ -318,42 +317,42 @@ the local-safe block derivation to continue.</p>
 <p>RPC calls that a node should watch for, originating from supervisor that is called on DB updates for relevant block
 safety info for a given chain and block.</p>
 <h4 id="interop_updatecrosssafe"><a class="header" href="#interop_updatecrosssafe">interop_updateCrossSafe</a></h4>
-<pre><code class="language-javascript">payload: (derived: BlockID, derivedFrom: BlockID)
+<pre><code class="language-javascript">payload (derived: BlockID, source: BlockID)
 </code></pre>
 <p>Signal that a block can be promoted to cross-safe.</p>
 <h4 id="interop_updatecrossunsafe"><a class="header" href="#interop_updatecrossunsafe">interop_updateCrossUnsafe</a></h4>
-<pre><code class="language-javascript">payload: BlockID
+<pre><code class="language-javascript">payload (BlockID)
 </code></pre>
 <p>Signal that a block can be promoted to cross-unsafe.</p>
 <h4 id="interop_updatefinalized"><a class="header" href="#interop_updatefinalized">interop_updateFinalized</a></h4>
-<pre><code class="language-javascript">payload: BlockID
+<pre><code class="language-javascript">payload (BlockID)
 </code></pre>
 <p>Signal that a block can be marked as finalized.</p>
 <h3 id="sync-methods"><a class="header" href="#sync-methods">Sync Methods</a></h3>
 <p>RPC methods that are relevant for syncing the supervisor. These are directly called by the supervisor for fetching L2
 data.</p>
 <h4 id="interop_fetchreceipts"><a class="header" href="#interop_fetchreceipts">interop_fetchReceipts</a></h4>
-<pre><code class="language-javascript">payload: Hash -&gt; Receipts //L2 block hash
+<pre><code class="language-javascript">payload (Hash) -&gt; Receipts //L2 block hash
 </code></pre>
 <p>Fetches all transaction receipts in a given L2 block.</p>
 <h4 id="interop_l2blockrefbytimestamp"><a class="header" href="#interop_l2blockrefbytimestamp">interop_l2BlockRefByTimestamp</a></h4>
-<pre><code class="language-javascript">payload: uint64 -&gt; BlockRef
+<pre><code class="language-javascript">payload (uint64) -&gt; BlockRef
 </code></pre>
 <p>Fetches L2 BlockRef of the block that occurred at given timestamp</p>
 <h4 id="interop_blockrefbynumber"><a class="header" href="#interop_blockrefbynumber">interop_blockRefByNumber</a></h4>
-<pre><code class="language-javascript">payload: uint64 -&gt; BlockRef
+<pre><code class="language-javascript">payload (uint64) -&gt; BlockRef
 </code></pre>
 <p>Fetches the BlockRef from a given L2 block number</p>
 <h4 id="interop_chainid"><a class="header" href="#interop_chainid">interop_chainID</a></h4>
-<pre><code class="language-javascript">payload: none -&gt; uint256
+<pre><code class="language-javascript">payload () -&gt; string
 </code></pre>
 <p>Returns chainID of the L2</p>
 <h4 id="interop_outputv0attimestamp"><a class="header" href="#interop_outputv0attimestamp">interop_outputV0AtTimestamp</a></h4>
-<pre><code class="language-javascript">payload: uint64 -&gt; OutputV0
+<pre><code class="language-javascript">payload (uint64) -&gt; OutputV0
 </code></pre>
 <p>Returns the state root, storage root and block hash for a given timestamp</p>
 <h4 id="interop_pendingoutputv0attimestamp"><a class="header" href="#interop_pendingoutputv0attimestamp">interop_pendingOutputV0AtTimestamp</a></h4>
-<pre><code class="language-javascript">payload: uint64 -&gt; OutputV0
+<pre><code class="language-javascript">payload (uint64) -&gt; OutputV0
 </code></pre>
 <p>Returns the optimistic output of the invalidated block from replacement</p>
 <p><strong>Note:</strong> All events should return relevant error(s) in case of unsuccessful calls.</p>
@@ -361,40 +360,31 @@ data.</p>
 <pre><code class="language-javascript">Hash: 0x prefixed, hex encoded, fixed-length string representing 32 bytes
 
 BlockID {
-    Hash: Hash
-    Number: uint64
+    hash: Hash
+    number: uint64
 }
 
 BlockSeal {
-    Hash: Hash
-    Number: uint64
-    Timestamp: uint64
+    hash: Hash
+    number: uint64
+    timestamp: uint64
 }
 
 BlockRef {
-    Hash: Hash
-    Number: uint64
-    ParentHash: Hash
-    Time: uint64
-}
-
-L2BlockRef {
-    Hash: Hash
-    Number: uint64
-    ParentHash: Hash
-    Time: uint64
-    L1Origin: BlockID
-    SequenceNumber: uint64 //distance to first block of epoch
+    hash: Hash
+    number: uint64
+    parentHash: Hash
+    timestamp: uint64
 }
 
 DerivedBlockRefPair {
-    Source: BlockRef
-    Derived: BlockRef
+    source: BlockRef
+    derived: BlockRef
 }
 
 BlockReplacement {
-    Replacement: BlockRef
-    Invalidated: Hash
+    replacement: BlockRef
+    invalidated: Hash
 }
 
 Receipts -&gt; []Receipt
@@ -402,9 +392,9 @@ Receipts -&gt; []Receipt
 Receipt -&gt; op-geth/core/types/receipt
 
 OutputV0 {
-    StateRoot: Hash
-    MessagePasserStorageRoot: Hash
-    BlockHash: Hash
+    stateRoot: Hash
+    messagePasserStorageRoot: Hash
+    blockHash: Hash
 }
 </code></pre>
 
