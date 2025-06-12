@@ -29,7 +29,7 @@
 
 ## Overview
 
-Bonds is an add-on to the core [Fault Dispute Game](fault-dispute-game.md). The core game mechanics are
+Bonds are an add-on to the core [Fault Dispute Game](fault-dispute-game.md). The core game mechanics are
 designed to ensure honesty as the best response to winning subgames. By introducing financial incentives,
 Bonds makes it worthwhile for honest challengers to participate.
 Without the bond reward incentive, the FDG will be too costly for honest players to participate in given the
