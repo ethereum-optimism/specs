@@ -257,7 +257,8 @@ Returns: `SuperRootResponse`
 
 Parameters: (none)
 
-Returns: `SupervisorSyncStatus`
+Returns: `SupervisorSyncStatus`.
+Throws: Some error if set of supervised chains is empty.
 
 #### `supervisor_allSafeDerivedAt`
 
