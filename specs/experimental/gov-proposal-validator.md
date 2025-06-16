@@ -16,6 +16,8 @@
 - [EAS Integration](#eas-integration)
   - [Why EAS?](#why-eas)
   - [Implementation Details](#implementation-details)
+- [Submit Proposal](#submit-proposal)
+- [Approve Proposal](#approve-proposal)
 - [Proposal uniqueness](#proposal-uniqueness)
 - [Invariants](#invariants)
 - [Security Considerations](#security-considerations)
@@ -43,7 +45,6 @@ types. For detailed flows of each proposal, see [design docs](https://github.com
 
 The contract has a single `owner` role (Optimism Foundation) with permissions to:
 
-- Set minimum voting power threshold for delegate approvals
 - Set the minimum approvals for each supported proposal type
 - Configure voting cycle parameters
 - Set maximum token distribution limits for proposals
@@ -87,6 +88,7 @@ For the `ProposalSettings` of the voting module, these are:
 that will be used to calculate the fraction of the votable supply that the proposal will need in votes in order
 to pass.
 - `bool isRelativeToVotableSupply`: Should always be `true`.
+---
 
 `submitCouncilMemberElectionsProposal`
 
@@ -121,6 +123,7 @@ of top choices that can pass the voting.
 
 For the `ProposalOptions` of the voting module, these are:
 - `string[] optionDescriptions`: The strings of the different options that can be voted.
+---
 
 `submitFundingProposal`
 
@@ -163,6 +166,7 @@ For the `ProposalOptions` of the voting module, these are:
 - `string[] optionsDescriptions`: The strings of the different options that can be voted.
 - `address[] optionsRecipients`: An address for each option to transfer funds to in case the option passes the voting.
 - `uint256[] optionsAmounts`: The amount to transfer for each option in case the option passes the voting.
+---
 
 `approveProposal`
 
@@ -172,17 +176,21 @@ Approves a proposal before being moved for voting, used by the top delegates.
 - MUST check if caller has enough voting power to call the function and approve a proposal
   The voting power of the delegate is checked against the end of the last voting cycle from when
   the proposal was submitted.
+- MUST provide a valid attestation UID
+- MUST check if the attestation has been revoked
+- The attestation MUST reffer to non partial delegation
 - MUST check if caller has already approved the same proposal
 - MUST store the approval vote
 - MUST emit `ProposalApproved` when successfully called
 
 ```solidity
-function approveProposal(bytes32 _proposalHash) external
+function approveProposal(bytes32 _proposalHash, bytes32 _attestationUid) external
 ```
 
 Approving a funding proposal type requires extra attention to the budget amount and options, of the
 approval voting module, that were provided on the submission of the proposal. This should be handled
 by the Agora's UI.
+---
 
 `moveToVote`
 
@@ -224,29 +232,19 @@ function moveToVote(
     string memory _proposalDescription
 ) external returns (uint256 proposalHash_)
 ```
+---
 
 `canApproveProposal`
 
-Returns true if a delegate address has enough voting power to approve a proposal.
+Returns true if a delegate is part of the top100 delegates based on the dynamic attestation service.
 
 - Can be called by anyone
-- MUST return TRUE if the delegates' voting power is above the `minimumVotingPower`
+- MUST return TRUE if the delegate is part of the top100 and can approve a proposal
 
 ```solidity
-function canApproveProposal(address _delegate) public view returns (bool canSignOff_)
+function canApproveProposal(address _delegate, bytes32 _attestationUid) public view returns (bool canApprove_)
 ```
-
-`setMinimumVotingPower`
-
-Sets the minimum voting power a delegate must have in order to be eligible to approve a proposal.
-
-- MUST only be called by the owner of the contract
-- MUST change the existing minimum voting power to the new
-- MUST emit `MinimumVotingPowerSet` event
-
-```solidity
-function setMinimumVotingPower(uint256 _minimumVotingPower) external
-```
+---
 
 `setVotingCycleData`
 
@@ -264,6 +262,7 @@ function setVotingCycleData(
     uint256 _distributionLimit
 ) external
 ```
+---
 
 `setProposalDistributionThreshold`
 
@@ -276,6 +275,7 @@ Sets the maximum distribution amount a proposal can request.
 ```solidity
 function setProposalDistributionThreshold(uint256 _threshold) external
 ```
+---
 
 `setProposalTypeApprovalThreshold`
 
@@ -294,14 +294,23 @@ function setProposalTypeApprovalThreshold(
 
 ### Properties
 
-`ATTESTATION_SCHEMA_UID`
+`ATTESTATION_SCHEMA_UID_APPROVED_PROPOSERS`
 
 The EAS' schema UID that is used to verify attestation for approved addresses that can submit proposals for specific
 `ProposalTypes`.
 
 ```solidity
 /// Schema { approvedProposer: address, proposalType: uint8 }
-bytes32 public immutable ATTESTATION_SCHEMA_UID;
+bytes32 public immutable ATTESTATION_SCHEMA_UID_APPROVED_PROPOSERS;
+```
+
+`ATTESTATION_SCHEMA_UID_TOP100_DELEGATES`
+
+The EAS' schema UID that is used to verify attestation for a top100 delegate that can approve a proposal submission.
+
+```solidity
+/// Schema { ranl: string, includePartialDelegation: bool, date: string }
+bytes32 public immutable ATTESTATION_SCHEMA_UID_TOP100_DELEGATES;
 ```
 
 `GOVERNOR`
@@ -310,14 +319,6 @@ The address of the Optimism Governor contract.
 
 ```solidity
 IOptimismGovernor public immutable GOVERNOR;
-```
-
-`minimumVotingPower`
-
-The minimum voting power a delegate must have in order to be eligible for approving a proposal.
-
-```solidity
-uint256 public minimumVotingPower;
 ```
 
 `proposalDistributionThreshold`
@@ -475,28 +476,38 @@ event ProposalVotingModuleData(uint256 indexed proposalHash, bytes encodedVoting
 ## EAS Integration
 
 `ProposalValidator` integrates Ethereum Attestation Service (EAS) to handle proposer authorization for specific
-`ProposalType`s, removing the need for adding custom logic to the contract.
+`ProposalType`s, and authentication of the top100 delegates for approving a proposal, removing the need for adding
+custom logic to the contract.
 
-### Why EAS?
+## Why EAS?
 
 - **Decentralized trust**: Instead of custom logic, Optimism uses attestations signed by the Foundation to authorize
   proposers.
 - **Low integration overhead**: `EAS` and `SchemaRegistry` are predeploys on Optimism, requiring no additional deployments
   or infrastructure.
-- **Schema validation**: Ensures attestations follow strict data formats (`address approvedDelegate, uint8 proposalType`).
+- **Schema validation**: Ensures attestations follow strict data formats (e.g. `address approvedDelegate, uint8 proposalType`).
 - **Revocability and expiration**: EAS supports expiration and revocation semantics natively, allowing dynamic control over
   authorized proposers.
 
-### Implementation Details
+## Implementation Details
 
-- On setup, the contract registers a schema in the predeployed `SchemaRegistry`.
-- The submit proposal functions validates attestations by:
-  - Ensuring the attestation UID matches the registered schema.
-  - Verifying the attester is the contract owner (Optimism Foundation).
-  - Decoding the attestation to check the proposer's address and proposal type.
-- Only proposals of type `ProtocolOrGovernorUpgrade`, `MaintenanceUpgradeProposals`, and
-`CouncilMemberElections` require
-  valid EAS attestations.
+### Submit Proposal
+
+For the submit proposals we will need to register a new schema as described at `ATTESTATION_SCHEMA_UID_APPROVED_PROPOSERS`.
+The submit proposal functions validates attestations by:
+- Ensuring the attestation UID matches the registered schema.
+- Verifying the attester is the contract owner (Optimism Foundation).
+- Decoding the attestation to check the proposer's address and proposal type.
+- Only proposals of type `ProtocolOrGovernorUpgrade`, `MaintenanceUpgradeProposals`, and `CouncilMemberElections`
+require valid EAS attestations.
+
+### Approve Proposal
+
+For the top100 delegates we will be using an existing schema that was created by the [dynamic attestation service](https://github.com/CuriaLab/dynamic_attestation_mvp).
+The approve proposal function validates attestations by:
+- Ensuring the attestation UID matches the registered schema.
+- Verifying the attester is the contract owner (Optimism Foundation).
+- Decoding the attestation to check the targets address.
 
 **Technical implementation docs: [EAS Integration](https://www.notion.so/EAS-Integration-1de9a4c092c780478e19cc8175aa054e?pvs=21)**
 
@@ -533,7 +544,7 @@ maintaining proposal integrity and preventing spam.
 
 ## Invariants
 
-- It MUST allow only the `owner` to set the `minimumVotingPower`, `votingCycleData`, `proposalDistributionThreshold`, and
+- It MUST allow only the `owner` to set the `votingCycleData`, `proposalDistributionThreshold`, and
   `proposalTypeApprovalThreshold`
 - It MUST only allow eligible addresses to approve a proposal
 - It MUST only allow authorized addresses to submit proposals for types `ProtocolOrGovernorUpgrade`,
@@ -548,10 +559,11 @@ maintaining proposal integrity and preventing spam.
 ## Security Considerations
 
 - **Role-Based Restrictions:** The `owner` role should be securely managed, as it holds critical permissions such as
-  setting voting power thresholds, configuring voting cycles, and distribution limits. Any compromise could significantly
-  impact governance.
+  configuring voting cycles, and distribution limits. Any compromise could significantly impact governance.
 - **Attestation Validation:** Two key aspects need consideration:
   - The Optimism Foundation must have a secure and thorough process for validating addresses before issuing attestations
     for specific proposal types
   - The contract must properly verify attestation expiration and revocation status to prevent the use of outdated or
     invalid attestations
+- **Dynamic Attestation Service:** Since we rely on the dynamic attestation service for updating the top100 delegates
+  we need to ensure that the service will be running and updating the attestations at least during the governance cycles.
