@@ -330,18 +330,20 @@ Returns: RPC error if the `minSafety` is not met by one or more of the access en
 The access-list entries represent messages, and may be incomplete or malformed.
 Malformed access-lists result in an RPC error.
 
-### Errors
+### Data Availability Errors
 
-The Supervisor RPC API uses a 6-digit error code system that extends standard JSON-RPC error codes
-while providing additional categorization based on gRPC status codes.
-
-For standard JSON-RPC error codes, refer to [Ethereum JSON-RPC Error Reference](https://ethereum-json-rpc.com/errors).
+The Supervisor RPC API data availability errors use a 6-digit error code system that
+extends standard JSON-RPC error codes while providing additional categorization 
+based on gRPC status codes.
 
 #### JSON-RPC Error Codes
 
+An extra digit, ensures error codes don't interfere with standard 5-digit
+[Ethereum JSON-RPC Errors](https://ethereum-json-rpc.com/errors).
+
 #### Error Code Structure
 
-Supervisor error codes follow this structure:
+Superchain data availability RPC error codes follow this structure:
 
 - First 2 digits: `32` (indicating server error, matching JSON-RPC conventions)
 - Middle 2 digits: gRPC status code category (01-16, zero-padded)
@@ -349,81 +351,81 @@ Supervisor error codes follow this structure:
 
 For gRPC status codes reference, see [gRPC Status Codes](https://grpc.io/docs/guides/status-codes/).
 
-#### Protocol Specific Error Codes
+#### Error Codes
 
-##### `-3204XX` `DEADLINE_EXCEEDED` errors
+##### -3204`XX` - `DEADLINE_EXCEEDED` errors
 
-###### `-320400` `UNINITIALIZED_CHAIN_DATABASE`
+- -320400 `UNINITIALIZED_CHAIN_DATABASE`
 
-Happens when a chain database is not initialized yet.
+  Happens when a chain database is not initialized yet.
 
-##### `-3205XX` `NOT_FOUND` errors
+##### -3205`XX` - `NOT_FOUND` errors
 
-###### `-320500` `SKIPPED_DATA`
+- -320500 `SKIPPED_DATA`
+ 
+  Happens when we try to retrieve data that is not available (pruned).
+  It may also happen if we erroneously skip data, that was not considered a conflict, if the DB is corrupted.
 
-Happens when we try to retrieve data that is not available (pruned).
-It may also happen if we erroneously skip data, that was not considered a conflict, if the DB is corrupted.
+- -320501 `UNKNOWN_CHAIN`
+  
+  Happens when a chain is unknown, not in the dependency set.
 
-###### `-320501` `UNKNOWN_CHAIN`
+##### -3206`XX` - `ALREADY_EXISTS` errors
 
-Happens when a chain is unknown, not in the dependency set.
+- -320600 `CONFLICTING_DATA`
+  
+  Happens when we know for sure that there is different canonical data.
 
-##### `-3206XX` `ALREADY_EXISTS` errors
-
-###### `-320600` `CONFLICTING_DATA`
-
-Happens when we know for sure that there is different canonical data.
-
-###### `-320601` `INEFFECTIVE_DATA`
-
-Happens when data is accepted as compatible, but did not change anything.
+- -320601 `INEFFECTIVE_DATA`
+  
+  Happens when data is accepted as compatible, but did not change anything.
 This happens when a node is deriving an L2 block we already know of being derived from the given source,
 but without path to skip forward to newer source blocks without doing the known derivation work first.
 
-##### `-3209XX` `FAILED_PRECONDITION` errors
+##### -3209`XX` - `FAILED_PRECONDITION` errors
 
-###### `-320900` `OUT_OF_ORDER`
-
-Happens when you try to add data to the DB, but it does not actually fit onto the latest data
+- -320900 `OUT_OF_ORDER`
+ 
+  Happens when you try to add data to the DB, but it does not actually fit onto the latest data
 (by being too old or new).
 
-###### `-320901` `AWAITING_REPLACEMENT_BLOCK`
+- -320901 `AWAITING_REPLACEMENT_BLOCK`
+  
+  Happens when we know for sure that a replacement block is needed before progress can be made.
 
-Happens when we know for sure that a replacement block is needed before progress can be made.
+##### -3210`XX` - `ABORTED` errors
 
-##### `-3210XX` `ABORTED` errors
-
-###### `-321000` `ITER_STOP`
-
-Happens in iterator to indicate iteration has to stop.
+- -321000 `ITER_STOP`
+  
+  Happens in iterator to indicate iteration has to stop.
 This error might only be used internally and not sent over the network.
 
-##### `-3211XX` `OUT_OF_RANGE` errors
+##### -3211`XX` - `OUT_OF_RANGE` errors
 
-###### `-321100` `OUT_OF_SCOPE`
-
-Happens when data is accessed, but access is not allowed, because of a limited scope.
+- -321100 `OUT_OF_SCOPE`
+  
+  Happens when data is accessed, but access is not allowed, because of a limited scope.
 E.g. when limiting scope to L2 blocks derived from a specific subset of the L1 chain.
 
-##### `-3212XX` `UNIMPLEMENTED` errors
+##### -3212`XX` - `UNIMPLEMENTED` errors
 
-###### `-321200` `CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB`
-
-Happens when you try to get the previous block of the first block.
+- -321200 `CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB`
+  
+  Happens when you try to get the previous block of the first block.
 E.g. when trying to determine the previous source block for the first L1 block in the database.
 
-##### `-3214XX` `UNAVAILABLE` errors
+##### -3214`XX` - `UNAVAILABLE` errors
 
-###### `-321401` `FUTURE_DATA`
+- -321401 `FUTURE_DATA`
+  
+  Happens when data is just not yet available.
 
-Happens when data is just not yet available.
+##### -3215`XX` - `DATA_LOSS` errors
 
-##### `-3215XX` `DATA_LOSS` errors
+- -321500 `MISSED_DATA`
+  
+  Happens when we search the DB, know the data may be there, but is not (e.g. different revision).
 
-###### `-321500` `MISSED_DATA`
-
-Happens when we search the DB, know the data may be there, but is not (e.g. different revision).
-
-###### `-321501` `DATA_CORRUPTION`
-
-Happens when the underlying DB has some I/O issue.
+- -321501 `DATA_CORRUPTION`
+  
+  Happens when the underlying DB has some I/O issue.
