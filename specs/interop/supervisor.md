@@ -356,23 +356,28 @@ For gRPC status codes reference, see [gRPC Status Codes](https://grpc.io/docs/gu
 ##### -3204`XX` - `DEADLINE_EXCEEDED` errors
 
 ###### -320400 `UNINITIALIZED_CHAIN_DATABASE`
+
 Happens when a chain database is not initialized yet.
 
 ##### -3205`XX` - `NOT_FOUND` errors
 
 ###### -320500 `SKIPPED_DATA`
+
 Happens when we try to retrieve data that is not available (pruned).
 It may also happen if we erroneously skip data, that was not considered a conflict, if the DB is corrupted.
 
 ###### -320501 `UNKNOWN_CHAIN`
-  Happens when a chain is unknown, not in the dependency set.
+
+Happens when a chain is unknown, not in the dependency set.
 
 ##### -3206`XX` - `ALREADY_EXISTS` errors
 
 ###### -320600 `CONFLICTING_DATA`
+
 Happens when we know for sure that there is different canonical data.
 
 ###### -320601 `INEFFECTIVE_DATA`
+
 Happens when data is accepted as compatible, but did not change anything.
 This happens when a node is deriving an L2 block we already know of being derived from the given source,
 but without path to skip forward to newer source blocks without doing the known derivation work first.
@@ -380,39 +385,47 @@ but without path to skip forward to newer source blocks without doing the known 
 ##### -3209`XX` - `FAILED_PRECONDITION` errors
 
 ###### -320900 `OUT_OF_ORDER`
+
 Happens when you try to add data to the DB, but it does not actually fit onto the latest data
 (by being too old or new).
 
 ###### -320901 `AWAITING_REPLACEMENT_BLOCK`
+
 Happens when we know for sure that a replacement block is needed before progress can be made.
 
 ##### -3210`XX` - `ABORTED` errors
 
 ###### -321000 `ITER_STOP`
+
 Happens in iterator to indicate iteration has to stop.
 This error might only be used internally and not sent over the network.
 
 ##### -3211`XX` - `OUT_OF_RANGE` errors
 
 ###### -321100 `OUT_OF_SCOPE`
+
 Happens when data is accessed, but access is not allowed, because of a limited scope.
 E.g. when limiting scope to L2 blocks derived from a specific subset of the L1 chain.
 
 ##### -3212`XX` - `UNIMPLEMENTED` errors
 
 ###### -321200 `CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB`
+
 Happens when you try to get the previous block of the first block.
 E.g. when trying to determine the previous source block for the first L1 block in the database.
 
 ##### -3214`XX` - `UNAVAILABLE` errors
 
 ###### -321401 `FUTURE_DATA`
+
 Happens when data is just not yet available.
 
 ##### -3215`XX` - `DATA_LOSS` errors
 
 ###### -321500 `MISSED_DATA`
+
 Happens when we search the DB, know the data may be there, but is not (e.g. different revision).
 
 ###### -321501 `DATA_CORRUPTION`
+
 Happens when the underlying DB has some I/O issue.
