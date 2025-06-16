@@ -174,8 +174,8 @@ Approves a proposal before being moved for voting, used by the top delegates.
 
 - MUST check if proposal hash corresponds to a valid proposal
 - MUST check if caller has enough voting power to call the function and approve a proposal
-  The voting power of the delegate is checked against the end of the last voting cycle from when
-  the proposal was submitted.
+  The voting power of the delegate is checked against a dynamic attestation service that
+  updates the top100 delegates every day.
 - MUST provide a valid attestation UID
 - MUST check if the attestation has been revoked
 - The attestation MUST refer to non partial delegation
