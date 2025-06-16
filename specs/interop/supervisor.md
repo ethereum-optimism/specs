@@ -163,7 +163,9 @@ Describes a block.
 
 #### `SupervisorSyncStatus`
 
-Describes the sync status of the Supervisor component.
+Describes the sync status of the Supervisor component. Fields `minSyncedL1`,
+`safeTimestamp` and `finalizedTimestamp` are set as the minimum value among
+chains in `chains`.
 
 `OBJECT`:
 - `minSyncedL1`: `BlockRef` - block ref to the synced L1 block
