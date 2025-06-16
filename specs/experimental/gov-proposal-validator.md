@@ -178,7 +178,7 @@ Approves a proposal before being moved for voting, used by the top delegates.
   the proposal was submitted.
 - MUST provide a valid attestation UID
 - MUST check if the attestation has been revoked
-- The attestation MUST reffer to non partial delegation
+- The attestation MUST refer to non partial delegation
 - MUST check if caller has already approved the same proposal
 - MUST store the approval vote
 - MUST emit `ProposalApproved` when successfully called
@@ -314,7 +314,7 @@ bytes32 public immutable ATTESTATION_SCHEMA_UID_APPROVED_PROPOSERS;
 The EAS' schema UID that is used to verify attestation for a top100 delegate that can approve a proposal submission.
 
 ```solidity
-/// Schema { ranl: string, includePartialDelegation: bool, date: string }
+/// Schema { rank: string, includePartialDelegation: bool, date: string }
 bytes32 public immutable ATTESTATION_SCHEMA_UID_TOP100_DELEGATES;
 ```
 
