@@ -19,8 +19,6 @@
     - [`BlockRef`](#blockref)
     - [`DerivedIDPair`](#derivedidpair)
     - [`ChainRootInfo`](#chainrootinfo)
-    - [`SupervisorSyncStatus`](#supervisorsyncstatus)
-    - [`SupervisorChainSyncStatus`](#supervisorchainsyncstatus)
     - [`SuperRootResponse`](#superrootresponse)
     - [`SafetyLevel`](#safetylevel)
   - [Methods](#methods)
@@ -161,27 +159,6 @@ Describes a block.
 - `canonical`: `Hash` - output root at the latest canonical block
 - `pending`: `Bytes` - output root preimage
 
-#### `SupervisorSyncStatus`
-
-Describes the sync status of the Supervisor component.
-
-`OBJECT`:
-- `minSyncedL1`: `BlockRef` - block ref to the synced L1 block
-- `safeTimestamp`: `Int` - safe timestamp
-- `finalizedTimestamp`: `Int` - finalized timestamp
-- `chains`: `OBJECT` with `ChainID` keys and `SupervisorChainSyncStatus` values
-
-#### `SupervisorChainSyncStatus`
-
-Describes the sync status for a specific chain
-
-`OBJECT`:
-- `localUnsafe`: `BlockRef` - local-unsafe ref for the given chain
-- `localSafe`: `BlockID` - local-safe ref for the given chain
-- `crossUnsafe`: `BlockID` - cross-unsafe ref for the given chain
-- `safe`: `BlockID` - cross-safe ref for the given chain
-- `finalized`: `BlockID` - finalized ref for the given chain
-
 #### `SuperRootResponse`
 
 `OBJECT`:
@@ -198,7 +175,7 @@ Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 
 `STRING`, one of:
 - `invalid`
-- `unsafe`: equivalent to safety of the `latest` RPC label.
+- `unsafe`: matching local-unsafe, equivalent to safety of the `latest` RPC label.
 - `cross-unsafe`
 - `local-safe`
 - `safe`: matching cross-safe, named `safe` to match the RPC label.
