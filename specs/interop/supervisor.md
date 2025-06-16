@@ -333,7 +333,7 @@ Malformed access-lists result in an RPC error.
 ### Data Availability Errors
 
 The Supervisor RPC API data availability errors use a 6-digit error code system that
-extends standard JSON-RPC error codes while providing additional categorization 
+extends standard JSON-RPC error codes while providing additional categorization
 based on gRPC status codes.
 
 #### JSON-RPC Error Codes
@@ -362,7 +362,7 @@ For gRPC status codes reference, see [gRPC Status Codes](https://grpc.io/docs/gu
 ##### -3205`XX` - `NOT_FOUND` errors
 
 - -320500 `SKIPPED_DATA`
- 
+
   Happens when we try to retrieve data that is not available (pruned).
   It may also happen if we erroneously skip data, that was not considered a conflict, if the DB is corrupted.
 
@@ -385,7 +385,7 @@ but without path to skip forward to newer source blocks without doing the known 
 ##### -3209`XX` - `FAILED_PRECONDITION` errors
 
 - -320900 `OUT_OF_ORDER`
- 
+
   Happens when you try to add data to the DB, but it does not actually fit onto the latest data
 (by being too old or new).
 
