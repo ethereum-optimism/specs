@@ -73,7 +73,7 @@ or `Bedrock` or `Canyon`. Deprecated contracts should not be used.
 | SchemaRegistry                | 0x4200000000000000000000000000000000000020 | Bedrock    | No         | Yes     |
 | EAS                           | 0x4200000000000000000000000000000000000021 | Bedrock    | No         | Yes     |
 | BeaconBlockRoot               | 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02 | Ecotone    | No         | No      |
-| OperatorFeeVault              | 0x420000000000000000000000000000000000001B | Bedrock    | No         | Yes     |
+| OperatorFeeVault              | 0x420000000000000000000000000000000000001B | Isthmus    | No         | Yes     |
 
 ## LegacyMessagePasser
 
