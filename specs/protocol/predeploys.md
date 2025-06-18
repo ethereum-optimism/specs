@@ -25,6 +25,7 @@
 - [EAS](#eas)
 - [Beacon Block Root](#beacon-block-root)
 - [Governance Token](#governance-token)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
@@ -358,4 +359,4 @@ Ecotone network upgrade and is specified in [EIP-4788](https://eips.ethereum.org
 
 Address: 0x4200000000000000000000000000000000000042
 
-See [Governance Token specs](https://specs.optimism.io/governance/gov-token.html)
+See [Governance Token specs](https://specs.optimism.io/governance/gov-token.html).
