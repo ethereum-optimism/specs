@@ -363,7 +363,5 @@ Ecotone network upgrade and is specified in [EIP-4788](https://eips.ethereum.org
 
 Address: `0x420000000000000000000000000000000000001B`
 
-The fee vault specifications can be seen here [Fee vault specs](https://specs.optimism.io/protocol/isthmus/exec-engine.html#fee-vaults)
-and the operator fee vault specifications can be found here
-[Operator Fee Vault](https://specs.optimism.io/protocol/isthmus/predeploys.html#operatorfeevault).
+See [Operator Fee Vault](https://specs.optimism.io/protocol/isthmus/predeploys.html#operatorfeevault) spec.
 
