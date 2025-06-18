@@ -24,6 +24,7 @@
 - [SchemaRegistry](#schemaregistry)
 - [EAS](#eas)
 - [Beacon Block Root](#beacon-block-root)
+- [Operator Fee Vault](#operator-fee-vault)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -71,6 +72,7 @@ or `Bedrock` or `Canyon`. Deprecated contracts should not be used.
 | SchemaRegistry                | 0x4200000000000000000000000000000000000020 | Bedrock    | No         | Yes     |
 | EAS                           | 0x4200000000000000000000000000000000000021 | Bedrock    | No         | Yes     |
 | BeaconBlockRoot               | 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02 | Ecotone    | No         | No      |
+| OperatorFeeVault              | 0x420000000000000000000000000000000000001B | Bedrock    | No         | Yes     |
 
 ## LegacyMessagePasser
 
@@ -353,3 +355,13 @@ Address: `0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02`
 
 The `BeaconBlockRoot` predeploy provides access to the L1 beacon block roots. This was added during the
 Ecotone network upgrade and is specified in [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788).
+
+## Operator Fee Vault
+
+[Implementation](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/OperatorFeeVault.sol)
+
+Address: `0x420000000000000000000000000000000000001B`
+
+The fee vault specifications can be seen here [Fee vault specs](https://specs.optimism.io/protocol/isthmus/exec-engine.html#fee-vaults)
+and the operator fee vault specifications can be found here
+[Operator Fee Vault](https://specs.optimism.io/protocol/isthmus/predeploys.html#operatorfeevault).
