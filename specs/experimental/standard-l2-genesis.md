@@ -210,7 +210,7 @@ The `upgrader` can only be set during initialization.
 ## Deterministic genesis state
 
 This upgrade enables a deterministic L2 genesis state by moving all network
-specific configuration out of the initial L2 genesis state. All network specific
+specific configuration from the initial L2 genesis state. All network specific
 configuration is sourced from deposit transactions during the initialization
 of the `SystemConfig`.
 
