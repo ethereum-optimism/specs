@@ -334,7 +334,7 @@ representing a bytes list, prefixed with <code>0x</code>.</p>
 <p>Describes a block.</p>
 <p><code>OBJECT</code>:</p>
 <ul>
-<li><code>hash</code>: <code>HASH</code> - block hash</li>
+<li><code>hash</code>: <code>Hash</code> - block hash</li>
 <li><code>number</code>: <code>Int</code> - block number</li>
 </ul>
 <h4 id="blockref"><a class="header" href="#blockref"><code>BlockRef</code></a></h4>
@@ -347,6 +347,12 @@ representing a bytes list, prefixed with <code>0x</code>.</p>
 <li><code>timestamp</code>: <code>Int</code> - block timestamp</li>
 </ul>
 <h4 id="derivedidpair"><a class="header" href="#derivedidpair"><code>DerivedIDPair</code></a></h4>
+<p>A pair of block identifiers, linking a <code>derived</code> block to the <code>source</code> block from which it was derived.</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>source</code>: <code>BlockID</code> - The block ID of the <code>source</code> block.</li>
+<li><code>derived</code>: <code>BlockID</code> - The block ID of the <code>derived</code> block.</li>
+</ul>
 <h4 id="chainrootinfo"><a class="header" href="#chainrootinfo"><code>ChainRootInfo</code></a></h4>
 <p><code>OBJECT</code>:</p>
 <ul>
@@ -556,7 +562,7 @@ E.g. when trying to determine the previous source block for the first L1 block i
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../interop/managed-mode.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../interop/managed-node.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -570,7 +576,7 @@ E.g. when trying to determine the previous source block for the first L1 block i
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../interop/managed-mode.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../interop/managed-node.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

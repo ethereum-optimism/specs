@@ -7145,6 +7145,8 @@ the OP-Stack protocol in the Fjord release. The op-geth implementation is
 <li><a href="protocol/predeploys.html#schemaregistry">SchemaRegistry</a></li>
 <li><a href="protocol/predeploys.html#eas">EAS</a></li>
 <li><a href="protocol/predeploys.html#beacon-block-root">Beacon Block Root</a></li>
+<li><a href="protocol/predeploys.html#governance-token">Governance Token</a></li>
+<li><a href="protocol/predeploys.html#operator-fee-vault">Operator Fee Vault</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-22"><a class="header" href="#overview-22">Overview</a></h2>
@@ -7184,6 +7186,7 @@ or <code>Bedrock</code> or <code>Canyon</code>. Deprecated contracts should not 
 <tr><td>SchemaRegistry</td><td>0x4200000000000000000000000000000000000020</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
 <tr><td>EAS</td><td>0x4200000000000000000000000000000000000021</td><td>Bedrock</td><td>No</td><td>Yes</td></tr>
 <tr><td>BeaconBlockRoot</td><td>0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</td><td>Ecotone</td><td>No</td><td>No</td></tr>
+<tr><td>OperatorFeeVault</td><td>0x420000000000000000000000000000000000001B</td><td>Isthmus</td><td>No</td><td>Yes</td></tr>
 </tbody></table>
 </div>
 <h2 id="legacymessagepasser"><a class="header" href="#legacymessagepasser">LegacyMessagePasser</a></h2>
@@ -7371,6 +7374,13 @@ protocol.</p>
 <p>Address: <code>0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02</code></p>
 <p>The <code>BeaconBlockRoot</code> predeploy provides access to the L1 beacon block roots. This was added during the
 Ecotone network upgrade and is specified in <a href="https://eips.ethereum.org/EIPS/eip-4788">EIP-4788</a>.</p>
+<h2 id="governance-token"><a class="header" href="#governance-token">Governance Token</a></h2>
+<p>Address: 0x4200000000000000000000000000000000000042</p>
+<p>See <a href="https://specs.optimism.io/governance/gov-token.html">Governance Token specs</a>.</p>
+<h2 id="operator-fee-vault"><a class="header" href="#operator-fee-vault">Operator Fee Vault</a></h2>
+<p><a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/OperatorFeeVault.sol">Implementation</a></p>
+<p>Address: <code>0x420000000000000000000000000000000000001B</code></p>
+<p>See <a href="https://specs.optimism.io/protocol/isthmus/predeploys.html#operatorfeevault">Operator Fee Vault</a> spec.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="preinstalls"><a class="header" href="#preinstalls">Preinstalls</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -8439,7 +8449,7 @@ SuperchainConfig and ProtocolVersions contract addresses.<br/>
 <strong>Requirement:</strong> Mainnet or Sepolia<br/>
 <strong>Notes:</strong> A superchain target defines a set of layer 2 chains which share <code>SuperchainConfig</code> and <code>ProtocolVersions</code>
 contracts deployed on layer 1.<br/></p>
-<h3 id="governance-token"><a class="header" href="#governance-token">Governance Token</a></h3>
+<h3 id="governance-token-1"><a class="header" href="#governance-token-1">Governance Token</a></h3>
 <p><strong>Description:</strong> OP token used for the Optimism Collective's Token House governance.<br/>
 <strong>Administrator:</strong> n/a<br/>
 <strong>Requirement:</strong> Disabled<br/>
@@ -12164,9 +12174,10 @@ outlined in the <a href="protocol/isthmus/./exec-engine.html#">Operator Fee</a> 
 <p>This vault implements <code>FeeVault</code>, like <code>BaseFeeVault</code>, <code>SequencerFeeVault</code>, and <code>L1FeeVault</code>.
 No special logic is needed in order to insert or withdraw funds.</p>
 <p>Its address will be <code>0x420000000000000000000000000000000000001b</code>.</p>
+<p>See also <a href="protocol/isthmus/./exec-engine.html#fee-vaults">Fee Vaults</a>.</p>
 <h2 id="security-considerations-4"><a class="header" href="#security-considerations-4">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="governance-token-1"><a class="header" href="#governance-token-1">Governance Token</a></h1>
+<h1 id="governance-token-2"><a class="header" href="#governance-token-2">Governance Token</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -14840,7 +14851,7 @@ representing a bytes list, prefixed with <code>0x</code>.</p>
 <p>Describes a block.</p>
 <p><code>OBJECT</code>:</p>
 <ul>
-<li><code>hash</code>: <code>HASH</code> - block hash</li>
+<li><code>hash</code>: <code>Hash</code> - block hash</li>
 <li><code>number</code>: <code>Int</code> - block number</li>
 </ul>
 <h4 id="blockref"><a class="header" href="#blockref"><code>BlockRef</code></a></h4>
@@ -14853,6 +14864,12 @@ representing a bytes list, prefixed with <code>0x</code>.</p>
 <li><code>timestamp</code>: <code>Int</code> - block timestamp</li>
 </ul>
 <h4 id="derivedidpair"><a class="header" href="#derivedidpair"><code>DerivedIDPair</code></a></h4>
+<p>A pair of block identifiers, linking a <code>derived</code> block to the <code>source</code> block from which it was derived.</p>
+<p><code>OBJECT</code>:</p>
+<ul>
+<li><code>source</code>: <code>BlockID</code> - The block ID of the <code>source</code> block.</li>
+<li><code>derived</code>: <code>BlockID</code> - The block ID of the <code>derived</code> block.</li>
+</ul>
 <h4 id="chainrootinfo"><a class="header" href="#chainrootinfo"><code>ChainRootInfo</code></a></h4>
 <p><code>OBJECT</code>:</p>
 <ul>
@@ -15059,48 +15076,48 @@ E.g. when trying to determine the previous source block for the first L1 block i
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="interop/managed-mode.html#authentication">Authentication</a></li>
-<li><a href="interop/managed-mode.html#node---supervisor">Node <code>-&gt;</code> Supervisor</a>
+<li><a href="interop/managed-node.html#authentication">Authentication</a></li>
+<li><a href="interop/managed-node.html#node---supervisor">Node <code>-&gt;</code> Supervisor</a>
 <ul>
-<li><a href="interop/managed-mode.html#reset">Reset</a></li>
-<li><a href="interop/managed-mode.html#unsafeblock">UnsafeBlock</a></li>
-<li><a href="interop/managed-mode.html#derivationupdate">DerivationUpdate</a></li>
-<li><a href="interop/managed-mode.html#derivationoriginupdate">DerivationOriginUpdate</a></li>
-<li><a href="interop/managed-mode.html#exhaustl1">ExhaustL1</a></li>
-<li><a href="interop/managed-mode.html#replaceblock">ReplaceBlock</a></li>
+<li><a href="interop/managed-node.html#reset">Reset</a></li>
+<li><a href="interop/managed-node.html#unsafeblock">UnsafeBlock</a></li>
+<li><a href="interop/managed-node.html#derivationupdate">DerivationUpdate</a></li>
+<li><a href="interop/managed-node.html#derivationoriginupdate">DerivationOriginUpdate</a></li>
+<li><a href="interop/managed-node.html#exhaustl1">ExhaustL1</a></li>
+<li><a href="interop/managed-node.html#replaceblock">ReplaceBlock</a></li>
 </ul>
 </li>
-<li><a href="interop/managed-mode.html#supervisor---node">Supervisor <code>-&gt;</code> Node</a>
+<li><a href="interop/managed-node.html#supervisor---node">Supervisor <code>-&gt;</code> Node</a>
 <ul>
-<li><a href="interop/managed-mode.html#control-signals">Control Signals</a>
+<li><a href="interop/managed-node.html#control-signals">Control Signals</a>
 <ul>
-<li><a href="interop/managed-mode.html#interop_pullevent">interop_pullEvent</a></li>
-<li><a href="interop/managed-mode.html#interop_anchorpoint-soon-to-be-deprecated">interop_anchorPoint (Soon to be deprecated)</a></li>
-<li><a href="interop/managed-mode.html#interop_invalidateblock">interop_invalidateBlock</a></li>
-<li><a href="interop/managed-mode.html#interop_providel1">interop_provideL1</a></li>
-<li><a href="interop/managed-mode.html#interop_reset">interop_reset</a></li>
+<li><a href="interop/managed-node.html#interop_pullevent">interop_pullEvent</a></li>
+<li><a href="interop/managed-node.html#interop_anchorpoint-soon-to-be-deprecated">interop_anchorPoint (Soon to be deprecated)</a></li>
+<li><a href="interop/managed-node.html#interop_invalidateblock">interop_invalidateBlock</a></li>
+<li><a href="interop/managed-node.html#interop_providel1">interop_provideL1</a></li>
+<li><a href="interop/managed-node.html#interop_reset">interop_reset</a></li>
 </ul>
 </li>
-<li><a href="interop/managed-mode.html#db">DB</a>
+<li><a href="interop/managed-node.html#db">DB</a>
 <ul>
-<li><a href="interop/managed-mode.html#interop_updatecrosssafe">interop_updateCrossSafe</a></li>
-<li><a href="interop/managed-mode.html#interop_updatecrossunsafe">interop_updateCrossUnsafe</a></li>
-<li><a href="interop/managed-mode.html#interop_updatefinalized">interop_updateFinalized</a></li>
+<li><a href="interop/managed-node.html#interop_updatecrosssafe">interop_updateCrossSafe</a></li>
+<li><a href="interop/managed-node.html#interop_updatecrossunsafe">interop_updateCrossUnsafe</a></li>
+<li><a href="interop/managed-node.html#interop_updatefinalized">interop_updateFinalized</a></li>
 </ul>
 </li>
-<li><a href="interop/managed-mode.html#sync-methods">Sync Methods</a>
+<li><a href="interop/managed-node.html#sync-methods">Sync Methods</a>
 <ul>
-<li><a href="interop/managed-mode.html#interop_fetchreceipts">interop_fetchReceipts</a></li>
-<li><a href="interop/managed-mode.html#interop_l2blockrefbytimestamp">interop_l2BlockRefByTimestamp</a></li>
-<li><a href="interop/managed-mode.html#interop_blockrefbynumber">interop_blockRefByNumber</a></li>
-<li><a href="interop/managed-mode.html#interop_chainid">interop_chainID</a></li>
-<li><a href="interop/managed-mode.html#interop_outputv0attimestamp">interop_outputV0AtTimestamp</a></li>
-<li><a href="interop/managed-mode.html#interop_pendingoutputv0attimestamp">interop_pendingOutputV0AtTimestamp</a></li>
+<li><a href="interop/managed-node.html#interop_fetchreceipts">interop_fetchReceipts</a></li>
+<li><a href="interop/managed-node.html#interop_l2blockrefbytimestamp">interop_l2BlockRefByTimestamp</a></li>
+<li><a href="interop/managed-node.html#interop_blockrefbynumber">interop_blockRefByNumber</a></li>
+<li><a href="interop/managed-node.html#interop_chainid">interop_chainID</a></li>
+<li><a href="interop/managed-node.html#interop_outputv0attimestamp">interop_outputV0AtTimestamp</a></li>
+<li><a href="interop/managed-node.html#interop_pendingoutputv0attimestamp">interop_pendingOutputV0AtTimestamp</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="interop/managed-mode.html#types">Types</a></li>
+<li><a href="interop/managed-node.html#types">Types</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <p>This section is based on the control flow between <code>managed</code> node and <code>supervisor</code>, described
@@ -15119,7 +15136,7 @@ No re-authentication is needed during the lifetime of this socket.</p>
 the file containing the jwt secret should be provided to the supervisor instance.</p>
 <h2 id="node---supervisor"><a class="header" href="#node---supervisor">Node <code>-&gt;</code> Supervisor</a></h2>
 <p>Events that a supervisor should subscribe to, originating from the node, handled by the supervisor. For the used types,
-refer <a href="interop/managed-mode.html#Types">this</a> section.</p>
+refer <a href="interop/managed-node.html#Types">this</a> section.</p>
 <p>Every event sent from the node is of type <code>ManagedEvent</code> whose fields are populated with the events that occurred. All
 non-null events are sent at once. The other fields are omitted.</p>
 <pre><code class="language-javascript">ManagedEvent {
@@ -15136,7 +15153,7 @@ non-null events are sent at once. The other fields are omitted.</p>
 <pre><code class="language-javascript">Reset: string
 </code></pre>
 <p>This is emitted when the node has determined that it needs a reset. It tells the supervisor to send the
-<a href="interop/managed-mode.html#interop_reset">interop_reset</a> event with the required parameters.</p>
+<a href="interop/managed-node.html#interop_reset">interop_reset</a> event with the required parameters.</p>
 <h3 id="unsafeblock"><a class="header" href="#unsafeblock">UnsafeBlock</a></h3>
 <pre><code class="language-javascript">UnsafeBlock: BlockRef //L2's BlockRef
 </code></pre>
@@ -15166,7 +15183,7 @@ non-null events are sent at once. The other fields are omitted.</p>
 <p>Emitted when a block gets replaced for any reason.</p>
 <h2 id="supervisor---node"><a class="header" href="#supervisor---node">Supervisor <code>-&gt;</code> Node</a></h2>
 <p>Messages that a node should watch for, originating from supervisor, handled by node. This also includes control signals
-that the supervisor can ask the node to perform. For the used types, refer <a href="interop/managed-mode.html#types">this</a> section.</p>
+that the supervisor can ask the node to perform. For the used types, refer <a href="interop/managed-node.html#types">this</a> section.</p>
 <p><em>Note: Headings represent the actual name of the methods over RPC, payload is the serialized version of the given type.</em></p>
 <p><code>-&gt; indicates return</code></p>
 <h3 id="control-signals"><a class="header" href="#control-signals">Control Signals</a></h3>
@@ -17107,7 +17124,7 @@ stages, so that components which must be upgrade atomically can be. For example,
 <code>OptimismPortal</code> contracts may need to be upgraded in one transaction, followed by another
 transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="governance-token-2"><a class="header" href="#governance-token-2">Governance Token</a></h1>
+<h1 id="governance-token-3"><a class="header" href="#governance-token-3">Governance Token</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
