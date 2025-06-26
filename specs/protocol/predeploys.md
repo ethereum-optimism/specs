@@ -341,7 +341,7 @@ protocol.
 
 ## EAS
 
-[Implementation](https://github.com/ethereum-attestation-service/eas-contracts/blob/master/contracts/EAS.sol)
+[Implementation](https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/vendor/eas)
 
 Address: `0x4200000000000000000000000000000000000021`
 
