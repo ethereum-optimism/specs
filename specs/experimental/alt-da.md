@@ -212,7 +212,7 @@ when using the alt DA source are limited to wrapping the L1 based `DataAvailabil
 in the pipeline with a module that enables pulling the data from the offchain DA source once
 we've extracted the commitment from L1 DA.
 
-Similar to L1 based DA, for each L1 block we open a calldata source to retrieve the input commitments
+Similarly to L1 based DA, for each L1 block we open a calldata source to retrieve the input commitments
 from the transactions and use each commitment with its l1 origin block number to resolve
 the input data from the storage service. To enable smooth transition between alt-da and rollup mode, any L1 data
 retrieved from the batcher inbox that is not prefixed with `txDataVersion1` is forwarded downstream
