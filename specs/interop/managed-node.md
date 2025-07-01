@@ -1,3 +1,5 @@
+> **Note:** This document has been moved to [specs/protocol/rpc/rpc-interop.md](../protocol/rpc/rpc-interop.md)
+
 # Control flow between Supervisor and Managed node
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
