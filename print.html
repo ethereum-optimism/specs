@@ -14878,7 +14878,9 @@ representing a bytes list, prefixed with <code>0x</code>.</p>
 <li><code>pending</code>: <code>Bytes</code> - output root preimage</li>
 </ul>
 <h4 id="supervisorsyncstatus"><a class="header" href="#supervisorsyncstatus"><code>SupervisorSyncStatus</code></a></h4>
-<p>Describes the sync status of the Supervisor component.</p>
+<p>Describes the sync status of the Supervisor component. Fields <code>minSyncedL1</code>,
+<code>safeTimestamp</code> and <code>finalizedTimestamp</code> are set as the minimum value among
+chains in <code>chains</code>.</p>
 <p><code>OBJECT</code>:</p>
 <ul>
 <li><code>minSyncedL1</code>: <code>BlockRef</code> - block ref to the synced L1 block</li>
@@ -14956,7 +14958,8 @@ which represents the global state across all monitored chains.</p>
 <p>Returns: <code>SuperRootResponse</code></p>
 <h4 id="supervisor_syncstatus"><a class="header" href="#supervisor_syncstatus"><code>supervisor_syncStatus</code></a></h4>
 <p>Parameters: (none)</p>
-<p>Returns: <code>SupervisorSyncStatus</code></p>
+<p>Returns: <code>SupervisorSyncStatus</code>.
+Throws: Some error if set of supervised chains is empty.</p>
 <h4 id="supervisor_allsafederivedat"><a class="header" href="#supervisor_allsafederivedat"><code>supervisor_allSafeDerivedAt</code></a></h4>
 <p>Returns the last derived block for each chain, from the given L1 block.</p>
 <p>Parameters:</p>
@@ -15109,7 +15112,7 @@ E.g. when trying to determine the previous source block for the first L1 block i
 <ul>
 <li><a href="interop/managed-node.html#interop_fetchreceipts">interop_fetchReceipts</a></li>
 <li><a href="interop/managed-node.html#interop_l2blockrefbytimestamp">interop_l2BlockRefByTimestamp</a></li>
-<li><a href="interop/managed-node.html#interop_blockrefbynumber">interop_blockRefByNumber</a></li>
+<li><a href="interop/managed-node.html#interop_l2blockrefbynumber">interop_l2BlockRefByNumber</a></li>
 <li><a href="interop/managed-node.html#interop_chainid">interop_chainID</a></li>
 <li><a href="interop/managed-node.html#interop_outputv0attimestamp">interop_outputV0AtTimestamp</a></li>
 <li><a href="interop/managed-node.html#interop_pendingoutputv0attimestamp">interop_pendingOutputV0AtTimestamp</a></li>
@@ -15242,10 +15245,10 @@ data.</p>
 <pre><code class="language-javascript">payload (uint64) -&gt; BlockRef
 </code></pre>
 <p>Fetches L2 BlockRef of the block that occurred at given timestamp</p>
-<h4 id="interop_blockrefbynumber"><a class="header" href="#interop_blockrefbynumber">interop_blockRefByNumber</a></h4>
-<pre><code class="language-javascript">payload (uint64) -&gt; BlockRef
+<h4 id="interop_l2blockrefbynumber"><a class="header" href="#interop_l2blockrefbynumber">interop_l2BlockRefByNumber</a></h4>
+<pre><code class="language-javascript">payload (uint64) -&gt; L2BlockRef
 </code></pre>
-<p>Fetches the BlockRef from a given L2 block number</p>
+<p>Fetches the L2 BlockRef from a given L2 block number</p>
 <h4 id="interop_chainid"><a class="header" href="#interop_chainid">interop_chainID</a></h4>
 <pre><code class="language-javascript">payload () -&gt; string
 </code></pre>
