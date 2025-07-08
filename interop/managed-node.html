@@ -179,7 +179,7 @@
 <li><a href="#reset">Reset</a></li>
 <li><a href="#unsafeblock">UnsafeBlock</a></li>
 <li><a href="#derivationupdate">DerivationUpdate</a></li>
-<li><a href="#derivationoriginupdate">DerivationOriginUpdate</a></li>
+<li><a href="#derivationcurrentl1update">DerivationCurrentL1Update</a></li>
 <li><a href="#exhaustl1">ExhaustL1</a></li>
 <li><a href="#replaceblock">ReplaceBlock</a></li>
 </ul>
@@ -240,7 +240,7 @@ non-null events are sent at once. The other fields are omitted.</p>
     Reset,
     UnsafeBlock,
     DerivationUpdate,
-    DerivationOriginUpdate,
+    DerivationCurrentL1Update,
     ExhaustL1,
     ReplaceBlock
 }
@@ -262,11 +262,13 @@ non-null events are sent at once. The other fields are omitted.</p>
 }
 </code></pre>
 <p>Signals that an L2 block is considered local-safe.</p>
-<h3 id="derivationoriginupdate"><a class="header" href="#derivationoriginupdate">DerivationOriginUpdate</a></h3>
-<pre><code class="language-javascript">DerivationOriginUpdate: BlockRef
+<h3 id="derivationcurrentl1update"><a class="header" href="#derivationcurrentl1update">DerivationCurrentL1Update</a></h3>
+<pre><code class="language-javascript">DerivationCurrentL1Update: DerivedBlockRefPair {
+    source: BlockRef  //Newly observed L1
+    derived: BlockRef //L2's BlockRef
+}
 </code></pre>
-<p>Signals that an L2 block is now local-safe because of the given L1 traversal. This would be accompanied with
-<code>DerivationUpdate</code>.</p>
+<p>Signals that an L2 block is considered local-safe following the observation of a new L1 block.</p>
 <h3 id="exhaustl1"><a class="header" href="#exhaustl1">ExhaustL1</a></h3>
 <pre><code class="language-javascript">ExhaustL1: DerivedBlockRefPair {
     source: BlockRef  //Last L1
