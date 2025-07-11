@@ -36,10 +36,10 @@ The `ProposalValidator` manages the proposal lifecycle through three main action
 
 - `Submit Proposal`: Records new proposals
 - `Approve Proposal`: Handles proposal approvals
-- `Move to Vote`: Transitions approved proposals to voting phase
+- `Move to Vote`: Transitions approved proposals to the Governor for voting
 
-The contract also integrates with EAS (Ethereum Attestation Service) to verify authorized proposers for specific proposal
-types. For detailed flows of each proposal, see [design docs](https://github.com/ethereum-optimism/design-docs/pull/260).
+The contract also integrates with EAS (Ethereum Attestation Service) to verify authorized proposers and approvals for specific
+proposal types. For detailed flows of each proposal, see [design docs](https://github.com/ethereum-optimism/design-docs/pull/260).
 
 ## Roles
 
@@ -60,40 +60,42 @@ Submits a Protocol/Governor Upgrade or a Maintenance Upgrade proposal to move fo
 
 `ProtocolOrGovernorUpgrade`: If all submission checks pass for this proposal type, the `ProposalValidator`
 will store the submission proposal data and will be able to accept approvals by top delegates before being
-able to move for voting.
+able to move to the Governor for voting.
 
 `MaintenanceUpgrade`: This proposal type can move straight to voting if all submission checks pass, unlike
 the rest of the proposals where they need to collect a number of approvals by top delegates in order
 to move to vote. This call should be atomic.
 
 - MUST be called by an `owner` approved address
+- MUST only be called for `ProtocolOrGovernorUpgrade` or `MaintenanceUpgrade` proposal type
 - MUST check if the proposal is a duplicate
 - MUST use the `Optimistic` Voting Module
 - MUST provide a valid againstThreshold
 - MUST provide a valid attestation UID
 - MUST NOT execute any operations
 - MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
-- MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
-- MUST move straight to vote IF `_proposalType` is `MaintenanceUpgrade`
+- MUST store submission proposal data which are defined by the `ProposalData` struct
+- MUST call `Governor.proposeWithModule` IF `_proposalType` is `MaintenanceUpgrade`
 
 ```solidity
 function submitUpgradeProposal(
     uint248 _againstThreshold,
     string memory _proposalDescription,
     bytes32 _attestationUid,
-    ProposalType _proposalType
+    ProposalType _proposalType,
+    uint256 _votingCycle
 ) external returns (bytes32 proposalHash_);
 ```
 
 **Optimistic Voting Module**
 
-Maintenance Upgrade proposals use the `Optimistic` voting module.
+Both proposals use the `Optimistic` voting module.
 
 For the `ProposalSettings` of the voting module, these are:
-- `uint248 againstThreshold`: Should be provided by the proposer. This value will be the percentage
+- `uint248 againstThreshold`: Should be provided by the caller. This value will be the percentage
 that will be used to calculate the fraction of the votable supply that the proposal will need in votes in order
 to pass.
-- `bool isRelativeToVotableSupply`: Should always be `true`.
+- `bool isRelativeToVotableSupply`: If voting power should be relative to the votable supply. Should always be `true`.
 ---
 
 `submitCouncilMemberElectionsProposal`
@@ -107,14 +109,15 @@ Submits a Council Member Elections proposal for approval and voting.
 - MUST provide a valid attestation UID
 - MUST NOT execute any operations
 - MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
-- MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
+- MUST store submission proposal data which are defined by the `ProposalData` struct
 
 ```solidity
 function submitCouncilMemberElectionsProposal(
     uint128 _criteriaValue,
     string[] _optionDescriptions,
     string memory _proposalDescription,
-    bytes32 _attestationUid
+    bytes32 _attestationUid,
+    uint256 _votingCycle
 ) external returns (bytes32 proposalHash_);
 ```
 
@@ -133,7 +136,7 @@ For the `ProposalOptions` of the voting module, these are:
 
 `submitFundingProposal`
 
-Submits a `GovernanceFund` or `CouncilBudget` proposal type that transfers OP tokens for approval and voting.
+Submits a `GovernanceFund` or `CouncilBudget` proposal type, for approval and voting, that transfers OP tokens.
 
 - MUST only be called for `GovernanceFund` or `CouncilBudget` proposal type
 - CAN be called by anyone
@@ -143,8 +146,8 @@ Submits a `GovernanceFund` or `CouncilBudget` proposal type that transfers OP to
 - MUST use the `Predeploys.GOVERNANCE_TOKEN` and `IERC20.transfer` signature to create the `calldata`
 for each option
 - MUST NOT request to transfer more than `proposalDistributionThreshold` tokens
-- MUST emit `ProposalSubmitted` event
-- MUST store submission proposal data which are defined by the `ProposalSubmissionData` struct
+- MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
+- MUST store submission proposal data which are defined by the `ProposalData` struct
 
 ```solidity
 function submitFundingProposal(
@@ -154,13 +157,13 @@ function submitFundingProposal(
     uint256[] _optionsAmounts,
     string memory _description,
     ProposalType _proposalType,
+    uint256 _votingCycle
 ) external returns (bytes32 proposalHash_);
 ```
 
 **Approval Voting Module**
 
-Funding proposals use the `Approval` voting module but unlike the Protocol or Governor upgrade proposals,
-funding proposals need to execute token transfers.
+Funding proposals use the `Approval` voting module.
 This requires the user who submits the proposal to provide some additional data related to the proposal.
 
 For the `ProposalSettings` of the voting module, these are:
@@ -176,12 +179,12 @@ For the `ProposalOptions` of the voting module, these are:
 
 `approveProposal`
 
-Approves a proposal before being moved for voting, used by the top delegates.
+Approves a proposal before being moved to Governor for voting, used by the top delegates.
 
 - MUST check if proposal hash corresponds to a valid proposal
-- MUST check if caller has enough voting power to call the function and approve a proposal
-  The voting power of the delegate is checked against a dynamic attestation service that
-  updates the top100 delegates every day.
+- MUST check if the caller is one of the top100 delegates
+  The top100 delegates is checked against a dynamic attestation service that updates the
+top100 delegates every day.
 - MUST provide a valid attestation UID
 - MUST check if the attestation has been revoked
 - The attestation MUST refer to non partial delegation
@@ -199,45 +202,77 @@ by the Agora's UI.
 
 ---
 
-`moveToVote`
+`moveToVoteProtocolOrGovernorUpgradeProposal`
 
-Checks if the provided proposal is ready to move for voting. Based on the Proposal Type different checks are being
-validated. If all checks pass then `OptimismGovernor.proposeWithModule` is being called to forward the proposal for voting.
+Moves a Protocol or Governor Upgrade proposal to vote by proposing it on the Governor.
+If all checks pass then `OptimismGovernor.proposeWithModule` is being called to forward the proposal.
 
 - MUST create the `proposalHash` and check if it exists and is valid
 - Proposal MUST have gathered equal or more than the `requiredApprovals` defined for that type
 - MUST check if proposal has already moved for voting
+- MUST check that is called by the proposer that submitted the proposal
+- `_optionsRecipients` and `_optionsAmounts` MUST be empty
 - MUST emit `ProposalMovedToVote` event
 
-For `ProtocolOrGovernorUpgrade` type:
+```solidity
+function moveToVoteProtocolOrGovernorUpgradeProposal(
+    uint248 _againstThreshold,
+    string memory _proposalDescription
+)
+    external
+    returns (bytes32 proposalHash_)
+```
 
-- MUST also check that is called by the proposer that submitted the proposal
-- `_optionsRecipients` and `_optionsAmounts` MUST be empty
+---
 
-For `MaintenanceUpgradeProposals` type:
+`moveToVoteCouncilMemberElectionsProposal`
 
-- This type does not require any checks and is being forwarded to the Governor contracts, this should happen atomically.
+Moves a council member elections proposal to vote by proposing it on the Governor.
+If all checks pass then `OptimismGovernor.proposeWithModule` is being called to forward the proposal.
 
-For `CouncilMemberElections` type:
-
+- MUST create the `proposalHash` and check if it exists and is valid
+- Proposal MUST have gathered equal or more than the `requiredApprovals` defined for that type
+- MUST check if proposal has already moved for voting
 - MUST also check that is called by the proposer that submitted the proposal
 - `_optionsRecipients` and `_optionsAmounts` MUST be empty
 - Proposal MUST be moved to vote during a valid voting cycle
+- MUST emit `ProposalMovedToVote` event
 
-For `GovernanceFund` and `CouncilBudget` types:
+```solidity
+function moveToVoteCouncilMemberElectionsProposal(
+    uint128 _criteriaValue,
+    string[] memory _optionsDescriptions,
+    string memory _proposalDescription
+)
+    external
+    returns (bytes32 proposalHash_)
+```
 
+---
+
+`moveToVoteFundingProposal`
+
+Moves a funding proposal to vote by proposing it on the Governor.
+If all checks pass then `OptimismGovernor.proposeWithModule` is being called to forward the proposal.
+
+- MUST create the `proposalHash` and check if it exists and is valid
+- Proposal MUST have gathered equal or more than the `requiredApprovals` defined for that type
+- MUST check if proposal has already moved for voting
 - Proposal MUST be moved to vote during a valid voting cycle
 - MUST check if the total amount of tokens that can possible be distributed during this voting cycle does not go over the
   `VotingCycleData.votingCycleDistributionLimit`
 
 ```solidity
-function moveToVote(
+function moveToVoteFundingProposal(
     uint128 _criteriaValue,
+    string[] memory _optionsDescriptions,
     address[] memory _optionsRecipients,
     uint256[] memory _optionsAmounts,
-    string[] memory _optionDescriptions,
-    string memory _proposalDescription
-) external returns (uint256 proposalHash_)
+    string memory _description,
+    ProposalType _proposalType
+)
+    external
+    returns (bytes32 proposalHash_)
 ```
 
 ---
@@ -250,7 +285,7 @@ Returns true if a delegate is part of the top100 delegates based on the dynamic 
 - MUST return TRUE if the delegate is part of the top100 and can approve a proposal
 
 ```solidity
-function canApproveProposal(address _delegate, bytes32 _attestationUid) public view returns (bool canApprove_)
+function canApproveProposal(bytes32 _attestationUid, address _delegate) public view returns (bool canApprove_)
 ```
 
 ---
@@ -266,9 +301,9 @@ Sets the voting cycle data.
 ```solidity
 function setVotingCycleData(
     uint256 _cycleNumber,
-    uint256 _startBlock,
+    uint256 _startingTimestamp,
     uint256 _duration,
-    uint256 _distributionLimit
+    uint256 _votingCycleDistributionLimit
 ) external
 ```
 
@@ -288,40 +323,41 @@ function setProposalDistributionThreshold(uint256 _threshold) external
 
 ---
 
-`setProposalTypeApprovalThreshold`
+`setProposalTypeData`
 
-Sets the number of approvals a specific proposal type should have before being able to move for voting.
+Sets the data for a proposal type. The amount of approvals and the voting module id each type has.
 
 - MUST only be called by the owner of the contract
 - MUST change the previous value to the new one
-- MUST emit `ProposalTypeApprovalThresholdSet` event
+- MUST emit `ProposalTypeDataSet` event
 
 ```solidity
-function setProposalTypeApprovalThreshold(
-    uint8 _proposalTypeId,
-    uint256 _approvalThreshold
+function setProposalTypeData(
+    ProposalType _proposalType,
+    ProposalTypeData memory _proposalTypeData
 ) external
 ```
 
 ### Properties
 
-`ATTESTATION_SCHEMA_UID_APPROVED_PROPOSERS`
+`APPROVED_PROPOSER_ATTESTATION_SCHEMA_UID`
 
-The EAS' schema UID that is used to verify attestation for approved addresses that can submit proposals for specific
-`ProposalTypes`.
+The schema UID for attestations in the Ethereum Attestation Service for checking if the caller
+is an approved proposer.
 
 ```solidity
 /// Schema { approvedProposer: address, proposalType: uint8 }
-bytes32 public immutable ATTESTATION_SCHEMA_UID_APPROVED_PROPOSERS;
+bytes32 public immutable APPROVED_PROPOSER_ATTESTATION_SCHEMA_UID;
 ```
 
-`ATTESTATION_SCHEMA_UID_TOP100_DELEGATES`
+`TOP_DELEGATES_ATTESTATION_SCHEMA_UID`
 
-The EAS' schema UID that is used to verify attestation for a top100 delegate that can approve a proposal submission.
+The schema UID for attestations in the Ethereum Attestation Service for checking if the caller
+is part of the top100 delegates.
 
 ```solidity
 /// Schema { rank: string, includePartialDelegation: bool, date: string }
-bytes32 public immutable ATTESTATION_SCHEMA_UID_TOP100_DELEGATES;
+bytes32 public immutable TOP_DELEGATES_ATTESTATION_SCHEMA_UID;
 ```
 
 `GOVERNOR`
@@ -330,6 +366,14 @@ The address of the Optimism Governor contract.
 
 ```solidity
 IOptimismGovernor public immutable GOVERNOR;
+```
+
+`proposalTypesConfigurator`
+
+The proposal types configurator contract.
+
+```solidity
+IProposalTypesConfigurator public proposalTypesConfigurator;
 ```
 
 `proposalDistributionThreshold`
@@ -348,26 +392,26 @@ A mapping that stores the data for each voting cycle.
 mapping(uint256 => VotingCycleData) public votingCycles;
 ```
 
+`proposalTypesData`
+
+A mapping that stores data related to each proposal type.
+
+```solidity
+mapping(ProposalType => ProposalTypeData) public proposalTypesData;
+```
+
 `_proposals`
 
 A mapping that stores each submitted proposal's data based on its `proposalHash`. The proposal hash is produced by hashing
 the ABI encoded values of specific proposal params, see [Proposal uniqueness](#proposal-uniqueness).
 
 ```solidity
-mapping(bytes32 => ProposalSubmissionData) private _proposals;
-```
-
-`_proposalTypesData`
-
-A mapping that stores data related to each proposal type.
-
-```solidity
-mapping(ProposalType => ProposalTypeData) private _proposalTypesData;
+mapping(bytes32 => ProposalData) private _proposals;
 ```
 
 ### Structs
 
-`ProposalSubmissionData`
+`ProposalData`
 
 A struct that holds all the data for a single proposal. Consists of:
 
@@ -376,16 +420,16 @@ A struct that holds all the data for a single proposal. Consists of:
 - `inVoting`: Returns true if the proposal has already been submitted for voting
 - `delegateApprovals`: Mapping of addresses that approved the specific proposal
 - `approvalsCounter`: The number of approvals the specific proposal has received
-- `timestamp`: The timestamp of the proposal submission
+- `votingCycle`: The voting cycle number the proposal is targetted for.
 
 ```solidity
-struct ProposalSubmissionData {
+struct ProposalData {
     address proposer;
     ProposalType proposalType;
-    bool inVoting;
+    bool movedToVote;
     mapping(address => bool) delegateApprovals;
     uint256 approvalsCounter;
-    uint256 timestamp;
+    uint256 votingCycle;
 }
 ```
 
@@ -394,8 +438,8 @@ struct ProposalSubmissionData {
 A struct that holds data for each proposal type.
 
 - `requiredApprovals`: The number of approvals each proposal type requires in order to be able to move for voting.
-- `proposalVotingModule`: The voting module (proposal type configurator) that can be used for each proposal type. This
-is set by the owner on initialize.
+- `proposalVotingModule`: The proposal type ID used to get the voting module from the configurator.
+This is set by the owner on initialize.
 
 ```solidity
 struct ProposalTypeData {
@@ -408,15 +452,17 @@ struct ProposalTypeData {
 
 A struct that stores data related to the voting cycle.
 
-- `startingBlock`: The block number/timestamp that the voting cycle starts
+- `startingTimestamp`: The starting timestamp of the voting cycle.
 - `duration`: The duration of the specific voting cycle
 - `votingCycleDistributionLimit`: A more general distribution amount limit tied to the voting cycle
+- `movedToVoteTokenCount` The total amount of tokens to possibly be distributed in the voting cycle
 
 ```solidity
 struct VotingCycleData {
-    uint256 startingBlock;
+    uint256 startingTimestamp;
     uint256 duration;
     uint256 votingCycleDistributionLimit;
+    movedToVoteTokenCount;
 }
 ```
 
@@ -453,7 +499,7 @@ MUST be triggered when a proposal submission is successfully called.
 
 ```solidity
 event ProposalSubmitted(
-    uint256 indexed proposalHash,
+    bytes32 indexed proposalHash,
     address indexed proposer,
     string description,
     ProposalType proposalType
@@ -465,7 +511,7 @@ event ProposalSubmitted(
 MUST be triggered when `approveProposal` is successfully called.
 
 ```solidity
-event ProposalApproved(uint256 indexed proposalHash, address indexed approver);
+event ProposalApproved(bytes32 indexed proposalHash, address indexed approver);
 ```
 
 `ProposalMovedToVote`
@@ -473,7 +519,7 @@ event ProposalApproved(uint256 indexed proposalHash, address indexed approver);
 MUST be triggered when `moveToVote` is successfully called.
 
 ```solidity
-event ProposalMovedToVote(uint256 indexed proposalHash, address indexed executor);
+event ProposalMovedToVote(bytes32 indexed proposalHash, address indexed executor);
 ```
 
 `ProposalVotingModuleData`
@@ -481,7 +527,7 @@ event ProposalMovedToVote(uint256 indexed proposalHash, address indexed executor
 MUST be triggered with `ProposalSubmitted` event.
 
 ```solidity
-event ProposalVotingModuleData(uint256 indexed proposalHash, bytes encodedVotingModuleData);
+event ProposalVotingModuleData(bytes32 indexed proposalHash, bytes encodedVotingModuleData);
 ```
 
 ## EAS Integration
@@ -530,7 +576,7 @@ as the one created on `Governor.hashProposalWithModule` and used by the `Voting 
 
 A proposal is uniquely identified by a tuple:
 
-- `proposalValidator`: The address of the proposal validator
+- `governor`: The address of the Governor
 - `module`: The address of the voting module the proposal uses
 - `proposalVotingModuleData`: The encoded voting module data
 - `descriptionHash`: The hash of the description
@@ -538,13 +584,13 @@ A proposal is uniquely identified by a tuple:
 These elements are ABI-encoded and hashed:
 
 ```solidity
-keccak256(abi.encode(proposalValidator, module, proposalVotingModuleData, descriptionHash));
+keccak256(abi.encode(governor, module, proposalVotingModuleData, descriptionHash));
 ```
 
 This hash serves as a unique identifier for the proposal. The contract stores submitted proposals in:
 
 ```solidity
-mapping(bytes32 => ProposalSubmissionData) private _proposals;
+mapping(bytes32 => ProposalData) private _proposals;
 ```
 
 When a new proposal is submitted, the contract checks that `_proposals[proposalHash]` is empty (e.g., `proposer ==
