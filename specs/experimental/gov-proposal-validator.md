@@ -93,8 +93,8 @@ Both proposals use the `Optimistic` voting module.
 
 For the `ProposalSettings` of the voting module, these are:
 - `uint248 againstThreshold`: Should be provided by the caller. This value will be the percentage
-that will be used to calculate the fraction of the votable supply that the proposal will need in votes in order
-to pass.
+that will be used to calculate the fraction of against votes relative to the votable supply that the proposal will need in
+against votes in order to not pass.
 - `bool isRelativeToVotableSupply`: If voting power should be relative to the votable supply. Should always be `true`.
 ---
 
@@ -145,7 +145,7 @@ Submits a `GovernanceFund` or `CouncilBudget` proposal type, for approval and vo
 - MUST use "Threshold" criteria type for the Voting Module
 - MUST use the `Predeploys.GOVERNANCE_TOKEN` and `IERC20.transfer` signature to create the `calldata`
 for each option
-- MUST NOT request to transfer more than `proposalDistributionThreshold` tokens
+- MUST NOT request to transfer more than `proposalDistributionThreshold` tokens for each option
 - MUST emit `ProposalSubmitted` and `ProposalVotingModuleData` events
 - MUST store submission proposal data which are defined by the `ProposalData` struct
 
@@ -168,9 +168,8 @@ This requires the user who submits the proposal to provide some additional data 
 
 For the `ProposalSettings` of the voting module, these are:
 - `uint128 criteriaValue`: Since the passing criteria type is always "Threshold", for this proposal type,
-this value will be the percentage that will be used to calculate the fraction of the votable supply that
-the proposal will need in votes in order to pass.
-
+this value will be the absolute number of votes required for the proposal to pass.
+It represents the threshold that must be met or exceeded for any option to be considered successful.
 For the `ProposalOptions` of the voting module, these are:
 - `string[] optionsDescriptions`: The strings of the different options that can be voted.
 - `address[] optionsRecipients`: An address for each option to transfer funds to in case the option passes the voting.
@@ -285,7 +284,7 @@ Returns true if a delegate is part of the top100 delegates based on the dynamic 
 - MUST return TRUE if the delegate is part of the top100 and can approve a proposal
 
 ```solidity
-function canApproveProposal(bytes32 _attestationUid, address _delegate) public view returns (bool canApprove_)
+function canApproveProposal(bytes32 _attestationUid, address _delegate) external view returns (bool canApprove_)
 ```
 
 ---
@@ -296,7 +295,7 @@ Sets the voting cycle data.
 
 - MUST only be called by the owner of the contract
 - MUST NOT change an existing voting cycle
-- MUST emit `VotingCycleSet` event
+- MUST emit `VotingCycleDataSet` event
 
 ```solidity
 function setVotingCycleData(
@@ -346,7 +345,7 @@ The schema UID for attestations in the Ethereum Attestation Service for checking
 is an approved proposer.
 
 ```solidity
-/// Schema { approvedProposer: address, proposalType: uint8 }
+/// Schema { proposalType: uint8, date: string }
 bytes32 public immutable APPROVED_PROPOSER_ATTESTATION_SCHEMA_UID;
 ```
 
@@ -419,8 +418,8 @@ A struct that holds all the data for a single proposal. Consists of:
 - `proposalType`: The type of the proposal
 - `inVoting`: Returns true if the proposal has already been submitted for voting
 - `delegateApprovals`: Mapping of addresses that approved the specific proposal
-- `approvalsCounter`: The number of approvals the specific proposal has received
-- `votingCycle`: The voting cycle number the proposal is targetted for.
+- `approvalCount`: The number of approvals the specific proposal has received
+- `votingCycle`: The voting cycle number the proposal is targeted for.
 
 ```solidity
 struct ProposalData {
@@ -428,7 +427,7 @@ struct ProposalData {
     ProposalType proposalType;
     bool movedToVote;
     mapping(address => bool) delegateApprovals;
-    uint256 approvalsCounter;
+    uint256 approvalCount;
     uint256 votingCycle;
 }
 ```
@@ -462,7 +461,7 @@ struct VotingCycleData {
     uint256 startingTimestamp;
     uint256 duration;
     uint256 votingCycleDistributionLimit;
-    movedToVoteTokenCount;
+    uint256 movedToVoteTokenCount;
 }
 ```
 
@@ -542,7 +541,7 @@ custom logic to the contract.
   proposers.
 - **Low integration overhead**: `EAS` and `SchemaRegistry` are predeploys on Optimism, requiring no additional deployments
   or infrastructure.
-- **Schema validation**: Ensures attestations follow strict data formats (e.g. `address approvedDelegate, uint8 proposalType`).
+- **Schema validation**: Ensures attestations follow strict data formats (e.g. `uint8 proposalType, string date`).
 - **Revocability and expiration**: EAS supports expiration and revocation semantics natively, allowing dynamic control over
   authorized proposers.
 
