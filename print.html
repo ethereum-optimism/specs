@@ -2896,10 +2896,10 @@ but the client should regard any error like any other unanswered request, as the
 <p><strong>Note</strong> the following assumes a single sequencer and batcher. In the future, the design will be adapted to
 accommodate multiple such entities.</p>
 </blockquote>
-<p><a href="protocol/../glossary.html#L2-chain-derivation">L2 chain derivation</a> — deriving L2 <a href="protocol/../glossary.html#block">blocks</a> from L1 data — is one of the main responsibilities
+<p><a href="protocol/../glossary.html#l2-chain-derivation">L2 chain derivation</a> — deriving L2 <a href="protocol/../glossary.html#block">blocks</a> from L1 data — is one of the main responsibilities
 of the <a href="protocol/../glossary.html#rollup-node">rollup node</a>, both in validator mode, and in sequencer mode (where derivation acts as a sanity
 check on sequencing, and enables detecting L1 chain <a href="protocol/../glossary.html#chain-re-organization">re-organizations</a>).</p>
-<p>The L2 chain is derived from the L1 chain. In particular, each L1 block following <a href="protocol/../glossary.html#L2-chain-inception">L2 chain
+<p>The L2 chain is derived from the L1 chain. In particular, each L1 block following <a href="protocol/../glossary.html#l2-chain-inception">L2 chain
 inception</a> is mapped to a <a href="protocol/../glossary.html#sequencing-epoch">sequencing epoch</a> comprising
 at least one L2 block. Each L2 block belongs to exactly one epoch, and we call the corresponding L1
 block its <a href="protocol/../glossary.html#l1-origin">L1 origin</a>. The epoch's number equals that of its L1 origin block.</p>
@@ -2927,7 +2927,7 @@ if <code>E</code> is the first epoch.</li>
 </ul>
 <p>To derive the whole L2 chain from scratch, we start with the <a href="protocol/../glossary.html#l2-genesis-block">L2 genesis state</a> and
 the <a href="protocol/../glossary.html#l2-genesis-block">L2 genesis block</a> as the first L2 block. We then derive L2 blocks from each epoch in order,
-starting at the first L1 block following <a href="protocol/../glossary.html#L2-chain-inception">L2 chain inception</a>. Refer to the
+starting at the first L1 block following <a href="protocol/../glossary.html#l2-chain-inception">L2 chain inception</a>. Refer to the
 <a href="protocol/derivation.html#architecture">Architecture section</a> for more information on how we implement this in practice.
 The L2 chain may contain pre-Bedrock history, but the L2 genesis here refers to the Bedrock L2
 genesis block.</p>
