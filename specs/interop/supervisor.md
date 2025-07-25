@@ -1,3 +1,5 @@
+> **Note:** This document has been moved to [specs/protocol/rpc/rpc-supervisor.md](../protocol/rpc/rpc-supervisor.md)
+
 # Supervisor
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->

@@ -201,6 +201,8 @@ The two base fee values and their respective scalars can be accessed in two inte
 
 ## Engine API
 
+> **Note:** This section has been moved to [specs/protocol/rpc/rpc-engine.md](rpc/rpc-engine.md)
+
 ### `engine_forkchoiceUpdatedV2`
 
 This updates which L2 blocks the engine considers to be canonical (`forkchoiceState` argument),
