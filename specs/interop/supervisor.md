@@ -181,7 +181,9 @@ chains in `chains`.
 - `chains`: `OBJECT` with `ChainID` keys and `SupervisorChainSyncStatus` values
 
 > **Note:**  
-> If `minSyncedL1` does not exist, it MUST be represented as a `BlockRef` with a `hash` and `parentHash` of `0x0000000000000000000000000000000000000000000000000000000000000000`, a `number` of `0`, and a `timestamp` of `0`.
+> If `minSyncedL1` does not exist, it MUST be represented as a `BlockRef` with a `hash` and `parentHash` of  
+> `0x0000000000000000000000000000000000000000000000000000000000000000`, a `number` of `0`,  
+> and a `timestamp` of `0`.
 
 #### `SupervisorChainSyncStatus`
 
@@ -195,7 +197,9 @@ Describes the sync status for a specific chain
 - `finalized`: `BlockID` - finalized ref for the given chain
 
 > **Note:**  
-> For the fields `localSafe`, `crossUnsafe`, `safe`, and `finalized`, if the referenced block does not exist yet, the `BlockID` MUST be represented with a `hash` of `0x0000000000000000000000000000000000000000000000000000000000000000` and a `number` of `0`.
+> For the fields `localSafe`, `crossUnsafe`, `safe`, and `finalized`, if the referenced block does not exist yet,  
+> the `BlockID` MUST be represented with a `hash` of  
+> `0x0000000000000000000000000000000000000000000000000000000000000000` and a `number` of `0`.
 
 #### `SuperRootResponse`
 
