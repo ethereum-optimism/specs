@@ -14448,6 +14448,12 @@ chains in <code>chains</code>.</p>
 <li><code>finalizedTimestamp</code>: <code>Int</code> - finalized timestamp</li>
 <li><code>chains</code>: <code>OBJECT</code> with <code>ChainID</code> keys and <code>SupervisorChainSyncStatus</code> values</li>
 </ul>
+<blockquote>
+<p><strong>Note:</strong><br />
+If <code>minSyncedL1</code> does not exist, it MUST be represented as a <code>BlockRef</code> with a <code>hash</code> and <code>parentHash</code> of<br />
+<code>0x0000000000000000000000000000000000000000000000000000000000000000</code>, a <code>number</code> of <code>0</code>,<br />
+and a <code>timestamp</code> of <code>0</code>.</p>
+</blockquote>
 <h4 id="supervisorchainsyncstatus"><a class="header" href="#supervisorchainsyncstatus"><code>SupervisorChainSyncStatus</code></a></h4>
 <p>Describes the sync status for a specific chain</p>
 <p><code>OBJECT</code>:</p>
@@ -14458,6 +14464,12 @@ chains in <code>chains</code>.</p>
 <li><code>safe</code>: <code>BlockID</code> - cross-safe ref for the given chain</li>
 <li><code>finalized</code>: <code>BlockID</code> - finalized ref for the given chain</li>
 </ul>
+<blockquote>
+<p><strong>Note:</strong><br />
+For the fields <code>localSafe</code>, <code>crossUnsafe</code>, <code>safe</code>, and <code>finalized</code>, if the referenced block does not exist yet,<br />
+the <code>BlockID</code> MUST be represented with a <code>hash</code> of<br />
+<code>0x0000000000000000000000000000000000000000000000000000000000000000</code> and a <code>number</code> of <code>0</code>.</p>
+</blockquote>
 <h4 id="superrootresponse"><a class="header" href="#superrootresponse"><code>SuperRootResponse</code></a></h4>
 <p><code>OBJECT</code>:</p>
 <ul>
