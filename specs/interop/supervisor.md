@@ -19,6 +19,8 @@
     - [`BlockRef`](#blockref)
     - [`DerivedIDPair`](#derivedidpair)
     - [`ChainRootInfo`](#chainrootinfo)
+    - [`SupervisorSyncStatus`](#supervisorsyncstatus)
+    - [`SupervisorChainSyncStatus`](#supervisorchainsyncstatus)
     - [`SuperRootResponse`](#superrootresponse)
     - [`SafetyLevel`](#safetylevel)
   - [Methods](#methods)
