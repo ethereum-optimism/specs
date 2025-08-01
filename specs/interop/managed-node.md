@@ -19,6 +19,7 @@
     - [interop_invalidateBlock](#interop_invalidateblock)
     - [interop_provideL1](#interop_providel1)
     - [interop_reset](#interop_reset)
+    - [interop_resetPreInterop](#interop_resetpreinterop)
   - [DB](#db)
     - [interop_updateCrossSafe](#interop_updatecrosssafe)
     - [interop_updateCrossUnsafe](#interop_updatecrossunsafe)
