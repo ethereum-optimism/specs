@@ -194,6 +194,14 @@ Forces a reset to a specific local-unsafe/local-safe/finalized starting point on
 override local-unsafe, to reset the very end of the chain. Resets may override local-safe, since post-interop we need
 the local-safe block derivation to continue.
 
+#### interop_resetPreInterop
+
+```javascript
+payload()
+```
+
+Forces a pre-interop reset on the node. It means resetting the node to a state before the Interop upgrade
+
 ### DB
 
 RPC calls that a node should watch for, originating from supervisor that is called on DB updates for relevant block
