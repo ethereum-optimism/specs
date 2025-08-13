@@ -41,6 +41,15 @@ Constraints:
 The `minBaseFeeLog2` field encodes the base-2 logarithm of the minimum base fee in wei. A value of `0` disables the
 minimum base fee entirely.
 
+```javascript
+if minBaseFeeLog2 > 0 {
+  minBaseFee = 2**minBaseFeeLog2
+  if baseFee < minBaseFee {
+    baseFee = minBaseFee
+  }
+}
+```
+
 Note: `extraData` has a maximum capacity of 32 bytes (to fit the L1 beacon-chain `extraData` type) and may be
 extended by future upgrades.
 
