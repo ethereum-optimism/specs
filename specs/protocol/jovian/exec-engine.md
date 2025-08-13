@@ -63,8 +63,3 @@ PayloadAttributesV3: {
     minBaseFeeLog2: QUANTITY or null
 }
 ```
-
-- Pre-Jovian: `eip1559Params` is 8 bytes and encodes `denominator` and `elasticity`.
-- Jovian: adds a separate `minBaseFeeLog2` field (uint8), not included in `eip1559Params`.
-
-
