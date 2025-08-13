@@ -12,7 +12,9 @@
 
 ## Minimum Base Fee
 
-Jovian introduces a [configurable minimum base fee](https://github.com/ethereum-optimism/design-docs/blob/main/protocol/minimum-base-fee.md) to reduce the duration of priority-fee auctions on OP Stack chains.
+Jovian introduces a
+[configurable minimum base fee](https://github.com/ethereum-optimism/design-docs/blob/main/protocol/minimum-base-fee.md)
+to reduce the duration of priority-fee auctions on OP Stack chains.
 
 The minimum base fee is configured via `SystemConfig` (see `./system-config.md`) and enforced by the execution engine
 via the block header `extraData` encoding and the Engine API `PayloadAttributesV3` parameters.

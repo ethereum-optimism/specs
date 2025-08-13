@@ -56,5 +56,3 @@ This function returns the log2 of the currently configured minimum base fee.
 ```solidity
 function minBaseFeeLog2() external view returns (uint8);
 ```
-
-

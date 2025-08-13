@@ -304,7 +304,8 @@ or a zero `bytes32` if the Dencun functionality with `parentBeaconBlockRoot` is 
 Starting with Holocene, the `eip1559Params` field must encode the EIP1559 parameters. It must be `null` before.
 See [Dynamic EIP-1559 Parameters](holocene/exec-engine.md#dynamic-eip-1559-parameters) for details.
 
-Starting with Jovian, the `minBaseFeeLog2` field is added (uint8). It must be `null` before Jovian. See [Jovian Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee) for details.
+Starting with Jovian, the `minBaseFeeLog2` field is added (uint8). It must be `null` before Jovian.
+See [Jovian Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee) for details.
 
 ### `engine_newPayloadV2`
 
