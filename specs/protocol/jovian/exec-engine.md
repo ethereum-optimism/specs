@@ -23,19 +23,13 @@ Like [Holocene's dynamic EIP-1559 parameters](../holocene/exec-engine.md#dynamic
 fee parameters in the `extraData` field of each L2 block header. The format is extended to include an additional byte
 for the minimum base fee exponent.
 
-`extraData` layout (10 bytes total):
-
 | Name             | Type               | Byte Offset |
 | ---------------- | ------------------ | ----------- |
-| `version`        | `u8`               | `[0, 1)`    |
-| `denominator`    | `u32 (big-endian)` | `[1, 5)`    |
-| `elasticity`     | `u32 (big-endian)` | `[5, 9)`    |
 | `minBaseFeeLog2` | `u8`               | `[9, 10)`   |
 
 Constraints:
 
 - `version` MUST be `1` (incremented from Holocene's `0`).
-- `denominator` MUST be non-zero.
 - There MUST NOT be any data beyond these 10 bytes.
 
 The `minBaseFeeLog2` field encodes the base-2 logarithm of the minimum base fee in wei. A value of `0` disables the
