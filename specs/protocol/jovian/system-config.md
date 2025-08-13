@@ -5,6 +5,11 @@
 **Table of Contents**
 
 - [Minimum Base Fee Configuration](#minimum-base-fee-configuration)
+  - [`ConfigUpdate`](#configupdate)
+  - [Modifying Minimum Base Fee](#modifying-minimum-base-fee)
+  - [Interface](#interface)
+    - [Minimum Base Fee Parameters](#minimum-base-fee-parameters)
+      - [`minBaseFeeLog2`](#minbasefeelog2)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
