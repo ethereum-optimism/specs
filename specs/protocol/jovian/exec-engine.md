@@ -35,16 +35,14 @@ Constraints:
 - There MUST NOT be any data beyond these 10 bytes.
 
 The `minBaseFeeFactors` field encodes minimum base fee in wei as a 4-bit significand followed by a
-4-bit exponent to the power of 10. A value of `0` disables the minimum base fee entirely.
+4-bit exponent to the power of 10. When `significand` is `0`, the base fee behavior is unchanged.
 
 ```javascript
-if minBaseFeeFactors > 0 {
-  significand = minBaseFeeFactors >> 4 & 0x0F
-  exponent = minBaseFeeFactors & 0x0F
-  minBaseFee = significand * 10**exponent
-  if baseFee < minBaseFee {
-    baseFee = minBaseFee
-  }
+significand = minBaseFeeFactors >> 4 & 0x0F
+exponent = minBaseFeeFactors & 0x0F
+minBaseFee = significand * 10**exponent
+if baseFee < minBaseFee {
+  baseFee = minBaseFee
 }
 ```
 
