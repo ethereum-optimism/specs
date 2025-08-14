@@ -1,51 +1,99 @@
 
 # Calldata Limit
 Starting with Jovian, the `gasUsed` field of a block may instead represent the utilization of calldata within the block.
-The purpose of this feature is to take into account the throughput of the DA Layer (the L1) when creating blocks that feature a high volume of `calldata`
+The purpose of this feature is to take into account the throughput of the DA Layer (the L1) when creating blocks that feature a high volume of `calldata`.
 
 # Terms 
 
 ## `calldata`
 Calldata is the `data` field attached to a transaction submitted to the OP Chain. The transaction author fully controls the content and size of the calldata at the time of authoring.
 
-## `da_bytes_estimate`
-`da_bytes_estimate` is the size of the `calldata` present in a transaction with respect to how much space it is expected to consume on the DA Layer. The DA Bytes Estimate may be smaller thatn the raw Calldata because the data is compressed when published to L1.
+## `da_footprint`
+`da_footprint` is the estimate of how much space a given transaction is expected to consume on the DA Layer. The value of `da_footprint` is driven by the size of the transaction's `calldata`. `da_footprint` may be less than the the size of the `calldata` because the data is compressed when published to L1.
 
 ```py
-da_bytes_estimate = max(min_transaction_size, intercept + fastlz_coef * tx.fastlz_size / 1e6)
+da_footprint = max(min_transaction_size, intercept + fastlz_coef * tx.fastlz_size / 1e6)
 ```
 
 The protocol constants `min_transaction_size`, `intercept`, `fastlz_coef` are defined in prior Hard Forks.
 
-## `block_da_bytes_estimate`
-`block_da_bytes_estimate` represents the cumulative total of `da_bytes_estimate` for all transactions included in the given block.
+## `block_da_footprint`
+`block_da_footprint` represents the cumulative total of `da_footprint` for all transactions included in the given block.
 
 ```py
-block_da_bytes_estimate = 0
+block_da_footprint = 0
 for tx in block_txs:
-    block_da_bytes_estimate += tx.da_bytes_estimate
-```
-
-## `calldata_footprint_cost`
-`calldata_footprint_cost` is a coefficient value which normalizes the `block_da_bytes_estimate` such that it can be compared to the `gasLimit` of the block.
-The value of `calldata_footprint_cost` is 400, which is an arbitrary coefficient selected by analysis of real chain data.
-
-```py
-calldata_footprint_cost = da_bytes_estimate * calldata_footprint_cost
+    block_da_footprint += tx.da_footprint
 ```
 
 ## `block_gas_limit`
 `block_gas_limit` represents the maximum allowable gas accumulated by all transactions in a given block. Above this limit, the block is not valid by protocol rules.
 
-## `block_da_bytes_limit`
-`block_da_bytes_limit` represents the maximum allowable size of a block's `block_da_bytes_estimate`.
-This is equal to `(block_gas_limit / calldata_footprint_cost)`, but in practice the `block_da_bytes_estimate` is normalized to be comparable with the `block_gas_limit`, so `block_da_bytes_limit` is not used directly.
+## `da_footprint_factor`
+`da_footprint_factor` is a multiplier which normalizes the `block_da_footprint` such that it can be compared to `block_gas_limit`.
 
-## `gasUsed`
+The value of `da_footprint_factor` is 400.
+
+```py
+da_footprint_factor = 400
+```
+### Rationale of `da_footprint_factor` value
+A `da_footprint_factor` value was selected such that under standard operation blocks are only limited by their gas usage,
+while in times of calldata heavy spam, block data which is posted to the Data Layer does not exceed its throughput capabilities.
+- Values which are too high would artificially restrict the size of blocks which contain standard calldata transactions.
+- Values which are too low would fail to restrict calldata heavy blocks and would exceed throughput capabilities.
+
+The value selected, `400`, represents a middle-ground value which is successful in backtesting across multiple large OP Chains.
+
+## `da_footprint_limit`
+`da_footprint_limit` represents the maximum allowable size of a block's `block_da_footprint`.
+```py
+da_footprint_limit = block_gas_limit / da_footprint_factor
+```
+In practice, this value is never computed directly, as the `block_da_footprint` is scaled up using the `da_footprint_factor` to be compared to the `block_gas_limit`.
+
+# Calculation of `gasUsed` in a Block
 Pre-Jovian, `gasUsed` always represented the cumulative total `gasUsed` of each transaction included in that block.
+
+```py
+block_gas_used= 0
+for tx in block_txs:
+    block_gas_used += tx.gasUsed
+
+gasUsed = block_gas_used
+```
 
 Jovian onward, `gasUsed` may represent one of two values, the larger of either:
 - The original definition, representing the cumulative total of `gasUsed` of transactions
-- A pseudo-value representing the `block_da_bytes_estimate`, normalized to resemble the original `gasUsed` by multiplying it with the coefficient `calldata_footprint_cost`
+- The `block_da_footprint`, normalized to be comparable the original `gasUsed` by multiplying it with `da_footprint_factor`
 
-In order to distinguish which value is being used, the `gasUsed` of each transaction may be summed. If the total is less than the `block_gas_limit`, it implies the `gasUsed` is using calldata footprint. This can be verified by constructing the `block_da_bytes_estimate`, and multiplying it by the `calldata_footprint_cost` coefficient.
+```py
+block_gas_used = 0
+block_da_footprint = 0
+for tx in block_txs:
+    block_gas_used += tx.gasUsed
+    block_da_footprint = tx.da_footprint
+
+normalized_block_da_footprint = block_da_footprint * da_footprint_factor
+
+gasUsed = max(block_gas_used, normalized_block_da_footprint)
+```
+
+## Validation of `gasUsed` in a Block
+
+Validation of `gasUsed` for a block is the same as the calculation above: accumulate the `da_footprint` and `gasUsed` of each
+transaction in the block, scale the `block_da_footprint` by the `da_footprint_factor` and take the larger of the two.
+
+In order to distinguish which method was used in a given block, the `gasUsed` of the block should be compared to the accumulated
+`block_gas_used`. If they are equal, then the block was limited by the gas consumption of the included transactions.
+
+If `gasUsed` does not equal the accumulated `block_gas_used`, it indicates that `block_da_footprint` was the limit imposed on the block. This can be verified by dividing `gasUsed` by `da_footprint_factor` and comparing it to the accumulated `block_da_footprint`, which should be equal.
+
+```py
+if block.gasUsed == block_gas_used:
+    limit = "gas"
+else if block.gasUsed / da_footprint_factor == block_da_footprint:
+    limit = "da"
+else:
+    except("gasUsed is neither gas or da based (invalid)")
+```
