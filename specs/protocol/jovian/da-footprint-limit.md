@@ -1,12 +1,9 @@
 
-# Calldata Limit
-Starting with Jovian, the `gasUsed` field of a block may instead represent the utilization of calldata within the block.
+# DA Footprint Limit
+Starting with Jovian, the `gasUsed` field of a block may instead represent the utilization of the DA by the block, based on the calldata of the transactions included in that block.
 The purpose of this feature is to take into account the throughput of the DA Layer (the L1) when creating blocks that feature a high volume of `calldata`.
 
 # Terms 
-
-## `calldata`
-Calldata is the `data` field attached to a transaction submitted to the OP Chain. The transaction author fully controls the content and size of the calldata at the time of authoring.
 
 ## `da_footprint`
 `da_footprint` is the estimate of how much space a given transaction is expected to consume on the DA Layer. The value of `da_footprint` is driven by the size of the transaction's `calldata`. `da_footprint` may be less than the the size of the `calldata` because the data is compressed when published to L1.
