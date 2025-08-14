@@ -15,7 +15,7 @@ Calldata is the `data` field attached to a transaction submitted to the OP Chain
 da_footprint = max(min_transaction_size, intercept + fastlz_coef * tx.fastlz_size / 1e6)
 ```
 
-The protocol constants `min_transaction_size`, `intercept`, `fastlz_coef` are defined in prior Hard Forks.
+The protocol constants `min_transaction_size`, `intercept`, `fastlz_coef` are defined in [Fjord LZ Estimation](../fjord/exec-engine#fjord-l1-cost-fee-changes-fastlz-estimator).
 
 ## `block_da_footprint`
 `block_da_footprint` represents the cumulative total of `da_footprint` for all transactions included in the given block.
