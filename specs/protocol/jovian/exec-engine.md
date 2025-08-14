@@ -47,6 +47,10 @@ if baseFee < minBaseFee {
 }
 ```
 
+The significand and exponent allow the minimum base fee to be specified in scientific notation.
+For instance, to set a minimum base fee of 1 gwei (1*10^9 wei), the significand would be `1` and the
+exponent would be `9`.
+
 The 4-bit significand and exponent can each encode values from `0` to `15`. This produces minimum base
 fees up to `1.5e16` wei (0.015 ETH) with a constraint of one significant digit for most values. Every
 minimum base fee value can be incremented with a precision of 50% (significand increase from 2 to 3 for

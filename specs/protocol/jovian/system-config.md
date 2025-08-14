@@ -18,7 +18,9 @@
 
 Jovian adds new configuration values to `SystemConfig` to control the minimum base fee used by the EIP-1559 fee market
 on OP Stack chains. The value represents the minimum base fee in wei as a 4-bit significand followed by a
-4-bit exponent to the power of 10.
+4-bit exponent to the power of 10. This allows the minimum base fee to be specified in scientific notation.
+For instance, to set a minimum base fee of 1 gwei (1*10^9 wei), the significand would be `1` and the
+exponent would be `9`.
 
 | Name                    | Type    | Default | Meaning                                     |
 |-------------------------|---------|---------|---------------------------------------------|
