@@ -7,6 +7,7 @@
 - [Minimum Base Fee](#minimum-base-fee)
   - [Minimum Base Fee in Block Header](#minimum-base-fee-in-block-header)
   - [Minimum Base Fee in `PayloadAttributesV3`](#minimum-base-fee-in-payloadattributesv3)
+  - [Rationale](#rationale)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -73,3 +74,12 @@ PayloadAttributesV3: {
     minBaseFeeFactors: QUANTITY or null
 }
 ```
+
+### Rationale
+
+As with [Holocene's dynamic EIP-1559 parameters](../holocene/exec-engine.md#rationale), placing the
+minimum base fee in the block header allows us to avoid reaching into the state during block sealing.
+This retains the purity of the function that computes the next block's base fee from its parent block
+header, while still allowing them to be dynamically configured. Dynamic configuration is handled
+similarly to `gasLimit`, with the derivation pipeline providing the appropriate `SystemConfig`
+contract values to the block builder via `PayloadAttributesV3` parameters.
