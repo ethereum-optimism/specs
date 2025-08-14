@@ -46,6 +46,11 @@ if baseFee < minBaseFee {
 }
 ```
 
+The 4-bit significand can encode values from `0` to `15` and the 4-bit exponent can encode values
+from `0` to `15`. This produces minimum base fees up to `1.5e16` wei (0.015 ETH) with a constraint
+of one significant digit for most values. Every minimum base fee value can be incremented with a
+precision of 50% (2 -> 3 for any exponent) or finer.
+
 Note: `extraData` has a maximum capacity of 32 bytes (to fit the L1 beacon-chain `extraData` type) and may be
 extended by future upgrades.
 
