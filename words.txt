@@ -205,6 +205,7 @@ SELFDESTRUCT
 sequencerfeevault
 sequencerfeevaultconfig
 Shapella
+significand
 Singlethreaded
 SLOAD
 standardbridge
