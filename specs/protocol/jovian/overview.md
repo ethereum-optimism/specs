@@ -12,6 +12,7 @@
 This document is not finalized and should be considered experimental.
 
 ## Execution Layer
+
 [DA Footprint Limit](./da-footprint-limit.md)
 
 ## Consensus Layer
