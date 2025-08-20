@@ -52,7 +52,7 @@
     - [`OptimismMintableERC20Created`](#optimismmintableerc20created)
     - [`StandardL2TokenCreated`](#standardl2tokencreated)
 - [L2StandardBridge](#l2standardbridge)
-  - [Updates](#updates-1)
+  - [Updates](#updates)
     - [convert](#convert)
     - [`Converted`](#converted)
   - [Invariants](#invariants)
