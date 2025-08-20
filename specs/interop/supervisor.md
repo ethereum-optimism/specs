@@ -139,7 +139,7 @@ representing a bytes list, prefixed with `0x`.
 Describes a block.
 
 `OBJECT`:
-- `hash`: `HASH` - block hash
+- `hash`: `Hash` - block hash
 - `number`: `Int` - block number
 
 #### `BlockRef`
@@ -154,6 +154,13 @@ Describes a block.
 
 #### `DerivedIDPair`
 
+A pair of block identifiers, linking a `derived` block to the `source` block from which it was derived.
+
+`OBJECT`:
+
+- `source`: `BlockID` - The block ID of the `source` block.
+- `derived`: `BlockID` - The block ID of the `derived` block.
+
 #### `ChainRootInfo`
 
 `OBJECT`:
@@ -163,13 +170,20 @@ Describes a block.
 
 #### `SupervisorSyncStatus`
 
-Describes the sync status of the Supervisor component.
+Describes the sync status of the Supervisor component. Fields `minSyncedL1`,
+`safeTimestamp` and `finalizedTimestamp` are set as the minimum value among
+chains in `chains`.
 
 `OBJECT`:
 - `minSyncedL1`: `BlockRef` - block ref to the synced L1 block
 - `safeTimestamp`: `Int` - safe timestamp
 - `finalizedTimestamp`: `Int` - finalized timestamp
 - `chains`: `OBJECT` with `ChainID` keys and `SupervisorChainSyncStatus` values
+
+> **Note:**  
+> If `minSyncedL1` does not exist, it MUST be represented as a `BlockRef` with a `hash` and `parentHash` of  
+> `0x0000000000000000000000000000000000000000000000000000000000000000`, a `number` of `0`,  
+> and a `timestamp` of `0`.
 
 #### `SupervisorChainSyncStatus`
 
@@ -181,6 +195,11 @@ Describes the sync status for a specific chain
 - `crossUnsafe`: `BlockID` - cross-unsafe ref for the given chain
 - `safe`: `BlockID` - cross-safe ref for the given chain
 - `finalized`: `BlockID` - finalized ref for the given chain
+
+> **Note:**  
+> For the fields `localSafe`, `crossUnsafe`, `safe`, and `finalized`, if the referenced block does not exist yet,  
+> the `BlockID` MUST be represented with a `hash` of  
+> `0x0000000000000000000000000000000000000000000000000000000000000000` and a `number` of `0`.
 
 #### `SuperRootResponse`
 
@@ -198,7 +217,7 @@ Corresponds to a verifier [SafetyLevel](./verifier.md#safety).
 
 `STRING`, one of:
 - `invalid`
-- `unsafe`: equivalent to safety of the `latest` RPC label.
+- `unsafe`: matching local-unsafe, equivalent to safety of the `latest` RPC label.
 - `cross-unsafe`
 - `local-safe`
 - `safe`: matching cross-safe, named `safe` to match the RPC label.
@@ -255,7 +274,8 @@ Returns: `SuperRootResponse`
 
 Parameters: (none)
 
-Returns: `SupervisorSyncStatus`
+Returns: `SupervisorSyncStatus`.
+Throws: Some error if set of supervised chains is empty.
 
 #### `supervisor_allSafeDerivedAt`
 

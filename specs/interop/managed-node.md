@@ -9,7 +9,7 @@
   - [Reset](#reset)
   - [UnsafeBlock](#unsafeblock)
   - [DerivationUpdate](#derivationupdate)
-  - [DerivationOriginUpdate](#derivationoriginupdate)
+  - [DerivationCurrentL1Update](#derivationcurrentl1update)
   - [ExhaustL1](#exhaustl1)
   - [ReplaceBlock](#replaceblock)
 - [Supervisor `->` Node](#supervisor---node)
@@ -26,7 +26,7 @@
   - [Sync Methods](#sync-methods)
     - [interop_fetchReceipts](#interop_fetchreceipts)
     - [interop_l2BlockRefByTimestamp](#interop_l2blockrefbytimestamp)
-    - [interop_blockRefByNumber](#interop_blockrefbynumber)
+    - [interop_l2BlockRefByNumber](#interop_l2blockrefbynumber)
     - [interop_chainID](#interop_chainid)
     - [interop_outputV0AtTimestamp](#interop_outputv0attimestamp)
     - [interop_pendingOutputV0AtTimestamp](#interop_pendingoutputv0attimestamp)
@@ -66,7 +66,7 @@ ManagedEvent {
     Reset,
     UnsafeBlock,
     DerivationUpdate,
-    DerivationOriginUpdate,
+    DerivationCurrentL1Update,
     ExhaustL1,
     ReplaceBlock
 }
@@ -102,14 +102,16 @@ DerivationUpdate: DerivedBlockRefPair {
 
 Signals that an L2 block is considered local-safe.
 
-### DerivationOriginUpdate
+### DerivationCurrentL1Update
 
 ```javascript
-DerivationOriginUpdate: BlockRef
+DerivationCurrentL1Update: DerivedBlockRefPair {
+    source: BlockRef  //Newly observed L1
+    derived: BlockRef //L2's BlockRef
+}
 ```
 
-Signals that an L2 block is now local-safe because of the given L1 traversal. This would be accompanied with
-`DerivationUpdate`.
+Signals that an L2 block is considered local-safe following the observation of a new L1 block.
 
 ### ExhaustL1
 
@@ -242,13 +244,13 @@ payload (uint64) -> BlockRef
 
 Fetches L2 BlockRef of the block that occurred at given timestamp
 
-#### interop_blockRefByNumber
+#### interop_l2BlockRefByNumber
 
 ```javascript
-payload (uint64) -> BlockRef
+payload (uint64) -> L2BlockRef
 ```
 
-Fetches the BlockRef from a given L2 block number
+Fetches the L2 BlockRef from a given L2 block number
 
 #### interop_chainID
 
