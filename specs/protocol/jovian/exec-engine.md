@@ -23,38 +23,26 @@ via the block header `extraData` encoding and the Engine API `PayloadAttributesV
 ### Minimum Base Fee in Block Header
 
 Like [Holocene's dynamic EIP-1559 parameters](../holocene/exec-engine.md#dynamic-eip-1559-parameters), Jovian encodes
-fee parameters in the `extraData` field of each L2 block header. The format is extended to include an additional byte
-for the minimum base fee exponent.
+fee parameters in the `extraData` field of each L2 block header. The format is extended to include an additional
+`u64` field for the minimum base fee in wei.
 
 | Name                | Type               | Byte Offset |
 | ------------------- | ------------------ | ----------- |
-| `minBaseFeeFactors` | `uint8`            | `[9, 10)`   |
+| `minBaseFee`        | `u64 (big-endian)` | `[9, 17)`   |
 
 Constraints:
 
 - `version` MUST be `1` (incremented from Holocene's `0`).
-- There MUST NOT be any data beyond these 10 bytes.
+- There MUST NOT be any data beyond these 17 bytes.
 
-The `minBaseFeeFactors` field encodes minimum base fee in wei as a 4-bit significand followed by a
-4-bit exponent to the power of 10. When `significand` is `0`, the base fee behavior is unchanged.
+The `minBaseFee` field is an absolute minimum expressed in wei. During base fee computation, if the
+computed `baseFee` is less than `minBaseFee`, it MUST be clamped to `minBaseFee`.
 
 ```javascript
-significand = minBaseFeeFactors >> 4 & 0x0F
-exponent = minBaseFeeFactors & 0x0F
-minBaseFee = significand * 10**exponent
-if baseFee < minBaseFee {
+if (baseFee < minBaseFee) {
   baseFee = minBaseFee
 }
 ```
-
-The significand and exponent allow the minimum base fee to be specified in scientific notation.
-For instance, to set a minimum base fee of 1 gwei (1*10^9 wei), the significand would be `1` and the
-exponent would be `9`.
-
-The 4-bit significand and exponent can each encode values from `0` to `15`. This produces minimum base
-fees up to `1.5e16` wei (0.015 ETH) with a constraint of one significant digit for most values. Every
-minimum base fee value can be incremented with a precision of 50% (significand increase from 2 to 3 for
-any exponent) or finer.
 
 Note: `extraData` has a maximum capacity of 32 bytes (to fit the L1 beacon-chain `extraData` type) and may be
 extended by future upgrades.
@@ -62,7 +50,7 @@ extended by future upgrades.
 ### Minimum Base Fee in `PayloadAttributesV3`
 
 The Engine API [`PayloadAttributesV3`](../exec-engine.md#extended-payloadattributesv3) is extended in Jovian with a new
-field `minBaseFeeFactors`. The existing `eip1559Params` remains 8 bytes (Holocene format).
+field `minBaseFee`. The existing `eip1559Params` remains 8 bytes (Holocene format).
 
 ```text
 PayloadAttributesV3: {
@@ -75,7 +63,7 @@ PayloadAttributesV3: {
     noTxPool: bool
     gasLimit: QUANTITY or null
     eip1559Params: DATA (8 bytes) or null
-    minBaseFeeFactors: QUANTITY or null
+    minBaseFee: QUANTITY or null
 }
 ```
 

@@ -59,7 +59,7 @@ blocks must have an **empty** `extraData` field.
 
 With Holocene, the `extraData` field [encodes the EIP-1559 parameters](holocene/exec-engine.md#dynamic-eip-1559-parameters).
 
-With Jovian, the `extraData` encoding is extended to [include `minBaseFeeFactors`](jovian/exec-engine.md#minimum-base-fee).
+With Jovian, the `extraData` encoding is extended to [include `minBaseFee`](jovian/exec-engine.md#minimum-base-fee).
 
 ## Deposited transaction processing
 
@@ -291,7 +291,7 @@ PayloadAttributesV3: {
     noTxPool: bool
     gasLimit: QUANTITY or null
     eip1559Params: DATA (8 bytes) or null
-    minBaseFeeFactors: QUANTITY or null
+    minBaseFee: QUANTITY or null
 }
 ```
 
@@ -304,7 +304,7 @@ or a zero `bytes32` if the Dencun functionality with `parentBeaconBlockRoot` is 
 Starting with Holocene, the `eip1559Params` field must encode the EIP1559 parameters. It must be `null` before.
 See [Dynamic EIP-1559 Parameters](holocene/exec-engine.md#dynamic-eip-1559-parameters) for details.
 
-Starting with Jovian, the `minBaseFeeFactors` field is added (uint8). It must be `null` before Jovian.
+Starting with Jovian, the `minBaseFee` field is added. It must be `null` before Jovian.
 See [Jovian Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee) for details.
 
 ### `engine_newPayloadV2`
