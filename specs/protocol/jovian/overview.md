@@ -13,4 +13,6 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
+- [Block Calldata Limit](./block-calldata-limit.md)
+
 ## Consensus Layer
