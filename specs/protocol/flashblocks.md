@@ -78,7 +78,7 @@ This document assumes knowledge of the terminology, definitions, and other mater
 
 As of April 2025, Layer 2 (L2) protocols built with the OP Stack have a minimum block time of one second, imposing significant constraints on user experience. The limitation on minimum block times is primarily historical and architectural, reflecting earlier assumptions of Ethereum network as well as deeply-integrated type definitions, from the L2 blockchain client all the way down to smart contracts on the L1, making modification a very large task.
 
-Due to similar constraints on Ethereum Layer 1, preconfirmations have gained attention as a promising method to decouple blockchain user experiences from rigid block-time limitations and sidestep the longstanding debate between block time and block size. Existing preconfirmation solutions predominantly depend on economic security in the form of cryptoeconomic mechanisms such as staking. as well as focus on per-transaction preconfirmations, inadvertently pushing protocols into the “Latency Auction” region of the [MEV Trilemma](https://writings.flashbots.net/introducing-rollup-boost). Furthermore, previous approaches have often introduced entirely new Ethereum JSON-RPC methods, presenting substantial integration barriers and hindering practical adoption.
+Due to similar constraints on Ethereum Layer 1, preconfirmations have gained attention as a promising method to decouple blockchain user experiences from rigid block-time limitations and sidestep the longstanding debate between block time and block size. Existing preconfirmation solutions predominantly depend on economic security in the form of cryptoeconomic mechanisms such as staking. As well as focus on per-transaction preconfirmations, inadvertently pushing protocols into the “Latency Auction” region of the [MEV Trilemma](https://writings.flashbots.net/introducing-rollup-boost). Furthermore, previous approaches have often introduced entirely new Ethereum JSON-RPC methods, presenting substantial integration barriers and hindering practical adoption.
 
 Inspired by modern blockchain networks like Solana and Celestia, Flashblocks introduce an “out-of-protocol” standard for incremental delivery of partial blocks containing batches of transactions. This approach significantly reduces perceived latency for end-users  and improves network bandwidth without modifying underlying protocol rules, offering a streamlined path for incremental adoption by node operators and existing infrastructure. 
 
@@ -114,14 +114,13 @@ The core data structure sent from the Block Builder to Rollup Boost and then ext
 
 ```python
 class FlashblocksPayloadV1():
-		version: Bytes4
+    version: Bytes4
     payload_id: Bytes8
     parent_flash_hash: Optional[Bytes32]
     index: uint64
     static: Optional[ExecutionPayloadStaticV1]
     diff: ExecutionPayloadFlashblockResultV1
     metadata: FlashblocksMetadata
-```
 
 **Field descriptions:**
 
@@ -201,9 +200,8 @@ Container encapsulating all metadata for a flashblock, including account state c
 
 ```python
 class FlashblockMetadata():
-		accounts: List[AccountMetadata]
-		transactions: List[TransactionMetadata]
-```
+         accounts: List[AccountMetadata]
+	transactions: List[TransactionMetadata]
 
 **Field descriptions:**
 
@@ -410,7 +408,7 @@ sequenceDiagram
 
     rect rgb(230,255,235)
     loop **Flashblock Construction** (every FLASHBLOCKS_TIME)
-		    Note over BB: **Flashblock Construction**
+		    Note over BB: **3. Flashblock Construction**
         BB->>RB: FlashblocksPayloadV1
 
         rect rgb(252,244,255)
@@ -529,7 +527,7 @@ After handling the mandatory sequencer transactions in the initial Flashblock, t
 8.	**Flashblock Construction Termination**
 
 - Flashblock construction continues iteratively until:
-    - Rollup Boost signals final block aggregation and propagation via engine_getPayload.
+    - Rollup Boost signals final block aggregation and propagation via `engine_getPayload`.
     - A failure or timeout condition arises requiring failover procedures, detailed separately.
 
 ```mermaid
