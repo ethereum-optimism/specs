@@ -61,7 +61,7 @@
 
 # Abstract
 
-Introduces a standard for partial blocks called “Flashblocks,” inspired but not entirely identical to [Solana Shreds](https://github.com/solana-foundation/specs/blob/main/p2p/shred.md), enabling rapid preconfirmations on Ethereum Layer 2 networks such as OP Stack. Flashblocks propagate transaction batches incrementally and expose their state via a modified Ethereum JSON-RPC interface, giving users immediate feedback equivalent to drastically reduced block times without modifying underlying the underlying OP Stack protocol. Flashblocks can be combined with Trusted Execution Environment technology to enable quick verifiability over various networks of machines in addition to protection from equivocation.
+Introduces a standard for partial blocks called “Flashblocks,” inspired but not entirely identical to [Solana Shreds](https://github.com/solana-foundation/specs/blob/main/p2p/shred.md), enabling rapid preconfirmations on Ethereum Layer 2 networks such as OP Stack. Flashblocks propagate transaction batches incrementally and expose their state via a modified Ethereum JSON-RPC interface, giving users immediate feedback equivalent to drastically reduced block times without modifying the underlying OP Stack protocol. Flashblocks can be combined with Trusted Execution Environment technology to enable quick verifiability over various networks of machines in addition to protection from equivocation.
 
 # Prerequisites
 
