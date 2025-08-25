@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Governance Token - OP Stack Specification</title>
+        <title>Jovian - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -21,33 +21,33 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon.svg">
-        <link rel="shortcut icon" href="../favicon.png">
-        <link rel="stylesheet" href="../css/variables.css">
-        <link rel="stylesheet" href="../css/general.css">
-        <link rel="stylesheet" href="../css/chrome.css">
-        <link rel="stylesheet" href="../css/print.css" media="print">
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="../fonts/fonts.css">
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../highlight.css">
-        <link rel="stylesheet" href="../tomorrow-night.css">
-        <link rel="stylesheet" href="../ayu-highlight.css">
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../theme/css/footer.css">
+        <link rel="stylesheet" href="../../theme/css/footer.css">
 
 
         <!-- Provide site root to javascript -->
         <script>
-            var path_to_root = "../";
+            var path_to_root = "../../";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc.js"></script>
+        <script src="../../toc.js"></script>
     </head>
     <body>
     <div id="body-container">
@@ -99,7 +99,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -133,13 +133,13 @@
                     <h1 class="menu-title">OP Stack Specification</h1>
 
                     <div class="right-buttons">
-                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/governance/gov-token.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/jovian/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -169,103 +169,36 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="governance-token"><a class="header" href="#governance-token">Governance Token</a></h1>
+<h1 id="jovian-network-upgrade"><a class="header" href="#jovian-network-upgrade">Jovian Network Upgrade</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#overview">Overview</a>
-<ul>
-<li><a href="#token-minting">Token Minting</a></li>
-<li><a href="#token-burning">Token Burning</a></li>
-<li><a href="#voting-power">Voting Power</a>
-<ul>
-<li><a href="#public-query-functions">Public Query Functions</a></li>
-</ul>
-</li>
-<li><a href="#delegation">Delegation</a>
-<ul>
-<li><a href="#basic-delegation">Basic Delegation</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a href="#execution-layer">Execution Layer</a></li>
+<li><a href="#consensus-layer">Consensus Layer</a></li>
+<li><a href="#smart-contracts">Smart Contracts</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
-<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
-<tr><td>Token name</td><td><code>Optimism</code></td></tr>
-<tr><td>Token symbol</td><td><code>OP</code></td></tr>
-<tr><td>Token decimals</td><td><code>18</code></td></tr>
-</tbody></table>
-</div>
-<p><code>GovernanceToken</code> is an <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> token contract that inherits from <code>ERC20Burnable</code>,
-<code>ERC20Votes</code>, and <code>Ownable</code>. It allows token holders to delegate their voting power to other addresses, enabling a representative
-voting system. The <code>GovernanceToken</code> currently only supports basic delegation whereby a user can delegate its entire token
-balance to a specific address for voting and votes cannot be re-delegated.</p>
-<h3 id="token-minting"><a class="header" href="#token-minting">Token Minting</a></h3>
-<p><code>GovernanceToken</code> MUST have a <code>mint(address,uint256)</code> function with external visibility that allows the <code>owner()</code> address
-to mint an arbitrary number of new tokens to a specific address. This function MUST only be called by the contract
-owner, the <code>MintManager</code>, as enforced by the <code>onlyOwner</code> modifier inherited from the <code>Ownable</code> contract.</p>
-<h3 id="token-burning"><a class="header" href="#token-burning">Token Burning</a></h3>
-<p>The contract MUST allow token holders to burn their own tokens using the inherited <code>burn(uint256)</code> or
-<code>burnFrom(address,uint256)</code> functions inherited from <code>ERC20Burnable</code>. Burn functions MUST NOT allow a user's balance to
-underflow and attempts to reduce balance below zero MUST revert.</p>
-<h3 id="voting-power"><a class="header" href="#voting-power">Voting Power</a></h3>
-<p>Each token corresponds to one unit of voting power. Token holders who wish to utilize their tokens for voting MUST delegate
-their voting power to an address (can be their own address). An active delegation MUST NOT prevent a user from transferring
-tokens. The <code>GovernanceToken</code> contract MUST offer public accessor functions for querying voting power, as outlined below.</p>
-<h4 id="public-query-functions"><a class="header" href="#public-query-functions">Public Query Functions</a></h4>
+<p>This document is not finalized and should be considered experimental.</p>
+<h2 id="execution-layer"><a class="header" href="#execution-layer">Execution Layer</a></h2>
 <ul>
-<li><code>checkpoints(address,uint32) returns (Checkpoint)</code>
+<li><a href="./exec-engine.html#minimum-base-fee">Minimum Base Fee</a></li>
+</ul>
+<h2 id="consensus-layer"><a class="header" href="#consensus-layer">Consensus Layer</a></h2>
+<h2 id="smart-contracts"><a class="header" href="#smart-contracts">Smart Contracts</a></h2>
 <ul>
-<li>MUST retrieve the n-th Checkpoint for a given address.</li>
+<li><a href="./system-config.html">System Config</a></li>
 </ul>
-</li>
-<li><code>numCheckpoints(address) returns (uint32)</code>
-<ul>
-<li>MUST retrieve the total number of Checkpoint objects for a given address.</li>
-</ul>
-</li>
-<li><code>delegates(address) returns (address)</code>
-<ul>
-<li>MUST retrieve the address that an account is delegating to.</li>
-</ul>
-</li>
-<li><code>getVotes() returns (uint256)</code>
-<ul>
-<li>MUST retrieve the current voting power of an address.</li>
-</ul>
-</li>
-<li><code>getPastVotes(address,uint256) returns (uint256)</code>
-<ul>
-<li>MUST retrieve the voting power of an address at specific block number in the past.</li>
-</ul>
-</li>
-<li><code>getPastTotalSupply(uint256) returns (uint256)</code>
-<ul>
-<li>MUST return the total token supply at a specific block number in the past.</li>
-</ul>
-</li>
-</ul>
-<h3 id="delegation"><a class="header" href="#delegation">Delegation</a></h3>
-<h4 id="basic-delegation"><a class="header" href="#basic-delegation">Basic Delegation</a></h4>
-<p>Vote power can be delegated either by calling the <code>delegate(address)</code> function directly (to delegate as the <code>msg.sender</code>)
-or by providing a signature to be used with function <code>delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)</code>,
-as inherited from <code>ERC20Votes</code>. Delegation through these functions is considered "basic delegation" as these functions will
-delegate the entirety of the user's available balance to the target address. Delegations cannot be re-delegated to another
-address.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../protocol/jovian/system-config.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/predeploys.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../experimental/standard-l2-genesis.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/jovian/exec-engine.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -275,11 +208,11 @@ address.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../protocol/jovian/system-config.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/predeploys.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../experimental/standard-l2-genesis.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/jovian/exec-engine.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
@@ -294,19 +227,19 @@ address.</p>
         </script>
 
 
-        <script src="../elasticlunr.min.js"></script>
-        <script src="../mark.min.js"></script>
-        <script src="../searcher.js"></script>
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
 
-        <script src="../clipboard.min.js"></script>
-        <script src="../highlight.js"></script>
-        <script src="../book.js"></script>
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../specs/static/solidity.min.js"></script>
-        <script src="../specs/static/mermaid.min.js"></script>
-        <script src="../specs/static/mermaid-init.js"></script>
-        <script src="../theme/js/footer.js"></script>
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
 
 
     </div>

@@ -1899,10 +1899,12 @@ and EIP-1559 elasticity. After Canyon it should also take a new value <code>EIP1
 the denominator in the 1559 formula rather than the prior denominator.</p>
 <p>The formula for EIP-1559 is otherwise not modified.</p>
 <p>Starting with Holocene, the EIP-1559 parameters become <a href="protocol/holocene/exec-engine.html#dynamic-eip-1559-parameters">dynamically configurable</a>.</p>
+<p>Starting with Jovian, a <a href="protocol/jovian/exec-engine.html#minimum-base-fee">configurable minimum base fee</a> is introduced.</p>
 <h2 id="extra-data"><a class="header" href="#extra-data">Extra Data</a></h2>
 <p>Before Holocene, the genesis block may contain an arbitrary <code>extraData</code> value whereas all normal
 blocks must have an <strong>empty</strong> <code>extraData</code> field.</p>
 <p>With Holocene, the <code>extraData</code> field <a href="protocol/holocene/exec-engine.html#dynamic-eip-1559-parameters">encodes the EIP-1559 parameters</a>.</p>
+<p>With Jovian, the <code>extraData</code> encoding is extended to <a href="protocol/jovian/exec-engine.html#minimum-base-fee">include <code>minBaseFee</code></a>.</p>
 <h2 id="deposited-transaction-processing"><a class="header" href="#deposited-transaction-processing">Deposited transaction processing</a></h2>
 <p>The Engine interfaces abstract away transaction types with <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a>.</p>
 <p>To support rollup functionality, processing of a new Deposit <a href="https://eips.ethereum.org/EIPS/eip-2718#transactions"><code>TransactionType</code></a>
@@ -2102,6 +2104,7 @@ to <a href="https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03
     noTxPool: bool
     gasLimit: QUANTITY or null
     eip1559Params: DATA (8 bytes) or null
+    minBaseFee: QUANTITY or null
 }
 </code></pre>
 <p>The requirements of this object are the same as extended <a href="protocol/exec-engine.html#extended-payloadattributesv2"><code>PayloadAttributesV2</code></a> with
@@ -2110,6 +2113,8 @@ the addition of <code>parentBeaconBlockRoot</code> which is the parent beacon bl
 or a zero <code>bytes32</code> if the Dencun functionality with <code>parentBeaconBlockRoot</code> is not active on L1.</p>
 <p>Starting with Holocene, the <code>eip1559Params</code> field must encode the EIP1559 parameters. It must be <code>null</code> before.
 See <a href="protocol/holocene/exec-engine.html#dynamic-eip-1559-parameters">Dynamic EIP-1559 Parameters</a> for details.</p>
+<p>Starting with Jovian, the <code>minBaseFee</code> field is added. It must be <code>null</code> before Jovian.
+See <a href="protocol/jovian/exec-engine.html#minimum-base-fee">Jovian Minimum Base Fee</a> for details.</p>
 <h3 id="engine_newpayloadv2"><a class="header" href="#engine_newpayloadv2"><code>engine_newPayloadV2</code></a></h3>
 <p>No modifications to <a href="https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_newpayloadv2"><code>engine_newPayloadV2</code></a>.
 Applies a L2 block to the engine state.</p>
@@ -12228,6 +12233,148 @@ No special logic is needed in order to insert or withdraw funds.</p>
 <p>See also <a href="protocol/isthmus/./exec-engine.html#fee-vaults">Fee Vaults</a>.</p>
 <h2 id="security-considerations-4"><a class="header" href="#security-considerations-4">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="jovian-network-upgrade"><a class="header" href="#jovian-network-upgrade">Jovian Network Upgrade</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/jovian/overview.html#execution-layer">Execution Layer</a></li>
+<li><a href="protocol/jovian/overview.html#consensus-layer">Consensus Layer</a></li>
+<li><a href="protocol/jovian/overview.html#smart-contracts">Smart Contracts</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>This document is not finalized and should be considered experimental.</p>
+<h2 id="execution-layer-6"><a class="header" href="#execution-layer-6">Execution Layer</a></h2>
+<ul>
+<li><a href="protocol/jovian/./exec-engine.html#minimum-base-fee">Minimum Base Fee</a></li>
+</ul>
+<h2 id="consensus-layer-8"><a class="header" href="#consensus-layer-8">Consensus Layer</a></h2>
+<h2 id="smart-contracts-2"><a class="header" href="#smart-contracts-2">Smart Contracts</a></h2>
+<ul>
+<li><a href="protocol/jovian/./system-config.html">System Config</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="jovian-execution-engine"><a class="header" href="#jovian-execution-engine">Jovian: Execution Engine</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/jovian/exec-engine.html#minimum-base-fee">Minimum Base Fee</a>
+<ul>
+<li><a href="protocol/jovian/exec-engine.html#minimum-base-fee-in-block-header">Minimum Base Fee in Block Header</a></li>
+<li><a href="protocol/jovian/exec-engine.html#minimum-base-fee-in-payloadattributesv3">Minimum Base Fee in <code>PayloadAttributesV3</code></a></li>
+<li><a href="protocol/jovian/exec-engine.html#rationale">Rationale</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="minimum-base-fee"><a class="header" href="#minimum-base-fee">Minimum Base Fee</a></h2>
+<p>Jovian introduces a
+<a href="https://github.com/ethereum-optimism/design-docs/blob/main/protocol/minimum-base-fee.md">configurable minimum base fee</a>
+to reduce the duration of priority-fee auctions on OP Stack chains.</p>
+<p>The minimum base fee is configured via <code>SystemConfig</code> (see <code>./system-config.md</code>) and enforced by the execution engine
+via the block header <code>extraData</code> encoding and the Engine API <code>PayloadAttributesV3</code> parameters.</p>
+<h3 id="minimum-base-fee-in-block-header"><a class="header" href="#minimum-base-fee-in-block-header">Minimum Base Fee in Block Header</a></h3>
+<p>Like <a href="protocol/jovian/../holocene/exec-engine.html#dynamic-eip-1559-parameters">Holocene's dynamic EIP-1559 parameters</a>, Jovian encodes
+fee parameters in the <code>extraData</code> field of each L2 block header. The format is extended to include an additional
+<code>u64</code> field for the minimum base fee in wei.</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Byte Offset</th></tr></thead><tbody>
+<tr><td><code>minBaseFee</code></td><td><code>u64 (big-endian)</code></td><td><code>[9, 17)</code></td></tr>
+</tbody></table>
+</div>
+<p>Constraints:</p>
+<ul>
+<li><code>version</code> MUST be <code>1</code> (incremented from Holocene's <code>0</code>).</li>
+<li>There MUST NOT be any data beyond these 17 bytes.</li>
+</ul>
+<p>The <code>minBaseFee</code> field is an absolute minimum expressed in wei. During base fee computation, if the
+computed <code>baseFee</code> is less than <code>minBaseFee</code>, it MUST be clamped to <code>minBaseFee</code>.</p>
+<pre><code class="language-javascript">if (baseFee &lt; minBaseFee) {
+  baseFee = minBaseFee
+}
+</code></pre>
+<p>Note: <code>extraData</code> has a maximum capacity of 32 bytes (to fit the L1 beacon-chain <code>extraData</code> type) and may be
+extended by future upgrades.</p>
+<h3 id="minimum-base-fee-in-payloadattributesv3"><a class="header" href="#minimum-base-fee-in-payloadattributesv3">Minimum Base Fee in <code>PayloadAttributesV3</code></a></h3>
+<p>The Engine API <a href="protocol/jovian/../exec-engine.html#extended-payloadattributesv3"><code>PayloadAttributesV3</code></a> is extended in Jovian with a new
+field <code>minBaseFee</code>. The existing <code>eip1559Params</code> remains 8 bytes (Holocene format).</p>
+<pre><code class="language-text">PayloadAttributesV3: {
+    timestamp: QUANTITY
+    prevRandao: DATA (32 bytes)
+    suggestedFeeRecipient: DATA (20 bytes)
+    withdrawals: array of WithdrawalV1
+    parentBeaconBlockRoot: DATA (32 bytes)
+    transactions: array of DATA
+    noTxPool: bool
+    gasLimit: QUANTITY or null
+    eip1559Params: DATA (8 bytes) or null
+    minBaseFee: QUANTITY or null
+}
+</code></pre>
+<h3 id="rationale-5"><a class="header" href="#rationale-5">Rationale</a></h3>
+<p>As with <a href="protocol/jovian/../holocene/exec-engine.html#rationale">Holocene's dynamic EIP-1559 parameters</a>, placing the
+minimum base fee in the block header allows us to avoid reaching into the state during block sealing.
+This retains the purity of the function that computes the next block's base fee from its parent block
+header, while still allowing them to be dynamically configured. Dynamic configuration is handled
+similarly to <code>gasLimit</code>, with the derivation pipeline providing the appropriate <code>SystemConfig</code>
+contract values to the block builder via <code>PayloadAttributesV3</code> parameters.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="jovian-system-config"><a class="header" href="#jovian-system-config">Jovian: System Config</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/jovian/system-config.html#minimum-base-fee-configuration">Minimum Base Fee Configuration</a>
+<ul>
+<li><a href="protocol/jovian/system-config.html#configupdate"><code>ConfigUpdate</code></a></li>
+<li><a href="protocol/jovian/system-config.html#modifying-minimum-base-fee">Modifying Minimum Base Fee</a></li>
+<li><a href="protocol/jovian/system-config.html#interface">Interface</a>
+<ul>
+<li><a href="protocol/jovian/system-config.html#minimum-base-fee-parameters">Minimum Base Fee Parameters</a>
+<ul>
+<li><a href="protocol/jovian/system-config.html#minbasefee"><code>minBaseFee</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="minimum-base-fee-configuration"><a class="header" href="#minimum-base-fee-configuration">Minimum Base Fee Configuration</a></h2>
+<p>Jovian adds a configuration value to <code>SystemConfig</code> to control the minimum base fee used by the EIP-1559 fee market
+on OP Stack chains. The value is a minimum base fee in wei.</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>minBaseFee</code></td><td><code>uint64</code></td><td><code>0</code></td><td>Minimum base fee in wei</td></tr>
+</tbody></table>
+</div>
+<p>The configuration is updated via a new method on <code>SystemConfig</code>:</p>
+<pre><code class="language-solidity">function setMinBaseFee(uint64 minBaseFee) external onlyOwner;
+</code></pre>
+<h3 id="configupdate-2"><a class="header" href="#configupdate-2"><code>ConfigUpdate</code></a></h3>
+<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
+<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
+<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
+<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+<tr><td><code>OPERATOR_FEE_PARAMS</code></td><td><code>uint8(5)</code></td><td><code>uint256(_operatorFeeScalar) &lt;&lt; 64 | _operatorFeeConstant</code></td><td>Modifies the operator fee scalar and constant</td></tr>
+<tr><td><code>MIN_BASE_FEE</code></td><td><code>uint8(6)</code></td><td><code>abi.encode(uint64(_minBaseFee))</code></td><td>Modifies the minimum base fee (wei)</td></tr>
+</tbody></table>
+</div>
+<h3 id="modifying-minimum-base-fee"><a class="header" href="#modifying-minimum-base-fee">Modifying Minimum Base Fee</a></h3>
+<p>Upon update, the contract emits a <code>ConfigUpdate</code> event with a new <code>UpdateType</code> value <code>MIN_BASE_FEE</code>, enabling nodes
+to derive the configuration from L1 logs.</p>
+<p>Implementations MUST incorporate the configured value into the block header <code>extraData</code> as specified in
+<code>./exec-engine.md</code>.</p>
+<h3 id="interface-4"><a class="header" href="#interface-4">Interface</a></h3>
+<h4 id="minimum-base-fee-parameters"><a class="header" href="#minimum-base-fee-parameters">Minimum Base Fee Parameters</a></h4>
+<h5 id="minbasefee"><a class="header" href="#minbasefee"><code>minBaseFee</code></a></h5>
+<p>This function returns the currently configured minimum base fee in wei.</p>
+<pre><code class="language-solidity">function minBaseFee() external view returns (uint64);
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="governance-token-2"><a class="header" href="#governance-token-2">Governance Token</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -12434,7 +12581,7 @@ configurability.</p>
 </tbody></table>
 </div>
 <h2 id="systemconfig-1"><a class="header" href="#systemconfig-1"><code>SystemConfig</code></a></h2>
-<h3 id="configupdate-2"><a class="header" href="#configupdate-2"><code>ConfigUpdate</code></a></h3>
+<h3 id="configupdate-3"><a class="header" href="#configupdate-3"><code>ConfigUpdate</code></a></h3>
 <p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
 <tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
@@ -12462,7 +12609,7 @@ configurability.</p>
 <li><code>setConfig(SET_REMOTE_CHAIN_ID)</code></li>
 </ul>
 <p>These actions MAY only be triggered if there is a diff to the value.</p>
-<h3 id="interface-4"><a class="header" href="#interface-4">Interface</a></h3>
+<h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
 <h4 id="fee-vault-config"><a class="header" href="#fee-vault-config">Fee Vault Config</a></h4>
 <p>For each <code>FeeVault</code>, there is a setter for its config. The arguments to the setter include
 the <code>RECIPIENT</code>, the <code>MIN_WITHDRAWAL_AMOUNT</code> and the <code>WithdrawalNetwork</code>.
@@ -12479,7 +12626,7 @@ Each of these functions should be <code>public</code> and only callable by the c
 </code></pre>
 <h2 id="optimismportal-2"><a class="header" href="#optimismportal-2"><code>OptimismPortal</code></a></h2>
 <p>The <code>OptimismPortal</code> is updated to emit a special system <code>TransactionDeposited</code> event.</p>
-<h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
+<h3 id="interface-6"><a class="header" href="#interface-6">Interface</a></h3>
 <h4 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h4>
 <p>The <code>setConfig</code> function MUST only be callable by the <code>SystemConfig</code>. This ensures that the <code>SystemConfig</code>
 is the single source of truth for chain operator ownership.</p>
@@ -12521,7 +12668,7 @@ that call the L2 <code>ProxyAdmin</code>.</p>
 <tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="interface-6"><a class="header" href="#interface-6">Interface</a></h3>
+<h3 id="interface-7"><a class="header" href="#interface-7">Interface</a></h3>
 <pre><code class="language-solidity">function upgrader() public view returns (address)
 </code></pre>
 <h3 id="initialization-3"><a class="header" href="#initialization-3">Initialization</a></h3>
@@ -12572,7 +12719,7 @@ rather than reading it from local state.</p>
 This means that it can be deterministically called by network upgrade transactions
 or by special deposit transactions emitted by the <code>OptimismPortal</code> that assume
 the identity of the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="rationale-5"><a class="header" href="#rationale-5">Rationale</a></h4>
+<h4 id="rationale-6"><a class="header" href="#rationale-6">Rationale</a></h4>
 <p>It is much easier to manage the overall roles of the full system under this model.
 The owner of the <code>ProxyAdmin</code> can upgrade any of the predeploys, meaning it can
 write storage slots that correspond to withdrawals. This ensures that only the
@@ -12591,7 +12738,7 @@ system or a chain governor can issue upgrades to the predeploys.</p>
 </ul>
 <p>Each slot MUST have a defined <code>ConfigType</code> that authorizes the setting of the storage slot
 via a deposit transaction from the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="interface-7"><a class="header" href="#interface-7">Interface</a></h4>
+<h4 id="interface-8"><a class="header" href="#interface-8">Interface</a></h4>
 <h5 id="setisthmus-1"><a class="header" href="#setisthmus-1"><code>setIsthmus</code></a></h5>
 <p>This function is meant to be called once on the activation block of the holocene network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
@@ -12612,7 +12759,7 @@ contract by removing the need for special getters for each piece of config.</p>
 <p>The caller needs to ABI decode the data into the desired type.</p>
 <h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
 <p>The following changes apply to each of the <code>BaseFeeVault</code>, the <code>L1FeeVault</code> and the <code>SequencerFeeVault</code>.</p>
-<h4 id="interface-8"><a class="header" href="#interface-8">Interface</a></h4>
+<h4 id="interface-9"><a class="header" href="#interface-9">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract:</p>
 <ul>
 <li><code>recipient()(address)</code></li>
@@ -12631,21 +12778,21 @@ contract by removing the need for special getters for each piece of config.</p>
 <pre><code class="language-solidity">function config()(address,uint256,WithdrawalNetwork)
 </code></pre>
 <h3 id="l2crossdomainmessenger-1"><a class="header" href="#l2crossdomainmessenger-1">L2CrossDomainMessenger</a></h3>
-<h4 id="interface-9"><a class="header" href="#interface-9">Interface</a></h4>
+<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherMessenger()(address)</code></li>
 <li><code>OTHER_MESSENGER()(address)</code></li>
 </ul>
 <h3 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h3>
-<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
+<h4 id="interface-11"><a class="header" href="#interface-11">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherBridge()(address)</code></li>
 <li><code>OTHER_BRIDGE()(address)</code></li>
 </ul>
 <h3 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h3>
-<h4 id="interface-11"><a class="header" href="#interface-11">Interface</a></h4>
+<h4 id="interface-12"><a class="header" href="#interface-12">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherBridge()(address)</code></li>
@@ -14343,59 +14490,59 @@ inclusion.</p>
 </li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#errors">Errors</a>
+<li><a href="interop/supervisor.html#data-availability-errors">Data Availability Errors</a>
 <ul>
 <li><a href="interop/supervisor.html#json-rpc-error-codes">JSON-RPC Error Codes</a></li>
 <li><a href="interop/supervisor.html#error-code-structure">Error Code Structure</a></li>
-<li><a href="interop/supervisor.html#protocol-specific-error-codes">Protocol Specific Error Codes</a>
+<li><a href="interop/supervisor.html#error-codes">Error Codes</a>
 <ul>
-<li><a href="interop/supervisor.html#-3204xx-deadline_exceeded-errors"><code>-3204XX</code> <code>DEADLINE_EXCEEDED</code> errors</a>
+<li><a href="interop/supervisor.html#-3204xx-deadline_exceeded-errors">-3204<code>XX</code> <code>DEADLINE_EXCEEDED</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-320400-uninitialized_chain_database"><code>-320400</code> <code>UNINITIALIZED_CHAIN_DATABASE</code></a></li>
+<li><a href="interop/supervisor.html#-320400-uninitialized_chain_database">-320400 <code>UNINITIALIZED_CHAIN_DATABASE</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3205xx-not_found-errors"><code>-3205XX</code> <code>NOT_FOUND</code> errors</a>
+<li><a href="interop/supervisor.html#-3205xx-not_found-errors">-3205<code>XX</code> <code>NOT_FOUND</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-320500-skipped_data"><code>-320500</code> <code>SKIPPED_DATA</code></a></li>
-<li><a href="interop/supervisor.html#-320501-unknown_chain"><code>-320501</code> <code>UNKNOWN_CHAIN</code></a></li>
+<li><a href="interop/supervisor.html#-320500-skipped_data">-320500 <code>SKIPPED_DATA</code></a></li>
+<li><a href="interop/supervisor.html#-320501-unknown_chain">-320501 <code>UNKNOWN_CHAIN</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3206xx-already_exists-errors"><code>-3206XX</code> <code>ALREADY_EXISTS</code> errors</a>
+<li><a href="interop/supervisor.html#-3206xx-already_exists-errors">-3206<code>XX</code> <code>ALREADY_EXISTS</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-320600-conflicting_data"><code>-320600</code> <code>CONFLICTING_DATA</code></a></li>
-<li><a href="interop/supervisor.html#-320601-ineffective_data"><code>-320601</code> <code>INEFFECTIVE_DATA</code></a></li>
+<li><a href="interop/supervisor.html#-320600-conflicting_data">-320600 <code>CONFLICTING_DATA</code></a></li>
+<li><a href="interop/supervisor.html#-320601-ineffective_data">-320601 <code>INEFFECTIVE_DATA</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3209xx-failed_precondition-errors"><code>-3209XX</code> <code>FAILED_PRECONDITION</code> errors</a>
+<li><a href="interop/supervisor.html#-3209xx-failed_precondition-errors">-3209<code>XX</code> <code>FAILED_PRECONDITION</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-320900-out_of_order"><code>-320900</code> <code>OUT_OF_ORDER</code></a></li>
-<li><a href="interop/supervisor.html#-320901-awaiting_replacement_block"><code>-320901</code> <code>AWAITING_REPLACEMENT_BLOCK</code></a></li>
+<li><a href="interop/supervisor.html#-320900-out_of_order">-320900 <code>OUT_OF_ORDER</code></a></li>
+<li><a href="interop/supervisor.html#-320901-awaiting_replacement_block">-320901 <code>AWAITING_REPLACEMENT_BLOCK</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3210xx-aborted-errors"><code>-3210XX</code> <code>ABORTED</code> errors</a>
+<li><a href="interop/supervisor.html#-3210xx-aborted-errors">-3210<code>XX</code> <code>ABORTED</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-321000-iter_stop"><code>-321000</code> <code>ITER_STOP</code></a></li>
+<li><a href="interop/supervisor.html#-321000-iter_stop">-321000 <code>ITER_STOP</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3211xx-out_of_range-errors"><code>-3211XX</code> <code>OUT_OF_RANGE</code> errors</a>
+<li><a href="interop/supervisor.html#-3211xx-out_of_range-errors">-3211<code>XX</code> <code>OUT_OF_RANGE</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-321100-out_of_scope"><code>-321100</code> <code>OUT_OF_SCOPE</code></a></li>
+<li><a href="interop/supervisor.html#-321100-out_of_scope">-321100 <code>OUT_OF_SCOPE</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3212xx-unimplemented-errors"><code>-3212XX</code> <code>UNIMPLEMENTED</code> errors</a>
+<li><a href="interop/supervisor.html#-3212xx-unimplemented-errors">-3212<code>XX</code> <code>UNIMPLEMENTED</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-321200-cannot_get_parent_of_first_block_in_db"><code>-321200</code> <code>CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB</code></a></li>
+<li><a href="interop/supervisor.html#-321200-cannot_get_parent_of_first_block_in_db">-321200 <code>CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3214xx-unavailable-errors"><code>-3214XX</code> <code>UNAVAILABLE</code> errors</a>
+<li><a href="interop/supervisor.html#-3214xx-unavailable-errors">-3214<code>XX</code> <code>UNAVAILABLE</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-321401-future_data"><code>-321401</code> <code>FUTURE_DATA</code></a></li>
+<li><a href="interop/supervisor.html#-321401-future_data">-321401 <code>FUTURE_DATA</code></a></li>
 </ul>
 </li>
-<li><a href="interop/supervisor.html#-3215xx-data_loss-errors"><code>-3215XX</code> <code>DATA_LOSS</code> errors</a>
+<li><a href="interop/supervisor.html#-3215xx-data_loss-errors">-3215<code>XX</code> <code>DATA_LOSS</code> errors</a>
 <ul>
-<li><a href="interop/supervisor.html#-321500-missed_data"><code>-321500</code> <code>MISSED_DATA</code></a></li>
-<li><a href="interop/supervisor.html#-321501-data_corruption"><code>-321501</code> <code>DATA_CORRUPTION</code></a></li>
+<li><a href="interop/supervisor.html#-321500-missed_data">-321500 <code>MISSED_DATA</code></a></li>
+<li><a href="interop/supervisor.html#-321501-data_corruption">-321501 <code>DATA_CORRUPTION</code></a></li>
 </ul>
 </li>
 </ul>
@@ -14636,64 +14783,67 @@ Advanced block-builders may still choose to include these messages by verifying 
 </li>
 <li><code>executingDescriptor</code>: <code>ExecutingDescriptor</code> - applies as execution-context to all messages.</li>
 </ul>
-<p>Returns: RPC error if the <code>minSafety</code> is not met by one or more of the access entries.</p>
-<p>The access-list entries represent messages, and may be incomplete or malformed.
-Malformed access-lists result in an RPC error.</p>
-<h3 id="errors"><a class="header" href="#errors">Errors</a></h3>
-<p>The Supervisor RPC API uses a 6-digit error code system that extends standard JSON-RPC error codes
-while providing additional categorization based on gRPC status codes.</p>
-<p>For standard JSON-RPC error codes, refer to <a href="https://ethereum-json-rpc.com/errors">Ethereum JSON-RPC Error Reference</a>.</p>
+<p>Returns: void if all <code>inboxEntries</code> meet <code>minSafety</code>, otherwise RPC error. (Protocol specific errors of this method
+are exhaustively coded)(#json-rpc-error-codes). Examples of protocol errors are, errors due to <code>minSafety</code> not being
+met by one or more of the access entries, or, the <code>inboxEntries</code> list may be incomplete or malformed w.r.t. the list
+of messages it should map to.</p>
+<h3 id="data-availability-errors"><a class="header" href="#data-availability-errors">Data Availability Errors</a></h3>
+<p>The Supervisor RPC API data availability errors use a 6-digit error code system that
+extends standard JSON-RPC error codes while providing additional categorization
+based on gRPC status codes.</p>
 <h4 id="json-rpc-error-codes"><a class="header" href="#json-rpc-error-codes">JSON-RPC Error Codes</a></h4>
+<p>An extra digit, ensures error codes don't interfere with standard 5-digit
+<a href="https://ethereum-json-rpc.com/errors">Ethereum JSON-RPC Errors</a>.</p>
 <h4 id="error-code-structure"><a class="header" href="#error-code-structure">Error Code Structure</a></h4>
-<p>Supervisor error codes follow this structure:</p>
+<p>Superchain data availability RPC error codes follow this structure:</p>
 <ul>
 <li>First 2 digits: <code>32</code> (indicating server error, matching JSON-RPC conventions)</li>
 <li>Middle 2 digits: gRPC status code category (01-16, zero-padded)</li>
 <li>Last 2 digits: Specific error index within that category (00-99)</li>
 </ul>
 <p>For gRPC status codes reference, see <a href="https://grpc.io/docs/guides/status-codes/">gRPC Status Codes</a>.</p>
-<h4 id="protocol-specific-error-codes"><a class="header" href="#protocol-specific-error-codes">Protocol Specific Error Codes</a></h4>
-<h5 id="-3204xx-deadline_exceeded-errors"><a class="header" href="#-3204xx-deadline_exceeded-errors"><code>-3204XX</code> <code>DEADLINE_EXCEEDED</code> errors</a></h5>
-<h6 id="-320400-uninitialized_chain_database"><a class="header" href="#-320400-uninitialized_chain_database"><code>-320400</code> <code>UNINITIALIZED_CHAIN_DATABASE</code></a></h6>
+<h4 id="error-codes"><a class="header" href="#error-codes">Error Codes</a></h4>
+<h5 id="-3204xx-deadline_exceeded-errors"><a class="header" href="#-3204xx-deadline_exceeded-errors">-3204<code>XX</code> <code>DEADLINE_EXCEEDED</code> errors</a></h5>
+<h6 id="-320400-uninitialized_chain_database"><a class="header" href="#-320400-uninitialized_chain_database">-320400 <code>UNINITIALIZED_CHAIN_DATABASE</code></a></h6>
 <p>Happens when a chain database is not initialized yet.</p>
-<h5 id="-3205xx-not_found-errors"><a class="header" href="#-3205xx-not_found-errors"><code>-3205XX</code> <code>NOT_FOUND</code> errors</a></h5>
-<h6 id="-320500-skipped_data"><a class="header" href="#-320500-skipped_data"><code>-320500</code> <code>SKIPPED_DATA</code></a></h6>
+<h5 id="-3205xx-not_found-errors"><a class="header" href="#-3205xx-not_found-errors">-3205<code>XX</code> <code>NOT_FOUND</code> errors</a></h5>
+<h6 id="-320500-skipped_data"><a class="header" href="#-320500-skipped_data">-320500 <code>SKIPPED_DATA</code></a></h6>
 <p>Happens when we try to retrieve data that is not available (pruned).
 It may also happen if we erroneously skip data, that was not considered a conflict, if the DB is corrupted.</p>
-<h6 id="-320501-unknown_chain"><a class="header" href="#-320501-unknown_chain"><code>-320501</code> <code>UNKNOWN_CHAIN</code></a></h6>
+<h6 id="-320501-unknown_chain"><a class="header" href="#-320501-unknown_chain">-320501 <code>UNKNOWN_CHAIN</code></a></h6>
 <p>Happens when a chain is unknown, not in the dependency set.</p>
-<h5 id="-3206xx-already_exists-errors"><a class="header" href="#-3206xx-already_exists-errors"><code>-3206XX</code> <code>ALREADY_EXISTS</code> errors</a></h5>
-<h6 id="-320600-conflicting_data"><a class="header" href="#-320600-conflicting_data"><code>-320600</code> <code>CONFLICTING_DATA</code></a></h6>
+<h5 id="-3206xx-already_exists-errors"><a class="header" href="#-3206xx-already_exists-errors">-3206<code>XX</code> <code>ALREADY_EXISTS</code> errors</a></h5>
+<h6 id="-320600-conflicting_data"><a class="header" href="#-320600-conflicting_data">-320600 <code>CONFLICTING_DATA</code></a></h6>
 <p>Happens when we know for sure that there is different canonical data.</p>
-<h6 id="-320601-ineffective_data"><a class="header" href="#-320601-ineffective_data"><code>-320601</code> <code>INEFFECTIVE_DATA</code></a></h6>
+<h6 id="-320601-ineffective_data"><a class="header" href="#-320601-ineffective_data">-320601 <code>INEFFECTIVE_DATA</code></a></h6>
 <p>Happens when data is accepted as compatible, but did not change anything.
 This happens when a node is deriving an L2 block we already know of being derived from the given source,
 but without path to skip forward to newer source blocks without doing the known derivation work first.</p>
-<h5 id="-3209xx-failed_precondition-errors"><a class="header" href="#-3209xx-failed_precondition-errors"><code>-3209XX</code> <code>FAILED_PRECONDITION</code> errors</a></h5>
-<h6 id="-320900-out_of_order"><a class="header" href="#-320900-out_of_order"><code>-320900</code> <code>OUT_OF_ORDER</code></a></h6>
+<h5 id="-3209xx-failed_precondition-errors"><a class="header" href="#-3209xx-failed_precondition-errors">-3209<code>XX</code> <code>FAILED_PRECONDITION</code> errors</a></h5>
+<h6 id="-320900-out_of_order"><a class="header" href="#-320900-out_of_order">-320900 <code>OUT_OF_ORDER</code></a></h6>
 <p>Happens when you try to add data to the DB, but it does not actually fit onto the latest data
 (by being too old or new).</p>
-<h6 id="-320901-awaiting_replacement_block"><a class="header" href="#-320901-awaiting_replacement_block"><code>-320901</code> <code>AWAITING_REPLACEMENT_BLOCK</code></a></h6>
+<h6 id="-320901-awaiting_replacement_block"><a class="header" href="#-320901-awaiting_replacement_block">-320901 <code>AWAITING_REPLACEMENT_BLOCK</code></a></h6>
 <p>Happens when we know for sure that a replacement block is needed before progress can be made.</p>
-<h5 id="-3210xx-aborted-errors"><a class="header" href="#-3210xx-aborted-errors"><code>-3210XX</code> <code>ABORTED</code> errors</a></h5>
-<h6 id="-321000-iter_stop"><a class="header" href="#-321000-iter_stop"><code>-321000</code> <code>ITER_STOP</code></a></h6>
+<h5 id="-3210xx-aborted-errors"><a class="header" href="#-3210xx-aborted-errors">-3210<code>XX</code> <code>ABORTED</code> errors</a></h5>
+<h6 id="-321000-iter_stop"><a class="header" href="#-321000-iter_stop">-321000 <code>ITER_STOP</code></a></h6>
 <p>Happens in iterator to indicate iteration has to stop.
 This error might only be used internally and not sent over the network.</p>
-<h5 id="-3211xx-out_of_range-errors"><a class="header" href="#-3211xx-out_of_range-errors"><code>-3211XX</code> <code>OUT_OF_RANGE</code> errors</a></h5>
-<h6 id="-321100-out_of_scope"><a class="header" href="#-321100-out_of_scope"><code>-321100</code> <code>OUT_OF_SCOPE</code></a></h6>
+<h5 id="-3211xx-out_of_range-errors"><a class="header" href="#-3211xx-out_of_range-errors">-3211<code>XX</code> <code>OUT_OF_RANGE</code> errors</a></h5>
+<h6 id="-321100-out_of_scope"><a class="header" href="#-321100-out_of_scope">-321100 <code>OUT_OF_SCOPE</code></a></h6>
 <p>Happens when data is accessed, but access is not allowed, because of a limited scope.
 E.g. when limiting scope to L2 blocks derived from a specific subset of the L1 chain.</p>
-<h5 id="-3212xx-unimplemented-errors"><a class="header" href="#-3212xx-unimplemented-errors"><code>-3212XX</code> <code>UNIMPLEMENTED</code> errors</a></h5>
-<h6 id="-321200-cannot_get_parent_of_first_block_in_db"><a class="header" href="#-321200-cannot_get_parent_of_first_block_in_db"><code>-321200</code> <code>CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB</code></a></h6>
+<h5 id="-3212xx-unimplemented-errors"><a class="header" href="#-3212xx-unimplemented-errors">-3212<code>XX</code> <code>UNIMPLEMENTED</code> errors</a></h5>
+<h6 id="-321200-cannot_get_parent_of_first_block_in_db"><a class="header" href="#-321200-cannot_get_parent_of_first_block_in_db">-321200 <code>CANNOT_GET_PARENT_OF_FIRST_BLOCK_IN_DB</code></a></h6>
 <p>Happens when you try to get the previous block of the first block.
 E.g. when trying to determine the previous source block for the first L1 block in the database.</p>
-<h5 id="-3214xx-unavailable-errors"><a class="header" href="#-3214xx-unavailable-errors"><code>-3214XX</code> <code>UNAVAILABLE</code> errors</a></h5>
-<h6 id="-321401-future_data"><a class="header" href="#-321401-future_data"><code>-321401</code> <code>FUTURE_DATA</code></a></h6>
+<h5 id="-3214xx-unavailable-errors"><a class="header" href="#-3214xx-unavailable-errors">-3214<code>XX</code> <code>UNAVAILABLE</code> errors</a></h5>
+<h6 id="-321401-future_data"><a class="header" href="#-321401-future_data">-321401 <code>FUTURE_DATA</code></a></h6>
 <p>Happens when data is just not yet available.</p>
-<h5 id="-3215xx-data_loss-errors"><a class="header" href="#-3215xx-data_loss-errors"><code>-3215XX</code> <code>DATA_LOSS</code> errors</a></h5>
-<h6 id="-321500-missed_data"><a class="header" href="#-321500-missed_data"><code>-321500</code> <code>MISSED_DATA</code></a></h6>
+<h5 id="-3215xx-data_loss-errors"><a class="header" href="#-3215xx-data_loss-errors">-3215<code>XX</code> <code>DATA_LOSS</code> errors</a></h5>
+<h6 id="-321500-missed_data"><a class="header" href="#-321500-missed_data">-321500 <code>MISSED_DATA</code></a></h6>
 <p>Happens when we search the DB, know the data may be there, but is not (e.g. different revision).</p>
-<h6 id="-321501-data_corruption"><a class="header" href="#-321501-data_corruption"><code>-321501</code> <code>DATA_CORRUPTION</code></a></h6>
+<h6 id="-321501-data_corruption"><a class="header" href="#-321501-data_corruption">-321501 <code>DATA_CORRUPTION</code></a></h6>
 <p>Happens when the underlying DB has some I/O issue.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="control-flow-between-supervisor-and-managed-node"><a class="header" href="#control-flow-between-supervisor-and-managed-node">Control flow between Supervisor and Managed node</a></h1>
@@ -14721,6 +14871,7 @@ E.g. when trying to determine the previous source block for the first L1 block i
 <li><a href="interop/managed-node.html#interop_invalidateblock">interop_invalidateBlock</a></li>
 <li><a href="interop/managed-node.html#interop_providel1">interop_provideL1</a></li>
 <li><a href="interop/managed-node.html#interop_reset">interop_reset</a></li>
+<li><a href="interop/managed-node.html#interop_resetpreinterop">interop_resetPreInterop</a></li>
 </ul>
 </li>
 <li><a href="interop/managed-node.html#db">DB</a>
@@ -14843,6 +14994,10 @@ This method will soon be removed in favor of fetching the information from a sup
 <p>Forces a reset to a specific local-unsafe/local-safe/finalized starting point only if the blocks did exist. Resets may
 override local-unsafe, to reset the very end of the chain. Resets may override local-safe, since post-interop we need
 the local-safe block derivation to continue.</p>
+<h4 id="interop_resetpreinterop"><a class="header" href="#interop_resetpreinterop">interop_resetPreInterop</a></h4>
+<pre><code class="language-javascript">payload()
+</code></pre>
+<p>Forces a pre-interop reset on the node. It means resetting the node to a state before the Interop upgrade</p>
 <h3 id="db"><a class="header" href="#db">DB</a></h3>
 <p>RPC calls that a node should watch for, originating from supervisor that is called on DB updates for relevant block
 safety info for a given chain and block.</p>
@@ -16502,7 +16657,7 @@ function superchainConfig() external view returns (ISuperchainConfig);
 function version() external view returns (string memory);
 </code></pre>
 <h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
-<h3 id="interface-12"><a class="header" href="#interface-12">Interface</a></h3>
+<h3 id="interface-13"><a class="header" href="#interface-13">Interface</a></h3>
 <h4 id="deploy-1"><a class="header" href="#deploy-1"><code>deploy</code></a></h4>
 <p>The <code>deploy</code> method is used to deploy the full set of L1 contracts required to setup a new OP Stack
 chain that complies with the <a href="experimental/../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
@@ -16600,7 +16755,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </li>
 </ul>
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
-<h3 id="interface-13"><a class="header" href="#interface-13">Interface</a></h3>
+<h3 id="interface-14"><a class="header" href="#interface-14">Interface</a></h3>
 <h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Proxy Admin Owner to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
@@ -16652,7 +16807,7 @@ function, increasing the cost and reducing the number of OP Chains which can be 
 <p>Because different OP Chains within a Superchain may use different dispute game types, and are
 expected to move from a permissioned to permissionless game over time, an <code>addGameType()</code> method is
 provided to enable adding a new game type to multiple games at once.</p>
-<h3 id="interface-14"><a class="header" href="#interface-14">Interface</a></h3>
+<h3 id="interface-15"><a class="header" href="#interface-15">Interface</a></h3>
 <h4 id="addgametype"><a class="header" href="#addgametype"><code>addGameType</code></a></h4>
 <p>The <code>addGameType</code> method is used to orchestrate the actions required to add a new game type to one
 or more chains.</p>

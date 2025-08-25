@@ -194,6 +194,7 @@
 <li><a href="#interop_invalidateblock">interop_invalidateBlock</a></li>
 <li><a href="#interop_providel1">interop_provideL1</a></li>
 <li><a href="#interop_reset">interop_reset</a></li>
+<li><a href="#interop_resetpreinterop">interop_resetPreInterop</a></li>
 </ul>
 </li>
 <li><a href="#db">DB</a>
@@ -316,6 +317,10 @@ This method will soon be removed in favor of fetching the information from a sup
 <p>Forces a reset to a specific local-unsafe/local-safe/finalized starting point only if the blocks did exist. Resets may
 override local-unsafe, to reset the very end of the chain. Resets may override local-safe, since post-interop we need
 the local-safe block derivation to continue.</p>
+<h4 id="interop_resetpreinterop"><a class="header" href="#interop_resetpreinterop">interop_resetPreInterop</a></h4>
+<pre><code class="language-javascript">payload()
+</code></pre>
+<p>Forces a pre-interop reset on the node. It means resetting the node to a state before the Interop upgrade</p>
 <h3 id="db"><a class="header" href="#db">DB</a></h3>
 <p>RPC calls that a node should watch for, originating from supervisor that is called on DB updates for relevant block
 safety info for a given chain and block.</p>
