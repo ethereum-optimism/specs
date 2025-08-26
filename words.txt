@@ -48,6 +48,9 @@ crossdomainmessenger
 crossdomainmessengeraddress
 cwia
 datas
+deauthorize
+Deauthorized
+Deauthorizes
 Decentralizable
 delayedweth
 DELEGATECALL

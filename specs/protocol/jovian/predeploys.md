@@ -27,6 +27,7 @@
 - [Liquidity Controller](#liquidity-controller)
   - [Functions](#functions-2)
     - [`authorizeMinter`](#authorizeminter)
+    - [`deauthorizeMinter`](#deauthorizeminter)
     - [`mint`](#mint)
     - [`burn`](#burn)
     - [`gasPayingAssetName`](#gaspayingassetname)
@@ -240,6 +241,18 @@ function authorizeMinter(address _minter) external
 - MUST only be callable by the L1 ProxyAdmin owner
 - MUST authorize `_minter` to call the `mint()` function
 - MUST emit `MinterAuthorized` event
+
+#### `deauthorizeMinter`
+
+Deauthorizes an address from minting native assets from the liquidity pool.
+
+```solidity
+function deauthorizeMinter(address _minter) external
+```
+
+- MUST only be callable by the L1 ProxyAdmin owner
+- MUST deauthorize `_minter` from calling the `mint()` function
+- MUST emit `MinterDeauthorized` event
 
 #### `mint`
 
