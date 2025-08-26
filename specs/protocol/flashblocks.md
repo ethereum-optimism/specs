@@ -505,7 +505,7 @@ After handling the mandatory sequencer transactions in the initial Flashblock, t
     
     Note that each flashblock builds upon the state of all previous flashblocks, with these fields reflecting the cumulative state after applying the new transactions in this particular flashblock.
     
-- Encapsulate these computed updates into `ExecutionPayloadFlashblockResultV1`.
+- Encapsulate these computed updates into `ExecutionPayloadFlashblockDeltaV1`.
 
 5.	**Flashblock Indexing and Metadata**
 
