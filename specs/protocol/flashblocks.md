@@ -9,7 +9,7 @@
   - [Parameters](#parameters)
   - [Data structures](#data-structures)
     - [**`FlashblocksPayloadV1`**](#flashblockspayloadv1)
-    - [**`ExecutionPayloadFlashblockResultV1`**](#executionpayloadflashblockresultv1)
+    - [**`ExecutionPayloadFlashblockDeltaV1`**](#executionpayloadflashblockdeltav1)
     - [**`ExecutionPayloadStaticV1`**](#executionpayloadstaticv1)
     - [**`Metadata`**](#metadata)
     - [**`AccountMetadata`**](#accountmetadata)
