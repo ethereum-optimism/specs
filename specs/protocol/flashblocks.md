@@ -136,7 +136,7 @@ class FlashblocksPayloadV1():
 Container encoding only the mutable portions of the execution payload updated during Flashblock construction.
 
 ```python
-class ExecutionPayloadFlashblockResultV1():
+class ExecutionPayloadFlashblockDeltaV1():
     state_root: Bytes32
     receipts_root: Bytes32
     logs_bloom: ByteVector[BYTES_PER_LOGS_BLOOM]
