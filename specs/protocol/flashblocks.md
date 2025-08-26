@@ -119,7 +119,7 @@ class FlashblocksPayloadV1():
     parent_flash_hash: Optional[Bytes32]
     index: uint64
     static: Optional[ExecutionPayloadStaticV1]
-    diff: ExecutionPayloadFlashblockResultV1
+    diff: ExecutionPayloadFlashblockDeltaV1
     metadata: FlashblocksMetadata
 
 **Field descriptions:**
