@@ -131,7 +131,7 @@ class FlashblocksPayloadV1():
 - `diff`: Container with fields representing changes from the base payload.
 - `metadata`: Supplementary information about the execution of the flashblock. For example: account state changes, storage modifications, transaction receipts.
 
-### **`ExecutionPayloadFlashblockResultV1`**
+### **`ExecutionPayloadFlashblockDeltaV1`**
 
 Container encoding only the mutable portions of the execution payload updated during Flashblock construction.
 
