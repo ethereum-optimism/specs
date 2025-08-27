@@ -68,6 +68,12 @@ Alternatively, the `cancellation_threshold(safe)` can start at 1 for each safe, 
 
 ## Invariants
 
+### iTG-001: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys
+If an attacker has joint or temporary key control over a quorum of keys, honest users should always be able to recover the account.
+
+#### Severity: Critical
+If this invariant is broken, honest control of the multisig is lost.
+
 ### Nested Cancellation
 A nested safe setup is a safe (parent safe) in which one or more owners are a Gnosis Safe (child safes). There can be multiple levels of nesting. The one parent safe that is not a child of any other safe is called a root safe.
 
