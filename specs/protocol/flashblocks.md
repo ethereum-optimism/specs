@@ -150,7 +150,6 @@ class FlashblocksPayloadV1():
     static: Optional[ExecutionPayloadStaticV1]
     diff: ExecutionPayloadFlashblockDeltaV1
     metadata: FlashblocksMetadata
-
 **Field descriptions:**
 
 - `payload_id`: PayloadID is an identifier of the payload build process. The same for all flashblocks.
