@@ -10,59 +10,58 @@
 - [Prerequisites](#prerequisites)
 - [Motivation](#motivation)
 - [Specification](#specification)
-  - [Terminology](#terminology)
-  - [Parameters](#parameters)
-  - [Data structures](#data-structures)
-    - [**`FlashblocksPayloadV1`**](#flashblockspayloadv1)
-    - [**`ExecutionPayloadFlashblockDeltaV1`**](#executionpayloadflashblockdeltav1)
-    - [**`ExecutionPayloadStaticV1`**](#executionpayloadstaticv1)
-    - [**`Metadata`**](#metadata)
-    - [**`AccountMetadata`**](#accountmetadata)
-    - [**`StorageSlot`**](#storageslot)
-    - [**`TransactionMetadata`**](#transactionmetadata)
-  - [System architecture](#system-architecture)
-  - [Out-of-Protocol Design](#out-of-protocol-design)
-    - [In-Protocol vs. Out-of-Protocol](#in-protocol-vs-out-of-protocol)
-    - [Design Rationale and Benefits](#design-rationale-and-benefits)
-    - [Implications for This Specification](#implications-for-this-specification)
-  - [Assumptions About Op Stack](#assumptions-about-op-stack)
-  - [Flashblock Lifecycle](#flashblock-lifecycle)
-  - [Flashblock Construction Process](#flashblock-construction-process)
-    - [Handling of Sequencer Transactions](#handling-of-sequencer-transactions)
-    - [Transaction Inclusion Heuristics](#transaction-inclusion-heuristics)
-    - [Post-block Execution Rules](#post-block-execution-rules)
-    - [Construction Steps](#construction-steps)
-  - [Flashblocks Metadata](#flashblocks-metadata)
-    - [Alternative Design Consideration](#alternative-design-consideration)
-  - [Rationale for Including State Roots in Flashblocks](#rationale-for-including-state-roots-in-flashblocks)
-    - [Non-Blocking Block Production](#non-blocking-block-production)
-    - [Builder Availability and System Reliability](#builder-availability-and-system-reliability)
-    - [Future Design Considerations](#future-design-considerations)
-  - [Builder-to-Rollup-boost Communication Flow](#builder-to-rollup-boost-communication-flow)
-  - [Flashblock Validity Rules](#flashblock-validity-rules)
-  - [Flashblock System Invariants](#flashblock-system-invariants)
-  - [Flashblock Propagation](#flashblock-propagation)
-    - [Secure propagation](#secure-propagation)
-  - [Flashblock JSON-RPC APIs](#flashblock-json-rpc-apis)
-    - [Ethereum JSON RPC Modifications](#ethereum-json-rpc-modifications)
-    - [op\_supportedCapabilities](#op_supportedcapabilities)
+[-*+] [Terminology](#terminology)
+[-*+] [Parameters](#parameters)
+[-*+] [Data structures](#data-structures)
+[-*+] [**`FlashblocksPayloadV1`**](#flashblockspayloadv1)
+[-*+] [**`ExecutionPayloadFlashblockDeltaV1`**](#executionpayloadflashblockdeltav1)
+[-*+] [**`ExecutionPayloadStaticV1`**](#executionpayloadstaticv1)
+[-*+] [**`Metadata`**](#metadata)
+[-*+] [**`AccountMetadata`**](#accountmetadata)
+[-*+] [**`StorageSlot`**](#storageslot)
+[-*+] [**`TransactionMetadata`**](#transactionmetadata)
+[-*+] [System architecture](#system-architecture)
+[-*+] [Out-of-Protocol Design](#out-of-protocol-design)
+[-*+] [In-Protocol vs. Out-of-Protocol](#in-protocol-vs-out-of-protocol)
+[-*+] [Design Rationale and Benefits](#design-rationale-and-benefits)
+[-*+] [Implications for This Specification](#implications-for-this-specification)
+[-*+] [Assumptions About Op Stack](#assumptions-about-op-stack)
+[-*+] [Flashblock Lifecycle](#flashblock-lifecycle)
+[-*+] [Flashblock Construction Process](#flashblock-construction-process)
+[-*+] [Handling of Sequencer Transactions](#handling-of-sequencer-transactions)
+[-*+] [Transaction Inclusion Heuristics](#transaction-inclusion-heuristics)
+[-*+] [Post-block Execution Rules](#post-block-execution-rules)
+[-*+] [Construction Steps](#construction-steps)
+[-*+] [Flashblocks Metadata](#flashblocks-metadata)
+[-*+] [Alternative Design Consideration](#alternative-design-consideration)
+[-*+] [Rationale for Including State Roots in Flashblocks](#rationale-for-including-state-roots-in-flashblocks)
+[-*+] [Non-Blocking Block Production](#non-blocking-block-production)
+[-*+] [Builder Availability and System Reliability](#builder-availability-and-system-reliability)
+[-*+] [Future Design Considerations](#future-design-considerations)
+[-*+] [Builder-to-Rollup-boost Communication Flow](#builder-to-rollup-boost-communication-flow)
+[-*+] [Flashblock Validity Rules](#flashblock-validity-rules)
+[-*+] [Flashblock System Invariants](#flashblock-system-invariants)
+[-*+] [Flashblock Propagation](#flashblock-propagation)
+[-*+] [Secure propagation](#secure-propagation)
+[-*+] [Flashblock JSON-RPC APIs](#flashblock-json-rpc-apis)
+[-*+] [Ethereum JSON RPC Modifications](#ethereum-json-rpc-modifications)
+[-*+] [op\_supportedCapabilities](#op_supportedcapabilities)
 - [Reliability and Operational Considerations](#reliability-and-operational-considerations)
-  - [Transaction Propagation](#transaction-propagation)
-  - [Failover scenarios](#failover-scenarios)
-    - [Block Builder](#block-builder)
-    - [The Sequencer or Rollup-boost](#the-sequencer-or-rollup-boost)
-  - [Integration with High Availability Sequencer Setups](#integration-with-high-availability-sequencer-setups)
-  - [Faults](#faults)
-    - [**Safety Faults**](#safety-faults)
-    - [**Liveness Faults**](#liveness-faults)
+[-*+] [Transaction Propagation](#transaction-propagation)
+[-*+] [Failover scenarios](#failover-scenarios)
+[-*+] [Block Builder](#block-builder)
+[-*+] [The Sequencer or Rollup-boost](#the-sequencer-or-rollup-boost)
+[-*+] [Integration with High Availability Sequencer Setups](#integration-with-high-availability-sequencer-setups)
+[-*+] [Faults](#faults)
+[-*+] [**Safety Faults**](#safety-faults)
+[-*+] [**Liveness Faults**](#liveness-faults)
 - [Rationale](#rationale)
-    - [Why out-of-protocol](#why-out-of-protocol)
-    - [Why not shorter block times](#why-not-shorter-block-times)
+[-*+] [Why out-of-protocol](#why-out-of-protocol)
+[-*+] [Why not shorter block times](#why-not-shorter-block-times)
 - [Backwards Compatibility](#backwards-compatibility)
-  - [End Users](#end-users)
-  - [Infrastructure Operators](#infrastructure-operators)
+[-*+] [End Users](#end-users)
+[-*+] [Infrastructure Operators](#infrastructure-operators)
 - [Implementation](#implementation)
-
 
 # Abstract
 
@@ -77,10 +76,10 @@ technology to enable quick verifiability over various networks of machines in ad
 
 This document assumes knowledge of the terminology, definitions, and other material in
 
-- [🔗 Ethereum Optimism Protocol Specs](https://github.com/ethereum-optimism/specs/tree/main/specs/protocol)
+- [🔗 Ethereum Optimism Protocol Specs][ethereum-optimism](https://github.com/ethereum-optimism/)
 - [🔗 OP Stack Engine API](https://specs.optimism.io/protocol/exec-engine.html#engine-api)
 - [🔗 External Block Production in OP Stack Design
-Doc](https://github.com/ethereum-optimism/design-docs/blob/main/protocol/external-block-production.md)
+Doc][ethereum-optimism](https://github.com/ethereum-optimism/)
 - [🔗 Ethereum Execution APIs](https://github.com/ethereum/execution-apis/tree/main)
 - [🔗 Introducing Rollup-Boost - Launching on Unichain](https://writings.flashbots.net/introducing-rollup-boost)
 - [🔗 Rollup-boost design doc](https://www.notion.so/RFD-1-Rollup-boost-1996b4a0d876802f95d1c98387e38162?pvs=21)
@@ -111,16 +110,16 @@ streamlined path for incremental adoption by node operators and existing infrast
 ## Terminology
 
 All terms, actors, and components are used in this document identically to how they are defined in the [OP Stack
-protocol definition](https://github.com/ethereum-optimism/specs/blob/main/specs/glossary.md).
+protocol definition][ethereum-optimism](https://github.com/ethereum-optimism/)
 
 Additional terms introduced:
 
 - **External Block Builder** - External Block Builders are first introduced to the OP Stack in the [External Block
 Production Design
-Document](https://github.com/ethereum-optimism/design-docs/blob/main/protocol/external-block-production.md) ****where
+Document][ethereum-optimism](https://github.com/ethereum-optimism/) ****where
 they are described as an external party that the Sequencer can request blocks from.
 - **Rollup Boost** - A sidecar piece of software first introduced without name in the [External Block Production Design
-Document](https://github.com/ethereum-optimism/design-docs/blob/main/protocol/external-block-production.md) with two
+Document][ethereum-optimism](https://github.com/ethereum-optimism/) with two
 roles:
     1. obfuscate the presence of External Block Builder software from the `op-node` and `op-geth` software
     2. manage communication from the sequencer with External Block Builders and handle block delivery to `op-node` .
@@ -339,9 +338,9 @@ This architecture shows the flow of data through the Flashblocks system:
 
 1. The **OP Node** initiates block production and sends requests to **Rollup Boost**
 2. **Rollup Boost** coordinates between multiple components:
-    - It communicates with the **Block Builder** to create Flashblocks
-    - It maintains a connection to the **Fallback EL** for reliability if the Block Builder fails
-    - It propagates validated Flashblocks to the network via the **WebSocket Proxy**
+[-*+] It communicates with the **Block Builder** to create Flashblocks
+[-*+] It maintains a connection to the **Fallback EL** for reliability if the Block Builder fails
+[-*+] It propagates validated Flashblocks to the network via the **WebSocket Proxy**
 3. The **WebSocket Proxy** distributes Flashblocks to multiple **RPC Providers**
 4. **RPC Providers** serve preconfirmation data to **End Users**
 
@@ -426,8 +425,8 @@ Rollup Boost as it normally would to its local Execution Engine.
 
     Rollup Boost forwards the `engine_forkchoiceUpdated` call concurrently to:
 
-    - The Sequencer’s local Execution Engine
-    - The External Block Builder
+[-*+] The Sequencer’s local Execution Engine
+[-*+] The External Block Builder
 3. **Flashblock Construction**:
 
     Upon receiving the fork choice update, the External Block Builder constructs and continuously delivers
@@ -467,7 +466,6 @@ requests or any last-minute processing.
 7. **Full Block Propagation**:
 
     The Sequencer propagates the aggregated block following standard OP Stack protocol rules.
-
 
 ```mermaid
 sequenceDiagram
@@ -608,14 +606,14 @@ Rules section
 3. **Flashblock Payload Assembly**
 
 - After transaction execution, compute and record the following execution state updates:
-    - `state_root`: The new post-execution state root resulting from the executed transactions.
-    - `receipts_root`: The receipts trie root derived from execution outcomes.
-    - `logs_bloom`: Aggregated logs bloom from all emitted transaction logs within this flashblock.
-    - `gas_used`: Total gas consumed by executed transactions.
-    - `transactions`: Serialized transaction payloads included within the flashblock.
-    - `withdrawals` (if applicable): Withdrawals executed during the current flashblock interval (as per OP Stack
+[-*+] `state_root`: The new post-execution state root resulting from the executed transactions.
+[-*+] `receipts_root`: The receipts trie root derived from execution outcomes.
+[-*+] `logs_bloom`: Aggregated logs bloom from all emitted transaction logs within this flashblock.
+[-*+] `gas_used`: Total gas consumed by executed transactions.
+[-*+] `transactions`: Serialized transaction payloads included within the flashblock.
+[-*+] `withdrawals` (if applicable): Withdrawals executed during the current flashblock interval (as per OP Stack
 withdrawal specification).
-    - `block_hash`: Computed block hash uniquely identifying this flashblock execution state.
+[-*+] `block_hash`: Computed block hash uniquely identifying this flashblock execution state.
 
     Note that each flashblock builds upon the state of all previous flashblocks, with these fields reflecting the
 cumulative state after applying the new transactions in this particular flashblock.
@@ -646,8 +644,8 @@ reached (e.g., end of block building period via `engine_getPayload` request).
 8. **Flashblock Construction Termination**
 
 - Flashblock construction continues iteratively until:
-    - Rollup Boost signals final block aggregation and propagation via `engine_getPayload`.
-    - A failure or timeout condition arises requiring failover procedures, detailed separately.
+[-*+] Rollup Boost signals final block aggregation and propagation via `engine_getPayload`.
+[-*+] A failure or timeout condition arises requiring failover procedures, detailed separately.
 
 ```mermaid
 sequenceDiagram
@@ -786,8 +784,8 @@ implementation.
 
     A flashblock is considered a valid block if:
 
-    - It includes the first flashblock (with index 0 containing the base data)
-    - It comprises a continuous sequence of flashblocks with incrementing indices.
+[-*+] It includes the first flashblock (with index 0 containing the base data)
+[-*+] It comprises a continuous sequence of flashblocks with incrementing indices.
 
 ## Flashblock System Invariants
 
@@ -1154,7 +1152,7 @@ RPC provider scans the `storage_slots` list for the requested key and returns 
 ## Transaction Propagation
 
 Similar to the design laid out in the [External Block
-Production](https://github.com/ethereum-optimism/design-docs/blob/main/protocol/external-block-production.md) design
+Production][ethereum-optimism](https://github.com/ethereum-optimism/) design
 document, Flashblocks makes no assumptions about how transactions are delivered to the block builder. A non-exhaustive
 list of valid approaches:
 
@@ -1191,8 +1189,8 @@ specification document. For details on managing Flashblock state across multiple
 preconfirmation integrity during failovers, please refer to the resources linked below.
 
 - what do with a rotating set of sequencers like with OP conductor
-https://github.com/ethereum-optimism/optimism/tree/develop/op-conductor
-- World HA design discussion https://github.com/flashbots/rollup-boost/issues/181
+[op-conductor](https://github.com/ethereum-optimism/optimism/tree/develop/op-conductor)
+- World HA design discussion[flashbots](https://github.com/flashbots/)
 - Base Technical Design Document [TDD: Rollup Boost Integration with HA
 Sequencer](https://www.notion.so/TDD-Rollup-Boost-Integration-with-HA-Sequencer-1d0c9d820ca380348f21e44a5442feaf?pvs=21)
 
@@ -1227,7 +1225,7 @@ include via the L1 as normal.
 
 # Rationale
 
-### Why out-of-protocol
+## Why out-of-protocol
 
 The design is implemented as an out-of-protocol solution rather than a core protocol modification to allow for faster
 iteration and development. This approach respects the stability guarantees of the OP Stack while allowing participants
@@ -1268,7 +1266,7 @@ maintaining a Preconfirmation cache and responding with the relevant data on req
 # Implementation
 
 A feature complete implementation of all components described in this document can be found in the
-[rollup-boost](https://github.com/flashbots/rollup-boost),
-[op-rbuilder](https://github.com/flashbots/rbuilder/tree/develop/crates/op-rbuilder),
+[rollup-boost][flashbots](https://github.com/flashbots/)
+[op-rbuilder][flashbots](https://github.com/flashbots/)
 [flashblocks-websocket-proxy](https://github.com/base/flashblocks-websocket-proxy), and
 [reth-flashblocks](https://github.com/danyalprout/reth-flashblocks).
