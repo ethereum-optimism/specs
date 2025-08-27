@@ -70,16 +70,33 @@ A challenge to a multisig to prove that it is not in a liveness failure state.
 
 ## Assumptions
 
-### The Fallback Owner is Honest
-The fallback owner is assumed to be honest.
+### aLM-001: The Fallback Owner is Honest
+The fallback owner is chosen by the multisig which can verify that it is honest.
 
-### The Fallback Owner is Active
+#### Severity: Medium to High
+If this assumtion is false and not known to be false, the LivenessModule is not able to recover the multisig from a liveness failure state until a new fallback owner is chosen.
+
+If this assumption is false but not known to be false, and a challenge is successful, the multisig would enter into a safety failure state.
+
+### aLM-002: The Fallback Owner is Active
 The fallback owner is assumed to be active.
 
-## Invariants
-- For an enabled `safe`, there can't be more than one concurrent challenge.
+#### Severity: High
+If this assumption is false, the LivenessModule is not operational and if the multisig would fall into a liveness failure state it would not be able to recover.
 
+## Invariants
+
+### iLM-001: No Concurrent Challenges
+For an enabled `safe`, there can't be more than one concurrent challenge.
+
+#### Severity: Medium
+If this invariant is broken, an attacker could spam the multisig with challenges, damaging its operational performance.
+
+### iLM-002: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys
 If an attacker has full, joint, or temporary key control over less than a quorum of keys, honest users should always be able to recover the account by transferring ownership to the fallback owner
+
+#### Severity: High
+If this invariant is broken, an attacker with temporary key control over less than a quorum of keys could force the multisig into a liveness failure state.
 
 ## Function Specification
 
