@@ -9,6 +9,7 @@ basefeevaultconfig
 bijective
 bitlist
 bitlists
+Brotli
 BLOBBASEFEE
 blobbasefee
 blobdata
@@ -45,6 +46,7 @@ crossdomainmessengeraddress
 cryptoeconomic
 CWIA
 cwia
+disincentivized
 datas
 Decentralizable
 delayedweth
@@ -60,12 +62,15 @@ dialable
 Discv
 discv
 disputegamefactory
+DOCTOC
+doctoc
 Doubleword
 EBADF
 ecpairing
 Edgington
 eigenda
 elif
+ENDIANNESS
 errno
 failovers
 fanout
@@ -181,6 +186,8 @@ PRESTATE
 Prestate
 prestate
 PREVRANDAO
+protobuf
+pubkey
 protocolversion
 protolambda
 RANDAO
@@ -203,6 +210,8 @@ runbooks
 Sched
 sched
 secp
+struct
+structs
 SELFDESTRUCT
 sequencerfeevault
 sequencerfeevaultconfig
