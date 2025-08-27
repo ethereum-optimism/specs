@@ -27,31 +27,64 @@
 
 ## Overview
 
-The `Governor` contract implements the core governance logic for creating, voting, and executing proposals.
-This contract uses the `GovernanceToken` contract for voting power snapshots, and the `ProposalTypesConfigurator`
-for proposal types.
+The `LivenessModule` contract implements a module that allows a multisig to be challenged to prove that it is not in a liveness failure state.
 
 ## Definitions
+The following lists definitions that will be used in LivenessModule. Where variables are defined, their names are not compulsory.
 
-### Successful challenge
-A challenge with a `challenge_start_time` more than `liveness_challenge_period` in the past.
+### Quorum
+The number of owners required to execute a transaction.
 
-### Unsuccessful challenge
-A challenge for which `cancelChallenge` was called earlier than `challenge_start_time + liveness_challenge_period`.
-TODO: Make sure the two definitions are a perfect partition.
+### Blocking Threshold
+The minimum number of owners not willing to execute a transaction, that by not approving the transaction guarantee that `quorum` is not met. It is defined as `min(quorum, total_owners - quorum + 1)`.
+
+### Active Owner
+An owner that is able to approve transactions.
+
+### Honest Owner
+An owner that is never willing to execute transactions outside of governance processes.
+
+### Malicious Owner
+An owner that is willing to execute transactions outside of governance processes.
+
+### Full Key Control
+An actor has full key control of an owner if it is solely able to approve transactions as that owner.
+
+### Joint Key Control
+An actor has joint key control of an owner if it is able, along with other actors, to approve transactions as that owner.
+
+### Temporary Key Control
+An actor has temporary key control of an owner if it is able to approve a limited set or number of transactions as that owner.
+
+### Multisig Liveness Failure
+A multisig is considered to be in a liveness failure state if the number of active honest owners is less than the `quorum`, or if the number of malicious active owners is equal or greater than the `blocking_threshold`.
+
+### Multisig Safety Failure
+A multisig is considered to be in a safety failure state if the number of active malicious owners is equal or greater than `quorum`.
+
+### Fallback Owner
+The owner that is appointed to take control of a multisig in case of a liveness or safety failure.
+
+### Liveness Challenge
+A challenge to a multisig to prove that it is not in a liveness failure state.
 
 ## Assumptions
+
+### The Fallback Owner is Honest
+The fallback owner is assumed to be honest.
+
+### The Fallback Owner is Active
+The fallback owner is assumed to be active.
 
 ## Invariants
 - For an enabled `safe`, there can't be more than one concurrent challenge.
 
+If an attacker has full, joint, or temporary key control over less than a quorum of keys, honest users should always be able to recover the account by transferring ownership to the fallback owner
+
 ## Function Specification
 
-### constructor
-- MUST not set any values.
-
 ### `enableModule`
-Enables the module by the multisig to be challenged.
+Enables the module by the multisig to be challenged and sets the `liveness_challenge_period` and `fallback_owner`.
 
 - MUST set the caller as a `safe`.
 - MUST take as parameters `liveness_challenge_period` and `fallback_owner` and store them as related to the `safe`.
@@ -60,31 +93,13 @@ TODO: Should we require the `fallback_owner` to execute a second transaction to 
 TODO: Should we hardcode some lower and higher bounds to `liveness_challenge_period`?
 
 ### `disableModule`
-Disables the module by the multisig to be challenged.
+Disables the module by an enabled `safe`.
 
 - MUST only be executable an enabled `safe`.
-- MUST revert if there is an ongoing challenge for the calling `safe`.
 - MUST erase the existing `liveness_challenge_period` and `fallback_owner` data related to the calling `safe`.
 
-### `setLivenessChallengePeriod`
-Changes the `liveness_challenge_period` for a given `safe`
-
-- MUST only be executable an enabled `safe`.
-- MUST revert if there is a challenge for the calling `safe`.
-
-### `setFallbackOwner`
-Changes the `fallback_owner` for a given `safe`
-
-- MUST only be executable an enabled `safe`.
-- MUST revert if there is a challenge for the calling `safe`.
-
-### `livenessChallengePeriod`
-Returns `livenessChallengePeriod`.
-
-- MUST never revert.
-
-### `fallbackOwner`
-Returns `fallbackOwner`.
+### `viewConfiguration`
+Returns the `liveness_challenge_period` and `fallback_owner` for a given `safe`.
 
 - MUST never revert.
 
