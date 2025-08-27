@@ -1,6 +1,5 @@
-# Flashblocks
 
-*Authors: [Ferran](https://github.com/ferranbt), [Dmarz](https://github.com/dmarzzz),
+<!-- markdownlint-disable MD046 MD029 MD041 -->*Authors: [Ferran](https://github.com/ferranbt), [Dmarz](https://github.com/dmarzzz),
 [Shana](https://github.com/avalonche), [0xkitsune](https://github.com/0xkitsune),
 [protolambda](https://github.com/protolambda), [Anton](https://github.com/0x416e746f6e),
 [Joshua](https://github.com/trianglesphere)*
