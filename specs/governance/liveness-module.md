@@ -112,8 +112,6 @@ Enables the module by the multisig to be challenged and sets the `liveness_chall
 - MUST set the caller as a `safe`.
 - MUST take as parameters `liveness_challenge_period` and `fallback_owner` and store them as related to the `safe`.
 - MUST accept an arbitrary number of independent `safe` contracts to enable the module.
-TODO: Should we require the `fallback_owner` to execute a second transaction to confirm?
-TODO: Should we hardcode some lower and higher bounds to `liveness_challenge_period`?
 
 ### `disableModule`
 Disables the module by an enabled `safe`.
