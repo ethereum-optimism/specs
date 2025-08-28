@@ -11,6 +11,7 @@
   - [isCustomGasToken](#iscustomgastoken)
   - [donateETH](#donateeth)
   - [depositTransaction](#deposittransaction)
+- [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -19,7 +20,9 @@
 ### Custom Gas Token Flag
 
 The **Custom Gas Token Flag** (`isCustomGasToken`) is a boolean value that indicates
-whether the chain is operating in Custom Gas Token mode.
+whether the chain is operating in Custom Gas Token mode. This flag is set during the
+`initialize` function call by directly passing the `_isCustomGasToken` boolean parameter,
+which is then assigned to the contract's `isCustomGasToken` state variable.
 
 ## Rationale
 
@@ -40,3 +43,14 @@ Returns true if the gas token is a custom gas token, false otherwise.
 ### depositTransaction
 
 - MUST revert if `isCustomGasToken()` returns `true` and `msg.value > 0`.
+
+## Security Considerations
+
+### Custom Gas Token Flag Immutability
+
+Once the `isCustomGasToken` flag is set to `true` during initialization, it should not be
+changed back to `false` in subsequent reinitializations. Changing from custom gas token mode
+back to ETH mode could create inconsistencies in the chain's gas token handling and
+potentially lead to security vulnerabilities. The flag represents a fundamental configuration
+of the chain's gas token mechanism and should remain consistent throughout the chain's
+lifetime.
