@@ -66,6 +66,9 @@ Alternatively, the `cancellation_threshold(safe)` can start at 1 for each safe, 
 
 ## Assumptions
 
+### aTG-001: Dishonest Users Don't Have Permanent Key Control Over a Quorum of Keys
+We assume that dishonest users have at most a temporary joint key control over a quorum of keys.
+
 ## Invariants
 
 ### iTG-001: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys
@@ -74,7 +77,7 @@ If an attacker has joint or temporary key control over a quorum of keys, honest 
 #### Severity: Critical
 If this invariant is broken, honest control of the multisig is lost.
 
-### Nested Cancellation
+### iTG-002: Nested Cancellation
 A nested safe setup is a safe (parent safe) in which one or more owners are a Gnosis Safe (child safes). There can be multiple levels of nesting. The one parent safe that is not a child of any other safe is called a root safe.
 
 For a given transaction in a root safe within a nested safe setup, a scheduled transaction could be rejected by owners in child safes an arbitrary number of levels away. The `cancellation_threshold(safe)` of a child safe must be considered before registering that the child safe is rejecting the transaction.
