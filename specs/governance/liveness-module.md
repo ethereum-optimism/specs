@@ -98,6 +98,12 @@ If an attacker has full, joint, or temporary key control over less than a quorum
 #### Severity: High
 If this invariant is broken, an attacker with temporary key control over less than a quorum of keys could force the multisig into a liveness failure state.
 
+### iLM-003: A Quorum Of Honest Users Retains Ownership
+While a quorum of honest users exist, they should remain in control of the account.
+
+#### Severity: Medium
+If this invariant is broken, there would be an operational and possibly reputational impact while the ownership of the account is restablished to the account owners.
+
 ## Function Specification
 
 ### `enableModule`
