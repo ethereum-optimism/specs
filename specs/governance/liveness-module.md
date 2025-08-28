@@ -43,86 +43,124 @@
 
 ## Overview
 
-The `LivenessModule` ensures a multisig remains operable by allowing challenges when it becomes unresponsive. If the multisig fails to prove liveness within a set period, ownership transfers to a trusted fallback owner to prevent deadlock.  
+The `LivenessModule` ensures a multisig remains operable by allowing challenges when it becomes unresponsive. If the
+multisig fails to prove liveness within a set period, ownership transfers to a trusted fallback owner to prevent
+deadlock.  
 
 ## Definitions
-The following lists definitions that will be used in LivenessModule. Where variables are defined, their names are not compulsory.
+
+The following lists definitions that will be used in LivenessModule. Where variables are defined, their names are not
+compulsory.
 
 ### Quorum
+
 The number of owners required to execute a transaction.
 
 ### Blocking Threshold
-The minimum number of owners not willing to execute a transaction, that by not approving the transaction guarantee that `quorum` is not met. It is defined as `min(quorum, total_owners - quorum + 1)`.
+
+The minimum number of owners not willing to execute a transaction, that by not approving the transaction guarantee that
+`quorum` is not met. It is defined as `min(quorum, total_owners - quorum + 1)`.
 
 ### Active Owner
+
 An owner that is able to approve transactions.
 
 ### Honest Owner
+
 An owner that is never willing to execute transactions outside of governance processes.
 
 ### Malicious Owner
+
 An owner that is willing to execute transactions outside of governance processes.
 
 ### Full Key Control
+
 An actor has full key control of an owner if it is solely able to approve transactions as that owner.
 
 ### Joint Key Control
-An actor has joint key control of an owner if it is able, along with other actors, to approve transactions as that owner.
+
+An actor has joint key control of an owner if it is able, along with other actors, to approve transactions as that
+owner.
 
 ### Temporary Key Control
-An actor has temporary key control of an owner if it is able to approve a limited set or number of transactions as that owner.
+
+An actor has temporary key control of an owner if it is able to approve a limited set or number of transactions as that
+owner.
 
 ### Multisig Liveness Failure
-A multisig is considered to be in a liveness failure state if the number of active honest owners is less than the `quorum`, or if the number of malicious active owners is equal or greater than the `blocking_threshold`.
+
+A multisig is considered to be in a liveness failure state if the number of active honest owners is less than the
+`quorum`, or if the number of malicious active owners is equal or greater than the `blocking_threshold`.
 
 ### Multisig Safety Failure
-A multisig is considered to be in a safety failure state if the number of active malicious owners is equal or greater than `quorum`.
+
+A multisig is considered to be in a safety failure state if the number of active malicious owners is equal or greater
+than `quorum`.
 
 ### Fallback Owner
+
 The owner that is appointed to take control of a multisig in case of a liveness or safety failure.
 
 ### Liveness Challenge
+
 A challenge to a multisig to prove that it is not in a liveness failure state.
 
 ## Assumptions
 
 ### aLM-001: The Fallback Owner is Honest
+
 The fallback owner is chosen by the multisig which can verify that it is honest.
 
 #### Severity: Medium to High
-If this assumption is false and not known to be false, the LivenessModule is not able to recover the multisig from a liveness failure state until a new fallback owner is chosen.
 
-If this assumption is false but not known to be false, and a challenge is successful, the multisig would enter into a safety failure state.
+If this assumption is false and not known to be false, the LivenessModule is not able to recover the multisig from a
+liveness failure state until a new fallback owner is chosen.
+
+If this assumption is false but not known to be false, and a challenge is successful, the multisig would enter into a
+safety failure state.
 
 ### aLM-002: The Fallback Owner is Active
+
 The fallback owner is assumed to be active.
 
 #### Severity: High
-If this assumption is false, the LivenessModule is not operational and if the multisig would fall into a liveness failure state it would not be able to recover.
+
+If this assumption is false, the LivenessModule is not operational and if the multisig would fall into a liveness
+failure state it would not be able to recover.
 
 ## Invariants
 
 ### iLM-001: No Concurrent Challenges
+
 For an enabled `safe`, there can't be more than one concurrent challenge.
 
 #### Severity: Medium
+
 If this invariant is broken, an attacker could spam the multisig with challenges, damaging its operational performance.
 
 ### iLM-002: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys
-If an attacker has full, joint, or temporary key control over less than a quorum of keys, honest users should always be able to recover the account by transferring ownership to the fallback owner
+
+If an attacker has full, joint, or temporary key control over less than a quorum of keys, honest users should always
+be able to recover the account by transferring ownership to the fallback owner
 
 #### Severity: High
-If this invariant is broken, an attacker with temporary key control over less than a quorum of keys could force the multisig into a liveness failure state.
+
+If this invariant is broken, an attacker with temporary key control over less than a quorum of keys could force the
+multisig into a liveness failure state.
 
 ### iLM-003: A Quorum Of Honest Users Retains Ownership
+
 While a quorum of honest users exist, they should remain in control of the account.
 
 #### Severity: Medium
-If this invariant is broken, there would be an operational and possibly reputational impact while the ownership of the account is restablished to the account owners.
+
+If this invariant is broken, there would be an operational and possibly reputational impact while the ownership of the
+account is restablished to the account owners.
 
 ## Function Specification
 
 ### `enableModule`
+
 Enables the module by the multisig to be challenged and sets the `liveness_challenge_period` and `fallback_owner`.
 
 - MUST set the caller as a `safe`.
@@ -130,22 +168,26 @@ Enables the module by the multisig to be challenged and sets the `liveness_chall
 - MUST accept an arbitrary number of independent `safe` contracts to enable the module.
 
 ### `disableModule`
+
 Disables the module by an enabled `safe`.
 
 - MUST only be executable an enabled `safe`.
 - MUST erase the existing `liveness_challenge_period` and `fallback_owner` data related to the calling `safe`.
 
 ### `viewConfiguration`
+
 Returns the `liveness_challenge_period` and `fallback_owner` for a given `safe`.
 
 - MUST never revert.
 
 ### `isChallenged`
+
 Returns `challenge_start_time + liveness_challenge_period` if there is a challenge for the given `safe`, or 0 if not.
 
 - MUST never revert.
 
 ### `startChallenge`
+
 Challenges an enabled `safe`.
 
 - MUST only be executable by `fallback` owner of the challenged `safe`.
@@ -164,7 +206,8 @@ Cancels a challenge for an enabled `safe`.
 
 ### `changeOwnershipToFallback`
 
-With a successful challenge, removes all current owners from an enabled `safe`, appoints `fallback` as its sole owner, and sets its quorum to 1.
+With a successful challenge, removes all current owners from an enabled `safe`, appoints `fallback` as its sole owner,
+and sets its quorum to 1.
 
 - MUST be executable by anyone.
 - MUST revert if the given `safe` hasn't enabled the module.
