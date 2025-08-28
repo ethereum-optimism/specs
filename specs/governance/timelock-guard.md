@@ -38,11 +38,35 @@ The `TimelockGuard` implements a mandatory delay on Gnosis Safe contracts as a S
 ## Definitions
 The following list defines variables that will be used in TimelockGuard. None of the variable names are compulsory, and if better names are found, they should be used.
 
-### `Quorum`
-The `quorum(safe)` is the number of owners in a safe that must signal approval of a transaction for it to be executed by the safe.
+### Quorum
+The number of owners required to execute a transaction.
 
 ### Blocking Threshold
-The `blocking_threshold(safe)` is the minimum number of owners that need to not signal approval so that a `quorum(safe)` can't be reached for the same safe. This is defined as `blocking_threshold(safe) = min(quorum(safe), total_owners(safe) - quorum(safe) + 1)`.
+The minimum number of owners not willing to execute a transaction, that by not approving the transaction guarantee that `quorum` is not met. It is defined as `min(quorum, total_owners - quorum + 1)`.
+
+### Active Owner
+An owner that is able to approve transactions.
+
+### Honest Owner
+An owner that is never willing to execute transactions outside of governance processes.
+
+### Malicious Owner
+An owner that is willing to execute transactions outside of governance processes.
+
+### Full Key Control
+An actor has full key control of an owner if it is solely able to approve transactions as that owner.
+
+### Joint Key Control
+An actor has joint key control of an owner if it is able, along with other actors, to approve transactions as that owner.
+
+### Temporary Key Control
+An actor has temporary key control of an owner if it is able to approve a limited set or number of transactions as that owner.
+
+### Multisig Liveness Failure
+A multisig is considered to be in a liveness failure state if the number of active honest owners is less than the `quorum`, or if the number of malicious active owners is equal or greater than the `blocking_threshold`.
+
+### Multisig Safety Failure
+A multisig is considered to be in a safety failure state if the number of active malicious owners is equal or greater than `quorum`.
 
 ### Scheduled Transaction
 A specific transaction that has been stored in the Timelock, for execution from a given safe.
@@ -69,6 +93,9 @@ Alternatively, the `cancellation_threshold(safe)` can start at 1 for each safe, 
 ### aTG-001: Dishonest Users Don't Have Permanent Key Control Over a Quorum of Keys
 We assume that dishonest users have at most a temporary joint key control over a quorum of keys.
 
+#### Severity: Critical
+If this invariant is broken, honest control of the multisig is lost.
+
 ## Invariants
 
 ### iTG-001: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys
@@ -77,7 +104,9 @@ If an attacker has joint or temporary key control over a quorum of keys, honest 
 #### Severity: Critical
 If this invariant is broken, honest control of the multisig is lost.
 
-### iTG-002: Nested Cancellation
+## Requirements and Contraints
+
+### Nested Cancellation
 A nested safe setup is a safe (parent safe) in which one or more owners are a Gnosis Safe (child safes). There can be multiple levels of nesting. The one parent safe that is not a child of any other safe is called a root safe.
 
 For a given transaction in a root safe within a nested safe setup, a scheduled transaction could be rejected by owners in child safes an arbitrary number of levels away. The `cancellation_threshold(safe)` of a child safe must be considered before registering that the child safe is rejecting the transaction.
@@ -85,7 +114,7 @@ For a given transaction in a root safe within a nested safe setup, a scheduled t
 To avoid rejection spamming, it must be verified upon rejection that the rejecting owner is an owner in the safe scheduled to execute the transaction, or in one of its child safes.
 
 ### Module Execution
-Safes implement separate Guard and ModuleGuard interfacesm and a Safe enables a separate Guard and ModuleGuard. To make the `delay_period(safe)` in TimelockGuard mandatory, the TimelockGuard:
+Safes implement separate Guard and ModuleGuard interfaces and a Safe enables a separate Guard and ModuleGuard. To make the `delay_period(safe)` in TimelockGuard mandatory, the TimelockGuard:
 - MUST implement both the Guard and ModuleGuard interfaces.
 - `ITransactionGuard(timelockGuard).checkTransaction(...)` and `IModuleGuard(timelockGuard).checkModuleTransaction(...)` MUST execute the same delay checking logic.
 
