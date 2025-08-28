@@ -1,4 +1,4 @@
-# Governor
+# Liveness Module
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -27,7 +27,7 @@
 
 ## Overview
 
-The `LivenessModule` contract implements a module that allows a multisig to be challenged to prove that it is not in a liveness failure state.
+The `LivenessModule` ensures a multisig remains operable by allowing challenges when it becomes unresponsive. If the multisig fails to prove liveness within a set period, ownership transfers to a trusted fallback owner to prevent deadlock.  
 
 ## Definitions
 The following lists definitions that will be used in LivenessModule. Where variables are defined, their names are not compulsory.
@@ -74,7 +74,7 @@ A challenge to a multisig to prove that it is not in a liveness failure state.
 The fallback owner is chosen by the multisig which can verify that it is honest.
 
 #### Severity: Medium to High
-If this assumtion is false and not known to be false, the LivenessModule is not able to recover the multisig from a liveness failure state until a new fallback owner is chosen.
+If this assumption is false and not known to be false, the LivenessModule is not able to recover the multisig from a liveness failure state until a new fallback owner is chosen.
 
 If this assumption is false but not known to be false, and a challenge is successful, the multisig would enter into a safety failure state.
 
@@ -126,7 +126,7 @@ Returns `challenge_start_time + liveness_challenge_period` if there is a challen
 - MUST never revert.
 
 ### `startChallenge`
-Challenges a enabled `safe`.
+Challenges an enabled `safe`.
 
 - MUST only be executable by `fallback` owner of the challenged `safe`.
 - MUST revert if there is a challenge for the `safe`.
@@ -135,16 +135,16 @@ Challenges a enabled `safe`.
 
 ### `cancelChallenge`
 
-Cancels a challenge for a enabled `safe`.
+Cancels a challenge for an enabled `safe`.
 
-- MUST only be executable by a enabled `safe`.
+- MUST only be executable by an enabled `safe`.
 - MUST revert if there isn't a challenge for the calling `safe`.
 - MUST revert if there is a challenge for the calling `safe` but the challenge is successful.
 - MUST emit the `ChallengeCancelled` event.
 
 ### `changeOwnershipToFallback`
 
-With a successful challenge, removes all current owners from a enabled `safe`, appoints `fallback` as its sole owner, and sets its quorum to 1.
+With a successful challenge, removes all current owners from an enabled `safe`, appoints `fallback` as its sole owner, and sets its quorum to 1.
 
 - MUST be executable by anyone.
 - MUST revert if the given `safe` hasn't enabled the module.
