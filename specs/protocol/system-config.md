@@ -209,12 +209,16 @@ In version `0`, the following update types are supported:
 
 ### setFeatureEnabled
 
+(+v4.1.0)
+
 - Used to enable or disable a [Customizable Feature](#customizable-feature).
 - Takes a bytes32 feature string and a boolean as an input.
 - MUST only be triggerable by the ProxyAdmin or its owner.
 - MUST toggle the feature flag on or off, based on the value of the boolean.
 
 ### isFeatureEnabled
+
+(+v4.1.0)
 
 - Takes a bytes32 feature string as an input.
 - Returns true if the feature is enabled and false otherwise.
@@ -270,15 +274,22 @@ Returns the block number at which the op-node can start searching for logs.
 
 ### paused
 
-This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by using either the
-chain's `ETHLockbox` address or the chain's `OptimismPortal` address as the
+(-v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
+using the chain's `ETHLockbox` address as the [Pause Identifier](./stage-1.md#pause-identifier).
+Returns the current pause state of the system by checking if the `SuperchainConfig` is paused for
+this chain's `ETHLockbox`.
+
+(+v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
+using either the chain's `ETHLockbox` address or the chain's `OptimismPortal` address as the
 [Pause Identifier](./stage-1.md#pause-identifier).
 
-- MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns true AND the
-  system is configured to use the `ETHLockbox` contract.
-- MUST return true if `SuperchainConfig.paused(optimismPortal())` returns true AND the system is
-  NOT configured to use the `ETHLockbox` contract.
-- MUST return true if `SuperchainConfig.paused(address(0))` returns true.
+- (-v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
+  true OR if `SuperchainConfig.paused(address(0))` returns true.
+- (+v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
+  true AND the system is configured to use the `ETHLockbox` contract.
+- (+v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal())` returns true AND the
+  system is NOT configured to use the `ETHLockbox` contract.
+- (+v4.1.0) MUST return true if `SuperchainConfig.paused(address(0))` returns true.
 - MUST return false otherwise.
 
 ### superchainConfig
