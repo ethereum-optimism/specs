@@ -164,8 +164,8 @@ account is restablished to the account owners.
 Enables the module by the multisig to be challenged and sets the `liveness_challenge_period` and `fallback_owner`.
 
 - MUST set the caller as a `safe`.
+- MUST allow an arbitrary number of `safe` contracts to use the module.
 - MUST take as parameters `liveness_challenge_period` and `fallback_owner` and store them as related to the `safe`.
-- MUST accept an arbitrary number of independent `safe` contracts to enable the module.
 
 ### `disableModule`
 
