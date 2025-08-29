@@ -280,12 +280,19 @@ applies globally to all chains sharing the <code>SuperchainConfig</code> contrac
 <li>When the identifier is a non-zero address, the pause applies specifically to the chain or set of
 chains associated with that identifier.</li>
 </ul>
-<p>The identifier must be an <code>ETHLockbox</code> address or <code>address(0)</code>. This allows for targeted pausing of
-either specific chains, the interop set (which shares an <code>ETHLockbox</code> contract), or the all chains
-that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is used as the identifier.</p>
-<p>OP Chains are expected to integrate with the <code>SuperchainConfig</code> via their <code>SystemConfig</code> contract,
-which will check for the status of the pause by passing along the address of the <code>ETHLockbox</code>
-being used within that system as the Pause Identifier.</p>
+<p>(-v4.1.0) The identifier must be an <code>ETHLockbox</code> address or <code>address(0)</code>. This allows for targeted
+pausing of either specific chains, the interop set (which shares an <code>ETHLockbox</code> contract), or all
+chains that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is used as the identifier.</p>
+<p>(-v4.1.0) OP Chains are expected to integrate with the <code>SuperchainConfig</code> via their <code>SystemConfig</code>
+contract, which will check for the status of the pause by passing along the address of the
+<code>ETHLockbox</code> being used within that system as the Pause Identifier.</p>
+<p>(+v4.1.0) The identifier must be an <code>ETHLockbox</code> address, an <code>OptimismPortal</code> address, or
+<code>address(0)</code>. This allows for targeted pausing of specific chains, the interop set (which shares an
+<code>ETHLockbox</code> contract), or all chains that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is
+used as the identifier. When the <code>ETHLockbox</code>
+<a href="./system-config.html#customizable-feature">Customizable Feature</a> is enabled, the <code>ETHLockbox</code>
+address is to be used as the pause identifier. When the <code>ETHLockbox</code> feature is disabled or the
+<code>ETHLockbox</code> address has not yet been configured, the <code>OptimismPortal</code> address is to be used.</p>
 <h3 id="stage-1-rollup"><a class="header" href="#stage-1-rollup">Stage 1 Rollup</a></h3>
 <p>L2BEAT defines that a system can be considered a "Stage 1 Rollup" system if it has the following
 property:</p>

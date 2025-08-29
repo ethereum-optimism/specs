@@ -7821,8 +7821,10 @@ address public immutable CHALLENGER;
 <ul>
 <li><a href="fault-proof/stage-one/optimism-portal.html#constructor">constructor</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#initialize">initialize</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#upgrade">upgrade</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#paused">paused</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#guardian">guardian</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#ethlockbox">ethLockbox</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#superrootsactive">superRootsActive</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#disputegamefactory">disputeGameFactory</a></li>
@@ -8046,21 +8048,32 @@ see this as a critical system risk.</p>
 <h3 id="initialize-1"><a class="header" href="#initialize-1">initialize</a></h3>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
-<li>MUST only be triggerable once.</li>
+<li>MUST NOT be triggerable if <code>upgrade()</code> has already been called.</li>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
-<li>MUST set the value of the <code>ETHLockbox</code> contract.</li>
+<li>(-v4.1.0) MUST set the value of the <code>ETHLockbox</code> contract.</li>
 <li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
 value if the value is not set already.</li>
 <li>MUST initialize the resource metering configuration.</li>
+</ul>
+<h3 id="upgrade"><a class="header" href="#upgrade">upgrade</a></h3>
+<ul>
+<li>MUST only be triggerable once.</li>
+<li>MUST NOT be triggerable if <code>initialize()</code> has already been called.</li>
+<li>MUST set the value of the <code>AnchorStateRegistry</code> contract address.</li>
+<li>(-4.1.0) MUST set the value of the <code>ETHLockbox</code> contract address.</li>
 </ul>
 <h3 id="paused-1"><a class="header" href="#paused-1">paused</a></h3>
 <p>Returns the current state of the <code>SystemConfig.paused()</code> function.</p>
 <h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
 <p>Returns the address of the Guardian as per <code>SystemConfig.guardian()</code>.</p>
+<h3 id="ethlockbox"><a class="header" href="#ethlockbox">ethLockbox</a></h3>
+<p>Returns the address of the ETHLockbox configured for this contract. If the contract has not been
+configured for this OptimismPortal, this function will return <code>address(0)</code>.</p>
 <h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
 <p>Returns the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
 <h3 id="superrootsactive"><a class="header" href="#superrootsactive">superRootsActive</a></h3>
+<p>(-v4.1.0)</p>
 <p>Returns the value of the <code>superRootsActive</code> variable which determines if the <code>OptimismPortal</code> will
 use the standard Output Root proof or the Super Root proof.</p>
 <h3 id="disputegamefactory"><a class="header" href="#disputegamefactory">disputeGameFactory</a></h3>
@@ -8086,6 +8099,7 @@ has not been initialized then this value will be <code>address(0)</code> and sho
 <code>OptimismPortal</code> is not currently executing an withdrawal transaction then this value will be
 <code>0x000000000000000000000000000000000000dEaD</code> and should not be used.</p>
 <h3 id="provewithdrawaltransaction-super-roots"><a class="header" href="#provewithdrawaltransaction-super-roots">proveWithdrawalTransaction (Super Roots)</a></h3>
+<p>(-v4.1.0)</p>
 <p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> a withdrawal transaction within an <code>OptimismPortal</code>
 that uses dispute games that argue over <a href="fault-proof/stage-one/optimism-portal.html#super-root">Super Roots</a>.</p>
 <ul>
@@ -8125,7 +8139,7 @@ that uses dispute games that argue over <a href="fault-proof/stage-one/optimism-
 <a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
 Challenger.</li>
-<li>MUST revert if <code>superRootsActive</code> is <code>true</code>.</li>
+<li>(-v4.1.0) MUST revert if <code>superRootsActive</code> is <code>true</code>.</li>
 <li>MUST revert if the proof provided by the user of the preimage of the Output Root that the dispute
 game argues about is invalid. This proof is verified by hashing the user-provided preimage and
 comparing them to the root claim of the referenced dispute game.</li>
@@ -8159,17 +8173,24 @@ created.</li>
 <li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code>.</li>
 <li>MUST mark the withdrawal as finalized.</li>
 <li>MUST set the L2 Withdrawal Sender variable correctly.</li>
-<li>MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.</li>
+<li>(-v4.1.0) MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.</li>
+<li>(+v4.1.0) MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value ONLY IF the
+OptimismPortal has an ETHLockbox configured AND the ETHLockbox system feature is active.</li>
 <li>MUST execute the withdrawal transaction by executing a contract call to the target address with
 the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
 specified by the withdrawal.</li>
 <li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
 <li>MUST emit a <code>WithdrawalFinalized</code> event with the withdrawal hash and success status.</li>
-<li>MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails.</li>
+<li>(-v4.1.0) MUST lock any unused ETH back into the ETHLockbox if the call to the target address
+fails.</li>
+<li>(+v4.1.0) MUST lock any unused ETH back into the ETHLockbox if the call to the target address
+fails ONLY IF the OptimismPortal has an ETHLockbox configured AND the ETHLockbox system feature
+is active.</li>
 <li>MUST revert if the withdrawal call fails and the transaction origin is the estimation address, to
 help determine exact gas costs.</li>
 </ul>
 <h3 id="migrateliquidity"><a class="header" href="#migrateliquidity">migrateLiquidity</a></h3>
+<p>(-v4.1.0)</p>
 <p>Allows the ProxyAdmin owner to migrate the total ETH balance to the ETHLockbox contract.</p>
 <ul>
 <li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
@@ -8178,6 +8199,7 @@ help determine exact gas costs.</li>
 <li>MAY be called even if the system is paused.</li>
 </ul>
 <h3 id="migratetosuperroots"><a class="header" href="#migratetosuperroots">migrateToSuperRoots</a></h3>
+<p>(-v4.1.0)</p>
 <p>Allows the ProxyAdmin owner to migrate the OptimismPortal to use a new ETHLockbox, point at a new
 AnchorStateRegistry, and start using the Super Roots proof method.</p>
 <ul>
@@ -8201,21 +8223,8 @@ addresses.</li>
 <p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> a withdrawal transaction using a proof submitted
 by another address.</p>
 <ul>
-<li>MUST revert if the system is paused.</li>
-<li>MUST revert if the function is called while a previous withdrawal is being executed.</li>
-<li>MUST revert if the target address is an <a href="fault-proof/stage-one/optimism-portal.html#unsafe-target">Unsafe Target</a>.</li>
-<li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code> when using the specified proof submitter.</li>
-<li>MUST mark the withdrawal as finalized.</li>
-<li>MUST set the L2 Withdrawal Sender variable correctly.</li>
-<li>MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.</li>
-<li>MUST execute the withdrawal transaction by executing a contract call to the target address with
-the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
-specified by the withdrawal.</li>
-<li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
-<li>MUST emit a <code>WithdrawalFinalized</code> event with the withdrawal hash and success status.</li>
-<li>MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails.</li>
-<li>MUST revert if the withdrawal call fails and the transaction origin is the estimation address, to
-help determine exact gas costs.</li>
+<li>MUST behave identically to <a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a> but
+allows the user to finalize a withdrawal with a proof that was submitted by another user.</li>
 </ul>
 <h3 id="numproofsubmitters"><a class="header" href="#numproofsubmitters">numProofSubmitters</a></h3>
 <p>Returns the number of proof submitters for a given withdrawal hash.</p>
@@ -8259,7 +8268,9 @@ deriving deposit transactions. Note that if a deposit is made by a contract, its
 address will be aliased when retrieved using <code>tx.origin</code> or <code>msg.sender</code>. Consider
 using the CrossDomainMessenger contracts for a simpler developer experience.</p>
 <ul>
-<li>MUST lock any ETH value (msg.value) in the ETHLockbox contract.</li>
+<li>(-v4.0.0) MUST lock any ETH value (msg.value) in the ETHLockbox contract.</li>
+<li>(+v4.1.0) MUST lock any ETH value (msg.value) in the ETHLockbox contract ONLY IF the
+OptimismPortal has an an ETHLockbox configured AND the ETHLockbox system feature is active.</li>
 <li>MUST apply resource metering to the gas limit parameter to prevent spam.</li>
 <li>MUST revert if the target address is not address(0) for contract creations.</li>
 <li>MUST revert if the gas limit provided is below the <a href="fault-proof/stage-one/optimism-portal.html#minimum-gas-limit">minimum gas limit</a>.</li>
@@ -8795,7 +8806,7 @@ that <a href="protocol/superchain-config.html#isupc-001-the-guardian-and-pause-d
 <li>MUST set the value of the Guardian role.</li>
 <li>MUST emit a ConfigUpdate event with the Guardian address.</li>
 </ul>
-<h3 id="upgrade"><a class="header" href="#upgrade">upgrade</a></h3>
+<h3 id="upgrade-1"><a class="header" href="#upgrade-1">upgrade</a></h3>
 <ul>
 <li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST migrate the guardian from old storage to new storage.</li>
@@ -9111,6 +9122,7 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 </li>
 <li><a href="protocol/system-config.html#unsafe-block-signer">Unsafe Block Signer</a></li>
 <li><a href="protocol/system-config.html#l2-gas-limit">L2 Gas Limit</a></li>
+<li><a href="protocol/system-config.html#customizable-feature">Customizable Feature</a></li>
 </ul>
 </li>
 <li><a href="protocol/system-config.html#functionality">Functionality</a>
@@ -9122,6 +9134,8 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 <ul>
 <li><a href="protocol/system-config.html#initialize">initialize</a></li>
 <li><a href="protocol/system-config.html#upgrade">upgrade</a></li>
+<li><a href="protocol/system-config.html#setfeatureenabled">setFeatureEnabled</a></li>
+<li><a href="protocol/system-config.html#isfeatureenabled">isFeatureEnabled</a></li>
 <li><a href="protocol/system-config.html#minimumgaslimit">minimumGasLimit</a></li>
 <li><a href="protocol/system-config.html#maximumgaslimit">maximumGasLimit</a></li>
 <li><a href="protocol/system-config.html#unsafeblocksigner">unsafeBlockSigner</a></li>
@@ -9238,6 +9252,14 @@ updates of L1 blocks.</p>
 <p>The gas limit may not be set to a value larger than the
 <a href="protocol/./configurability.html#gas-limit">maximum gas limit</a>. This is to ensure that L2 blocks are fault
 provable and of reasonable size to be processed by the client software.</p>
+<h3 id="customizable-feature"><a class="header" href="#customizable-feature">Customizable Feature</a></h3>
+<p>A <strong>Customizable Feature</strong> is a component of the OP Stack that is maintained as a production-grade
+element of the stack behind some sort of toggle. A Customizable Feature is distinct from other
+types of feature-flagged code because it is part of the mainline OP Stack and is intended to remain
+as a supported configuration option indefinitely. Unlike short-lived feature flags, which exist
+only to keep develop releasable while work is in progress, customizable features are permanent,
+user-facing options. They must be fully documented, tested in all supported modes, and designed for
+long-term maintainability.</p>
 <h2 id="functionality"><a class="header" href="#functionality">Functionality</a></h2>
 <h3 id="system-config-updates"><a class="header" href="#system-config-updates">System Config Updates</a></h3>
 <p>System config updates are signaled through the <code>ConfigUpdate(uint256,uint8,bytes)</code> event. The event
@@ -9270,12 +9292,26 @@ inbox, L1 contract addresses, and L2 chain ID.</li>
 <li>MUST set the start block to the current block number if it hasn't been set already.</li>
 <li>MUST validate the resource configuration parameters against system constraints.</li>
 </ul>
-<h3 id="upgrade-1"><a class="header" href="#upgrade-1">upgrade</a></h3>
+<h3 id="upgrade-2"><a class="header" href="#upgrade-2">upgrade</a></h3>
 <ul>
 <li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST set the L2 chain ID to the provided value.</li>
 <li>MUST set the SuperchainConfig contract address to the provided value.</li>
 <li>MUST clear the old dispute game factory address from storage (now derived from OptimismPortal).</li>
+</ul>
+<h3 id="setfeatureenabled"><a class="header" href="#setfeatureenabled">setFeatureEnabled</a></h3>
+<p>(+v4.1.0)</p>
+<ul>
+<li>Used to enable or disable a <a href="protocol/system-config.html#customizable-feature">Customizable Feature</a>.</li>
+<li>Takes a bytes32 feature string and a boolean as an input.</li>
+<li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
+<li>MUST toggle the feature flag on or off, based on the value of the boolean.</li>
+</ul>
+<h3 id="isfeatureenabled"><a class="header" href="#isfeatureenabled">isFeatureEnabled</a></h3>
+<p>(+v4.1.0)</p>
+<ul>
+<li>Takes a bytes32 feature string as an input.</li>
+<li>Returns true if the feature is enabled and false otherwise.</li>
 </ul>
 <h3 id="minimumgaslimit-1"><a class="header" href="#minimumgaslimit-1">minimumGasLimit</a></h3>
 <p>Returns the minimum L2 gas limit that can be safely set for the system to operate, calculated as
@@ -9303,13 +9339,21 @@ the sum of the maximum resource limit and the system transaction maximum gas.</p
 <h3 id="startblock"><a class="header" href="#startblock">startBlock</a></h3>
 <p>Returns the block number at which the op-node can start searching for logs.</p>
 <h3 id="paused-3"><a class="header" href="#paused-3">paused</a></h3>
-<p>This function integrates with the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> by using the
-chain's <code>ETHLockbox</code> address as the <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>. Returns the
-current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for this chain's
-<code>ETHLockbox</code>.</p>
+<p>(-v4.1.0) This function integrates with the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> by
+using the chain's <code>ETHLockbox</code> address as the <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>.
+Returns the current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for
+this chain's <code>ETHLockbox</code>.</p>
+<p>(+v4.1.0) This function integrates with the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> by
+using either the chain's <code>ETHLockbox</code> address or the chain's <code>OptimismPortal</code> address as the
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
 <ul>
-<li>MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns true OR if
-<code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(-v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
+true OR if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(+v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
+true AND the system is configured to use the <code>ETHLockbox</code> contract.</li>
+<li>(+v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal())</code> returns true AND the
+system is NOT configured to use the <code>ETHLockbox</code> contract.</li>
+<li>(+v4.1.0) MUST return true if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
 <li>MUST return false otherwise.</li>
 </ul>
 <h3 id="superchainconfig-1"><a class="header" href="#superchainconfig-1">superchainConfig</a></h3>
@@ -10069,12 +10113,19 @@ applies globally to all chains sharing the <code>SuperchainConfig</code> contrac
 <li>When the identifier is a non-zero address, the pause applies specifically to the chain or set of
 chains associated with that identifier.</li>
 </ul>
-<p>The identifier must be an <code>ETHLockbox</code> address or <code>address(0)</code>. This allows for targeted pausing of
-either specific chains, the interop set (which shares an <code>ETHLockbox</code> contract), or the all chains
-that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is used as the identifier.</p>
-<p>OP Chains are expected to integrate with the <code>SuperchainConfig</code> via their <code>SystemConfig</code> contract,
-which will check for the status of the pause by passing along the address of the <code>ETHLockbox</code>
-being used within that system as the Pause Identifier.</p>
+<p>(-v4.1.0) The identifier must be an <code>ETHLockbox</code> address or <code>address(0)</code>. This allows for targeted
+pausing of either specific chains, the interop set (which shares an <code>ETHLockbox</code> contract), or all
+chains that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is used as the identifier.</p>
+<p>(-v4.1.0) OP Chains are expected to integrate with the <code>SuperchainConfig</code> via their <code>SystemConfig</code>
+contract, which will check for the status of the pause by passing along the address of the
+<code>ETHLockbox</code> being used within that system as the Pause Identifier.</p>
+<p>(+v4.1.0) The identifier must be an <code>ETHLockbox</code> address, an <code>OptimismPortal</code> address, or
+<code>address(0)</code>. This allows for targeted pausing of specific chains, the interop set (which shares an
+<code>ETHLockbox</code> contract), or all chains that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is
+used as the identifier. When the <code>ETHLockbox</code>
+<a href="protocol/./system-config.html#customizable-feature">Customizable Feature</a> is enabled, the <code>ETHLockbox</code>
+address is to be used as the pause identifier. When the <code>ETHLockbox</code> feature is disabled or the
+<code>ETHLockbox</code> address has not yet been configured, the <code>OptimismPortal</code> address is to be used.</p>
 <h3 id="stage-1-rollup"><a class="header" href="#stage-1-rollup">Stage 1 Rollup</a></h3>
 <p>L2BEAT defines that a system can be considered a "Stage 1 Rollup" system if it has the following
 property:</p>
@@ -13764,7 +13815,7 @@ is the single source of truth for chain operator ownership.</p>
 <li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
 is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is <code>abi.encodeCall(L1Block.setConfig, (_type, _value))</code></li>
 </ul>
-<h4 id="upgrade-2"><a class="header" href="#upgrade-2"><code>upgrade</code></a></h4>
+<h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> function MUST only be callable by the <code>UPGRADER</code> role as defined
 in the <a href="experimental/standard-l2-genesis.html#superchainconfig"><code>SuperchainConfig</code></a>.</p>
 <pre><code class="language-solidity">function upgrade(bytes memory _data) external
@@ -17884,7 +17935,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </ul>
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
 <h3 id="interface-14"><a class="header" href="#interface-14">Interface</a></h3>
-<h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
+<h4 id="upgrade-4"><a class="header" href="#upgrade-4"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Proxy Admin Owner to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
 <p>It has the following interface:</p>

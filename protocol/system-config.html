@@ -188,6 +188,7 @@
 </li>
 <li><a href="#unsafe-block-signer">Unsafe Block Signer</a></li>
 <li><a href="#l2-gas-limit">L2 Gas Limit</a></li>
+<li><a href="#customizable-feature">Customizable Feature</a></li>
 </ul>
 </li>
 <li><a href="#functionality">Functionality</a>
@@ -199,6 +200,8 @@
 <ul>
 <li><a href="#initialize">initialize</a></li>
 <li><a href="#upgrade">upgrade</a></li>
+<li><a href="#setfeatureenabled">setFeatureEnabled</a></li>
+<li><a href="#isfeatureenabled">isFeatureEnabled</a></li>
 <li><a href="#minimumgaslimit">minimumGasLimit</a></li>
 <li><a href="#maximumgaslimit">maximumGasLimit</a></li>
 <li><a href="#unsafeblocksigner">unsafeBlockSigner</a></li>
@@ -315,6 +318,14 @@ updates of L1 blocks.</p>
 <p>The gas limit may not be set to a value larger than the
 <a href="./configurability.html#gas-limit">maximum gas limit</a>. This is to ensure that L2 blocks are fault
 provable and of reasonable size to be processed by the client software.</p>
+<h3 id="customizable-feature"><a class="header" href="#customizable-feature">Customizable Feature</a></h3>
+<p>A <strong>Customizable Feature</strong> is a component of the OP Stack that is maintained as a production-grade
+element of the stack behind some sort of toggle. A Customizable Feature is distinct from other
+types of feature-flagged code because it is part of the mainline OP Stack and is intended to remain
+as a supported configuration option indefinitely. Unlike short-lived feature flags, which exist
+only to keep develop releasable while work is in progress, customizable features are permanent,
+user-facing options. They must be fully documented, tested in all supported modes, and designed for
+long-term maintainability.</p>
 <h2 id="functionality"><a class="header" href="#functionality">Functionality</a></h2>
 <h3 id="system-config-updates"><a class="header" href="#system-config-updates">System Config Updates</a></h3>
 <p>System config updates are signaled through the <code>ConfigUpdate(uint256,uint8,bytes)</code> event. The event
@@ -354,6 +365,20 @@ inbox, L1 contract addresses, and L2 chain ID.</li>
 <li>MUST set the SuperchainConfig contract address to the provided value.</li>
 <li>MUST clear the old dispute game factory address from storage (now derived from OptimismPortal).</li>
 </ul>
+<h3 id="setfeatureenabled"><a class="header" href="#setfeatureenabled">setFeatureEnabled</a></h3>
+<p>(+v4.1.0)</p>
+<ul>
+<li>Used to enable or disable a <a href="#customizable-feature">Customizable Feature</a>.</li>
+<li>Takes a bytes32 feature string and a boolean as an input.</li>
+<li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
+<li>MUST toggle the feature flag on or off, based on the value of the boolean.</li>
+</ul>
+<h3 id="isfeatureenabled"><a class="header" href="#isfeatureenabled">isFeatureEnabled</a></h3>
+<p>(+v4.1.0)</p>
+<ul>
+<li>Takes a bytes32 feature string as an input.</li>
+<li>Returns true if the feature is enabled and false otherwise.</li>
+</ul>
 <h3 id="minimumgaslimit"><a class="header" href="#minimumgaslimit">minimumGasLimit</a></h3>
 <p>Returns the minimum L2 gas limit that can be safely set for the system to operate, calculated as
 the sum of the maximum resource limit and the system transaction maximum gas.</p>
@@ -380,13 +405,21 @@ the sum of the maximum resource limit and the system transaction maximum gas.</p
 <h3 id="startblock"><a class="header" href="#startblock">startBlock</a></h3>
 <p>Returns the block number at which the op-node can start searching for logs.</p>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
-<p>This function integrates with the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> by using the
-chain's <code>ETHLockbox</code> address as the <a href="./stage-1.html#pause-identifier">Pause Identifier</a>. Returns the
-current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for this chain's
-<code>ETHLockbox</code>.</p>
+<p>(-v4.1.0) This function integrates with the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> by
+using the chain's <code>ETHLockbox</code> address as the <a href="./stage-1.html#pause-identifier">Pause Identifier</a>.
+Returns the current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for
+this chain's <code>ETHLockbox</code>.</p>
+<p>(+v4.1.0) This function integrates with the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> by
+using either the chain's <code>ETHLockbox</code> address or the chain's <code>OptimismPortal</code> address as the
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
 <ul>
-<li>MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns true OR if
-<code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(-v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
+true OR if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(+v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
+true AND the system is configured to use the <code>ETHLockbox</code> contract.</li>
+<li>(+v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal())</code> returns true AND the
+system is NOT configured to use the <code>ETHLockbox</code> contract.</li>
+<li>(+v4.1.0) MUST return true if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
 <li>MUST return false otherwise.</li>
 </ul>
 <h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
