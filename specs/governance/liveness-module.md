@@ -130,15 +130,7 @@ failure state it would not be able to recover.
 
 ## Invariants
 
-### iLM-001: No Concurrent Challenges
-
-For an enabled `safe`, there can't be more than one concurrent challenge.
-
-#### Severity: Medium
-
-If this invariant is broken, an attacker could spam the multisig with challenges, damaging its operational performance.
-
-### iLM-002: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys
+### iLM-001: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys
 
 If an attacker has full, joint, or temporary key control over less than a quorum of keys, honest users should always
 be able to recover the account by transferring ownership to the fallback owner
@@ -146,7 +138,15 @@ be able to recover the account by transferring ownership to the fallback owner
 #### Severity: High
 
 If this invariant is broken, an attacker with temporary key control over less than a quorum of keys could force the
-multisig into a liveness failure state.
+multisig into a temporary safety failure state.
+
+iLM-002: The `safe` Chooses The Fallback
+
+Each `safe` MUST choose its fallback address. No other account should be allowed to do this.
+
+#### Severity: High
+
+If this invariant is broken, control over the multisig would be lost in the case of a liveness failure.
 
 ### iLM-003: A Quorum Of Honest Users Retains Ownership
 
@@ -157,21 +157,41 @@ While a quorum of honest users exist, they should remain in control of the accou
 If this invariant is broken, there would be an operational and possibly reputational impact while the ownership of the
 account is restablished to the account owners.
 
+iLM-004: Allowing Challenges Is Elective
+
+A `safe` MUST choose to be open to liveness challenges at any time, and CAN choose to stop accepting liveness
+challenges at any time.
+
+#### Severity: Medium
+
+If this invariant is broken, there would be an operational and possibly reputational impact while the ownership of the
+account is restablished to the account owners.
+
+### iLM-005: No Challenge Spam
+
+For an enabled `safe`, there can't be more challenges that are needed to guarantee liveness.
+
+#### Severity: Medium
+
+If this invariant is broken, an attacker could spam the multisig with challenges, driving it into a temporary liveness
+failure state, which could be used to force ownership into the fallback address.
+
 ## Function Specification
 
-### `enableModule`
+### `configure`
 
-Enables the module by the multisig to be challenged and sets the `liveness_challenge_period` and `fallback_owner`.
+Configures the module by the multisig to be challenged and sets the `liveness_challenge_period` and `fallback_owner`.
 
+- The module MUST be enabled on the `safe`.
 - MUST set the caller as a `safe`.
 - MUST allow an arbitrary number of `safe` contracts to use the module.
 - MUST take as parameters `liveness_challenge_period` and `fallback_owner` and store them as related to the `safe`.
 
-### `disableModule`
+### `clear`
 
-Disables the module by an enabled `safe`.
+Removes the module configuration by a previously enabled `safe`.
 
-- MUST only be executable an enabled `safe`.
+- The module MUST NOT be enabled on the `safe`.
 - MUST erase the existing `liveness_challenge_period` and `fallback_owner` data related to the calling `safe`.
 
 ### `viewConfiguration`
@@ -180,28 +200,31 @@ Returns the `liveness_challenge_period` and `fallback_owner` for a given `safe`.
 
 - MUST never revert.
 
-### `isChallenged`
+### `getChallengePeriodEnd`
 
 Returns `challenge_start_time + liveness_challenge_period` if there is a challenge for the given `safe`, or 0 if not.
 
 - MUST never revert.
 
-### `startChallenge`
+### `challenge`
 
 Challenges an enabled `safe`.
 
 - MUST only be executable by `fallback` owner of the challenged `safe`.
+- MUST revert if the `safe` hasn't enabled the module.
+- MUST revert if the `safe` hasn't configured the module.
 - MUST revert if there is a challenge for the `safe`.
 - MUST set `challenge_start_time` to the current block time.
 - MUST emit the `ChallengeStarted` event.
 
-### `cancelChallenge`
+### `respond`
 
 Cancels a challenge for an enabled `safe`.
 
 - MUST only be executable by an enabled `safe`.
+- MUST revert if the `safe` hasn't enabled the module.
+- MUST revert if the `safe` hasn't configured the module.
 - MUST revert if there isn't a challenge for the calling `safe`.
-- MUST revert if there is a challenge for the calling `safe` but the challenge is successful.
 - MUST emit the `ChallengeCancelled` event.
 
 ### `changeOwnershipToFallback`
@@ -210,7 +233,8 @@ With a successful challenge, removes all current owners from an enabled `safe`, 
 and sets its quorum to 1.
 
 - MUST be executable by anyone.
-- MUST revert if the given `safe` hasn't enabled the module.
+- MUST revert if the `safe` hasn't enabled the module.
+- MUST revert if the `safe` hasn't configured the module.
 - MUST revert if there isn't a successful challenge for the given `safe`.
 - MUST enable the module to start a new challenge.
 - MUST emit the `ChallengeExecuted` event.
