@@ -12,6 +12,7 @@
   - [donateETH](#donateeth)
   - [depositTransaction](#deposittransaction)
 - [Security Considerations](#security-considerations)
+  - [Custom Gas Token Flag Immutability](#custom-gas-token-flag-immutability)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
