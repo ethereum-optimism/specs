@@ -182,10 +182,11 @@ failure state, which could be used to force ownership into the fallback address.
 
 Configures the module by the multisig to be challenged and sets the `liveness_challenge_period` and `fallback_owner`.
 
+- MUST allow an arbitrary number of `safe` contracts to use the module.
 - The module MUST be enabled on the `safe`.
 - MUST set the caller as a `safe`.
-- MUST allow an arbitrary number of `safe` contracts to use the module.
 - MUST take as parameters `liveness_challenge_period` and `fallback_owner` and store them as related to the `safe`.
+- If a challenge exists, it MUST be canceled, including emitting the appropriate events.
 
 ### `clear`
 
@@ -193,6 +194,7 @@ Removes the module configuration by a previously enabled `safe`.
 
 - The module MUST NOT be enabled on the `safe`.
 - MUST erase the existing `liveness_challenge_period` and `fallback_owner` data related to the calling `safe`.
+- If a challenge exists, it MUST be canceled, including emitting the appropriate events.
 
 ### `viewConfiguration`
 
@@ -213,7 +215,7 @@ Challenges an enabled `safe`.
 - MUST only be executable by `fallback` owner of the challenged `safe`.
 - MUST revert if the `safe` hasn't enabled the module.
 - MUST revert if the `safe` hasn't configured the module.
-- MUST revert if there is a challenge for the `safe`.
+- MUST revert if a challenge for the `safe` exists.
 - MUST set `challenge_start_time` to the current block time.
 - MUST emit the `ChallengeStarted` event.
 
@@ -225,6 +227,7 @@ Cancels a challenge for an enabled `safe`.
 - MUST revert if the `safe` hasn't enabled the module.
 - MUST revert if the `safe` hasn't configured the module.
 - MUST revert if there isn't a challenge for the calling `safe`.
+- MUST reset `challenge_start_time` to 0.
 - MUST emit the `ChallengeCancelled` event.
 
 ### `changeOwnershipToFallback`
@@ -236,5 +239,5 @@ and sets its quorum to 1.
 - MUST revert if the `safe` hasn't enabled the module.
 - MUST revert if the `safe` hasn't configured the module.
 - MUST revert if there isn't a successful challenge for the given `safe`.
-- MUST enable the module to start a new challenge.
+- MUST reset `challenge_start_time` to 0 to enable the fallback to start a new challenge.
 - MUST emit the `ChallengeExecuted` event.
