@@ -47,7 +47,9 @@ cwia
 CWIA
 datas
 deauthorize
+deauthorized
 Deauthorized
+deauthorizer
 Deauthorizes
 Decentralizable
 delayedweth
