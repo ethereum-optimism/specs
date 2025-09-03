@@ -131,10 +131,8 @@ that rejected the transaction.
 ### Cancellation Threshold
 
 The `cancellation_threshold(safe)` is the number of owners that must reject a given transaction for it not to be
-executed after the `delay_period(safe)`. It is equal to `blocking_threshold(safe)`.
-
-Alternatively, the `cancellation_threshold(safe)` can start at 1 for each safe, increasing by 1 with each consecutive
-cancelled by the given safe transaction up to `blocking_threshold(safe)`, resetting to 1 with each successfully
+executed after the `delay_period(safe)`. It starts at 1 for each safe, increasing by 1 with each consecutive
+cancelled transacton by the given safe up to `blocking_threshold(safe)`, resetting to 1 with each successfully
 executed transaction by the given safe.
 
 ## Assumptions
@@ -158,9 +156,7 @@ the account.
 
 If this invariant is broken, honest control of the multisig is lost.
 
-## Requirements and Contraints
-
-### Nested Cancellation
+### iTG-002: Owners Of Child Safes Can Signal Rejection Of Transactions
 
 A nested safe setup is a safe (parent safe) in which one or more owners are a Gnosis Safe (child safes). There can be
 multiple levels of nesting. The one parent safe that is not a child of any other safe is called a root safe.
@@ -169,28 +165,32 @@ For a given transaction in a root safe within a nested safe setup, a scheduled t
 in child safes an arbitrary number of levels away. The `cancellation_threshold(safe)` of a child safe must be
 considered before registering that the child safe is rejecting the transaction.
 
+#### Severity: Medium
+
+If this invariant is broken, the cancellation flow would be not operational for nested setups, making the timelock less
+useful.
+
+### iTG-003: The Signatures For A Cancelled Transaction Can Not Be Reused
+
+The signatures for a cancelled transaction can not be reused.
+
+#### Severity: Medium
+
+If this invariant is broken, a malicious user could spam the multisig with transactions that must be cancelled,
+causing an impact close to a liveness failure through operational overhead.
+
+### iTG-004: Only Owners Can Signal Rejection Of Transactions
+
 To avoid rejection spamming, it must be verified upon rejection that the rejecting owner is an owner in the safe
 scheduled to execute the transaction, or in one of its child safes.
 
-### Module Execution
+#### Severity: Low
 
-Safes implement separate Guard and ModuleGuard interfaces and a Safe enables a separate Guard and ModuleGuard. To make
-the `delay_period(safe)` in TimelockGuard mandatory, the TimelockGuard:
-- MUST implement both the Guard and ModuleGuard interfaces.
-- `ITransactionGuard(timelockGuard).checkTransaction(...)` and
-`IModuleGuard(timelockGuard).checkModuleTransaction(...)` MUST execute the same delay checking logic.
-
-It follows that any module will need to implement an entry point function to `scheduleTransaction`.
-
-### Replayability Conflicts
-
-The TimelockGuard does not control replayability of transactions, which is done by either the safe or a potential
-module would decide to overwrite the logic.
+If this invariant is broken, the event history of the timelock would contain useless events.
 
 ## Function Specification
 
-The following list details the functions that must be included the in TimelockGuard. None of the function names are
-compulsory, and if better names are found, they should be used.
+The following list details the functions that must be included the in TimelockGuard.
 
 ### enable
 
@@ -240,15 +240,6 @@ delay period has passed.
 - MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
 - MUST revert if `scheduling_time(safe, tx) + delay_period(safe) < block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
-
-### checkModuleTransaction
-
-Called by anyone, and also by the Safe in `preModuleExecution`, verifies if a given transaction was scheduled and the
-delay period has passed.
-
-- MUST revert if the TimelockGuard is not enabled for the safe.
-- MUST take the exact parameters from the `IModuleGuard.checkModuleTransaction` interface.
-- MUST execute the same internal logic as `checkTransaction`.
 
 ### checkPendingTransactions
 
