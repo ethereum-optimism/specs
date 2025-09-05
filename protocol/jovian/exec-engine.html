@@ -211,7 +211,7 @@ computed <code>baseFee</code> is less than <code>minBaseFee</code>, it MUST be c
 <p>Note: <code>extraData</code> has a maximum capacity of 32 bytes (to fit the L1 beacon-chain <code>extraData</code> type) and may be
 extended by future upgrades.</p>
 <h3 id="minimum-base-fee-in-payloadattributesv3"><a class="header" href="#minimum-base-fee-in-payloadattributesv3">Minimum Base Fee in <code>PayloadAttributesV3</code></a></h3>
-<p>The Engine API <a href="../exec-engine.html#extended-payloadattributesv3"><code>PayloadAttributesV3</code></a> is extended in Jovian with a new
+<p>The Engine API <a href="../exec-engine.html#extended-payloadattributesv3"><code>PayloadAttributesV3</code></a> is extended with a new
 field <code>minBaseFee</code>. The existing <code>eip1559Params</code> remains 8 bytes (Holocene format).</p>
 <pre><code class="language-text">PayloadAttributesV3: {
     timestamp: QUANTITY
@@ -226,6 +226,7 @@ field <code>minBaseFee</code>. The existing <code>eip1559Params</code> remains 8
     minBaseFee: QUANTITY or null
 }
 </code></pre>
+<p>The <code>minBaseFee</code> MUST be <code>null</code> prior to the Jovian fork, and MUST be non-<code>null</code> after the Jovian fork.</p>
 <h3 id="rationale"><a class="header" href="#rationale">Rationale</a></h3>
 <p>As with <a href="../holocene/exec-engine.html#rationale">Holocene's dynamic EIP-1559 parameters</a>, placing the
 minimum base fee in the block header allows us to avoid reaching into the state during block sealing.
