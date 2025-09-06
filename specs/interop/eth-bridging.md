@@ -21,7 +21,7 @@ predeploy for message passing and the `ETHLiquidity` contract for supplying nati
 | Name                          | Value                                        |
 | ----------------------------- | -------------------------------------------- |
 | `SuperchainETHBridge` Address | `0x4200000000000000000000000000000000000024` |
-| `ETHLiquidity` Address        | `0x4200000000000000000000000000000000000025` |
+| `ETHLiquidity` Address        | '0x06EE840642a33367ee59fCA237F270d5119d1356' |
 
 ## Design
 
