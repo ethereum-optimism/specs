@@ -281,7 +281,7 @@ of a transaction now includes the worst-case operator fee.
 calculation. In more detail, these parameters can be accessed in two interchangable ways.
 
 - read from the deposited L1 attributes (`operatorFeeScalar` and `operatorFeeConstant`) of the current L2 block
-- read from the L1 Block Info contract (`0x4200000000000000000000000000000000000015`)
+- read from the L1 Block Info contract (`0x06EE840642a33367ee59fCA237F270d5119d1356')
   - using the respective solidity getter functions (`operatorFeeScalar`, `operatorFeeConstant`)
   - using direct storage-reads:
     - Operator fee scalar as big-endian `uint32` in slot `8` at offset `0`.
