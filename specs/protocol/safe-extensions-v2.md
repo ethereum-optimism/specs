@@ -202,7 +202,7 @@ that rejected the transaction.
 
 The `cancellation_threshold(safe)` is the number of owners that must reject a given transaction for it not to be
 executed after the `timelock_delay(safe)`. It starts at 1 for each safe, increasing by 1 with each consecutive
-cancelled transacton by the given safe up to `blocking_threshold(safe)`, resetting to 1 with each successfully
+cancelled transaction by the given safe up to `blocking_threshold(safe)`, resetting to 1 with each successfully
 executed transaction by the given safe.
 
 ## Assumptions
