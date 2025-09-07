@@ -4,31 +4,83 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Security Council Liveness Checking Extensions](#security-council-liveness-checking-extensions)
-  - [The Liveness Guard](#the-liveness-guard)
-  - [The Liveness Module](#the-liveness-module)
-  - [Owner Removal Call Flow](#owner-removal-call-flow)
-  - [Shutdown](#shutdown)
-  - [Liveness Security Properties](#liveness-security-properties)
-    - [Liveness Guard Security Properties](#liveness-guard-security-properties)
-    - [Liveness Module Security Properties](#liveness-module-security-properties)
-  - [Interdependency between the Liveness Guard and Liveness Module](#interdependency-between-the-liveness-guard-and-liveness-module)
-- [Operational Considerations](#operational-considerations)
-  - [Manual validation of new owner liveness](#manual-validation-of-new-owner-liveness)
-  - [Deploying the Liveness Checking System](#deploying-the-liveness-checking-system)
-  - [Modifying the Liveness Checking System](#modifying-the-liveness-checking-system)
-    - [Replacing the Liveness Module](#replacing-the-liveness-module)
-    - [Replacing the Liveness Guard](#replacing-the-liveness-guard)
+- [Definitions](#definitions)
+  - [Quorum](#quorum)
+  - [Blocking Threshold](#blocking-threshold)
+  - [Active Owner](#active-owner)
+  - [Honest Owner](#honest-owner)
+  - [Malicious Owner](#malicious-owner)
+  - [Full Key Control](#full-key-control)
+  - [Joint Key Control](#joint-key-control)
+  - [Temporary Key Control](#temporary-key-control)
+  - [Multisig Liveness Failure](#multisig-liveness-failure)
+  - [Multisig Safety Failure](#multisig-safety-failure)
+- [Definitions in Liveness Module](#definitions-in-liveness-module)
+  - [Fallback Owner](#fallback-owner)
+  - [Liveness Challenge](#liveness-challenge)
+  - [Liveness Challenge Period](#liveness-challenge-period)
+  - [Successful Challenge](#successful-challenge)
+- [Definitions in Timelock Guard](#definitions-in-timelock-guard)
+  - [Scheduled Transaction](#scheduled-transaction)
+  - [Scheduling Time](#scheduling-time)
+  - [Timelock Delay Period](#timelock-delay-period)
+  - [Rejected Transaction](#rejected-transaction)
+  - [Rejecting Owners](#rejecting-owners)
+  - [Cancellation Threshold](#cancellation-threshold)
+- [Assumptions](#assumptions)
+  - [aSS-001: Dishonest Users Don't Have Permanent Key Control Over a Quorum of Keys](#ass-001-dishonest-users-dont-have-permanent-key-control-over-a-quorum-of-keys)
+    - [Severity: Critical](#severity-critical)
+  - [aSS-002: The Fallback Owner is Honest](#ass-002-the-fallback-owner-is-honest)
+    - [Severity: Medium to High](#severity-medium-to-high)
+  - [aSS-003: The Fallback Owner is Active](#ass-003-the-fallback-owner-is-active)
+- [Invariants](#invariants)
+  - [iSS-001: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys](#iss-001-honest-users-can-recover-from-temporary-key-control-over-a-quorum-of-keys)
+    - [Severity: High](#severity-high)
+  - [iSS-002: The `safe` Chooses The Fallback](#iss-002-the-safe-chooses-the-fallback)
+    - [Severity: High](#severity-high-1)
+  - [iSS-003: A Quorum Of Honest Users Retains Ownership](#iss-003-a-quorum-of-honest-users-retains-ownership)
+    - [Severity: Medium](#severity-medium)
+  - [iSS-004: The Liveness Challenge Period Is Greater Than The Timelock Delay](#iss-004-the-liveness-challenge-period-is-greater-than-the-timelock-delay)
+    - [Severity: Medium](#severity-medium-1)
+  - [iSS-005: Allowing Challenges Is Elective](#iss-005-allowing-challenges-is-elective)
+    - [Severity: Medium](#severity-medium-2)
+  - [iSS-006: No Challenge Spam](#iss-006-no-challenge-spam)
+    - [Severity: Medium](#severity-medium-3)
+  - [iSS-007: Honest Users Can Recover From Temporary Key Control Over a Quorum of Keys](#iss-007-honest-users-can-recover-from-temporary-key-control-over-a-quorum-of-keys)
+    - [Severity: Critical](#severity-critical-1)
+  - [iSS-008: Owners Of Child Safes Can Signal Rejection Of Transactions](#iss-008-owners-of-child-safes-can-signal-rejection-of-transactions)
+    - [Severity: Medium](#severity-medium-4)
+  - [iSS-009: The Signatures For A Cancelled Transaction Can Not Be Reused](#iss-009-the-signatures-for-a-cancelled-transaction-can-not-be-reused)
+    - [Severity: Medium](#severity-medium-5)
+  - [iSS-010: Only Owners Can Signal Rejection Of Transactions](#iss-010-only-owners-can-signal-rejection-of-transactions)
+    - [Severity: Low](#severity-low)
+- [Function Specification](#function-specification)
+  - [`configureLivenessModule`](#configurelivenessmodule)
+  - [`clearLivenessModule`](#clearlivenessmodule)
+  - [`configureTimelockGuard`](#configuretimelockguard)
+  - [`clearTimelockGuard`](#cleartimelockguard)
+  - [`viewLivenessModuleConfiguration`](#viewlivenessmoduleconfiguration)
+  - [`viewTimelockGuardConfiguration`](#viewtimelockguardconfiguration)
+  - [`getLivenessChallengePeriodEnd`](#getlivenesschallengeperiodend)
+  - [`challenge`](#challenge)
+  - [`respond`](#respond)
+  - [`changeOwnershipToFallback`](#changeownershiptofallback)
+  - [`cancellationThreshold`](#cancellationthreshold)
+  - [`scheduleTransaction`](#scheduletransaction)
+  - [`checkTransaction`](#checktransaction)
+  - [`checkPendingTransactions`](#checkpendingtransactions)
+  - [`rejectTransaction`](#rejecttransaction)
+  - [`rejectTransactionWithSignature`](#rejecttransactionwithsignature)
+  - [`cancelTransaction`](#canceltransaction)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 This document describes extensions to the Security Council and Guardian Safe contracts, which
 provide additional functionality and security guarantees on top of those provided by the Safe
 contract.
 
-These extensions are developed using a singleton contract that can be enabled simultanesouly as a
-([module](https://docs.safe.global/advanced/smart-account-modules) and a 
-[guard](https://docs.safe.global/advanced/smart-account-guards)) which the Safe contract has
-built-in support for:
+These extensions are developed using a singleton contract that can be enabled simultaneously as a
+([module](https://docs.safe.global/advanced/smart-account-modules) and a
+[guard](https://docs.safe.global/advanced/smart-account-guards)) which the Safe contract has built-in support for:
 
 1. **Guard contracts:** can execute pre- and post- transaction checks.
 2. **Module contracts:** a contract which is
@@ -214,7 +266,8 @@ The `liveness_challenge_period(safe)` MUST be greater than the `timelock_delay(s
 
 #### Severity: Medium
 
-If this invariant is broken, it would not be possible to respond to challenges, and ownership could be transferred to the fallback owner even if the multisig is not in a liveness failure state.
+If this invariant is broken, it would not be possible to respond to challenges, and ownership could be transferred to
+the fallback owner even if the multisig is not in a liveness failure state.
 
 ### iSS-005: Allowing Challenges Is Elective
 
@@ -331,7 +384,8 @@ Returns the `timelock_delay` for a given `safe`.
 
 ### `getLivenessChallengePeriodEnd`
 
-Returns `challenge_start_time + liveness_challenge_period + timelock_delay` if there is a challenge for the given `safe`, or 0 if not.
+Returns `challenge_start_time + liveness_challenge_period + timelock_delay` if there is a challenge for the given
+`safe`, or 0 if not.
 
 - MUST never revert.
 
