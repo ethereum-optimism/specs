@@ -188,6 +188,10 @@ from a given safe.
 Given a scheduled transaction, the `timelock_delay(safe)` is the minimum time in seconds after
 `scheduling_time(safe, tx)` that execution is allowed.
 
+### Execution Time
+
+The `execution_time(safe, tx)` is the sum of `scheduling_time(safe, tx)` and `timelock_delay(safe)`.
+
 ### Rejected Transaction
 
 Given a transaction scheduled to execute from given safe, owners for the safe reject the transaction to signal they
@@ -297,7 +301,15 @@ the account.
 
 If this invariant is broken, honest control of the multisig is lost.
 
-### iSS-008: Owners Of Child Safes Can Signal Rejection Of Transactions
+### iSS-008: The Execution Time Doesn't Change
+
+For a given transaction, the `execution_time(safe, tx)` must never change.
+
+#### Severity: Medium
+
+If this invariant is broken, a temporary compromise of the safe could be used to skip the timelock delay.
+
+### iSS-009: Owners Of Child Safes Can Signal Rejection Of Transactions
 
 A nested safe setup is a safe (parent safe) in which one or more owners are a Gnosis Safe (child safes). There can be
 multiple levels of nesting. The one parent safe that is not a child of any other safe is called a root safe.
@@ -311,7 +323,7 @@ considered before registering that the child safe is rejecting the transaction.
 If this invariant is broken, the cancellation flow would be not operational for nested setups, making the timelock less
 useful.
 
-### iSS-009: The Signatures For A Cancelled Transaction Can Not Be Reused
+### iSS-010: The Signatures For A Cancelled Transaction Can Not Be Reused
 
 The signatures for a cancelled transaction can not be reused.
 
@@ -320,7 +332,7 @@ The signatures for a cancelled transaction can not be reused.
 If this invariant is broken, a malicious user could spam the multisig with transactions that must be cancelled,
 causing an impact close to a liveness failure through operational overhead.
 
-### iSS-010: Only Owners Can Signal Rejection Of Transactions
+### iSS-011: Only Owners Can Signal Rejection Of Transactions
 
 To avoid rejection spamming, it must be verified upon rejection that the rejecting owner is an owner in the safe
 scheduled to execute the transaction, or in one of its child safes.
@@ -438,6 +450,7 @@ the `timelock_delay`.
 - MUST take the same parameters as `execTransaction`.
 - MUST revert if an identical transaction has already been scheduled.
 - MUST revert if an identical transaction was cancelled.
+- MUST set `execution_time(safe, tx)` to `block.timestamp + timelock_delay(safe)`.
 - MUST emit a `TransactionScheduled` event, with at least `safe` and relevant transaction data.
 
 To allow for identical transactions to be scheduled more than once, but requiring different signatures for each one, a
@@ -450,7 +463,7 @@ delay period has passed.
 
 - MUST revert if the contract is not enabled as a guard for the safe.
 - MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
-- MUST revert if `scheduling_time(safe, tx) + timelock_delay(safe) < block.timestamp`.
+- MUST revert if `execution_time(safe, tx) < block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
 
 ### `checkPendingTransactions`
@@ -481,9 +494,8 @@ the `rejectTransaction` function name.
 ### `cancelTransaction`
 
 Called by anyone, verify that the `cancellation_threshold` has been met for the Safe to cancel a given scheduled
-transaction.
+transaction. It can be called at any time.
 
 - MUST revert if the contract is not enabled as a guard for the safe.
-- MUST revert if `scheduling_time(safe, tx) + timelock_delay(safe) >= block.timestamp`.
 - MUST revert if `sum(rejecting_owners(safe, tx)) < cancellation_threshold(safe)`.
 - MUST emit a `TransactionCancelled` event, with at least `safe` and a transaction identifier.
