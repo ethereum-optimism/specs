@@ -30,7 +30,8 @@ function setMinBaseFee(uint64 minBaseFee) external onlyOwner;
 
 ### `ConfigUpdate`
 
-When the configuration is updated, a [`ConfigUpdate`](../system-config.html#system-config-updates) event MUST be emitted with the following parameters:
+When the configuration is updated, a [`ConfigUpdate`](../system-config.html#system-config-updates) event
+MUST be emitted with the following parameters:
 
 | `version` | `updateType` | `data` | Usage |
 | ---- | ----- | --- | -- |
