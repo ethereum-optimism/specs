@@ -33,7 +33,7 @@ function setMinBaseFee(uint64 minBaseFee) external onlyOwner;
 When the configuration is updated, a [`ConfigUpdate`](../system-config.html#system-config-updates) event MUST be emitted with the following parameters:
 
 | `version` | `updateType` | `data` | Usage |
-
+| ---- | ----- | --- | -- |
 | `uint256(0)` | `uint8(6)` | `abi.encode(uint64(_minBaseFee))` | Modifies the minimum base fee (wei) |
 
 ### Initialization
