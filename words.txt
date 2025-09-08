@@ -203,7 +203,7 @@ replayability
 replayable
 reposted
 reputational
-restablished
+reestablished
 returndata
 Rollups
 rollups

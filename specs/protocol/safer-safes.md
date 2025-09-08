@@ -265,7 +265,7 @@ While a quorum of honest users exist, they should remain in control of the accou
 #### Severity: Medium
 
 If this invariant is broken, there would be an operational and possibly reputational impact while the ownership of the
-account is restablished to the account owners.
+account is reestablished to the account owners.
 
 ### iSS-004: The Liveness Challenge Period Is Greater Than The Timelock Delay
 
@@ -284,7 +284,7 @@ challenges at any time.
 #### Severity: Medium
 
 If this invariant is broken, there would be an operational and possibly reputational impact while the ownership of the
-account is restablished to the account owners.
+account is reestablished to the account owners.
 
 ### iSS-006: No Challenge Spam
 
@@ -443,6 +443,7 @@ and sets its quorum to 1.
 
 Returns the `cancellation_threshold` for a given safe.
 
+- MUST NOT revert
 - MUST return 0 if the contract is not enabled as a guard for the safe.
 
 ### `scheduleTransaction`
@@ -474,9 +475,10 @@ delay period has passed.
 
 Called by anyone, returns the list of all scheduled but not cancelled transactions for a given safe.
 
-*Note:* If we want to exclude executed transactions from this list, the TimelockGuard would need to query into the
-storage of the safe, and if a module that overrides replayability is implemented, the TimelockGuard would need to look
-into its storage as well.
+- MUST NOT revert
+
+*Note:* If we want to exclude executed transactions from this list, we would need to implement the
+`checkAfterExecution` hook and store the executed state for transactions.
 
 ### `rejectTransaction`
 
