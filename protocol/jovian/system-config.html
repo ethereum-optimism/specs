@@ -177,6 +177,7 @@
 <li><a href="#minimum-base-fee-configuration">Minimum Base Fee Configuration</a>
 <ul>
 <li><a href="#configupdate"><code>ConfigUpdate</code></a></li>
+<li><a href="#initialization">Initialization</a></li>
 <li><a href="#modifying-minimum-base-fee">Modifying Minimum Base Fee</a></li>
 <li><a href="#interface">Interface</a>
 <ul>
@@ -202,22 +203,30 @@ on OP Stack chains. The value is a minimum base fee in wei.</p>
 <pre><code class="language-solidity">function setMinBaseFee(uint64 minBaseFee) external onlyOwner;
 </code></pre>
 <h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
-<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
-<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
-<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
-<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
-<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
-<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
-<tr><td><code>OPERATOR_FEE_PARAMS</code></td><td><code>uint8(5)</code></td><td><code>uint256(_operatorFeeScalar) &lt;&lt; 64 | _operatorFeeConstant</code></td><td>Modifies the operator fee scalar and constant</td></tr>
-<tr><td><code>MIN_BASE_FEE</code></td><td><code>uint8(6)</code></td><td><code>abi.encode(uint64(_minBaseFee))</code></td><td>Modifies the minimum base fee (wei)</td></tr>
+<p>When the configuration is updated, a <a href="../system-config.html#system-config-updates"><code>ConfigUpdate</code></a> event
+MUST be emitted with the following parameters:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>version</code></th><th><code>updateType</code></th><th><code>data</code></th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>uint256(0)</code></td><td><code>uint8(6)</code></td><td><code>abi.encode(uint64(_minBaseFee))</code></td><td>Modifies the minimum base fee (wei)</td></tr>
 </tbody></table>
 </div>
+<h3 id="initialization"><a class="header" href="#initialization">Initialization</a></h3>
+<p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
+<ul>
+<li><code>emit ConfigUpdate.BATCHER</code></li>
+<li><code>emit ConfigUpdate.FEE_SCALARS</code></li>
+<li><code>emit ConfigUpdate.GAS_LIMIT</code></li>
+<li><code>emit ConfigUpdate.UNSAFE_BLOCK_SIGNER</code></li>
+</ul>
+<p>Intentionally absent from this is <code>emit ConfigUpdate.EIP_1559_PARAMS</code> and <code>emit ConfigUpdate.MIN_BASE_FEE</code>.
+As long as these values are unset, the default values will be used.
+Requiring these parameters to be set during initialization would add a strict requirement
+that the L2 hardforks before the L1 contracts are upgraded, and this is complicated to manage in a
+world of many chains.</p>
 <h3 id="modifying-minimum-base-fee"><a class="header" href="#modifying-minimum-base-fee">Modifying Minimum Base Fee</a></h3>
-<p>Upon update, the contract emits a <code>ConfigUpdate</code> event with a new <code>UpdateType</code> value <code>MIN_BASE_FEE</code>, enabling nodes
+<p>Upon update, the contract emits the <code>ConfigUpdate</code> event above, enabling nodes
 to derive the configuration from L1 logs.</p>
 <p>Implementations MUST incorporate the configured value into the block header <code>extraData</code> as specified in
-<code>./exec-engine.md</code>.</p>
+<code>./exec-engine.md</code>. Until the first such event is emitted, a default value of <code>0</code> should be used.</p>
 <h3 id="interface"><a class="header" href="#interface">Interface</a></h3>
 <h4 id="minimum-base-fee-parameters"><a class="header" href="#minimum-base-fee-parameters">Minimum Base Fee Parameters</a></h4>
 <h5 id="minbasefee"><a class="header" href="#minbasefee"><code>minBaseFee</code></a></h5>

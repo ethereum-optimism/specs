@@ -197,13 +197,10 @@
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>SystemConfig</code> is updated to allow for dynamic EIP-1559 parameters.</p>
 <h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
-<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
-<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
-<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>abi.encode(uint256(0), (uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar)</code></td><td>Modifies the fee scalars</td></tr>
-<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
-<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
-<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>abi.encode((uint256(_denominator) &lt;&lt; 32) | _elasticity)</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+<p>When the configuration is updated, a <a href="../system-config.html#system-config-updates"><code>ConfigUpdate</code></a> event
+MUST be emitted with the following parameters:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>version</code></th><th><code>updateType</code></th><th><code>data</code></th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>uint256(0)</code></td><td><code>uint8(4)</code></td><td><code>abi.encode((uint256(_denominator) &lt;&lt; 32) | _elasticity)</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
 </tbody></table>
 </div>
 <p>Note that the above encoding is the format emitted by the SystemConfig event, which differs from the format in extraData
@@ -219,7 +216,7 @@ from the block header.</p>
 <p>Intentionally absent from this is <code>emit ConfigUpdate.EIP_1559_PARAMS</code>.
 As long as these values are unset, the default values will be used.
 Requiring 1559 parameters to be set during initialization would add a strict requirement
-that the L2 hardforks before the L1 contracts, and this is complicated to manage in a
+that the L2 hardforks before the L1 contracts are upgraded, and this is complicated to manage in a
 world of many chains.</p>
 <h3 id="modifying-eip-1559-parameters"><a class="header" href="#modifying-eip-1559-parameters">Modifying EIP-1559 Parameters</a></h3>
 <p>A new <code>SystemConfig</code> <code>UpdateType</code> is introduced that enables the modification of
