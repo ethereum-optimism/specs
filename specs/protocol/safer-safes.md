@@ -372,6 +372,7 @@ Configure the contract as a timelock guard by setting the `timelock_delay`.
 
 - MUST allow an arbitrary number of `safe` contracts to use the contract as a guard.
 - The contract MUST be enabled as a guard for the `safe`.
+- MUST revert if `timelock_delay` is longer than 1 year.
 - MUST set the caller as a `safe`.
 - MUST take `timelock_delay` as a parameter and store is as related to the `safe`.
 - MUST emit a `GuardConfigured` event with at least `timelock_delay` as a parameter.
