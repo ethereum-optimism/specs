@@ -6,6 +6,7 @@
 
 - [Minimum Base Fee Configuration](#minimum-base-fee-configuration)
   - [`ConfigUpdate`](#configupdate)
+  - [Initialization](#initialization)
   - [Modifying Minimum Base Fee](#modifying-minimum-base-fee)
   - [Interface](#interface)
     - [Minimum Base Fee Parameters](#minimum-base-fee-parameters)
