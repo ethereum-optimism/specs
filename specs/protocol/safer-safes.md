@@ -435,7 +435,7 @@ Cancels a challenge for an enabled `safe`.
 With a successful challenge, removes all current owners from an enabled `safe`, appoints `fallback` as its sole owner,
 and sets its quorum to 1.
 
-- MUST be executable by anyone.
+- MUST only be executable by `fallback` owner of the challenged `safe`.
 - MUST revert if the `safe` hasn't enabled the contract as a module.
 - MUST revert if the `safe` hasn't configured the contract as a module.
 - MUST revert if there isn't a successful challenge for the given `safe`.
