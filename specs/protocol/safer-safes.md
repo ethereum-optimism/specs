@@ -486,7 +486,6 @@ Called by a Safe owner, signal the rejection of a scheduled transaction.
 
 - MUST revert if the contract is not enabled as a guard for the safe.
 - MUST revert if not called by an owner of the safe scheduled to execute the transaction, or in one of its child safes.
-- MUST be able to reference a transaction scheduled in a different safe. The transaction might not exist.
 - MUST emit a `TransactionRejected` event, with at least `safe` and a transaction identifier.
 
 ### `rejectTransactionWithSignature`
