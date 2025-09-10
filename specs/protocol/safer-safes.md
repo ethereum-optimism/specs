@@ -90,6 +90,9 @@ These extensions are developed using a singleton contract that can be enabled si
    authorized to execute transactions via the Safe. This means the liveness module must properly implement
    auth conditions internally.
 
+The extension contract specificationis compatible with the 
+[V1.5.0](https://github.com/safe-global/safe-contracts/releases/tag/v1.5.0) Safe contract version.
+
 When enabled as a guard, the extension contract implements a mandatory delay on the execution of transactions. When
 enabled as a module, the extension contract ensures a multisig remains operable by allowing challenges when it becomes
 unresponsive. If the multisig fails to prove liveness within a set period, ownership transfers to a trusted fallback
