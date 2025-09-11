@@ -11,6 +11,8 @@
 - [DA Footprint Block Limit](#da-footprint-block-limit)
   - [Scalar loading](#scalar-loading)
   - [Rationale](#rationale-1)
+- [Operator Fee](#operator-fee)
+  - [Fee Formula Update](#fee-formula-update)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -134,3 +136,33 @@ market, leading to suboptimal resource prices.
 
 By changing the meaning of the `gasUsed` field in times of high DA demand, the fee market can properly adjust without reverting
 to priority fee auctions (an inferior experience for users).
+
+## Operator Fee
+
+### Fee Formula Update
+
+Jovian updates the operator fee calculation to use a more impactful scalar multiplier, ensuring it serves as a meaningful fee mechanism.
+Starting at the Jovian activation, the operator fee MUST be computed as:
+
+$$
+\text{operatorFee} = (\text{gas} \times \text{operatorFeeScalar} \times 100) + \text{operatorFeeConstant}
+$$
+
+Where:
+
+- `gas` is the amount of gas that the transaction used. When buying gas before execution, use the transaction's
+  `gas_limit`. When computing the post-execution refund, use `gas_used` as described in the Isthmus spec.
+- `operatorFeeScalar` is a `uint32` set by the chain operator. The effective per-gas scalar applied is `100 * operatorFeeScalar`.
+- `operatorFeeConstant` is a `uint64` set by the chain operator.
+
+Maximum value note: with the new formula, the operator fee's maximum value has 103 bits:
+
+$$
+\text{operatorFee}_{\text{max}} = (\text{uint64}_{\text{max}} \times \text{uint32}_{\text{max}} \times 100) +
+\text{uint64}_{\text{max}} \approx 7.924660923989131 \times 10^{30}
+$$
+
+Implementations that use `uint256` for intermediate arithmetic do not need additional overflow checks.
+
+All other operator fee semantics described in the Isthmus spec (e.g., deposit transactions not being charged,
+refund rules, fee vault beneficiary) continue to apply.
