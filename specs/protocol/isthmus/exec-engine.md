@@ -220,7 +220,7 @@ fee. This fee follows the same semantics of existing fees charged in the EVM[^1]
 #### Fee Formula
 
 $$
-\text{operatorFee} = (\text{gas} \times \text{operatorFeeScalar} \div 10^6) + \text{operatorFeeConstant}
+\text{operatorFee} = (\text{gas} \times \text{operatorFeeScalar} \times 100) + \text{operatorFeeConstant}
 $$
 
 Where:
@@ -228,14 +228,14 @@ Where:
 - `gas` is the amount of gas that the transaction used. When calculating the amount of gas that is bought at the
   beginning of the transaction, this should be the `gas_limit`. When determining how much gas should be refunded,
   based off of how much of the `gas_limit` the transaction used, this should be the `gas_used`.
-- `operatorFeeScalar` is a `uint32` scalar set by the chain operator, scaled by `1e6`.
+- `operatorFeeScalar` is a `uint32` scalar set by the chain operator. The effective scalar applied to the gas is 100 times this value.
 - `operatorFeeConstant` is a `uint64` scalar set by the chain operator.
 
-Note that the operator fee's maximum value has 77 bits, which can be calculated from the maximum input parameters:
+Note that the operator fee's maximum value has 103 bits, which can be calculated from the maximum input parameters:
 
 $$
-\text{operatorFee}_{\text{max}} = (\text{uint64}_{\text{max}} \times \text{uint32}_{\text{max}} \div 10^6) +
-\text{uint64}_{\text{max}} \approx 7.924660923989131 \times 10^{22}
+\text{operatorFee}_{\text{max}} = (\text{uint64}_{\text{max}} \times \text{uint32}_{\text{max}} \times 100) +
+\text{uint64}_{\text{max}} \approx 7.924660923989131 \times 10^{30}
 $$
 
 So implementations don't need to check for overflows if they perform the calculations with `uint256` types.
