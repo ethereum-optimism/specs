@@ -292,11 +292,12 @@ PayloadAttributesV3: {
     gasLimit: QUANTITY or null
     eip1559Params: DATA (8 bytes) or null
     minBaseFee: QUANTITY or null
+    daFootprintGasScalar: QUANTITY (16 bits) or null
 }
 ```
 
 The requirements of this object are the same as extended [`PayloadAttributesV2`](#extended-payloadattributesv2) with
-the addition of `parentBeaconBlockRoot` which is the parent beacon block root from the L1 origin block of the L2 block.
+the addition of the fields listed below.
 
 Starting at Ecotone, the `parentBeaconBlockRoot` must be set to the L1 origin `parentBeaconBlockRoot`,
 or a zero `bytes32` if the Dencun functionality with `parentBeaconBlockRoot` is not active on L1.
@@ -304,8 +305,9 @@ or a zero `bytes32` if the Dencun functionality with `parentBeaconBlockRoot` is 
 Starting with Holocene, the `eip1559Params` field must encode the EIP1559 parameters. It must be `null` before.
 See [Dynamic EIP-1559 Parameters](holocene/exec-engine.md#dynamic-eip-1559-parameters) for details.
 
-Starting with Jovian, the `minBaseFee` field is added. It must be `null` before Jovian.
-See [Jovian Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee) for details.
+Starting with Jovian, the `minBaseFee` and `daFootprintGasScalar` fields are added. They must be `null` before Jovian.
+See [Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee) and
+[DA Footprint Gas Scalar](jovian/exec-engine.md#da-footprint-gas-scalar) for details.
 
 ### `engine_newPayloadV2`
 

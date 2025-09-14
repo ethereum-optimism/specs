@@ -8,6 +8,8 @@
   - [Minimum Base Fee in Block Header](#minimum-base-fee-in-block-header)
   - [Minimum Base Fee in `PayloadAttributesV3`](#minimum-base-fee-in-payloadattributesv3)
   - [Rationale](#rationale)
+- [DA Footprint Limit](#da-footprint-limit)
+  - [Rationale](#rationale-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -77,3 +79,31 @@ This retains the purity of the function that computes the next block's base fee 
 header, while still allowing them to be dynamically configured. Dynamic configuration is handled
 similarly to `gasLimit`, with the derivation pipeline providing the appropriate `SystemConfig`
 contract values to the block builder via `PayloadAttributesV3` parameters.
+
+## DA Footprint Limit
+
+This feature allows for the estimated data-availability (DA) footprint of a block to influence the block's `gasUsed`
+property (which is no longer always equal to the sum of the gas used in each transaction included in the block). In this
+way, the fee market is coupled to the estimated data-availability footprint via the EIP-1559 mechanism, allowing for an
+excess in data-availability requirements to cause a rise in the base fee.
+
+The total DA footprint of a block is calculated by scaling the cumulative DA footprint of its transactions
+(as calculated by the [Fjord LZ Estimation](../fjord/exec-engine.md#fjord-l1-cost-fee-changes-fastlz-estimator) by
+a configurable scalar value, the `daFootprintGasScalar`.
+
+The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar` and `operatorFeeConstant`
+[included](../isthmus/exec-engine.md#operator-fee) in the Isthmus fork. It can be read in two interchangable ways:
+
+- read from the deposited L1 attributes (`daFootprintGasScalar`) of the current L2 block
+- read from the L1 Block Info contract (`0x4200000000000000000000000000000000000015`)
+  - using the solidity getter function `daFootprintGasScalar`
+  - using a direct storage-read: big-endian `uint16` in slot `9` at offset `0`.
+
+### Rationale
+
+While the current L1 fee mechanism charges for DA usage based on the size of a transaction, it does not influence future
+base fee calculations. As a result, excessive DA usage is not efficiently reflected in the fee market, leading to suboptimal
+resource prices.
+
+By changing the meaning of the `gasUsed` field in times of high DA demand, the fee market can properly adjust without reverting
+to an inferior PFA experience.
