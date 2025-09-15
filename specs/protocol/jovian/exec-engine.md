@@ -82,9 +82,8 @@ contract values to the block builder via `PayloadAttributesV3` parameters.
 
 ## DA Footprint Limit
 
-Jovian changes the interpretation of an L2 block's `gasUsed` field. Before, the `gasUsed` was equal to the total gas used
-by all transactions in a block. After Jovian, `gasUsed` is equal to a block's "DA footprint" iff the footprint exceeds
-the total gas used by transactions. As a result, blocks with high DA usage will cause the base fee to increase in
+From Jovian, `gasUsed` is equal to a block's "DA footprint" if the footprint exceeds
+the total gas used by transaction, and equal to the sum of the gas used by each transaction otherwise. As a result, blocks with high DA usage may cause the base fee to increase in
 subsequent blocks.
 
 A block's DA footprint is calculated by scaling the cumulative DA footprint of its transactions
