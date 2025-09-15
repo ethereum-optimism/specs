@@ -35,3 +35,4 @@ In the first L2 block after the Jovian activation block, the Jovian L1 attribute
 
 The pre-Jovian values are migrated over 1:1.
 Blocks after the Jovian activation block contain all pre-Jovian values 1:1, and also set `daFootprintGasScalar`.
+The default value for the `daFootprintGasScalar` is `400`.
