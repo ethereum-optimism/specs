@@ -19,6 +19,7 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
+- [Network upgrade transactions](./derivation.md#network-upgrade-transactions) applied during derivation
 - Auto-upgrading and extension of the [L1 Attributes Predeployed Contract][l1-attributes.md]
   (also known as `L1Block` predeploy)
 
