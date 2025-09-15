@@ -9157,6 +9157,7 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 <li><a href="protocol/system-config.html#setgaslimit">setGasLimit</a></li>
 <li><a href="protocol/system-config.html#seteip1559params">setEIP1559Params</a></li>
 <li><a href="protocol/system-config.html#setoperatorfeescalars">setOperatorFeeScalars</a></li>
+<li><a href="protocol/system-config.html#setminbasefee">setMinBaseFee</a></li>
 <li><a href="protocol/system-config.html#resourceconfig">resourceConfig</a></li>
 <li><a href="protocol/system-config.html#guardian">guardian</a></li>
 </ul>
@@ -9279,6 +9280,7 @@ updates <code>baseFeeScalar</code> and <code>blobBaseFeeScalar</code></li>
 <li>Type <code>3</code>: <code>unsafeBlockSigner</code> overwrite, as <code>address</code> payload</li>
 <li>Type <code>4</code>: <code>eip1559Params</code> overwrite, as <code>uint256</code> payload encoding denomination and elasticity</li>
 <li>Type <code>5</code>: <code>operatorFeeParams</code> overwrite, as <code>uint256</code> payload encoding scalar and constant</li>
+<li>Type <code>6</code>: <code>minBaseFee</code> overwrite, as <code>uint64</code> payload</li>
 </ul>
 <h2 id="function-specification-3"><a class="header" href="#function-specification-3">Function Specification</a></h2>
 <h3 id="initialize-3"><a class="header" href="#initialize-3">initialize</a></h3>
@@ -9412,6 +9414,13 @@ system is NOT configured to use the <code>ETHLockbox</code> contract.</li>
 <li>MUST revert if called by an address other than the owner.</li>
 <li>MUST update the operatorFeeScalar and operatorFeeConstant values.</li>
 <li>MUST emit a ConfigUpdate event with the UpdateType.OPERATOR_FEE_PARAMS type.</li>
+</ul>
+<h3 id="setminbasefee"><a class="header" href="#setminbasefee">setMinBaseFee</a></h3>
+<p>Starting at Jovian, this function allows the owner to update the minimum base fee parameter.</p>
+<ul>
+<li>MUST revert if called by an address other than the owner.</li>
+<li>MUST update the minBaseFee value.</li>
+<li>MUST emit a ConfigUpdate event with the UpdateType.MIN_BASE_FEE type.</li>
 </ul>
 <h3 id="resourceconfig"><a class="header" href="#resourceconfig">resourceConfig</a></h3>
 <p>Returns the current resource metering configuration.</p>
