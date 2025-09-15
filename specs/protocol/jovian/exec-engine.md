@@ -83,8 +83,8 @@ contract values to the block builder via `PayloadAttributesV3` parameters.
 ## DA Footprint Limit
 
 From Jovian, `gasUsed` is equal to a block's "DA footprint" if the footprint exceeds
-the total gas used by transaction, and equal to the sum of the gas used by each transaction otherwise. As a result, blocks with high DA usage may cause the base fee to increase in
-subsequent blocks.
+the total gas used by transaction, and equal to the sum of the gas used by each transaction otherwise. As a result,
+blocks with high DA usage may cause the base fee to increase in subsequent blocks.
 
 A block's DA footprint is calculated by scaling the cumulative DA footprint of its transactions
 (as calculated by the [Fjord LZ Estimation](../fjord/exec-engine.md#fjord-l1-cost-fee-changes-fastlz-estimator) by
@@ -100,9 +100,9 @@ The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar`
 
 ### Rationale
 
-While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, it does not influence future
-base fee calculations. As a result, excessive DA usage is not efficiently reflected in the fee market, leading to suboptimal
-resource prices.
+While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, it
+does not influence future base fee calculations. As a result, excessive DA usage is not efficiently reflected in the fee
+market, leading to suboptimal resource prices.
 
 By changing the meaning of the `gasUsed` field in times of high DA demand, the fee market can properly adjust without reverting
 to priority fee auctions (an inferior experience for users).
