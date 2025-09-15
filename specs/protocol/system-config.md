@@ -372,7 +372,7 @@ Starting at Jovian, this function allows the owner to update the minimum base fe
 
 ### setDAFootprintGasScalar
 
-Allows the owner to update the da footprint gas scalar.
+Starting at Jovian, this function allows the owner to update the DA footprint gas scalar.
 
 - MUST revert if called by an address other than the owner.
 - MUST update the daFootprintGasScalar value.

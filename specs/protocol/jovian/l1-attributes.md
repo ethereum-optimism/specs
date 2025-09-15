@@ -26,7 +26,7 @@ The L1 block attributes transaction is updated to include the DA footprint gas s
 | batcherHash       | bytes32 | 132-163        | 5       |
 | operatorFeeScalar   | uint32  | 164-167      | 6       |
 | operatorFeeConstant | uint64  | 168-175      |         |
-| daFootprintGasScalar | uint16  | 176-177     | 7       |
+| daFootprintGasScalar | uint16  | 176-177     |         |
 
 Note that the first input argument, in the same pattern as previous versions of the L1 attributes transaction,
 is the function selector: the first four bytes of `keccak256("setL1BlockValuesJovian()")`.
@@ -37,4 +37,4 @@ The pre-Jovian values are migrated over 1:1.
 Blocks after the Isthmus activation block contain all pre-Isthmus values 1:1,
 and also set the following new attributes:
 
-- The `daFootprintGasScalar` is set to `<todo>`.
+- The `daFootprintGasScalar` is set to `400`.

@@ -82,14 +82,14 @@ contract values to the block builder via `PayloadAttributesV3` parameters.
 
 ## DA Footprint Limit
 
-This feature allows for the estimated data-availability (DA) footprint of a block to influence the block's `gasUsed`
-property (which is no longer always equal to the sum of the gas used in each transaction included in the block). In this
-way, the fee market is coupled to the estimated data-availability footprint via the EIP-1559 mechanism, allowing for an
-excess in data-availability requirements to cause a rise in the base fee.
+Jovian changes the interpretation of an L2 block's `gasUsed` field. Before, the `gasUsed` was equal to the total gas used
+by all transactions in a block. After Jovian, `gasUsed` is equal to a block's "DA footprint" iff the footprint exceeds
+the total gas used by transactions. As a result, blocks with high DA usage will cause the base fee to increase in
+subsequent blocks.
 
-The total DA footprint of a block is calculated by scaling the cumulative DA footprint of its transactions
+A block's DA footprint is calculated by scaling the cumulative DA footprint of its transactions
 (as calculated by the [Fjord LZ Estimation](../fjord/exec-engine.md#fjord-l1-cost-fee-changes-fastlz-estimator) by
-a configurable scalar value, the `daFootprintGasScalar`.
+a configurable scalar value, the `daFootprintGasScalar`. The larger the scalar, the higher the price of DA.
 
 The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar` and `operatorFeeConstant`
 [included](../isthmus/exec-engine.md#operator-fee) in the Isthmus fork. It can be read in two interchangable ways:

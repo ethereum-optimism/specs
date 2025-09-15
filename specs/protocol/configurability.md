@@ -32,7 +32,6 @@
   - [Governance Token](#governance-token)
   - [Operator Fee Scalar](#operator-fee-scalar)
   - [Operator Fee Constant](#operator-fee-constant)
-  - [DA Footprint Gas Scalar](#da-footprint-gas-scalar)
   - [Resource Config](#resource-config)
 - [Policy Parameters](#policy-parameters)
   - [Data Availability Type](#data-availability-type)
@@ -300,12 +299,6 @@ contracts deployed on layer 1.<br/>
 
 Note that the operator fee scalar and constant are primarily used for non-standard configurations,
 like op-succinct, so their standard values are 0.
-
-### [DA Footprint Gas Scalar](exec-engine.md#da-footprint)
-
-**Description:** scales the cumulative da size of all transactions in a block. <br/>
-**Administrator:** [System Config Owner](#admin-roles)<br/>
-**Requirement:** 0 <br/>
 
 [^chain-id-uniqueness]: The chain ID must be globally unique among all EVM chains.
 
