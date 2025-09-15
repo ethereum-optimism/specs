@@ -100,7 +100,7 @@ The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar`
 
 ### Rationale
 
-While the current L1 fee mechanism charges for DA usage based on the size of a transaction, it does not influence future
+While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, it does not influence future
 base fee calculations. As a result, excessive DA usage is not efficiently reflected in the fee market, leading to suboptimal
 resource prices.
 
