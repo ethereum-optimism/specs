@@ -12,22 +12,26 @@ PYTHON_SCRIPT="${SCRIPT_DIR}/gen_predeploy_docs.py"
 DEPS_DIR="${SCRIPT_DIR}/.venv"
 # ────────────────────────────────────────────────────────────────────────────────
 
-# 1) Create and activate virtual environment
+# 0) Ensure 'uv' is available
+if ! command -v uv >/dev/null 2>&1; then
+  echo "✗ Error: 'uv' is required but was not found in PATH." >&2
+  echo "  Install with Homebrew: brew install uv" >&2
+  exit 1
+fi
+
+# 1) Create and activate virtual environment (via uv)
 if [ ! -d "${DEPS_DIR}" ]; then
   echo "➤ Creating virtual environment at ${DEPS_DIR}…"
-  python3 -m venv "${DEPS_DIR}"
+  uv venv "${DEPS_DIR}"
 fi
 
 # Activate virtual environment
 # shellcheck disable=SC1091
 source "${DEPS_DIR}/bin/activate"
 
-# 2) Upgrade pip and install dependencies
-echo "➤ Upgrading pip…"
-pip install --upgrade pip
-
+# 2) Install dependencies using uv
 echo "➤ Installing dependencies…"
-pip install jinja2
+uv pip install jinja2
 
 # 3) Exec your script, passing along any args
 exec python "${PYTHON_SCRIPT}" "$@"

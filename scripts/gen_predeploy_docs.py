@@ -115,7 +115,7 @@ def check_dependencies():
     try:
         import jinja2
     except ImportError:
-        raise EnvironmentError("Required Python package 'jinja2' is not installed. Please install it with 'pip install jinja2'.")
+        raise EnvironmentError("Required Python package 'jinja2' is not installed. Please install it with 'uv pip install jinja2'.")
 
 def stash_and_checkout(repo_path, git_commit_hash):
     """Stash any changes in the repo and checkout the specified commit. Returns True if successful, False otherwise."""
