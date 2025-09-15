@@ -88,7 +88,7 @@ subsequent blocks.
 
 A block's DA footprint is calculated by scaling the cumulative DA footprint of its transactions
 (as calculated by the [Fjord LZ Estimation](../fjord/exec-engine.md#fjord-l1-cost-fee-changes-fastlz-estimator) by
-a configurable scalar value, the `daFootprintGasScalar`. The larger the scalar, the higher the price of DA.
+a configurable scalar value, the `daFootprintGasScalar`.
 
 The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar` and `operatorFeeConstant`
 [included](../isthmus/exec-engine.md#operator-fee) in the Isthmus fork. It can be read in two interchangable ways:
