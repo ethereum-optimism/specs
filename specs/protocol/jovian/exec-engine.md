@@ -105,4 +105,4 @@ base fee calculations. As a result, excessive DA usage is not efficiently reflec
 resource prices.
 
 By changing the meaning of the `gasUsed` field in times of high DA demand, the fee market can properly adjust without reverting
-to an inferior PFA experience.
+to priority fee auctions (an inferior experience for users).
