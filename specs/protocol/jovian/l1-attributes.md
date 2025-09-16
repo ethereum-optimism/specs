@@ -34,5 +34,4 @@ is the function selector: the first four bytes of `keccak256("setL1BlockValuesJo
 In the first L2 block after the Jovian activation block, the Jovian L1 attributes are used.
 
 The pre-Jovian values are migrated over 1:1.
-Blocks after the Jovian activation block contain all pre-Jovian values 1:1, and also set `daFootprintGasScalar`.
-The default value for the `daFootprintGasScalar` is `400`.
+Blocks after the Jovian activation block contain all pre-Jovian values 1:1, and also set `daFootprintGasScalar` to the value from the `SystemConfig`. If that value is `0`, then a default of `600` is set. 
