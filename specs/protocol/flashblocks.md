@@ -1,3 +1,5 @@
+# Flashblocks
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <!-- *Authors: [Ferran](https://github.com/ferranbt), [Dmarz](https://github.com/dmarzzz),
@@ -337,9 +339,9 @@ This architecture shows the flow of data through the Flashblocks system:
 
 1. The **OP Node** initiates block production and sends requests to **Rollup Boost**
 2. **Rollup Boost** coordinates between multiple components:
-- It communicates with the **Block Builder** to create Flashblocks
-- It maintains a connection to the **Fallback EL** for reliability if the Block Builder fails
-- It propagates validated Flashblocks to the network via the **WebSocket Proxy**
+   - It communicates with the **Block Builder** to create Flashblocks
+   - It maintains a connection to the **Fallback EL** for reliability if the Block Builder fails
+   - It propagates validated Flashblocks to the network via the **WebSocket Proxy**
 3. The **WebSocket Proxy** distributes Flashblocks to multiple **RPC Providers**
 4. **RPC Providers** serve preconfirmation data to **End Users**
 
@@ -424,8 +426,8 @@ Rollup Boost as it normally would to its local Execution Engine.
 
     Rollup Boost forwards the `engine_forkchoiceUpdated` call concurrently to:
 
-- The Sequencer's local Execution Engine
-- The External Block Builder
+   - The Sequencer's local Execution Engine
+   - The External Block Builder
 
 3. **Flashblock Construction**:
 
@@ -592,60 +594,60 @@ constructing subsequent Flashblocks by following these steps for each interval:
 
 1. **Transaction Selection**
 
-- Retrieve transactions from local or external mempool:
-- Prioritize and sort transactions based on predefined sequencing policies, such as priority ordering or by MEV paid.
+   - Retrieve transactions from local or external mempool:
+   - Prioritize and sort transactions based on predefined sequencing policies, such as priority ordering or by MEV paid.
 
 2. **Transaction Execution**
 
-- Sequentially execute selected transactions against a state snapshot derived from the current execution payload base
+   - Sequentially execute selected transactions against a state snapshot derived from the current execution payload base
 (ExecutionPayloadBaseV1) or the last validated flashblock
-- Apply the transaction inclusion heuristics described earlier to determine when to stop including transactions
-- After transaction execution completes, apply all post-block execution rules as described in the Post-Block Execution
+   - Apply the transaction inclusion heuristics described earlier to determine when to stop including transactions
+   - After transaction execution completes, apply all post-block execution rules as described in the Post-Block Execution
 Rules section
 
 3. **Flashblock Payload Assembly**
 
-- After transaction execution, compute and record the following execution state updates:
-- `state_root`: The new post-execution state root resulting from the executed transactions.
-- `receipts_root`: The receipts trie root derived from execution outcomes.
-- `logs_bloom`: Aggregated logs bloom from all emitted transaction logs within this flashblock.
-- `gas_used`: Total gas consumed by executed transactions.
-- `transactions`: Serialized transaction payloads included within the flashblock.
-- `withdrawals` (if applicable): Withdrawals executed during the current flashblock interval (as per OP Stack
+   - After transaction execution, compute and record the following execution state updates:
+   - `state_root`: The new post-execution state root resulting from the executed transactions.
+   - `receipts_root`: The receipts trie root derived from execution outcomes.
+   - `logs_bloom`: Aggregated logs bloom from all emitted transaction logs within this flashblock.
+   - `gas_used`: Total gas consumed by executed transactions.
+   - `transactions`: Serialized transaction payloads included within the flashblock.
+   - `withdrawals` (if applicable): Withdrawals executed during the current flashblock interval (as per OP Stack
 withdrawal specification).
-- `block_hash`: Computed block hash uniquely identifying this flashblock execution state.
+   - `block_hash`: Computed block hash uniquely identifying this flashblock execution state.
 
     Note that each flashblock builds upon the state of all previous flashblocks, with these fields reflecting the
 cumulative state after applying the new transactions in this particular flashblock.
 
-- Encapsulate these computed updates into `ExecutionPayloadFlashblockDeltaV1`.
+   - Encapsulate these computed updates into `ExecutionPayloadFlashblockDeltaV1`.
 
-5. **Flashblock Indexing and Metadata**
+4. **Flashblock Indexing and Metadata**
 
-- Assign a monotonically incremented `index` to the newly constructed Flashblock payload.
-- Compute the SSZ hash of the previous Flashblock and assign it as the `parent_flash_hash` (for the first Flashblock
+   - Assign a monotonically incremented `index` to the newly constructed Flashblock payload.
+   - Compute the SSZ hash of the previous Flashblock and assign it as the `parent_flash_hash` (for the first Flashblock
 with index 0, this field is empty)
 
-6. **Flashblock Delivery**
+5. **Flashblock Delivery**
 
-- Package the `index`, `payload_id`,  `ExecutionPayloadFlashblockDeltaV1`, and metadata into a `FlashblocksPayloadV1`
+   - Package the `index`, `payload_id`,  `ExecutionPayloadFlashblockDeltaV1`, and metadata into a `FlashblocksPayloadV1`
 payload.
-- Deliver the assembled `FlashblocksPayloadV1` payload promptly to Rollup Boost via the designated Flashblocks
+   - Deliver the assembled `FlashblocksPayloadV1` payload promptly to Rollup Boost via the designated Flashblocks
 submission API.
 
-7. **Subsequent Flashblock Construction**
+6. **Subsequent Flashblock Construction**
 
-- Immediately after successful delivery, increment the Flashblock `index`.
-- Revert any post-block execution changes as described in the Post-Block Execution Rules section
-- Reset the transaction execution context based on the newly delivered state.
-- Begin constructing the next `FlashblocksPayloadV1` payload, repeating from step 1 until a termination condition is
+   - Immediately after successful delivery, increment the Flashblock `index`.
+   - Revert any post-block execution changes as described in the Post-Block Execution Rules section
+   - Reset the transaction execution context based on the newly delivered state.
+   - Begin constructing the next `FlashblocksPayloadV1` payload, repeating from step 1 until a termination condition is
 reached (e.g., end of block building period via `engine_getPayload` request).
 
-8. **Flashblock Construction Termination**
+7. **Flashblock Construction Termination**
 
-- Flashblock construction continues iteratively until:
-- Rollup Boost signals final block aggregation and propagation via `engine_getPayload`.
-- A failure or timeout condition arises requiring failover procedures, detailed separately.
+   - Flashblock construction continues iteratively until:
+   - Rollup Boost signals final block aggregation and propagation via `engine_getPayload`.
+   - A failure or timeout condition arises requiring failover procedures, detailed separately.
 
 ```mermaid
 sequenceDiagram
