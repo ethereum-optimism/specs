@@ -78,10 +78,9 @@ technology to enable quick verifiability over various networks of machines in ad
 
 This document assumes knowledge of the terminology, definitions, and other material in
 
-- [🔗 Ethereum Optimism Protocol Specs][ethereum-optimism](https://github.com/ethereum-optimism/)
+- [🔗 Ethereum Optimism Protocol Specs](https://github.com/ethereum-optimism/)
 - [🔗 OP Stack Engine API](https://specs.optimism.io/protocol/exec-engine.html#engine-api)
-- [🔗 External Block Production in OP Stack Design
-Doc][ethereum-optimism](https://github.com/ethereum-optimism/)
+- [🔗 External Block Production in OP Stack Design Doc](https://github.com/ethereum-optimism/)
 - [🔗 Ethereum Execution APIs](https://github.com/ethereum/execution-apis/tree/main)
 - [🔗 Introducing Rollup-Boost - Launching on Unichain](https://writings.flashbots.net/introducing-rollup-boost)
 - [🔗 Rollup-boost design doc](https://www.notion.so/RFD-1-Rollup-boost-1996b4a0d876802f95d1c98387e38162?pvs=21)
@@ -112,16 +111,15 @@ streamlined path for incremental adoption by node operators and existing infrast
 ## Terminology
 
 All terms, actors, and components are used in this document identically to how they are defined in the [OP Stack
-protocol definition][ethereum-optimism](https://github.com/ethereum-optimism/)
+protocol definition](https://github.com/ethereum-optimism/)
 
 Additional terms introduced:
 
 - **External Block Builder** - External Block Builders are first introduced to the OP Stack in the [External Block
-Production Design
-Document][ethereum-optimism](https://github.com/ethereum-optimism/) ****where
+Production Design Document](https://github.com/ethereum-optimism/) where
 they are described as an external party that the Sequencer can request blocks from.
 - **Rollup Boost** - A sidecar piece of software first introduced without name in the [External Block Production Design
-Document][ethereum-optimism](https://github.com/ethereum-optimism/) with two
+Document](https://github.com/ethereum-optimism/) with two
 roles:
     1. obfuscate the presence of External Block Builder software from the `op-node` and `op-geth` software
     2. manage communication from the sequencer with External Block Builders and handle block delivery to `op-node` .
@@ -428,6 +426,7 @@ Rollup Boost as it normally would to its local Execution Engine.
 
 - The Sequencer's local Execution Engine
 - The External Block Builder
+
 3. **Flashblock Construction**:
 
     Upon receiving the fork choice update, the External Block Builder constructs and continuously delivers
