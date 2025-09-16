@@ -81,9 +81,9 @@ function minBaseFee() external view returns (uint64);
 
 ## DA Footprint Configuration
 
-Jovian adds a configuration value to `SystemConfig` to control the `daFootprintGasScalar`.
-The value is a multiplier on the cumulative da footprint of a block's transactions, scaling it so
-it can be compared to the gas limit.
+Jovian adds a configuration value to the `SystemConfig` to control the `daFootprintGasScalar`.
+The value is a multiplier on the cumulative DA footprint of a block's transactions, scaling it up to the
+gas dimension so it is comparable to the gas limit.
 
 | Name                   | Type     | Default | Meaning                 |
 |------------------------|----------|---------|-------------------------|
