@@ -2,11 +2,6 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<!-- *Authors: [Ferran](https://github.com/ferranbt), [Dmarz](https://github.com/dmarzzz),
-[Shana](https://github.com/avalonche), [0xkitsune](https://github.com/0xkitsune),
-[protolambda](https://github.com/protolambda), [Anton](https://github.com/0x416e746f6e),
-[Joshua](https://github.com/trianglesphere)* -->
-
 **Table of Contents**
 
 - [Abstract](#abstract)
@@ -16,13 +11,13 @@
   - [Terminology](#terminology)
   - [Parameters](#parameters)
   - [Data structures](#data-structures)
-    - [`FlashblocksPayloadV1`](#flashblockspayloadv1)
-    - [`ExecutionPayloadFlashblockDeltaV1`](#executionpayloadflashblockdeltav1)
-    - [`ExecutionPayloadStaticV1`](#executionpayloadstaticv1)
-    - [`Metadata`](#metadata)
-    - [`AccountMetadata`](#accountmetadata)
-    - [`StorageSlot`](#storageslot)
-    - [`TransactionMetadata`](#transactionmetadata)
+    - [**`FlashblocksPayloadV1`**](#flashblockspayloadv1)
+    - [**`ExecutionPayloadFlashblockDeltaV1`**](#executionpayloadflashblockdeltav1)
+    - [**`ExecutionPayloadStaticV1`**](#executionpayloadstaticv1)
+    - [**`Metadata`**](#metadata)
+    - [**`AccountMetadata`**](#accountmetadata)
+    - [**`StorageSlot`**](#storageslot)
+    - [**`TransactionMetadata`**](#transactionmetadata)
   - [System architecture](#system-architecture)
   - [Out-of-Protocol Design](#out-of-protocol-design)
     - [In-Protocol vs. Out-of-Protocol](#in-protocol-vs-out-of-protocol)
