@@ -80,7 +80,7 @@ header, while still allowing them to be dynamically configured. Dynamic configur
 similarly to `gasLimit`, with the derivation pipeline providing the appropriate `SystemConfig`
 contract values to the block builder via `PayloadAttributesV3` parameters.
 
-## DA Footprint Limit
+## DA Footprint Block Limit
 
 From Jovian, `gasUsed` is equal to a block's "DA footprint" if the footprint exceeds
 the total gas used by transaction, and equal to the sum of the gas used by each transaction otherwise. As a result,
