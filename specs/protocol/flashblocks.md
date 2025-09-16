@@ -157,6 +157,8 @@ class FlashblocksPayloadV1():
     metadata: FlashblocksMetadata
 **Field descriptions:**
 
+```
+
 - `payload_id`: PayloadID is an identifier of the payload build process. The same for all flashblocks.
 - `index`: Index of the Flashblock within the parent block.
 - `parent_flash_hash`: SSZ hash of the parent flashblock in the sequence. For the first flashblock (index 0), the field
@@ -241,6 +243,7 @@ Container encapsulating all metadata for a flashblock, including account state c
 class FlashblockMetadata():
          accounts: List[AccountMetadata]
   transactions: List[TransactionMetadata]
+```
 
 **Field descriptions:**
 
@@ -836,7 +839,7 @@ implemented between Rollup Boost and external RPC providers to relay this inform
 
 This mirror simply relays WebSocket data without requiring any Flashblocks-specific knowledge, acting purely as a
 transport layer that forwards WebSocket messages from Rollup Boost to subscribed RPC providers. You can find an example
-implementation [here](https://github.com/base/flashblocks-websocket-proxy).
+implementation in the [flashblocks-websocket-proxy repository](https://github.com/base/flashblocks-websocket-proxy).
 
 ```mermaid
 flowchart TD
