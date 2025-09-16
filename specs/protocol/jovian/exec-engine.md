@@ -8,7 +8,7 @@
   - [Minimum Base Fee in Block Header](#minimum-base-fee-in-block-header)
   - [Minimum Base Fee in `PayloadAttributesV3`](#minimum-base-fee-in-payloadattributesv3)
   - [Rationale](#rationale)
-- [DA Footprint Limit](#da-footprint-limit)
+- [DA Footprint Block Limit](#da-footprint-block-limit)
   - [Rationale](#rationale-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
