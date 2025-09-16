@@ -83,12 +83,19 @@ contract values to the block builder via `PayloadAttributesV3` parameters.
 ## DA Footprint Block Limit
 
 From Jovian, `gasUsed` is equal to a block's "DA footprint" if the footprint exceeds
-the total gas used by transaction, and equal to the sum of the gas used by each transaction otherwise. As a result,
-blocks with high DA usage may cause the base fee to increase in subsequent blocks.
+the total gas used by transaction, and equal to the sum of the gas used by each transaction (excluding deposits)
+otherwise. As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
 
 A block's DA footprint is calculated by scaling the cumulative DA footprint of its transactions
 (as calculated by the [Fjord LZ Estimation](../fjord/exec-engine.md#fjord-l1-cost-fee-changes-fastlz-estimator) by
-a configurable scalar value, the `daFootprintGasScalar`.
+a configurable scalar value, the `daFootprintGasScalar`:
+
+```python
+da_usage_estimate = max(minTransactionSize, intercept + fastlzCoef*fastlzSize / 1e6)
+da_footprint = da_usage_estimate * da_footprint_gas_scalar
+```
+
+Here, `fastlzSize` is the length of the FastLZ-compressed RLP-encoding of a transaction.
 
 The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar` and `operatorFeeConstant`
 [included](../isthmus/exec-engine.md#operator-fee) in the Isthmus fork. It can be read in two interchangable ways:
