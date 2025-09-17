@@ -182,6 +182,14 @@ prove that it is not in a liveness failure state.
 
 The following list defines variables that will be used in TimelockGuard specifically.
 
+### Safe
+
+The `safe` is the Safe contract that is being extended.
+
+### Tx Hash
+
+The `txHash` is the hash of all the transaction data as calculated by the Safe contract.
+
 ### Scheduled Transaction
 
 A specific transaction that has been stored in the Timelock, for execution from a given safe.
@@ -214,8 +222,16 @@ that rejected the transaction.
 
 The `cancellation_threshold(safe)` is the number of owners that must reject a given transaction for it not to be
 executed after the `timelock_delay(safe)`. It starts at 1 for each safe, increasing by 1 with each consecutive
-cancelled transaction by the given safe up to `blocking_threshold(safe)`, resetting to 1 with each successfully
-executed transaction by the given safe.
+cancelled transaction by the given safe up to the minimum of `blocking_threshold(safe)` and `quorum(safe)`, resetting
+to 1 with each successfully executed transaction by the given safe.
+
+The upper bound of the `cancellation_threshold(safe)` is `blocking_threshold(safe)` because at that point the absent
+or malicious owners force the safe into a liveness failure, and the LivenessModule should be used.
+
+The upper bound of the `cancellation_threshold(safe)` is also `quorum(safe)` because at that point the safe is in a
+safety failure, and the LivenessModule should be used if there are enough honest owners left to cancel the challenge
+responses. If a malicious party has control over a quorum of keys, and is capable of indefinitely respond to liveness
+challenges, other security mechanisms should be used to protect the protocol or its users.
 
 ## Assumptions
 
@@ -455,72 +471,89 @@ Returns the `timelock_delay` for a given `safe`.
 
 - MUST never revert.
 
+#### `cancellationThreshold`
+
+Returns the `cancellation_threshold` for a given `safe`.
+
+- MUST NOT revert
+- MUST return 0 if the contract is not enabled as a guard for the `safe`.
+
+#### `getScheduledTransaction`
+
+Returns the scheduled transaction for a given `safe` and `txHash`.
+
+- MUST NOT revert
+- MUST return an empty transaction if the transaction is not scheduled.
+
+#### `getAllScheduledTransactions`
+
+Called by anyone, returns the list of all scheduled but not cancelled or executed transactions for a given safe.
+
+- MUST NOT revert
+- MUST return the list of all scheduled but not cancelled or executed transactions for the given `safe`.
+
 #### `configureTimelockGuard`
 
 Configure the contract as a timelock guard by setting the `timelock_delay`.
 
 - MUST allow an arbitrary number of `safe` contracts to use the contract as a guard.
-- The contract MUST be enabled as a guard for the `safe`.
+- MUST revert if the contract is not enabled as a guard for the `safe`.
 - MUST revert if `timelock_delay` is longer than 1 year.
 - MUST set the caller as a `safe`.
 - MUST take `timelock_delay` as a parameter and store is as related to the `safe`.
+- MUST set the `cancellation_threshold` to 1.
 - MUST emit a `GuardConfigured` event with at least `timelock_delay` as a parameter.
 
 #### `clearTimelockGuard`
 
 Remove the timelock guard configuration by a previously enabled `safe`.
 
-- The contract MUST NOT be enabled as a guard for the `safe`.
+- MUST revert if the contract is enabled as a guard for the `safe`.
+- MUST revert if the contract is not configured for the `safe`.
 - MUST erase the existing `timelock_delay` data related to the calling `safe`.
-- If a challenge exists, it MUST be cancelled, including emitting the appropriate events.
 - MUST emit a `GuardCleared` event.
-
-#### `cancellationThreshold`
-
-Returns the `cancellation_threshold` for a given safe.
-
-- MUST NOT revert
-- MUST return 0 if the contract is not enabled as a guard for the safe.
 
 #### `scheduleTransaction`
 
 Called by anyone using signatures from Safe owners, registers a transaction in the TimelockGuard for execution after
 the `timelock_delay`.
 
-- MUST revert if the contract is not enabled as a guard for the safe.
+- MUST revert if the contract is not enabled as a guard for the `safe`.
+- MUST revert if the contract is not configured for the `safe`.
 - MUST take the same parameters as `execTransaction`.
 - MUST revert if an identical transaction has already been scheduled.
 - MUST revert if an identical transaction was cancelled.
-- MUST set `execution_time(safe, tx)` to `block.timestamp + timelock_delay(safe)`.
+- MUST set `execution_time(safe, txHash)` to `block.timestamp + timelock_delay(safe)`.
 - MUST emit a `TransactionScheduled` event, with at least `safe` and relevant transaction data.
 
-To allow for identical transactions to be scheduled more than once, but requiring different signatures for each one, a
-`salt` parameter can be included in `data` with the sole purpose of differentiating otherwise identical transactions.
+#### `cancelTransaction`
+
+Makes a scheduled transaction not executable. To do so, it builds a no-op transaction at the same nonce as the
+scheduled transaction, and verifies that the supplied signatures for such a no-op transaction are valid and amount to
+`cancellation_threshold(safe)`. If successful, it increases the `cancellation_threshold(safe)` by 1.
+
+- MUST revert if the contract is not enabled as a guard for the `safe`.
+- MUST revert if the contract is not configured for the `safe`.
+- MUST revert if `sum(rejecting_owners(safe, tx)) < cancellation_threshold(safe)`.
+- MUST emit a `TransactionCancelled` event, with at least `safe` and a transaction identifier.
 
 #### `checkTransaction`
 
-Called by anyone, and also by the Safe in `execTransaction`, verifies if a given transaction was scheduled and the
-delay period has passed.
+Can be called by anyone. It will be called by the `safe` in `execTransaction` if the contract is enabled as a guard.
+It verifies if a given transaction was scheduled and the delay period has passed, and reverts if not.
 
-- MUST revert if the contract is not enabled as a guard for the safe.
+- MUST revert if the contract is not enabled as a guard for the `safe`.
+- MUST revert if the contract is not configured for the `safe`.
 - MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
 - MUST revert if `execution_time(safe, tx) < block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
 
-#### `checkPendingTransactions`
+#### `checkAfterExecution`
 
-Called by anyone, returns the list of all scheduled but not cancelled transactions for a given safe.
+Can be called by anyone. It will be called by the `safe` in `execTransaction` if the contract is enabled as a guard.
+It updates state after the transaction has been executed.
 
-- MUST NOT revert
-
-*Note:* If we want to exclude executed transactions from this list, we would need to implement the
-`checkAfterExecution` hook and store the executed state for transactions.
-
-#### `cancelTransaction`
-
-Called by anyone, verify that the `cancellation_threshold` has been met for the Safe to cancel a given scheduled
-transaction. It can be called at any time.
-
-- MUST revert if the contract is not enabled as a guard for the safe.
-- MUST revert if `sum(rejecting_owners(safe, tx)) < cancellation_threshold(safe)`.
-- MUST emit a `TransactionCancelled` event, with at least `safe` and a transaction identifier.
+- MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
+- MUST revert if the contract is not enabled as a guard for the `safe`. // TODO: I'm not sure if we want to ever revert here
+- MUST revert if the contract is not configured for the `safe`. // TODO: I'm not sure if we want to ever revert here
+- MUST set `cancellation_threshold(safe)` to 1.
