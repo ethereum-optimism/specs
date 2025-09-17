@@ -190,6 +190,21 @@
 </li>
 </ul>
 </li>
+<li><a href="#da-footprint-configuration">DA Footprint Configuration</a>
+<ul>
+<li><a href="#configupdate-1"><code>ConfigUpdate</code></a></li>
+<li><a href="#modifying-da-footprint-gas-scalar">Modifying DA Footprint Gas Scalar</a></li>
+<li><a href="#interface-1">Interface</a>
+<ul>
+<li><a href="#da-footprint-gas-scalar-parameters">DA Footprint Gas Scalar Parameters</a>
+<ul>
+<li><a href="#dafootprintgasscalar"><code>daFootprintGasScalar</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="minimum-base-fee-configuration"><a class="header" href="#minimum-base-fee-configuration">Minimum Base Fee Configuration</a></h2>
@@ -233,12 +248,33 @@ to derive the configuration from L1 logs.</p>
 <p>This function returns the currently configured minimum base fee in wei.</p>
 <pre><code class="language-solidity">function minBaseFee() external view returns (uint64);
 </code></pre>
+<h2 id="da-footprint-configuration"><a class="header" href="#da-footprint-configuration">DA Footprint Configuration</a></h2>
+<p>Jovian adds a <code>uint16</code> configuration value to <code>SystemConfig</code> to control the <a href="./derivation.html"><code>daFootprintGasScalar</code></a>.</p>
+<p>The configuration is updated via a new method on <code>SystemConfig</code>:</p>
+<pre><code class="language-solidity">function setDAFootprintGasScalar(uint16 daFootprintGasScalar) external onlyOwner;
+</code></pre>
+<h3 id="configupdate-1"><a class="header" href="#configupdate-1"><code>ConfigUpdate</code></a></h3>
+<p>When the configuration is updated, a <a href="../system-config.html#system-config-updates"><code>ConfigUpdate</code></a> event
+MUST be emitted with the following parameters:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>version</code></th><th><code>updateType</code></th><th><code>data</code></th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>uint256(0)</code></td><td><code>uint8(7)</code></td><td><code>abi.encode(uint16(_daFootprintGasScalar))</code></td><td>Modifies the DA footprint gas scalar</td></tr>
+</tbody></table>
+</div>
+<h3 id="modifying-da-footprint-gas-scalar"><a class="header" href="#modifying-da-footprint-gas-scalar">Modifying DA Footprint Gas Scalar</a></h3>
+<p>Upon update, the contract emits the <code>ConfigUpdate</code> event above, enabling nodes
+to derive the configuration from L1 logs.</p>
+<h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
+<h4 id="da-footprint-gas-scalar-parameters"><a class="header" href="#da-footprint-gas-scalar-parameters">DA Footprint Gas Scalar Parameters</a></h4>
+<h5 id="dafootprintgasscalar"><a class="header" href="#dafootprintgasscalar"><code>daFootprintGasScalar</code></a></h5>
+<p>This function returns the currently configured DA footprint gas scalar.</p>
+<pre><code class="language-solidity">function daFootprintGasScalar() external view returns (uint16);
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/jovian/exec-engine.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/jovian/l1-attributes.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -252,7 +288,7 @@ to derive the configuration from L1 logs.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/jovian/exec-engine.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/jovian/l1-attributes.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

@@ -181,6 +181,12 @@
 <li><a href="#rationale">Rationale</a></li>
 </ul>
 </li>
+<li><a href="#da-footprint-block-limit">DA Footprint Block Limit</a>
+<ul>
+<li><a href="#scalar-loading">Scalar loading</a></li>
+<li><a href="#rationale-1">Rationale</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="minimum-base-fee"><a class="header" href="#minimum-base-fee">Minimum Base Fee</a></h2>
@@ -234,6 +240,50 @@ This retains the purity of the function that computes the next block's base fee 
 header, while still allowing them to be dynamically configured. Dynamic configuration is handled
 similarly to <code>gasLimit</code>, with the derivation pipeline providing the appropriate <code>SystemConfig</code>
 contract values to the block builder via <code>PayloadAttributesV3</code> parameters.</p>
+<h2 id="da-footprint-block-limit"><a class="header" href="#da-footprint-block-limit">DA Footprint Block Limit</a></h2>
+<p>A DA footprint block limit is introduced to limit the total amount of estimated compressed
+transaction data that can fit into a block.
+For each transaction, a new resource called DA footprint is tracked, next to its gas usage.
+It is scaled to the gas dimension so that its block total can also be limited by
+the block gas limit, like a block's total gas usage.</p>
+<p>Let a block's <code>daFootprint</code> be defined as follows:</p>
+<pre><code class="language-python">def daFootprint(block)
+  daFootprint = 0
+  for tx in block.txs:
+      if !tx.IsDepositTx
+        daUsageEstimate = max(minTransactionSize, intercept + fastlzCoef * tx.fastlzSize / 1e6)
+        daFootprint += daUsageEstimate * daFootprintGasScalar
+  return daFootprint 
+</code></pre>
+<p>where <code>intercept</code>, <code>minTransactionSize</code>, <code>fastLzCoef</code> and <code>fastlzSize</code>
+are defined in the <a href="../fjord/exec-engine.html">Fjord specs</a> and <code>/</code> represents integer division.</p>
+<p>From Jovian, the <code>gasUsed</code> property of each block header is equal to the maximum over
+that block's <code>daFootprint</code> and the sum of the gas used by each transaction
+(the pre-Jovian definition of a block's <code>gasUsed</code> field).
+As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.</p>
+<p>The <code>gasUsed</code> must continue to be less than or equal to the block gas limit, meaning that
+(since the <code>daFootprint</code> must also be less than or equal to the block gas limit),
+blocks may have no more than <code>gasLimit/daFootprintGasScalar</code> total estimated DA usage.</p>
+<h3 id="scalar-loading"><a class="header" href="#scalar-loading">Scalar loading</a></h3>
+<p>The <code>daFootprintGasScalar</code> is loaded in a similar way to the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>
+<a href="../isthmus/exec-engine.html#operator-fee">included</a> in the Isthmus fork. It can be read in two interchangable ways:</p>
+<ul>
+<li>read from the deposited L1 attributes (<code>daFootprintGasScalar</code>) of the current L2 block
+(decoded according to the <a href="./l1-attributes.html">jovian schema</a>)</li>
+<li>read from the L1 Block Info contract (<code>0x4200000000000000000000000000000000000015</code>)
+<ul>
+<li>using the solidity getter function <code>daFootprintGasScalar</code></li>
+<li>using a direct storage-read: big-endian <code>uint16</code> in slot <code>9</code> at offset <code>0</code>.</li>
+</ul>
+</li>
+</ul>
+<p>It takes on a default value as described in the section on <a href="./l1-attributes.html">L1 Attributes</a>.</p>
+<h3 id="rationale-1"><a class="header" href="#rationale-1">Rationale</a></h3>
+<p>While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, it
+does not influence future base fee calculations. As a result, excessive DA usage is not efficiently reflected in the fee
+market, leading to suboptimal resource prices.</p>
+<p>By changing the meaning of the <code>gasUsed</code> field in times of high DA demand, the fee market can properly adjust without reverting
+to priority fee auctions (an inferior experience for users).</p>
 
                     </main>
 
@@ -243,7 +293,7 @@ contract values to the block builder via <code>PayloadAttributesV3</code> parame
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../protocol/jovian/system-config.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/jovian/derivation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -257,7 +307,7 @@ contract values to the block builder via <code>PayloadAttributesV3</code> parame
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../protocol/jovian/system-config.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/jovian/derivation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
