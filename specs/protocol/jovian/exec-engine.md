@@ -96,8 +96,8 @@ def daFootprint(block)
   daFootprint = 0
   for tx in block.txs:
       if !tx.IsDepositTx
-        estimatedSize = max(minTransactionSize, intercept + fastlzCoef * tx.fastlzSize / 1e6)
-        daFootprint += estimatedSize * daFootprintGasScalar
+        daUsageEstimate = max(minTransactionSize, intercept + fastlzCoef * tx.fastlzSize / 1e6)
+        daFootprint += daUsageEstimate * daFootprintGasScalar
   return daFootprint 
 ```
 
