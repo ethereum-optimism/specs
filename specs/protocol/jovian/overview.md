@@ -14,7 +14,10 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
+<<<<<<## Execution Layer
+
 - [Minimum Base Fee](./exec-engine.md#minimum-base-fee)
+- [DA Footprint Limit](./da-footprint-limit.md)
 
 ## Consensus Layer
 
