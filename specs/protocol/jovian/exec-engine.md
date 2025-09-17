@@ -113,7 +113,7 @@ blocks may have no more than `gasLimit/daFootprintGasScalar` total estimated DA 
 The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar` and `operatorFeeConstant`
 [included](../isthmus/exec-engine.md#operator-fee) in the Isthmus fork. It can be read in two interchangable ways:
 
-- read from the deposited L1 attributes (`daFootprintGasScalar`) of the current L2 block
+- read from the deposited L1 attributes (`daFootprintGasScalar`) of the current L2 block (decoded according to the schema [here](./l1-attributes.md))
 - read from the L1 Block Info contract (`0x4200000000000000000000000000000000000015`)
   - using the solidity getter function `daFootprintGasScalar`
   - using a direct storage-read: big-endian `uint16` in slot `9` at offset `0`.
