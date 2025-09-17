@@ -98,6 +98,8 @@ enabled as a module, the extension contract ensures a multisig remains operable 
 unresponsive. If the multisig fails to prove liveness within a set period, ownership transfers to a trusted fallback
  owner to prevent deadlock.
 
+ As a best practice, the fallback owner should have stronger security guarantees than the safe enabling the extensions.
+
 The extensions in this document are intended to replace the extensions in the
 [Safe Contract Extensions](./safe-extensions.md) document.
 
@@ -349,9 +351,40 @@ If this invariant is broken, the event history of the timelock would contain use
 
 ## Function Specification
 
-### `configureLivenessModule`
+### Liveness Module
 
-Configure the contract as a liveness module by setting the `liveness_challenge_period` and `fallback_owner`.
+The Liveness Module is the same contract as the Timelock Guard, but the function specification is in its own section
+for clarity.
+
+#### `version`
+
+Returns the semantic contract version.
+
+- MUST never revert.
+
+#### `livenessSafeConfiguration`
+
+Returns the `liveness_challenge_period` and `fallback_owner` for a given `safe`.
+
+- MUST never revert.
+
+#### `challengeStartTime`
+
+Returns `challenge_start_time` if there is a challenge for the given `safe`, or 0 if not.
+
+- MUST never revert.
+
+#### `getLivenessChallengePeriodEnd`
+
+Returns `challenge_start_time + liveness_challenge_period + timelock_delay` if there is a challenge for the given
+`safe`, or 0 if not.
+
+- MUST never revert.
+
+#### `configureLivenessModule`
+
+Configure the contract as a liveness module for a given `safe` by setting the `liveness_challenge_period` and
+`fallback_owner`.
 
 - MUST allow an arbitrary number of `safe` contracts to use the contract as a module.
 - The contract MUST be enabled as a module on the `safe`.
@@ -360,16 +393,69 @@ Configure the contract as a liveness module by setting the `liveness_challenge_p
 - If a challenge exists, it MUST be canceled, including emitting the appropriate events.
 - MUST emit a `ModuleConfigured` event with at least `liveness_challenge_period` and `fallback_owner` as parameters.
 
-### `clearLivenessModule`
+#### `clearLivenessModule`
 
 Removes the liveness module configuration by a previously enabled `safe`.
 
+- The contract MUST be configured for the `safe`.
 - The contract MUST NOT be enabled as a module on the `safe`.
 - MUST erase the existing `liveness_challenge_period` and `fallback_owner` data related to the calling `safe`.
 - If a challenge exists, it MUST be cancelled, including emitting the appropriate events.
 - MUST emit a `ModuleCleared` event.
 
-### `configureTimelockGuard`
+#### `challenge`
+
+Challenges an enabled `safe` to prove that it is not in a liveness failure state.
+
+- MUST only be executable by `fallback` owner of the challenged `safe`.
+- MUST revert if the `safe` hasn't enabled the contract as a module.
+- MUST revert if the `safe` hasn't configured the module for the `safe`.
+- MUST revert if a challenge for the `safe` exists.
+- MUST set `challenge_start_time` to the current block time.
+- MUST emit the `ChallengeStarted` event.
+
+#### `respond`
+
+Cancels a challenge for an enabled `safe`.
+
+- MUST revert if the `safe` hasn't enabled the contract as a module.
+- MUST revert if the `safe` hasn't configured the module for the `safe`.
+- MUST revert if there isn't a challenge for the calling `safe`.
+- MUST reset `challenge_start_time` to 0.
+- MUST emit the `ChallengeCancelled` event.
+
+#### `changeOwnershipToFallback`
+
+With a successful challenge, removes all current owners from an enabled `safe`, appoints `fallback` as its sole owner,
+and sets its quorum to 1.
+
+- MUST only be executable by `fallback` owner of the challenged `safe`.
+- MUST revert if the `safe` hasn't enabled the contract as a module.
+- MUST revert if the `safe` hasn't configured the module for the `safe`.
+- MUST revert if there isn't a successful challenge for the given `safe`.
+- MUST reset `challenge_start_time` to 0 to enable the fallback to start a new challenge.
+- MUST set the `fallback_owner` as the sole owner of the `safe`.
+- MUST set the quorum of the `safe` to 1.
+- MUST emit the `ChallengeExecuted` event.
+
+### Timelock Guard
+
+The Timelock Guard is the same contract as the Liveness Module, but the function specification is in its own section
+for clarity.
+
+#### `version`
+
+Returns the semantic contract version.
+
+- MUST never revert.
+
+#### `timelockSafeConfiguration`
+
+Returns the `timelock_delay` for a given `safe`.
+
+- MUST never revert.
+
+#### `configureTimelockGuard`
 
 Configure the contract as a timelock guard by setting the `timelock_delay`.
 
@@ -380,7 +466,7 @@ Configure the contract as a timelock guard by setting the `timelock_delay`.
 - MUST take `timelock_delay` as a parameter and store is as related to the `safe`.
 - MUST emit a `GuardConfigured` event with at least `timelock_delay` as a parameter.
 
-### `clearTimelockGuard`
+#### `clearTimelockGuard`
 
 Remove the timelock guard configuration by a previously enabled `safe`.
 
@@ -389,67 +475,14 @@ Remove the timelock guard configuration by a previously enabled `safe`.
 - If a challenge exists, it MUST be cancelled, including emitting the appropriate events.
 - MUST emit a `GuardCleared` event.
 
-### `viewLivenessModuleConfiguration`
-
-Returns the `liveness_challenge_period` and `fallback_owner` for a given `safe`.
-
-- MUST never revert.
-
-### `viewTimelockGuardConfiguration`
-
-Returns the `timelock_delay` for a given `safe`.
-
-- MUST never revert.
-
-### `getLivenessChallengePeriodEnd`
-
-Returns `challenge_start_time + liveness_challenge_period + timelock_delay` if there is a challenge for the given
-`safe`, or 0 if not.
-
-- MUST never revert.
-
-### `challenge`
-
-Challenges an enabled `safe` to prove that it is not in a liveness failure state.
-
-- MUST only be executable by `fallback` owner of the challenged `safe`.
-- MUST revert if the `safe` hasn't enabled the contract as a module.
-- MUST revert if the `safe` hasn't configured the contract as a module.
-- MUST revert if a challenge for the `safe` exists.
-- MUST set `challenge_start_time` to the current block time.
-- MUST emit the `ChallengeStarted` event.
-
-### `respond`
-
-Cancels a challenge for an enabled `safe`.
-
-- MUST only be executable by an enabled `safe`.
-- MUST revert if the `safe` hasn't enabled the contract as a module.
-- MUST revert if the `safe` hasn't configured the contract as a module.
-- MUST revert if there isn't a challenge for the calling `safe`.
-- MUST reset `challenge_start_time` to 0.
-- MUST emit the `ChallengeCancelled` event.
-
-### `changeOwnershipToFallback`
-
-With a successful challenge, removes all current owners from an enabled `safe`, appoints `fallback` as its sole owner,
-and sets its quorum to 1.
-
-- MUST only be executable by `fallback` owner of the challenged `safe`.
-- MUST revert if the `safe` hasn't enabled the contract as a module.
-- MUST revert if the `safe` hasn't configured the contract as a module.
-- MUST revert if there isn't a successful challenge for the given `safe`.
-- MUST reset `challenge_start_time` to 0 to enable the fallback to start a new challenge.
-- MUST emit the `ChallengeExecuted` event.
-
-### `cancellationThreshold`
+#### `cancellationThreshold`
 
 Returns the `cancellation_threshold` for a given safe.
 
 - MUST NOT revert
 - MUST return 0 if the contract is not enabled as a guard for the safe.
 
-### `scheduleTransaction`
+#### `scheduleTransaction`
 
 Called by anyone using signatures from Safe owners, registers a transaction in the TimelockGuard for execution after
 the `timelock_delay`.
@@ -464,7 +497,7 @@ the `timelock_delay`.
 To allow for identical transactions to be scheduled more than once, but requiring different signatures for each one, a
 `salt` parameter can be included in `data` with the sole purpose of differentiating otherwise identical transactions.
 
-### `checkTransaction`
+#### `checkTransaction`
 
 Called by anyone, and also by the Safe in `execTransaction`, verifies if a given transaction was scheduled and the
 delay period has passed.
@@ -474,7 +507,7 @@ delay period has passed.
 - MUST revert if `execution_time(safe, tx) < block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
 
-### `checkPendingTransactions`
+#### `checkPendingTransactions`
 
 Called by anyone, returns the list of all scheduled but not cancelled transactions for a given safe.
 
@@ -483,23 +516,7 @@ Called by anyone, returns the list of all scheduled but not cancelled transactio
 *Note:* If we want to exclude executed transactions from this list, we would need to implement the
 `checkAfterExecution` hook and store the executed state for transactions.
 
-### `rejectTransaction`
-
-Called by a Safe owner, signal the rejection of a scheduled transaction.
-
-- MUST revert if the contract is not enabled as a guard for the safe.
-- MUST revert if not called by an owner of the safe scheduled to execute the transaction, or in one of its child safes.
-- MUST emit a `TransactionRejected` event, with at least `safe` and a transaction identifier.
-
-### `rejectTransactionWithSignature`
-
-Called by anyone, using signatures form one or more owners, signal the rejection of a scheduled transaction. Can reuse
-the `rejectTransaction` function name.
-
-- MUST revert if the contract is not enabled as a guard for the safe.
-- MUST reuse the same internal logic as `rejectTransaction`.
-
-### `cancelTransaction`
+#### `cancelTransaction`
 
 Called by anyone, verify that the `cancellation_threshold` has been met for the Safe to cancel a given scheduled
 transaction. It can be called at any time.
