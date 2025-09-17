@@ -83,27 +83,27 @@ contract values to the block builder via `PayloadAttributesV3` parameters.
 
 ## DA Footprint Block Limit
 
-Let a block's `scaledDAFootprint` be defined as follows:
+Let a block's `daFootprint` be defined as follows:
 
 ```python
-def scaledDAFootprint(block)
-  blockDAFootprint = 0
+def daFootprint(block)
+  daFootprint = 0
   for tx in block.txs:
       if !tx.IsDepositTx
-        txDAFootprint = max(minTransactionSize, intercept + fastlzCoef * tx.fastlzSize * 1e-6)
-        blockDAFootprint += txDAFootprint 
-  return blockDAFootprint * daFootprintGasScalar
+        estimatedSize = max(minTransactionSize, intercept + fastlzCoef * tx.fastlzSize / 1e6)
+        daFootprint += estimatedSize * daFootprintGasScalar
+  return daFootprint 
 ```
 
 where `intercept`, `minTransactionSize`, `fastLzCoef` and `fastlzSize`
-are defined in the [Fjord specs](../fjord/exec-engine.md).
+are defined in the [Fjord specs](../fjord/exec-engine.md) and `/` represents integer division.
 
 From Jovian, the `gasUsed` property of each block header is equal to the maximum over
-that block's `scaledDAFootprint` and the sum of the gas used by each transaction.
+that block's `daFootprint` and the sum of the gas used by each transaction.
 As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
 
 The `gasUsed` must continue to be less than or equal to the block gas limit, meaning that
-(since the `scaledDAFootprint` must also be less than or equal to the block gas limit),
+(since the `daFootprint` must also be less than or equal to the block gas limit),
 blocks have an effective "DA footprint Block Limit" of `gasLimit/daFootprintGasScalar`.
 
 ### Scalar loading
