@@ -99,7 +99,7 @@ where `intercept`, `minTransactionSize`, `fastLzCoef` and `fastlzSize`
 are defined in the [Fjord specs](../fjord/exec-engine.md) and `/` represents integer division.
 
 From Jovian, the `gasUsed` property of each block header is equal to the maximum over
-that block's `daFootprint` and the sum of the gas used by each transaction.
+that block's `daFootprint` and the sum of the gas used by each transaction (the pre-Jovian definition of a block's `gasUsed` field).
 As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
 
 The `gasUsed` must continue to be less than or equal to the block gas limit, meaning that
