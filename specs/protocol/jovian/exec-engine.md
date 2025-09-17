@@ -81,22 +81,29 @@ similarly to `gasLimit`, with the derivation pipeline providing the appropriate 
 contract values to the block builder via `PayloadAttributesV3` parameters.
 
 ## DA Footprint Block Limit
-
-From Jovian, `gasUsed` is equal to a block's "DA footprint" if the footprint exceeds
-the total gas used by transaction, and equal to the sum of the gas used by each transaction (excluding deposits)
-otherwise. As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
-
-A block's DA footprint is calculated by scaling the cumulative DA footprint of its transactions
-(as calculated by the [Fjord LZ Estimation](../fjord/exec-engine.md#fjord-l1-cost-fee-changes-fastlz-estimator) by
-a configurable scalar value, the `daFootprintGasScalar`:
+Let a block's `scaledDAFootprint` be defined as follows:
 
 ```python
-da_usage_estimate = max(minTransactionSize, intercept + fastlzCoef*fastlzSize / 1e6)
-da_footprint = da_usage_estimate * da_footprint_gas_scalar
+def scaledDAFootprint(block)
+  blockDAFootprint = 0
+  for tx in block.txs:
+      if !tx.IsDepositTx
+        txDAFootprint = max(minTransactionSize, intercept + fastlzCoef * tx.fastlzSize * 1e-6)
+        blockDAFootprint += txDAFootprint 
+  return blockDAFootprint * daFootprintGasScalar
 ```
+where `intercept`, `minTransactionSize`, `fastLzCoef` and `fastlzSize`
+are defined in the [Fjord specs](../fjord/exec-engine.md).
 
-Here, `fastlzSize` is the length of the FastLZ-compressed RLP-encoding of a transaction.
+From Jovian, the `gasUsed` property of each block header is equal to the maximum over 
+that block's `scaledDAFootprint` and the sum of the gas used by each transaction.
+As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
 
+The `gasUsed` must continue to be less than or equal to the block gas limit, meaning that
+(since the `scaledDAFootprint` must also be less than or equal to the block gas limit),
+blocks have an effective "DA footprint Block Limit" of `gasLimit/daFootprintGasScalar`.
+
+### Scalar loading
 The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar` and `operatorFeeConstant`
 [included](../isthmus/exec-engine.md#operator-fee) in the Isthmus fork. It can be read in two interchangable ways:
 
@@ -104,6 +111,8 @@ The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar`
 - read from the L1 Block Info contract (`0x4200000000000000000000000000000000000015`)
   - using the solidity getter function `daFootprintGasScalar`
   - using a direct storage-read: big-endian `uint16` in slot `9` at offset `0`.
+
+It takes on a default value as described in the section on [L1 Attributes](./l1-attributes.md).
 
 ### Rationale
 
