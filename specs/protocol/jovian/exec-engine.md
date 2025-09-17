@@ -81,6 +81,7 @@ similarly to `gasLimit`, with the derivation pipeline providing the appropriate 
 contract values to the block builder via `PayloadAttributesV3` parameters.
 
 ## DA Footprint Block Limit
+
 Let a block's `scaledDAFootprint` be defined as follows:
 
 ```python
@@ -92,10 +93,11 @@ def scaledDAFootprint(block)
         blockDAFootprint += txDAFootprint 
   return blockDAFootprint * daFootprintGasScalar
 ```
+
 where `intercept`, `minTransactionSize`, `fastLzCoef` and `fastlzSize`
 are defined in the [Fjord specs](../fjord/exec-engine.md).
 
-From Jovian, the `gasUsed` property of each block header is equal to the maximum over 
+From Jovian, the `gasUsed` property of each block header is equal to the maximum over
 that block's `scaledDAFootprint` and the sum of the gas used by each transaction.
 As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
 
@@ -104,6 +106,7 @@ The `gasUsed` must continue to be less than or equal to the block gas limit, mea
 blocks have an effective "DA footprint Block Limit" of `gasLimit/daFootprintGasScalar`.
 
 ### Scalar loading
+
 The `daFootprintGasScalar` is loaded in a similar way to the `operatorFeeScalar` and `operatorFeeConstant`
 [included](../isthmus/exec-engine.md#operator-fee) in the Isthmus fork. It can be read in two interchangable ways:
 
