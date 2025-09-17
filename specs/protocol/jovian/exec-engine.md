@@ -104,7 +104,7 @@ As a result, blocks with high DA usage may cause the base fee to increase in sub
 
 The `gasUsed` must continue to be less than or equal to the block gas limit, meaning that
 (since the `daFootprint` must also be less than or equal to the block gas limit),
-blocks have an effective "DA footprint Block Limit" of `gasLimit/daFootprintGasScalar`.
+blocks may have no more than `gasLimit/daFootprintGasScalar` total estimated DA usage.
 
 ### Scalar loading
 
