@@ -9,6 +9,7 @@
   - [Minimum Base Fee in `PayloadAttributesV3`](#minimum-base-fee-in-payloadattributesv3)
   - [Rationale](#rationale)
 - [DA Footprint Block Limit](#da-footprint-block-limit)
+  - [Scalar loading](#scalar-loading)
   - [Rationale](#rationale-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
