@@ -83,6 +83,8 @@ contract values to the block builder via `PayloadAttributesV3` parameters.
 
 ## DA Footprint Block Limit
 
+A DA footprint block limit is introduced to limit the total amount of estimated compressed transaction data that can fit into a block. For each transaction, a new resource called DA footprint is tracked, next to its gas usage. It is scaled to the gas dimension so that its block total can also be limited by the block gas limit, like a block's total gas usage.
+
 Let a block's `daFootprint` be defined as follows:
 
 ```python
