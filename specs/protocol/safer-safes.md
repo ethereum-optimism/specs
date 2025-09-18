@@ -543,17 +543,10 @@ Can be called by anyone. It will be called by the `safe` in `execTransaction` if
 It verifies if a given transaction was scheduled and the delay period has passed, and reverts if not.
 
 - MUST revert if the contract is not enabled as a guard for the `safe`.
-- MUST revert if the contract is not configured for the `safe`.
 - MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
-- MUST revert if `execution_time(safe, tx) < block.timestamp`.
+- MUST revert if `timelock_delay(safe) > 0` and `execution_time(safe, tx) < block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
-
-#### `checkAfterExecution`
-
-Can be called by anyone. It will be called by the `safe` in `execTransaction` if the contract is enabled as a guard.
-It updates state after the transaction has been executed.
-
-- MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
-- MUST revert if the contract is not enabled as a guard for the `safe`. // TODO: I'm not sure if we want to ever revert here
-- MUST revert if the contract is not configured for the `safe`. // TODO: I'm not sure if we want to ever revert here
 - MUST set `cancellation_threshold(safe)` to 1.
+
+Note that if the contract is enabled but not configured for the safe, then `timelock_delay(safe) == 0` and the check
+passes. This is intentional to avoid bricking the multisig if the guard is enabled but not configured.
