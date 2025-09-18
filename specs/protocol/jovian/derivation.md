@@ -38,7 +38,7 @@ A deposit transaction is derived with the following attributes:
 - `nonce`: `0`
 - `gasLimit`: `444775`
 - `data`: `0x0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-l1-block-deployment.txt))
-- `sourceHash`: `0x98faf23b9795967bc0b1c543144739d50dba3ea40420e77ad6ca9848dbfb62e8`,  
+- `sourceHash`: `0x98faf23b9795967bc0b1c543144739d50dba3ea40420e77ad6ca9848dbfb62e8`,
   computed with the "Upgrade-deposited" type, with `intent = "Jovian: L1Block Deployment"`
 
 This results in the Jovian L1Block contract being deployed to
@@ -64,7 +64,7 @@ make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 ```
 
-This transaction MUST deploy a contract with the following code hash  
+This transaction MUST deploy a contract with the following code hash
 `0xf7b6ef0de2a53625d467d98c2932a5a5d64ffa1a331ebbde5bb06e2591b5835a`.
 
 To verify the code hash:
