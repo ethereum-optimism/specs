@@ -5,10 +5,6 @@ import os
 import re
 import json
 
-
-# Questions:
-# - Should proxy update transactions originate from the same address as the contract deployment?
-
 SOURCE_HASH_PREFIX = "0x0000000000000000000000000000000000000000000000000000000000000002"
 
 JINJA_TEMPLATE = """### {{ params.contract_name }} Deployment
@@ -405,10 +401,26 @@ def main():
         estimated_gas = estimate_gas(args.eth_rpc_url, creation_code, constructor_signature, args.constructor_args)
 
         data_path_result = data_path(args.fork_name, args.contract_name)
+
+
         template_data = {
             "fork_name": args.fork_name,
             "contract_name": args.contract_name,
             "intent": intent,
+
+            # Comment from @geoknee on args.from_address: It would be great if there was some way we could ensure that
+            # this address has not yet been used, or at least that it's nonce is equal to
+            # the provided nonce. Otherwise we may have specs bugs and upgrade transactions
+            # will (I think) potentially revert.
+            #
+            # We apparently have a convention that each deployment will come from a unique
+            # address with a zero nonce. This convention guarantees the upgrade transaction
+            # does not revert, so if we check the convention is adhered to we should be
+            # fine.
+            #
+            # In lieu of automation around this, we can instruct the user to choose an
+            # unused address or suggest they just increment the previous address which was
+            # used (going in order through the hardforks).
             "from_address": args.from_address,
             "from_address_nonce": args.from_address_nonce,
             "gas_limit": estimated_gas,
@@ -418,7 +430,7 @@ def main():
             "contract_code_hash": contract_code_hash,
             "source_hash": source_hash,
             "deployed_address": deployed_address,
-            "command": "./scripts/run_gen_predeploy_docs.sh " + ' '.join(sys.argv[1:]),
+            "command": "./scripts/run_gen_predeploy_docs.sh " + ' \\\n'.join(sys.argv[1:]),
             "forge_artifact_path_data": forge_artifact_path_val,
         }
         if args.proxy_address:
