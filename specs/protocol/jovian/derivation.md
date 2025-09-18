@@ -9,7 +9,7 @@
   - [L1Block Proxy Update](#l1block-proxy-update)
   - [GasPriceOracle deployment](#gaspriceoracle-deployment)
   - [GasPriceOracle Proxy Update](#gaspriceoracle-proxy-update)
-  - [GasPriceOracle Enable Isthmus](#gaspriceoracle-enable-isthmus)
+  - [GasPriceOracle Enable Jovian](#gaspriceoracle-enable-jovian)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
