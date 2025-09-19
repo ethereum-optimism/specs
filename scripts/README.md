@@ -45,8 +45,8 @@ cp scripts/upgrades/gen_interop_upgrade_tx_specs.sh scripts/upgrades/gen_<yourfo
 ```
 
 ### 2) Check static configuration 
-In `scripts/generate_upgrade_tx_specs.sh` you may alter default values for 
 
+In `scripts/generate_upgrade_tx_specs.sh` you may alter default values for
 
 - The `--eth-rpc-url` value: An RPC that supports `eth_estimateGas` for creation.
 - The `--optimism-repo-path` value: Path to your local `optimism` clone.
