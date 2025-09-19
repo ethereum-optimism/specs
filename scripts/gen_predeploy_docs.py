@@ -341,7 +341,7 @@ def forge_artifact_path(contract_name):
 
 def data_path(fork_name, contract_name):
     """Returns the data path for the contract."""
-    return f"specs/static/bytecode/{fork_name.lower()}-{camel_to_kebab(contract_name)}-deployment.txt"
+    return f"../specs/static/bytecode/{fork_name.lower()}-{camel_to_kebab(contract_name)}-deployment.txt"
 
 def render_template(data):
     """Render a Jinja2 template with the provided data."""
