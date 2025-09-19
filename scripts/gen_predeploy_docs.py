@@ -20,7 +20,7 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `nonce`: `{{ params.from_address_nonce }}`
 - `gasLimit`: `{{ params.gas_limit }}`
-- `data`: `{{ params.data_bytecode_head }}` ([full bytecode](../../../{{ params.data_path }}))
+- `data`: `{{ params.data_bytecode_head }}` ([full bytecode](../../{{ params.data_path }}))
 - `sourceHash`: `{{ params.source_hash }}`,  
   computed with the "Upgrade-deposited" type, with `intent = "{{ params.intent }}"`
 
