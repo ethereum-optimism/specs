@@ -18,7 +18,9 @@ This folder contains tooling to generate reproducible, copy‑pasteable markdown
 - **`run_gen_predeploy_docs.sh`**: Thin wrapper that:
   - Ensures a local venv (via `uv`), installs Python deps, and runs `gen_predeploy_docs.py` with your flags.
 
-- **`upgrades/*.sh`**: Per‑upgrade entrypoints. These call `run_gen_predeploy_docs.sh` once per contract that’s part of the upgrade, passing the right parameters. See `upgrades/gen_interop_upgrade_tx_specs.sh` for a concrete example.
+- **`upgrades/*.sh`**: Per‑upgrade config files. These are consumed by `generate_upgrade_tx_specs.sh`. See `upgrades/interop.sh` for a concrete example.
+
+-- **`generate_upgrade_tx_specs.sh`**: Loads variables from a config file, and calls `run_gen_predeploy_docs.sh` once per contract that’s part of the upgrade, passing the right parameters.
 
 ### Prerequisites
 
@@ -30,32 +32,41 @@ Tip: Ensure the repo at `--optimism-repo-path` can build with `make build-contra
 
 ---
 
-## How to use `run_gen_predeploy_docs.sh` (Interop example)
+## How to use `generate_upgrade_tx_specs.sh` (Interop example)
 
-We’ll use `scripts/upgrades/gen_interop_upgrade_tx_specs.sh` as the example workflow.
+We’ll use `scripts/upgrades/interop.sh` as the example workflow.
 
-### 1) Create a new upgrade script
+### 1) Create a new upgrade config file
 
-Copy the Interop example to a new file under `scripts/upgrades/`, e.g.:
+Copy the Interop example config file to a new file under `scripts/upgrades/`, e.g.:
 
 ```bash
 cp scripts/upgrades/gen_interop_upgrade_tx_specs.sh scripts/upgrades/gen_<yourfork>_upgrade_tx_specs.sh
 ```
 
-### 2) Update variables for your upgrade
+### 2) Check static configuration 
 
-Edit your new script:
+In `scripts/generate_upgrade_tx_specs.sh` you may alter default values for
+
+- The `--eth-rpc-url` value: An RPC that supports `eth_estimateGas` for creation.
+- The `--optimism-repo-path` value: Path to your local `optimism` clone.
+- Optionally keep `--copy-contract-bytecode true` to automatically write creation bytecode files.
+
+Note the helper that increments `FROM_ADDRESS` between iterations so each deployment uses a fresh address with nonce 0.
+
+
+### 3) Update variables for your upgrade
+
+Edit your config file:
 
 - **`GIT_COMMIT_HASH`**: The Optimism repo commit hash that defines the contracts for your upgrade.
 - **`FROM_ADDRESS_NONCE`**: Usually `0` per our convention.
 - **`FROM_ADDRESS`**: A unique sender for the first deployment. Convention: each deployment uses a fresh address with nonce 0. If you deploy multiple contracts in one script, increment the address between runs (see the helper in the example).
 - **`FORK_NAME`**: Display name used in the rendered docs and bytecode file paths.
 - **`contracts` array**: One entry per contract, `"ContractName:ProxyAddress"`. If no proxy, you can still list it or comment unused lines.
-- The `--eth-rpc-url` value: An RPC that supports `eth_estimateGas` for creation.
-- The `--optimism-repo-path` value: Path to your local `optimism` clone.
-- Optionally keep `--copy-contract-bytecode true` to automatically write creation bytecode files.
 
-In `scripts/upgrades/gen_interop_upgrade_tx_specs.sh` these look like:
+
+In `scripts/upgrades/interop.sh` these look like:
 
 ```bash
 GIT_COMMIT_HASH=71c460ec7c7c05791ddd841b97bcb664a1f0c753
@@ -69,14 +80,12 @@ declare -a contracts=(
 )
 ```
 
-Note the helper that increments `FROM_ADDRESS` between iterations so each deployment uses a fresh address with nonce 0.
+### 4) Run your script
 
-### 3) Run your script
-
-From the repo root:
+From the `scripts` directory:
 
 ```bash
-bash scripts/upgrades/gen_interop_upgrade_tx_specs.sh
+bash generate_upgrade_tx_specs.sh ./upgrades/interop.sh
 ```
 
 It will:
@@ -87,7 +96,7 @@ It will:
 Tip: Capture output for review:
 
 ```bash
-bash scripts/upgrades/gen_interop_upgrade_tx_specs.sh | tee /tmp/<yourfork>-gen.md
+bash generate_upgrade_tx_specs.sh ./upgrades/interop.sh | tee /tmp/<yourfork>-gen.md
 ```
 
 ### 4) Paste into your derivation spec

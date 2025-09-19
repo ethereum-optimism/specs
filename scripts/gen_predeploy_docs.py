@@ -20,8 +20,8 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `nonce`: `{{ params.from_address_nonce }}`
 - `gasLimit`: `{{ params.gas_limit }}`
-- `data`: `{{ params.data_bytecode_head }}` ([full bytecode](../../../{{ params.data_path }}))
-- `sourceHash`: `{{ params.source_hash }}`,  
+- `data`: `{{ params.data_bytecode_head }}` ([full bytecode](../../{{ params.data_path }}))
+- `sourceHash`: `{{ params.source_hash }}`,
   computed with the "Upgrade-deposited" type, with `intent = "{{ params.intent }}"`
 
 This results in the {{ params.fork_name }} {{ params.contract_name }} contract being deployed to
@@ -47,7 +47,7 @@ make build-contracts
 jq -r ".bytecode.object" {{ params.forge_artifact_path_data }}
 ```
 
-This transaction MUST deploy a contract with the following code hash  
+This transaction MUST deploy a contract with the following code hash
 `{{ params.contract_code_hash }}`.
 
 To verify the code hash:
@@ -97,6 +97,18 @@ def camel_to_snake(name):
 def camel_to_kebab(name):
     pattern = re.compile(r'(?<!^)(?=[A-Z])')
     return pattern.sub('-', name).lower()
+
+def format_args_with_alternate_newlines(args):
+    """Format CLI arguments with newlines every other argument."""
+    result = []
+    for i, arg in enumerate(args):
+        result.append(arg)
+        # Add newline after every second argument (indices 1, 3, 5, etc.)
+        if i % 2 == 1 and i < len(args) - 1:
+            result.append(' \\\n')
+        elif i < len(args) - 1:
+            result.append(' ')
+    return ''.join(result)
 
 def check_dependencies():
     """Check if required commands and packages are available."""
@@ -341,7 +353,7 @@ def forge_artifact_path(contract_name):
 
 def data_path(fork_name, contract_name):
     """Returns the data path for the contract."""
-    return f"specs/static/bytecode/{fork_name.lower()}-{camel_to_kebab(contract_name)}-deployment.txt"
+    return f"../specs/static/bytecode/{fork_name.lower()}-{camel_to_kebab(contract_name)}-deployment.txt"
 
 def render_template(data):
     """Render a Jinja2 template with the provided data."""
@@ -430,7 +442,7 @@ def main():
             "contract_code_hash": contract_code_hash,
             "source_hash": source_hash,
             "deployed_address": deployed_address,
-            "command": "./scripts/run_gen_predeploy_docs.sh " + ' \\\n'.join(sys.argv[1:]),
+            "command": "./scripts/run_gen_predeploy_docs.sh " + format_args_with_alternate_newlines(sys.argv[1:]),
             "forge_artifact_path_data": forge_artifact_path_val,
         }
         if args.proxy_address:
@@ -444,7 +456,7 @@ def main():
         info(f"\n-- Rendered Template --")
         rendered_output = render_template(template_data)
         print(rendered_output, end="")
-        info(f"--- End Rendered Template ---\n")
+        info(f"\n--- End Rendered Template ---\n")
         if args.copy_contract_bytecode:
             run_cmd(f"jq -r '.bytecode.object' {args.optimism_repo_path}/{forge_artifact_path_val} > ./{data_path_result}")
             success(f"Copied contract bytecode to {data_path_result}")
