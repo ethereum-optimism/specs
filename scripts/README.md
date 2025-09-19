@@ -80,8 +80,6 @@ declare -a contracts=(
 )
 ```
 
-
-
 ### 4) Run your script
 
 From the `scripts` directory:
@@ -98,7 +96,7 @@ It will:
 Tip: Capture output for review:
 
 ```bash
-bash scripts/upgrades/gen_interop_upgrade_tx_specs.sh | tee /tmp/<yourfork>-gen.md
+bash generate_upgrade_tx_specs.sh ./upgrades/interop.sh | tee /tmp/<yourfork>-gen.md
 ```
 
 ### 4) Paste into your derivation spec
