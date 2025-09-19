@@ -98,6 +98,18 @@ def camel_to_kebab(name):
     pattern = re.compile(r'(?<!^)(?=[A-Z])')
     return pattern.sub('-', name).lower()
 
+def format_args_with_alternate_newlines(args):
+    """Format CLI arguments with newlines every other argument."""
+    result = []
+    for i, arg in enumerate(args):
+        result.append(arg)
+        # Add newline after every second argument (indices 1, 3, 5, etc.)
+        if i % 2 == 1 and i < len(args) - 1:
+            result.append(' \\\n')
+        elif i < len(args) - 1:
+            result.append(' ')
+    return ''.join(result)
+
 def check_dependencies():
     """Check if required commands and packages are available."""
     commands = ['git', 'make', 'jq', 'cast']
@@ -430,7 +442,7 @@ def main():
             "contract_code_hash": contract_code_hash,
             "source_hash": source_hash,
             "deployed_address": deployed_address,
-            "command": "./scripts/run_gen_predeploy_docs.sh " + ' \\\n'.join(sys.argv[1:]),
+            "command": "./scripts/run_gen_predeploy_docs.sh " + format_args_with_alternate_newlines(sys.argv[1:]),
             "forge_artifact_path_data": forge_artifact_path_val,
         }
         if args.proxy_address:
