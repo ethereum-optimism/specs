@@ -494,24 +494,17 @@ Called by anyone, returns the list of all scheduled but not cancelled or execute
 
 #### `configureTimelockGuard`
 
-Configure the contract as a timelock guard by setting the `timelock_delay`.
+Configure the contract as a timelock guard by setting the `timelock_delay` and `safety_delay`.
 
 - MUST allow an arbitrary number of `safe` contracts to use the contract as a guard.
 - MUST revert if the contract is not enabled as a guard for the `safe`.
 - MUST revert if `timelock_delay` is longer than 1 year.
+- MUST revert if `safety_delay` is longer than 1 year.
 - MUST set the caller as a `safe`.
-- MUST take `timelock_delay` as a parameter and store is as related to the `safe`.
+- MUST take `timelock_delay` as a parameter and store it as related to the `safe`.
+- MUST take `safety_delay` as a parameter and store it as related to the `safe`.
 - MUST set the `cancellation_threshold` to 1.
-- MUST emit a `GuardConfigured` event with at least `timelock_delay` as a parameter.
-
-#### `clearTimelockGuard`
-
-Remove the timelock guard configuration by a previously enabled `safe`.
-
-- MUST revert if the contract is enabled as a guard for the `safe`.
-- MUST revert if the contract is not configured for the `safe`.
-- MUST erase the existing `timelock_delay` data related to the calling `safe`.
-- MUST emit a `GuardCleared` event.
+- MUST emit a `GuardConfigured` event with at least `timelock_delay` and `safety_delay` as parameters.
 
 #### `scheduleTransaction`
 
@@ -537,6 +530,16 @@ scheduled transaction, and verifies that the supplied signatures for such a no-o
 - MUST revert if `sum(rejecting_owners(safe, tx)) < cancellation_threshold(safe)`.
 - MUST emit a `TransactionCancelled` event, with at least `safe` and a transaction identifier.
 
+#### `slowTimelockGuard`
+
+Pauses the timelock guard for a given `safe`.
+
+- MUST revert if the contract is not enabled as a guard for the `safe`.
+- MUST revert if the contract is not configured for the `safe`.
+- MUST revert if a quorum of valid signatures from Safe owners is not provided as a parameter.
+- MUST revert if the quorum of signatures was already used.
+- MUST toggle the `slow` state of the `safe`.
+
 #### `checkTransaction`
 
 Can be called by anyone. It will be called by the `safe` in `execTransaction` if the contract is enabled as a guard.
@@ -544,6 +547,7 @@ It verifies if a given transaction was scheduled and the delay period has passed
 
 - MUST revert if the contract is not enabled as a guard for the `safe`.
 - MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
+- MUST add the `safety_delay(safe)` to the `execution_time(safe, tx)` if the `safe` is `slow`.
 - MUST revert if `timelock_delay(safe) > 0` and `execution_time(safe, tx) < block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
 - MUST set `cancellation_threshold(safe)` to 1.
