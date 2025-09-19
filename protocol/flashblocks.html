@@ -184,10 +184,10 @@
 <li><a href="#data-structures">Data structures</a>
 <ul>
 <li><a href="#flashblockspayloadv1"><strong><code>FlashblocksPayloadV1</code></strong></a></li>
-<li><a href="#executionpayloadflashblockdeltav1">ExecutionPayloadFlashblockDeltaV1</a></li>
+<li><a href="#executionpayloadflashblockdeltav1"><strong><code>ExecutionPayloadFlashblockDeltaV1</code></strong></a></li>
 <li><a href="#executionpayloadstaticv1"><strong><code>ExecutionPayloadStaticV1</code></strong></a></li>
 <li><a href="#metadata"><strong><code>Metadata</code></strong></a></li>
-<li><a href="#accountmetadata">AccountMetadata</a></li>
+<li><a href="#accountmetadata"><strong><code>AccountMetadata</code></strong></a></li>
 <li><a href="#storageslot"><strong><code>StorageSlot</code></strong></a></li>
 <li><a href="#transactionmetadata"><strong><code>TransactionMetadata</code></strong></a></li>
 </ul>
@@ -284,10 +284,9 @@ technology to enable quick verifiability over various networks of machines in ad
 <h1 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h1>
 <p>This document assumes knowledge of the terminology, definitions, and other material in</p>
 <ul>
-<li>[🔗 Ethereum Optimism Protocol Specs]<a href="https://github.com/ethereum-optimism/">ethereum-optimism</a></li>
+<li><a href="https://github.com/ethereum-optimism/">🔗 Ethereum Optimism Protocol Specs</a></li>
 <li><a href="https://specs.optimism.io/protocol/exec-engine.html#engine-api">🔗 OP Stack Engine API</a></li>
-<li>[🔗 External Block Production in OP Stack Design
-Doc]<a href="https://github.com/ethereum-optimism/">ethereum-optimism</a></li>
+<li><a href="https://github.com/ethereum-optimism/">🔗 External Block Production in OP Stack Design Doc</a></li>
 <li><a href="https://github.com/ethereum/execution-apis/tree/main">🔗 Ethereum Execution APIs</a></li>
 <li><a href="https://writings.flashbots.net/introducing-rollup-boost">🔗 Introducing Rollup-Boost - Launching on Unichain</a></li>
 <li><a href="https://www.notion.so/RFD-1-Rollup-boost-1996b4a0d876802f95d1c98387e38162?pvs=21">🔗 Rollup-boost design doc</a></li>
@@ -311,16 +310,15 @@ perceived latency for end-users  and improves network bandwidth without modifyin
 streamlined path for incremental adoption by node operators and existing infrastructure.</p>
 <h1 id="specification"><a class="header" href="#specification">Specification</a></h1>
 <h2 id="terminology"><a class="header" href="#terminology">Terminology</a></h2>
-<p>All terms, actors, and components are used in this document identically to how they are defined in the [OP Stack
-protocol definition]<a href="https://github.com/ethereum-optimism/">ethereum-optimism</a></p>
+<p>All terms, actors, and components are used in this document identically to how they are defined in the <a href="https://github.com/ethereum-optimism/">OP Stack
+protocol definition</a></p>
 <p>Additional terms introduced:</p>
 <ul>
-<li><strong>External Block Builder</strong> - External Block Builders are first introduced to the OP Stack in the [External Block
-Production Design
-Document]<a href="https://github.com/ethereum-optimism/">ethereum-optimism</a> ****where
+<li><strong>External Block Builder</strong> - External Block Builders are first introduced to the OP Stack in the <a href="https://github.com/ethereum-optimism/">External Block
+Production Design Document</a> where
 they are described as an external party that the Sequencer can request blocks from.</li>
-<li><strong>Rollup Boost</strong> - A sidecar piece of software first introduced without name in the [External Block Production Design
-Document]<a href="https://github.com/ethereum-optimism/">ethereum-optimism</a> with two
+<li><strong>Rollup Boost</strong> - A sidecar piece of software first introduced without name in the <a href="https://github.com/ethereum-optimism/">External Block Production Design
+Document</a> with two
 roles:
 <ol>
 <li>obfuscate the presence of External Block Builder software from the <code>op-node</code> and <code>op-geth</code> software</li>
@@ -352,8 +350,9 @@ representing a Flashblock payload, encapsulating block deltas, base configuratio
     static: Optional[ExecutionPayloadStaticV1]
     diff: ExecutionPayloadFlashblockDeltaV1
     metadata: FlashblocksMetadata
+**Field descriptions:**
+
 </code></pre>
-<p><strong>Field descriptions:</strong></p>
 <ul>
 <li><code>payload_id</code>: PayloadID is an identifier of the payload build process. The same for all flashblocks.</li>
 <li><code>index</code>: Index of the Flashblock within the parent block.</li>
@@ -364,7 +363,7 @@ is empty.</li>
 <li><code>metadata</code>: Supplementary information about the execution of the flashblock. For example: account state changes,
 storage modifications, transaction receipts.</li>
 </ul>
-<h3 id="executionpayloadflashblockdeltav1"><a class="header" href="#executionpayloadflashblockdeltav1">ExecutionPayloadFlashblockDeltaV1</a></h3>
+<h3 id="executionpayloadflashblockdeltav1"><a class="header" href="#executionpayloadflashblockdeltav1"><strong><code>ExecutionPayloadFlashblockDeltaV1</code></strong></a></h3>
 <p>Container encoding only the mutable portions of the execution payload updated during Flashblock construction.</p>
 <pre><code class="language-python">class ExecutionPayloadFlashblockDeltaV1():
     state_root: Bytes32
@@ -433,7 +432,7 @@ throughout construction.</p>
 <li><code>accounts</code>: List of accounts with modified state in this flashblock.</li>
 <li><code>transactions</code>: List of transaction execution results in this flashblock.</li>
 </ul>
-<h3 id="accountmetadata"><a class="header" href="#accountmetadata">AccountMetadata</a></h3>
+<h3 id="accountmetadata"><a class="header" href="#accountmetadata"><strong><code>AccountMetadata</code></strong></a></h3>
 <p>Container representing account state changes included in the Flashblock metadata. It is used by providers to fulfill
 the RPC requests.</p>
 <pre><code class="language-python">class AccountMetadata():
@@ -508,9 +507,12 @@ flowchart LR
 <ol>
 <li>The <strong>OP Node</strong> initiates block production and sends requests to <strong>Rollup Boost</strong></li>
 <li><strong>Rollup Boost</strong> coordinates between multiple components:
-[-<em>+] It communicates with the <strong>Block Builder</strong> to create Flashblocks
-[-</em>+] It maintains a connection to the <strong>Fallback EL</strong> for reliability if the Block Builder fails
-[-*+] It propagates validated Flashblocks to the network via the <strong>WebSocket Proxy</strong></li>
+<ul>
+<li>It communicates with the <strong>Block Builder</strong> to create Flashblocks</li>
+<li>It maintains a connection to the <strong>Fallback EL</strong> for reliability if the Block Builder fails</li>
+<li>It propagates validated Flashblocks to the network via the <strong>WebSocket Proxy</strong></li>
+</ul>
+</li>
 <li>The <strong>WebSocket Proxy</strong> distributes Flashblocks to multiple <strong>RPC Providers</strong></li>
 <li><strong>RPC Providers</strong> serve preconfirmation data to <strong>End Users</strong></li>
 </ol>
@@ -586,7 +588,7 @@ Rollup Boost as it normally would to its local Execution Engine.</p>
 <code>FlashblocksPayloadV1</code> at intervals defined by <code>FLASHBLOCKS_TIME</code> following the <strong>Flashblocks Construction Process</strong>
 defined in this document.</p>
 <p>It's important to emphasize that during this process, the External Block Builder sends only the incremental changes
-in each Flashblock, not the full block state each time. Each <code>FlashblocksPayloadV1</code> contains just the delta from the
+in each Flashblock, not the full block state each time. Each <code>FlashblocksPayloadV1</code> contains just the delta from the
 previous state (new transactions, updated state roots, etc.), allowing for efficient bandwidth usage and faster
 propagation.</p>
 <p>Only the first Flashblock (with <code>index</code> 0) includes the <code>static</code> field containing immutable block data, while
@@ -598,7 +600,7 @@ without any additional data.</p>
 </li>
 <li>
 <p><strong>Flashblock Validation and Propagation</strong>:</p>
-<p>For each received <code>FlashblocksPayloadV1</code>, Rollup Boost validates it against the Sequencer's local Execution Engine
+<p>For each received <code>FlashblocksPayloadV1</code>, Rollup Boost validates it against the Sequencer’s local Execution Engine
 and according to the <strong>Flashblocks Validity Rules</strong> defined in this document. Upon successful validation, Rollup Boost
 propagates the payload to all subscribed Flashblock-compatible RPC providers.</p>
 </li>
@@ -743,8 +745,7 @@ Rules section</li>
 <li>
 <p><strong>Flashblock Payload Assembly</strong></p>
 <ul>
-<li>After transaction execution, compute and record the following execution state updates:
-<ul>
+<li>After transaction execution, compute and record the following execution state updates:</li>
 <li><code>state_root</code>: The new post-execution state root resulting from the executed transactions.</li>
 <li><code>receipts_root</code>: The receipts trie root derived from execution outcomes.</li>
 <li><code>logs_bloom</code>: Aggregated logs bloom from all emitted transaction logs within this flashblock.</li>
@@ -753,8 +754,6 @@ Rules section</li>
 <li><code>withdrawals</code> (if applicable): Withdrawals executed during the current flashblock interval (as per OP Stack
 withdrawal specification).</li>
 <li><code>block_hash</code>: Computed block hash uniquely identifying this flashblock execution state.</li>
-</ul>
-</li>
 </ul>
 <p>Note that each flashblock builds upon the state of all previous flashblocks, with these fields reflecting the
 cumulative state after applying the new transactions in this particular flashblock.</p>
@@ -792,12 +791,9 @@ reached (e.g., end of block building period via <code>engine_getPayload</code> r
 <li>
 <p><strong>Flashblock Construction Termination</strong></p>
 <ul>
-<li>Flashblock construction continues iteratively until:
-<ul>
+<li>Flashblock construction continues iteratively until:</li>
 <li>Rollup Boost signals final block aggregation and propagation via <code>engine_getPayload</code>.</li>
 <li>A failure or timeout condition arises requiring failover procedures, detailed separately.</li>
-</ul>
-</li>
 </ul>
 </li>
 </ol>
@@ -922,9 +918,13 @@ state roots are calculated on each Flashblock contrary to publication due to the
 implementation.</p>
 <p>A flashblock is considered a valid block if:</p>
 </li>
+<li>
+<p>It includes the first flashblock (with index 0 containing the base data)</p>
+</li>
+<li>
+<p>It comprises a continuous sequence of flashblocks with incrementing indices.</p>
+</li>
 </ul>
-<p>[-<em>+] It includes the first flashblock (with index 0 containing the base data)
-[-</em>+] It comprises a continuous sequence of flashblocks with incrementing indices.</p>
 <h2 id="flashblock-system-invariants"><a class="header" href="#flashblock-system-invariants">Flashblock System Invariants</a></h2>
 <p>The following invariants must hold true for the Flashblocks protocol to function reliably:</p>
 <ul>
@@ -1201,8 +1201,7 @@ preconfirmation cache state. If the requested account appears in the <code>Acco
 RPC provider scans the <code>storage_slots</code> list for the requested key and returns the corresponding value directly.</p>
 <h1 id="reliability-and-operational-considerations"><a class="header" href="#reliability-and-operational-considerations">Reliability and Operational Considerations</a></h1>
 <h2 id="transaction-propagation"><a class="header" href="#transaction-propagation">Transaction Propagation</a></h2>
-<p>Similar to the design laid out in the [External Block
-Production]<a href="https://github.com/ethereum-optimism/">ethereum-optimism</a> design
+<p>Similar to the design laid out in the <a href="https://github.com/ethereum-optimism/">External Block Production</a> design
 document, Flashblocks makes no assumptions about how transactions are delivered to the block builder. A non-exhaustive
 list of valid approaches:</p>
 <ul>
@@ -1285,8 +1284,8 @@ enabled.</p>
 maintaining a Preconfirmation cache and responding with the relevant data on request with the <code>pending</code> tag.</p>
 <h1 id="implementation"><a class="header" href="#implementation">Implementation</a></h1>
 <p>A feature complete implementation of all components described in this document can be found in the
-[rollup-boost]<a href="https://github.com/flashbots/">flashbots</a>
-[op-rbuilder]<a href="https://github.com/flashbots/">flashbots</a>
+<a href="https://github.com/flashbots/">rollup-boost</a>
+<a href="https://github.com/flashbots/">op-rbuilder</a>
 <a href="https://github.com/base/flashblocks-websocket-proxy">flashblocks-websocket-proxy</a>, and
 <a href="https://github.com/danyalprout/reth-flashblocks">reth-flashblocks</a>.</p>
 
