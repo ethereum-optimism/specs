@@ -94,7 +94,8 @@ sequenceDiagram
 Legacy immutables are preserved for network-specific config, and storage-based overrides are
 enabled via getters. Each getter returns the storage value if set; otherwise, it falls back
 to the immutable. Setters write to storage to opt into overrides. A flag tracks whether the
-storage variable was set. This allows the [`FeeVaultInitializer`](./fee-vault-initializer.md) to set legacy (immutable) values when deploying the new fee vault implementation and enables the `ProxyAdmin.owner`
+storage variable was set. This allows the [`FeeVaultInitializer`](./fee-vault-initializer.md) to set
+legacy (immutable) values when deploying the new fee vault implementation and enables the `ProxyAdmin.owner`
 to override what is returned by the getters once the new configuration has been set.
 
 The `withdraw` function returns the value that was withdrawn from the vault at the time of the function call.
@@ -180,7 +181,9 @@ function withdrawalNetwork() external view returns (WithdrawalNetwork)
 
 #### `withdraw`
 
-Withdraws the funds stored in the vault to the recipient. If the recipient is an address on L2, a `SafeCall.send` is performed; if it's an address on L1, `IL2ToL1MessagePasser.initiateWithdrawal` is used. Returns the value of the withdrawal.
+Withdraws the funds stored in the vault to the recipient. If the recipient is an address on L2, a `SafeCall.send`
+is performed; if it's an address on L1, `IL2ToL1MessagePasser.initiateWithdrawal` is used.
+Returns the value of the withdrawal.
 
 ```solidity
 function withdraw() external returns(uint256)
@@ -241,7 +244,9 @@ network, and the `FeeSplitter` as the recipient MUST be set using the setter fun
 
 ## FeeSplitter
 
-This contract splits the funds it receives from the vaults using a configured `ISharesCalculator` compatible revenue shares calculator to determine which addresses should receive funds and in what amounts by querying `ISharesCalculator.getRecipientsAndAmounts`:
+This contract splits the funds it receives from the vaults using a configured `ISharesCalculator` compatible
+revenue shares calculator to determine which addresses should receive funds and in what amounts
+by querying `ISharesCalculator.getRecipientsAndAmounts`:
 
 ```solidity
 struct ShareInfo {
@@ -260,9 +265,11 @@ function getRecipientsAndAmounts(
 ```
 
 The `ShareInfo[]` array returned represents pairs: a `recipient` address to receive the funds and an `amount` of funds
-it should receive; a default [`SuperchainRevSharesCalculator`](./superchain-revshares-calc.md) implementation of this interface is provided.
+it should receive; a default [`SuperchainRevSharesCalculator`](./superchain-revshares-calc.md)
+implementation of this interface is provided.
 
-The `FeeSplitter` integrates with the fee vault system by configuring each Fee Vault to use `WithdrawalNetwork.L2` and setting this predeploy as the recipient in every fee vault.
+The `FeeSplitter` integrates with the fee vault system by configuring each Fee Vault to use `WithdrawalNetwork.L2`
+and setting this predeploy as the recipient in every fee vault.
 
 The `FeeSplitter` MUST be proxied and initializable only by the `ProxyAdmin.owner()`.
 
