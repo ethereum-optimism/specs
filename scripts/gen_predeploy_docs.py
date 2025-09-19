@@ -444,7 +444,7 @@ def main():
         info(f"\n-- Rendered Template --")
         rendered_output = render_template(template_data)
         print(rendered_output, end="")
-        info(f"--- End Rendered Template ---\n")
+        info(f"\n--- End Rendered Template ---\n")
         if args.copy_contract_bytecode:
             run_cmd(f"jq -r '.bytecode.object' {args.optimism_repo_path}/{forge_artifact_path_val} > ./{data_path_result}")
             success(f"Copied contract bytecode to {data_path_result}")
