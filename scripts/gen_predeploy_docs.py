@@ -21,7 +21,7 @@ A deposit transaction is derived with the following attributes:
 - `nonce`: `{{ params.from_address_nonce }}`
 - `gasLimit`: `{{ params.gas_limit }}`
 - `data`: `{{ params.data_bytecode_head }}` ([full bytecode](../../{{ params.data_path }}))
-- `sourceHash`: `{{ params.source_hash }}`,  
+- `sourceHash`: `{{ params.source_hash }}`,
   computed with the "Upgrade-deposited" type, with `intent = "{{ params.intent }}"`
 
 This results in the {{ params.fork_name }} {{ params.contract_name }} contract being deployed to
@@ -47,7 +47,7 @@ make build-contracts
 jq -r ".bytecode.object" {{ params.forge_artifact_path_data }}
 ```
 
-This transaction MUST deploy a contract with the following code hash  
+This transaction MUST deploy a contract with the following code hash
 `{{ params.contract_code_hash }}`.
 
 To verify the code hash:
