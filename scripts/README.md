@@ -36,7 +36,7 @@ Tip: Ensure the repo at `--optimism-repo-path` can build with `make build-contra
 
 We’ll use `scripts/upgrades/interop.sh` as the example workflow.
 
-### 1) Create a new upgrade script
+### 1) Create a new upgrade config file
 
 Copy the Interop example config file to a new file under `scripts/upgrades/`, e.g.:
 
