@@ -1,5 +1,7 @@
 # FeeVaultInitializer
 
+<!-- cSpell:words staticcall -->
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
@@ -26,7 +28,7 @@ When the initializer is deployed, it will:
 
 - Read and retrieve the current values for `recipient()`, `withdrawalNetwork()`, and `minWithdrawalAmount()`
   from each live vault (`SequencerFeeVault`, `L1FeeVault`, `BaseFeeVault`, `OperatorFeeVault`).
-- Handle legacy vaults that may not have the `WITHDRAWAL_NETWORK` function by using a low-level staticcall and
+- Handle legacy vaults that may not have the `WITHDRAWAL_NETWORK` function by using a low-level `staticcall` and
   assigning the default value of `WithdrawalNetwork.L2` when the configuration cannot be read.
 - Deploy a new implementation for each vault, passing the retrieved values per vault as constructor
   immutables, and passing `L2` as the `WITHDRAWAL_NETWORK` constructor immutable in case a legacy vault is

@@ -1,5 +1,7 @@
 # Predeploys
 
+<!-- cSpell:words TSTORE -->
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
@@ -299,7 +301,7 @@ to the appropriate addresses according to the amounts returned by the set shares
 When attempting to withdraw from the vaults, it checks that the withdrawal network is set to `WithdrawalNetwork.L2`,
 and that the recipient of the vault is the `FeeSplitter`. It MUST revert if any of these conditions is not met.
 It MUST only withdraw if the vault balance is greater than or equal to its minimum withdrawal amount.
-In addition, it follows a `nonReentrant` pattern using `TSORE`d flags, to avoid receiving balance back
+In addition, it follows a `nonReentrant` pattern using `TSTORE`d flags, to avoid receiving balance back
 once the fees are being disbursed.
 
 ```solidity
@@ -328,7 +330,7 @@ function receive() external payable
 
 #### `setSharesCalculator`
 
-Sets the address of the calculator used to partion the fees.
+Sets the address of the calculator used to partition the fees.
 
 ```solidity
 function setSharesCalculator(ISharesCalculator _newSharesCalculator) external
