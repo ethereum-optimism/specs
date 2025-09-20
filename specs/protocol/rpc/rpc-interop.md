@@ -1,4 +1,6 @@
-> **Note:** This document has been moved to [specs/protocol/rpc/rpc-interop.md](../protocol/rpc/rpc-interop.md)
+# Interop RPC
+
+> **Moved from:** [specs/interop/managed-node.md](../../interop/managed-node.md)
 
 # Control flow between Supervisor and Managed node
 
@@ -11,7 +13,7 @@
   - [Reset](#reset)
   - [UnsafeBlock](#unsafeblock)
   - [DerivationUpdate](#derivationupdate)
-  - [DerivationCurrentL1Update](#derivationcurrentl1update)
+  - [DerivationOriginUpdate](#derivationoriginupdate)
   - [ExhaustL1](#exhaustl1)
   - [ReplaceBlock](#replaceblock)
 - [Supervisor `->` Node](#supervisor---node)
@@ -21,7 +23,6 @@
     - [interop_invalidateBlock](#interop_invalidateblock)
     - [interop_provideL1](#interop_providel1)
     - [interop_reset](#interop_reset)
-    - [interop_resetPreInterop](#interop_resetpreinterop)
   - [DB](#db)
     - [interop_updateCrossSafe](#interop_updatecrosssafe)
     - [interop_updateCrossUnsafe](#interop_updatecrossunsafe)
@@ -29,7 +30,7 @@
   - [Sync Methods](#sync-methods)
     - [interop_fetchReceipts](#interop_fetchreceipts)
     - [interop_l2BlockRefByTimestamp](#interop_l2blockrefbytimestamp)
-    - [interop_l2BlockRefByNumber](#interop_l2blockrefbynumber)
+    - [interop_blockRefByNumber](#interop_blockrefbynumber)
     - [interop_chainID](#interop_chainid)
     - [interop_outputV0AtTimestamp](#interop_outputv0attimestamp)
     - [interop_pendingOutputV0AtTimestamp](#interop_pendingoutputv0attimestamp)
@@ -69,7 +70,7 @@ ManagedEvent {
     Reset,
     UnsafeBlock,
     DerivationUpdate,
-    DerivationCurrentL1Update,
+    DerivationOriginUpdate,
     ExhaustL1,
     ReplaceBlock
 }
@@ -105,16 +106,14 @@ DerivationUpdate: DerivedBlockRefPair {
 
 Signals that an L2 block is considered local-safe.
 
-### DerivationCurrentL1Update
+### DerivationOriginUpdate
 
 ```javascript
-DerivationCurrentL1Update: DerivedBlockRefPair {
-    source: BlockRef  //Newly observed L1
-    derived: BlockRef //L2's BlockRef
-}
+DerivationOriginUpdate: BlockRef
 ```
 
-Signals that an L2 block is considered local-safe following the observation of a new L1 block.
+Signals that an L2 block is now local-safe because of the given L1 traversal. This would be accompanied with
+`DerivationUpdate`.
 
 ### ExhaustL1
 
@@ -197,14 +196,6 @@ Forces a reset to a specific local-unsafe/local-safe/finalized starting point on
 override local-unsafe, to reset the very end of the chain. Resets may override local-safe, since post-interop we need
 the local-safe block derivation to continue.
 
-#### interop_resetPreInterop
-
-```javascript
-payload()
-```
-
-Forces a pre-interop reset on the node. It means resetting the node to a state before the Interop upgrade
-
 ### DB
 
 RPC calls that a node should watch for, originating from supervisor that is called on DB updates for relevant block
@@ -255,13 +246,13 @@ payload (uint64) -> BlockRef
 
 Fetches L2 BlockRef of the block that occurred at given timestamp
 
-#### interop_l2BlockRefByNumber
+#### interop_blockRefByNumber
 
 ```javascript
-payload (uint64) -> L2BlockRef
+payload (uint64) -> BlockRef
 ```
 
-Fetches the L2 BlockRef from a given L2 block number
+Fetches the BlockRef from a given L2 block number
 
 #### interop_chainID
 
@@ -331,4 +322,4 @@ OutputV0 {
     messagePasserStorageRoot: Hash
     blockHash: Hash
 }
-```
+``` 
