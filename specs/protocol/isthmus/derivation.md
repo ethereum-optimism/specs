@@ -91,10 +91,10 @@ The `GasPriceOracle` contract is also upgraded to support the Isthmus operator f
 
 A deposit transaction is derived with the following attributes:
 
-- `from`: `0x4210000000000000000000000000000000000004`
+- `from`: `0x06EE840642a33367ee59fCA237F270d5119d1356`
 - `to`: `null`
 - `mint`: `0`
-- `value`: `0`
+- `value`: `64eth`
 - `gasLimit`: `1,625,000`
 - `data`: `0x60806040523480156100105...` ([full bytecode](../../static/bytecode/isthmus-gas-price-oracle-deployment.txt))
 - `sourceHash`: `0xfc70b48424763fa3fab9844253b4f8d508f91eb1f7cb11a247c9baec0afb8035`,
