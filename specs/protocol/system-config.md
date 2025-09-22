@@ -14,10 +14,14 @@
     - [Post-Ecotone Scalar Encoding](#post-ecotone-scalar-encoding)
   - [Unsafe Block Signer](#unsafe-block-signer)
   - [L2 Gas Limit](#l2-gas-limit)
+  - [Customizable Feature](#customizable-feature)
 - [Functionality](#functionality)
   - [System Config Updates](#system-config-updates)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
+  - [upgrade](#upgrade)
+  - [setFeatureEnabled](#setfeatureenabled)
+  - [isFeatureEnabled](#isfeatureenabled)
   - [minimumGasLimit](#minimumgaslimit)
   - [maximumGasLimit](#maximumgaslimit)
   - [unsafeBlockSigner](#unsafeblocksigner)
@@ -40,6 +44,7 @@
   - [setEIP1559Params](#seteip1559params)
   - [setOperatorFeeScalars](#setoperatorfeescalars)
   - [resourceConfig](#resourceconfig)
+  - [guardian](#guardian)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -150,6 +155,16 @@ The gas limit may not be set to a value larger than the
 [maximum gas limit](./configurability.md#gas-limit). This is to ensure that L2 blocks are fault
 provable and of reasonable size to be processed by the client software.
 
+### Customizable Feature
+
+A **Customizable Feature** is a component of the OP Stack that is maintained as a production-grade
+element of the stack behind some sort of toggle. A Customizable Feature is distinct from other
+types of feature-flagged code because it is part of the mainline OP Stack and is intended to remain
+as a supported configuration option indefinitely. Unlike short-lived feature flags, which exist
+only to keep develop releasable while work is in progress, customizable features are permanent,
+user-facing options. They must be fully documented, tested in all supported modes, and designed for
+long-term maintainability.
+
 ## Functionality
 
 ### System Config Updates
@@ -169,17 +184,44 @@ In version `0`, the following update types are supported:
   updates `baseFeeScalar` and `blobBaseFeeScalar`
 - Type `2`: `gasLimit` overwrite, as `uint64` payload
 - Type `3`: `unsafeBlockSigner` overwrite, as `address` payload
+- Type `4`: `eip1559Params` overwrite, as `uint256` payload encoding denomination and elasticity
+- Type `5`: `operatorFeeParams` overwrite, as `uint256` payload encoding scalar and constant
 
 ## Function Specification
 
 ### initialize
 
+- MUST only be triggerable by the ProxyAdmin or its owner.
 - MUST only be triggerable once.
 - MUST set the owner of the contract to the provided `_owner` address.
 - MUST set the SuperchainConfig contract address.
 - MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config, batch
   inbox, L1 contract addresses, and L2 chain ID.
 - MUST set the start block to the current block number if it hasn't been set already.
+- MUST validate the resource configuration parameters against system constraints.
+
+### upgrade
+
+- MUST only be triggerable by the ProxyAdmin or its owner.
+- MUST set the L2 chain ID to the provided value.
+- MUST set the SuperchainConfig contract address to the provided value.
+- MUST clear the old dispute game factory address from storage (now derived from OptimismPortal).
+
+### setFeatureEnabled
+
+(+v4.1.0)
+
+- Used to enable or disable a [Customizable Feature](#customizable-feature).
+- Takes a bytes32 feature string and a boolean as an input.
+- MUST only be triggerable by the ProxyAdmin or its owner.
+- MUST toggle the feature flag on or off, based on the value of the boolean.
+
+### isFeatureEnabled
+
+(+v4.1.0)
+
+- Takes a bytes32 feature string as an input.
+- Returns true if the feature is enabled and false otherwise.
 
 ### minimumGasLimit
 
@@ -232,13 +274,22 @@ Returns the block number at which the op-node can start searching for logs.
 
 ### paused
 
-This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by using the
-chain's `ETHLockbox` address as the [Pause Identifier](./stage-1.md#pause-identifier). Returns the
-current pause state of the system by checking if the `SuperchainConfig` is paused for this chain's
-`ETHLockbox`.
+(-v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
+using the chain's `ETHLockbox` address as the [Pause Identifier](./stage-1.md#pause-identifier).
+Returns the current pause state of the system by checking if the `SuperchainConfig` is paused for
+this chain's `ETHLockbox`.
 
-- MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns true OR if
-  `SuperchainConfig.paused(address(0))` returns true.
+(+v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
+using either the chain's `ETHLockbox` address or the chain's `OptimismPortal` address as the
+[Pause Identifier](./stage-1.md#pause-identifier).
+
+- (-v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
+  true OR if `SuperchainConfig.paused(address(0))` returns true.
+- (+v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
+  true AND the system is configured to use the `ETHLockbox` contract.
+- (+v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal())` returns true AND the
+  system is NOT configured to use the `ETHLockbox` contract.
+- (+v4.1.0) MUST return true if `SuperchainConfig.paused(address(0))` returns true.
 - MUST return false otherwise.
 
 ### superchainConfig
@@ -266,7 +317,7 @@ Allows the owner to update the [Batcher Hash](#batcher-hash).
 Allows the owner to update the gas configuration parameters (pre-Ecotone).
 
 - MUST revert if called by an address other than the owner.
-- MUST revert if the scalar exceeds the maximum allowed value.
+- MUST revert if the scalar exceeds the maximum allowed value (no upper 8 bits should be set).
 - MUST update the overhead and scalar values.
 - MUST emit a ConfigUpdate event with the UpdateType.FEE_SCALARS type.
 
@@ -310,3 +361,16 @@ Allows the owner to update the operator fee parameters.
 ### resourceConfig
 
 Returns the current resource metering configuration.
+
+- MUST perform validation checks when setting the resource config:
+  - Minimum base fee must be less than or equal to maximum base fee
+  - Base fee change denominator must be greater than 1
+  - Max resource limit plus system transaction gas must be less than or equal to the L2 gas limit
+  - Elasticity multiplier must be greater than 0
+  - No precision loss when computing target resource limit
+
+### guardian
+
+Returns the address of the guardian from the SuperchainConfig contract.
+
+- MUST return the result of a call to `superchainConfig.guardian()`.

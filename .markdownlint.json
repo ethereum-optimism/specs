@@ -4,7 +4,7 @@
     "strict": false,
     "stern": false,
     "code_blocks": false,
-    "tables": false,
+    "tables": false
   },
   "no-duplicate-heading": {
     "siblings_only": true
