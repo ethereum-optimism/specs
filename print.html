@@ -13518,22 +13518,30 @@ header, while still allowing them to be dynamically configured. Dynamic configur
 similarly to <code>gasLimit</code>, with the derivation pipeline providing the appropriate <code>SystemConfig</code>
 contract values to the block builder via <code>PayloadAttributesV3</code> parameters.</p>
 <h2 id="da-footprint-block-limit"><a class="header" href="#da-footprint-block-limit">DA Footprint Block Limit</a></h2>
-<p>A DA footprint block limit is introduced to limit the total amount of estimated compressed
+<p>A <em>DA footprint block limit</em> is introduced to limit the total amount of estimated compressed
 transaction data that can fit into a block.
 For each transaction, a new resource called DA footprint is tracked, next to its gas usage.
 It is scaled to the gas dimension so that its block total can also be limited by
 the block gas limit, like a block's total gas usage.</p>
 <p>Let a block's <code>daFootprint</code> be defined as follows:</p>
-<pre><code class="language-python">def daFootprint(block)
+<pre><code class="language-python">def daFootprint(block: Block) -&gt; int:
   daFootprint = 0
-  for tx in block.txs:
-      if !tx.IsDepositTx
-        daUsageEstimate = max(minTransactionSize, intercept + fastlzCoef * tx.fastlzSize / 1e6)
-        daFootprint += daUsageEstimate * daFootprintGasScalar
+
+  for tx in block.transactions:
+      if tx.type == DEPOSIT_TX_TYPE:
+          continue
+
+      daUsageEstimate = max(
+          minTransactionSize,
+          (intercept + fastlzCoef * tx.fastlzSize) // 1e6
+      )
+      daFootprint += daUsageEstimate * daFootprintGasScalar
+
   return daFootprint 
 </code></pre>
-<p>where <code>intercept</code>, <code>minTransactionSize</code>, <code>fastLzCoef</code> and <code>fastlzSize</code>
-are defined in the <a href="protocol/jovian/../fjord/exec-engine.html">Fjord specs</a> and <code>/</code> represents integer division.</p>
+<p>where <code>intercept</code>, <code>minTransactionSize</code>, <code>fastlzCoef</code> and <code>fastlzSize</code>
+are defined in the <a href="protocol/jovian/../fjord/exec-engine.html">Fjord specs</a>, <code>DEPOSIT_TX_TYPE</code> is <code>0x7E</code>,
+and <code>//</code> represents integer floor division.</p>
 <p>From Jovian, the <code>gasUsed</code> property of each block header is equal to the maximum over
 that block's <code>daFootprint</code> and the sum of the gas used by each transaction
 (the pre-Jovian definition of a block's <code>gasUsed</code> field).
@@ -13541,6 +13549,8 @@ As a result, blocks with high DA usage may cause the base fee to increase in sub
 <p>The <code>gasUsed</code> must continue to be less than or equal to the block gas limit, meaning that
 (since the <code>daFootprint</code> must also be less than or equal to the block gas limit),
 blocks may have no more than <code>gasLimit/daFootprintGasScalar</code> total estimated DA usage.</p>
+<p>Note that, since the base fee continues to be updated according to a block's <code>gasUsed</code> field, the base fee may be
+directly influenced by DA usage.</p>
 <h3 id="scalar-loading"><a class="header" href="#scalar-loading">Scalar loading</a></h3>
 <p>The <code>daFootprintGasScalar</code> is loaded in a similar way to the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>
 <a href="protocol/jovian/../isthmus/exec-engine.html#operator-fee">included</a> in the Isthmus fork. It can be read in two interchangable ways:</p>
@@ -13556,11 +13566,15 @@ blocks may have no more than <code>gasLimit/daFootprintGasScalar</code> total es
 </ul>
 <p>It takes on a default value as described in the section on <a href="protocol/jovian/./l1-attributes.html">L1 Attributes</a>.</p>
 <h3 id="rationale-7"><a class="header" href="#rationale-7">Rationale</a></h3>
-<p>While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, it
-does not influence future base fee calculations. As a result, excessive DA usage is not efficiently reflected in the fee
-market, leading to suboptimal resource prices.</p>
-<p>By changing the meaning of the <code>gasUsed</code> field in times of high DA demand, the fee market can properly adjust without reverting
-to priority fee auctions (an inferior experience for users).</p>
+<p>While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, no
+protocol mechanism currently reflects the limited available <em>DA throughput on L1</em>. E.g. on Ethereum L1 with Pectra
+enabled, the available blob throughput is <code>~96 kB/s</code> (with a target of <code>~64 kB/s</code>), but the calldata floor gas price of
+<code>40</code> for calldata-heavy L2 transactions allows for more incompressible transaction data to be included on most OP Stack
+chains than the Ethereum blob space could handle. This is currently mitigated at the policy level by batcher-sequencer
+throttling: a mechanism which artificially constricts block building. This can cause base fees to fall, which implies
+unnecessary losses for chain operators and a negative user experience (transaction inclusion delays, priority fee
+auctions). So hard-limiting a block's DA footprint in a way that also influences the base fee mitigates the
+aforementioned problems of policy-based solutions.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="derivation-2"><a class="header" href="#derivation-2">Derivation</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -13680,7 +13694,7 @@ is the function selector: the first four bytes of <code>keccak256("setL1BlockVal
 <p>In the first L2 block after the Jovian activation block, the Jovian L1 attributes are used.</p>
 <p>The pre-Jovian values are migrated over 1:1.
 Blocks after the Jovian activation block contain all pre-Jovian values 1:1, and also set <code>daFootprintGasScalar</code> to the
-value from the <code>SystemConfig</code>. If that value is <code>0</code>, then a default of <code>600</code> is set.</p>
+value from the <code>SystemConfig</code>. If that value is <code>0</code>, then a default of <code>400</code> is set.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="jovian-system-config"><a class="header" href="#jovian-system-config">Jovian: System Config</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
