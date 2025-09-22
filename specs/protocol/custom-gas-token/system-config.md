@@ -2,23 +2,38 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Definitions](#definitions)
-  - [Custom Gas Token Flag](#custom-gas-token-flag)
+  - [Feature Flag Bitmap](#feature-flag-bitmap)
 - [Function Specification](#function-specification)
-  - [isCustomGasToken](#iscustomgastoken)
+  - [isFeatureEnabled](#isfeatureenabled)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Definitions
 
-### Custom Gas Token Flag
+### Feature Flag Bitmap
+
+The `SystemConfig` contract contains a mapping `isFeatureEnabled` that uses bitmaps to efficiently track multiple features including Custom Gas Token mode.
+
+```solidity
+mapping(uint256 => bool) public isFeatureEnabled;
+```
 
 ## Function Specification
 
-### isCustomGasToken
+### isFeatureEnabled
 
-Returns true if the gas token is a custom gas token, false otherwise.
+Returns true if the specified feature is enabled, false otherwise.
 
-- MUST return the result of a call to `optimismPortal.isCustomGasToken()`.
+```solidity
+function isFeatureEnabled(uint256 _feature) external view returns (bool)
+```
+
+For Custom Gas Token mode, contracts check:
+
+- `isFeatureEnabled[Features.CUSTOM_GAS_TOKEN]`
+
+This provides an efficient way to query feature states across the system.
