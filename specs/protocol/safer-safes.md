@@ -117,7 +117,7 @@ The number of owners required to execute a transaction.
 ### Blocking Threshold
 
 The minimum number of owners not willing to execute a transaction, that by not approving the transaction guarantee
-that `quorum` is not met. It is defined as `min(quorum, total_owners - quorum + 1)`.
+that `quorum` is not met. It is defined as `total_owners - quorum + 1`.
 
 ### Active Owner
 
