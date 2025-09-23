@@ -81,18 +81,18 @@ function setCustomGasToken() external
 - MUST set the internal `isCustomGasToken` flag to `true`
 - MUST be callable only once per chain (the flag cannot be reverted to `false`)
 
-Once enabled, various predeploys will check `isFeatureEnabled[Features.CUSTOM_GAS_TOKEN]` to determine if ETH
+Once enabled, various predeploys will check `L1Block.isCustomGasToken()` to determine if ETH
 bridging operations should be blocked.
 
 ## L2CrossDomainMessenger
 
-The `sendMessage` function MUST revert if `isFeatureEnabled[Features.CUSTOM_GAS_TOKEN]` is `true` and `msg.value > 0`.
+The `sendMessage` function MUST revert if `L1Block.isCustomGasToken()` returns `true` and `msg.value > 0`.
 This revert occurs because `L2CrossDomainMessenger` internally calls `L2ToL1MessagePasser.initiateWithdrawal`
 which enforces the CGT restriction.
 
 ## L2StandardBridge
 
-ETH bridging functions MUST revert if `isFeatureEnabled[Features.CUSTOM_GAS_TOKEN]` is `true` and the function involves ETH transfers.
+ETH bridging functions MUST revert if `L1Block.isCustomGasToken()` returns `true` and the function involves ETH transfers.
 This revert occurs because `L2StandardBridge` internally calls `L2CrossDomainMessenger.sendMessage`,
 which in turn calls `L2ToL1MessagePasser.initiateWithdrawal` that enforces the CGT restriction.
 

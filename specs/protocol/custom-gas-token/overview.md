@@ -10,7 +10,6 @@
 - [Smart Contracts](#smart-contracts)
   - [Core L2 Smart Contracts](#core-l2-smart-contracts)
     - [Custom Gas Token](#custom-gas-token)
-- [Feature Flag System](#feature-flag-system)
 - [Development and Configuration](#development-and-configuration)
   - [Fresh Deployments](#fresh-deployments)
   - [Migration from Existing Implementation](#migration-from-existing-implementation)
@@ -70,29 +69,6 @@ contracts.
 This approach preserves full alignment with EVM equivalence and client-side compatibility as provided by the
 standard OP Stack. No new functionalities outside the execution environment are required to make it work.
 
-## Feature Flag System
-
-### Bitmap-based Feature Detection
-
-The CGT implementation uses a bitmap-based feature flag system that provides efficient storage and allows
-multiple features to be tracked in a single storage slot.
-
-**Implementation:**
-
-- Uses `isFeatureEnabled[Features.CUSTOM_GAS_TOKEN]` bitmap approach
-- Enables efficient checking of multiple features
-- Provides gas-optimized feature detection across contracts
-
-### Feature Checking
-
-Contracts check for CGT mode by querying the `SystemConfig` contract:
-
-```solidity
-systemConfig.isFeatureEnabled(Features.CUSTOM_GAS_TOKEN)
-```
-
-The `SystemConfig` contains the `isFeatureEnabled` mapping that provides a unified interface for feature detection across all system contracts.
-
 ## Development and Configuration
 
 ### Fresh Deployments
@@ -101,7 +77,7 @@ For fresh CGT deployments, the following configuration process is used:
 
 1. **L2 Genesis Configuration**: The initial liquidity amount is configured during genesis via `l2genesis.s.sol`
 2. **Contract Initialization**: `NativeAssetLiquidity` and `LiquidityController` contracts are deployed with proxy support
-3. **Feature Flag Setting**: The `Features.CUSTOM_GAS_TOKEN` bitmap is enabled to activate CGT mode across all relevant predeploys
+3. **Feature Flag Setting**: The `Features.CUSTOM_GAS_TOKEN` bitmap is enabled to activate CGT mode across all relevant predeploys (see [System Config](./system-config.md) for details on feature flags)
 
 ### Migration from Existing Implementation
 

@@ -5,12 +5,36 @@
 
 **Table of Contents**
 
+- [Feature Flag System](#feature-flag-system)
+  - [Bitmap-based Feature Detection](#bitmap-based-feature-detection)
+  - [Feature Checking](#feature-checking)
 - [Definitions](#definitions)
   - [Feature Flag Bitmap](#feature-flag-bitmap)
 - [Function Specification](#function-specification)
   - [isFeatureEnabled](#isfeatureenabled)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Feature Flag System
+
+### Bitmap-based Feature Detection
+
+The CGT implementation uses a bitmap-based feature flag system that provides efficient storage and allows
+multiple features to be tracked in a single storage slot.
+
+**Implementation:**
+
+- Uses `isFeatureEnabled[Features.CUSTOM_GAS_TOKEN]` bitmap approach
+- Enables efficient checking of multiple features
+- Provides gas-optimized feature detection across contracts
+
+### Feature Checking
+
+Contracts check for CGT mode by querying the `SystemConfig` contract:
+
+```solidity
+systemConfig.isFeatureEnabled(Features.CUSTOM_GAS_TOKEN)
+```
 
 ## Definitions
 
