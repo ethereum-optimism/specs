@@ -43,7 +43,7 @@ The `L1Block` contract is upgraded to support the Isthmus operator fee feature.
 
 A deposit transaction is derived with the following attributes:
 
-- `from`: `0x4210000000000000000000000000000000000003`
+- `from`: `0x06EE840642a33367ee59fCA237F270d5119d1356'
 - `to`: `null`
 - `mint`: `0`
 - `value`: `0`
