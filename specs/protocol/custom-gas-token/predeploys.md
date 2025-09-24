@@ -35,6 +35,7 @@
     - [`gasPayingAssetSymbol`](#gaspayingassetsymbol)
   - [Events](#events-1)
     - [`MinterAuthorized`](#minterauthorized)
+    - [`MinterDeauthorized`](#minterdeauthorized)
     - [`AssetsMinted`](#assetsminted)
     - [`AssetsBurned`](#assetsburned)
   - [Invariants](#invariants-1)
@@ -323,6 +324,16 @@ event MinterAuthorized(address indexed minter, address indexed authorizer)
 ```
 
 Where `minter` is the address being authorized and `authorizer` is the L1 ProxyAdmin owner who authorized them.
+
+#### `MinterDeauthorized`
+
+Emitted when a minter is deauthorized by the contract owner.
+
+```solidity
+event MinterDeauthorized(address indexed minter, address indexed deauthorizer)
+```
+
+Where `minter` is the address being deauthorized and `deauthorizer` is the L1 ProxyAdmin owner who deauthorized them.
 
 #### `AssetsMinted`
 

@@ -21,6 +21,7 @@ Blockspace
 blocksv
 blocktime
 Bootnode
+Brotli
 bridgeaddress
 bytestring
 calldatas
@@ -47,7 +48,11 @@ cwia
 CWIA
 datas
 deauthorize
+doctoc
+DOCTOC
+deauthorized
 Deauthorized
+deauthorizer
 Deauthorizes
 Decentralizable
 delayedweth
@@ -60,6 +65,7 @@ Dencun
 Depositer
 devnet
 dialable
+disincentivized
 discv
 Discv
 disputegamefactory
@@ -69,6 +75,7 @@ ecpairing
 Edgington
 eigenda
 elif
+ENDIANNESS
 errno
 failovers
 fanout
@@ -185,8 +192,10 @@ prestate
 Prestate
 PRESTATE
 PREVRANDAO
+protobuf
 protocolversion
 protolambda
+pubkey
 randao
 Randao
 RANDAO
@@ -218,6 +227,8 @@ Solana
 standardbridge
 standardbridgeaddress
 statelessly
+struct
+structs
 subgame
 Subgame
 subgames
