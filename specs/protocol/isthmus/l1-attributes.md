@@ -38,7 +38,7 @@ In each subsequent L2 block, the `setL1BlockValuesIsthmus()` method must be used
 
 When using this method, the pre-Isthmus values are migrated over 1:1
 and the transaction also sets the following new attributes to the values 
-from the [`SystemConfig`](./configurability.md#systemconfig):
+from the [`SystemConfig`](./system-config.md):
 
 - `operatorFeeScalar`
 - `operatorFeeConstant`
