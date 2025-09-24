@@ -189,7 +189,8 @@ function fund() external payable
 - MUST be callable by any address
 
 **Important for CGT Migration**: When migrating to Custom Gas Token mode, the total amount funded through this function
-should not exceed the `nativeAssetLiquidity` amount configured during chain setup. Exceeding this amount may cause liquidity problems.
+should not exceed the `nativeAssetLiquidity` amount configured during chain setup.
+Exceeding this amount may cause liquidity problems.
 
 ### Events
 

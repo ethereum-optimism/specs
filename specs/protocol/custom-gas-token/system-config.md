@@ -40,7 +40,8 @@ systemConfig.isFeatureEnabled(Features.CUSTOM_GAS_TOKEN)
 
 ### Feature Flag Bitmap
 
-The `SystemConfig` contract contains a mapping `isFeatureEnabled` that uses bitmaps to efficiently track multiple features including Custom Gas Token mode.
+The `SystemConfig` contract contains a mapping `isFeatureEnabled` that uses bitmaps to efficiently
+track multiple features including Custom Gas Token mode.
 
 ```solidity
 mapping(uint256 => bool) public isFeatureEnabled;
