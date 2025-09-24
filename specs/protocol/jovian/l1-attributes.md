@@ -32,8 +32,8 @@ Note that the first input argument, in the same pattern as previous versions of 
 is the function selector: the first four bytes of `keccak256("setL1BlockValuesJovian()")`.
 
 In the activation block, there are two possibilities:
-* If Jovian is active at genesis, the `setL1BlockValuesJovian()` method must be used.
-* If Jovian activates after genesis [`setL1BlockValuesIsthmus()`](../isthmus/l1-attributes.md) method must be used.
+- If Jovian is active at genesis, the `setL1BlockValuesJovian()` method must be used.
+- If Jovian activates after genesis [`setL1BlockValuesIsthmus()`](../isthmus/l1-attributes.md) method must be used.
  This is because the L1 Block contract will not yet have been upgraded.
 
 In each subsequent L2 block, the `setL1BlockValuesJovian()` method must be used.

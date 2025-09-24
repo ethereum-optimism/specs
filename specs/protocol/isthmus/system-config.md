@@ -16,10 +16,10 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-
 ## Operator Fee Parameter Configuration
 
-Isthmus adds configuration variables `operatorFeeScalar` (`uint32`) and `operatorFeeConstant` (`uint64`) to `SystemConfig` to control the operator fee parameters.
+Isthmus adds configuration variables `operatorFeeScalar` (`uint32`)
+and `operatorFeeConstant` (`uint64`) to `SystemConfig` to control the operator fee parameters.
 
 ### `ConfigUpdate`
 
