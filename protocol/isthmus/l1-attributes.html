@@ -196,10 +196,16 @@
 </div>
 <p>Note that the first input argument, in the same pattern as previous versions of the L1 attributes transaction,
 is the function selector: the first four bytes of <code>keccak256("setL1BlockValuesIsthmus()")</code>.</p>
-<p>In the first L2 block after the Isthmus activation block, the Isthmus L1 attributes are first used.</p>
-<p>The pre-Isthmus values are migrated over 1:1.
-Blocks after the Isthmus activation block contain all pre-Isthmus values 1:1,
-and also set the following new attributes:</p>
+<p>In the activation block, there are two possibilities:</p>
+<ul>
+<li>If Isthmus is active at genesis, the <code>setL1BlockValuesIsthmus()</code> method must be used.</li>
+<li>If Isthmus activates after genesis <a href="../ecotone/l1-attributes.html"><code>setL1BlockValuesEcotone()</code></a>
+method must be used. This is because the L1 Block contract will not yet have been upgraded.</li>
+</ul>
+<p>In each subsequent L2 block, the <code>setL1BlockValuesIsthmus()</code> method must be used.</p>
+<p>When using this method, the pre-Isthmus values are migrated over 1:1
+and the transaction also sets the following new attributes to the values
+from the <a href="./system-config.html"><code>SystemConfig</code></a>:</p>
 <ul>
 <li><code>operatorFeeScalar</code></li>
 <li><code>operatorFeeConstant</code></li>

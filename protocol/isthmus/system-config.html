@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>L1 Attributes - OP Stack Specification</title>
+        <title>System Config - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -139,7 +139,7 @@
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/jovian/l1-attributes.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/isthmus/system-config.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -169,54 +169,84 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="l1-block-attributes"><a class="header" href="#l1-block-attributes">L1 Block Attributes</a></h1>
+<h1 id="isthmus-system-config"><a class="header" href="#isthmus-system-config">Isthmus: System Config</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="#overview">Overview</a></li>
+<li><a href="#operator-fee-parameter-configuration">Operator Fee Parameter Configuration</a>
+<ul>
+<li><a href="#configupdate"><code>ConfigUpdate</code></a></li>
+<li><a href="#initialization">Initialization</a></li>
+<li><a href="#modifying-operator-fee-parameters">Modifying Operator Fee Parameters</a></li>
+<li><a href="#interface">Interface</a>
+<ul>
+<li><a href="#operator-fee-parameters">Operator fee parameters</a>
+<ul>
+<li><a href="#operatorfeescalar"><code>operatorFeeScalar</code></a></li>
+<li><a href="#operatorfeeconstant"><code>operatorFeeConstant</code></a></li>
+<li><a href="#setoperatorfeescalars"><code>setOperatorFeeScalars</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>The L1 block attributes transaction is updated to include the DA footprint gas scalar.</p>
-<div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
-<tr><td>{0x3db6be2b}</td><td></td><td>0-3</td><td>n/a</td></tr>
-<tr><td>baseFeeScalar</td><td>uint32</td><td>4-7</td><td>1</td></tr>
-<tr><td>blobBaseFeeScalar</td><td>uint32</td><td>8-11</td><td></td></tr>
-<tr><td>sequenceNumber</td><td>uint64</td><td>12-19</td><td></td></tr>
-<tr><td>l1BlockTimestamp</td><td>uint64</td><td>20-27</td><td></td></tr>
-<tr><td>l1BlockNumber</td><td>uint64</td><td>28-35</td><td></td></tr>
-<tr><td>basefee</td><td>uint256</td><td>36-67</td><td>2</td></tr>
-<tr><td>blobBaseFee</td><td>uint256</td><td>68-99</td><td>3</td></tr>
-<tr><td>l1BlockHash</td><td>bytes32</td><td>100-131</td><td>4</td></tr>
-<tr><td>batcherHash</td><td>bytes32</td><td>132-163</td><td>5</td></tr>
-<tr><td>operatorFeeScalar</td><td>uint32</td><td>164-167</td><td>6</td></tr>
-<tr><td>operatorFeeConstant</td><td>uint64</td><td>168-175</td><td></td></tr>
-<tr><td>daFootprintGasScalar</td><td>uint16</td><td>176-177</td><td></td></tr>
+<h2 id="operator-fee-parameter-configuration"><a class="header" href="#operator-fee-parameter-configuration">Operator Fee Parameter Configuration</a></h2>
+<p>Isthmus adds configuration variables <code>operatorFeeScalar</code> (<code>uint32</code>)
+and <code>operatorFeeConstant</code> (<code>uint64</code>) to <code>SystemConfig</code> to control the operator fee parameters.</p>
+<h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
+<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
+<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
+<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
+<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+<tr><td><code>OPERATOR_FEE_PARAMS</code></td><td><code>uint8(5)</code></td><td><code>uint256(_operatorFeeScalar) &lt;&lt; 64 | _operatorFeeConstant</code></td><td>Modifies the operator fee scalar and constant</td></tr>
 </tbody></table>
 </div>
-<p>Note that the first input argument, in the same pattern as previous versions of the L1 attributes transaction,
-is the function selector: the first four bytes of <code>keccak256("setL1BlockValuesJovian()")</code>.</p>
-<p>In the activation block, there are two possibilities:</p>
+<h3 id="initialization"><a class="header" href="#initialization">Initialization</a></h3>
+<p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
 <ul>
-<li>If Jovian is active at genesis, the <code>setL1BlockValuesJovian()</code> method must be used.</li>
-<li>If Jovian activates after genesis <a href="../isthmus/l1-attributes.html"><code>setL1BlockValuesIsthmus()</code></a> method must be used.
-This is because the L1 Block contract will not yet have been upgraded.</li>
+<li><code>emit ConfigUpdate.BATCHER</code></li>
+<li><code>emit ConfigUpdate.FEE_SCALARS</code></li>
+<li><code>emit ConfigUpdate.GAS_LIMIT</code></li>
+<li><code>emit ConfigUpdate.UNSAFE_BLOCK_SIGNER</code></li>
+<li><code>emit ConfigUpdate.EIP_1559_PARAMS</code></li>
 </ul>
-<p>In each subsequent L2 block, the <code>setL1BlockValuesJovian()</code> method must be used.</p>
-<p>When using this method, the pre-Jovian values are migrated over 1:1
-and the transaction also sets <code>daFootprintGasScalar</code> to the
-value from the <a href="./system-config.html"><code>SystemConfig</code></a>. If that value is <code>0</code>, then a default of <code>400</code> is set.</p>
+<p>These actions MAY only be triggered if there is a diff to the value.</p>
+<p>The <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> are initialized to 0.</p>
+<h3 id="modifying-operator-fee-parameters"><a class="header" href="#modifying-operator-fee-parameters">Modifying Operator Fee Parameters</a></h3>
+<p>A new <code>SystemConfig</code> <code>UpdateType</code> is introduced that enables the modification of
+the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <code>SystemConfig</code> owner.</p>
+<h3 id="interface"><a class="header" href="#interface">Interface</a></h3>
+<h4 id="operator-fee-parameters"><a class="header" href="#operator-fee-parameters">Operator fee parameters</a></h4>
+<h5 id="operatorfeescalar"><a class="header" href="#operatorfeescalar"><code>operatorFeeScalar</code></a></h5>
+<p>This function returns the currently configured operator fee scalar.</p>
+<pre><code class="language-solidity">function operatorFeeScalar()(uint32)
+</code></pre>
+<h5 id="operatorfeeconstant"><a class="header" href="#operatorfeeconstant"><code>operatorFeeConstant</code></a></h5>
+<p>This function returns the currently configured operator fee constant.</p>
+<pre><code class="language-solidity">function operatorFeeConstant()(uint64)
+</code></pre>
+<h5 id="setoperatorfeescalars"><a class="header" href="#setoperatorfeescalars"><code>setOperatorFeeScalars</code></a></h5>
+<p>This function sets the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>.</p>
+<p>This function MUST only be callable by the <code>SystemConfig</code> owner.</p>
+<pre><code class="language-solidity">function setOperatorFeeScalar(uint32 _operatorFeeScalar, uint64 _operatorFeeConstant)
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../protocol/jovian/derivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../protocol/isthmus/predeploys.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../protocol/jovian/system-config.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../protocol/jovian/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -226,11 +256,11 @@ value from the <a href="./system-config.html"><code>SystemConfig</code></a>. If 
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../protocol/jovian/derivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../protocol/isthmus/predeploys.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../protocol/jovian/system-config.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../protocol/jovian/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
