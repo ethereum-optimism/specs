@@ -159,7 +159,6 @@ make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
 ```
 
-
 ### GasPriceOracle Proxy Update
 
 This transaction updates the GasPriceOracle Proxy ERC-1967

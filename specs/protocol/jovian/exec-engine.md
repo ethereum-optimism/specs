@@ -134,8 +134,8 @@ While the current L1 fee mechanism charges for DA usage based on an estimate of 
 does not influence future base fee calculations. As a result, excessive DA usage is not efficiently reflected in the fee
 market, leading to suboptimal resource prices.
 
-By changing the meaning of the `gasUsed` field in times of high DA demand, the fee market can properly adjust without reverting
-to priority fee auctions (an inferior experience for users).
+By changing the meaning of the `gasUsed` field in times of high DA demand, the fee market can properly adjust without
+reverting to priority fee auctions (an inferior experience for users).
 
 ## Operator Fee
 
@@ -148,7 +148,8 @@ $$
 \text{operatorFee} = (\text{gas} \times \text{operatorFeeScalar} \times 100) + \text{operatorFeeConstant}
 $$
 
-The effective per-gas scalar applied is therefore `100 * operatorFeeScalar`. Otherwise, the data types and operator fee semantics described in the [Isthmus spec](../isthmus/exec-engine.md#operator-fee) continue to apply.
+The effective per-gas scalar applied is therefore `100 * operatorFeeScalar`. Otherwise, the data types and operator fee
+semantics described in the [Isthmus spec](../isthmus/exec-engine.md#operator-fee) continue to apply.
 
 ### Maximum value
 
