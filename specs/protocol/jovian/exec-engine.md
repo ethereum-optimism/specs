@@ -13,6 +13,7 @@
   - [Rationale](#rationale-1)
 - [Operator Fee](#operator-fee)
   - [Fee Formula Update](#fee-formula-update)
+  - [Maximum value](#maximum-value)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

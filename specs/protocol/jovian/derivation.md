@@ -7,7 +7,7 @@
 - [Network Upgrade Transactions](#network-upgrade-transactions)
   - [L1Block Deployment](#l1block-deployment)
   - [L1Block Proxy Update](#l1block-proxy-update)
-  - [GasPriceOracle deployment](#gaspriceoracle-deployment)
+  - [GasPriceOracle Deployment](#gaspriceoracle-deployment)
   - [GasPriceOracle Proxy Update](#gaspriceoracle-proxy-update)
   - [GasPriceOracle Enable Jovian](#gaspriceoracle-enable-jovian)
 
@@ -109,7 +109,11 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 ```
 
 ### GasPriceOracle Deployment
-<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../optimism --fork-name Jovian --contract-name GasPriceOracle --from-address 0x4210000000000000000000000000000000000006 --from-address-nonce 0 --git-commit-hash 134edb32991f408a3354caf3de8a68145437cfc9 --eth-rpc-url https://optimism.rpc.subquery.network/public --proxy-address 0x420000000000000000000000000000000000000F --copy-contract-bytecode true -->
+<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../optimism
+ --fork-name Jovian --contract-name GasPriceOracle --from-address 0x4210000000000000000000000000000000000006
+  --from-address-nonce 0 --git-commit-hash 134edb32991f408a3354caf3de8a68145437cfc9
+  --eth-rpc-url https://optimism.rpc.subquery.network/public
+  --proxy-address 0x420000000000000000000000000000000000000F --copy-contract-bytecode true -->
 
 The `GasPriceOracle` contract is deployed.
 
