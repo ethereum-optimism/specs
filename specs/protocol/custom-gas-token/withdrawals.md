@@ -10,4 +10,5 @@
 
 ## The L2ToL1MessagePasser Contract
 
-The `initiateWithdrawal` function MUST revert if `L1Block.isCustomGasToken()` returns `true` and `msg.value > 0`.
+The `initiateWithdrawal` function MUST revert if `isFeatureEnabled[Features.CUSTOM_GAS_TOKEN]`
+is `true` and `msg.value > 0`.

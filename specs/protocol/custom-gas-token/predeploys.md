@@ -188,6 +188,10 @@ function fund() external payable
 - MUST emit `LiquidityFunded` event
 - MUST be callable by any address
 
+**Important for CGT Migration**: When migrating to Custom Gas Token mode, the total amount funded through this function
+should not exceed the `nativeAssetLiquidity` amount configured during chain setup.
+Exceeding this amount may cause liquidity problems.
+
 ### Events
 
 #### `LiquidityDeposited`
@@ -219,6 +223,7 @@ event LiquidityFunded(address indexed funder, uint256 amount)
 - Only the `LiquidityController` predeploy can call `deposit()` and `withdraw()`
 - All native asset supply changes must go through this contract when CGT mode is active
 - No direct user interaction is permitted with liquidity management functions
+- For CGT migrations: `fund()` amounts should not exceed the configured `nativeAssetLiquidity` amount to maintain consistency
 
 ## Liquidity Controller
 
