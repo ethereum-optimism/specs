@@ -55,6 +55,16 @@ and also set the following new attributes:
   Or `1` if the L1 block does not support blobs.
   The `1` value is derived from the EIP-4844 `MIN_BLOB_GASPRICE`.
 
+Note that the L1 blob bas fee is _not_ exposed as a part of the L1 origin block.
+It must be computed using an parameterized off-chain formula which takes the
+excess blob gas field from the header of the L1 origin block as described in 
+https://eips.ethereum.org/EIPS/eip-4844#base-fee-per-blob-gas-update-rule.
+The `BLOB_BASE_FEE_UPDATE_FRACTION` parameter in the formula varies
+according to which L1 fork is active
+at the origin block (see e.g. https://eips.ethereum.org/EIPS/eip-7691). It is therefore
+necessary for L2 consensus layer clients to know the blob parameters and activation
+time for each L1 fork to compute the `blobBaseFee` correctly. 
+
 ## L1 Attributes Predeployed Contract
 
 [sys-config]: ../system-config.md
