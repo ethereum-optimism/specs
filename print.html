@@ -11594,6 +11594,19 @@ and also set the following new attributes:</p>
 Or <code>1</code> if the L1 block does not support blobs.
 The <code>1</code> value is derived from the EIP-4844 <code>MIN_BLOB_GASPRICE</code>.</li>
 </ul>
+<p>Note that the L1 blob bas fee is <em>not</em> exposed as a part of the L1 origin block.
+It must be computed using an parameterized off-chain formula which takes the
+excess blob gas field from the header of the L1 origin block as described in
+<a href="https://eips.ethereum.org/EIPS/eip-4844#base-fee-per-blob-gas-update-rule">EIP-4844</a>.
+The <code>BLOB_BASE_FEE_UPDATE_FRACTION</code> parameter in the formula varies
+according to which L1 fork is active
+at the origin block (see e.g. <a href="https://eips.ethereum.org/EIPS/eip-7691">EIP-7691</a>). It is therefore
+necessary for L2 consensus layer clients to know the blob parameters and activation
+time for each L1 fork to compute the <code>blobBaseFee</code> correctly. Blob Parameter Only
+(BPO) forks, introduced in <a href="https://eips.ethereum.org/EIPS/eip-7892">EIP-7892</a>
+can mean that <code>BLOB_BASE_FEE_UPDATE_FRACTION</code> is updated frequently:
+that clients and fault proof programs therefore need to stay up to date with
+such forks.</p>
 <h2 id="l1-attributes-predeployed-contract-1"><a class="header" href="#l1-attributes-predeployed-contract-1">L1 Attributes Predeployed Contract</a></h2>
 <p>The L1 Attributes predeploy stores the following values:</p>
 <ul>
