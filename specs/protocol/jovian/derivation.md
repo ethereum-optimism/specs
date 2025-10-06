@@ -38,7 +38,7 @@ The network upgrade transactions are specified in the next section.
 ## Network Upgrade Transactions
 
 The upgrade transaction details below are based on the monorepo at commit hash
-`7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca`, and will be updated once a contracts release is made.
+`41614ab527df1cf74f9820f60d8f588ade769679`, and will be updated once a contracts release is made.
 
 ### L1Block Deployment
 <!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../../optimism \
@@ -46,7 +46,7 @@ The upgrade transaction details below are based on the monorepo at commit hash
 --contract-name L1Block \
 --from-address 0x4210000000000000000000000000000000000006 \
 --from-address-nonce 0 \
---git-commit-hash 7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca \
+--git-commit-hash 41614ab527df1cf74f9820f60d8f588ade769679 \
 --eth-rpc-url https://optimism.rpc.subquery.network/public \
 --proxy-address 0x4200000000000000000000000000000000000015 \
 --copy-contract-bytecode true -->
@@ -60,7 +60,7 @@ A deposit transaction is derived with the following attributes:
 - `mint`: `0`
 - `value`: `0`
 - `nonce`: `0`
-- `gasLimit`: `444775`
+- `gasLimit`: `450371`
 - `data`: `0x0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-l1-block-deployment.txt))
 - `sourceHash`: `0x98faf23b9795967bc0b1c543144739d50dba3ea40420e77ad6ca9848dbfb62e8`,
   computed with the "Upgrade-deposited" type, with `intent = "Jovian: L1Block Deployment"`
@@ -83,18 +83,18 @@ cast keccak $(cast concat-hex 0x000000000000000000000000000000000000000000000000
 Verify `data`:
 
 ```bash
-git checkout 7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca
+git checkout 41614ab527df1cf74f9820f60d8f588ade769679
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 ```
 
 This transaction MUST deploy a contract with the following code hash
-`0xf7b6ef0de2a53625d467d98c2932a5a5d64ffa1a331ebbde5bb06e2591b5835a`.
+`0x6ea662425460e060189934ef28973d03b4e96d4cdcf6c7db90c0f45d8dc46a91`.
 
 To verify the code hash:
 
 ```bash
-git checkout 7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca
+git checkout 41614ab527df1cf74f9820f60d8f588ade769679
 make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json)
 ```
