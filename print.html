@@ -13452,6 +13452,7 @@ the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <
 <ul>
 <li><a href="protocol/jovian/./exec-engine.html#minimum-base-fee">Minimum Base Fee</a></li>
 <li><a href="protocol/jovian/./exec-engine.html#da-footprint-limit">DA Footprint Limit</a></li>
+<li><a href="protocol/jovian/./exec-engine.html#operator-fee">Operator Fee</a></li>
 </ul>
 <h2 id="consensus-layer-8"><a class="header" href="#consensus-layer-8">Consensus Layer</a></h2>
 <ul>
@@ -13480,6 +13481,12 @@ the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <
 <ul>
 <li><a href="protocol/jovian/exec-engine.html#scalar-loading">Scalar loading</a></li>
 <li><a href="protocol/jovian/exec-engine.html#rationale-1">Rationale</a></li>
+</ul>
+</li>
+<li><a href="protocol/jovian/exec-engine.html#operator-fee">Operator Fee</a>
+<ul>
+<li><a href="protocol/jovian/exec-engine.html#fee-formula-update">Fee Formula Update</a></li>
+<li><a href="protocol/jovian/exec-engine.html#maximum-value">Maximum value</a></li>
 </ul>
 </li>
 </ul>
@@ -13593,6 +13600,17 @@ throttling: a mechanism which artificially constricts block building. This can c
 unnecessary losses for chain operators and a negative user experience (transaction inclusion delays, priority fee
 auctions). So hard-limiting a block's DA footprint in a way that also influences the base fee mitigates the
 aforementioned problems of policy-based solutions.</p>
+<h2 id="operator-fee-1"><a class="header" href="#operator-fee-1">Operator Fee</a></h2>
+<h3 id="fee-formula-update"><a class="header" href="#fee-formula-update">Fee Formula Update</a></h3>
+<p>Jovian updates the operator fee calculation so that higher fees may be charged.
+Starting at the Jovian activation, the operator fee MUST be computed as:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">operatorFee</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord text"><span class="mord">gas</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">operatorFeeScalar</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">100</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">operatorFeeConstant</span></span></span></span></span></span></p>
+<p>The effective per-gas scalar applied is therefore <code>100 * operatorFeeScalar</code>. Otherwise, the data types and operator fee
+semantics described in the <a href="protocol/jovian/../isthmus/exec-engine.html#operator-fee">Isthmus spec</a> continue to apply.</p>
+<h3 id="maximum-value"><a class="header" href="#maximum-value">Maximum value</a></h3>
+<p>With the new formula, the operator fee's maximum value has 103 bits:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9275em;vertical-align:-0.2441em;"></span><span class="mord"><span class="mord text"><span class="mord">operatorFee</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.0573em;"><span style="top:-2.4559em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2441em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord text"><span class="mord">uint64</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8179em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord text"><span class="mord">uint32</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">100</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8179em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord text"><span class="mord">uint64</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">max</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">7.924660923989131</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8641em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">30</span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+<p>Implementations that use <code>uint256</code> for intermediate arithmetic do not need additional overflow checks.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="derivation-2"><a class="header" href="#derivation-2">Derivation</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -13604,6 +13622,9 @@ aforementioned problems of policy-based solutions.</p>
 <ul>
 <li><a href="protocol/jovian/derivation.html#l1block-deployment">L1Block Deployment</a></li>
 <li><a href="protocol/jovian/derivation.html#l1block-proxy-update">L1Block Proxy Update</a></li>
+<li><a href="protocol/jovian/derivation.html#gaspriceoracle-deployment">GasPriceOracle Deployment</a></li>
+<li><a href="protocol/jovian/derivation.html#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="protocol/jovian/derivation.html#gaspriceoracle-enable-jovian">GasPriceOracle Enable Jovian</a></li>
 </ul>
 </li>
 </ul>
@@ -13696,6 +13717,89 @@ computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: L1Block
 <p>Verify <code>sourceHash</code>:</p>
 <pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: L1Block Proxy Update"))
 # 0x08447273a4fbce97bc8c515f97ac74efc461f6a4001553712f31ebc11288bad2
+</code></pre>
+<h3 id="gaspriceoracle-deployment-3"><a class="header" href="#gaspriceoracle-deployment-3">GasPriceOracle Deployment</a></h3>
+<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../optimism
+ --fork-name Jovian --contract-name GasPriceOracle --from-address 0x4210000000000000000000000000000000000006
+  --from-address-nonce 0 --git-commit-hash 134edb32991f408a3354caf3de8a68145437cfc9
+  --eth-rpc-url https://optimism.rpc.subquery.network/public
+  --proxy-address 0x420000000000000000000000000000000000000F --copy-contract-bytecode true -->
+<p>The <code>GasPriceOracle</code> contract is deployed.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000006</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>nonce</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1756783</code></li>
+<li><code>data</code>: <code>0x0x608060405234801561001057600080...</code> (<a href="protocol/jovian/../../../specs/static/bytecode/jovian-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545</code>,<br />
+computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: GasPriceOracle Deployment"</code></li>
+</ul>
+<p>This results in the Jovian GasPriceOracle contract being deployed to
+<code>0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000006
+Computed Address: 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Deployment"))
+# 0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout 134edb32991f408a3354caf3de8a68145437cfc9
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash<br />
+<code>0xa7fd95526766fc3ba40ed64aa1b55ad051cb2930df64e11c4a848b81d3a8deaf</code>.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 134edb32991f408a3354caf3de8a68145437cfc9
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
+</code></pre>
+<h3 id="gaspriceoracle-proxy-update-3"><a class="header" href="#gaspriceoracle-proxy-update-3">GasPriceOracle Proxy Update</a></h3>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967
+implementation slot to point to the new GasPriceOracle deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (GasPriceOracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe60000000000000000000000003ba4007f5c922fbb33c454b41ea7a1f11e83df2c</code></li>
+<li><code>sourceHash</code>: <code>0x46b597e2d8346ed7749b46734074361e0b41a0ab9af7afda5bb4e367e072bcb8</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: GasPriceOracle Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C)
+# 0x3659cfe60000000000000000000000003ba4007f5c922fbb33c454b41ea7a1f11e83df2c
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Proxy Update"))
+# 0x46b597e2d8346ed7749b46734074361e0b41a0ab9af7afda5bb4e367e072bcb8
+</code></pre>
+<h3 id="gaspriceoracle-enable-jovian"><a class="header" href="#gaspriceoracle-enable-jovian">GasPriceOracle Enable Jovian</a></h3>
+<p>This transaction informs the GasPriceOracle to start using the Jovian operator fee formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>90,000</code></li>
+<li><code>data</code>: <code>0xb3d72079</code></li>
+<li><code>sourceHash</code>: <code>0xe836db6a959371756f8941be3e962d000f7e12a32e49e2c9ca42ba177a92716c</code>,<br />
+computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: Gas Price Oracle Set Jovian"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig "setJovian()"
+# 0xb3d72079
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: Gas Price Oracle Set Jovian"))
+# 0xe836db6a959371756f8941be3e962d000f7e12a32e49e2c9ca42ba177a92716c
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l1-block-attributes-1"><a class="header" href="#l1-block-attributes-1">L1 Block Attributes</a></h1>

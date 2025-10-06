@@ -179,6 +179,9 @@
 <ul>
 <li><a href="#l1block-deployment">L1Block Deployment</a></li>
 <li><a href="#l1block-proxy-update">L1Block Proxy Update</a></li>
+<li><a href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></li>
+<li><a href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></li>
+<li><a href="#gaspriceoracle-enable-jovian">GasPriceOracle Enable Jovian</a></li>
 </ul>
 </li>
 </ul>
@@ -271,6 +274,89 @@ computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: L1Block
 <p>Verify <code>sourceHash</code>:</p>
 <pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: L1Block Proxy Update"))
 # 0x08447273a4fbce97bc8c515f97ac74efc461f6a4001553712f31ebc11288bad2
+</code></pre>
+<h3 id="gaspriceoracle-deployment"><a class="header" href="#gaspriceoracle-deployment">GasPriceOracle Deployment</a></h3>
+<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../optimism
+ --fork-name Jovian --contract-name GasPriceOracle --from-address 0x4210000000000000000000000000000000000006
+  --from-address-nonce 0 --git-commit-hash 134edb32991f408a3354caf3de8a68145437cfc9
+  --eth-rpc-url https://optimism.rpc.subquery.network/public
+  --proxy-address 0x420000000000000000000000000000000000000F --copy-contract-bytecode true -->
+<p>The <code>GasPriceOracle</code> contract is deployed.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000006</code></li>
+<li><code>to</code>: <code>null</code></li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>nonce</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>1756783</code></li>
+<li><code>data</code>: <code>0x0x608060405234801561001057600080...</code> (<a href="../../../specs/static/bytecode/jovian-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
+<li><code>sourceHash</code>: <code>0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545</code>,<br />
+computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: GasPriceOracle Deployment"</code></li>
+</ul>
+<p>This results in the Jovian GasPriceOracle contract being deployed to
+<code>0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000006
+Computed Address: 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Deployment"))
+# 0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545
+</code></pre>
+<p>Verify <code>data</code>:</p>
+<pre><code class="language-bash">git checkout 134edb32991f408a3354caf3de8a68145437cfc9
+make build-contracts
+jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
+</code></pre>
+<p>This transaction MUST deploy a contract with the following code hash<br />
+<code>0xa7fd95526766fc3ba40ed64aa1b55ad051cb2930df64e11c4a848b81d3a8deaf</code>.</p>
+<p>To verify the code hash:</p>
+<pre><code class="language-bash">git checkout 134edb32991f408a3354caf3de8a68145437cfc9
+make build-contracts
+cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
+</code></pre>
+<h3 id="gaspriceoracle-proxy-update"><a class="header" href="#gaspriceoracle-proxy-update">GasPriceOracle Proxy Update</a></h3>
+<p>This transaction updates the GasPriceOracle Proxy ERC-1967
+implementation slot to point to the new GasPriceOracle deployment.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (GasPriceOracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>50,000</code></li>
+<li><code>data</code>: <code>0x3659cfe60000000000000000000000003ba4007f5c922fbb33c454b41ea7a1f11e83df2c</code></li>
+<li><code>sourceHash</code>: <code>0x46b597e2d8346ed7749b46734074361e0b41a0ab9af7afda5bb4e367e072bcb8</code>
+computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: GasPriceOracle Proxy Update"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C)
+# 0x3659cfe60000000000000000000000003ba4007f5c922fbb33c454b41ea7a1f11e83df2c
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Proxy Update"))
+# 0x46b597e2d8346ed7749b46734074361e0b41a0ab9af7afda5bb4e367e072bcb8
+</code></pre>
+<h3 id="gaspriceoracle-enable-jovian"><a class="header" href="#gaspriceoracle-enable-jovian">GasPriceOracle Enable Jovian</a></h3>
+<p>This transaction informs the GasPriceOracle to start using the Jovian operator fee formula.</p>
+<p>A deposit transaction is derived with the following attributes:</p>
+<ul>
+<li><code>from</code>: <code>0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001</code> (Depositer Account)</li>
+<li><code>to</code>: <code>0x420000000000000000000000000000000000000F</code> (Gas Price Oracle Proxy)</li>
+<li><code>mint</code>: <code>0</code></li>
+<li><code>value</code>: <code>0</code></li>
+<li><code>gasLimit</code>: <code>90,000</code></li>
+<li><code>data</code>: <code>0xb3d72079</code></li>
+<li><code>sourceHash</code>: <code>0xe836db6a959371756f8941be3e962d000f7e12a32e49e2c9ca42ba177a92716c</code>,<br />
+computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: Gas Price Oracle Set Jovian"</code></li>
+</ul>
+<p>Verify data:</p>
+<pre><code class="language-bash">cast sig "setJovian()"
+# 0xb3d72079
+</code></pre>
+<p>Verify <code>sourceHash</code>:</p>
+<pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: Gas Price Oracle Set Jovian"))
+# 0xe836db6a959371756f8941be3e962d000f7e12a32e49e2c9ca42ba177a92716c
 </code></pre>
 
                     </main>
