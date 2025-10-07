@@ -2,20 +2,22 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Summary](#summary)
-- [Functions](#functions)
-  - [`receive`](#receive)
-  - [`setMinDepositAmount`](#setmindepositamount)
-  - [`setL2Recipient`](#setl2recipient)
-  - [`setGasLimit`](#setgaslimit)
-- [Events](#events)
-  - [`FeesDeposited`](#feesdeposited)
-  - [`MinDepositAmountUpdated`](#mindepositamountupdated)
-  - [`L2RecipientUpdated`](#l2recipientupdated)
-  - [`FundsReceived`](#fundsreceived)
-  - [`GasLimitUpdated`](#gaslimitupdated)
+- [FeesDepositor](#feesdepositor)
+  - [Summary](#summary)
+  - [Functions](#functions)
+    - [`receive`](#receive)
+    - [`setMinDepositAmount`](#setmindepositamount)
+    - [`setL2Recipient`](#setl2recipient)
+    - [`setGasLimit`](#setgaslimit)
+  - [Events](#events)
+    - [`FeesDeposited`](#feesdeposited)
+    - [`MinDepositAmountUpdated`](#mindepositamountupdated)
+    - [`L2RecipientUpdated`](#l2recipientupdated)
+    - [`FundsReceived`](#fundsreceived)
+    - [`GasLimitUpdated`](#gaslimitupdated)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -74,7 +76,7 @@ receive() external payable
 Updates the minimum deposit amount the contract must hold before the deposit process can be initiated.
 
 ```solidity
-function setMinDepositAmount(uint256 _newMinDepositAmount) external
+function setMinDepositAmount(uint96 _newMinDepositAmount) external
 ```
 
 - MUST only be callable by `ProxyAdmin.owner()`.
@@ -98,7 +100,7 @@ function setL2Recipient(address _newRecipient) external
 Updates the gas limit used for the deposit transaction during the fees deposit process.
 
 ```solidity
-function setGasLimit(uint64 _gasLimit) external
+function setGasLimit(uint32 _gasLimit) external
 ```
 
 - MUST only be callable by `ProxyAdmin.owner()`.
@@ -120,7 +122,7 @@ event FeesDeposited(address indexed recipient, uint256 amount)
 Emitted when the minimum deposit amount before the deposit process can be initiated is updated.
 
 ```solidity
-event MinDepositAmountUpdated(uint256 oldMinDepositAmount, uint256 newMinDepositAmount)
+event MinDepositAmountUpdated(uint96 oldMinDepositAmount, uint96 newMinDepositAmount)
 ```
 
 ### `L2RecipientUpdated`
@@ -144,5 +146,5 @@ event FundsReceived(address indexed sender, uint256 amount, uint256 newBalance)
 Emitted when the gas limit for the deposit transaction is updated.
 
 ```solidity
-event GasLimitUpdated(uint64 oldGasLimit, uint64 newGasLimit)
+event GasLimitUpdated(uint32 oldGasLimit, uint32 newGasLimit)
 ```

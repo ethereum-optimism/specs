@@ -2,20 +2,22 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Summary](#summary)
-- [Functions](#functions)
-  - [`receive`](#receive)
-  - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
-  - [`setRecipient`](#setrecipient)
-  - [`setWithdrawalGasLimit`](#setwithdrawalgaslimit)
-- [Events](#events)
-  - [`WithdrawalInitiated`](#withdrawalinitiated)
-  - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
-  - [`RecipientUpdated`](#recipientupdated)
-  - [`WithdrawalGasLimitUpdated`](#withdrawalgaslimitupdated)
-  - [`FundsReceived`](#fundsreceived)
+- [L1Withdrawer](#l1withdrawer)
+  - [Summary](#summary)
+  - [Functions](#functions)
+    - [`receive`](#receive)
+    - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
+    - [`setRecipient`](#setrecipient)
+    - [`setWithdrawalGasLimit`](#setwithdrawalgaslimit)
+  - [Events](#events)
+    - [`WithdrawalInitiated`](#withdrawalinitiated)
+    - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
+    - [`RecipientUpdated`](#recipientupdated)
+    - [`WithdrawalGasLimitUpdated`](#withdrawalgaslimitupdated)
+    - [`FundsReceived`](#fundsreceived)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -70,7 +72,7 @@ function setRecipient(address _newRecipient) external
 Updates the gas limit for the withdrawal on L1.
 
 ```solidity
-function setWithdrawalGasLimit(uint256 _newWithdrawalGasLimit) external
+function setWithdrawalGasLimit(uint32 _newWithdrawalGasLimit) external
 ```
 
 - MUST only be callable by `ProxyAdmin.owner()`.
@@ -108,7 +110,7 @@ event RecipientUpdated(address oldRecipient, address newRecipient)
 Emitted when the withdrawal gas limit on L1 is updated.
 
 ```solidity
-event WithdrawalGasLimitUpdated(uint256 oldWithdrawalGasLimit, uint256 newWithdrawalGasLimit)
+event WithdrawalGasLimitUpdated(uint32 oldWithdrawalGasLimit, uint32 newWithdrawalGasLimit)
 ```
 
 ### `FundsReceived`

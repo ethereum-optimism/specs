@@ -4,38 +4,40 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Overview](#overview)
-  - [Disburse Fees Flow](#disburse-fees-flow)
-- [FeeVault](#feevault)
-  - [Functions](#functions)
-    - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
-    - [`setRecipient`](#setrecipient)
-    - [`setWithdrawalNetwork`](#setwithdrawalnetwork)
-    - [`recipient`](#recipient)
-    - [`minWithdrawalAmount`](#minwithdrawalamount)
-    - [`withdrawalNetwork`](#withdrawalnetwork)
-    - [`withdraw`](#withdraw)
-  - [Events](#events)
-    - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
-    - [`RecipientUpdated`](#recipientupdated)
-    - [`WithdrawalNetworkUpdated`](#withdrawalnetworkupdated)
-  - [Invariants](#invariants)
-- [Fee Vaults (SequencerFeeVault, L1FeeVault, BaseFeeVault, OperatorFeeVault)](#fee-vaults-sequencerfeevault-l1feevault-basefeevault-operatorfeevault)
-- [FeeSplitter](#feesplitter)
-  - [Functions](#functions-1)
-    - [`initialize`](#initialize)
-    - [`disburseFees`](#disbursefees)
-    - [`receive`](#receive)
-    - [`setSharesCalculator`](#setsharescalculator)
-    - [`setFeeDisbursementInterval`](#setfeedisbursementinterval)
-  - [Events](#events-1)
-    - [`FeesDisbursed`](#feesdisbursed)
-    - [`FeesReceived`](#feesreceived)
-    - [`FeeDisbursementIntervalUpdated`](#feedisbursementintervalupdated)
-    - [`SharesCalculatorUpdated`](#sharescalculatorupdated)
-- [Security Considerations](#security-considerations)
+- [Predeploys](#predeploys)
+  - [Overview](#overview)
+    - [Disburse Fees Flow](#disburse-fees-flow)
+  - [FeeVault](#feevault)
+    - [Functions](#functions)
+      - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
+      - [`setRecipient`](#setrecipient)
+      - [`setWithdrawalNetwork`](#setwithdrawalnetwork)
+      - [`recipient`](#recipient)
+      - [`minWithdrawalAmount`](#minwithdrawalamount)
+      - [`withdrawalNetwork`](#withdrawalnetwork)
+      - [`withdraw`](#withdraw)
+    - [Events](#events)
+      - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
+      - [`RecipientUpdated`](#recipientupdated)
+      - [`WithdrawalNetworkUpdated`](#withdrawalnetworkupdated)
+    - [Invariants](#invariants)
+  - [Fee Vaults (SequencerFeeVault, L1FeeVault, BaseFeeVault, OperatorFeeVault)](#fee-vaults-sequencerfeevault-l1feevault-basefeevault-operatorfeevault)
+  - [FeeSplitter](#feesplitter)
+    - [Functions](#functions-1)
+      - [`initialize`](#initialize)
+      - [`disburseFees`](#disbursefees)
+      - [`receive`](#receive)
+      - [`setSharesCalculator`](#setsharescalculator)
+      - [`setFeeDisbursementInterval`](#setfeedisbursementinterval)
+    - [Events](#events-1)
+      - [`FeesDisbursed`](#feesdisbursed)
+      - [`FeesReceived`](#feesreceived)
+      - [`FeeDisbursementIntervalUpdated`](#feedisbursementintervalupdated)
+      - [`SharesCalculatorUpdated`](#sharescalculatorupdated)
+  - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -280,12 +282,11 @@ The `FeeSplitter` MUST be proxied and initializable only by the `ProxyAdmin.owne
 
 #### `initialize`
 
-Initializes the contract with the initial recipients and disbursement interval.
+Initializes the contract with the initial recipients and sets disbursement interval to `1 days` as default.
 
 ```solidity
 function initialize(
-        ISharesCalculator _sharesCalculator,
-        uint128 _feeDisbursementInterval
+        ISharesCalculator _sharesCalculator
     ) external
 ```
 
