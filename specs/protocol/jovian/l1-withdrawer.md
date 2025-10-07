@@ -2,22 +2,20 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
-- [L1Withdrawer](#l1withdrawer)
-  - [Summary](#summary)
-  - [Functions](#functions)
-    - [`receive`](#receive)
-    - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
-    - [`setRecipient`](#setrecipient)
-    - [`setWithdrawalGasLimit`](#setwithdrawalgaslimit)
-  - [Events](#events)
-    - [`WithdrawalInitiated`](#withdrawalinitiated)
-    - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
-    - [`RecipientUpdated`](#recipientupdated)
-    - [`WithdrawalGasLimitUpdated`](#withdrawalgaslimitupdated)
-    - [`FundsReceived`](#fundsreceived)
+- [Summary](#summary)
+- [Functions](#functions)
+  - [`receive`](#receive)
+  - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
+  - [`setRecipient`](#setrecipient)
+  - [`setWithdrawalGasLimit`](#setwithdrawalgaslimit)
+- [Events](#events)
+  - [`WithdrawalInitiated`](#withdrawalinitiated)
+  - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
+  - [`RecipientUpdated`](#recipientupdated)
+  - [`WithdrawalGasLimitUpdated`](#withdrawalgaslimitupdated)
+  - [`FundsReceived`](#fundsreceived)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
