@@ -140,7 +140,7 @@ The `GasPriceOracle` contract is deployed.
 
 A deposit transaction is derived with the following attributes:
 
-- `from`: `0x4210000000000000000000000000000000000006`
+- `from`: `0x4210000000000000000000000000000000000007`
 - `to`: `null`
 - `mint`: `0`
 - `value`: `0`
@@ -151,11 +151,11 @@ A deposit transaction is derived with the following attributes:
   computed with the "Upgrade-deposited" type, with `intent = "Jovian: GasPriceOracle Deployment"`
 
 This results in the Jovian GasPriceOracle contract being deployed to
-`0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C`, to verify:
+`0x4f1db3c6AbD250ba86E0928471A8F7DB3AFd88F1`, to verify:
 
 ```bash
-cast compute-address --nonce=0 0x4210000000000000000000000000000000000006
-Computed Address: 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C
+cast compute-address --nonce=0 0x4210000000000000000000000000000000000007
+Computed Address: 0x4f1db3c6AbD250ba86E0928471A8F7DB3AFd88F1
 ```
 
 Verify `sourceHash`:
