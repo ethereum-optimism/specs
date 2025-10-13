@@ -4,38 +4,40 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
-- [Overview](#overview)
-  - [Disburse Fees Flow](#disburse-fees-flow)
-- [FeeVault](#feevault)
-  - [Functions](#functions)
-    - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
-    - [`setRecipient`](#setrecipient)
-    - [`setWithdrawalNetwork`](#setwithdrawalnetwork)
-    - [`recipient`](#recipient)
-    - [`minWithdrawalAmount`](#minwithdrawalamount)
-    - [`withdrawalNetwork`](#withdrawalnetwork)
-    - [`withdraw`](#withdraw)
-  - [Events](#events)
-    - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
-    - [`RecipientUpdated`](#recipientupdated)
-    - [`WithdrawalNetworkUpdated`](#withdrawalnetworkupdated)
-  - [Invariants](#invariants)
-- [Fee Vaults (SequencerFeeVault, L1FeeVault, BaseFeeVault, OperatorFeeVault)](#fee-vaults-sequencerfeevault-l1feevault-basefeevault-operatorfeevault)
-- [FeeSplitter](#feesplitter)
-  - [Functions](#functions-1)
-    - [`initialize`](#initialize)
-    - [`disburseFees`](#disbursefees)
-    - [`receive`](#receive)
-    - [`setSharesCalculator`](#setsharescalculator)
-    - [`setFeeDisbursementInterval`](#setfeedisbursementinterval)
-  - [Events](#events-1)
-    - [`FeesDisbursed`](#feesdisbursed)
-    - [`FeesReceived`](#feesreceived)
-    - [`FeeDisbursementIntervalUpdated`](#feedisbursementintervalupdated)
-    - [`SharesCalculatorUpdated`](#sharescalculatorupdated)
-- [Security Considerations](#security-considerations)
+- [Predeploys](#predeploys)
+  - [Overview](#overview)
+    - [Disburse Fees Flow](#disburse-fees-flow)
+  - [FeeVault](#feevault)
+    - [Functions](#functions)
+      - [`setMinWithdrawalAmount`](#setminwithdrawalamount)
+      - [`setRecipient`](#setrecipient)
+      - [`setWithdrawalNetwork`](#setwithdrawalnetwork)
+      - [`recipient`](#recipient)
+      - [`minWithdrawalAmount`](#minwithdrawalamount)
+      - [`withdrawalNetwork`](#withdrawalnetwork)
+      - [`withdraw`](#withdraw)
+    - [Events](#events)
+      - [`MinWithdrawalAmountUpdated`](#minwithdrawalamountupdated)
+      - [`RecipientUpdated`](#recipientupdated)
+      - [`WithdrawalNetworkUpdated`](#withdrawalnetworkupdated)
+    - [Invariants](#invariants)
+  - [Fee Vaults (SequencerFeeVault, L1FeeVault, BaseFeeVault, OperatorFeeVault)](#fee-vaults-sequencerfeevault-l1feevault-basefeevault-operatorfeevault)
+  - [FeeSplitter](#feesplitter)
+    - [Functions](#functions-1)
+      - [`initialize`](#initialize)
+      - [`disburseFees`](#disbursefees)
+      - [`receive`](#receive)
+      - [`setSharesCalculator`](#setsharescalculator)
+      - [`setFeeDisbursementInterval`](#setfeedisbursementinterval)
+    - [Events](#events-1)
+      - [`FeesDisbursed`](#feesdisbursed)
+      - [`FeesReceived`](#feesreceived)
+      - [`FeeDisbursementIntervalUpdated`](#feedisbursementintervalupdated)
+      - [`SharesCalculatorUpdated`](#sharescalculatorupdated)
+  - [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -94,12 +96,8 @@ sequenceDiagram
 
 ## FeeVault
 
-Legacy immutables are preserved for network-specific config, and storage-based overrides are
-enabled via getters. Each getter returns the storage value if set; otherwise, it falls back
-to the immutable. Setters write to storage to opt into overrides. A flag tracks whether the
-storage variable was set. This allows the [`FeeVaultInitializer`](./fee-vault-initializer.md) to set
-legacy (immutable) values when deploying the new fee vault implementation and enables the `ProxyAdmin.owner`
-to override what is returned by the getters once the new configuration has been set.
+Legacy getters are preserved as part of the interface, but default to the newly added storage variables, this means that
+now both the legacy and the new storage variables values will match.
 
 The `withdraw` function returns the value that was withdrawn from the vault at the time of the function call.
 
@@ -391,8 +389,3 @@ event SharesCalculatorUpdated(address oldSharesCalculator, address newSharesCalc
 
 - Given that vault recipients can now be updated, it's important to ensure that this can only be done by the
   appropriate address, namely `ProxyAdmin.owner()`.
-- Upgrading the vaults and making them compatible with the `FeeSplitter` incurs a process
-  that requires deploying. We provide a [`FeeVaultInitializer`](./fee-vault-initializer.md) that performs this upgrade.
-  the new implementations and properly configuring the vaults, which introduces complexity and potential for errors.
-  It is important to develop a solution, such as a contract to manage the entire upgrade process, simplifying
-  the UX and reducing the risk of errors.
