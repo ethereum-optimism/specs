@@ -102,7 +102,6 @@ make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json)
 ```
 
-
 ### L1Block Proxy Update
 
 This transaction updates the L1Block Proxy ERC-1967
@@ -191,7 +190,6 @@ git checkout b3299e0ddb55442e6496512084d16c439ea2da77
 make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
 ```
-
 
 ### GasPriceOracle Proxy Update
 
