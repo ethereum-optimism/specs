@@ -43,7 +43,6 @@ The network upgrade transactions are specified in the next section.
 The upgrade transaction details below are based on the monorepo at commit hash
 `b3299e0ddb55442e6496512084d16c439ea2da77`, and will be updated once a contracts release is made.
 
-
 ### L1Block Deployment
 <!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../../optimism \
 --fork-name Jovian \
@@ -102,7 +101,6 @@ git checkout b3299e0ddb55442e6496512084d16c439ea2da77
 make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json)
 ```
-
 
 ### L1Block Proxy Update
 
@@ -192,7 +190,6 @@ git checkout b3299e0ddb55442e6496512084d16c439ea2da77
 make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
 ```
-
 
 ### GasPriceOracle Proxy Update
 
