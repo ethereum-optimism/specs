@@ -32,6 +32,9 @@ following order:
 - Network Upgrade Transactions
   - L1Block deployment
   - Update L1Block Proxy ERC-1967 Implementation
+  - GasPriceOracle deployment
+  - Update GasPriceOracle Proxy ERC-1967 Implementation
+  - GasPriceOracle Enable Jovian call
 
 The network upgrade transactions are specified in the next section.
 
