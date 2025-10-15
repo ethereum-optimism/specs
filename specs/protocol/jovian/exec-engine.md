@@ -122,8 +122,8 @@ During block building and header validation, it must be guaranteed and checked, 
 `daFootprint` stays below the `gasLimit`, just like the `gasUsed` property.
 Note that this implies that blocks may have no more than `gasLimit/daFootprintGasScalar` total estimated DA usage bytes.
 
-Furthermore, from Jovian, the base fee update calculation now uses the value `gasMetered := max(gasUsed, blobGasUsed)`
-where it used the `gasUsed` value of the parent block before.
+Furthermore, from Jovian, the base fee update calculation now uses `gasMetered := max(gasUsed, blobGasUsed)`
+in place of the `gasUsed` value used before.
 As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
 
 ### Scalar loading
