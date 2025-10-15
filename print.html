@@ -13567,15 +13567,14 @@ the block gas limit, like a block's total gas usage.</p>
 <p>where <code>intercept</code>, <code>minTransactionSize</code>, <code>fastlzCoef</code> and <code>fastlzSize</code>
 are defined in the <a href="protocol/jovian/../fjord/exec-engine.html">Fjord specs</a>, <code>DEPOSIT_TX_TYPE</code> is <code>0x7E</code>,
 and <code>//</code> represents integer floor division.</p>
-<p>From Jovian, the <code>gasUsed</code> property of each block header is equal to the maximum over
-that block's <code>daFootprint</code> and the sum of the gas used by each transaction
-(the pre-Jovian definition of a block's <code>gasUsed</code> field).
+<p>From Jovian, the <code>blobGasUsed</code> property of each block header is set to that block's <code>daFootprint</code>. Note that pre-Jovian,
+since Ecotone, it was set to 0, as OP Stack chains don't support blobs. It is now repurposed to store the DA footprint.</p>
+<p>During block building and header validation, it must be guaranteed and checked, respectively, that the block's
+<code>daFootprint</code> stays below the <code>gasLimit</code>, just like the <code>gasUsed</code> property.
+Note that this implies that blocks may have no more than <code>gasLimit/daFootprintGasScalar</code> total estimated DA usage bytes.</p>
+<p>Furthermore, from Jovian, the base fee update calculation now uses <code>gasMetered := max(gasUsed, blobGasUsed)</code>
+in place of the <code>gasUsed</code> value used before.
 As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.</p>
-<p>The <code>gasUsed</code> must continue to be less than or equal to the block gas limit, meaning that
-(since the <code>daFootprint</code> must also be less than or equal to the block gas limit),
-blocks may have no more than <code>gasLimit/daFootprintGasScalar</code> total estimated DA usage.</p>
-<p>Note that, since the base fee continues to be updated according to a block's <code>gasUsed</code> field, the base fee may be
-directly influenced by DA usage.</p>
 <h3 id="scalar-loading"><a class="header" href="#scalar-loading">Scalar loading</a></h3>
 <p>The <code>daFootprintGasScalar</code> is loaded in a similar way to the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code>
 <a href="protocol/jovian/../isthmus/exec-engine.html#operator-fee">included</a> in the Isthmus fork. It can be read in two interchangable ways:</p>
@@ -13585,7 +13584,7 @@ directly influenced by DA usage.</p>
 <li>read from the L1 Block Info contract (<code>0x4200000000000000000000000000000000000015</code>)
 <ul>
 <li>using the solidity getter function <code>daFootprintGasScalar</code></li>
-<li>using a direct storage-read: big-endian <code>uint16</code> in slot <code>9</code> at offset <code>0</code>.</li>
+<li>using a direct storage-read: big-endian <code>uint16</code> in slot <code>8</code> at offset <code>12</code>.</li>
 </ul>
 </li>
 </ul>
