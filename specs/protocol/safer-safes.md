@@ -440,7 +440,7 @@ Cancels a challenge for an enabled `safe`.
 - MUST revert if the `safe` hasn't enabled the contract as a module.
 - MUST revert if the `safe` hasn't configured the module for the `safe`.
 - MUST revert if there isn't a challenge for the calling `safe`.
-- MUST reset `challenge_start_time` to 0.
+- MUST reset `challenge_start_time` to 0 for the calling `safe`.
 - MUST emit the `ChallengeCancelled` event.
 
 #### `changeOwnershipToFallback`
@@ -455,7 +455,7 @@ and sets its quorum to 1.
 - MUST reset `challenge_start_time` to 0 to enable the fallback to start a new challenge.
 - MUST set the `fallback_owner` as the sole owner of the `safe`.
 - MUST set the quorum of the `safe` to 1.
-- MUST emit the `ChallengeExecuted` event.
+- MUST emit the `ChallengeSucceeded` event.
 
 ### Timelock Guard
 
@@ -544,12 +544,15 @@ Can be called by anyone. It will be called by the `safe` in `execTransaction` if
 It verifies if a given transaction was scheduled and the delay period has passed, and reverts if not.
 
 - MUST revert if the contract is not enabled as a guard for the `safe`.
+- MUST revert if the executor of the transaction is not an owner for the `safe`.
 - MUST succeed if the contract is enabled but not configured.
 - MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
 - MUST add the `safety_delay(safe)` to the `execution_time(safe, tx)` if the `safe` is `slow`.
 - MUST revert if `timelock_delay(safe) > 0` and `execution_time(safe, tx) > block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
 - MUST set `cancellation_threshold(safe)` to 1.
+
+Note that we are tightening the security properties of the Safe by requiring that only owners can execute. This way an attacker must obtain a private key in addition to phishing enough signatures to schedule and execute.
 
 #### `checkAfterExecution`
 
