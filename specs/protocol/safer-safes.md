@@ -199,8 +199,8 @@ A specific transaction that has been stored in the Timelock, for execution from 
 
 ### Scheduling Time
 
-The `scheduling_time(safe, tx)` is the time in seconds of the block in which a transaction was scheduled for execution
-from a given safe.
+The `scheduling_time(safe, tx)` is the time in seconds of the block in which a transaction was scheduled
+for execution from a given safe.
 
 ### Timelock Delay Period
 
@@ -527,7 +527,9 @@ the `timelock_delay`.
 
 #### `cancelTransaction`
 
-Makes a scheduled transaction not executable. To do so, it builds a transaction for a no-op `signCancellation` function, and verifies that the supplied signatures for such a no-op transaction are valid and amount to `cancellation_threshold(safe)`. If successful, it increases the `cancellation_threshold(safe)` by 1.
+Makes a scheduled transaction not executable. To do so, it builds a transaction for a no-op `signCancellation` function,
+and verifies that the supplied signatures for such a no-op transaction are valid and amount to
+`cancellation_threshold(safe)`. If successful, it increases the `cancellation_threshold(safe)` by 1.
 
 - MUST revert if the contract is not enabled as a guard for the `safe`.
 - MUST revert if the contract is not configured for the `safe`.
@@ -552,7 +554,8 @@ It verifies if a given transaction was scheduled and the delay period has passed
 - MUST revert if the scheduled transaction was cancelled.
 - MUST set `cancellation_threshold(safe)` to 1.
 
-Note that we are tightening the security properties of the Safe by requiring that only owners can execute. This way an attacker must obtain a private key in addition to phishing enough signatures to schedule and execute.
+Note that we are tightening the security properties of the Safe by requiring that only owners can execute.
+This way an attacker must obtain a private key in addition to phishing enough signatures to schedule and execute.
 
 #### `checkAfterExecution`
 
