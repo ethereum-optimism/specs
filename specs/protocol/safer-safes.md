@@ -21,6 +21,8 @@
   - [Liveness Challenge Period](#liveness-challenge-period)
   - [Successful Challenge](#successful-challenge)
 - [Definitions in Timelock Guard](#definitions-in-timelock-guard)
+  - [Safe](#safe)
+  - [Tx Hash](#tx-hash)
   - [Scheduled Transaction](#scheduled-transaction)
   - [Scheduling Time](#scheduling-time)
   - [Timelock Delay Period](#timelock-delay-period)
@@ -58,28 +60,33 @@
   - [iSS-011: Only Owners Can Signal Rejection Of Transactions](#iss-011-only-owners-can-signal-rejection-of-transactions)
     - [Severity: Low](#severity-low)
 - [Function Specification](#function-specification)
-  - [`configureLivenessModule`](#configurelivenessmodule)
-  - [`clearLivenessModule`](#clearlivenessmodule)
-  - [`configureTimelockGuard`](#configuretimelockguard)
-  - [`clearTimelockGuard`](#cleartimelockguard)
-  - [`viewLivenessModuleConfiguration`](#viewlivenessmoduleconfiguration)
-  - [`viewTimelockGuardConfiguration`](#viewtimelockguardconfiguration)
-  - [`getLivenessChallengePeriodEnd`](#getlivenesschallengeperiodend)
-  - [`challenge`](#challenge)
-  - [`respond`](#respond)
-  - [`changeOwnershipToFallback`](#changeownershiptofallback)
-  - [`cancellationThreshold`](#cancellationthreshold)
-  - [`scheduleTransaction`](#scheduletransaction)
-  - [`checkTransaction`](#checktransaction)
-  - [`checkPendingTransactions`](#checkpendingtransactions)
-  - [`rejectTransaction`](#rejecttransaction)
-  - [`rejectTransactionWithSignature`](#rejecttransactionwithsignature)
-  - [`cancelTransaction`](#canceltransaction)
+  - [Liveness Module](#liveness-module)
+    - [`version`](#version)
+    - [`livenessSafeConfiguration`](#livenesssafeconfiguration)
+    - [`challengeStartTime`](#challengestarttime)
+    - [`getLivenessChallengePeriodEnd`](#getlivenesschallengeperiodend)
+    - [`configureLivenessModule`](#configurelivenessmodule)
+    - [`clearLivenessModule`](#clearlivenessmodule)
+    - [`challenge`](#challenge)
+    - [`respond`](#respond)
+    - [`changeOwnershipToFallback`](#changeownershiptofallback)
+  - [Timelock Guard](#timelock-guard)
+    - [`version`](#version-1)
+    - [`timelockSafeConfiguration`](#timelocksafeconfiguration)
+    - [`cancellationThreshold`](#cancellationthreshold)
+    - [`timelockDelay`](#timelockdelay)
+    - [`getScheduledTransaction`](#getscheduledtransaction)
+    - [`pendingTransactions`](#pendingtransactions)
+    - [`configureTimelockGuard`](#configuretimelockguard)
+    - [`scheduleTransaction`](#scheduletransaction)
+    - [`cancelTransaction`](#canceltransaction)
+    - [`signCancellation`](#signcancellation)
+    - [`checkTransaction`](#checktransaction)
+    - [`checkAfterExecution`](#checkafterexecution)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-This document describes extensions to the Security Council and Guardian Safe contracts, which
-provide additional functionality and security guarantees on top of those provided by the Safe
-contract.
+This document describes extensions to the Gnosis Safe contracts, which provide additional functionality and security
+guarantees on top of those already provided by standard contract.
 
 These extensions are developed using a singleton contract that can be enabled simultaneously as a
 ([module](https://docs.safe.global/advanced/smart-account-modules) and a
@@ -90,21 +97,17 @@ These extensions are developed using a singleton contract that can be enabled si
    authorized to execute transactions via the Safe. This means the liveness module must properly implement
    auth conditions internally.
 
-The extension contract specificationis compatible with the 
+The extension contract specification is compatible with the 
 [V1.5.0](https://github.com/safe-global/safe-contracts/releases/tag/v1.5.0) Safe contract version.
 
 When enabled as a guard, the extension contract implements a mandatory delay on the execution of transactions. When
-enabled as a module, the extension contract ensures a multisig remains operable by allowing challenges when it becomes
-unresponsive. If the multisig fails to prove liveness within a set period, ownership transfers to a trusted fallback
- owner to prevent deadlock.
+enabled as a module, the extension contract ensures a multisig remains operable by allowing liveness challenges by a
+trusted fallback address. If the multisig fails to prove liveness within a set period, ownership transfers to the fallback to prevent deadlock.
 
  As a best practice, the fallback owner should have stronger security guarantees than the safe enabling the extensions.
 
 The extensions in this document are intended to replace the extensions in the
 [Safe Contract Extensions](./safe-extensions.md) document.
-
-For more information about the Security Council and Guardian roles, refer to the
-[Stage One Roles and Requirements](./stage-1.md) document.
 
 ## Definitions
 
@@ -392,7 +395,7 @@ Returns `challenge_start_time` if there is a challenge for the given `safe`, or 
 
 #### `getLivenessChallengePeriodEnd`
 
-Returns `challenge_start_time + liveness_challenge_period + timelock_delay` if there is a challenge for the given
+Returns `challenge_start_time + liveness_challenge_period` if there is a challenge for the given
 `safe`, or 0 if not.
 
 - MUST never revert.
@@ -406,15 +409,15 @@ Configure the contract as a liveness module for a given `safe` by setting the `l
 - The contract MUST be enabled as a module on the `safe`.
 - MUST set the caller as a `safe`.
 - MUST take `liveness_challenge_period` and `fallback_owner` as parameters and store them as related to the `safe`.
-- If a challenge exists, it MUST be canceled, including emitting the appropriate events.
 - MUST emit a `ModuleConfigured` event with at least `liveness_challenge_period` and `fallback_owner` as parameters.
+- IF a challenge exists, it MUST be canceled, including emitting the appropriate events.
+- IF LivenessModule is enabled, `liveness_challenge_period >= timelock_delay * 2`
 
 #### `clearLivenessModule`
 
 Removes the liveness module configuration by a previously enabled `safe`.
 
 - The contract MUST be configured for the `safe`.
-- The contract MUST NOT be enabled as a module on the `safe`.
 - MUST erase the existing `liveness_challenge_period` and `fallback_owner` data related to the calling `safe`.
 - If a challenge exists, it MUST be cancelled, including emitting the appropriate events.
 - MUST emit a `ModuleCleared` event.
@@ -476,7 +479,12 @@ Returns the `timelock_delay` for a given `safe`.
 Returns the `cancellation_threshold` for a given `safe`.
 
 - MUST NOT revert
-- MUST return 0 if the contract is not enabled as a guard for the `safe`.
+
+#### `timelockDelay`
+
+Returns the `timelock_delay` for a given `safe`.
+
+- MUST NOT revert
 
 #### `getScheduledTransaction`
 
@@ -485,7 +493,7 @@ Returns the scheduled transaction for a given `safe` and `txHash`.
 - MUST NOT revert
 - MUST return an empty transaction if the transaction is not scheduled.
 
-#### `getAllScheduledTransactions`
+#### `pendingTransactions`
 
 Called by anyone, returns the list of all scheduled but not cancelled or executed transactions for a given safe.
 
@@ -494,17 +502,15 @@ Called by anyone, returns the list of all scheduled but not cancelled or execute
 
 #### `configureTimelockGuard`
 
-Configure the contract as a timelock guard by setting the `timelock_delay` and `safety_delay`.
+Configure the contract as a timelock guard by setting the `timelock_delay`.
 
 - MUST allow an arbitrary number of `safe` contracts to use the contract as a guard.
-- MUST revert if the contract is not enabled as a guard for the `safe`.
 - MUST revert if `timelock_delay` is longer than 1 year.
-- MUST revert if `safety_delay` is longer than 1 year.
 - MUST set the caller as a `safe`.
 - MUST take `timelock_delay` as a parameter and store it as related to the `safe`.
-- MUST take `safety_delay` as a parameter and store it as related to the `safe`.
 - MUST set the `cancellation_threshold` to 1.
-- MUST emit a `GuardConfigured` event with at least `timelock_delay` and `safety_delay` as parameters.
+- MUST emit a `GuardConfigured` event with at least `timelock_delay` as a parameter.
+- IF LivenessModule is enabled, `liveness_challenge_period >= timelock_delay * 2`
 
 #### `scheduleTransaction`
 
@@ -521,24 +527,16 @@ the `timelock_delay`.
 
 #### `cancelTransaction`
 
-Makes a scheduled transaction not executable. To do so, it builds a no-op transaction at the same nonce as the
-scheduled transaction, and verifies that the supplied signatures for such a no-op transaction are valid and amount to
-`cancellation_threshold(safe)`. If successful, it increases the `cancellation_threshold(safe)` by 1.
+Makes a scheduled transaction not executable. To do so, it builds a transaction for a no-op `signCancellation` function, and verifies that the supplied signatures for such a no-op transaction are valid and amount to `cancellation_threshold(safe)`. If successful, it increases the `cancellation_threshold(safe)` by 1.
 
 - MUST revert if the contract is not enabled as a guard for the `safe`.
 - MUST revert if the contract is not configured for the `safe`.
 - MUST revert if `sum(rejecting_owners(safe, tx)) < cancellation_threshold(safe)`.
 - MUST emit a `TransactionCancelled` event, with at least `safe` and a transaction identifier.
 
-#### `slowTimelockGuard`
+#### `signCancellation`
 
-Pauses the timelock guard for a given `safe`.
-
-- MUST revert if the contract is not enabled as a guard for the `safe`.
-- MUST revert if the contract is not configured for the `safe`.
-- MUST revert if a quorum of valid signatures from Safe owners is not provided as a parameter.
-- MUST revert if the quorum of signatures was already used.
-- MUST toggle the `slow` state of the `safe`.
+No-op function to facilitate using the Gnosis Safe facilities to cancel scheduled functions.
 
 #### `checkTransaction`
 
@@ -546,11 +544,18 @@ Can be called by anyone. It will be called by the `safe` in `execTransaction` if
 It verifies if a given transaction was scheduled and the delay period has passed, and reverts if not.
 
 - MUST revert if the contract is not enabled as a guard for the `safe`.
+- MUST succeed if the contract is enabled but not configured.
 - MUST take the exact parameters from the `ITransactionGuard.checkTransaction` interface.
 - MUST add the `safety_delay(safe)` to the `execution_time(safe, tx)` if the `safe` is `slow`.
-- MUST revert if `timelock_delay(safe) > 0` and `execution_time(safe, tx) < block.timestamp`.
+- MUST revert if `timelock_delay(safe) > 0` and `execution_time(safe, tx) > block.timestamp`.
 - MUST revert if the scheduled transaction was cancelled.
 - MUST set `cancellation_threshold(safe)` to 1.
 
-Note that if the contract is enabled but not configured for the safe, then `timelock_delay(safe) == 0` and the check
-passes. This is intentional to avoid bricking the multisig if the guard is enabled but not configured.
+#### `checkAfterExecution`
+
+Hook called by the Safe after transaction execution when the guard is enabled.
+
+- MUST never revert.
+- MUST take the exact parameters from the `ITransactionGuard.checkAfterExecution` interface.
+- MUST reset the `cancellation_threshold` to 1 if the transaction was successful.
+- MUST emit a `TransactionExecuted` event, with at least `safe` and a transaction identifier.
