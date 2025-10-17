@@ -455,7 +455,10 @@ and sets its quorum to 1.
 - MUST reset `challenge_start_time` to 0 to enable the fallback to start a new challenge.
 - MUST set the `fallback_owner` as the sole owner of the `safe`.
 - MUST set the quorum of the `safe` to 1.
+- MUST remove any Guard installed on the Safe.
 - MUST emit the `ChallengeSucceeded` event.
+
+Note that if the Safe has a Guard enabled, it is removed. This is in case that the Guard is bricking the Safe.
 
 ### Timelock Guard
 
