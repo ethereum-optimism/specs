@@ -13644,20 +13644,23 @@ following order:</p>
 <ul>
 <li>L1Block deployment</li>
 <li>Update L1Block Proxy ERC-1967 Implementation</li>
+<li>GasPriceOracle deployment</li>
+<li>Update GasPriceOracle Proxy ERC-1967 Implementation</li>
+<li>GasPriceOracle Enable Jovian call</li>
 </ul>
 </li>
 </ul>
 <p>The network upgrade transactions are specified in the next section.</p>
 <h2 id="network-upgrade-transactions"><a class="header" href="#network-upgrade-transactions">Network Upgrade Transactions</a></h2>
 <p>The upgrade transaction details below are based on the monorepo at commit hash
-<code>7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca</code>, and will be updated once a contracts release is made.</p>
+<code>b3299e0ddb55442e6496512084d16c439ea2da77</code>, and will be updated once a contracts release is made.</p>
 <h3 id="l1block-deployment-2"><a class="header" href="#l1block-deployment-2">L1Block Deployment</a></h3>
 <!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../../optimism \
 --fork-name Jovian \
 --contract-name L1Block \
 --from-address 0x4210000000000000000000000000000000000006 \
 --from-address-nonce 0 \
---git-commit-hash 7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca \
+--git-commit-hash b3299e0ddb55442e6496512084d16c439ea2da77 \
 --eth-rpc-url https://optimism.rpc.subquery.network/public \
 --proxy-address 0x4200000000000000000000000000000000000015 \
 --copy-contract-bytecode true -->
@@ -13669,7 +13672,7 @@ following order:</p>
 <li><code>mint</code>: <code>0</code></li>
 <li><code>value</code>: <code>0</code></li>
 <li><code>nonce</code>: <code>0</code></li>
-<li><code>gasLimit</code>: <code>444775</code></li>
+<li><code>gasLimit</code>: <code>447315</code></li>
 <li><code>data</code>: <code>0x0x608060405234801561001057600080...</code> (<a href="protocol/jovian/../../../specs/static/bytecode/jovian-l1-block-deployment.txt">full bytecode</a>)</li>
 <li><code>sourceHash</code>: <code>0x98faf23b9795967bc0b1c543144739d50dba3ea40420e77ad6ca9848dbfb62e8</code>,
 computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: L1Block Deployment"</code></li>
@@ -13684,14 +13687,14 @@ Computed Address: 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C
 # 0x98faf23b9795967bc0b1c543144739d50dba3ea40420e77ad6ca9848dbfb62e8
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout 7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca
+<pre><code class="language-bash">git checkout b3299e0ddb55442e6496512084d16c439ea2da77
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
 </code></pre>
 <p>This transaction MUST deploy a contract with the following code hash
-<code>0xf7b6ef0de2a53625d467d98c2932a5a5d64ffa1a331ebbde5bb06e2591b5835a</code>.</p>
+<code>0x5f885ca815d2cf27a203123e50b8ae204fdca910b6995d90b2d7700cbb9240d1</code>.</p>
 <p>To verify the code hash:</p>
-<pre><code class="language-bash">git checkout 7daaabbf2c2cce892aa171bc7e1331ad31bcc8ca
+<pre><code class="language-bash">git checkout b3299e0ddb55442e6496512084d16c439ea2da77
 make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json)
 </code></pre>
@@ -13718,42 +13721,46 @@ computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: L1Block
 # 0x08447273a4fbce97bc8c515f97ac74efc461f6a4001553712f31ebc11288bad2
 </code></pre>
 <h3 id="gaspriceoracle-deployment-3"><a class="header" href="#gaspriceoracle-deployment-3">GasPriceOracle Deployment</a></h3>
-<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../optimism
- --fork-name Jovian --contract-name GasPriceOracle --from-address 0x4210000000000000000000000000000000000006
-  --from-address-nonce 0 --git-commit-hash 134edb32991f408a3354caf3de8a68145437cfc9
-  --eth-rpc-url https://optimism.rpc.subquery.network/public
-  --proxy-address 0x420000000000000000000000000000000000000F --copy-contract-bytecode true -->
+<!-- Generated with: ./scripts/run_gen_predeploy_docs.sh --optimism-repo-path ../../optimism \
+--fork-name Jovian \
+--contract-name GasPriceOracle \
+--from-address 0x4210000000000000000000000000000000000007 \
+--from-address-nonce 0 \
+--git-commit-hash b3299e0ddb55442e6496512084d16c439ea2da77 \
+--eth-rpc-url https://optimism.rpc.subquery.network/public \
+--proxy-address 0x420000000000000000000000000000000000000F \
+--copy-contract-bytecode true -->
 <p>The <code>GasPriceOracle</code> contract is deployed.</p>
 <p>A deposit transaction is derived with the following attributes:</p>
 <ul>
-<li><code>from</code>: <code>0x4210000000000000000000000000000000000006</code></li>
+<li><code>from</code>: <code>0x4210000000000000000000000000000000000007</code></li>
 <li><code>to</code>: <code>null</code></li>
 <li><code>mint</code>: <code>0</code></li>
 <li><code>value</code>: <code>0</code></li>
 <li><code>nonce</code>: <code>0</code></li>
 <li><code>gasLimit</code>: <code>1756783</code></li>
 <li><code>data</code>: <code>0x0x608060405234801561001057600080...</code> (<a href="protocol/jovian/../../../specs/static/bytecode/jovian-gas-price-oracle-deployment.txt">full bytecode</a>)</li>
-<li><code>sourceHash</code>: <code>0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545</code>,<br />
+<li><code>sourceHash</code>: <code>0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545</code>,
 computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: GasPriceOracle Deployment"</code></li>
 </ul>
 <p>This results in the Jovian GasPriceOracle contract being deployed to
-<code>0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C</code>, to verify:</p>
-<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000006
-Computed Address: 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C
+<code>0x4f1db3c6AbD250ba86E0928471A8F7DB3AFd88F1</code>, to verify:</p>
+<pre><code class="language-bash">cast compute-address --nonce=0 0x4210000000000000000000000000000000000007
+Computed Address: 0x4f1db3c6AbD250ba86E0928471A8F7DB3AFd88F1
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
 <pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Deployment"))
 # 0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545
 </code></pre>
 <p>Verify <code>data</code>:</p>
-<pre><code class="language-bash">git checkout 134edb32991f408a3354caf3de8a68145437cfc9
+<pre><code class="language-bash">git checkout b3299e0ddb55442e6496512084d16c439ea2da77
 make build-contracts
 jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
 </code></pre>
-<p>This transaction MUST deploy a contract with the following code hash<br />
+<p>This transaction MUST deploy a contract with the following code hash
 <code>0xa7fd95526766fc3ba40ed64aa1b55ad051cb2930df64e11c4a848b81d3a8deaf</code>.</p>
 <p>To verify the code hash:</p>
-<pre><code class="language-bash">git checkout 134edb32991f408a3354caf3de8a68145437cfc9
+<pre><code class="language-bash">git checkout b3299e0ddb55442e6496512084d16c439ea2da77
 make build-contracts
 cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json)
 </code></pre>
@@ -13767,13 +13774,13 @@ implementation slot to point to the new GasPriceOracle deployment.</p>
 <li><code>mint</code>: <code>0</code></li>
 <li><code>value</code>: <code>0</code></li>
 <li><code>gasLimit</code>: <code>50,000</code></li>
-<li><code>data</code>: <code>0x3659cfe60000000000000000000000003ba4007f5c922fbb33c454b41ea7a1f11e83df2c</code></li>
+<li><code>data</code>: <code>0x3659cfe60000000000000000000000004f1db3c6abd250ba86e0928471a8f7db3afd88f1</code></li>
 <li><code>sourceHash</code>: <code>0x46b597e2d8346ed7749b46734074361e0b41a0ab9af7afda5bb4e367e072bcb8</code>
 computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: GasPriceOracle Proxy Update"</code></li>
 </ul>
 <p>Verify data:</p>
-<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C)
-# 0x3659cfe60000000000000000000000003ba4007f5c922fbb33c454b41ea7a1f11e83df2c
+<pre><code class="language-bash">cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x4f1db3c6AbD250ba86E0928471A8F7DB3AFd88F1)
+# 0x3659cfe60000000000000000000000004f1db3c6abd250ba86e0928471a8f7db3afd88f1
 </code></pre>
 <p>Verify <code>sourceHash</code>:</p>
 <pre><code class="language-bash">cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Proxy Update"))
