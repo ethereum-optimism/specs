@@ -13313,7 +13313,8 @@ the Isthmus activation time.</p>
 is the function selector: the first four bytes of <code>keccak256("setL1BlockValuesIsthmus()")</code>.</p>
 <p>In the activation block, there are two possibilities:</p>
 <ul>
-<li>If Isthmus is active at genesis, the <code>setL1BlockValuesIsthmus()</code> method must be used.</li>
+<li>If Isthmus is active at genesis, there are no transactions in the activation block
+and therefore no L1 Block Attributes transaction to consider.</li>
 <li>If Isthmus activates after genesis <a href="protocol/isthmus/../ecotone/l1-attributes.html"><code>setL1BlockValuesEcotone()</code></a>
 method must be used. This is because the L1 Block contract will not yet have been upgraded.</li>
 </ul>
@@ -13838,7 +13839,8 @@ computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: Gas Pri
 is the function selector: the first four bytes of <code>keccak256("setL1BlockValuesJovian()")</code>.</p>
 <p>In the activation block, there are two possibilities:</p>
 <ul>
-<li>If Jovian is active at genesis, the <code>setL1BlockValuesJovian()</code> method must be used.</li>
+<li>If Jovian is active at genesis, there are no transactions in the activation block
+and therefore no L1 Block Attributes transaction to consider.</li>
 <li>If Jovian activates after genesis <a href="protocol/jovian/../isthmus/l1-attributes.html"><code>setL1BlockValuesIsthmus()</code></a> method must be used.
 This is because the L1 Block contract will not yet have been upgraded.</li>
 </ul>
