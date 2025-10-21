@@ -105,8 +105,5 @@ self-destructs.
 - MUST call `selfdestruct(_recipient)` to transfer all ETH to the recipient
 - MUST NOT execute any code at the recipient address during the transfer
 - MUST succeed regardless of recipient address type or code
-- MUST leave no code at the SafeSend contract address after execution
 - MUST leave zero balance at the SafeSend contract address after execution
 - MUST complete within the same transaction as the contract creation
-- MUST NOT emit any events (selfdestruct does not emit events)
-- MUST NOT perform any validation on the recipient address (zero address is allowed)
