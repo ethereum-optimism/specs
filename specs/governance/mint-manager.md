@@ -123,7 +123,7 @@ ensures that token inflation is bounded and predictable.
 
 #### Impact
 
-**Severity: High**
+**Severity: Medium**
 
 If this invariant is violated, the owner could mint an unlimited number of tokens, leading to:
 - Severe token dilution for existing holders
@@ -131,9 +131,9 @@ If this invariant is violated, the owner could mint an unlimited number of token
 - Destruction of the token's economic value
 - Complete loss of trust in the protocol's governance system
 
-Note: This is rated High rather than Critical because it requires assumption aMM-003 (owner acts within governance
-constraints) to fail. The contract enforces this invariant on-chain, but if a malicious owner attempts to bypass it,
-the impact would be severe.
+Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.
 
 ### iMM-002: Time-based minting restriction
 
@@ -145,7 +145,7 @@ that minting operations are rate-limited, preventing rapid inflation even if the
 
 #### Impact
 
-**Severity: High**
+**Severity: Medium**
 
 If this invariant is violated, the owner could:
 - Mint the [Mint Cap](#mint-cap) multiple times in rapid succession
@@ -153,9 +153,9 @@ If this invariant is violated, the owner could:
 - Undermine the predictability and transparency of the token supply schedule
 - Violate the expectations of token holders regarding inflation rates
 
-Note: This is rated High rather than Critical because it requires assumption aMM-003 (owner acts within governance
-constraints) to fail. The contract enforces this invariant on-chain, but if a malicious owner attempts to bypass it,
-the impact would be severe.
+Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.
 
 ### iMM-003: Exclusive minting authority
 
