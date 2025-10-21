@@ -14038,6 +14038,250 @@ as inherited from <code>ERC20Votes</code>. Delegation through these functions is
 delegate the entirety of the user's available balance to the target address. Delegations cannot be re-delegated to another
 address.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="mintmanager"><a class="header" href="#mintmanager">MintManager</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="governance/mint-manager.html#overview">Overview</a></li>
+<li><a href="governance/mint-manager.html#definitions">Definitions</a>
+<ul>
+<li><a href="governance/mint-manager.html#mint-cap">Mint Cap</a></li>
+<li><a href="governance/mint-manager.html#mint-period">Mint Period</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="governance/mint-manager.html#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#dependencies">Dependencies</a></li>
+<li><a href="governance/mint-manager.html#invariants">Invariants</a>
+<ul>
+<li><a href="governance/mint-manager.html#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact-3">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#function-specifications">Function Specifications</a>
+<ul>
+<li><a href="governance/mint-manager.html#constructor">constructor</a></li>
+<li><a href="governance/mint-manager.html#mint">mint</a></li>
+<li><a href="governance/mint-manager.html#upgrade">upgrade</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
+<p>The <code>MintManager</code> contract serves as the owner of the <a href="governance/./gov-token.html">GovernanceToken</a> and controls the token
+inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
+period between mints. The contract is upgradeable, allowing the owner to transfer control to a new <code>MintManager</code>
+implementation if changes to the inflation schedule are required.</p>
+<h2 id="definitions-6"><a class="header" href="#definitions-6">Definitions</a></h2>
+<h3 id="mint-cap"><a class="header" href="#mint-cap">Mint Cap</a></h3>
+<p>The maximum percentage of the total token supply that can be minted in a single minting operation. Set to 2%
+(represented as 20/1000 with 4 decimal precision).</p>
+<h3 id="mint-period"><a class="header" href="#mint-period">Mint Period</a></h3>
+<p>The minimum time interval that must elapse between consecutive minting operations. Set to 365 days.</p>
+<h2 id="assumptions-3"><a class="header" href="#assumptions-3">Assumptions</a></h2>
+<h3 id="amm-001-governancetoken-implements-required-functions-correctly"><a class="header" href="#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a></h3>
+<p>The <code>GovernanceToken</code> contract correctly implements the <code>mint(address,uint256)</code> function, <code>transferOwnership(address)</code>
+function, and <code>totalSupply()</code> view function according to their expected behavior. Specifically:</p>
+<ul>
+<li><code>mint()</code> increases the token balance of the specified account by the specified amount</li>
+<li><code>totalSupply()</code> accurately returns the current total supply of tokens</li>
+<li><code>transferOwnership()</code> transfers ownership to the specified address</li>
+</ul>
+<h4 id="mitigations-18"><a class="header" href="#mitigations-18">Mitigations</a></h4>
+<ul>
+<li>The <code>GovernanceToken</code> contract is part of the same protocol and is subject to the same security audits</li>
+<li>The interface is well-defined in <code>IGovernanceToken.sol</code></li>
+<li>The implementation follows OpenZeppelin's standard patterns</li>
+</ul>
+<h3 id="amm-002-block-timestamp-reliability"><a class="header" href="#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a></h3>
+<p>The EVM <code>block.timestamp</code> value is sufficiently reliable for enforcing the 365-day minting period. While miners can
+manipulate timestamps within a small range (~15 seconds), this manipulation is negligible compared to the 365-day
+period.</p>
+<h4 id="mitigations-19"><a class="header" href="#mitigations-19">Mitigations</a></h4>
+<ul>
+<li>The 365-day period is long enough that minor timestamp manipulation has no practical impact</li>
+<li>Ethereum consensus rules limit timestamp manipulation</li>
+<li>The time-based restriction is a rate limit, not a precise scheduling mechanism</li>
+</ul>
+<h3 id="amm-003-owner-acts-within-governance-constraints"><a class="header" href="#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a></h3>
+<p>The contract owner (typically a governance multisig or DAO) will only call <code>mint()</code> and <code>upgrade()</code> functions in
+accordance with governance decisions and the protocol's established rules. The owner will not abuse their authority
+to mint excessive tokens or transfer ownership to malicious addresses.</p>
+<h4 id="mitigations-20"><a class="header" href="#mitigations-20">Mitigations</a></h4>
+<ul>
+<li>Owner is expected to be a governance-controlled address (e.g., multisig or Governor contract)</li>
+<li>All minting operations are subject to the on-chain mint cap and time restrictions</li>
+<li>Ownership transfers are transparent on-chain and subject to community oversight</li>
+<li>The upgrade mechanism allows for replacing a compromised or malicious owner</li>
+</ul>
+<h3 id="amm-004-valid-successor-mintmanager"><a class="header" href="#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a></h3>
+<p>When upgrading, the owner will provide a valid, non-zero address for the new <code>MintManager</code> contract. The successor
+contract will be properly implemented and tested before the upgrade is executed.</p>
+<h4 id="mitigations-21"><a class="header" href="#mitigations-21">Mitigations</a></h4>
+<ul>
+<li>Governance processes include review and testing of new MintManager implementations</li>
+<li>The upgrade transaction is subject to governance approval and timelock mechanisms</li>
+<li>The contract enforces a basic check that the successor address is not the zero address</li>
+</ul>
+<h2 id="dependencies-11"><a class="header" href="#dependencies-11">Dependencies</a></h2>
+<p>This specification depends on:</p>
+<ul>
+<li><a href="governance/./gov-token.html">GovernanceToken</a> - The ERC20Votes token that this contract has permission to mint</li>
+</ul>
+<h2 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h2>
+<h3 id="imm-001-mint-cap-enforcement"><a class="header" href="#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a></h3>
+<p>No single minting operation can mint more than the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> of the current total token supply.</p>
+<p><strong>Full Description:</strong>
+Any call to <code>mint()</code> MUST enforce that the requested mint amount does not exceed the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a>. This
+ensures that token inflation is bounded and predictable.</p>
+<h4 id="impact-19"><a class="header" href="#impact-19">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is violated, the owner could mint an unlimited number of tokens, leading to:</p>
+<ul>
+<li>Severe token dilution for existing holders</li>
+<li>Loss of governance voting power for existing token holders</li>
+<li>Destruction of the token's economic value</li>
+<li>Complete loss of trust in the protocol's governance system</li>
+</ul>
+<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
+<h3 id="imm-002-time-based-minting-restriction"><a class="header" href="#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a></h3>
+<p>Minting operations can only occur after the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has elapsed since the previous mint.</p>
+<p><strong>Full Description:</strong>
+Any call to <code>mint()</code> MUST revert if the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has not elapsed since the last mint. This ensures
+that minting operations are rate-limited, preventing rapid inflation even if the owner attempts multiple mints.</p>
+<h4 id="impact-20"><a class="header" href="#impact-20">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is violated, the owner could:</p>
+<ul>
+<li>Mint the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> multiple times in rapid succession</li>
+<li>Cause uncontrolled inflation far exceeding the intended rate</li>
+<li>Undermine the predictability and transparency of the token supply schedule</li>
+<li>Violate the expectations of token holders regarding inflation rates</li>
+</ul>
+<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
+<h3 id="imm-003-exclusive-minting-authority"><a class="header" href="#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a></h3>
+<p>Only the contract owner can successfully call the <code>mint()</code> function to create new governance tokens.</p>
+<p><strong>Full Description:</strong>
+The <code>mint()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the address returned by
+<code>owner()</code> can execute minting operations. Any call from a non-owner address MUST revert.</p>
+<h4 id="impact-21"><a class="header" href="#impact-21">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated:</p>
+<ul>
+<li>Unauthorized parties could mint tokens without governance approval</li>
+<li>The entire governance system would be compromised</li>
+<li>Token supply would become unpredictable and uncontrolled</li>
+<li>The economic security of the protocol would be destroyed</li>
+</ul>
+<h3 id="imm-004-ownership-transfer-control"><a class="header" href="#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a></h3>
+<p>Only the current contract owner can transfer ownership of the GovernanceToken to a new MintManager.</p>
+<p><strong>Full Description:</strong>
+The <code>upgrade()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the current owner can
+initiate an upgrade to a new <code>MintManager</code> implementation. This prevents unauthorized parties from taking control of
+the token minting authority.</p>
+<h4 id="impact-22"><a class="header" href="#impact-22">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated:</p>
+<ul>
+<li>Attackers could transfer ownership to a malicious contract</li>
+<li>The governance system would lose control over token minting</li>
+<li>A malicious MintManager could mint unlimited tokens or implement harmful policies</li>
+<li>The protocol's governance would be permanently compromised</li>
+</ul>
+<h2 id="function-specifications"><a class="header" href="#function-specifications">Function Specifications</a></h2>
+<h3 id="constructor-3"><a class="header" href="#constructor-3">constructor</a></h3>
+<pre><code class="language-solidity">constructor(address _upgrader, address _governanceToken)
+</code></pre>
+<p>Initializes the <code>MintManager</code> contract with the specified owner and governance token.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_upgrader</code>: The address that will become the owner of this contract</li>
+<li><code>_governanceToken</code>: The address of the <code>GovernanceToken</code> contract that this manager will control</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST call <code>transferOwnership(_upgrader)</code> to set the contract owner</li>
+<li>MUST set <code>governanceToken</code> to the provided <code>_governanceToken</code> address</li>
+<li>MUST initialize <code>mintPermittedAfter</code> to enable immediate first mint while enforcing restrictions on subsequent mints</li>
+<li>MUST NOT validate that <code>_upgrader</code> or <code>_governanceToken</code> are non-zero addresses (caller responsibility)</li>
+</ul>
+<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
+<pre><code class="language-solidity">function mint(address _account, uint256 _amount) public onlyOwner
+</code></pre>
+<p>Mints new governance tokens to the specified account, subject to time and cap restrictions.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_account</code>: The address that will receive the newly minted tokens</li>
+<li><code>_amount</code>: The number of tokens to mint (in wei, with 18 decimals)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
+<li>MUST revert if the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has not elapsed since the last mint</li>
+<li>MUST revert if <code>_amount</code> exceeds the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a></li>
+<li>MUST set <code>mintPermittedAfter</code> to <code>block.timestamp + MINT_PERIOD</code> to enforce the next <a href="governance/mint-manager.html#mint-period">Mint Period</a></li>
+<li>MUST call <code>governanceToken.mint(_account, _amount)</code> to perform the actual minting</li>
+</ul>
+<h3 id="upgrade-3"><a class="header" href="#upgrade-3">upgrade</a></h3>
+<pre><code class="language-solidity">function upgrade(address _newMintManager) public onlyOwner
+</code></pre>
+<p>Transfers ownership of the <code>GovernanceToken</code> to a new <code>MintManager</code> contract, effectively upgrading the minting system.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_newMintManager</code>: The address of the new <code>MintManager</code> contract that will become the owner of the <code>GovernanceToken</code></li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
+<li>MUST revert if <code>_newMintManager == address(0)</code></li>
+<li>MUST call <code>governanceToken.transferOwnership(_newMintManager)</code> to transfer ownership</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="standard-l2-genesis"><a class="header" href="#standard-l2-genesis">Standard L2 Genesis</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -14138,7 +14382,7 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
+<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
 <h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
@@ -14218,7 +14462,7 @@ is the single source of truth for chain operator ownership.</p>
 <li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
 is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is <code>abi.encodeCall(L1Block.setConfig, (_type, _value))</code></li>
 </ul>
-<h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
+<h4 id="upgrade-4"><a class="header" href="#upgrade-4"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> function MUST only be callable by the <code>UPGRADER</code> role as defined
 in the <a href="experimental/standard-l2-genesis.html#superchainconfig"><code>SuperchainConfig</code></a>.</p>
 <pre><code class="language-solidity">function upgrade(bytes memory _data) external
@@ -14412,7 +14656,7 @@ a future hardfork.</p>
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
+<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -15120,7 +15364,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
+<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -15205,7 +15449,7 @@ bareChecksum = H(idLogHash ++ idChainID)
 typeByte = 0x03
 checksum = typeByte ++ bareChecksum[1:]
 </code></pre>
-<h3 id="assumptions-3"><a class="header" href="#assumptions-3">Assumptions</a></h3>
+<h3 id="assumptions-4"><a class="header" href="#assumptions-4">Assumptions</a></h3>
 <h4 id="gas-schedule-dependencies"><a class="header" href="#gas-schedule-dependencies">Gas Schedule Dependencies</a></h4>
 <p>The <code>CrossL2Inbox</code> contract's validation mechanism relies on precise gas cost calculations for storage operations.</p>
 <p><code>SLOAD</code> operations cost 2100 gas for cold access and 100 gas for warm access.</p>
@@ -15459,7 +15703,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-41"><a class="header" href="#overview-41">Overview</a></h3>
+<h3 id="overview-42"><a class="header" href="#overview-42">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -15526,7 +15770,7 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-42"><a class="header" href="#overview-42">Overview</a></h3>
+<h3 id="overview-43"><a class="header" href="#overview-43">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -15624,7 +15868,7 @@ with <code>convert</code>.</p>
 </code></pre>
 <p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
 <code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
-<h3 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h3>
+<h3 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h3>
 <p>The <code>convert</code> function conserves the following invariants:</p>
 <ul>
 <li>Conservation of amount:
@@ -15682,7 +15926,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-43"><a class="header" href="#overview-43">Overview</a></h3>
+<h3 id="overview-44"><a class="header" href="#overview-44">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -15754,7 +15998,7 @@ sequenceDiagram
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h3 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h3>
+<h3 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h3>
 <p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -15829,7 +16073,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -16129,7 +16373,7 @@ inclusion.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
 <p>The supervisor is an implementation detail of OP Stack native interop and is not the only
 architecture that can be used to implement it. The supervisor is responsible for indexing
 data from all of the chains in a cluster so that the <a href="interop/./verifier.html#safety">safety level</a>
@@ -16683,7 +16927,7 @@ OutputV0 {
 <li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <p>Interop introduces the Super Fault Dispute Game as a
 new <a href="interop/../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
 pre-interop <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
@@ -16799,7 +17043,7 @@ program identifying the type of step to perform based on the agreed prestate.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainTokenBridge</code>.
@@ -17055,7 +17299,7 @@ but revert on the destination chain, and could never be successfully replayed.</
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <p>The <code>ETHLiquidity</code> contract is a predeploy that manages native ETH liquidity for cross-chain
 transfers within the Superchain interop set. It works in conjunction with the
 <code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
@@ -17070,7 +17314,7 @@ transfer mechanism.</p>
 <tr><td>Initial Balance</td><td><code>type(uint248).max</code> wei</td></tr>
 </tbody></table>
 </div>
-<h2 id="definitions-6"><a class="header" href="#definitions-6">Definitions</a></h2>
+<h2 id="definitions-7"><a class="header" href="#definitions-7">Definitions</a></h2>
 <h3 id="eth-liquidity"><a class="header" href="#eth-liquidity">ETH Liquidity</a></h3>
 <p>ETH Liquidity refers to the availability of native ETH on a particular chain. The <code>ETHLiquidity</code>
 contract manages this liquidity by providing a mechanism to burn and mint ETH as needed for
@@ -17083,33 +17327,33 @@ a cross-chain transfer.</p>
 <p>Liquidity Burning is the process of depositing ETH into the <code>ETHLiquidity</code> contract. This operation
 is performed when ETH is being sent from a source chain to a destination chain as part of a
 cross-chain transfer.</p>
-<h2 id="assumptions-4"><a class="header" href="#assumptions-4">Assumptions</a></h2>
+<h2 id="assumptions-5"><a class="header" href="#assumptions-5">Assumptions</a></h2>
 <h3 id="ael-001-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#ael-001-safesend-correctly-transfers-eth-to-recipients">aEL-001: SafeSend correctly transfers ETH to recipients</a></h3>
 <p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
 for valid addresses.</p>
-<h4 id="mitigations-18"><a class="header" href="#mitigations-18">Mitigations</a></h4>
+<h4 id="mitigations-22"><a class="header" href="#mitigations-22">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
+<h2 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h2>
 <h3 id="iel-001-eth-balance-is-always-sufficient-for-minting--burning"><a class="header" href="#iel-001-eth-balance-is-always-sufficient-for-minting--burning">iEL-001: ETH balance is always sufficient for minting / burning</a></h3>
 <p>The <code>ETHLiquidity</code> contract must always have enough ETH to fulfill all legitimate minting / burning
 requests.</p>
-<h4 id="impact-19"><a class="header" href="#impact-19">Impact</a></h4>
+<h4 id="impact-23"><a class="header" href="#impact-23">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, the cross-chain ETH transfer mechanism would fail, potentially leading
 to users being unable to receive their ETH on destination chains.</p>
 <h3 id="iel-002-only-authorized-contracts-can-call-mint-and-burn"><a class="header" href="#iel-002-only-authorized-contracts-can-call-mint-and-burn">iEL-002: Only authorized contracts can call mint and burn</a></h3>
 <p>The <code>mint</code> and <code>burn</code> functions must only be callable by authorized contracts (specifically the
 <code>SuperchainETHBridge</code>).</p>
-<h4 id="impact-20"><a class="header" href="#impact-20">Impact</a></h4>
+<h4 id="impact-24"><a class="header" href="#impact-24">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, unauthorized parties could mint ETH without burning an equivalent
 amount on a source chain, leading to inflation.</p>
 <h3 id="iel-003-contract-balance-never-overflows"><a class="header" href="#iel-003-contract-balance-never-overflows">iEL-003: Contract balance never overflows</a></h3>
 <p>The <code>ETHLiquidity</code> contract's balance must never overflow due to excessive burning operations.</p>
-<h4 id="impact-21"><a class="header" href="#impact-21">Impact</a></h4>
+<h4 id="impact-25"><a class="header" href="#impact-25">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, the contract could reach an invalid state, potentially disrupting the
 cross-chain ETH transfer mechanism. The invariant that avoids overflow is maintained by
@@ -17117,7 +17361,7 @@ cross-chain ETH transfer mechanism. The invariant that avoids overflow is mainta
 integrate with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that such future contracts
 do not break this invariant.</p>
 <h2 id="function-specification-4"><a class="header" href="#function-specification-4">Function Specification</a></h2>
-<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
+<h3 id="mint-1"><a class="header" href="#mint-1">mint</a></h3>
 <p>Withdraws ETH from the <code>ETHLiquidity</code> contract equal to the <code>_amount</code> and sends it to the
 <code>msg.sender</code>.</p>
 <pre><code class="language-solidity">function mint(uint256 _amount) external
@@ -17217,7 +17461,7 @@ do not break this invariant.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>The <code>SuperchainETHBridge</code> is a predeploy contract that facilitates cross-chain ETH bridging within
 the Superchain interop set. It serves as an abstraction layer on top of the
 <code>L2toL2CrossDomainMessenger</code> specifically designed for native ETH transfers between chains. The
@@ -17230,7 +17474,7 @@ withdrawals, see the <a href="interop/./eth-lockbox.html"><code>ETHLockbox</code
 <tr><td><code>SuperchainETHBridge</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="definitions-7"><a class="header" href="#definitions-7">Definitions</a></h2>
+<h2 id="definitions-8"><a class="header" href="#definitions-8">Definitions</a></h2>
 <h3 id="eth-bridging"><a class="header" href="#eth-bridging">ETH Bridging</a></h3>
 <p>ETH Bridging refers to the process of transferring native ETH from one chain to another within the
 Superchain interop set. This process involves burning ETH on the source chain and minting an
@@ -17249,11 +17493,11 @@ burned from the user's account and a cross-chain message is sent to the destinat
 <h3 id="destination-chain"><a class="header" href="#destination-chain">Destination Chain</a></h3>
 <p>The Destination Chain is the chain to which ETH is being transferred. On this chain, ETH is sent
 to the recipient's account based on the cross-chain message received from the source chain.</p>
-<h2 id="assumptions-5"><a class="header" href="#assumptions-5">Assumptions</a></h2>
+<h2 id="assumptions-6"><a class="header" href="#assumptions-6">Assumptions</a></h2>
 <h3 id="aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages"><a class="header" href="#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001: L2ToL2CrossDomainMessenger properly delivers messages</a></h3>
 <p>We assume that the <code>L2ToL2CrossDomainMessenger</code> contract properly and faithfully delivers messages
 between chains, maintaining the integrity and authenticity of the message contents.</p>
-<h4 id="mitigations-19"><a class="header" href="#mitigations-19">Mitigations</a></h4>
+<h4 id="mitigations-23"><a class="header" href="#mitigations-23">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>L2ToL2CrossDomainMessenger</code> contract</li>
 <li>Audits of the messaging protocol</li>
@@ -17262,7 +17506,7 @@ between chains, maintaining the integrity and authenticity of the message conten
 <h3 id="aseb-002-ethliquidity-contract-maintains-sufficient-liquidity"><a class="header" href="#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002: <code>ETHLiquidity</code> contract maintains sufficient liquidity</a></h3>
 <p>We assume that the <code>ETHLiquidity</code> contract maintains sufficient liquidity to fulfill all valid ETH
 minting requests. This is ensured by initializing the contract with <code>type(uint248).max</code> wei.</p>
-<h4 id="mitigations-20"><a class="header" href="#mitigations-20">Mitigations</a></h4>
+<h4 id="mitigations-24"><a class="header" href="#mitigations-24">Mitigations</a></h4>
 <ul>
 <li>Total ETH supply is much less than the initial balance of the <code>ETHLiquidity</code> contract</li>
 <li>Contract is initially initialized with <code>type(uint248).max</code> wei and can hold up to
@@ -17271,20 +17515,20 @@ minting requests. This is ensured by initializing the contract with <code>type(u
 <h3 id="aseb-003-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#aseb-003-safesend-correctly-transfers-eth-to-recipients">aSEB-003: <code>SafeSend</code> correctly transfers ETH to recipients</a></h3>
 <p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
 for valid addresses.</p>
-<h4 id="mitigations-21"><a class="header" href="#mitigations-21">Mitigations</a></h4>
+<h4 id="mitigations-25"><a class="header" href="#mitigations-25">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h2>
+<h2 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h2>
 <h3 id="iseb-001-eth-sent-equals-eth-received"><a class="header" href="#iseb-001-eth-sent-equals-eth-received">iSEB-001: ETH sent equals ETH received</a></h3>
 <p>The amount of ETH sent from the source chain must equal the amount of ETH received on the
 destination chain for any given cross-chain transfer.</p>
-<h4 id="impact-22"><a class="header" href="#impact-22">Impact</a></h4>
+<h4 id="impact-26"><a class="header" href="#impact-26">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, users could receive more or less ETH than they sent, leading to
 inflation or loss of funds.</p>
-<h4 id="dependencies-11"><a class="header" href="#dependencies-11">Dependencies</a></h4>
+<h4 id="dependencies-12"><a class="header" href="#dependencies-12">Dependencies</a></h4>
 <ul>
 <li><a href="interop/superchain-eth-bridge.html#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001</a></li>
 <li><a href="interop/superchain-eth-bridge.html#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002</a></li>
@@ -17292,21 +17536,21 @@ inflation or loss of funds.</p>
 <h3 id="iseb-002-only-authorized-contracts-can-call-relayeth"><a class="header" href="#iseb-002-only-authorized-contracts-can-call-relayeth">iSEB-002: Only authorized contracts can call <code>relayETH</code></a></h3>
 <p>The <code>relayETH</code> function must only be callable by the <code>L2ToL2CrossDomainMessenger</code> contract, and the
 cross-domain sender must be the <code>SuperchainETHBridge</code> contract on the source chain.</p>
-<h4 id="impact-23"><a class="header" href="#impact-23">Impact</a></h4>
+<h4 id="impact-27"><a class="header" href="#impact-27">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, unauthorized parties could mint ETH on the destination chain without
 burning an equivalent amount on the source chain, leading to inflation.</p>
-<h4 id="dependencies-12"><a class="header" href="#dependencies-12">Dependencies</a></h4>
+<h4 id="dependencies-13"><a class="header" href="#dependencies-13">Dependencies</a></h4>
 <ul>
 <li><a href="interop/superchain-eth-bridge.html#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001</a></li>
 </ul>
 <h3 id="iseb-003-eth-cannot-be-sent-to-the-zero-address"><a class="header" href="#iseb-003-eth-cannot-be-sent-to-the-zero-address">iSEB-003: ETH cannot be sent to the zero address</a></h3>
 <p>The <code>sendETH</code> function must revert if the recipient address is the zero address.</p>
-<h4 id="impact-24"><a class="header" href="#impact-24">Impact</a></h4>
+<h4 id="impact-28"><a class="header" href="#impact-28">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, ETH could be sent to the zero address, effectively burning it without
 the possibility of recovery.</p>
-<h4 id="dependencies-13"><a class="header" href="#dependencies-13">Dependencies</a></h4>
+<h4 id="dependencies-14"><a class="header" href="#dependencies-14">Dependencies</a></h4>
 <p>None</p>
 <h2 id="function-specification-5"><a class="header" href="#function-specification-5">Function Specification</a></h2>
 <h3 id="sendeth"><a class="header" href="#sendeth">sendETH</a></h3>
@@ -17369,7 +17613,7 @@ ID.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>ETH is bridged between chains within the Superchain interop set by using the <code>SuperchainETHBridge</code>
 predeploy for message passing and the <code>ETHLiquidity</code> contract for supplying native ETH liquidity.</p>
 <h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
@@ -17456,11 +17700,11 @@ sequenceDiagram
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
-<h2 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h2>
+<h2 id="invariants-10"><a class="header" href="#invariants-10">Invariants</a></h2>
 <ul>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
@@ -17729,7 +17973,7 @@ needing to execute increasingly long chain histories.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -17801,7 +18045,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
+<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -17849,7 +18093,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">event ETHMigrated(uint256 amount);
 </code></pre>
-<h2 id="invariants-10"><a class="header" href="#invariants-10">Invariants</a></h2>
+<h2 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h2>
 <ul>
 <li>
 <p>Deposits MUST lock the ETH in the <code>ETHLockbox</code></p>
@@ -17916,7 +18160,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
+<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -18039,7 +18283,7 @@ from and the amount of ETH received.</li>
 <p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
 <pre><code class="language-solidity">event LiquidityReceived(ETHLockbox indexed lockbox, uint256 amount);
 </code></pre>
-<h2 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h2>
+<h2 id="invariants-12"><a class="header" href="#invariants-12">Invariants</a></h2>
 <h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>
 <ul>
 <li>
@@ -18210,7 +18454,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
+<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -18338,7 +18582,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </ul>
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
 <h3 id="interface-15"><a class="header" href="#interface-15">Interface</a></h3>
-<h4 id="upgrade-4"><a class="header" href="#upgrade-4"><code>upgrade</code></a></h4>
+<h4 id="upgrade-5"><a class="header" href="#upgrade-5"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Proxy Admin Owner to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
 <p>It has the following interface:</p>
@@ -18508,7 +18752,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
+<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>

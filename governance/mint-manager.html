@@ -1,0 +1,470 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>MintManager - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/governance/mint-manager.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="mintmanager"><a class="header" href="#mintmanager">MintManager</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#mint-cap">Mint Cap</a></li>
+<li><a href="#mint-period">Mint Period</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specifications">Function Specifications</a>
+<ul>
+<li><a href="#constructor">constructor</a></li>
+<li><a href="#mint">mint</a></li>
+<li><a href="#upgrade">upgrade</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>MintManager</code> contract serves as the owner of the <a href="./gov-token.html">GovernanceToken</a> and controls the token
+inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
+period between mints. The contract is upgradeable, allowing the owner to transfer control to a new <code>MintManager</code>
+implementation if changes to the inflation schedule are required.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="mint-cap"><a class="header" href="#mint-cap">Mint Cap</a></h3>
+<p>The maximum percentage of the total token supply that can be minted in a single minting operation. Set to 2%
+(represented as 20/1000 with 4 decimal precision).</p>
+<h3 id="mint-period"><a class="header" href="#mint-period">Mint Period</a></h3>
+<p>The minimum time interval that must elapse between consecutive minting operations. Set to 365 days.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="amm-001-governancetoken-implements-required-functions-correctly"><a class="header" href="#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a></h3>
+<p>The <code>GovernanceToken</code> contract correctly implements the <code>mint(address,uint256)</code> function, <code>transferOwnership(address)</code>
+function, and <code>totalSupply()</code> view function according to their expected behavior. Specifically:</p>
+<ul>
+<li><code>mint()</code> increases the token balance of the specified account by the specified amount</li>
+<li><code>totalSupply()</code> accurately returns the current total supply of tokens</li>
+<li><code>transferOwnership()</code> transfers ownership to the specified address</li>
+</ul>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>The <code>GovernanceToken</code> contract is part of the same protocol and is subject to the same security audits</li>
+<li>The interface is well-defined in <code>IGovernanceToken.sol</code></li>
+<li>The implementation follows OpenZeppelin's standard patterns</li>
+</ul>
+<h3 id="amm-002-block-timestamp-reliability"><a class="header" href="#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a></h3>
+<p>The EVM <code>block.timestamp</code> value is sufficiently reliable for enforcing the 365-day minting period. While miners can
+manipulate timestamps within a small range (~15 seconds), this manipulation is negligible compared to the 365-day
+period.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>The 365-day period is long enough that minor timestamp manipulation has no practical impact</li>
+<li>Ethereum consensus rules limit timestamp manipulation</li>
+<li>The time-based restriction is a rate limit, not a precise scheduling mechanism</li>
+</ul>
+<h3 id="amm-003-owner-acts-within-governance-constraints"><a class="header" href="#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a></h3>
+<p>The contract owner (typically a governance multisig or DAO) will only call <code>mint()</code> and <code>upgrade()</code> functions in
+accordance with governance decisions and the protocol's established rules. The owner will not abuse their authority
+to mint excessive tokens or transfer ownership to malicious addresses.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>Owner is expected to be a governance-controlled address (e.g., multisig or Governor contract)</li>
+<li>All minting operations are subject to the on-chain mint cap and time restrictions</li>
+<li>Ownership transfers are transparent on-chain and subject to community oversight</li>
+<li>The upgrade mechanism allows for replacing a compromised or malicious owner</li>
+</ul>
+<h3 id="amm-004-valid-successor-mintmanager"><a class="header" href="#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a></h3>
+<p>When upgrading, the owner will provide a valid, non-zero address for the new <code>MintManager</code> contract. The successor
+contract will be properly implemented and tested before the upgrade is executed.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>Governance processes include review and testing of new MintManager implementations</li>
+<li>The upgrade transaction is subject to governance approval and timelock mechanisms</li>
+<li>The contract enforces a basic check that the successor address is not the zero address</li>
+</ul>
+<h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
+<p>This specification depends on:</p>
+<ul>
+<li><a href="./gov-token.html">GovernanceToken</a> - The ERC20Votes token that this contract has permission to mint</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="imm-001-mint-cap-enforcement"><a class="header" href="#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a></h3>
+<p>No single minting operation can mint more than the <a href="#mint-cap">Mint Cap</a> of the current total token supply.</p>
+<p><strong>Full Description:</strong>
+Any call to <code>mint()</code> MUST enforce that the requested mint amount does not exceed the <a href="#mint-cap">Mint Cap</a>. This
+ensures that token inflation is bounded and predictable.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is violated, the owner could mint an unlimited number of tokens, leading to:</p>
+<ul>
+<li>Severe token dilution for existing holders</li>
+<li>Loss of governance voting power for existing token holders</li>
+<li>Destruction of the token's economic value</li>
+<li>Complete loss of trust in the protocol's governance system</li>
+</ul>
+<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
+<h3 id="imm-002-time-based-minting-restriction"><a class="header" href="#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a></h3>
+<p>Minting operations can only occur after the <a href="#mint-period">Mint Period</a> has elapsed since the previous mint.</p>
+<p><strong>Full Description:</strong>
+Any call to <code>mint()</code> MUST revert if the <a href="#mint-period">Mint Period</a> has not elapsed since the last mint. This ensures
+that minting operations are rate-limited, preventing rapid inflation even if the owner attempts multiple mints.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is violated, the owner could:</p>
+<ul>
+<li>Mint the <a href="#mint-cap">Mint Cap</a> multiple times in rapid succession</li>
+<li>Cause uncontrolled inflation far exceeding the intended rate</li>
+<li>Undermine the predictability and transparency of the token supply schedule</li>
+<li>Violate the expectations of token holders regarding inflation rates</li>
+</ul>
+<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
+<h3 id="imm-003-exclusive-minting-authority"><a class="header" href="#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a></h3>
+<p>Only the contract owner can successfully call the <code>mint()</code> function to create new governance tokens.</p>
+<p><strong>Full Description:</strong>
+The <code>mint()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the address returned by
+<code>owner()</code> can execute minting operations. Any call from a non-owner address MUST revert.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated:</p>
+<ul>
+<li>Unauthorized parties could mint tokens without governance approval</li>
+<li>The entire governance system would be compromised</li>
+<li>Token supply would become unpredictable and uncontrolled</li>
+<li>The economic security of the protocol would be destroyed</li>
+</ul>
+<h3 id="imm-004-ownership-transfer-control"><a class="header" href="#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a></h3>
+<p>Only the current contract owner can transfer ownership of the GovernanceToken to a new MintManager.</p>
+<p><strong>Full Description:</strong>
+The <code>upgrade()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the current owner can
+initiate an upgrade to a new <code>MintManager</code> implementation. This prevents unauthorized parties from taking control of
+the token minting authority.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated:</p>
+<ul>
+<li>Attackers could transfer ownership to a malicious contract</li>
+<li>The governance system would lose control over token minting</li>
+<li>A malicious MintManager could mint unlimited tokens or implement harmful policies</li>
+<li>The protocol's governance would be permanently compromised</li>
+</ul>
+<h2 id="function-specifications"><a class="header" href="#function-specifications">Function Specifications</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<pre><code class="language-solidity">constructor(address _upgrader, address _governanceToken)
+</code></pre>
+<p>Initializes the <code>MintManager</code> contract with the specified owner and governance token.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_upgrader</code>: The address that will become the owner of this contract</li>
+<li><code>_governanceToken</code>: The address of the <code>GovernanceToken</code> contract that this manager will control</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST call <code>transferOwnership(_upgrader)</code> to set the contract owner</li>
+<li>MUST set <code>governanceToken</code> to the provided <code>_governanceToken</code> address</li>
+<li>MUST initialize <code>mintPermittedAfter</code> to enable immediate first mint while enforcing restrictions on subsequent mints</li>
+<li>MUST NOT validate that <code>_upgrader</code> or <code>_governanceToken</code> are non-zero addresses (caller responsibility)</li>
+</ul>
+<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
+<pre><code class="language-solidity">function mint(address _account, uint256 _amount) public onlyOwner
+</code></pre>
+<p>Mints new governance tokens to the specified account, subject to time and cap restrictions.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_account</code>: The address that will receive the newly minted tokens</li>
+<li><code>_amount</code>: The number of tokens to mint (in wei, with 18 decimals)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
+<li>MUST revert if the <a href="#mint-period">Mint Period</a> has not elapsed since the last mint</li>
+<li>MUST revert if <code>_amount</code> exceeds the <a href="#mint-cap">Mint Cap</a></li>
+<li>MUST set <code>mintPermittedAfter</code> to <code>block.timestamp + MINT_PERIOD</code> to enforce the next <a href="#mint-period">Mint Period</a></li>
+<li>MUST call <code>governanceToken.mint(_account, _amount)</code> to perform the actual minting</li>
+</ul>
+<h3 id="upgrade"><a class="header" href="#upgrade">upgrade</a></h3>
+<pre><code class="language-solidity">function upgrade(address _newMintManager) public onlyOwner
+</code></pre>
+<p>Transfers ownership of the <code>GovernanceToken</code> to a new <code>MintManager</code> contract, effectively upgrading the minting system.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_newMintManager</code>: The address of the new <code>MintManager</code> contract that will become the owner of the <code>GovernanceToken</code></li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
+<li>MUST revert if <code>_newMintManager == address(0)</code></li>
+<li>MUST call <code>governanceToken.transferOwnership(_newMintManager)</code> to transfer ownership</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../governance/gov-token.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../experimental/standard-l2-genesis.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../governance/gov-token.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../experimental/standard-l2-genesis.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+        <script src="../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>
