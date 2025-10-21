@@ -216,6 +216,7 @@ rankdir
 rbuilder
 redeployments
 rederiving
+reentrancy
 regenesis
 remotechainid
 replayability
