@@ -6,6 +6,8 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
+  - [Mint Cap](#mint-cap)
+  - [Mint Period](#mint-period)
 - [Assumptions](#assumptions)
   - [aMM-001: GovernanceToken implements required functions correctly](#amm-001-governancetoken-implements-required-functions-correctly)
     - [Mitigations](#mitigations)
@@ -13,6 +15,8 @@
     - [Mitigations](#mitigations-1)
   - [aMM-003: Owner acts within governance constraints](#amm-003-owner-acts-within-governance-constraints)
     - [Mitigations](#mitigations-2)
+  - [aMM-004: Valid successor MintManager](#amm-004-valid-successor-mintmanager)
+    - [Mitigations](#mitigations-3)
 - [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [iMM-001: Mint cap enforcement](#imm-001-mint-cap-enforcement)
@@ -23,8 +27,6 @@
     - [Impact](#impact-2)
   - [iMM-004: Ownership transfer control](#imm-004-ownership-transfer-control)
     - [Impact](#impact-3)
-  - [iMM-005: Valid successor requirement](#imm-005-valid-successor-requirement)
-    - [Impact](#impact-4)
 - [Function Specifications](#function-specifications)
   - [constructor](#constructor)
   - [mint](#mint)
@@ -35,30 +37,20 @@
 ## Overview
 
 The `MintManager` contract serves as the owner of the [GovernanceToken](./gov-token.md) and controls the token
-inflation schedule. It enforces a maximum annual inflation rate of 2% of the total token supply and ensures that
-minting can only occur once per 365-day period. The contract is upgradeable, allowing the owner to transfer control
-to a new `MintManager` implementation if changes to the inflation schedule are required.
-
-The `MintManager` is deployed on L2 and manages the minting of governance tokens according to a predictable,
-rate-limited schedule. This provides transparency and predictability for token holders while maintaining flexibility
-for governance-approved changes through the upgrade mechanism.
+inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
+period between mints. The contract is upgradeable, allowing the owner to transfer control to a new `MintManager`
+implementation if changes to the inflation schedule are required.
 
 ## Definitions
 
-**Mint Cap**
+### Mint Cap
+
 The maximum percentage of the total token supply that can be minted in a single minting operation. Set to 2%
 (represented as 20/1000 with 4 decimal precision).
 
-**Mint Period**
+### Mint Period
+
 The minimum time interval that must elapse between consecutive minting operations. Set to 365 days.
-
-**Mint Permitted After**
-A timestamp stored in the contract that tracks when the next minting operation is allowed. After each mint, this
-value is set to `block.timestamp + MINT_PERIOD`.
-
-**First Mint**
-The initial minting operation after contract deployment, which has no time restriction or cap enforcement. This is
-identified by `mintPermittedAfter == 0`.
 
 ## Assumptions
 
@@ -102,6 +94,17 @@ to mint excessive tokens or transfer ownership to malicious addresses.
 - Ownership transfers are transparent on-chain and subject to community oversight
 - The upgrade mechanism allows for replacing a compromised or malicious owner
 
+### aMM-004: Valid successor MintManager
+
+When upgrading, the owner will provide a valid, non-zero address for the new `MintManager` contract. The successor
+contract will be properly implemented and tested before the upgrade is executed.
+
+#### Mitigations
+
+- Governance processes include review and testing of new MintManager implementations
+- The upgrade transaction is subject to governance approval and timelock mechanisms
+- The contract enforces a basic check that the successor address is not the zero address
+
 ## Dependencies
 
 This specification depends on:
@@ -112,12 +115,11 @@ This specification depends on:
 
 ### iMM-001: Mint cap enforcement
 
-After the first mint, no single minting operation can mint more than 2% of the current total token supply.
+No single minting operation can mint more than the [Mint Cap](#mint-cap) of the current total token supply.
 
 **Full Description:**
-Once `mintPermittedAfter` has been set to a non-zero value (after the first mint), any subsequent call to `mint()`
-MUST enforce that the requested mint amount does not exceed `(totalSupply * MINT_CAP) / DENOMINATOR`, which equals
-2% of the current total supply. This ensures that token inflation is bounded and predictable.
+Any call to `mint()` MUST enforce that the requested mint amount does not exceed the [Mint Cap](#mint-cap). This
+ensures that token inflation is bounded and predictable.
 
 #### Impact
 
@@ -131,20 +133,19 @@ If this invariant is violated, the owner could mint an unlimited number of token
 
 ### iMM-002: Time-based minting restriction
 
-After the first mint, subsequent minting operations can only occur after 365 days have elapsed since the previous mint.
+Minting operations can only occur after the [Mint Period](#mint-period) has elapsed since the previous mint.
 
 **Full Description:**
-Once `mintPermittedAfter` has been set to a non-zero value, any call to `mint()` MUST revert if
-`block.timestamp < mintPermittedAfter`. This ensures that minting operations are rate-limited to at most once per
-year, preventing rapid inflation even if the owner attempts multiple mints.
+Any call to `mint()` MUST revert if the [Mint Period](#mint-period) has not elapsed since the last mint. This ensures
+that minting operations are rate-limited, preventing rapid inflation even if the owner attempts multiple mints.
 
 #### Impact
 
 **Severity: Critical**
 
 If this invariant is violated, the owner could:
-- Mint the maximum 2% multiple times in rapid succession
-- Cause uncontrolled inflation far exceeding the intended 2% annual rate
+- Mint the [Mint Cap](#mint-cap) multiple times in rapid succession
+- Cause uncontrolled inflation far exceeding the intended rate
 - Undermine the predictability and transparency of the token supply schedule
 - Violate the expectations of token holders regarding inflation rates
 
@@ -185,26 +186,6 @@ If this invariant is violated:
 - A malicious MintManager could mint unlimited tokens or implement harmful policies
 - The protocol's governance would be permanently compromised
 
-### iMM-005: Valid successor requirement
-
-The GovernanceToken ownership can only be transferred to a non-zero address.
-
-**Full Description:**
-When calling `upgrade()`, the `_newMintManager` parameter MUST NOT be the zero address (`address(0)`). Transferring
-ownership to the zero address would permanently lock the token's minting and ownership functions, as no one could
-call the owner-restricted functions.
-
-#### Impact
-
-**Severity: High**
-
-If ownership is transferred to the zero address:
-- No future minting would be possible
-- The token supply would be permanently frozen
-- No further upgrades to the MintManager would be possible
-- The governance system would lose the ability to adjust the inflation schedule
-- This would effectively be an irreversible shutdown of the minting mechanism
-
 ## Function Specifications
 
 ### constructor
@@ -222,13 +203,13 @@ Initializes the `MintManager` contract with the specified owner and governance t
 **Behavior:**
 - MUST call `transferOwnership(_upgrader)` to set the contract owner
 - MUST set `governanceToken` to the provided `_governanceToken` address
-- MUST leave `mintPermittedAfter` at its default value of 0, indicating no mints have occurred yet
+- MUST initialize `mintPermittedAfter` to enable immediate first mint while enforcing restrictions on subsequent mints
 - MUST NOT validate that `_upgrader` or `_governanceToken` are non-zero addresses (caller responsibility)
 
 **State Changes:**
 - Sets `owner()` to `_upgrader`
 - Sets `governanceToken` to `_governanceToken`
-- Leaves `mintPermittedAfter` at 0
+- Initializes `mintPermittedAfter` appropriately
 
 **Events:**
 - Emits `OwnershipTransferred(address(0), _upgrader)` (from OpenZeppelin's Ownable)
@@ -247,21 +228,17 @@ Mints new governance tokens to the specified account, subject to time and cap re
 
 **Behavior:**
 - MUST revert if caller is not the contract owner (enforced by `onlyOwner` modifier)
-- If `mintPermittedAfter > 0` (not the first mint):
-  - MUST revert with "MintManager: minting not permitted yet" if `block.timestamp < mintPermittedAfter`
-  - MUST revert with "MintManager: mint amount exceeds cap" if
-    `_amount > (governanceToken.totalSupply() * MINT_CAP) / DENOMINATOR`
-- If `mintPermittedAfter == 0` (first mint):
-  - MUST NOT enforce any time restriction
-  - MUST NOT enforce the mint cap
-- MUST set `mintPermittedAfter = block.timestamp + MINT_PERIOD` (365 days from now)
+- MUST revert with "MintManager: minting not permitted yet" if the [Mint Period](#mint-period) has not elapsed since
+  the last mint
+- MUST revert with "MintManager: mint amount exceeds cap" if `_amount` exceeds the [Mint Cap](#mint-cap)
+- MUST set `mintPermittedAfter` to `block.timestamp + MINT_PERIOD` to enforce the next [Mint Period](#mint-period)
 - MUST call `governanceToken.mint(_account, _amount)` to perform the actual minting
 
 **State Changes:**
 - Updates `mintPermittedAfter` to `block.timestamp + MINT_PERIOD`
 
 **External Calls:**
-- Calls `governanceToken.totalSupply()` to check current supply (if not first mint)
+- Calls `governanceToken.totalSupply()` to check current supply for [Mint Cap](#mint-cap) validation
 - Calls `governanceToken.mint(_account, _amount)` to mint tokens
 
 **Events:**
