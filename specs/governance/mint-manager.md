@@ -228,9 +228,8 @@ Mints new governance tokens to the specified account, subject to time and cap re
 
 **Behavior:**
 - MUST revert if caller is not the contract owner (enforced by `onlyOwner` modifier)
-- MUST revert with "MintManager: minting not permitted yet" if the [Mint Period](#mint-period) has not elapsed since
-  the last mint
-- MUST revert with "MintManager: mint amount exceeds cap" if `_amount` exceeds the [Mint Cap](#mint-cap)
+- MUST revert if the [Mint Period](#mint-period) has not elapsed since the last mint
+- MUST revert if `_amount` exceeds the [Mint Cap](#mint-cap)
 - MUST set `mintPermittedAfter` to `block.timestamp + MINT_PERIOD` to enforce the next [Mint Period](#mint-period)
 - MUST call `governanceToken.mint(_account, _amount)` to perform the actual minting
 
@@ -247,6 +246,5 @@ Transfers ownership of the `GovernanceToken` to a new `MintManager` contract, ef
 
 **Behavior:**
 - MUST revert if caller is not the contract owner (enforced by `onlyOwner` modifier)
-- MUST revert with "MintManager: mint manager cannot be the zero address" if
-  `_newMintManager == address(0)`
+- MUST revert if `_newMintManager == address(0)`
 - MUST call `governanceToken.transferOwnership(_newMintManager)` to transfer ownership
