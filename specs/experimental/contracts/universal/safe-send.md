@@ -7,7 +7,6 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Forced ETH Transfer](#forced-eth-transfer)
-  - [Code Execution](#code-execution)
 - [Assumptions](#assumptions)
   - [aSS-001: EVM selfdestruct behavior remains consistent](#ass-001-evm-selfdestruct-behavior-remains-consistent)
     - [Mitigations](#mitigations)
@@ -15,12 +14,8 @@
 - [Invariants](#invariants)
   - [iSS-001: ETH must be transferred without triggering recipient code](#iss-001-eth-must-be-transferred-without-triggering-recipient-code)
     - [Impact](#impact)
-  - [iSS-002: Contract must self-destruct immediately upon construction](#iss-002-contract-must-self-destruct-immediately-upon-construction)
+  - [iSS-002: Transfer must succeed for any recipient address](#iss-002-transfer-must-succeed-for-any-recipient-address)
     - [Impact](#impact-1)
-  - [iSS-003: Transfer must succeed for any recipient address](#iss-003-transfer-must-succeed-for-any-recipient-address)
-    - [Impact](#impact-2)
-  - [iSS-004: No state persists after construction](#iss-004-no-state-persists-after-construction)
-    - [Impact](#impact-3)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
 
@@ -40,12 +35,6 @@ A transfer of ETH that bypasses the recipient's code execution. Unlike standard 
 `transfer`, a [Forced ETH Transfer] does not invoke the recipient's `receive()` or `fallback()` functions,
 and cannot be reverted by the recipient.
 
-### Code Execution
-
-The invocation of smart contract code at a recipient address during an ETH transfer. Standard ETH transfer
-methods (`call`, `transfer`, `send`) trigger [Code Execution] at the recipient, which can cause reentrancy
-vulnerabilities or allow recipients to reject transfers.
-
 ## Assumptions
 
 ### aSS-001: EVM selfdestruct behavior remains consistent
@@ -63,7 +52,7 @@ properties.
 
 ## Dependencies
 
-This contract has no dependencies on other OP Stack contracts or specifications. It relies solely on core EVM opcodes.
+N/A
 
 ## Invariants
 
@@ -82,21 +71,7 @@ If recipient code were executed during the transfer, it would:
 - Allow malicious recipients to revert and block legitimate ETH transfers
 - Violate the security guarantees that SafeSend provides to its callers (e.g., SuperchainETHBridge, Faucet)
 
-### iSS-002: Contract must self-destruct immediately upon construction
-
-The SafeSend contract MUST self-destruct during its constructor execution, leaving no code at the contract
-address after deployment. The contract MUST NOT persist beyond the transaction in which it is created.
-
-#### Impact
-
-**Severity: High**
-
-If the contract persisted after construction:
-- ETH could become trapped at the SafeSend contract address
-- The contract address could be reused in unexpected ways
-- Gas costs would increase due to unnecessary state storage
-
-### iSS-003: Transfer must succeed for any recipient address
+### iSS-002: Transfer must succeed for any recipient address
 
 The ETH transfer MUST succeed regardless of the recipient address type, including:
 - Externally Owned Accounts (EOAs)
@@ -112,20 +87,6 @@ If transfers could fail based on recipient characteristics:
 - Cross-chain ETH bridging via SuperchainETHBridge could be blocked by malicious recipients
 - Faucet withdrawals could be denied by recipient manipulation
 - System reliability would depend on recipient cooperation
-
-### iSS-004: No state persists after construction
-
-After the constructor completes, the SafeSend contract address MUST have no code and no balance. The contract
-MUST NOT leave any persistent state on-chain.
-
-#### Impact
-
-**Severity: Medium**
-
-If state persisted after construction:
-- Gas costs would increase unnecessarily for callers
-- The contract address namespace would be polluted
-- Potential confusion about contract reusability
 
 ## Function Specification
 
