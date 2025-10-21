@@ -123,13 +123,17 @@ ensures that token inflation is bounded and predictable.
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 If this invariant is violated, the owner could mint an unlimited number of tokens, leading to:
 - Severe token dilution for existing holders
 - Loss of governance voting power for existing token holders
 - Destruction of the token's economic value
 - Complete loss of trust in the protocol's governance system
+
+Note: This is rated High rather than Critical because it requires assumption aMM-003 (owner acts within governance
+constraints) to fail. The contract enforces this invariant on-chain, but if a malicious owner attempts to bypass it,
+the impact would be severe.
 
 ### iMM-002: Time-based minting restriction
 
@@ -141,13 +145,17 @@ that minting operations are rate-limited, preventing rapid inflation even if the
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 If this invariant is violated, the owner could:
 - Mint the [Mint Cap](#mint-cap) multiple times in rapid succession
 - Cause uncontrolled inflation far exceeding the intended rate
 - Undermine the predictability and transparency of the token supply schedule
 - Violate the expectations of token holders regarding inflation rates
+
+Note: This is rated High rather than Critical because it requires assumption aMM-003 (owner acts within governance
+constraints) to fail. The contract enforces this invariant on-chain, but if a malicious owner attempts to bypass it,
+the impact would be severe.
 
 ### iMM-003: Exclusive minting authority
 
@@ -206,14 +214,6 @@ Initializes the `MintManager` contract with the specified owner and governance t
 - MUST initialize `mintPermittedAfter` to enable immediate first mint while enforcing restrictions on subsequent mints
 - MUST NOT validate that `_upgrader` or `_governanceToken` are non-zero addresses (caller responsibility)
 
-**State Changes:**
-- Sets `owner()` to `_upgrader`
-- Sets `governanceToken` to `_governanceToken`
-- Initializes `mintPermittedAfter` appropriately
-
-**Events:**
-- Emits `OwnershipTransferred(address(0), _upgrader)` (from OpenZeppelin's Ownable)
-
 ### mint
 
 ```solidity
@@ -234,21 +234,6 @@ Mints new governance tokens to the specified account, subject to time and cap re
 - MUST set `mintPermittedAfter` to `block.timestamp + MINT_PERIOD` to enforce the next [Mint Period](#mint-period)
 - MUST call `governanceToken.mint(_account, _amount)` to perform the actual minting
 
-**State Changes:**
-- Updates `mintPermittedAfter` to `block.timestamp + MINT_PERIOD`
-
-**External Calls:**
-- Calls `governanceToken.totalSupply()` to check current supply for [Mint Cap](#mint-cap) validation
-- Calls `governanceToken.mint(_account, _amount)` to mint tokens
-
-**Events:**
-- Emits events from the `GovernanceToken` contract (Transfer event for minting)
-
-**Reverts:**
-- If caller is not owner: "Ownable: caller is not the owner"
-- If minting before permitted time: "MintManager: minting not permitted yet"
-- If amount exceeds cap: "MintManager: mint amount exceeds cap"
-
 ### upgrade
 
 ```solidity
@@ -265,22 +250,3 @@ Transfers ownership of the `GovernanceToken` to a new `MintManager` contract, ef
 - MUST revert with "MintManager: mint manager cannot be the zero address" if
   `_newMintManager == address(0)`
 - MUST call `governanceToken.transferOwnership(_newMintManager)` to transfer ownership
-
-**State Changes:**
-- None in this contract (state changes occur in the `GovernanceToken` contract)
-
-**External Calls:**
-- Calls `governanceToken.transferOwnership(_newMintManager)`
-
-**Events:**
-- Emits `OwnershipTransferred` event from the `GovernanceToken` contract
-
-**Reverts:**
-- If caller is not owner: "Ownable: caller is not the owner"
-- If `_newMintManager` is zero address: "MintManager: mint manager cannot be the zero address"
-
-**Post-Conditions:**
-- After this function executes successfully, this `MintManager` contract will no longer be able to mint tokens or
-  perform further upgrades
-- The new `MintManager` at `_newMintManager` will have full control over the `GovernanceToken`
-- The new `MintManager` will have its own `mintPermittedAfter` state, independent of this contract's state
