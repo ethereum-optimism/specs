@@ -5,7 +5,6 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Dependencies](#dependencies)
 - [Definitions](#definitions)
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
@@ -20,10 +19,6 @@
 
 Provides backwards-compatible access to the L1 block number for legacy applications. This contract is deprecated
 and exists solely for compatibility with the pre-Bedrock Optimism system.
-
-## Dependencies
-
-- [L1Block](../../protocol/predeploys.md#l1block): Queries the `number()` function to retrieve the current L1 block number.
 
 ## Definitions
 
