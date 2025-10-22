@@ -15,7 +15,6 @@
     - [Mitigations](#mitigations-1)
   - [a01-003: Protocol correctly credits L1 fees to this contract](#a01-003-protocol-correctly-credits-l1-fees-to-this-contract)
     - [Mitigations](#mitigations-2)
-- [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [i01-001: Accumulated fees can always be withdrawn once threshold is met](#i01-001-accumulated-fees-can-always-be-withdrawn-once-threshold-is-met)
     - [Impact](#impact)
@@ -88,15 +87,6 @@ address. Incorrect fee calculation or routing would prevent the vault from accum
 
 - Fee calculation is part of the core protocol specification
 - Fee routing is handled by the execution engine's coinbase mechanism
-
-## Dependencies
-
-This specification depends on:
-
-- [L2ToL1MessagePasser](../../../protocol/predeploys.md#l2tol1messagepasser): Used for initiating withdrawals to
-  L1
-- [OptimismPortal](../../../fault-proof/stage-one/optimism-portal.md): Finalizes L1 withdrawals on the destination
-  chain
 
 ## Invariants
 
