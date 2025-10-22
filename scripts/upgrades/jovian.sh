@@ -2,7 +2,7 @@
 # Configuration file for interop upgrade transaction specifications
 # This file contains all the constants used by generate_upgrade_tx_specs.sh
 
-GIT_COMMIT_HASH=b3299e0ddb55442e6496512084d16c439ea2da77
+GIT_COMMIT_HASH=773798a67678ab28c3ef7ee3405f25c04616af19
 FROM_ADDRESS_NONCE=0
 FROM_ADDRESS=0x4210000000000000000000000000000000000006
 FORK_NAME=Jovian
