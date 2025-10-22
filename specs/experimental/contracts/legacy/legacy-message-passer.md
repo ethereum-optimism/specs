@@ -19,7 +19,6 @@
     - [Impact](#impact-1)
 - [Function Specification](#function-specification)
   - [passMessageToL1](#passmessagetol1)
-  - [version](#version)
   - [sentMessages](#sentmessages)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -103,15 +102,6 @@ Stores a commitment to a message in the `sentMessages` mapping.
 - MUST NOT revert under any circumstances
 - MUST NOT emit any events
 - MUST NOT forward the call to L2ToL1MessagePasser
-
-### version
-
-Returns the semantic version of the contract.
-
-**Parameters:** None
-
-**Behavior:**
-- MUST return the string "1.1.2"
 
 ### sentMessages
 
