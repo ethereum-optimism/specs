@@ -9,16 +9,10 @@
 - [Assumptions](#assumptions)
   - [a01-001: Owner governance constraints](#a01-001-owner-governance-constraints)
     - [Mitigations](#mitigations)
-  - [a01-002: Legacy contract migration](#a01-002-legacy-contract-migration)
-    - [Mitigations](#mitigations-1)
 - [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [i01-001: Owner-exclusive write access](#i01-001-owner-exclusive-write-access)
     - [Impact](#impact)
-  - [i01-002: Unrestricted read access](#i01-002-unrestricted-read-access)
-    - [Impact](#impact-1)
-  - [i01-003: Name-address mapping persistence](#i01-003-name-address-mapping-persistence)
-    - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [setAddress](#setaddress)
   - [getAddress](#getaddress)
@@ -48,17 +42,6 @@ dependent legacy contracts.
 - Address changes emit events for transparency and monitoring
 - Legacy contracts depending on this registry are being phased out
 
-### a01-002: Legacy contract migration
-
-Contracts that depend on AddressManager for address resolution are either deprecated, have migrated to the new proxy
-system, or are aware that this contract is maintained only for backwards compatibility.
-
-#### Mitigations
-
-- Clear deprecation notices in documentation
-- New contracts use the standard proxy pattern instead
-- Contract remains deployed to support existing dependencies
-
 ## Dependencies
 
 N/A
@@ -76,31 +59,6 @@ Only the contract owner can modify the name-to-address mappings via `setAddress`
 If this invariant were violated, unauthorized parties could modify the address registry, potentially redirecting legacy
 contracts to malicious addresses. This would be Critical if assumption [a01-001] fails and the owner is compromised,
 as it could lead to complete system compromise for dependent contracts.
-
-### i01-002: Unrestricted read access
-
-Any address can query the registry via `getAddress` without restrictions.
-
-#### Impact
-
-**Severity: Low**
-
-If this invariant were violated and read access were restricted, dependent legacy contracts would fail to resolve
-addresses, breaking their functionality. However, since the contract is deprecated and being phased out, the impact
-is limited to legacy system components.
-
-### i01-003: Name-address mapping persistence
-
-Once a name-to-address mapping is set, it persists in storage and can be queried. Mappings can be overwritten but
-the storage slot remains accessible.
-
-#### Impact
-
-**Severity: Medium**
-
-If this invariant were violated and mappings could be deleted or become inaccessible, legacy contracts relying on
-these addresses would fail. The severity is Medium rather than High because the contract is deprecated and the number
-of dependent contracts is limited and decreasing.
 
 ## Function Specification
 
