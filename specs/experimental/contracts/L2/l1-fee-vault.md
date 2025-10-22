@@ -18,14 +18,8 @@
 - [Invariants](#invariants)
   - [i01-001: Accumulated fees can always be withdrawn once threshold is met](#i01-001-accumulated-fees-can-always-be-withdrawn-once-threshold-is-met)
     - [Impact](#impact)
-  - [i01-002: Total processed amount never decreases](#i01-002-total-processed-amount-never-decreases)
+  - [i01-002: Withdrawals can only go to the authorized recipient](#i01-002-withdrawals-can-only-go-to-the-authorized-recipient)
     - [Impact](#impact-1)
-  - [i01-003: Withdrawals always transfer the entire balance](#i01-003-withdrawals-always-transfer-the-entire-balance)
-    - [Impact](#impact-2)
-  - [i01-004: Configuration parameters are immutable after deployment](#i01-004-configuration-parameters-are-immutable-after-deployment)
-    - [Impact](#impact-3)
-  - [i01-005: Only authorized withdrawals succeed](#i01-005-only-authorized-withdrawals-succeed)
-    - [Impact](#impact-4)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [receive](#receive)
@@ -103,54 +97,17 @@ If withdrawals become impossible, accumulated L1 fees would be permanently locke
 designated recipient from receiving funds that are rightfully theirs. This would break the fee distribution
 mechanism of the protocol.
 
-### i01-002: Total processed amount never decreases
+### i01-002: Withdrawals can only go to the authorized recipient
 
-The `totalProcessed` counter must be monotonically increasing. Each withdrawal adds the withdrawn amount to this
-counter, providing an immutable record of all fees ever withdrawn from the vault.
-
-#### Impact
-
-**Severity: Low**
-
-If `totalProcessed` could decrease, it would compromise the accounting integrity of the fee system, making it
-impossible to accurately track historical fee withdrawals. However, this does not directly impact fund security.
-
-### i01-003: Withdrawals always transfer the entire balance
-
-When a withdrawal is triggered, the complete balance of the contract at that moment must be transferred to the
-recipient. No fees should remain in the contract after a successful withdrawal.
-
-#### Impact
-
-**Severity: Medium**
-
-If partial withdrawals were possible or fees remained after withdrawal, it could lead to accounting discrepancies
-and require additional withdrawal transactions, increasing operational costs and complexity.
-
-### i01-004: Configuration parameters are immutable after deployment
-
-The recipient address, minimum withdrawal amount, and withdrawal network must remain constant throughout the
-contract's lifetime. These parameters cannot be modified after deployment.
-
-#### Impact
-
-**Severity: High**
-
-If configuration could be changed, an attacker gaining control could redirect fees to their own address or prevent
-legitimate withdrawals by setting an impossibly high minimum. Immutability ensures predictable behavior.
-
-### i01-005: Only authorized withdrawals succeed
-
-Withdrawals to L1 must only succeed through the proper L2ToL1MessagePasser mechanism with the configured minimum
-gas limit. Direct transfers or alternative withdrawal paths must not be possible.
+All withdrawn funds must be sent to the recipient address configured at deployment. No mechanism should exist to
+redirect funds to any other address.
 
 #### Impact
 
 **Severity: Critical**
 
-If unauthorized withdrawal mechanisms existed, attackers could bypass the fault proof system and steal accumulated
-fees without proper validation on L1. The L2ToL1MessagePasser provides the security guarantees for cross-domain
-transfers.
+If funds could be redirected to unauthorized addresses, attackers could steal accumulated L1 fees that belong to
+the designated recipient. This would compromise the fundamental security of the fee distribution system.
 
 ## Function Specification
 
