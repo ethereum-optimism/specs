@@ -192,6 +192,7 @@ offchain
 opstack
 outputroot
 parseable
+pasteable
 peerstore
 permissioned
 permissionless
@@ -218,6 +219,7 @@ redeployments
 rederiving
 reentrancy
 regenesis
+reinitializer
 remotechainid
 replayability
 replayable
@@ -257,9 +259,8 @@ upgrader
 userspace
 uvarint
 varint
+venv
 wakeup
 wighawag
 yamux
 yourfork
-venv
-pasteable
