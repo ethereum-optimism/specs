@@ -12,10 +12,12 @@
   - [a01-002: Implementation storage layout compatibility](#a01-002-implementation-storage-layout-compatibility)
     - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
-  - [i01-001: Implementation address resolution requirement](#i01-001-implementation-address-resolution-requirement)
+  - [i01-001: Transparent proxy behavior](#i01-001-transparent-proxy-behavior)
     - [Impact](#impact)
-  - [i01-002: Immutable configuration after deployment](#i01-002-immutable-configuration-after-deployment)
+  - [i01-002: Implementation address resolution requirement](#i01-002-implementation-address-resolution-requirement)
     - [Impact](#impact-1)
+  - [i01-003: Immutable configuration after deployment](#i01-003-immutable-configuration-after-deployment)
+    - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [fallback](#fallback)
@@ -60,7 +62,21 @@ The implementation contract does not use mappings in storage slots 0 or 1, which
 
 ## Invariants
 
-### i01-001: Implementation address resolution requirement
+### i01-001: Transparent proxy behavior
+
+The proxy MUST preserve the execution context for all calls, ensuring that `msg.sender` and `msg.value` remain unchanged
+when execution is delegated to the implementation contract. From the end-user's perspective, interactions with the proxy
+MUST be indistinguishable from direct interactions with the implementation contract.
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is violated, the proxy would break the fundamental contract of transparent proxies. Users would lose
+their identity in delegated calls, breaking authentication and authorization mechanisms in the implementation contract.
+ETH transfers would fail or be misdirected, potentially leading to fund loss.
+
+### i01-002: Implementation address resolution requirement
 
 All calls to the proxy MUST resolve to a non-zero implementation address before delegatecall execution. The proxy MUST
 revert if the AddressManager returns the zero address for the configured implementation name.
@@ -72,7 +88,7 @@ revert if the AddressManager returns the zero address for the configured impleme
 If this invariant is violated and delegatecall proceeds to the zero address, the call would fail unpredictably. The
 explicit revert ensures clear failure semantics and prevents undefined behavior.
 
-### i01-002: Immutable configuration after deployment
+### i01-003: Immutable configuration after deployment
 
 The `implementationName` and `addressManager` configuration stored in the proxy MUST NOT change after deployment. These
 values are set once in the constructor and have no update mechanism.
