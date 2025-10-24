@@ -9,6 +9,10 @@
   - [Liveness Timestamp](#liveness-timestamp)
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
+  - [i01-001: Liveness tracking accuracy](#i01-001-liveness-tracking-accuracy)
+    - [Impact](#impact)
+  - [i02-002: Liveness demonstration capability](#i02-002-liveness-demonstration-capability)
+    - [Impact](#impact-1)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [safe](#safe)
@@ -37,8 +41,31 @@ N/A
 
 ## Invariants
 
-- Liveness for each owner is tracked accurately
-- Owners are always capable of showing liveness if the owner is actually live
+### i01-001: Liveness tracking accuracy
+
+Liveness for each owner is tracked accurately. The `lastLive` mapping correctly reflects when owners sign transactions
+or call `showLiveness`, and owner additions/removals are properly synchronized with the Safe's owner set.
+
+#### Impact
+
+**Severity: High**
+
+If liveness tracking is inaccurate, inactive owners could appear active (preventing their removal) or active owners
+could appear inactive (enabling improper removal). This undermines the entire liveness monitoring mechanism and could
+lead to unauthorized changes to the Safe's owner set.
+
+### i02-002: Liveness demonstration capability
+
+Owners are always capable of showing liveness if the owner is actually live. The guard never prevents legitimate owners
+from demonstrating their liveness through either transaction signatures or direct `showLiveness` calls.
+
+#### Impact
+
+**Severity: Critical**
+
+If legitimate owners cannot demonstrate liveness, they could be incorrectly identified as inactive and removed from the
+Safe. This could lead to loss of access to the Safe's assets and functionality, potentially causing permanent fund
+loss if enough owners are incorrectly removed.
 
 ## Function Specification
 
