@@ -16,10 +16,14 @@
   - [aDGF-002: Implementation contracts are valid IDisputeGame implementations](#adgf-002-implementation-contracts-are-valid-idisputegame-implementations)
     - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
-  - [iDGF-001: Game uniqueness is enforced](#idgf-001-game-uniqueness-is-enforced)
+  - [iDGF-001: Dispute game factory properly creates dispute games](#idgf-001-dispute-game-factory-properly-creates-dispute-games)
     - [Impact](#impact)
-  - [iDGF-002: Game registry consistency is maintained](#idgf-002-game-registry-consistency-is-maintained)
+  - [iDGF-002: Dispute game factory allows anyone to create dispute games](#idgf-002-dispute-game-factory-allows-anyone-to-create-dispute-games)
     - [Impact](#impact-1)
+  - [iDGF-003: Dispute game factory games are unique](#idgf-003-dispute-game-factory-games-are-unique)
+    - [Impact](#impact-2)
+  - [iDGF-004: Dispute game factory can create games for any game type](#idgf-004-dispute-game-factory-can-create-games-for-any-game-type)
+    - [Impact](#impact-3)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [initialize](#initialize)
@@ -91,7 +95,32 @@ incorrectly.
 
 ## Invariants
 
-### iDGF-001: Game uniqueness is enforced
+### iDGF-001: Dispute game factory properly creates dispute games
+
+The factory successfully creates functional dispute game clones when provided with valid parameters. Created games are
+properly initialized with the correct immutable arguments (creator, root claim, parent hash, extra data) and can be
+queried through the factory's lookup functions.
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is violated, the factory could create non-functional or incorrectly configured games, breaking the
+entire dispute resolution system and potentially allowing invalid withdrawals.
+
+### iDGF-002: Dispute game factory allows anyone to create dispute games
+
+Any address can create a dispute game by calling the create function with valid parameters and the required
+initialization bond. There are no access restrictions on game creation beyond the bond requirement.
+
+#### Impact
+
+**Severity: High**
+
+If this invariant is violated, the permissionless nature of the dispute system would be compromised, potentially
+preventing legitimate challengers from creating games to dispute invalid claims.
+
+### iDGF-003: Dispute game factory games are unique
 
 For any given combination of game type, root claim, and extra data, at most one dispute game can be created. Once a
 game exists for a specific [Game UUID](#game-uuid), attempting to create another game with the same parameters will
@@ -105,19 +134,17 @@ If this invariant is violated, multiple games could exist for the same dispute p
 which game result should be considered authoritative. This could enable attackers to create duplicate games and
 potentially exploit race conditions in systems that consume game results.
 
-### iDGF-002: Game registry consistency is maintained
+### iDGF-004: Dispute game factory can create games for any game type
 
-Every game created through the factory can be queried both by its parameters (via the games function) and by its
-creation order (via the gameAtIndex function). The total count of games (via gameCount) accurately reflects the number
-of games that can be retrieved by index, and all games retrievable by index can also be queried by their parameters.
+The factory can create games for any game type that has a registered implementation, regardless of the specific game
+type value. The factory does not restrict which game types can be used, only requiring that an implementation exists.
 
 #### Impact
 
 **Severity: Medium**
 
-If this invariant is violated, off-chain systems that rely on the game list for discovery could miss games or
-encounter inconsistent data. This could prevent challengers from discovering games they need to participate in,
-potentially allowing invalid claims to go unchallenged.
+If this invariant is violated, the factory could arbitrarily restrict certain game types, limiting the flexibility of
+the dispute system and potentially preventing the deployment of new game implementations.
 
 ## Function Specification
 
