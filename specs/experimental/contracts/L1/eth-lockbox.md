@@ -17,6 +17,8 @@
 - [Invariants](#invariants)
   - [i01-001: Portal Authorization Required](#i01-001-portal-authorization-required)
     - [Impact](#impact)
+  - [i01-002: Always Accessible](#i01-002-always-accessible)
+    - [Impact](#impact-1)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [lockETH](#locketh)
@@ -89,6 +91,17 @@ ETH can only be distributed to approved OptimismPortal contracts.
 
 If violated, unauthorized contracts could drain the lockbox, resulting in loss of all pooled ETH
 across the Superchain cluster.
+
+### i01-002: Always Accessible
+
+Authorized portals can always access funds in the lockbox immediately, subject only to pause state.
+
+#### Impact
+
+**Severity: High**
+
+If violated, legitimate withdrawals could be blocked, trapping user funds and breaking the liveness
+guarantee of the unified liquidity system.
 
 ## Function Specification
 
