@@ -14,16 +14,16 @@
 - [Assumptions](#assumptions)
   - [a01-001: LivenessGuard provides accurate liveness data](#a01-001-livenessguard-provides-accurate-liveness-data)
     - [Mitigations](#mitigations)
-  - [a02-002: Fallback owner is governance-controlled](#a02-002-fallback-owner-is-governance-controlled)
+  - [a02-002: Fallback owner is trusted](#a02-002-fallback-owner-is-trusted)
     - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
-  - [i01-001: Safe threshold correctly maintained](#i01-001-safe-threshold-correctly-maintained)
+  - [i01-001: Threshold is maintained](#i01-001-threshold-is-maintained)
     - [Impact](#impact)
-  - [i02-002: Final state validity](#i02-002-final-state-validity)
+  - [i02-002: Live owners are not removed](#i02-002-live-owners-are-not-removed)
     - [Impact](#impact-1)
-  - [i03-003: LivenessGuard immutability during removal](#i03-003-livenessguard-immutability-during-removal)
+  - [i03-003: Non-live owners are correctly removed](#i03-003-non-live-owners-are-correctly-removed)
     - [Impact](#impact-2)
-  - [i04-004: Post-shutdown deactivation](#i04-004-post-shutdown-deactivation)
+  - [i04-004: Fallback is properly triggered when owner count is unsafe](#i04-004-fallback-is-properly-triggered-when-owner-count-is-unsafe)
     - [Impact](#impact-3)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
@@ -89,10 +89,10 @@ active.
 - The module verifies the LivenessGuard has not been changed during the removal process
 - The LivenessGuard address is immutable in the module, preventing substitution
 
-### a02-002: Fallback owner is governance-controlled
+### a02-002: Fallback owner is trusted
 
-The [Fallback Owner] address is controlled by legitimate governance and will act in the best interest of the Safe's
-stakeholders. A malicious fallback owner could gain complete control of the Safe during [Shutdown].
+The [Fallback Owner] address is trusted to act in the best interest of the Safe's stakeholders. A malicious fallback
+owner could gain complete control of the Safe during [Shutdown].
 
 #### Mitigations
 
@@ -102,59 +102,61 @@ stakeholders. A malicious fallback owner could gain complete control of the Safe
 
 ## Invariants
 
-### i01-001: Safe threshold correctly maintained
+### i01-001: Threshold is maintained
 
-After any owner removal operation, the Safe's threshold equals the value returned by `getRequiredThreshold` for the
-current number of owners. This ensures the Safe remains operational with an appropriate signing requirement based on
-the [Threshold Percentage].
+The Safe's signing threshold is correctly calculated and maintained throughout all owner removal operations. After any
+removal, the threshold equals the value computed by the [Threshold Percentage] formula for the current number of
+owners, ensuring the Safe remains operational and secure.
 
 #### Impact
 
 **Severity: Critical**
 
-If the threshold is incorrectly set, the Safe could become unusable (threshold too high for remaining owners) or
+If the threshold is incorrectly maintained, the Safe could become unusable (threshold too high for remaining owners) or
 insecure (threshold too low for the number of owners). This could result in loss of access to Safe assets or
 unauthorized transaction execution.
 
-### i02-002: Final state validity
+### i02-002: Live owners are not removed
 
-After `removeOwners` completes, the Safe is in one of two valid states: either it has at least [Minimum Owners] with
-the correct threshold, or it has exactly one owner (the [Fallback Owner]) with a threshold of 1 and the module is
-deactivated.
+Owners who have demonstrated liveness within the [Liveness Interval] cannot be removed through the `removeOwners`
+function, except during [Shutdown] when the owner count has already fallen below [Minimum Owners]. This protects active
+participants from being incorrectly removed.
 
 #### Impact
 
 **Severity: Critical**
 
-Invalid final states could leave the Safe in an unusable configuration (too few owners without fallback takeover) or
-allow the module to continue operating after shutdown (enabling unintended removals). This could cause permanent loss
-of access to Safe assets.
+If live owners could be removed, active participants could lose access to the Safe despite maintaining their
+responsibilities. This could lead to unauthorized changes to the Safe's owner set and potential loss of control over
+Safe assets.
 
-### i03-003: LivenessGuard immutability during removal
+### i03-003: Non-live owners are correctly removed
 
-The LivenessGuard contract address stored in the Safe's guard storage slot remains unchanged throughout the
-`removeOwners` execution. This prevents owners from bypassing liveness checks by swapping the guard mid-removal.
-
-#### Impact
-
-**Severity: High**
-
-If the guard could be changed during removal, malicious owners could replace it with a guard that reports all owners as
-active, preventing legitimate removals of inactive owners. This would undermine the entire liveness enforcement
-mechanism.
-
-### i04-004: Post-shutdown deactivation
-
-Once `ownershipTransferredToFallback` is set to true during [Shutdown], the module cannot execute any further owner
-removals. This prevents the module from interfering with the [Fallback Owner]'s control of the Safe.
+Owners who have not demonstrated liveness within the [Liveness Interval] can be successfully removed through the
+`removeOwners` function when the owner count is at or above [Minimum Owners]. This ensures the liveness enforcement
+mechanism functions as intended.
 
 #### Impact
 
 **Severity: High**
 
-If the module remained active after shutdown, it could incorrectly attempt to remove the fallback owner or interfere
-with governance's recovery actions. This would complicate the recovery process and could lead to unexpected Safe
-configurations.
+If non-live owners cannot be removed, the liveness enforcement mechanism fails its core purpose. Inactive owners would
+accumulate over time, potentially leading to a Safe where the threshold cannot be met because too many owners have lost
+access to their keys.
+
+### i04-004: Fallback is properly triggered when owner count is unsafe
+
+When owner removals reduce the count below [Minimum Owners], [Shutdown] is triggered: all remaining owners are removed,
+the [Fallback Owner] becomes the sole owner with threshold 1, and the module deactivates itself. This ensures the Safe
+never remains in an unsafe configuration with too few owners.
+
+#### Impact
+
+**Severity: Critical**
+
+If shutdown fails to trigger properly, the Safe could be left with too few owners to meet the threshold, causing
+permanent loss of access to Safe assets. Alternatively, if shutdown triggers incorrectly, legitimate owners could lose
+control to the fallback owner prematurely.
 
 ## Function Specification
 
