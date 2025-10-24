@@ -11,12 +11,10 @@
   - [Transparent Proxy Pattern](#transparent-proxy-pattern)
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
-  - [i01-001: Complete call delegation without interception](#i01-001-complete-call-delegation-without-interception)
+  - [i01-001: Proxy transparency for non-admin users](#i01-001-proxy-transparency-for-non-admin-users)
     - [Impact](#impact)
-  - [i01-002: Admin-only access to proxy interface](#i01-002-admin-only-access-to-proxy-interface)
+  - [i01-002: Admin-only access to administrative interface](#i01-002-admin-only-access-to-administrative-interface)
     - [Impact](#impact-1)
-  - [i01-003: EIP-1967 storage slot isolation](#i01-003-eip-1967-storage-slot-isolation)
-    - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [receive](#receive)
@@ -63,12 +61,15 @@ N/A
 
 ## Invariants
 
-### i01-001: Complete call delegation without interception
+### i01-001: Proxy transparency for non-admin users
 
-All calls from non-admin addresses MUST be delegated to the implementation contract without any interception,
-modification, or validation by the proxy. The proxy MUST preserve the complete execution context including `msg.sender`,
-`msg.value`, calldata, and return data. The proxy MUST NOT impose any restrictions on what functions can be called or
-what data can be passed through.
+The proxy MUST be completely transparent to non-admin users, meaning it MUST NOT affect implementation contract
+functionality in any way. All calls from non-admin addresses MUST be delegated to the implementation without
+interception, modification, or validation. The proxy MUST preserve the complete execution context including
+`msg.sender`, `msg.value`, calldata, and return data. The proxy's storage MUST be isolated from the implementation's
+storage such that the implementation cannot access or modify the proxy's admin or implementation addresses. Non-admin
+callers MUST be unable to access the proxy's administrative interface, even if they attempt to call administrative
+functions, ensuring no function selector collisions between proxy and implementation.
 
 #### Impact
 
@@ -76,39 +77,22 @@ what data can be passed through.
 
 If this invariant is violated, the proxy would break the fundamental trust model of transparent proxies. Users would be
 unable to interact with the implementation contract as intended, potentially losing access to funds or functionality.
-The proxy's purpose is to be completely transparent to non-admin users, and any interception would violate this core
-property.
+Implementation contracts could compromise the proxy by modifying admin or implementation addresses. Unauthorized users
+could upgrade the implementation to a malicious contract or transfer admin rights, leading to complete system
+compromise.
 
-### i01-002: Admin-only access to proxy interface
+### i01-002: Admin-only access to administrative interface
 
 The proxy's administrative functions (`upgradeTo`, `upgradeToAndCall`, `changeAdmin`, `admin`, `implementation`) MUST
-only be accessible to the admin address or `address(0)`. All other addresses MUST have their calls delegated to the
-implementation, even if they attempt to call these administrative functions. This prevents function selector collisions
-where the implementation contract might have functions with the same signatures as the proxy's administrative functions.
+only be accessible to the admin address or `address(0)`. The `address(0)` exception enables off-chain simulations via
+`eth_call` without compromising security, as `address(0)` cannot be used as `msg.sender` during normal EVM execution.
 
 #### Impact
 
 **Severity: Critical**
 
 If this invariant is violated, unauthorized addresses could upgrade the implementation to a malicious contract, steal
-all funds held by the proxy, or transfer admin rights. The `address(0)` exception enables off-chain simulations without
-compromising security since `address(0)` cannot be used as `msg.sender` during normal EVM execution.
-
-### i01-003: EIP-1967 storage slot isolation
-
-The admin and implementation addresses MUST be stored at the EIP-1967 specified storage slots
-(`bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1)` and
-`bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1)` respectively). These slots MUST NOT be accessible or
-modifiable through delegated calls to the implementation contract.
-
-#### Impact
-
-**Severity: Critical**
-
-If this invariant is violated and the implementation contract could modify these storage slots, it could change its own
-implementation address or admin address, leading to complete compromise of the proxy's security model. The EIP-1967
-slots are specifically chosen to be in a range that is extremely unlikely to collide with normal contract storage
-layouts.
+all funds held by the proxy, or transfer admin rights, leading to complete compromise of the system.
 
 ## Function Specification
 
