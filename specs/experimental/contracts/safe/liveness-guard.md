@@ -9,12 +9,6 @@
   - [Liveness Timestamp](#liveness-timestamp)
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
-  - [i01-001: Signature Attribution Accuracy](#i01-001-signature-attribution-accuracy)
-    - [Impact](#impact)
-  - [i02-002: Non-Reversion Guarantee](#i02-002-non-reversion-guarantee)
-    - [Impact](#impact-1)
-  - [i03-003: Owner Set Synchronization](#i03-003-owner-set-synchronization)
-    - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [safe](#safe)
@@ -43,45 +37,8 @@ N/A
 
 ## Invariants
 
-### i01-001: Signature Attribution Accuracy
-
-Signatures extracted from Safe transactions are correctly attributed to their actual signers. Non-signers cannot
-create records of having signed, and actual signers cannot be censored from having their signatures recorded.
-
-#### Impact
-
-**Severity: High**
-
-If signatures are misattributed, inactive owners could appear active (preventing their removal) or active owners
-could appear inactive (enabling improper removal). This undermines the entire liveness tracking mechanism and could
-lead to unauthorized changes to the Safe's owner set.
-
-### i02-002: Non-Reversion Guarantee
-
-The `checkTransaction` and `checkAfterExecution` functions never permanently revert regardless of input parameters
-or contract state. This ensures the Safe can always execute transactions even if the guard encounters unexpected
-conditions.
-
-#### Impact
-
-**Severity: Critical**
-
-If either guard function reverts, the Safe becomes unable to execute any transactions, effectively locking all
-assets and functionality. This represents a complete denial of service for the Safe contract.
-
-### i03-003: Owner Set Synchronization
-
-The `lastLive` mapping accurately reflects the current Safe owner set. When owners are added to the Safe, they are
-recorded with the current timestamp. When owners are removed from the Safe, their entries are deleted from the
-mapping. The internal owner tracking state is completely cleared after each transaction execution.
-
-#### Impact
-
-**Severity: High**
-
-If the mapping becomes desynchronized, newly added owners could be immediately removable (before demonstrating
-liveness), or removed owners could retain liveness records. The internal owner tracking state must be cleared to
-prevent state corruption across multiple transactions.
+- Liveness for each owner is tracked accurately
+- Owners are always capable of showing liveness if the owner is actually live
 
 ## Function Specification
 
