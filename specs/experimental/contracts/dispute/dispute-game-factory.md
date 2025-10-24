@@ -107,9 +107,9 @@ potentially exploit race conditions in systems that consume game results.
 
 ### iDGF-002: Game registry consistency is maintained
 
-Every game created through the factory is recorded in both the `_disputeGames` mapping (indexed by
-[Game UUID](#game-uuid)) and the `_disputeGameList` array (indexed by creation order). The information stored in both
-data structures remains consistent throughout the contract's lifetime.
+Every game created through the factory can be queried both by its parameters (via the games function) and by its
+creation order (via the gameAtIndex function). The total count of games (via gameCount) accurately reflects the number
+of games that can be retrieved by index, and all games retrievable by index can also be queried by their parameters.
 
 #### Impact
 
@@ -151,7 +151,7 @@ Returns the total number of dispute games created by this factory.
 
 **Behavior:**
 
-- MUST return the length of the internal game list
+- MUST return the total number of games created
 - MUST be a view function with no state changes
 
 ### games
@@ -167,7 +167,7 @@ Queries for a dispute game by its parameters.
 **Behavior:**
 
 - MUST compute the [Game UUID](#game-uuid) from the provided parameters
-- MUST return the game proxy address and creation timestamp from the internal mapping
+- MUST return the game proxy address and creation timestamp if a game exists for the given parameters
 - MUST return `address(0)` and timestamp 0 if no game exists for the given parameters
 - MUST be a view function with no state changes
 
@@ -182,8 +182,7 @@ Returns the dispute game at a specific index in the creation order.
 **Behavior:**
 
 - MUST revert if `_index` is greater than or equal to the total game count
-- MUST return the game type, creation timestamp, and proxy address
-- MUST unpack the GameId from the internal list
+- MUST return the game type, creation timestamp, and proxy address for the game at the specified index
 - MUST be a view function with no state changes
 
 ### create
@@ -205,8 +204,8 @@ Creates a new dispute game proxy contract.
   block hash, and extra data
 - MUST include game type and implementation args in the clone if implementation args are configured for the game type
 - MUST call initialize on the created clone, forwarding the sent ETH
-- MUST store the game in both the `_disputeGames` mapping and `_disputeGameList` array
-- MUST pack the game type, current timestamp, and proxy address into a GameId
+- MUST make the game queryable by both its parameters and its creation index
+- MUST increment the total game count
 - MUST emit DisputeGameCreated event with the proxy address, game type, and root claim
 - MUST return the address of the created game proxy
 
@@ -237,7 +236,7 @@ Searches for the most recent games of a specific type.
 
 **Behavior:**
 
-- MUST return an empty array if `_start` is greater than or equal to the game list length
+- MUST return an empty array if `_start` is greater than or equal to the total game count
 - MUST return an empty array if `_n` is zero
 - MUST perform a reverse linear search from `_start` towards index 0
 - MUST include only games matching `_gameType`
