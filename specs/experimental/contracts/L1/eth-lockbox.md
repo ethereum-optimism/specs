@@ -10,15 +10,13 @@
   - [Authorized Lockbox](#authorized-lockbox)
   - [Liquidity Migration](#liquidity-migration)
 - [Assumptions](#assumptions)
-  - [a01-001: ProxyAdmin Owner Governance](#a01-001-proxyadmin-owner-governance)
+  - [a01-001: ProxyAdmin Owner Trusted](#a01-001-proxyadmin-owner-trusted)
     - [Mitigations](#mitigations)
+  - [a01-002: Authorized Portals Trusted](#a01-002-authorized-portals-trusted)
+    - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
-  - [i01-001: Unified Liquidity Sufficiency](#i01-001-unified-liquidity-sufficiency)
+  - [i01-001: Portal Authorization Required](#i01-001-portal-authorization-required)
     - [Impact](#impact)
-  - [i01-002: Withdrawal Transaction Isolation](#i01-002-withdrawal-transaction-isolation)
-    - [Impact](#impact-1)
-  - [i01-003: Complete Liquidity Migration](#i01-003-complete-liquidity-migration)
-    - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [lockETH](#locketh)
@@ -59,10 +57,10 @@ performed during system upgrades or when merging multiple lockboxes into a unifi
 
 ## Assumptions
 
-### a01-001: ProxyAdmin Owner Governance
+### a01-001: ProxyAdmin Owner Trusted
 
-The ProxyAdmin owner operates within governance constraints when authorizing portals and lockboxes,
-and when initiating liquidity migrations.
+The ProxyAdmin owner is governance-trusted and operates within governance constraints when
+authorizing portals and lockboxes, and when initiating liquidity migrations.
 
 #### Mitigations
 
@@ -70,45 +68,27 @@ and when initiating liquidity migrations.
 - Shared ProxyAdmin owner requirement ensures consistent security model across components
 - SuperchainConfig consistency check prevents cross-cluster authorization
 
+### a01-002: Authorized Portals Trusted
+
+Approved OptimismPortal contracts are trusted and will only request valid withdrawals of funds.
+
+#### Mitigations
+
+- Portal authorization requires shared ProxyAdmin owner and SuperchainConfig
+- Portal authorization is controlled by governance-trusted ProxyAdmin owner
+
 ## Invariants
 
-### i01-001: Unified Liquidity Sufficiency
+### i01-001: Portal Authorization Required
 
-The ETH balance held by the lockbox must always be sufficient to fulfill all pending withdrawal
-obligations across all authorized portals. The total withdrawable ETH across all chains in the
-dependency set must never exceed the lockbox balance.
+ETH can only be distributed to approved OptimismPortal contracts.
 
 #### Impact
 
 **Severity: Critical**
 
-If violated, legitimate withdrawals could fail due to insufficient liquidity, breaking the core
-promise of unified liquidity management and potentially trapping user funds.
-
-### i01-002: Withdrawal Transaction Isolation
-
-ETH unlocking must not occur during the execution of a withdrawal transaction (when
-`OptimismPortal.l2Sender()` is not `DEFAULT_L2_SENDER`), preventing recursive withdrawal attacks
-and ensuring proper accounting.
-
-#### Impact
-
-**Severity: Critical**
-
-If violated, malicious actors could exploit recursive calls during withdrawal execution to drain
-the lockbox or create accounting inconsistencies.
-
-### i01-003: Complete Liquidity Migration
-
-When migrating liquidity between lockboxes, the entire ETH balance must be transferred atomically
-to prevent liquidity fragmentation or loss.
-
-#### Impact
-
-**Severity: High**
-
-If violated, liquidity could become fragmented across multiple lockboxes, complicating management
-and potentially causing withdrawal failures if portals reference the wrong lockbox.
+If violated, unauthorized contracts could drain the lockbox, resulting in loss of all pooled ETH
+across the Superchain cluster.
 
 ## Function Specification
 
