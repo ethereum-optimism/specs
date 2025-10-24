@@ -130,6 +130,7 @@ delegatecall
 delegatecalls
 delegatees
 delegators
+desynchronized
 devnet
 dialable
 discv
@@ -179,6 +180,7 @@ merkleized
 meshsub
 messagepasser
 messsage
+misattributed
 mmap
 mplex
 multiclient
