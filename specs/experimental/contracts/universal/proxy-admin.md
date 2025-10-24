@@ -13,7 +13,7 @@
 - [Invariants](#invariants)
   - [i01-001: Owner-Only Administrative Control](#i01-001-owner-only-administrative-control)
     - [Impact](#impact)
-  - [i01-002: Proxy Type Consistency](#i01-002-proxy-type-consistency)
+  - [i01-002: Multi-Proxy Type Administration](#i01-002-multi-proxy-type-administration)
     - [Impact](#impact-1)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
@@ -69,17 +69,17 @@ configuration, and AddressManager modifications.
 Violation would allow unauthorized parties to upgrade proxy implementations or change proxy administrators, enabling
 complete takeover of managed contracts and potential theft of all assets controlled by those proxies.
 
-### i01-002: Proxy Type Consistency
+### i01-002: Multi-Proxy Type Administration
 
-Once a proxy's type is set, all administrative operations for that proxy must use the type-specific interface and
-storage layout corresponding to the configured ProxyType.
+The contract can successfully administrate all three proxy types (ERC1967, ChugSplash, and ResolvedDelegate) through
+their respective type-specific interfaces and storage layouts.
 
 #### Impact
 
 **Severity: High**
 
-Incorrect proxy type handling would cause administrative operations to fail or corrupt proxy state by writing to wrong
-storage slots, potentially bricking the proxy or causing undefined behavior.
+Failure to support any proxy type would prevent administration of legacy proxies during migrations, potentially
+leaving critical infrastructure without upgrade capabilities or administrative control.
 
 ## Function Specification
 
