@@ -7,10 +7,7 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Liveness Timestamp](#liveness-timestamp)
-  - [Owners Before Set](#owners-before-set)
 - [Assumptions](#assumptions)
-  - [a01-001: Safe Contract Integrity](#a01-001-safe-contract-integrity)
-    - [Mitigations](#mitigations)
 - [Invariants](#invariants)
   - [i01-001: Signature Attribution Accuracy](#i01-001-signature-attribution-accuracy)
     - [Impact](#impact)
@@ -40,24 +37,9 @@ access to their keys.
 The most recent block timestamp at which an owner either signed a Safe transaction or called the `showLiveness`
 function. This timestamp is publicly queryable via the `lastLive` mapping.
 
-### Owners Before Set
-
-A temporary enumerable set used during transaction execution to track the Safe's owner list before a transaction
-executes. This enables detection of owner additions and removals by comparing the pre-execution and post-execution
-owner sets.
-
 ## Assumptions
 
-### a01-001: Safe Contract Integrity
-
-The associated Safe contract correctly implements the Safe interface, including accurate signature validation,
-owner management, and transaction hash generation.
-
-#### Mitigations
-
-- The LivenessGuard is deployed with an immutable reference to a specific Safe contract
-- The Safe contract is a well-audited, widely-used implementation from Safe Global
-- The guard relies on the Safe's own security guarantees for signature validation
+N/A
 
 ## Invariants
 
@@ -91,15 +73,15 @@ assets and functionality. This represents a complete denial of service for the S
 
 The `lastLive` mapping accurately reflects the current Safe owner set. When owners are added to the Safe, they are
 recorded with the current timestamp. When owners are removed from the Safe, their entries are deleted from the
-mapping. The [Owners Before Set] is completely emptied after each transaction execution.
+mapping. The internal owner tracking state is completely cleared after each transaction execution.
 
 #### Impact
 
 **Severity: High**
 
 If the mapping becomes desynchronized, newly added owners could be immediately removable (before demonstrating
-liveness), or removed owners could retain liveness records. The [Owners Before Set] must be emptied to prevent
-state corruption across multiple transactions.
+liveness), or removed owners could retain liveness records. The internal owner tracking state must be cleared to
+prevent state corruption across multiple transactions.
 
 ## Function Specification
 
@@ -148,7 +130,7 @@ Records liveness for owners who signed the current transaction. Called by the Sa
 **Behavior:**
 
 - MUST revert if caller is not the associated Safe contract
-- MUST cache the current Safe owner list in the [Owners Before Set]
+- MUST cache the current Safe owner list for comparison after transaction execution
 - MUST reconstruct the transaction hash using Safe's `getTransactionHash()` with nonce decremented by 1
 - MUST extract exactly `threshold` number of signers from `_signatures` using `SafeSigners.getNSigners()`
 - MUST set `lastLive[signer]` to `block.timestamp` for each extracted signer
@@ -170,12 +152,11 @@ execution.
 - MUST revert if caller is not the associated Safe contract
 - MUST query the current Safe owner list via `getOwners()`
 - MUST process each current owner:
-  - If owner exists in [Owners Before Set], remove from the set (owner was already tracked)
-  - If owner does not exist in [Owners Before Set], set `lastLive[owner]` to `block.timestamp` (new owner added)
-- MUST process each remaining address in [Owners Before Set]:
+  - If owner existed before transaction execution, mark as processed
+  - If owner did not exist before transaction execution, set `lastLive[owner]` to `block.timestamp` (new owner added)
+- MUST process each owner that existed before but not after transaction execution:
   - Delete `lastLive[owner]` entry (owner was removed from Safe)
-  - Remove address from [Owners Before Set]
-- MUST ensure [Owners Before Set] is completely empty after execution
+- MUST ensure internal owner tracking state is completely cleared after execution
 - MUST NOT revert due to owner set changes or state inconsistencies
 
 ### showLiveness
