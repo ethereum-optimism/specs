@@ -18819,6 +18819,152 @@ which implements the required logic.</p>
 vote weight consistency, and managing checkpoints. It is incorporated as a predeploy of the OP stack to avoid manual deployments
 across the Superchain.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="livenessguard"><a class="header" href="#livenessguard">LivenessGuard</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="experimental/contracts/safe/liveness-guard.html#overview">Overview</a></li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#definitions">Definitions</a>
+<ul>
+<li><a href="experimental/contracts/safe/liveness-guard.html#liveness-timestamp">Liveness Timestamp</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#assumptions">Assumptions</a></li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#invariants">Invariants</a>
+<ul>
+<li><a href="experimental/contracts/safe/liveness-guard.html#i01-001-liveness-tracking-accuracy">i01-001: Liveness tracking accuracy</a>
+<ul>
+<li><a href="experimental/contracts/safe/liveness-guard.html#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#i02-002-liveness-demonstration-capability">i02-002: Liveness demonstration capability</a>
+<ul>
+<li><a href="experimental/contracts/safe/liveness-guard.html#impact-1">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#function-specification">Function Specification</a>
+<ul>
+<li><a href="experimental/contracts/safe/liveness-guard.html#constructor">constructor</a></li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#safe">safe</a></li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#checktransaction">checkTransaction</a></li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#checkafterexecution">checkAfterExecution</a></li>
+<li><a href="experimental/contracts/safe/liveness-guard.html#showliveness">showLiveness</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
+<p>The LivenessGuard tracks the liveness of Safe multisig owners by recording timestamps when owners sign transactions or
+explicitly demonstrate activity. It serves as a monitoring mechanism to identify inactive owners who may have lost
+access to their keys.</p>
+<h2 id="definitions-9"><a class="header" href="#definitions-9">Definitions</a></h2>
+<h3 id="liveness-timestamp"><a class="header" href="#liveness-timestamp">Liveness Timestamp</a></h3>
+<p>The most recent block timestamp at which an owner either signed a Safe transaction or called the <code>showLiveness</code>
+function. This timestamp is publicly queryable via the <code>lastLive</code> mapping.</p>
+<h2 id="assumptions-7"><a class="header" href="#assumptions-7">Assumptions</a></h2>
+<p>N/A</p>
+<h2 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h2>
+<h3 id="i01-001-liveness-tracking-accuracy"><a class="header" href="#i01-001-liveness-tracking-accuracy">i01-001: Liveness tracking accuracy</a></h3>
+<p>Liveness for each owner is tracked accurately. The <code>lastLive</code> mapping correctly reflects when owners sign transactions
+or call <code>showLiveness</code>, and owner additions/removals are properly synchronized with the Safe's owner set.</p>
+<h4 id="impact-29"><a class="header" href="#impact-29">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If liveness tracking is inaccurate, inactive owners could appear active (preventing their removal) or active owners
+could appear inactive (enabling improper removal). This undermines the entire liveness monitoring mechanism and could
+lead to unauthorized changes to the Safe's owner set.</p>
+<h3 id="i02-002-liveness-demonstration-capability"><a class="header" href="#i02-002-liveness-demonstration-capability">i02-002: Liveness demonstration capability</a></h3>
+<p>Owners are always capable of showing liveness if the owner is actually live. The guard never prevents legitimate owners
+from demonstrating their liveness through either transaction signatures or direct <code>showLiveness</code> calls.</p>
+<h4 id="impact-30"><a class="header" href="#impact-30">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If legitimate owners cannot demonstrate liveness, they could be incorrectly identified as inactive and removed from the
+Safe. This could lead to loss of access to the Safe's assets and functionality, potentially causing permanent fund
+loss if enough owners are incorrectly removed.</p>
+<h2 id="function-specification-6"><a class="header" href="#function-specification-6">Function Specification</a></h2>
+<h3 id="constructor-4"><a class="header" href="#constructor-4">constructor</a></h3>
+<p>Initializes the LivenessGuard for a specific Safe contract and records all current owners with the deployment
+timestamp.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_safe</code>: The Safe contract instance that this guard will monitor</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST set the immutable <code>SAFE</code> reference to the provided Safe contract</li>
+<li>MUST query the Safe's current owner list via <code>getOwners()</code></li>
+<li>MUST set <code>lastLive[owner]</code> to <code>block.timestamp</code> for each current owner</li>
+<li>MUST emit <code>OwnerRecorded</code> event for each current owner</li>
+</ul>
+<h3 id="safe-1"><a class="header" href="#safe-1">safe</a></h3>
+<p>Returns the Safe contract instance that this guard monitors.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the immutable <code>SAFE</code> contract reference</li>
+</ul>
+<h3 id="checktransaction"><a class="header" href="#checktransaction">checkTransaction</a></h3>
+<p>Records liveness for owners who signed the current transaction. Called by the Safe before transaction execution.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_to</code>: Transaction target address</li>
+<li><code>_value</code>: ETH value to send</li>
+<li><code>_data</code>: Transaction calldata</li>
+<li><code>_operation</code>: Operation type (Call or DelegateCall)</li>
+<li><code>_safeTxGas</code>: Gas allocated for Safe transaction execution</li>
+<li><code>_baseGas</code>: Gas costs independent of transaction execution</li>
+<li><code>_gasPrice</code>: Gas price for refund calculation</li>
+<li><code>_gasToken</code>: Token address for gas payment (zero address for ETH)</li>
+<li><code>_refundReceiver</code>: Address receiving gas refund</li>
+<li><code>_signatures</code>: Packed signature data from Safe owners</li>
+<li><code>_msgSender</code>: Original transaction sender</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the associated Safe contract</li>
+<li>MUST cache the current Safe owner list for comparison after transaction execution</li>
+<li>MUST reconstruct the transaction hash using Safe's <code>getTransactionHash()</code> with nonce decremented by 1</li>
+<li>MUST extract exactly <code>threshold</code> number of signers from <code>_signatures</code> using <code>SafeSigners.getNSigners()</code></li>
+<li>MUST set <code>lastLive[signer]</code> to <code>block.timestamp</code> for each extracted signer</li>
+<li>MUST emit <code>OwnerRecorded</code> event for each signer</li>
+<li>MUST NOT revert due to signature parsing or owner extraction failures</li>
+</ul>
+<h3 id="checkafterexecution"><a class="header" href="#checkafterexecution">checkAfterExecution</a></h3>
+<p>Updates the <code>lastLive</code> mapping to reflect any changes in the Safe's owner set. Called by the Safe after transaction
+execution.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li>First parameter (unnamed): Transaction hash (unused)</li>
+<li>Second parameter (unnamed): Transaction success status (unused)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the associated Safe contract</li>
+<li>MUST query the current Safe owner list via <code>getOwners()</code></li>
+<li>MUST process each current owner:
+<ul>
+<li>If owner existed before transaction execution, mark as processed</li>
+<li>If owner did not exist before transaction execution, set <code>lastLive[owner]</code> to <code>block.timestamp</code> (new owner added)</li>
+</ul>
+</li>
+<li>MUST process each owner that existed before but not after transaction execution:
+<ul>
+<li>Delete <code>lastLive[owner]</code> entry (owner was removed from Safe)</li>
+</ul>
+</li>
+<li>MUST ensure internal owner tracking state is completely cleared after execution</li>
+<li>MUST NOT revert due to owner set changes or state inconsistencies</li>
+</ul>
+<h3 id="showliveness"><a class="header" href="#showliveness">showLiveness</a></h3>
+<p>Allows a Safe owner to directly demonstrate liveness without signing a transaction.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not a current owner of the Safe (verified via <code>SAFE.isOwner()</code>)</li>
+<li>MUST set <code>lastLive[msg.sender]</code> to <code>block.timestamp</code></li>
+<li>MUST emit <code>OwnerRecorded</code> event with <code>msg.sender</code> as the owner</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <!-- markdownlint-disable MD053 -->
 <h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
