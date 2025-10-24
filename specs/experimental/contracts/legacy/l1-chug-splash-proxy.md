@@ -14,8 +14,6 @@
     - [Impact](#impact)
   - [i01-002: Owner-Only Administrative Control](#i01-002-owner-only-administrative-control)
     - [Impact](#impact-1)
-  - [i01-003: Pause Mechanism Enforcement](#i01-003-pause-mechanism-enforcement)
-    - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [receive](#receive)
@@ -75,18 +73,6 @@ and querying administrative state.
 
 Violation would allow unauthorized parties to deploy arbitrary code via `setCode`, manipulate storage via `setStorage`,
 or transfer ownership, enabling complete takeover of the proxy and any assets it controls.
-
-### i01-003: Pause Mechanism Enforcement
-
-When the owner implements the `isUpgrading()` interface and returns true, all delegated calls are blocked until the
-upgrade completes.
-
-#### Impact
-
-**Severity: High**
-
-Violation would allow users to interact with the implementation during upgrades, potentially causing state
-inconsistencies or exploiting intermediate upgrade states where invariants are temporarily violated.
 
 ## Function Specification
 
