@@ -8,6 +8,7 @@ Brotli
 CONFIGURATOR
 CWIA
 Celestia
+CHUGSPLASH
 Chainid
 Coef
 Configurator
