@@ -31,6 +31,6 @@ adoption. It's used by Passkeys, Apple Secure Enclave and many other systems.
 
 It is specified as part of [RIP-7212](https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md) and was added to
 the OP-Stack protocol in the Fjord release. The op-geth implementation is
-[here](https://github.com/ethereum-optimism/op-geth/blob/optimism/core/vm/contracts.go#L1161-L1193).
+[here](https://github.com/ethereum-optimism/op-geth/blob/24c89af/core/vm/contracts.go#L1519-L1535).
 
 Address: `0x0000000000000000000000000000000000000100`
