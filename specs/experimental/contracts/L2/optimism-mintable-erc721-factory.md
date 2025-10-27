@@ -48,8 +48,7 @@ and burning of tokens created by this factory.
 
 ## Invariants
 
-This contract has no cross-function invariants. All security properties are enforced within individual function
-boundaries and documented in the Function Specification section.
+N/A
 
 ## Function Specification
 
@@ -95,7 +94,11 @@ Creates a new OptimismMintableERC721 token contract that represents a remote tok
 
 **Behavior:**
 
+- MUST be callable by any address without access restrictions
 - MUST revert if `_remoteToken` is the zero address
+- MUST deterministically compute a deployment address from `_remoteToken`, `_name`, and `_symbol`
+- MUST revert if a contract already exists at the computed deployment address, preventing duplicate deployments
+  with identical parameters
 - MUST compute a salt as `keccak256(abi.encode(_remoteToken, _name, _symbol))`
 - MUST deploy a new OptimismMintableERC721 contract using CREATE2 with the computed salt
 - MUST pass `BRIDGE`, `REMOTE_CHAIN_ID`, `_remoteToken`, `_name`, and `_symbol` to the token constructor
