@@ -8,11 +8,18 @@
 - [Definitions](#definitions)
 - [Assumptions](#assumptions)
   - [a01-001: L1CrossDomainMessenger trusted](#a01-001-l1crossdomainmessenger-trusted)
+    - [Mitigations](#mitigations)
   - [a01-002: L2ToL1MessagePasser availability](#a01-002-l2tol1messagepasser-availability)
+    - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
   - [i01-001: Cross-chain message authentication](#i01-001-cross-chain-message-authentication)
+    - [Impact](#impact)
   - [i01-002: Message replay protection](#i01-002-message-replay-protection)
-  - [i01-003: Protected system contracts](#i01-003-protected-system-contracts)
+    - [Impact](#impact-1)
+  - [i01-003: Failed message replay capability](#i01-003-failed-message-replay-capability)
+    - [Impact](#impact-2)
+  - [i01-004: Message nonce monotonicity](#i01-004-message-nonce-monotonicity)
+    - [Impact](#impact-3)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [sendMessage](#sendmessage)
@@ -23,6 +30,8 @@
   - [l1CrossDomainMessenger](#l1crossdomainmessenger)
   - [OTHER_MESSENGER](#other_messenger)
   - [paused](#paused)
+  - [successfulMessages](#successfulmessages)
+  - [failedMessages](#failedmessages)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -84,18 +93,29 @@ be executed once across all attempts, whether successful or failed-then-replayed
 If this invariant is violated, attackers could replay withdrawal messages multiple times, potentially draining
 funds from L1 or executing the same state changes repeatedly.
 
-### i01-003: Protected system contracts
+### i01-003: Failed message replay capability
 
-Messages cannot target the L2CrossDomainMessenger itself or the L2ToL1MessagePasser predeploy. This prevents
-attacks that could compromise the messenger's state or the withdrawal mechanism.
+Messages that fail during execution can be replayed by anyone without requiring cross-chain authentication. Failed
+messages remain replayable until they succeed, enabling recovery from transient failures.
 
 #### Impact
 
 **Severity: High**
 
-If this invariant is violated, attackers could manipulate the messenger's internal state (such as
-successfulMessages or failedMessages mappings) or interfere with the withdrawal mechanism, potentially blocking
-legitimate withdrawals or enabling unauthorized message execution.
+If failed messages could not be replayed, users would permanently lose access to funds or messages sent cross-chain,
+as there would be no recovery mechanism for transient failures like insufficient gas or temporary contract issues.
+
+### i01-004: Message nonce monotonicity
+
+Message nonces increase monotonically for each message sent. Each message has a unique nonce that cannot be reused
+or skipped, ensuring messages can be uniquely identified.
+
+#### Impact
+
+**Severity: High**
+
+Non-monotonic nonces could enable message reordering attacks or allow attackers to predict and front-run message
+hashes, potentially breaking replay protection or causing messages to be processed out of order.
 
 ## Function Specification
 
@@ -230,4 +250,30 @@ Returns whether the contract is paused.
 **Behavior:**
 
 - MUST always return false on L2 (pausing is only enforced on L1)
+- MUST be a view function with no state changes
+
+### successfulMessages
+
+Returns whether a message hash has been successfully relayed.
+
+**Parameters:**
+
+- Message hash (bytes32)
+
+**Behavior:**
+
+- MUST return true if the message was successfully relayed, false otherwise
+- MUST be a view function with no state changes
+
+### failedMessages
+
+Returns whether a message hash has failed at least once during relay.
+
+**Parameters:**
+
+- Message hash (bytes32)
+
+**Behavior:**
+
+- MUST return true if the message has failed at least once, false otherwise
 - MUST be a view function with no state changes
