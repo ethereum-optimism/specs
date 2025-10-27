@@ -24,6 +24,8 @@
     - [Impact](#impact-2)
   - [i01-004: Relayed Call Fidelity](#i01-004-relayed-call-fidelity)
     - [Impact](#impact-3)
+  - [i01-005: L1→L2 Delivery Liveness](#i01-005-l1%E2%86%92l2-delivery-liveness)
+    - [Impact](#impact-4)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [sendMessage](#sendmessage)
@@ -134,10 +136,22 @@ sender. This holds for the initial relay and any replay.
 
 #### Impact
 
-**Severity: High**
+**Severity: Critical**
 
-Tampering with calldata, value, or sender would enable arbitrary execution or fund loss. Practical violation
-requires failure of external authentication assumptions (paired messenger correctness), so severity is High.
+Tampering with calldata, value, or sender would enable arbitrary execution or fund loss.
+
+### i01-005: L1→L2 Delivery Liveness
+
+All valid sent messages from L1 to L2 are received within a bounded amount of time less than 1 day. This time
+bound is provided by the derivation pipeline and sequencing window, while the messenger processes messages as
+they arrive.
+
+#### Impact
+
+**Severity: Critical**
+
+Without timely message delivery, users could experience indefinite delays in cross-chain operations, potentially
+leading to fund loss, failed time-sensitive transactions, or denial of service for critical bridge functionality.
 
 ## Function Specification
 
