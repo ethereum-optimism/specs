@@ -17,7 +17,7 @@
     - [Impact](#impact)
   - [i01-002: Users who withdraw NFTs on L2 can claim them on L1](#i01-002-users-who-withdraw-nfts-on-l2-can-claim-them-on-l1)
     - [Impact](#impact-1)
-  - [i01-003: NFTs can only be received through the bridge](#i01-003-nfts-can-only-be-received-through-the-bridge)
+  - [i01-003: Bridge tokens can only be minted through legitimate deposits](#i01-003-bridge-tokens-can-only-be-minted-through-legitimate-deposits)
     - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
@@ -88,9 +88,10 @@ period, provided the withdrawal is properly finalized on L1.
 
 If violated, users lose their NFTs permanently as the L2 token is burned but the L1 token cannot be claimed.
 
-### i01-003: NFTs can only be received through the bridge
+### i01-003: Bridge tokens can only be minted through legitimate deposits
 
-NFTs on L2 can only be minted through legitimate deposit finalization from L1, not through any other mechanism.
+OptimismMintableERC721 tokens on L2 can only be minted by the bridge through legitimate deposit finalization from
+L1, not through any other mechanism.
 
 #### Impact
 
