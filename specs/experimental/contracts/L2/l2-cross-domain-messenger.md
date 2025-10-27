@@ -148,7 +148,7 @@ they arrive.
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 Without timely message delivery, users could experience indefinite delays in cross-chain operations, potentially
 leading to fund loss, failed time-sensitive transactions, or denial of service for critical bridge functionality.
