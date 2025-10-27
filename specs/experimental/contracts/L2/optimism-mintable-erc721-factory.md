@@ -12,6 +12,10 @@
   - [a01-001: Bridge Contract Integrity](#a01-001-bridge-contract-integrity)
     - [Mitigations](#mitigations)
 - [Invariants](#invariants)
+  - [i01-001: Permissionless deployment](#i01-001-permissionless-deployment)
+    - [Impact](#impact)
+  - [i01-002: Deterministic uniqueness for identical parameters](#i01-002-deterministic-uniqueness-for-identical-parameters)
+    - [Impact](#impact-1)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
   - [bridge](#bridge)
@@ -48,7 +52,29 @@ and burning of tokens created by this factory.
 
 ## Invariants
 
-N/A
+### i01-001: Permissionless deployment
+
+Any address can deploy a [Local Token] via this factory. The factory does not restrict the caller for
+deployments.
+
+#### Impact
+
+**Severity: Low**
+
+If this property is broken, token deployment becomes permissioned, reducing openness and changing expected user
+experience.
+
+### i01-002: Deterministic uniqueness for identical parameters
+
+For any tuple (Remote Token, name, symbol), at most one [Local Token] exists. Re-invoking deployment with
+identical parameters does not result in an additional token contract.
+
+#### Impact
+
+**Severity: Medium**
+
+If this property is broken, multiple distinct contracts could represent the same remote token and metadata,
+leading to user confusion and fragmented integrations.
 
 ## Function Specification
 
