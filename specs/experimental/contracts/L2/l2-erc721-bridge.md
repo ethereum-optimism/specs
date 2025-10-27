@@ -33,8 +33,8 @@
 
 ## Overview
 
-The L2ERC721Bridge enables ERC721 NFT transfers between Ethereum L1 and Optimism L2. It mints NFTs on L2 when
-deposits are finalized from L1 and burns NFTs on L2 when withdrawals are initiated to L1.
+The L2ERC721Bridge enables ERC721 token transfers between Ethereum L1 and an OP Stack L2 chain. It mints tokens
+on L2 when deposits are finalized from L1 and burns tokens on L2 when withdrawals are initiated to L1.
 
 ## Definitions
 
