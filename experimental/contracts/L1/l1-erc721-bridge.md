@@ -12,10 +12,19 @@ tokens on L1 during deposits and releasing them upon withdrawal finalization.
 A specific combination of L1 token address and L2 token address that represents the same logical ERC721 collection
 across both chains.
 
-### Escrowed Token
+### Correct Deposit
 
-An ERC721 token held by the L1ERC721Bridge contract, tracked in the deposits mapping, representing a token that has
-been bridged to L2 and is awaiting withdrawal back to L1.
+A successful deposit initiation on L1 via bridgeERC721 or bridgeERC721To that meets all function preconditions and
+completes, resulting in a message to L2 for the specified Bridge Pair and token ID.
+
+### Eligible Withdrawal
+
+A withdrawal initiated by the L2ERC721Bridge that corresponds to an escrowed token and whose message has been
+delivered to L1 and is eligible for finalization according to the bridge protocol.
+
+### Bridge Flow
+
+The deposit and withdrawal processes mediated by the CrossDomainMessenger between the L1 and L2 ERC721 bridges.
 
 ## Assumptions
 
@@ -50,29 +59,42 @@ The ProxyAdmin owner (governance) acts honestly when initializing or upgrading t
 
 ## Invariants
 
-### i01-001: Escrow accounting consistency
+### i01-001: L2 delivery for Correct Deposits
 
-For any L1 token, L2 token, and token ID combination, if deposits[L1][L2][tokenId] is true, then the L1ERC721Bridge
-contract must hold that specific token ID of the L1 token contract. Conversely, any token held by the bridge must
-have a corresponding true entry in the deposits mapping.
+Any [Correct Deposit] MUST eventually result, after the corresponding message is delivered and processed on L2, in
+the designated recipient owning the same token ID of the corresponding remote token for the same [Bridge Pair].
+
+#### Impact
+
+**Severity: High**
+
+If violated, users can lose access to their asset (locked on L1 without L2 delivery), creating stuck funds and loss
+of availability. This liveness property depends on correct message delivery and the L2 bridge's behavior.
+
+### i01-002: L1 delivery for Eligible Withdrawals
+
+Any [Eligible Withdrawal] MUST be able to be finalized on L1 when the bridge is not paused, resulting in the
+designated recipient receiving the exact token ID of the local token for the same [Bridge Pair].
+
+#### Impact
+
+**Severity: High**
+
+If violated, users cannot reclaim assets that were withdrawn on L2, leading to stuck assets in escrow. This liveness
+property depends on correct message delivery and protocol withdrawal eligibility.
+
+### i01-003: No bypass of the Bridge Flow
+
+It MUST be impossible for any address to receive an ERC721 token via the bridge on either chain except through the
+[Bridge Flow]. Ownership changes across chains MUST only occur via deposits (L1→L2) and withdrawals (L2→L1)
+processed through the respective bridges and the CrossDomainMessenger.
 
 #### Impact
 
 **Severity: Critical**
 
-Violation would allow unauthorized withdrawal of escrowed tokens or prevent legitimate withdrawals, resulting in
-permanent loss of user assets.
-
-### i01-002: Cross-chain message authentication
-
-Only messages originating from the L2ERC721Bridge contract on L2 and delivered through the CrossDomainMessenger can
-trigger finalizeBridgeERC721. This prevents unauthorized withdrawal of escrowed tokens.
-
-#### Impact
-
-**Severity: Critical**
-
-Violation would allow attackers to drain all escrowed ERC721 tokens from the bridge without legitimate L2 withdrawals.
+If violated, an attacker could obtain assets without performing a valid deposit/withdrawal, enabling theft or
+duplication independent of external assumptions.
 
 ## Function Specification
 
@@ -108,7 +130,6 @@ Initiates a bridge transfer of an ERC721 token to the caller's address on L2.
 
 **Behavior:**
 
-- MUST revert if the contract is paused
 - MUST revert if caller is not an externally owned account (EOA)
 - MUST revert if `_remoteToken` is address(0)
 - MUST revert if the caller has not approved this contract to transfer the token
@@ -132,7 +153,6 @@ Initiates a bridge transfer of an ERC721 token to a specified recipient address 
 
 **Behavior:**
 
-- MUST revert if the contract is paused
 - MUST revert if `_to` is address(0)
 - MUST revert if `_remoteToken` is address(0)
 - MUST revert if the caller has not approved this contract to transfer the token
@@ -185,13 +205,12 @@ Returns the SuperchainConfig contract address.
 
 ### proxyAdmin
 
-Returns the ProxyAdmin contract that owns this proxy.
+Returns the ProxyAdmin contract that controls this proxy.
 
 **Behavior:**
 
-- MUST return the ProxyAdmin address from the EIP-1967 admin storage slot if non-zero
-- MUST return the owner of the AddressManager if this is a ResolvedDelegateProxy
-- MUST revert if no ProxyAdmin can be found
+- MUST return the ProxyAdmin contract address that controls this proxy
+- MUST revert if no ProxyAdmin is discoverable
 
 ### proxyAdminOwner
 
@@ -199,7 +218,7 @@ Returns the owner of the ProxyAdmin contract.
 
 **Behavior:**
 
-- MUST return the owner address from the ProxyAdmin contract
+- MUST return the owner address of the ProxyAdmin that controls this proxy
 - MUST revert if the ProxyAdmin cannot be determined
 
 ### MESSENGER
