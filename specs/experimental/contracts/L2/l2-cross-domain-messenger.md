@@ -22,6 +22,8 @@
     - [Impact](#impact-1)
   - [i01-003: Failed Message Recovery](#i01-003-failed-message-recovery)
     - [Impact](#impact-2)
+  - [i01-004: Relayed Call Fidelity](#i01-004-relayed-call-fidelity)
+    - [Impact](#impact-3)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [sendMessage](#sendmessage)
@@ -123,6 +125,19 @@ failed.
 
 Without proper failed message handling, users could lose funds or have messages permanently stuck if initial relay
 attempts fail. The replay mechanism ensures messages can eventually be executed with sufficient gas.
+
+### i01-004: Relayed Call Fidelity
+
+Any relayed message executes a call whose target, calldata bytes, and ETH value are exactly those committed by the
+initiating message, and during that call the xDomainMessageSender observed by the target equals the committed
+sender. This holds for the initial relay and any replay.
+
+#### Impact
+
+**Severity: High**
+
+Tampering with calldata, value, or sender would enable arbitrary execution or fund loss. Practical violation
+requires failure of external authentication assumptions (paired messenger correctness), so severity is High.
 
 ## Function Specification
 
