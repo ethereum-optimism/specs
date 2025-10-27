@@ -17,7 +17,7 @@
     - [Impact](#impact)
   - [i01-002: Users who withdraw NFTs on L2 can claim them on L1](#i01-002-users-who-withdraw-nfts-on-l2-can-claim-them-on-l1)
     - [Impact](#impact-1)
-  - [i01-003: Bridge token supply only changes via legitimate deposits and withdrawals](#i01-003-bridge-token-supply-only-changes-via-legitimate-deposits-and-withdrawals)
+  - [i01-003: One-to-one custody across chains via paired lock/mint and burn/unlock](#i01-003-one-to-one-custody-across-chains-via-paired-lockmint-and-burnunlock)
     - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
@@ -88,11 +88,13 @@ period, provided the withdrawal is properly finalized on L1.
 
 If violated, users lose their NFTs permanently as the L2 token is burned but the L1 token cannot be claimed.
 
-### i01-003: Bridge token supply only changes via legitimate deposits and withdrawals
+### i01-003: One-to-one custody across chains via paired lock/mint and burn/unlock
 
-On L2, the total supply of each OptimismMintableERC721 may only increase as a result of finalizing a valid
-deposit from the paired L1 bridge, and may only decrease as a result of initiating a valid withdrawal through
-this bridge. No other mechanism may mint or burn these tokens.
+For each bridged tokenId, exactly one of the following holds at any time: it is held on L1 by the bridge
+(locked) or it is represented on L2 by exactly one OptimismMintableERC721. Transitions between these states
+occur only through the canonical flows: a valid deposit locks the token on L1 and is paired with a mint on L2;
+a valid withdrawal burns the token on L2 and is paired with an unlock on L1. No other mechanism may create or
+release representations.
 
 #### Impact
 
