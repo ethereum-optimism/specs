@@ -65,9 +65,18 @@ the `minDepositAmount` threshold.
 receive() external payable
 ```
 
-- MUST initiate a deposit transaction to the recipient on OP Mainnet if the `minDepositAmount` threshold is reached.
+- MUST initiate a deposit transaction to the recipient on OP Mainnet via `L1CrossDomainMessenger.sendMessage()` if the
+  `minDepositAmount` threshold is reached, with the following parameters:
+  - `_target`: the configured `l2Recipient` address
+  - `_message`: empty bytes (`hex""`) for direct ETH transfer
+  - `_minGasLimit`: the configured `gasLimit` value
+  - `msg.value`: the contract's entire balance
 - MUST emit the `FundsReceived` event with the sender, amount received, and the current balance of the contract.
 - MUST emit the `FeesDeposited` event only if the threshold is reached.
+
+**Note**: The use of L1CrossDomainMessenger is essential for this flow. In cases where the deposit transaction
+fails due to resource metering constraints (insufficient gas or exceeding block resource limits), the message can be
+replayed with higher gas limits, ensuring funds are never permanently locked.
 
 ### `setMinDepositAmount`
 
