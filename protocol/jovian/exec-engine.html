@@ -184,6 +184,7 @@
 <li><a href="#da-footprint-block-limit">DA Footprint Block Limit</a>
 <ul>
 <li><a href="#scalar-loading">Scalar loading</a></li>
+<li><a href="#receipts">Receipts</a></li>
 <li><a href="#rationale-1">Rationale</a></li>
 </ul>
 </li>
@@ -293,6 +294,10 @@ As a result, blocks with high DA usage may cause the base fee to increase in sub
 </li>
 </ul>
 <p>It takes on a default value as described in the section on <a href="./l1-attributes.html">L1 Attributes</a>.</p>
+<h3 id="receipts"><a class="header" href="#receipts">Receipts</a></h3>
+<p>After Jovian activation, a new field <code>daFootprintGasScalar</code> is added to transaction receipts that is populated
+with the DA footprint gas scalar of the transaction's block.
+Furthermore, the <code>blobGasUsed</code> receipt field is set to the DA footprint of the transaction.</p>
 <h3 id="rationale-1"><a class="header" href="#rationale-1">Rationale</a></h3>
 <p>While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, no
 protocol mechanism currently reflects the limited available <em>DA throughput on L1</em>. E.g. on Ethereum L1 with Pectra
