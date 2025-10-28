@@ -15,15 +15,15 @@
   - [a01-002: SystemConfig Provides Accurate Pause State](#a01-002-systemconfig-provides-accurate-pause-state)
     - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
-  - [i01-001: Messages Cannot Be Replayed After Success](#i01-001-messages-cannot-be-replayed-after-success)
+  - [i01-001: All Valid Messages Can Be Executed Within Bounded Time](#i01-001-all-valid-messages-can-be-executed-within-bounded-time)
     - [Impact](#impact)
-  - [i01-002: Failed Messages Can Only Be Replayed By Non-Portal Callers](#i01-002-failed-messages-can-only-be-replayed-by-non-portal-callers)
+  - [i01-002: Valid Messages Are Executed Faithfully](#i01-002-valid-messages-are-executed-faithfully)
     - [Impact](#impact-1)
-  - [i01-003: Cross-Domain Message Sender Is Isolated Per Message](#i01-003-cross-domain-message-sender-is-isolated-per-message)
+  - [i01-003: Invalid Messages Cannot Be Executed](#i01-003-invalid-messages-cannot-be-executed)
     - [Impact](#impact-2)
-  - [i01-004: Messages Reach Destination Within Bounded Time](#i01-004-messages-reach-destination-within-bounded-time)
+  - [i01-004: Messages Can Only Be Executed Once](#i01-004-messages-can-only-be-executed-once)
     - [Impact](#impact-3)
-  - [i01-005: Message Integrity Is Preserved](#i01-005-message-integrity-is-preserved)
+  - [i01-005: Messages Can Always Be Sent To The Other Side By Any User](#i01-005-messages-can-always-be-sent-to-the-other-side-by-any-user)
     - [Impact](#impact-4)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
@@ -85,7 +85,43 @@ respect system-wide pause functionality.
 
 ## Invariants
 
-### i01-001: Messages Cannot Be Replayed After Success
+### i01-001: All Valid Messages Can Be Executed Within Bounded Time
+
+All valid messages sent from L2 to L1 can eventually be relayed and executed on L1 after the proof and finalization
+periods, provided the message does not target blocked addresses and has sufficient gas.
+
+#### Impact
+
+**Severity: High**
+
+This liveness property ensures that legitimate cross-domain communication cannot be permanently blocked. Violation
+would allow censorship of cross-domain messages or permanent locking of assets in bridge contracts.
+
+### i01-002: Valid Messages Are Executed Faithfully
+
+Messages relayed on L1 execute with the exact sender, target, value, and data that were specified when the message was
+sent from L2. No parameter can be modified during transmission.
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is violated, attackers could modify message parameters during transmission, leading to unauthorized
+fund transfers, incorrect state changes, or impersonation of legitimate senders.
+
+### i01-003: Invalid Messages Cannot Be Executed
+
+Messages that do not originate from the L2CrossDomainMessenger through the OptimismPortal, or messages targeting
+blocked system addresses, cannot be executed.
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is violated, attackers could forge messages that appear to come from L2, bypassing the security
+guarantees of the bridge and potentially stealing funds or compromising system integrity.
+
+### i01-004: Messages Can Only Be Executed Once
 
 Once a message has been successfully relayed and marked in the successfulMessages mapping, it cannot be relayed again
 regardless of who attempts to relay it.
@@ -97,54 +133,17 @@ regardless of who attempts to relay it.
 If this invariant is violated, an attacker could replay successful messages multiple times, potentially draining funds
 or causing unauthorized state changes on the target contract.
 
-### i01-002: Failed Messages Can Only Be Replayed By Non-Portal Callers
+### i01-005: Messages Can Always Be Sent To The Other Side By Any User
 
-Messages that failed during execution can be replayed by any caller except the OptimismPortal. When the portal calls
-relayMessage, it must be for a message that has not previously failed.
-
-#### Impact
-
-**Severity: High**
-
-This ensures that the portal only delivers fresh messages from L2, while allowing users to retry failed messages
-through direct calls. Violation would allow the portal to replay failed messages, breaking the message delivery
-guarantees.
-
-### i01-003: Cross-Domain Message Sender Is Isolated Per Message
-
-The xDomainMessageSender value is set only during message execution and reset immediately after. It cannot be accessed
-outside of an active message relay.
-
-#### Impact
-
-**Severity: Critical**
-
-If this invariant is violated, contracts could incorrectly identify the sender of cross-domain messages, leading to
-authentication bypass and unauthorized access to protected functions.
-
-### i01-004: Messages Reach Destination Within Bounded Time
-
-All valid messages sent from L2 to L1 through sendMessage can eventually be relayed on L1 after the proof and
-finalization periods, provided the message does not target blocked addresses and has sufficient gas.
+Any user can call sendMessage to send a message to L2 at any time when the system is not paused. There are no
+restrictions on who can initiate cross-domain messages.
 
 #### Impact
 
 **Severity: High**
 
-This liveness property ensures that legitimate cross-domain communication cannot be permanently blocked. Violation
-would allow censorship of cross-domain messages or permanent locking of assets in bridge contracts.
-
-### i01-005: Message Integrity Is Preserved
-
-Messages relayed on L1 execute with the exact sender, target, value, and data that were specified when the message was
-sent from L2. No parameter can be modified during transmission.
-
-#### Impact
-
-**Severity: Critical**
-
-If this invariant is violated, attackers could modify message parameters during transmission, leading to unauthorized
-fund transfers, incorrect state changes, or impersonation of legitimate senders.
+This liveness property ensures that the messaging system remains permissionless and censorship-resistant. Violation
+would allow selective blocking of users from sending cross-domain messages.
 
 ## Function Specification
 
