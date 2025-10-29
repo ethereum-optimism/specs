@@ -15,9 +15,9 @@
   - [a01-002: Depositor Account Controls Fork Activation](#a01-002-depositor-account-controls-fork-activation)
     - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
-  - [i01-001: Fork Activation Sequence Is Enforced](#i01-001-fork-activation-sequence-is-enforced)
+  - [i01-001: Fee Calculation Reflects Active Fork Formula](#i01-001-fee-calculation-reflects-active-fork-formula)
     - [Impact](#impact)
-  - [i01-002: Fork Activation Is Irreversible](#i01-002-fork-activation-is-irreversible)
+  - [i01-002: Fork Activation Restricted to Depositor Account](#i01-002-fork-activation-restricted-to-depositor-account)
     - [Impact](#impact-1)
 - [Function Specification](#function-specification)
   - [getL1Fee](#getl1fee)
@@ -87,29 +87,30 @@ time according to the network upgrade schedule.
 
 ## Invariants
 
-### i01-001: Fork Activation Sequence Is Enforced
+### i01-001: Fee Calculation Reflects Active Fork Formula
 
-Fork activations must occur in the correct sequence: Ecotone → Fjord → Isthmus → Jovian.
-Later forks cannot be activated before their prerequisites.
+The gas price oracle returns L1 fee estimates that accurately reflect the fee formula corresponding to the
+currently active network upgrade. Fee calculation functions apply the correct formula based on which fork flags
+are set, ensuring consistency between the reported fork state and the fee computation logic.
 
 #### Impact
 
 **Severity: High**
 
-Violating the fork sequence would cause fee calculation inconsistencies and could result in incorrect fee
-estimation, potentially leading to transaction failures or incorrect fee collection.
+If fee calculations do not match the active fork's formula, clients receive incorrect price signals, leading to
+incorrect transaction pricing, unexpected reverts, or economic harm for users and operators.
 
-### i01-002: Fork Activation Is Irreversible
+### i01-002: Fork Activation Restricted to Depositor Account
 
-Once a fork is activated, it cannot be deactivated. The fork flags (isEcotone, isFjord, isIsthmus, isJovian)
-can only transition from false to true, never from true to false.
+Only the depositor account can activate fork flags that change fee calculation behavior. No other account can
+trigger these state transitions that alter which fee formula is applied.
 
 #### Impact
 
-**Severity: Medium**
+**Severity: High**
 
-Allowing fork deactivation would create inconsistent fee calculations across the network and break the
-deterministic fee estimation that applications depend on.
+If unauthorized accounts can activate forks, they could arbitrarily change fee semantics, causing chain-wide
+inconsistencies in fee estimation and breaking the coordinated network upgrade process.
 
 ## Function Specification
 
