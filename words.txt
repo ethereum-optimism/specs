@@ -5,10 +5,10 @@ Blockhash
 Blockspace
 Bootnode
 Brotli
+CHUGSPLASH
 CONFIGURATOR
 CWIA
 Celestia
-CHUGSPLASH
 Chainid
 Coef
 Configurator
@@ -163,6 +163,7 @@ hardfork’s
 idxs
 impactfully
 incentivized
+incentivizes
 initcode
 inputbytes
 interchangable
@@ -176,6 +177,7 @@ linkcheck
 mcache
 mdbook
 merkle
+merkleization
 merkleized
 meshsub
 messagepasser
@@ -228,6 +230,7 @@ replayability
 replayable
 reposted
 returndata
+returndatasize
 rollups
 runbooks
 sched
