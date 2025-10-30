@@ -5,6 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Contract Variants](#contract-variants)
 - [Definitions](#definitions)
   - [Split Depth](#split-depth)
   - [Game Tree Position](#game-tree-position)
@@ -12,6 +13,9 @@
   - [Chess Clock](#chess-clock)
   - [Subgame](#subgame)
   - [Bond Distribution Mode](#bond-distribution-mode)
+  - [Proposer Role](#proposer-role)
+  - [Challenger Role](#challenger-role)
+  - [Immutable Args Pattern](#immutable-args-pattern)
 - [Assumptions](#assumptions)
   - [a01-001: Anchor State Registry Provides Valid Anchor States](#a01-001-anchor-state-registry-provides-valid-anchor-states)
     - [Mitigations](#mitigations)
@@ -32,6 +36,8 @@
     - [Impact](#impact-4)
   - [i01-006: Game Finalization Requires Resolution And Time Delay](#i01-006-game-finalization-requires-resolution-and-time-delay)
     - [Impact](#impact-5)
+  - [i01-007: Permissioned Game Participation Restricted To Authorized Roles](#i01-007-permissioned-game-participation-restricted-to-authorized-roles)
+    - [Impact](#impact-6)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [step](#step)
@@ -68,14 +74,41 @@
   - [weth](#weth)
   - [anchorStateRegistry](#anchorstateregistry)
   - [l2ChainId](#l2chainid)
+  - [proposer](#proposer)
+  - [challenger](#challenger)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
 
-The FaultDisputeGame contract implements a bisection-based dispute resolution mechanism for verifying L2 output root
-claims through iterative narrowing of disagreement ranges until reaching single instruction steps that can be verified
-on-chain via a fault proof virtual machine.
+The FaultDisputeGame contract family implements a bisection-based dispute resolution mechanism for verifying L2 output
+root claims through iterative narrowing of disagreement ranges until reaching single instruction steps that can be
+verified on-chain via a fault proof virtual machine. The family includes permissionless variants (FaultDisputeGame,
+FaultDisputeGameV2) and permissioned variants (PermissionedDisputeGame, PermissionedDisputeGameV2,
+SuperPermissionedDisputeGame) that restrict participation to authorized roles.
+
+## Contract Variants
+
+The FaultDisputeGame specification covers five contract variants that share the core bisection-based dispute resolution
+mechanism but differ in access control and architectural implementation.
+
+**FaultDisputeGame**: The base permissionless implementation where any address can participate in dispute games by
+making moves and executing steps. Uses constructor parameters for immutable configuration values.
+
+**PermissionedDisputeGame**: Extends FaultDisputeGame with access control restricting step and move functions to
+authorized proposer and challenger roles. Only the proposer can initialize games. Uses constructor parameters for
+immutable configuration values.
+
+**SuperPermissionedDisputeGame**: Similar to PermissionedDisputeGame but extends SuperFaultDisputeGame to support super
+root claims. Uses the [Immutable Args Pattern] to store proposer and challenger addresses.
+
+**FaultDisputeGameV2**: The V2 permissionless implementation that refactors the architecture to use the [Immutable Args
+Pattern] for storing VM, WETH, AnchorStateRegistry, and other configuration values instead of constructor parameters.
+This reduces deployment costs and enables efficient cloning.
+
+**PermissionedDisputeGameV2**: Extends FaultDisputeGameV2 with access control restricting step and move functions to
+authorized proposer and challenger roles. Only the proposer can initialize games. Uses the [Immutable Args Pattern] for
+all configuration values including proposer and challenger addresses.
 
 ## Definitions
 
@@ -109,6 +142,22 @@ claim is considered countered if at least one of its children remains uncountere
 The mechanism for distributing bonds after game finalization, which can be NORMAL (bonds distributed to winners) or
 REFUND (bonds returned to original depositors) based on whether the game is determined to be proper by the Anchor
 State Registry.
+
+### Proposer Role
+
+An authorized address that can create dispute game proposals and participate in the game by making moves and executing
+steps. In permissioned variants, only the proposer can initialize games.
+
+### Challenger Role
+
+An authorized address that can participate in dispute games by making moves and executing steps to challenge proposals.
+In permissioned variants, both proposer and challenger roles are required for game participation.
+
+### Immutable Args Pattern
+
+An architectural pattern where contract parameters are stored in append-only calldata rather than contract storage,
+reducing deployment costs and enabling efficient cloning. Used in V2 variants to store addresses and configuration
+values.
 
 ## Assumptions
 
@@ -216,6 +265,18 @@ delay period has elapsed according to the Anchor State Registry.
 Premature finalization could prevent legitimate challenges from being processed, allowing invalid claims to be accepted
 before proper dispute resolution completes.
 
+### i01-007: Permissioned Game Participation Restricted To Authorized Roles
+
+In permissioned variants, only addresses with the [Proposer Role] or [Challenger Role] can execute moves or steps, and
+only the proposer can initialize games.
+
+#### Impact
+
+**Severity: Critical**
+
+Unauthorized participation in permissioned games could allow malicious actors to interfere with dispute resolution or
+create invalid games, undermining the controlled rollout and fallback mechanisms that permissioned variants provide.
+
 ## Function Specification
 
 ### initialize
@@ -226,8 +287,10 @@ Initializes the dispute game with the root claim and establishes the anchor stat
 
 - MUST revert if the game has already been initialized
 - MUST revert if the Anchor State Registry returns a zero anchor root
-- MUST revert if the calldata length is not exactly 122 bytes
+- MUST revert if the calldata length does not match expected length (122 bytes for V1, varies for V2 based on immutable
+  args)
 - MUST revert if the root claim's L2 block number is less than or equal to the anchor state's block number
+- MUST revert if tx.origin is not the proposer in permissioned variants
 - MUST create the root claim at position 1 with the game creator as claimant and msg.value as bond
 - MUST deposit the bond into the DelayedWETH contract
 - MUST record the bond in refundModeCredit for the game creator
@@ -248,6 +311,7 @@ depth.
 
 **Behavior:**
 
+- MUST revert if msg.sender is not the proposer or challenger in permissioned variants
 - MUST revert if the game status is not IN_PROGRESS
 - MUST revert if the step position depth is not exactly MAX_GAME_DEPTH + 1
 - MUST revert if the keccak256 hash of _stateData does not match the pre-state claim (ignoring highest order byte)
@@ -298,6 +362,7 @@ Generic move function handling both attack and defend moves.
 
 **Behavior:**
 
+- MUST revert if msg.sender is not the proposer or challenger in permissioned variants
 - MUST revert if the game status is not IN_PROGRESS
 - MUST revert if the claim at `_challengeIndex` does not match `_disputed`
 - MUST revert if attempting to defend the root claim or an execution trace bisection root claim
@@ -632,3 +697,23 @@ Returns the L2 chain ID this game argues about.
 **Behavior:**
 
 - MUST return the L2_CHAIN_ID immutable value
+
+### proposer
+
+Returns the proposer address for permissioned variants.
+
+**Behavior:**
+
+- MUST return the proposer address from immutable args in PermissionedDisputeGameV2 and SuperPermissionedDisputeGame
+- MUST return the PROPOSER immutable value in PermissionedDisputeGame
+- MUST NOT exist in permissionless variants (FaultDisputeGame, FaultDisputeGameV2)
+
+### challenger
+
+Returns the challenger address for permissioned variants.
+
+**Behavior:**
+
+- MUST return the challenger address from immutable args in PermissionedDisputeGameV2 and SuperPermissionedDisputeGame
+- MUST return the CHALLENGER immutable value in PermissionedDisputeGame
+- MUST NOT exist in permissionless variants (FaultDisputeGame, FaultDisputeGameV2)
