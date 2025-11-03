@@ -106,7 +106,7 @@ Returns the chain ID for the remote network.
 
 ### createOptimismMintableERC721
 
-Creates a new OptimismMintableERC721 token contract that represents a remote token.
+Creates a new [OptimismMintableERC721](optimism-mintable-erc721.md) token contract that represents a remote token.
 
 **Parameters:**
 

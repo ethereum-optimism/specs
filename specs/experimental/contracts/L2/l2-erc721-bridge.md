@@ -86,10 +86,10 @@ If violated, users lose their NFTs permanently as the L2 token is burned but the
 ### i01-003: One-to-one custody across chains via paired lock/mint and burn/unlock
 
 For each bridged tokenId, exactly one of the following holds at any time: it is held on L1 by the bridge
-(locked) or it is represented on L2 by exactly one OptimismMintableERC721. Transitions between these states
-occur only through the canonical flows: a valid deposit locks the token on L1 and is paired with a mint on L2;
-a valid withdrawal burns the token on L2 and is paired with an unlock on L1. No other mechanism may create or
-release representations.
+(locked) or it is represented on L2 by exactly one [OptimismMintableERC721](optimism-mintable-erc721.md).
+Transitions between these states occur only through the canonical flows: a valid deposit locks the token on L1 and
+is paired with a mint on L2; a valid withdrawal burns the token on L2 and is paired with an unlock on L1. No other
+mechanism may create or release representations.
 
 #### Impact
 

@@ -92,8 +92,8 @@ governance.
 
 ### a01-004: OptimismMintableERC20 tokens correctly implement mint and burn
 
-OptimismMintableERC20 tokens correctly implement the mint and burn functions and accurately report their remote token
-address.
+[OptimismMintableERC20](../L2/l2-standard-bridge.md#optimismmintableerc20) tokens correctly implement the mint and burn
+functions and accurately report their remote token address.
 
 #### Mitigations
 

@@ -81,8 +81,8 @@ correctly implements the initiateWithdrawal function for sending messages to L1.
 
 ### i01-001: Message Replay Protection
 
-Successfully relayed messages cannot be replayed. Each message hash can only be marked as successful once, and
-attempting to relay an already-successful message will revert.
+Successfully relayed messages cannot be replayed. Each [message hash](l2-to-l1-message-passer.md#withdrawal-hash) can
+only be marked as successful once, and attempting to relay an already-successful message will revert.
 
 #### Impact
 
@@ -177,7 +177,7 @@ Sends a message from L2 to L1 by encoding it and passing it to the L2ToL1Message
 - MUST call L2ToL1MessagePasser.initiateWithdrawal with the encoded message and ETH value
 - MUST emit SentMessage event with target, sender, message, nonce, and minGasLimit
 - MUST emit SentMessageExtension1 event with sender and value
-- MUST increment the message nonce after sending
+- MUST increment the [message nonce](l2-to-l1-message-passer.md#message-nonce) after sending
 
 ### relayMessage
 
