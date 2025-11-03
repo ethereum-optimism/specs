@@ -18812,8 +18812,7 @@ function. This timestamp is publicly queryable via the <code>lastLive</code> map
 <p>N/A</p>
 <h2 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h2>
 <h3 id="i01-001-liveness-tracking-accuracy"><a class="header" href="#i01-001-liveness-tracking-accuracy">i01-001: Liveness tracking accuracy</a></h3>
-<p>Liveness for each owner is tracked accurately. The <code>lastLive</code> mapping correctly reflects when owners sign transactions
-or call <code>showLiveness</code>, and owner additions/removals are properly synchronized with the Safe's owner set.</p>
+<p>Owner activity is accurately tracked and properly synchronized with the Safe's owner set.</p>
 <h4 id="impact-29"><a class="header" href="#impact-29">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If liveness tracking is inaccurate, inactive owners could appear active (preventing their removal) or active owners
