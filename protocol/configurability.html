@@ -203,6 +203,8 @@
 <li><a href="#governance-token">Governance Token</a></li>
 <li><a href="#operator-fee-scalar">Operator Fee Scalar</a></li>
 <li><a href="#operator-fee-constant">Operator Fee Constant</a></li>
+<li><a href="#da-footprint-gas-scalar">DA Footprint Gas Scalar</a></li>
+<li><a href="#minimum-base-fee">Minimum Base Fee</a></li>
 <li><a href="#resource-config">Resource Config</a></li>
 </ul>
 </li>
@@ -422,6 +424,14 @@ contracts deployed on layer 1.<br/></p>
 <strong>Requirement:</strong> 0 <br/></p>
 <p>Note that the operator fee scalar and constant are primarily used for non-standard configurations,
 like op-succinct, so their standard values are 0.</p>
+<h3 id="da-footprint-gas-scalar"><a class="header" href="#da-footprint-gas-scalar"><a href="jovian/exec-engine.html#DA-footprint-block-limit">DA Footprint Gas Scalar</a></a></h3>
+<p><strong>Description:</strong> DA footprint gas scalar -- used to calculate the DA footprint<br/>
+<strong>Administrator:</strong> <a href="#admin-roles">System Config Owner</a><br/>
+<strong>Requirement:</strong> Requirements (if any) are declared in <a href="https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml">https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml</a></p>
+<h3 id="minimum-base-fee"><a class="header" href="#minimum-base-fee"><a href="jovian/exec-engine.html#minimum-base-fee">Minimum Base Fee</a></a></h3>
+<p><strong>Description:</strong> Minimum base fee -- sets the minimum base fee on L2<br/>
+<strong>Administrator:</strong> <a href="#admin-roles">System Config Owner</a><br/>
+<strong>Requirement:</strong> Requirements (if any) are declared in <a href="https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml">https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml</a></p>
 <div class="footnote-definition" id="chain-id-uniqueness"><sup class="footnote-definition-label">1</sup>
 <p>The chain ID must be globally unique among all EVM chains.</p>
 </div>
