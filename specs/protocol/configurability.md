@@ -306,13 +306,13 @@ like op-succinct, so their standard values are 0.
 
 **Description:** DA footprint gas scalar -- used to calculate the DA footprint<br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
-**Requirement:** Requirements (if any) are declared in https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml
+**Requirement:** Requirements (if any) are declared in <https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml>
 
 ### [Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee)
 
 **Description:** Minimum base fee -- sets the minimum base fee on L2<br/>
 **Administrator:** [System Config Owner](#admin-roles)<br/>
-**Requirement:** Requirements (if any) are declared in https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml
+**Requirement:** Requirements (if any) are declared in <https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml>
 
 [^chain-id-uniqueness]: The chain ID must be globally unique among all EVM chains.
 
