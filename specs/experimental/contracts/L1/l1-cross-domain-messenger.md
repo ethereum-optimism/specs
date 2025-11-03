@@ -6,6 +6,8 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
+  - [Message Hash](#message-hash)
+  - [Message Nonce](#message-nonce)
   - [Base Gas](#base-gas)
 - [Assumptions](#assumptions)
   - [a01-001: OptimismPortal Relays Valid Messages](#a01-001-optimismportal-relays-valid-messages)
@@ -43,6 +45,16 @@ applications to communicate across domains without directly interacting with low
 handles message replay for failed messages and integrates with the OptimismPortal for cross-chain message delivery.
 
 ## Definitions
+
+### Message Hash
+
+A unique identifier for a cross-domain message computed from the message parameters including nonce, sender, target,
+value, gas limit, and message data. Version 1 messages use a hash that commits to all parameters.
+
+### Message Nonce
+
+A monotonically increasing counter that uniquely identifies each sent message. The upper two bytes encode the message
+version while the lower bytes contain the sequential nonce value.
 
 ### Base Gas
 
@@ -167,7 +179,7 @@ Sends a message to a target address on L2 by depositing a transaction through th
 - MUST call portal.depositTransaction with the encoded message, base gas, and msg.value
 - MUST emit SentMessage event with target, sender, message, nonce, and gas limit
 - MUST emit SentMessageExtension1 event with sender and value
-- MUST increment the [message nonce](../L2/l2-to-l1-message-passer.md#message-nonce) by one
+- MUST increment the message nonce by one
 - MUST accept any value of ETH sent with the call and forward it to the portal
 
 ### relayMessage
@@ -186,7 +198,7 @@ Relays a message that was sent from L2 through the OptimismPortal or replays a p
 - MUST revert if the contract is paused
 - MUST revert if message version is not 0 or 1
 - MUST revert if version 0 message has already been successfully relayed using legacy hash
-- MUST compute version 1 [message hash](../L2/l2-to-l1-message-passer.md#withdrawal-hash) from all parameters
+- MUST compute version 1 message hash from all parameters
 - MUST revert if caller is not the portal and msg.value is not zero
 - MUST revert if caller is not the portal and message is not in failedMessages mapping
 - MUST revert if target is the messenger itself or the portal
