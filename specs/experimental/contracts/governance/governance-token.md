@@ -9,8 +9,6 @@
 - [Assumptions](#assumptions)
   - [aGT-001: Owner operates within governance constraints](#agt-001-owner-operates-within-governance-constraints)
     - [Mitigations](#mitigations)
-  - [aGT-002: ERC20Votes total supply constraint](#agt-002-erc20votes-total-supply-constraint)
-    - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
   - [iGT-001: Voting power reflects delegated balance](#igt-001-voting-power-reflects-delegated-balance)
     - [Impact](#impact)
@@ -60,16 +58,6 @@ protocol rules.
 - MintManager enforces on-chain rate limits and caps on minting operations
 - Ownership transfers are transparent and subject to community oversight
 
-### aGT-002: ERC20Votes total supply constraint
-
-The total token supply never exceeds 2^208 - 1 tokens, as required by the inherited ERC20Votes implementation to prevent
-overflow in voting calculations.
-
-#### Mitigations
-
-- OpenZeppelin ERC20Votes implementation enforces this constraint in the _mint function
-- The constraint provides sufficient headroom for any realistic token supply
-
 ## Invariants
 
 ### iGT-001: Voting power reflects delegated balance
@@ -114,7 +102,7 @@ custom modifications that break standard behavior.
 
 #### Impact
 
-**Severity: High**
+**Severity: Critical**
 
 If this invariant is violated, the token would lose compatibility with standard governance systems, wallets, and DeFi
 protocols. Governance contracts expecting standard ERC20Votes behavior would malfunction, voting power calculations
