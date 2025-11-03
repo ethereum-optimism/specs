@@ -54,13 +54,13 @@ replay protection.
 
 ### Message Hash
 
-A unique identifier for a cross-domain message computed from the message nonce, sender, target, value, minimum gas
-limit, and calldata. Version 1 messages use all these fields, while legacy version 0 messages use a subset.
+See [Withdrawal Hash](l2-to-l1-message-passer.md#withdrawal-hash) in the L2ToL1MessagePasser specification for the
+definition of message hash computation.
 
 ### Message Nonce
 
-A monotonically increasing counter that uniquely identifies each sent message. The nonce includes a 2-byte version
-prefix in the upper bits, allowing for different message formats while maintaining uniqueness.
+See [Message Nonce](l2-to-l1-message-passer.md#message-nonce) in the L2ToL1MessagePasser specification for the
+definition of nonce structure and versioning.
 
 ### Message Replay
 

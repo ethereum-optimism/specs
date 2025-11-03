@@ -57,9 +57,8 @@ mints them when finalizing withdrawals and burns them when depositing to L2.
 
 ### OptimismMintableERC20
 
-An ERC20 token that implements the IOptimismMintableERC20 or ILegacyMintableERC20 interface, allowing the bridge to
-mint and burn tokens. These tokens are native to L2 and have a corresponding L1 representation that can be
-minted/burned by the bridge.
+See [OptimismMintableERC20](../L2/l2-standard-bridge.md#optimismmintableerc20) in the L2StandardBridge specification
+for the definition of mintable ERC20 tokens.
 
 ### Native L1 Token
 

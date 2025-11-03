@@ -48,13 +48,13 @@ handles message replay for failed messages and integrates with the OptimismPorta
 
 ### Message Hash
 
-A unique identifier for a cross-domain message computed from the message parameters including nonce, sender, target,
-value, gas limit, and message data. Version 1 messages use a hash that commits to all parameters.
+See [Withdrawal Hash](../L2/l2-to-l1-message-passer.md#withdrawal-hash) in the L2ToL1MessagePasser specification for
+the definition of message hash computation.
 
 ### Message Nonce
 
-A monotonically increasing counter that uniquely identifies each sent message. The upper two bytes encode the message
-version while the lower bytes contain the sequential nonce value.
+See [Message Nonce](../L2/l2-to-l1-message-passer.md#message-nonce) in the L2ToL1MessagePasser specification for the
+definition of nonce structure and versioning.
 
 ### Base Gas
 

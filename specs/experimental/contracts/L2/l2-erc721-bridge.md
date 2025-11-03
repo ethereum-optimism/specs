@@ -40,9 +40,8 @@ on L2 when deposits are finalized from L1 and burns tokens on L2 when withdrawal
 
 ### OptimismMintableERC721
 
-An ERC721 token that implements the IOptimismMintableERC721 interface, allowing the bridge to mint and burn tokens.
-These tokens must be originally deployed on L1 and have a corresponding L2 representation that can be minted/burned
-by the bridge.
+See [OptimismMintableERC721](optimism-mintable-erc721.md#overview) specification for the definition of mintable ERC721
+tokens.
 
 ## Assumptions
 

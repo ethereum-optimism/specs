@@ -36,7 +36,8 @@ An ERC721 token deployed on L2 by this factory that represents a remote token fr
 
 ### Remote Token
 
-The original ERC721 token on the remote chain (typically L1) that a local token represents.
+See [Remote Token](optimism-mintable-erc721.md#remote-token) in the OptimismMintableERC721 specification for the
+definition of remote token addresses.
 
 ## Assumptions
 
