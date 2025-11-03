@@ -18,6 +18,8 @@
     - [Impact](#impact-1)
   - [iGT-003: Unauthorized minting is impossible](#igt-003-unauthorized-minting-is-impossible)
     - [Impact](#impact-2)
+  - [iGT-004: Standard ERC20Votes compliance](#igt-004-standard-erc20votes-compliance)
+    - [Impact](#impact-3)
 - [Function Specification](#function-specification)
   - [mint](#mint)
   - [burn](#burn)
@@ -104,6 +106,20 @@ Only the contract owner can successfully mint new tokens through the mint functi
 
 If this invariant is violated, unauthorized parties could mint unlimited tokens, completely destroying the token's
 economic value, diluting existing holders, and compromising the entire governance system.
+
+### iGT-004: Standard ERC20Votes compliance
+
+The contract maintains full compatibility with ERC20, ERC20Votes, ERC20Permit, and ERC20Burnable standards without
+custom modifications that break standard behavior.
+
+#### Impact
+
+**Severity: High**
+
+If this invariant is violated, the token would lose compatibility with standard governance systems, wallets, and DeFi
+protocols. Governance contracts expecting standard ERC20Votes behavior would malfunction, voting power calculations
+could become incorrect, and the token would not be usable in standard governance frameworks like OpenZeppelin Governor
+or Compound-style governance systems.
 
 ## Function Specification
 
