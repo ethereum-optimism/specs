@@ -24,14 +24,18 @@
   - [a01-003: DelayedWETH Contract Functions Correctly](#a01-003-delayedweth-contract-functions-correctly)
     - [Mitigations](#mitigations-2)
 - [Invariants](#invariants)
-  - [i01-001: Game Resolution Reflects Root Claim Validity](#i01-001-game-resolution-reflects-root-claim-validity)
+  - [i01-001: Game Resolution Reflects Actual Root Claim Validity](#i01-001-game-resolution-reflects-actual-root-claim-validity)
     - [Impact](#impact)
-  - [i01-002: Bond Distribution Matches Game Outcome](#i01-002-bond-distribution-matches-game-outcome)
+  - [i01-002: Game Can Always Be Resolved In Reasonable Bounded Time](#i01-002-game-can-always-be-resolved-in-reasonable-bounded-time)
     - [Impact](#impact-1)
-  - [i01-003: Game Finalization Requires Resolution And Time Delay](#i01-003-game-finalization-requires-resolution-and-time-delay)
+  - [i01-003: Bond Distribution Is Accurate According To Game Result](#i01-003-bond-distribution-is-accurate-according-to-game-result)
     - [Impact](#impact-2)
-  - [i01-004: Game Participation Is Permissionless By Default](#i01-004-game-participation-is-permissionless-by-default)
+  - [i01-004: Game Is Incentive Compatible](#i01-004-game-is-incentive-compatible)
     - [Impact](#impact-3)
+  - [i01-005: Dispute Game Resolution Is Independent Of Other Games](#i01-005-dispute-game-resolution-is-independent-of-other-games)
+    - [Impact](#impact-4)
+  - [i01-006: Default Games Are Permissionless](#i01-006-default-games-are-permissionless)
+    - [Impact](#impact-5)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [step](#step)
@@ -186,7 +190,7 @@ operations as specified.
 
 ## Invariants
 
-### i01-001: Game Resolution Reflects Root Claim Validity
+### i01-001: Game Resolution Reflects Actual Root Claim Validity
 
 After resolution, the game status accurately reflects whether the root claim was successfully defended (DEFENDER_WINS)
 or successfully challenged (CHALLENGER_WINS) based on the subgame resolution tree.
@@ -199,43 +203,65 @@ If this invariant is violated, invalid output roots could be accepted or valid o
 compromising the integrity of the L2 state validation system and potentially enabling theft of funds through invalid
 withdrawals.
 
-### i01-002: Bond Distribution Matches Game Outcome
+### i01-002: Game Can Always Be Resolved In Reasonable Bounded Time
 
-Bonds are distributed according to the bond distribution mode (NORMAL or REFUND) determined by whether the game is
-proper and finalized, with NORMAL mode distributing to winners and REFUND mode returning to original depositors.
+Games can always be resolved within a reasonable bounded time period (less than 30 days) regardless of participant
+behavior, ensuring that dispute resolution does not stall indefinitely.
+
+#### Impact
+
+**Severity: High**
+
+If games cannot be resolved in bounded time, the system could be subject to denial-of-service attacks where malicious
+actors prevent legitimate dispute resolution, blocking withdrawals and state finalization.
+
+### i01-003: Bond Distribution Is Accurate According To Game Result
+
+Bonds are distributed accurately according to the game result, with winners receiving bonds from losers in NORMAL mode
+and all participants receiving refunds in REFUND mode based on whether the game is proper and finalized.
 
 #### Impact
 
 **Severity: High**
 
 Incorrect bond distribution undermines the economic incentives that ensure honest participation in the dispute game
-system.
+system, potentially allowing attackers to profit from invalid claims or defenders to avoid penalties.
 
-### i01-003: Game Finalization Requires Resolution And Time Delay
+### i01-004: Game Is Incentive Compatible
 
-Games can only be closed and have their bond distribution mode determined after they are resolved and the finalization
-delay period has elapsed according to the Anchor State Registry.
-
-#### Impact
-
-**Severity: High**
-
-Premature finalization could prevent legitimate challenges from being processed, allowing invalid claims to be accepted
-before proper dispute resolution completes.
-
-### i01-004: Game Participation Is Permissionless By Default
-
-Game participation is permissionless by default. Authenticated game types restrict move and step operations to
-authorized roles ([Proposer Role] and [Challenger Role]), and restrict initialization to the proposer. This restriction
-applies only to authenticated game types and does not affect permissionless game types.
+The game's economic incentives ensure that honest behavior (defending valid claims and challenging invalid claims) is
+more profitable than dishonest behavior, maintaining the security of the dispute resolution system.
 
 #### Impact
 
 **Severity: High**
 
-If authenticated game types fail to properly restrict participation, unauthorized actors could interfere with dispute
-resolution or create invalid games, undermining the controlled rollout and fallback mechanisms that authenticated
-variants provide.
+If the game is not incentive compatible, rational actors may find it profitable to submit invalid claims or fail to
+challenge invalid claims, compromising the integrity of the L2 state validation system.
+
+### i01-005: Dispute Game Resolution Is Independent Of Other Games
+
+The resolution of any dispute game is independent of the result of any other game, ensuring that each game's outcome is
+determined solely by its own subgame tree and not influenced by external game states.
+
+#### Impact
+
+**Severity: High**
+
+If game resolutions are not independent, attackers could manipulate one game to influence another, potentially causing
+cascading failures or enabling coordinated attacks across multiple games.
+
+### i01-006: Default Games Are Permissionless
+
+By default, participation in FaultDisputeGame is permissionless, allowing any address to initialize games, make moves,
+and execute steps. Only explicitly authenticated game types restrict participation to authorized roles.
+
+#### Impact
+
+**Severity: High**
+
+If default games are not permissionless, the system loses its censorship resistance and decentralization properties,
+potentially allowing gatekeepers to prevent legitimate challenges to invalid claims.
 
 ## Function Specification
 
