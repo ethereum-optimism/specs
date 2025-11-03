@@ -10,6 +10,7 @@
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
   - [i01-001: Whitelist Irreversibility](#i01-001-whitelist-irreversibility)
+    - [Impact](#impact)
 - [Function Specification](#function-specification)
   - [setWhitelistedDeployer](#setwhitelisteddeployer)
   - [setOwner](#setowner)

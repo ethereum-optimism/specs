@@ -1,5 +1,43 @@
 # L1ERC721Bridge
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Overview](#overview)
+- [Definitions](#definitions)
+  - [Bridge Pair](#bridge-pair)
+  - [Correct Deposit](#correct-deposit)
+  - [Eligible Withdrawal](#eligible-withdrawal)
+  - [Bridge Flow](#bridge-flow)
+- [Assumptions](#assumptions)
+  - [a01-001: CrossDomainMessenger delivers messages reliably](#a01-001-crossdomainmessenger-delivers-messages-reliably)
+    - [Mitigations](#mitigations)
+  - [a01-002: L2ERC721Bridge validates withdrawals correctly](#a01-002-l2erc721bridge-validates-withdrawals-correctly)
+    - [Mitigations](#mitigations-1)
+  - [a01-003: ProxyAdmin owner operates within governance constraints](#a01-003-proxyadmin-owner-operates-within-governance-constraints)
+    - [Mitigations](#mitigations-2)
+- [Invariants](#invariants)
+  - [i01-001: L2 delivery for Correct Deposits](#i01-001-l2-delivery-for-correct-deposits)
+    - [Impact](#impact)
+  - [i01-002: L1 delivery for Eligible Withdrawals](#i01-002-l1-delivery-for-eligible-withdrawals)
+    - [Impact](#impact-1)
+  - [i01-003: No bypass of the Bridge Flow](#i01-003-no-bypass-of-the-bridge-flow)
+    - [Impact](#impact-2)
+- [Function Specification](#function-specification)
+  - [initialize](#initialize)
+  - [bridgeERC721](#bridgeerc721)
+  - [bridgeERC721To](#bridgeerc721to)
+  - [finalizeBridgeERC721](#finalizebridgeerc721)
+  - [paused](#paused)
+  - [superchainConfig](#superchainconfig)
+  - [proxyAdmin](#proxyadmin)
+  - [proxyAdminOwner](#proxyadminowner)
+  - [MESSENGER](#messenger)
+  - [OTHER_BRIDGE](#other_bridge)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Overview
 
 The L1ERC721Bridge enables trustless transfer of ERC721 tokens between Ethereum L1 and Optimism L2 by escrowing
@@ -133,10 +171,10 @@ Initiates a bridge transfer of an ERC721 token to the caller's address on L2.
 - MUST revert if caller is not an externally owned account (EOA)
 - MUST revert if `_remoteToken` is address(0)
 - MUST revert if the caller has not approved this contract to transfer the token
-- MUST set deposits[_localToken][_remoteToken][_tokenId] to true
+- MUST set `deposits[_localToken][_remoteToken][_tokenId]` to true
 - MUST transfer the token from caller to this contract using transferFrom
 - MUST send a cross-chain message to L2ERC721Bridge calling finalizeBridgeERC721
-- MUST emit ERC721BridgeInitiated event with caller as both _from and _to addresses
+- MUST emit ERC721BridgeInitiated event with caller as both _from and_to addresses
 
 ### bridgeERC721To
 
@@ -156,7 +194,7 @@ Initiates a bridge transfer of an ERC721 token to a specified recipient address 
 - MUST revert if `_to` is address(0)
 - MUST revert if `_remoteToken` is address(0)
 - MUST revert if the caller has not approved this contract to transfer the token
-- MUST set deposits[_localToken][_remoteToken][_tokenId] to true
+- MUST set `deposits[_localToken][_remoteToken][_tokenId]` to true
 - MUST transfer the token from caller to this contract using transferFrom
 - MUST send a cross-chain message to L2ERC721Bridge calling finalizeBridgeERC721 with `_to` as recipient
 - MUST emit ERC721BridgeInitiated event with caller as _from and `_to` as recipient
@@ -180,8 +218,8 @@ Completes an ERC721 bridge withdrawal from L2 by releasing the escrowed token to
 - MUST revert if the CrossDomainMessenger's xDomainMessageSender is not the L2ERC721Bridge
 - MUST revert if the contract is paused
 - MUST revert if `_localToken` is the address of this contract
-- MUST revert if deposits[_localToken][_remoteToken][_tokenId] is false
-- MUST set deposits[_localToken][_remoteToken][_tokenId] to false
+- MUST revert if `deposits[_localToken][_remoteToken][_tokenId]` is false
+- MUST set `deposits[_localToken][_remoteToken][_tokenId]` to false
 - MUST transfer the token from this contract to `_to` using safeTransferFrom
 - MUST emit ERC721BridgeFinalized event
 
