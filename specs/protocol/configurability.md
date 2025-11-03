@@ -300,6 +300,18 @@ contracts deployed on layer 1.<br/>
 Note that the operator fee scalar and constant are primarily used for non-standard configurations,
 like op-succinct, so their standard values are 0.
 
+### [DA Footprint Gas Scalar](jovian/exec-engine.md#DA-footprint-block-limit)
+
+**Description:** DA footprint gas scalar -- used to calculate the DA footprint<br/>
+**Administrator:** [System Config Owner](#admin-roles)<br/>
+**Requirement:** Requirements (if any) are declared in https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml
+
+### [Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee)
+
+**Description:** Minimum base fee -- sets the minimum base fee on L2<br/>
+**Administrator:** [System Config Owner](#admin-roles)<br/>
+**Requirement:** Requirements (if any) are declared in https://github.com/ethereum-optimism/superchain-registry/blob/main/validation/standard/standard-config-params-mainnet.toml
+
 [^chain-id-uniqueness]: The chain ID must be globally unique among all EVM chains.
 
 ### Resource Config
