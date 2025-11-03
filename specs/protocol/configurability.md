@@ -32,6 +32,8 @@
   - [Governance Token](#governance-token)
   - [Operator Fee Scalar](#operator-fee-scalar)
   - [Operator Fee Constant](#operator-fee-constant)
+  - [DA Footprint Gas Scalar](#da-footprint-gas-scalar)
+  - [Minimum Base Fee](#minimum-base-fee)
   - [Resource Config](#resource-config)
 - [Policy Parameters](#policy-parameters)
   - [Data Availability Type](#data-availability-type)
