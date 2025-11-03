@@ -7820,23 +7820,18 @@ address public immutable CHALLENGER;
 <ul>
 <li><a href="fault-proof/stage-one/optimism-portal.html#constructor">constructor</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#initialize">initialize</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#upgrade">upgrade</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#paused">paused</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#guardian">guardian</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#ethlockbox">ethLockbox</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#superrootsactive">superRootsActive</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#disputegamefactory">disputeGameFactory</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#respectedgametype">respectedGameType</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#respectedgametypeupdatedat">respectedGameTypeUpdatedAt</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#l2sender">l2Sender</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#provewithdrawaltransaction-super-roots">proveWithdrawalTransaction (Super Roots)</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#provewithdrawaltransaction-output-roots">proveWithdrawalTransaction (Output Roots)</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#provewithdrawaltransaction">proveWithdrawalTransaction</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#checkwithdrawal">checkWithdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#migrateliquidity">migrateLiquidity</a></li>
-<li><a href="fault-proof/stage-one/optimism-portal.html#migratetosuperroots">migrateToSuperRoots</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#donateeth">donateETH</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransactionexternalproof">finalizeWithdrawalTransactionExternalProof</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#numproofsubmitters">numProofSubmitters</a></li>
@@ -8047,20 +8042,12 @@ see this as a critical system risk.</p>
 <h3 id="initialize-1"><a class="header" href="#initialize-1">initialize</a></h3>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
-<li>MUST NOT be triggerable if <code>upgrade()</code> has already been called.</li>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
-<li>(-v4.1.0) MUST set the value of the <code>ETHLockbox</code> contract.</li>
+<li>MUST assert that the ETHLockbox state is valid based on the feature flag.</li>
 <li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
 value if the value is not set already.</li>
 <li>MUST initialize the resource metering configuration.</li>
-</ul>
-<h3 id="upgrade"><a class="header" href="#upgrade">upgrade</a></h3>
-<ul>
-<li>MUST only be triggerable once.</li>
-<li>MUST NOT be triggerable if <code>initialize()</code> has already been called.</li>
-<li>MUST set the value of the <code>AnchorStateRegistry</code> contract address.</li>
-<li>(-4.1.0) MUST set the value of the <code>ETHLockbox</code> contract address.</li>
 </ul>
 <h3 id="paused-1"><a class="header" href="#paused-1">paused</a></h3>
 <p>Returns the current state of the <code>SystemConfig.paused()</code> function.</p>
@@ -8071,10 +8058,6 @@ value if the value is not set already.</li>
 configured for this OptimismPortal, this function will return <code>address(0)</code>.</p>
 <h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
 <p>Returns the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
-<h3 id="superrootsactive"><a class="header" href="#superrootsactive">superRootsActive</a></h3>
-<p>(-v4.1.0)</p>
-<p>Returns the value of the <code>superRootsActive</code> variable which determines if the <code>OptimismPortal</code> will
-use the standard Output Root proof or the Super Root proof.</p>
 <h3 id="disputegamefactory"><a class="header" href="#disputegamefactory">disputeGameFactory</a></h3>
 <p>Returns the DisputeGameFactory contract from the AnchorStateRegistry contract.</p>
 <h3 id="disputegamefinalitydelayseconds-1"><a class="header" href="#disputegamefinalitydelayseconds-1">disputeGameFinalityDelaySeconds</a></h3>
@@ -8097,40 +8080,10 @@ a call to <code>AnchorStateRegistry.disputeGameFinalityDelaySeconds()</code>.</p
 has not been initialized then this value will be <code>address(0)</code> and should not be used. If the
 <code>OptimismPortal</code> is not currently executing an withdrawal transaction then this value will be
 <code>0x000000000000000000000000000000000000dEaD</code> and should not be used.</p>
-<h3 id="provewithdrawaltransaction-super-roots"><a class="header" href="#provewithdrawaltransaction-super-roots">proveWithdrawalTransaction (Super Roots)</a></h3>
-<p>(-v4.1.0)</p>
-<p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> a withdrawal transaction within an <code>OptimismPortal</code>
-that uses dispute games that argue over <a href="fault-proof/stage-one/optimism-portal.html#super-root">Super Roots</a>.</p>
+<h3 id="provewithdrawaltransaction"><a class="header" href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></h3>
+<p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> a withdrawal transaction.</p>
 <ul>
-<li>MUST revert if the withdrawal target is an <a href="fault-proof/stage-one/optimism-portal.html#unsafe-target">unsafe target</a>.</li>
-<li>MUST revert if the withdrawal is being proven against a game that is not a
-<a href="fault-proof/stage-one/./anchor-state-registry.html#proper-game">Proper Game</a>.</li>
-<li>MUST revert if the withdrawal is being proven against a game that is not a
-<a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
-<li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
-Challenger.</li>
-<li>MUST revert if <code>superRootsActive</code> is <code>false</code>.</li>
-<li>MUST revert if the proof provided by the user of the preimage of the Super Root that the dispute
-game argues about is invalid. This proof is verified by hashing the user-provided Super Root
-preimage and comparing them to the Super Root in the referenced dispute game.</li>
-<li>MUST revert if the pointer index of the Output Root inside of the Super Root provided by the user
-is beyond the size of the Output Roots array or points to a chain ID other than the chain ID
-stored within the <code>SystemConfig</code> contract for the <code>OptimismPortal</code>.</li>
-<li>MUST revert if the proof provided by the user of the preimage of the Output Root is invalid. This
-proof is verified by hashing the user-provided preimage and comparing them to the Output Root.</li>
-<li>MUST revert if the provided merkle trie proof that the withdrawal was included within the root
-claim of the provided dispute game is invalid.</li>
-<li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
-withdrawal, the address of the game against which it was proven, and the block timestamp at which
-the proof transaction was submitted.</li>
-<li>MUST add the proof submitter to the list of submitters for this withdrawal hash.</li>
-<li>MUST emit a <code>WithdrawalProven</code> event with the withdrawal hash, sender, and target.</li>
-<li>MUST emit a <code>WithdrawalProvenExtension1</code> event with the withdrawal hash and proof submitter address.</li>
-</ul>
-<h3 id="provewithdrawaltransaction-output-roots"><a class="header" href="#provewithdrawaltransaction-output-roots">proveWithdrawalTransaction (Output Roots)</a></h3>
-<p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">prove</a> a withdrawal transaction within an <code>OptimismPortal</code>
-that uses dispute games that argue over <a href="fault-proof/stage-one/optimism-portal.html#output-root">Output Roots</a>.</p>
-<ul>
+<li>MUST revert if the system is paused.</li>
 <li>MUST revert if the withdrawal target is an <a href="fault-proof/stage-one/optimism-portal.html#unsafe-target">Unsafe Target</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that is not a
 <a href="fault-proof/stage-one/./anchor-state-registry.html#proper-game">Proper Game</a>.</li>
@@ -8138,13 +8091,14 @@ that uses dispute games that argue over <a href="fault-proof/stage-one/optimism-
 <a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game">Respected Game</a>.</li>
 <li>MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
 Challenger.</li>
-<li>(-v4.1.0) MUST revert if <code>superRootsActive</code> is <code>true</code>.</li>
+<li>MUST revert if the current timestamp is less than or equal to the dispute game's creation
+timestamp.</li>
 <li>MUST revert if the proof provided by the user of the preimage of the Output Root that the dispute
 game argues about is invalid. This proof is verified by hashing the user-provided preimage and
 comparing them to the root claim of the referenced dispute game.</li>
 <li>MUST revert if the provided merkle trie proof that the withdrawal was included within the root
 claim of the provided dispute game is invalid.</li>
-<li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven<br />
+<li>MUST otherwise store a record of the withdrawal proof that includes the hash of the proven
 withdrawal, the address of the game against which it was proven, and the block timestamp at which
 the proof transaction was submitted.</li>
 <li>MUST add the proof submitter to the list of submitters for this withdrawal hash.</li>
@@ -8168,48 +8122,8 @@ created.</li>
 <h3 id="finalizewithdrawaltransaction"><a class="header" href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></h3>
 <p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> a withdrawal transaction.</p>
 <ul>
-<li>MUST revert if the function is called while a previous withdrawal is being executed.</li>
-<li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code>.</li>
-<li>MUST mark the withdrawal as finalized.</li>
-<li>MUST set the L2 Withdrawal Sender variable correctly.</li>
-<li>(-v4.1.0) MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.</li>
-<li>(+v4.1.0) MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value ONLY IF the
-OptimismPortal has an ETHLockbox configured AND the ETHLockbox system feature is active.</li>
-<li>MUST execute the withdrawal transaction by executing a contract call to the target address with
-the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
-specified by the withdrawal.</li>
-<li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
-<li>MUST emit a <code>WithdrawalFinalized</code> event with the withdrawal hash and success status.</li>
-<li>(-v4.1.0) MUST lock any unused ETH back into the ETHLockbox if the call to the target address
-fails.</li>
-<li>(+v4.1.0) MUST lock any unused ETH back into the ETHLockbox if the call to the target address
-fails ONLY IF the OptimismPortal has an ETHLockbox configured AND the ETHLockbox system feature
-is active.</li>
-<li>MUST revert if the withdrawal call fails and the transaction origin is the estimation address, to
-help determine exact gas costs.</li>
-</ul>
-<h3 id="migrateliquidity"><a class="header" href="#migrateliquidity">migrateLiquidity</a></h3>
-<p>(-v4.1.0)</p>
-<p>Allows the ProxyAdmin owner to migrate the total ETH balance to the ETHLockbox contract.</p>
-<ul>
-<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
-<li>MUST transfer the entire ETH balance of the OptimismPortal to the ETHLockbox contract.</li>
-<li>MUST emit an ETHMigrated event with the ETHLockbox address and the migrated ETH amount.</li>
-<li>MAY be called even if the system is paused.</li>
-</ul>
-<h3 id="migratetosuperroots"><a class="header" href="#migratetosuperroots">migrateToSuperRoots</a></h3>
-<p>(-v4.1.0)</p>
-<p>Allows the ProxyAdmin owner to migrate the OptimismPortal to use a new ETHLockbox, point at a new
-AnchorStateRegistry, and start using the Super Roots proof method.</p>
-<ul>
-<li>MUST revert if the system is paused.</li>
-<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
-<li>MUST revert if the new AnchorStateRegistry is the same as the current one.</li>
-<li>MUST update the ETHLockbox address to the provided new ETHLockbox address.</li>
-<li>MUST update the AnchorStateRegistry address to the provided new AnchorStateRegistry address.</li>
-<li>MUST set the superRootsActive flag to true, enabling Super Roots proof method.</li>
-<li>MUST emit a PortalMigrated event with the old and new ETHLockbox and AnchorStateRegistry
-addresses.</li>
+<li>MUST delegate to <code>finalizeWithdrawalTransactionExternalProof</code> with <code>msg.sender</code> as the proof
+submitter.</li>
 </ul>
 <h3 id="donateeth"><a class="header" href="#donateeth">donateETH</a></h3>
 <p>Allows any address to donate ETH to the contract without triggering a deposit to L2.</p>
@@ -8222,8 +8136,23 @@ addresses.</li>
 <p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> a withdrawal transaction using a proof submitted
 by another address.</p>
 <ul>
-<li>MUST behave identically to <a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a> but
-allows the user to finalize a withdrawal with a proof that was submitted by another user.</li>
+<li>MUST revert if the system is paused.</li>
+<li>MUST revert if the function is called while a previous withdrawal is being executed.</li>
+<li>MUST revert if the withdrawal target is an <a href="fault-proof/stage-one/optimism-portal.html#unsafe-target">Unsafe Target</a>.</li>
+<li>MUST revert if the withdrawal being finalized does not pass <code>checkWithdrawal</code>.</li>
+<li>MUST mark the withdrawal as finalized.</li>
+<li>MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value AND the OptimismPortal
+has an ETHLockbox configured AND the ETHLockbox system feature is active.</li>
+<li>MUST set the L2 Withdrawal Sender variable correctly.</li>
+<li>MUST execute the withdrawal transaction by executing a contract call to the target address with
+the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
+specified by the withdrawal.</li>
+<li>MUST unset the L2 Withdrawal Sender after the withdrawal call.</li>
+<li>MUST emit a <code>WithdrawalFinalized</code> event with the withdrawal hash and success status.</li>
+<li>MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails AND the
+OptimismPortal has an ETHLockbox configured AND the ETHLockbox system feature is active.</li>
+<li>MUST revert if the withdrawal call fails and the transaction origin is the estimation address, to
+help determine exact gas costs.</li>
 </ul>
 <h3 id="numproofsubmitters"><a class="header" href="#numproofsubmitters">numProofSubmitters</a></h3>
 <p>Returns the number of proof submitters for a given withdrawal hash.</p>
@@ -8267,15 +8196,15 @@ deriving deposit transactions. Note that if a deposit is made by a contract, its
 address will be aliased when retrieved using <code>tx.origin</code> or <code>msg.sender</code>. Consider
 using the CrossDomainMessenger contracts for a simpler developer experience.</p>
 <ul>
-<li>(-v4.0.0) MUST lock any ETH value (msg.value) in the ETHLockbox contract.</li>
-<li>(+v4.1.0) MUST lock any ETH value (msg.value) in the ETHLockbox contract ONLY IF the
-OptimismPortal has an an ETHLockbox configured AND the ETHLockbox system feature is active.</li>
-<li>MUST apply resource metering to the gas limit parameter to prevent spam.</li>
+<li>MUST lock any ETH value (msg.value) in the ETHLockbox contract if the OptimismPortal has an
+ETHLockbox configured AND the ETHLockbox system feature is active.</li>
 <li>MUST revert if the target address is not address(0) for contract creations.</li>
 <li>MUST revert if the gas limit provided is below the <a href="fault-proof/stage-one/optimism-portal.html#minimum-gas-limit">minimum gas limit</a>.</li>
 <li>MUST revert if the calldata is too large (&gt; 120,000 bytes).</li>
 <li>MUST transform the sender address to its alias if the caller is a contract.</li>
-<li>MUST emit a TransactionDeposited event with the from address, to address, deposit version, and opaque data.</li>
+<li>MUST apply resource metering to the gas limit parameter.</li>
+<li>MUST emit a TransactionDeposited event with the from address, to address, deposit version, and
+opaque data.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="precompiles"><a class="header" href="#precompiles">Precompiles</a></h1>
@@ -8805,7 +8734,7 @@ that <a href="protocol/superchain-config.html#isupc-001-the-guardian-and-pause-d
 <li>MUST set the value of the Guardian role.</li>
 <li>MUST emit a ConfigUpdate event with the Guardian address.</li>
 </ul>
-<h3 id="upgrade-1"><a class="header" href="#upgrade-1">upgrade</a></h3>
+<h3 id="upgrade"><a class="header" href="#upgrade">upgrade</a></h3>
 <ul>
 <li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST migrate the guardian from old storage to new storage.</li>
@@ -9295,7 +9224,7 @@ inbox, L1 contract addresses, and L2 chain ID.</li>
 <li>MUST set the start block to the current block number if it hasn't been set already.</li>
 <li>MUST validate the resource configuration parameters against system constraints.</li>
 </ul>
-<h3 id="upgrade-2"><a class="header" href="#upgrade-2">upgrade</a></h3>
+<h3 id="upgrade-1"><a class="header" href="#upgrade-1">upgrade</a></h3>
 <ul>
 <li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST set the L2 chain ID to the provided value.</li>
@@ -14282,7 +14211,7 @@ the token minting authority.</p>
 <li>MUST set <code>mintPermittedAfter</code> to <code>block.timestamp + MINT_PERIOD</code> to enforce the next <a href="governance/mint-manager.html#mint-period">Mint Period</a></li>
 <li>MUST call <code>governanceToken.mint(_account, _amount)</code> to perform the actual minting</li>
 </ul>
-<h3 id="upgrade-3"><a class="header" href="#upgrade-3">upgrade</a></h3>
+<h3 id="upgrade-2"><a class="header" href="#upgrade-2">upgrade</a></h3>
 <pre><code class="language-solidity">function upgrade(address _newMintManager) public onlyOwner
 </code></pre>
 <p>Transfers ownership of the <code>GovernanceToken</code> to a new <code>MintManager</code> contract, effectively upgrading the minting system.</p>
@@ -14477,7 +14406,7 @@ is the single source of truth for chain operator ownership.</p>
 <li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
 is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is <code>abi.encodeCall(L1Block.setConfig, (_type, _value))</code></li>
 </ul>
-<h4 id="upgrade-4"><a class="header" href="#upgrade-4"><code>upgrade</code></a></h4>
+<h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> function MUST only be callable by the <code>UPGRADER</code> role as defined
 in the <a href="experimental/standard-l2-genesis.html#superchainconfig"><code>SuperchainConfig</code></a>.</p>
 <pre><code class="language-solidity">function upgrade(bytes memory _data) external
@@ -18071,7 +18000,7 @@ the corresponding chain would need to deploy and manage its own <code>ETHLockbox
 when finalizing withdrawal transactions, without altering other aspects of the current <code>OptimismPortal</code> implementation.</p>
 <h2 id="interface-and-properties"><a class="header" href="#interface-and-properties">Interface and properties</a></h2>
 <h3 id="eth-management"><a class="header" href="#eth-management">ETH Management</a></h3>
-<h4 id="migrateliquidity-1"><a class="header" href="#migrateliquidity-1"><code>migrateLiquidity</code></a></h4>
+<h4 id="migrateliquidity"><a class="header" href="#migrateliquidity"><code>migrateLiquidity</code></a></h4>
 <p>Migrates the ETH liquidity to the <code>ETHLockbox</code>. This function will only be called once by the
 <code>ProxyAdmin</code> owner when updating the <code>OptimismPortal</code> contract.</p>
 <pre><code class="language-solidity">function migrateLiquidity() external;
@@ -18244,7 +18173,7 @@ withdrawal transaction.</li>
 </ul>
 <pre><code class="language-solidity">function authorizeLockbox(address _lockbox) external;
 </code></pre>
-<h4 id="migrateliquidity-2"><a class="header" href="#migrateliquidity-2"><code>migrateLiquidity</code></a></h4>
+<h4 id="migrateliquidity-1"><a class="header" href="#migrateliquidity-1"><code>migrateLiquidity</code></a></h4>
 <p>Migrates the ETH liquidity from the current <code>ETHLockbox</code> to another <code>ETHLockbox</code>.</p>
 <ul>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
@@ -18597,7 +18526,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </ul>
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
 <h3 id="interface-15"><a class="header" href="#interface-15">Interface</a></h3>
-<h4 id="upgrade-5"><a class="header" href="#upgrade-5"><code>upgrade</code></a></h4>
+<h4 id="upgrade-4"><a class="header" href="#upgrade-4"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Proxy Admin Owner to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
 <p>It has the following interface:</p>
