@@ -96,10 +96,11 @@ where multiple parties must independently verify the same computation.
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 Non-deterministic state transitions would make it impossible to resolve disputes, as honest parties could produce
-different valid state roots for the same input. This would completely break the fault proof system.
+different valid state roots for the same input. This would completely break the fault proof system. The severity is High
+rather than Critical due to the airgap protection in the dispute game system.
 
 ### i01-002: MIPS64 semantics conformance
 
@@ -110,10 +111,12 @@ Divergences affecting unreachable or unimplemented opcodes not used by the compi
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 Incorrect MIPS64 instruction execution would cause the on-chain VM to produce different state transitions than
-off-chain execution, breaking the fault proof system's ability to verify computation correctly.
+off-chain execution, breaking the fault proof system's ability to verify computation correctly. The severity is High
+rather than Critical due to the airgap protection in the dispute game system. Divergences affecting opcodes not used by
+the Go compiler would be Low severity.
 
 ## Function Specification
 
