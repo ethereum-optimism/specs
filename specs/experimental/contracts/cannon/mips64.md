@@ -16,14 +16,10 @@
   - [a01-002: Proof data is well-formed](#a01-002-proof-data-is-well-formed)
     - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
-  - [i01-001: Active thread stack is never empty during execution](#i01-001-active-thread-stack-is-never-empty-during-execution)
+  - [i01-001: Deterministic state transitions](#i01-001-deterministic-state-transitions)
     - [Impact](#impact)
-  - [i01-002: Memory reservations are mutually exclusive](#i01-002-memory-reservations-are-mutually-exclusive)
+  - [i01-002: MIPS64 semantics conformance](#i01-002-mips64-semantics-conformance)
     - [Impact](#impact-1)
-  - [i01-003: Thread stack roots correctly represent thread contents](#i01-003-thread-stack-roots-correctly-represent-thread-contents)
-    - [Impact](#impact-2)
-  - [i01-004: State transitions are deterministic](#i01-004-state-transitions-are-deterministic)
-    - [Impact](#impact-3)
 - [Function Specification](#function-specification)
   - [step](#step)
   - [oracle](#oracle)
@@ -61,9 +57,8 @@ yielding.
 
 ### State Version
 
-An identifier specifying the state transition rules implemented by the contract. The MIPS64 contract supports
-versions 7 (VersionMultiThreaded64_v4) and 8 (VersionMultiThreaded64_v5), which may differ in syscall behavior or
-state field interpretations.
+An identifier specifying the state transition rule set implemented by the contract. The identifier is returned by
+stateVersion() and is treated as an opaque selector by callers.
 
 ## Assumptions
 
@@ -93,50 +88,11 @@ offsets.
 
 ## Invariants
 
-### i01-001: Active thread stack is never empty during execution
+### i01-001: Deterministic state transitions
 
-When the VM has not exited, the active thread stack (determined by the traverseRight flag) must contain at least one
-thread. This ensures there is always a thread to execute when the VM is running.
-
-#### Impact
-
-**Severity: Critical**
-
-If the active thread stack becomes empty while the VM is running, execution cannot proceed and the VM enters an
-invalid state. This would break the fault proof system's ability to verify computation, potentially allowing invalid
-state transitions to be accepted or valid ones to be rejected.
-
-### i01-002: Memory reservations are mutually exclusive
-
-At most one memory reservation can be active across all threads at any time. When a new reservation is created via
-Load Linked instructions, any previous reservation is implicitly cleared. Any memory write to a reserved address
-clears the reservation.
-
-#### Impact
-
-**Severity: High**
-
-Violating this invariant would break the atomicity guarantees of read-modify-write operations, allowing race
-conditions between threads. This could lead to incorrect program execution and invalid state transitions in the fault
-proof system.
-
-### i01-003: Thread stack roots correctly represent thread contents
-
-The leftThreadStack and rightThreadStack values must be valid hash onion commitments to their respective thread
-stacks. Any operation that modifies thread stacks must update the corresponding root to maintain this commitment.
-
-#### Impact
-
-**Severity: Critical**
-
-If thread stack roots become inconsistent with actual thread contents, the state hash will be incorrect. This breaks
-the fault proof system's ability to verify state transitions, potentially allowing invalid execution traces to be
-accepted as valid.
-
-### i01-004: State transitions are deterministic
-
-Given identical input state and proof data, the step function produces identical output state. This determinism is
-essential for fault proofs, where multiple parties must independently compute the same state transition.
+For any given pre-state and input proofs, the step function produces a unique post-state. Independent verifiers
+computing the same state transition will arrive at identical results. This determinism is essential for fault proofs,
+where multiple parties must independently verify the same computation.
 
 #### Impact
 
@@ -144,6 +100,20 @@ essential for fault proofs, where multiple parties must independently compute th
 
 Non-deterministic state transitions would make it impossible to resolve disputes, as honest parties could produce
 different valid state roots for the same input. This would completely break the fault proof system.
+
+### i01-002: MIPS64 semantics conformance
+
+Each step execution must match the effects of executing one MIPS64 instruction under the semantics defined in the
+[Cannon Fault Proof VM specification](../../../fault-proof/cannon-fault-proof-vm.md). Any divergence from the MIPS64
+specification is a bug. Divergences that affect instructions relied upon by the Go compiler are High severity bugs.
+Divergences affecting unreachable or unimplemented opcodes not used by the compiler are Low severity bugs.
+
+#### Impact
+
+**Severity: Critical**
+
+Incorrect MIPS64 instruction execution would cause the on-chain VM to produce different state transitions than
+off-chain execution, breaking the fault proof system's ability to verify computation correctly.
 
 ## Function Specification
 
