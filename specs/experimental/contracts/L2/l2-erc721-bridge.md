@@ -6,7 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [OptimismMintableERC721](#optimismmintableerc721)
 - [Assumptions](#assumptions)
   - [a01-001: L1ERC721Bridge is trusted](#a01-001-l1erc721bridge-is-trusted)
     - [Mitigations](#mitigations)
@@ -38,10 +37,7 @@ on L2 when deposits are finalized from L1 and burns tokens on L2 when withdrawal
 
 ## Definitions
 
-### OptimismMintableERC721
-
-See [OptimismMintableERC721](optimism-mintable-erc721.md#overview) specification for the definition of mintable ERC721
-tokens.
+N/A
 
 ## Assumptions
 

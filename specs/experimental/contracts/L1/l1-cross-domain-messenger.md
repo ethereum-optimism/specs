@@ -6,8 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Message Hash](#message-hash)
-  - [Message Nonce](#message-nonce)
   - [Base Gas](#base-gas)
 - [Assumptions](#assumptions)
   - [a01-001: OptimismPortal Relays Valid Messages](#a01-001-optimismportal-relays-valid-messages)
@@ -45,16 +43,6 @@ applications to communicate across domains without directly interacting with low
 handles message replay for failed messages and integrates with the OptimismPortal for cross-chain message delivery.
 
 ## Definitions
-
-### Message Hash
-
-See [Withdrawal Hash](../L2/l2-to-l1-message-passer.md#withdrawal-hash) in the L2ToL1MessagePasser specification for
-the definition of message hash computation.
-
-### Message Nonce
-
-See [Message Nonce](../L2/l2-to-l1-message-passer.md#message-nonce) in the L2ToL1MessagePasser specification for the
-definition of nonce structure and versioning.
 
 ### Base Gas
 

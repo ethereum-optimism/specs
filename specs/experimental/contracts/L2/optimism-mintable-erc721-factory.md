@@ -7,7 +7,6 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Local Token](#local-token)
-  - [Remote Token](#remote-token)
 - [Assumptions](#assumptions)
   - [a01-001: Bridge Contract Integrity](#a01-001-bridge-contract-integrity)
     - [Mitigations](#mitigations)
@@ -32,12 +31,8 @@ Factory contract for deploying L2 ERC721 tokens that represent L1 NFTs in the OP
 
 ### Local Token
 
-An ERC721 token deployed on L2 by this factory that represents a remote token from another chain.
-
-### Remote Token
-
-See [Remote Token](optimism-mintable-erc721.md#remote-token) in the OptimismMintableERC721 specification for the
-definition of remote token addresses.
+An ERC721 token deployed on L2 by this factory that represents a
+[remote token](optimism-mintable-erc721.md#remote-token) from another chain.
 
 ## Assumptions
 

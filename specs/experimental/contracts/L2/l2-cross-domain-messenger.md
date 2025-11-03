@@ -7,8 +7,6 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Cross-Domain Message](#cross-domain-message)
-  - [Message Hash](#message-hash)
-  - [Message Nonce](#message-nonce)
   - [Message Replay](#message-replay)
 - [Assumptions](#assumptions)
   - [a01-001: L1CrossDomainMessenger Authentication](#a01-001-l1crossdomainmessenger-authentication)
@@ -51,16 +49,6 @@ messages, and ensures messages can only be relayed by the paired L1CrossDomainMe
 A message sent from one domain (L1 or L2) to another, containing a target address, calldata, gas limit, and
 optional ETH value. Messages are encoded with metadata including sender address and nonce for authentication and
 replay protection.
-
-### Message Hash
-
-See [Withdrawal Hash](l2-to-l1-message-passer.md#withdrawal-hash) in the L2ToL1MessagePasser specification for the
-definition of message hash computation.
-
-### Message Nonce
-
-See [Message Nonce](l2-to-l1-message-passer.md#message-nonce) in the L2ToL1MessagePasser specification for the
-definition of nonce structure and versioning.
 
 ### Message Replay
 
