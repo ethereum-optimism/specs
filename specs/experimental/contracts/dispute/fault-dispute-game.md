@@ -26,18 +26,12 @@
 - [Invariants](#invariants)
   - [i01-001: Game Resolution Reflects Root Claim Validity](#i01-001-game-resolution-reflects-root-claim-validity)
     - [Impact](#impact)
-  - [i01-002: Claims Cannot Be Resolved Out Of Order](#i01-002-claims-cannot-be-resolved-out-of-order)
+  - [i01-002: Bond Distribution Matches Game Outcome](#i01-002-bond-distribution-matches-game-outcome)
     - [Impact](#impact-1)
-  - [i01-003: Successful Steps Permanently Counter Claims](#i01-003-successful-steps-permanently-counter-claims)
+  - [i01-003: Game Finalization Requires Resolution And Time Delay](#i01-003-game-finalization-requires-resolution-and-time-delay)
     - [Impact](#impact-2)
-  - [i01-004: Bond Distribution Matches Game Outcome](#i01-004-bond-distribution-matches-game-outcome)
+  - [i01-004: Game Participation Is Permissionless By Default](#i01-004-game-participation-is-permissionless-by-default)
     - [Impact](#impact-3)
-  - [i01-005: L2 Block Number Challenge Overrides Root Claim](#i01-005-l2-block-number-challenge-overrides-root-claim)
-    - [Impact](#impact-4)
-  - [i01-006: Game Finalization Requires Resolution And Time Delay](#i01-006-game-finalization-requires-resolution-and-time-delay)
-    - [Impact](#impact-5)
-  - [i01-007: Permissioned Game Participation Restricted To Authorized Roles](#i01-007-permissioned-game-participation-restricted-to-authorized-roles)
-    - [Impact](#impact-6)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [step](#step)
@@ -205,31 +199,7 @@ If this invariant is violated, invalid output roots could be accepted or valid o
 compromising the integrity of the L2 state validation system and potentially enabling theft of funds through invalid
 withdrawals.
 
-### i01-002: Claims Cannot Be Resolved Out Of Order
-
-Subgames must be resolved bottom-up in the directed acyclic graph, ensuring all child subgames are resolved before
-their parent subgame can be resolved.
-
-#### Impact
-
-**Severity: Critical**
-
-Violating this invariant could allow premature resolution of parent claims before their children are properly
-evaluated, leading to incorrect game outcomes and improper bond distribution.
-
-### i01-003: Successful Steps Permanently Counter Claims
-
-Once a claim at maximum game depth is successfully countered via the step function, it remains countered and cannot be
-stepped against again.
-
-#### Impact
-
-**Severity: High**
-
-If claims could be stepped against multiple times, attackers could repeatedly challenge valid claims or defenders could
-repeatedly defend invalid claims, preventing proper game resolution.
-
-### i01-004: Bond Distribution Matches Game Outcome
+### i01-002: Bond Distribution Matches Game Outcome
 
 Bonds are distributed according to the bond distribution mode (NORMAL or REFUND) determined by whether the game is
 proper and finalized, with NORMAL mode distributing to winners and REFUND mode returning to original depositors.
@@ -241,19 +211,7 @@ proper and finalized, with NORMAL mode distributing to winners and REFUND mode r
 Incorrect bond distribution undermines the economic incentives that ensure honest participation in the dispute game
 system.
 
-### i01-005: L2 Block Number Challenge Overrides Root Claim
-
-When the root claim's L2 block number is successfully challenged via challengeRootL2Block, the root claim is always
-considered countered regardless of other subgame outcomes.
-
-#### Impact
-
-**Severity: Critical**
-
-This ensures that root claims with incorrect L2 block numbers cannot be used to finalize invalid state transitions,
-preventing potential consensus failures.
-
-### i01-006: Game Finalization Requires Resolution And Time Delay
+### i01-003: Game Finalization Requires Resolution And Time Delay
 
 Games can only be closed and have their bond distribution mode determined after they are resolved and the finalization
 delay period has elapsed according to the Anchor State Registry.
@@ -265,17 +223,19 @@ delay period has elapsed according to the Anchor State Registry.
 Premature finalization could prevent legitimate challenges from being processed, allowing invalid claims to be accepted
 before proper dispute resolution completes.
 
-### i01-007: Permissioned Game Participation Restricted To Authorized Roles
+### i01-004: Game Participation Is Permissionless By Default
 
-In permissioned variants, only addresses with the [Proposer Role] or [Challenger Role] can execute moves or steps, and
-only the proposer can initialize games.
+Game participation is permissionless by default. Authenticated game types restrict move and step operations to
+authorized roles ([Proposer Role] and [Challenger Role]), and restrict initialization to the proposer. This restriction
+applies only to authenticated game types and does not affect permissionless game types.
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
-Unauthorized participation in permissioned games could allow malicious actors to interfere with dispute resolution or
-create invalid games, undermining the controlled rollout and fallback mechanisms that permissioned variants provide.
+If authenticated game types fail to properly restrict participation, unauthorized actors could interfere with dispute
+resolution or create invalid games, undermining the controlled rollout and fallback mechanisms that authenticated
+variants provide.
 
 ## Function Specification
 
@@ -425,7 +385,7 @@ Resolves the entire game and determines the final outcome.
 - MUST revert if the game status is not IN_PROGRESS
 - MUST revert if the root subgame has not been resolved
 - MUST set status to DEFENDER_WINS if the root claim is uncountered
-- MUST set status to CHALLENGER_WINS if the root claim is countered
+- MUST set status to CHALLENGER_WINS if the root claim is countered or if the L2 block number challenge succeeded
 - MUST set resolvedAt to the current block timestamp
 - MUST emit a Resolved event with the final status
 
@@ -448,6 +408,7 @@ Resolves a subgame rooted at a specific claim by checking its children.
 - MUST distribute bonds to the counteredBy address for claims countered via step
 - MUST track the leftmost uncountered child position across resolution iterations
 - MUST mark the subgame as resolved when all children have been checked
+- MUST treat the root claim as countered if the L2 block number challenge succeeded
 - MUST distribute bonds to the L2 block number challenger if the root claim was challenged that way
 - MUST set the claim's counteredBy field based on resolution outcome
 
