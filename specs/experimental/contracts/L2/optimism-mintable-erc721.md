@@ -33,7 +33,7 @@ mint tokens when NFTs are deposited and burn tokens when NFTs are withdrawn.
 
 ### Remote Chain
 
-The chain where the [Remote Token](#remote-token) is natively deployed, identified by its chain ID.
+The chain where the remote token is natively deployed, identified by its chain ID.
 
 ## Assumptions
 
