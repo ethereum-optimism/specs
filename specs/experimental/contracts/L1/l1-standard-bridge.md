@@ -6,7 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Native L1 Token](#native-l1-token)
 - [Assumptions](#assumptions)
   - [a01-001: L2StandardBridge is trusted](#a01-001-l2standardbridge-is-trusted)
     - [Mitigations](#mitigations)
@@ -54,11 +53,7 @@ mints them when finalizing withdrawals and burns them when depositing to L2.
 
 ## Definitions
 
-### Native L1 Token
-
-An ERC20 token that is native to the L1 chain and does not implement the
-[OptimismMintableERC20](../L2/l2-standard-bridge.md#optimismmintableerc20) interface. These tokens are escrowed in
-the bridge contract when deposited to L2 and released when withdrawals are finalized from L2.
+N/A
 
 ## Assumptions
 

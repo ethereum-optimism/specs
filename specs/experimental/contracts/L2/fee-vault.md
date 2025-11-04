@@ -12,7 +12,6 @@
   - [OperatorFeeVault](#operatorfeevault)
 - [Definitions](#definitions)
   - [Minimum Withdrawal Amount](#minimum-withdrawal-amount)
-  - [Withdrawal Network](#withdrawal-network)
 - [Assumptions](#assumptions)
   - [a01-001: Recipient address is valid and can receive ETH](#a01-001-recipient-address-is-valid-and-can-receive-eth)
     - [Mitigations](#mitigations)
@@ -94,11 +93,6 @@ simplified distribution.
 
 The minimum balance of ETH that must accumulate in the vault before a withdrawal can be triggered. This
 threshold prevents excessive withdrawal transactions for small fee amounts.
-
-### Withdrawal Network
-
-The destination network where withdrawn fees are sent. Can be either L1 (cross-domain withdrawal via message
-passing) or L2 (direct transfer on the same chain).
 
 ## Assumptions
 

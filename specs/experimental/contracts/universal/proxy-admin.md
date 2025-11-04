@@ -6,9 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [ERC1967 Proxy](#erc1967-proxy)
-  - [ChugSplash Proxy](#chugsplash-proxy)
-  - [ResolvedDelegate Proxy](#resolveddelegate-proxy)
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
   - [i01-001: Owner-Only Administrative Control](#i01-001-owner-only-administrative-control)
@@ -38,18 +35,7 @@ ResolvedDelegate proxies.
 
 ## Definitions
 
-### ERC1967 Proxy
-
-Standard transparent proxy following EIP-1967 specification with separate admin and implementation storage slots.
-
-### ChugSplash Proxy
-
-Legacy proxy type used in earlier Optimism deployments with custom storage layout and upgrade mechanisms.
-
-### ResolvedDelegate Proxy
-
-Legacy proxy type that resolves implementation addresses through an AddressManager contract using string-based name
-lookups.
+N/A
 
 ## Assumptions
 

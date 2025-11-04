@@ -6,7 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Liveness Timestamp](#liveness-timestamp)
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
   - [i01-001: Liveness tracking accuracy](#i01-001-liveness-tracking-accuracy)
@@ -30,10 +29,7 @@ access to their keys.
 
 ## Definitions
 
-### Liveness Timestamp
-
-The most recent block timestamp at which an owner either signed a Safe transaction or called the `showLiveness`
-function. This timestamp is publicly queryable via the `lastLive` mapping.
+N/A
 
 ## Assumptions
 

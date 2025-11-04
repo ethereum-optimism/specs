@@ -6,9 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Message Hash](#message-hash)
-  - [Message Nonce](#message-nonce)
-  - [Base Gas](#base-gas)
 - [Assumptions](#assumptions)
   - [a01-001: OptimismPortal Relays Valid Messages](#a01-001-optimismportal-relays-valid-messages)
     - [Mitigations](#mitigations)
@@ -46,20 +43,7 @@ handles message replay for failed messages and integrates with the OptimismPorta
 
 ## Definitions
 
-### Message Hash
-
-A unique identifier for a cross-domain message computed from the message parameters including nonce, sender, target,
-value, gas limit, and message data. Version 1 messages use a hash that commits to all parameters.
-
-### Message Nonce
-
-A monotonically increasing counter that uniquely identifies each sent message. The upper two bytes encode the message
-version while the lower bytes contain the sequential nonce value.
-
-### Base Gas
-
-The total gas required to guarantee a message will be received on the other chain without running out of gas. This
-includes execution gas, calldata costs, and overhead for the relay mechanism.
+N/A
 
 ## Assumptions
 

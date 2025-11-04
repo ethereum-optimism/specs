@@ -6,14 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [L1 Data Fee](#l1-data-fee)
-  - [Fork Activation](#fork-activation)
-  - [Compressed Transaction Size](#compressed-transaction-size)
-  - [Bedrock L1 Fee Formula](#bedrock-l1-fee-formula)
-  - [Ecotone L1 Fee Formula](#ecotone-l1-fee-formula)
-  - [Fjord L1 Fee Formula](#fjord-l1-fee-formula)
-  - [Isthmus Operator Fee Formula](#isthmus-operator-fee-formula)
-  - [Jovian Operator Fee Formula](#jovian-operator-fee-formula)
 - [Assumptions](#assumptions)
   - [a01-001: L1Block Provides Accurate Fee Parameters](#a01-001-l1block-provides-accurate-fee-parameters)
     - [Mitigations](#mitigations)
@@ -53,58 +45,7 @@ L1 fees for transactions.
 
 ## Definitions
 
-### L1 Data Fee
-
-The portion of an L2 transaction fee that covers the cost of posting transaction data to L1 for data availability.
-This fee is calculated based on L1 gas prices, blob fees (post-Ecotone), and transaction size.
-
-### Fork Activation
-
-A one-way state transition that enables new fee calculation formulas corresponding to network upgrades
-(Ecotone, Fjord, Isthmus, Jovian). Once activated, a fork cannot be deactivated.
-
-### Compressed Transaction Size
-
-The estimated size of a transaction after compression, used in Fjord and later upgrades to more accurately
-estimate L1 data costs. Fjord uses FastLZ compression with linear regression to estimate Brotli compression ratios.
-
-### Bedrock L1 Fee Formula
-
-The L1 data fee is calculated as:
-`fee = (calldata_gas + overhead) × l1_base_fee × scalar / 10^decimals`.
-The calldata_gas counts 4 gas per zero byte and 16 gas per non-zero byte, plus 68 bytes (1088 gas) for the
-missing signature. The decimals value is 6. The overhead and scalar parameters are provided by the L1Block
-predeploy prior to Ecotone activation.
-
-### Ecotone L1 Fee Formula
-
-The L1 data fee is calculated as:
-`fee = calldata_gas × (base_fee_scalar × 16 × l1_base_fee + blob_base_fee_scalar × blob_base_fee) / (16 × 10^decimals)`.
-The calldata_gas uses the same accounting as Bedrock (4 gas per zero byte, 16 gas per non-zero byte, plus
-1088 gas for signature padding). The decimals value is 6. The base_fee_scalar and blob_base_fee_scalar are
-sourced from L1 via the L1Block predeploy.
-
-### Fjord L1 Fee Formula
-
-The L1 data fee is calculated as:
-`fee = estimated_compressed_bytes × (base_fee_scalar × 16 × l1_base_fee + blob_base_fee_scalar × blob_base_fee) /
-10^(2 × decimals)`.
-The estimated_compressed_bytes is obtained by compressing the transaction data with FastLZ, adding 68 bytes
-for signature padding, then applying a linear regression model to estimate the final compressed size with a
-minimum bound enforced. The decimals value is 6.
-
-### Isthmus Operator Fee Formula
-
-The operator fee is calculated as:
-`operator_fee = floor(gas_used × operator_fee_scalar / 10^decimals) + operator_fee_constant`.
-Prior to Isthmus activation, the operator fee is 0. The decimals value is 6. The operator_fee_scalar and
-operator_fee_constant are provided by the L1Block predeploy. Saturating arithmetic is used to prevent overflow.
-
-### Jovian Operator Fee Formula
-
-The operator fee is calculated as:
-`operator_fee = gas_used × operator_fee_scalar × 100 + operator_fee_constant`.
-The operator_fee_scalar and operator_fee_constant are provided by the L1Block predeploy.
+N/A
 
 ## Assumptions
 

@@ -7,9 +7,6 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Game UUID](#game-uuid)
-  - [Game Implementation](#game-implementation)
-  - [Initialization Bond](#initialization-bond)
-  - [Game Clone](#game-clone)
 - [Assumptions](#assumptions)
   - [aDGF-001: Owner operates within governance constraints](#adgf-001-owner-operates-within-governance-constraints)
     - [Mitigations](#mitigations)
@@ -51,21 +48,6 @@ game creation.
 
 A unique identifier for a dispute game computed as `keccak256(gameType || rootClaim || extraData)`. This identifier
 ensures that each unique combination of game parameters can only result in one game instance.
-
-### Game Implementation
-
-A template contract that implements the IDisputeGame interface. The factory clones this implementation using the
-Clone With Immutable Args (CWIA) pattern to create new game instances efficiently.
-
-### Initialization Bond
-
-The amount of ETH (in wei) required to create a dispute game of a specific game type. This bond is forwarded to the
-created game's initialize function and serves as the initial stake in the dispute.
-
-### Game Clone
-
-A minimal proxy contract created using the CWIA pattern that delegates all calls to a [Game Implementation](#game-implementation)
-while storing immutable game-specific parameters (creator address, root claim, parent hash, extra data) in its bytecode.
 
 ## Assumptions
 

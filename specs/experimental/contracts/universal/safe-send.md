@@ -6,7 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Forced ETH Transfer](#forced-eth-transfer)
 - [Assumptions](#assumptions)
   - [aSS-001: EVM selfdestruct behavior remains consistent](#ass-001-evm-selfdestruct-behavior-remains-consistent)
     - [Mitigations](#mitigations)
@@ -29,11 +28,7 @@ which transfers the contract's balance to the recipient without invoking any fal
 
 ## Definitions
 
-### Forced ETH Transfer
-
-A transfer of ETH that bypasses the recipient's code execution. Unlike standard ETH transfers via `call` or
-`transfer`, a [Forced ETH Transfer] does not invoke the recipient's `receive()` or `fallback()` functions,
-and cannot be reverted by the recipient.
+N/A
 
 ## Assumptions
 

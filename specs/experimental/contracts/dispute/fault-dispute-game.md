@@ -7,17 +7,7 @@
 - [Overview](#overview)
 - [Contract Variants](#contract-variants)
 - [Definitions](#definitions)
-  - [Split Depth](#split-depth)
-  - [Game Tree Position](#game-tree-position)
-  - [Absolute Prestate](#absolute-prestate)
-  - [Chess Clock](#chess-clock)
-  - [Subgame](#subgame)
-  - [Bond Distribution Mode](#bond-distribution-mode)
-  - [Proposer Role](#proposer-role)
-  - [Challenger Role](#challenger-role)
   - [Immutable Args Pattern](#immutable-args-pattern)
-  - [Super Root](#super-root)
-  - [L2 Sequence Number](#l2-sequence-number)
 - [Assumptions](#assumptions)
   - [a01-001: Anchor State Registry Provides Valid Anchor States](#a01-001-anchor-state-registry-provides-valid-anchor-states)
     - [Mitigations](#mitigations)
@@ -117,64 +107,11 @@ all configuration values including proposer and challenger addresses.
 
 ## Definitions
 
-### Split Depth
-
-The maximum depth in the game tree at which claims represent output roots. Below this depth, claims represent
-execution trace commitments for single block state transitions.
-
-### Game Tree Position
-
-A location in the binary game tree represented by a generalized index where the high-order bit indicates depth and
-remaining bits provide a unique identifier for each node at that depth.
-
-### Absolute Prestate
-
-The initial state of the fault proof virtual machine that serves as the starting point for all execution traces. This
-is a constant defined by the VM implementation being used.
-
-### Chess Clock
-
-A timing mechanism where each claim inherits the accumulated duration from its grandparent claim, tracking total time
-elapsed for each team to prevent indefinite delays in game resolution.
-
-### Subgame
-
-A directed acyclic graph of depth one where a root claim and its direct children form a fundamental dispute unit. A
-claim is considered countered if at least one of its children remains uncountered after resolution.
-
-### Bond Distribution Mode
-
-The mechanism for distributing bonds after game finalization, which can be NORMAL (bonds distributed to winners) or
-REFUND (bonds returned to original depositors) based on whether the game is determined to be proper by the Anchor
-State Registry.
-
-### Proposer Role
-
-An authorized address that can create dispute game proposals and participate in the game by making moves and executing
-steps. In permissioned variants, only the proposer can initialize games.
-
-### Challenger Role
-
-An authorized address that can participate in dispute games by making moves and executing steps to challenge proposals.
-In permissioned variants, both proposer and challenger roles are required for game participation.
-
 ### Immutable Args Pattern
 
 An architectural pattern where contract parameters are stored in append-only calldata rather than contract storage,
 reducing deployment costs and enabling efficient cloning. Used in V2 variants to store addresses and configuration
 values.
-
-### Super Root
-
-A cross-chain state commitment used in interoperability scenarios that represents the aggregated state across multiple
-L2 chains. Super roots are identified by L2 sequence numbers (timestamps) rather than block numbers, enabling
-coordination of state across chains with different block production rates.
-
-### L2 Sequence Number
-
-A timestamp-based identifier used in SuperFaultDisputeGame variants instead of L2 block numbers. Sequence numbers
-provide a chain-agnostic way to order and reference state commitments in interop contexts where multiple chains need to
-coordinate.
 
 ## Assumptions
 

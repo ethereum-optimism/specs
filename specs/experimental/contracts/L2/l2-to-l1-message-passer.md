@@ -6,9 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Withdrawal Transaction](#withdrawal-transaction)
-  - [Withdrawal Hash](#withdrawal-hash)
-  - [Message Nonce](#message-nonce)
 - [Assumptions](#assumptions)
   - [a01-001: OptimismPortal validates withdrawal proofs](#a01-001-optimismportal-validates-withdrawal-proofs)
     - [Mitigations](#mitigations)
@@ -34,23 +31,7 @@ included in the L2 output root, allowing users to prove on L1 that a withdrawal 
 
 ## Definitions
 
-### Withdrawal Transaction
-
-A withdrawal transaction represents an L2 to L1 message containing the sender address, target address on L1, ETH
-value to transfer, gas limit for L1 execution, and arbitrary calldata. Each withdrawal is uniquely identified by a
-nonce that includes a version number in its upper two bytes.
-
-### Withdrawal Hash
-
-The withdrawal hash is computed by keccak256 encoding the withdrawal transaction fields (nonce, sender, target,
-value, gasLimit, data). This hash serves as the commitment stored in the sentMessages mapping and is used for
-proving withdrawals on L1.
-
-### Message Nonce
-
-The message nonce is a 256-bit value where the upper 16 bits encode the message version (currently version 1) and
-the lower 240 bits contain a monotonically increasing counter. This versioning scheme allows for future changes to
-withdrawal transaction structure while maintaining backwards compatibility.
+N/A
 
 ## Assumptions
 

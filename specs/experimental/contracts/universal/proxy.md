@@ -6,9 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Admin](#admin)
-  - [Implementation](#implementation)
-  - [Transparent Proxy Pattern](#transparent-proxy-pattern)
 - [Assumptions](#assumptions)
 - [Invariants](#invariants)
   - [i01-001: Proxy transparency for non-admin users](#i01-001-proxy-transparency-for-non-admin-users)
@@ -35,25 +32,7 @@ proxy's administrative interface to upgrade the implementation or transfer owner
 
 ## Definitions
 
-### Admin
-
-The address that has exclusive access to the proxy's administrative functions. The admin can upgrade the
-implementation contract and transfer admin rights to a new address. The admin address is stored at the EIP-1967 admin
-storage slot to prevent collisions with the implementation contract's storage.
-
-### Implementation
-
-The address of the contract to which all non-admin calls are delegated. The implementation contains the actual business
-logic while the proxy maintains the state and provides upgradeability. The implementation address is stored at the
-EIP-1967 implementation storage slot.
-
-### Transparent Proxy Pattern
-
-A proxy pattern where the proxy's administrative interface is only accessible to the admin address, while all other
-callers have their calls transparently delegated to the implementation. This prevents function selector collisions
-between the proxy's administrative functions and the implementation's functions. Additionally, calls from `address(0)`
-are treated as admin calls to enable off-chain simulations via `eth_call` without requiring low-level storage
-inspection.
+N/A
 
 ## Assumptions
 

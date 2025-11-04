@@ -6,10 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Thread Stack](#thread-stack)
-  - [Memory Reservation](#memory-reservation)
-  - [Context Switch](#context-switch)
-  - [State Version](#state-version)
 - [Assumptions](#assumptions)
   - [a01-001: PreimageOracle provides valid data](#a01-001-preimageoracle-provides-valid-data)
     - [Mitigations](#mitigations)
@@ -35,30 +31,7 @@ of off-chain computation by proving correct execution of MIPS64 instructions wit
 
 ## Definitions
 
-### Thread Stack
-
-A hash onion structure representing a stack of thread states. Each thread is committed by computing
-`Keccak256(previous_root ++ thread_hash)`, where the empty stack is represented by
-`Keccak256(bytes32(0) ++ bytes32(0))`. This construction allows succinct commitment to all threads using a single
-bytes32 value. See the [Cannon Fault Proof VM specification](../../fault-proof/cannon-fault-proof-vm.md#thread-stack-hashing)
-for detailed hashing mechanics.
-
-### Memory Reservation
-
-A mechanism enabling atomic read-modify-write operations through Load Linked and Store Conditional instructions.
-A reservation tracks a memory address, the owning thread, and the operation size (32-bit or 64-bit). Any memory write
-to the reserved address clears the reservation, ensuring atomicity across concurrent threads.
-
-### Context Switch
-
-The process of preempting the currently active thread and activating another thread from the thread stacks.
-Context switches occur voluntarily through specific syscalls or forcibly after executing a quantum of steps without
-yielding.
-
-### State Version
-
-An identifier specifying the state transition rule set implemented by the contract. The identifier is returned by
-stateVersion() and is treated as an opaque selector by callers.
+N/A
 
 ## Assumptions
 

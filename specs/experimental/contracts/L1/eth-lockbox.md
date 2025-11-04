@@ -6,9 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Authorized Portal](#authorized-portal)
-  - [Authorized Lockbox](#authorized-lockbox)
-  - [Liquidity Migration](#liquidity-migration)
 - [Assumptions](#assumptions)
   - [a01-001: ProxyAdmin Owner Trusted](#a01-001-proxyadmin-owner-trusted)
     - [Mitigations](#mitigations)
@@ -41,21 +38,7 @@ enabling withdrawals from any chain regardless of where ETH was originally depos
 
 ## Definitions
 
-### Authorized Portal
-
-An OptimismPortal contract that has been granted permission to lock and unlock ETH from the
-lockbox. Authorization requires the portal to share the same ProxyAdmin owner and SuperchainConfig
-as the lockbox.
-
-### Authorized Lockbox
-
-Another ETHLockbox contract that has been granted permission to migrate its liquidity to the
-current lockbox. Authorization requires both lockboxes to share the same ProxyAdmin owner.
-
-### Liquidity Migration
-
-The process of transferring the entire ETH balance from one ETHLockbox to another, typically
-performed during system upgrades or when merging multiple lockboxes into a unified liquidity pool.
+N/A
 
 ## Assumptions
 

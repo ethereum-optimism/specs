@@ -6,8 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Cross-Domain Message](#cross-domain-message)
-  - [Message Replay](#message-replay)
 - [Assumptions](#assumptions)
   - [a01-001: L1CrossDomainMessenger Authentication](#a01-001-l1crossdomainmessenger-authentication)
     - [Mitigations](#mitigations)
@@ -44,16 +42,7 @@ messages, and ensures messages can only be relayed by the paired L1CrossDomainMe
 
 ## Definitions
 
-### Cross-Domain Message
-
-A message sent from one domain (L1 or L2) to another, containing a target address, calldata, gas limit, and
-optional ETH value. Messages are encoded with metadata including sender address and nonce for authentication and
-replay protection.
-
-### Message Replay
-
-The ability to re-execute a failed cross-domain message. Messages that fail during initial relay (due to
-insufficient gas or target revert) are marked as failed and can be replayed by anyone with sufficient gas.
+N/A
 
 ## Assumptions
 

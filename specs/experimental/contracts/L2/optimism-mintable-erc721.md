@@ -6,7 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Remote Token](#remote-token)
   - [Remote Chain](#remote-chain)
 - [Assumptions](#assumptions)
   - [a01-001: Bridge contract is trusted](#a01-001-bridge-contract-is-trusted)
@@ -31,11 +30,6 @@ another chain (typically L1). It enables cross-chain NFT transfers through the E
 mint tokens when NFTs are deposited and burn tokens when NFTs are withdrawn.
 
 ## Definitions
-
-### Remote Token
-
-The address of the corresponding ERC721 token contract on the remote chain (typically L1) that this L2 token
-represents.
 
 ### Remote Chain
 

@@ -6,12 +6,6 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Preimage Key](#preimage-key)
-  - [Large Preimage Proposal](#large-preimage-proposal)
-  - [Challenge Period](#challenge-period)
-  - [Preimage Part](#preimage-part)
-  - [Keccak Block](#keccak-block)
-  - [Bond](#bond)
 - [Assumptions](#assumptions)
   - [a01-001: Challengers Monitor Proposals](#a01-001-challengers-monitor-proposals)
     - [Mitigations](#mitigations)
@@ -57,38 +51,7 @@ Preimage Proposal system with a challenge mechanism to ensure data integrity.
 
 ## Definitions
 
-### Preimage Key
-
-A 32-byte identifier for preimage data where the first byte indicates the preimage type and the remaining 31 bytes
-contain type-specific data. Preimage types include: local (0x01), keccak256 (0x02), sha256 (0x04), blob (0x05), and
-precompile (0x06).
-
-### Large Preimage Proposal
-
-A mechanism for submitting preimages larger than the minimum proposal size through an incremental merkleization
-process. Proposals include keccak256 state commitments for each 136-byte block and are subject to a challenge period
-before finalization.
-
-### Challenge Period
-
-The time duration after a Large Preimage Proposal is finalized during which anyone can challenge the correctness of
-the keccak256 computation. If no successful challenge occurs during this period, the proposal can be squeezed to make
-the preimage data available.
-
-### Preimage Part
-
-A 32-byte segment of preimage data at a specific offset. Preimages are stored with an 8-byte big-endian length prefix
-followed by the actual data, and can be read in 32-byte parts at any valid offset.
-
-### Keccak Block
-
-A 136-byte chunk of data absorbed during keccak256 computation. Large Preimage Proposals process data in keccak blocks
-and commit to the internal state after each block is absorbed and permuted.
-
-### Bond
-
-ETH locked when creating a Large Preimage Proposal. The bond is returned to the claimant if the proposal passes the
-challenge period unchallenged, or paid to a challenger if the proposal is successfully challenged.
+N/A
 
 ## Assumptions
 
