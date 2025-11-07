@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
+  - [AddressManager](#addressmanager)
 - [Assumptions](#assumptions)
   - [a01-001: AddressManager provides valid implementation addresses](#a01-001-addressmanager-provides-valid-implementation-addresses)
     - [Mitigations](#mitigations)
@@ -33,7 +34,11 @@ patterns.
 
 ## Definitions
 
-N/A
+### AddressManager
+
+A legacy contract that maintains a registry mapping string names to addresses. Used in the pre-Bedrock Optimism system
+for contract address resolution. The ResolvedDelegateProxy queries the AddressManager to dynamically resolve its
+implementation address using a configured implementation name.
 
 ## Assumptions
 
