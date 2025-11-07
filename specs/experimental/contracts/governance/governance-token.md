@@ -53,13 +53,13 @@ on-chain rate limits and caps on minting operations according to governance-appr
 
 ### aGT-001: Owner operates within governance constraints
 
-The contract owner (MintManager) is trusted to mint tokens only in accordance with governance decisions and established
-protocol rules.
+The contract owner ([MintManager](#mintmanager)) is trusted to mint tokens only in accordance with governance decisions
+and established protocol rules.
 
 #### Mitigations
 
-- Owner is expected to be a governance-controlled MintManager contract
-- MintManager enforces on-chain rate limits and caps on minting operations
+- Owner is expected to be a governance-controlled [MintManager](#mintmanager) contract
+- [MintManager](#mintmanager) enforces on-chain rate limits and caps on minting operations
 - Ownership transfers are transparent and subject to community oversight
 
 ## Invariants
