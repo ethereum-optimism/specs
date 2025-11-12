@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -18,11 +19,9 @@
   - [Functions](#functions-1)
     - [`deposit`](#deposit)
     - [`withdraw`](#withdraw)
-    - [`fund`](#fund)
   - [Events](#events)
     - [`LiquidityDeposited`](#liquiditydeposited)
     - [`LiquidityWithdrawn`](#liquiditywithdrawn)
-    - [`LiquidityFunded`](#liquidityfunded)
   - [Invariants](#invariants)
 - [Liquidity Controller](#liquidity-controller)
   - [Functions](#functions-2)
@@ -145,7 +144,8 @@ Address: `0x4200000000000000000000000000000000000029`
 The `NativeAssetLiquidity` predeploy stores a large amount of pre-minted native asset
 that serves as the central liquidity source for Custom Gas Token chains. This contract
 is only deployed on chains using Custom Gas Token mode and acts as the vault for all
-native asset supply management operations.
+native asset supply management operations. The contract provides controlled access to
+liquidity through the `LiquidityController` predeploy only.
 
 ### Functions
 
@@ -174,24 +174,6 @@ function withdraw(uint256 _amount) external
 - MUST revert if the contract balance is insufficient
 - MUST emit `LiquidityWithdrawn` event
 
-#### `fund`
-
-Allows funding the contract with native assets. This function is used to initialize the contract with a large liquidity
-pool, similar to how ETHLiquidity is initialized in interop chains.
-
-```solidity
-function fund() external payable
-```
-
-- MUST accept any amount of native asset via `msg.value`
-- MUST revert if `msg.value` is zero
-- MUST emit `LiquidityFunded` event
-- MUST be callable by any address
-
-**Important for CGT Migration**: When migrating to Custom Gas Token mode, the total amount funded through this function
-should not exceed the `nativeAssetLiquidity` amount configured during chain setup.
-Exceeding this amount may cause liquidity problems.
-
 ### Events
 
 #### `LiquidityDeposited`
@@ -210,20 +192,11 @@ Emitted when native assets are withdrawn from the contract.
 event LiquidityWithdrawn(address indexed caller, uint256 value)
 ```
 
-#### `LiquidityFunded`
-
-Emitted when the contract receives funding, typically during initial deployment.
-
-```solidity
-event LiquidityFunded(address indexed funder, uint256 amount)
-```
-
 ### Invariants
 
 - Only the `LiquidityController` predeploy can call `deposit()` and `withdraw()`
 - All native asset supply changes must go through this contract when CGT mode is active
 - No direct user interaction is permitted with liquidity management functions
-- For CGT migrations: `fund()` amounts should not exceed the configured `nativeAssetLiquidity` amount to maintain consistency
 
 ## Liquidity Controller
 
