@@ -34,8 +34,8 @@
   - [Events](#events-1)
     - [`MinterAuthorized`](#minterauthorized)
     - [`MinterDeauthorized`](#minterdeauthorized)
-    - [`AssetsMinted`](#assetsminted)
-    - [`AssetsBurned`](#assetsburned)
+    - [`LiquidityMinted`](#liquidityminted)
+    - [`LiquidityBurned`](#liquidityburned)
   - [Invariants](#invariants-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -245,7 +245,7 @@ function mint(address _to, uint256 _amount) external
 - MUST call `NativeAssetLiquidity.withdraw(_amount)` to unlock assets
 - MUST send exactly `_amount` of native asset to `_to` address
 - MUST revert if `NativeAssetLiquidity` has insufficient balance
-- MUST emit `AssetsMinted` event
+- MUST emit `LiquidityMinted` event
 
 #### `burn`
 
@@ -259,7 +259,7 @@ function burn() external payable
 - MUST call `NativeAssetLiquidity.deposit{value: msg.value}()` to lock assets
 - MUST only be callable by authorized minters
 - MUST revert if `msg.value` is zero
-- MUST emit `AssetsBurned` event
+- MUST emit `LiquidityBurned` event
 
 #### `gasPayingAssetName`
 
@@ -292,41 +292,41 @@ function gasPayingAssetSymbol() external view returns (string memory)
 Emitted when a new minter is authorized by the contract owner.
 
 ```solidity
-event MinterAuthorized(address indexed minter, address indexed authorizer)
+event MinterAuthorized(address indexed minter)
 ```
 
-Where `minter` is the address being authorized and `authorizer` is the L1 ProxyAdmin owner who authorized them.
+Where `minter` is the address being authorized.
 
 #### `MinterDeauthorized`
 
 Emitted when a minter is deauthorized by the contract owner.
 
 ```solidity
-event MinterDeauthorized(address indexed minter, address indexed deauthorizer)
+event MinterDeauthorized(address indexed minter)
 ```
 
-Where `minter` is the address being deauthorized and `deauthorizer` is the L1 ProxyAdmin owner who deauthorized them.
+Where `minter` is the address being deauthorized.
 
-#### `AssetsMinted`
+#### `LiquidityMinted`
 
 Emitted when native assets are unlocked from the liquidity pool and sent to a recipient.
 
 ```solidity
-event AssetsMinted(address indexed minter, address indexed to, uint256 amount)
+event LiquidityMinted(address indexed minter, address indexed to, uint256 amount)
 ```
 
 Where `minter` is the authorized address calling the function, `to` is the recipient address,
 and `amount` is the amount of native assets minted.
 
-#### `AssetsBurned`
+#### `LiquidityBurned`
 
 Emitted when native assets are locked back into the liquidity pool.
 
 ```solidity
-event AssetsBurned(address indexed burner, uint256 amount)
+event LiquidityBurned(address indexed minter, uint256 amount)
 ```
 
-Where `burner` is the `msg.sender` who burned the assets and `amount` is the amount of native assets burned.
+Where `minter` is the `msg.sender` who burned the assets and `amount` is the amount of native assets burned.
 
 ### Invariants
 
