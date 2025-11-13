@@ -1014,7 +1014,6 @@ Some fields in the response cannot be final at the preconfirmation stage and req
 - `blockHash`: Uses the block hash of pending block at the time transaction was pre-confirmed.
 - `blockNumber`: Can be set to the current block number being processed
 
-
 **`eth_getBlockByNumber`**
 
 **Request**
@@ -1131,7 +1130,8 @@ state, this implementation executes the call on top of the preconfirmation state
 
 **`eth_estimateGas`**
 
-Generates and returns an estimate of how much gas is necessary to allow the transaction to complete considering the latest pre-confirmed state.
+Generates and returns an estimate of how much gas is necessary to allow the
+transaction to complete considering the latest pre-confirmed state.
 
 **Request**
 
