@@ -10,11 +10,11 @@
 
 ## Overview
 
-The L1 block attributes transaction is updated to include the operator fee parameters.
+The L1 block attributes transaction is updated to include the DA footprint gas scalar.
 
 | Input arg         | Type    | Calldata bytes | Segment |
 | ----------------- | ------- | -------------- | ------- |
-| {0x098999be}      |         | 0-3            | n/a     |
+| {0x3db6be2b}      |         | 0-3            | n/a     |
 | baseFeeScalar     | uint32  | 4-7            | 1       |
 | blobBaseFeeScalar | uint32  | 8-11           |         |
 | sequenceNumber    | uint64  | 12-19          |         |
@@ -26,21 +26,19 @@ The L1 block attributes transaction is updated to include the operator fee param
 | batcherHash       | bytes32 | 132-163        | 5       |
 | operatorFeeScalar   | uint32  | 164-167      | 6       |
 | operatorFeeConstant | uint64  | 168-175      |         |
+| daFootprintGasScalar | uint16  | 176-177     |         |
 
 Note that the first input argument, in the same pattern as previous versions of the L1 attributes transaction,
-is the function selector: the first four bytes of `keccak256("setL1BlockValuesIsthmus()")`.
+is the function selector: the first four bytes of `keccak256("setL1BlockValuesJovian()")`.
 
 In the activation block, there are two possibilities:
-- If Isthmus is active at genesis, there are no transactions in the activation block
+- If Jovian is active at genesis, there are no transactions in the activation block
 and therefore no L1 Block Attributes transaction to consider.
-- If Isthmus activates after genesis [`setL1BlockValuesEcotone()`](../ecotone/l1-attributes.md)
-method must be used. This is because the L1 Block contract will not yet have been upgraded.
+- If Jovian activates after genesis [`setL1BlockValuesIsthmus()`](../isthmus/l1-attributes.md) method must be used.
+ This is because the L1 Block contract will not yet have been upgraded.
 
-In each subsequent L2 block, the `setL1BlockValuesIsthmus()` method must be used.
+In each subsequent L2 block, the `setL1BlockValuesJovian()` method must be used.
 
-When using this method, the pre-Isthmus values are migrated over 1:1
-and the transaction also sets the following new attributes to the values
-from the [`SystemConfig`](./system-config.md):
-
-- `operatorFeeScalar`
-- `operatorFeeConstant`
+When using this method, the pre-Jovian values are migrated over 1:1
+and the transaction also sets `daFootprintGasScalar` to the
+value from the [`SystemConfig`](./system-config.md). If that value is `0`, then a default of `400` is set.
