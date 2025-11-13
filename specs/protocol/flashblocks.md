@@ -888,7 +888,8 @@ We repurpose the `pending` tag in the following RPC calls to enable consuming pr
 - eth_getStorageAt
 
 **Note: not all RPC methods explicitly require a "pending" tag to tap into the Flashblocks' state's awareness**
-The following RPC methods implicitly incorporate Flashblocks awareness whenever possible:
+
+The following RPC methods implicitly incorporate Flashblocks awareness like that whenever possible:
 - eth_getTransactionReceipt
 - eth_getTransactionByHash
 
