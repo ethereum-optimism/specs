@@ -28,9 +28,18 @@
 
 ## L2ProxyAdmin
 
-The `ProxyAdmin` predeploy at `0x4200000000000000000000000000000000000018` is upgraded with a new L2-specific implementation, `L2ProxyAdmin`, that supports predeploy upgrades during hard forks. The `L2ProxyAdmin` contract adds the `upgradePredeploys()` function, which is called during a hard fork activation block by the `DEPOSITOR_ACCOUNT` to upgrade all predeploys in a single transaction.
+The `ProxyAdmin` predeploy at `0x4200000000000000000000000000000000000018` is upgraded with a new L2-specific implementation,
+`L2ProxyAdmin`, that supports predeploy upgrades during hard forks. The `L2ProxyAdmin` contract adds
+the `upgradePredeploys()` function, which is called during a hard fork activation block by the `DEPOSITOR_ACCOUNT` to
+upgrade all predeploys in a single transaction.
 
-The `L2ProxyAdmin` implementation also removes unused logic from the universal `ProxyAdmin` contract. Previously, the L2 ProxyAdmin used the same "universal" implementation deployed on L1, which supports multiple proxy types (ERC1967, ChugSplash, and ResolvedDelegate) and includes proxy type validation logic. Since all L2 predeploys use ERC1967 proxies exclusively, `L2ProxyAdmin` overrides functions related to legacy proxy types to remove their support while keeping the same public interface for backward compatibility. Setters for configuration values regarding proxy types are overridden to result in no-ops, and getters are overridden to either return default values or values that are relevant in the ERC1967 context only.
+The `L2ProxyAdmin` implementation also removes unused logic from the universal `ProxyAdmin` contract.
+Previously, the L2 ProxyAdmin used the same "universal" implementation deployed on L1, which supports multiple
+proxy types (ERC1967, ChugSplash, and ResolvedDelegate) and includes proxy type validation logic.
+Since all L2 predeploys use ERC1967 proxies exclusively, `L2ProxyAdmin` overrides functions related to legacy proxy types
+to remove their support while keeping the same public interface for backward compatibility.
+Setters for configuration values regarding proxy types are overridden to result in no-ops, and getters are overridden
+to either return default values or values that are relevant in the ERC1967 context only.
 
 ## Invariants
 
@@ -44,7 +53,8 @@ Violation of this invariant would allow an attacker to trigger predeploy upgrade
 
 ### I-02: Depositor Account Execution Guarantee
 
-When called by the `DEPOSITOR_ACCOUNT`, the `upgradePredeploys` function MUST NOT revert, provided that the `_l2ContractsManager` parameter is a valid contract address.
+When called by the `DEPOSITOR_ACCOUNT`, the `upgradePredeploys` function MUST NOT revert,
+provided that the `_l2ContractsManager` parameter is a valid contract address.
 
 #### Impact
 
@@ -141,4 +151,6 @@ function upgradeAndCall(
 
 ## Security Considerations
 
-- Performing a `delegatecall` from the `ProxyAdmin` which manages **ALL** the predeploys must be implemented with extreme caution. We must ensure that no accounts other than the owner or the `DEPOSITOR_ACCOUNT` can call the `upgradePredeploys` function.
+- Performing a `delegatecall` from the `ProxyAdmin` which manages **ALL** the predeploys must be implemented
+  with extreme caution. We must ensure that no accounts other than the owner or the `DEPOSITOR_ACCOUNT`
+  can call the `upgradePredeploys` function.
