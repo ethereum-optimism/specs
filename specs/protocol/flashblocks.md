@@ -801,7 +801,7 @@ builder selection.
 ## Flashblock Propagation
 
 Once Rollup Boost has validated a flashblock, it is then propagated to the rest of the network to be included in each
-RPC Provider’s Preconfirmation Cache.
+RPC Provider’s Preconfirmation state.
 
 ```mermaid
 sequenceDiagram
@@ -864,9 +864,10 @@ flowchart TD
 ### Ethereum JSON RPC Modifications
 
 All modifications done to the existing Ethereum JSON RPC methods are confined to overloading the existing `pending`
-tag. Originally, this tag was designed to return block data being processed by the node's internal miner. It's fitting
+tag except a few JSON RPC methods which become inherently aware of preconfirmation state.
+Originally, this tag was designed to return block data being processed by the node's internal miner. It's fitting
 that we now use it for a similar purpose: exposing blocks in their preconfirmation stage. When queried with the
-`pending` tag, the endpoint uses the preconfirmation cache state to construct the response. The response might include
+`pending` tag, the endpoint uses the preconfirmation state state to construct the response. The response might include
 not only transactions but also block metadata like state root and receipt root.
 
 The tag is currently in a soft-deprecated state due to inconsistent implementations across clients, particularly after
@@ -962,7 +963,7 @@ to the protocol or for other protocols.
 }
 ```
 
-When queried, this endpoint first checks the preconfirmation cache for the requested transaction hash before falling
+When queried, this endpoint first checks the preconfirmation state for the requested transaction hash before falling
 back to the standard chain state lookup.
 
 Some fields in the response cannot be final at the preconfirmation stage and require placeholder values:
@@ -1006,7 +1007,7 @@ Some fields in the response cannot be final at the preconfirmation stage and req
 }
 ```
 
-When queried, this endpoint first checks the preconfirmation cache for the requested transaction hash before falling
+When queried, this endpoint first checks the preconfirmation state for the requested transaction hash before falling
 back to the standard chain state lookup.
 
 Some fields in the response cannot be final at the preconfirmation stage and require placeholder values:
@@ -1097,7 +1098,7 @@ sequenceDiagram
 "0x..." // Balance in wei
 ```
 
-When queried with the "pending" tag, the endpoint uses the preconfirmation cache state to return the account balance.
+When queried with the "pending" tag, the endpoint uses the preconfirmation state state to return the account balance.
 If the requested account appears in the `AccountMetadata` of a received Flashblock with a non-null `balance` field, the
 RPC provider can directly return this value without needing to access the full state. The response reflects all changes
 from preconfirmed transactions that affect the requested account's balance.
@@ -1121,7 +1122,7 @@ from preconfirmed transactions that affect the requested account's balance.
 "0x..." // Return data from the call
 ```
 
-When queried with the "pending" tag, the endpoint uses the preconfirmation cache state to return the call result. For
+When queried with the "pending" tag, the endpoint uses the preconfirmation state state to return the call result. For
 this endpoint to work, the preconfirmation stream needs to include state differences for both accounts and storage
 after each flashblock.
 
@@ -1173,7 +1174,7 @@ transaction to complete considering the latest pre-confirmed state.
 "0x..."// Contract bytecode
 ```
 
-When queried with the "pending" tag, the endpoint returns the contract bytecode from the preconfirmation cache state.
+When queried with the "pending" tag, the endpoint returns the contract bytecode from the preconfirmation state state.
 If the requested account appears in the `AccountMetadata` of a received Flashblock with a non-null `code` field, the
 RPC provider can directly return this value without accessing the full state.
 
@@ -1197,7 +1198,7 @@ RPC provider can directly return this value without accessing the full state.
 ```
 
 When queried with the "pending" tag, the endpoint returns the transaction count (nonce) of the account from the
-preconfirmation cache. If the requested account appears in the `AccountMetadata` of a received Flashblock, the RPC
+preconfirmation state. If the requested account appears in the `AccountMetadata` of a received Flashblock, the RPC
 provider can directly use the `nonce` field without additional state access.
 
 **`eth_getStorageAt`**
@@ -1220,7 +1221,7 @@ provider can directly use the `nonce` field without additional state access.
 ```
 
 When queried with the "pending" tag, the endpoint returns the value from the specified storage slot using the
-preconfirmation cache state. If the requested account appears in the `AccountMetadata` of a received Flashblock, the
+preconfirmation state state. If the requested account appears in the `AccountMetadata` of a received Flashblock, the
 RPC provider scans the `storage_slots` list for the requested key and returns the corresponding value directly.
 
 # Reliability and Operational Considerations
@@ -1336,7 +1337,7 @@ enabled.
 For Sequencer Operators, Flashblocks and Rollup Boost can be enabled and disabled with no additional harm to the system.
 
 For RPC Operators, Flashblocks will require a modified RPC node that subscribes to the Flashblock stream in addition to
-maintaining a Preconfirmation cache and responding with the relevant data on request with the `pending` tag.
+maintaining a Preconfirmation state and responding with the relevant data on request with the `pending` tag.
 
 # Implementation
 
