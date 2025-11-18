@@ -937,7 +937,7 @@ builder selection.</li>
 </ul>
 <h2 id="flashblock-propagation"><a class="header" href="#flashblock-propagation">Flashblock Propagation</a></h2>
 <p>Once Rollup Boost has validated a flashblock, it is then propagated to the rest of the network to be included in each
-RPC Provider’s Preconfirmation Cache.</p>
+RPC Provider’s Preconfirmation state.</p>
 <pre class="mermaid">sequenceDiagram
     participant B as Block Builder
     participant R as Rollup-boost
@@ -988,9 +988,10 @@ implementation in the <a href="https://github.com/base/flashblocks-websocket-pro
 <h2 id="flashblock-json-rpc-apis"><a class="header" href="#flashblock-json-rpc-apis">Flashblock JSON-RPC APIs</a></h2>
 <h3 id="ethereum-json-rpc-modifications"><a class="header" href="#ethereum-json-rpc-modifications">Ethereum JSON RPC Modifications</a></h3>
 <p>All modifications done to the existing Ethereum JSON RPC methods are confined to overloading the existing <code>pending</code>
-tag. Originally, this tag was designed to return block data being processed by the node's internal miner. It's fitting
+tag except a few JSON RPC methods which become inherently aware of preconfirmation state.
+Originally, this tag was designed to return block data being processed by the node's internal miner. It's fitting
 that we now use it for a similar purpose: exposing blocks in their preconfirmation stage. When queried with the
-<code>pending</code> tag, the endpoint uses the preconfirmation cache state to construct the response. The response might include
+<code>pending</code> tag, the endpoint uses the preconfirmation state state to construct the response. The response might include
 not only transactions but also block metadata like state root and receipt root.</p>
 <p>The tag is currently in a soft-deprecated state due to inconsistent implementations across clients, particularly after
 The Merge. However, it's worth noting that it's still actively used for certain endpoints, particularly
@@ -1001,13 +1002,19 @@ of the tag being removed in the future (see <a href="https://github.com/ethereu
 the design could adapt by introducing a flashblocks-specific tag if needed.</p>
 <p>We repurpose the <code>pending</code> tag in the following RPC calls to enable consuming preconfirmed state:</p>
 <ul>
-<li>eth_getTransactionReceipt</li>
-<li>eth_getBlockByHash</li>
-<li>eth_getBalance</li>
 <li>eth_call</li>
-<li>eth_getCode</li>
+<li>eth_estimateGas</li>
+<li>eth_getBlockByNumber</li>
+<li>eth_getBalance</li>
 <li>eth_getTransactionCount</li>
+<li>eth_getCode</li>
 <li>eth_getStorageAt</li>
+</ul>
+<p><strong>Note: not all RPC methods explicitly require a "pending" tag to tap into the Flashblocks' state's awareness</strong></p>
+<p>The following RPC methods implicitly incorporate Flashblocks awareness like that whenever possible:</p>
+<ul>
+<li>eth_getTransactionReceipt</li>
+<li>eth_getTransactionByHash</li>
 </ul>
 <h3 id="op_supportedcapabilities"><a class="header" href="#op_supportedcapabilities">op_supportedCapabilities</a></h3>
 <p>This endpoint allows clients to discover whether the RPC provider supports certain features, including Flashblocks.</p>
@@ -1060,17 +1067,53 @@ to the protocol or for other protocols.</p>
   "logsBloom": "0x..."
 }
 </code></pre>
-<p>When queried, this endpoint first checks the preconfirmation cache for the requested transaction hash before falling
+<p>When queried, this endpoint first checks the preconfirmation state for the requested transaction hash before falling
 back to the standard chain state lookup.</p>
 <p>Some fields in the response cannot be final at the preconfirmation stage and require placeholder values:</p>
 <ul>
 <li><code>blockHash</code>: Uses empty hash as placeholder</li>
 <li><code>blockNumber</code>: Can be set to the current block number being processed</li>
 </ul>
-<p><strong><code>eth_getBlockByHash</code></strong></p>
+<p><strong><code>eth_getTransactionByHash</code></strong></p>
 <p><strong>Request</strong></p>
 <pre><code class="language-json">{
-  "method": "eth_getBlockByHash",
+  "method": "eth_getTransactionByHash",
+  "params": ["0x..."], // Transaction hash of the potentially pre-confirmed transaction
+  "id": 1,
+  "jsonrpc": "2.0"
+}
+</code></pre>
+<p><strong>Response</strong></p>
+<pre><code class="language-json">{
+  "id": 1,
+  "result": {
+    "blockHash": "0x...", 
+    "blockNumber": "0x...",
+    "hash": "0x...",
+    "transactionIndex": "0x0",
+    "type": "0x2",
+    "nonce": "0x...",
+    "from": "0x...",
+    "to": "0x...",
+    "gas": "0x...",
+    "value": "0x...",
+    "gasPrice": "0x...",
+    "chainId": "0x..."
+  },
+  "jsonrpc": "2.0"
+}
+</code></pre>
+<p>When queried, this endpoint first checks the preconfirmation state for the requested transaction hash before falling
+back to the standard chain state lookup.</p>
+<p>Some fields in the response cannot be final at the preconfirmation stage and require placeholder values:</p>
+<ul>
+<li><code>blockHash</code>: Uses the block hash of pending block at the time transaction was pre-confirmed.</li>
+<li><code>blockNumber</code>: Can be set to the current block number being processed</li>
+</ul>
+<p><strong><code>eth_getBlockByNumber</code></strong></p>
+<p><strong>Request</strong></p>
+<pre><code class="language-json">{
+  "method": "eth_getBlockByNumber",
   "params": ["pending", false],  // Second parameter indicates full transaction objects (true) or only hashes (false)
   "id": 1,
   "jsonrpc": "2.0"
@@ -1133,7 +1176,7 @@ preconfirmed transactions at that moment.</p>
 <p><strong>Response</strong></p>
 <pre><code class="language-json">"0x..." // Balance in wei
 </code></pre>
-<p>When queried with the "pending" tag, the endpoint uses the preconfirmation cache state to return the account balance.
+<p>When queried with the "pending" tag, the endpoint uses the preconfirmation state state to return the account balance.
 If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock with a non-null <code>balance</code> field, the
 RPC provider can directly return this value without needing to access the full state. The response reflects all changes
 from preconfirmed transactions that affect the requested account's balance.</p>
@@ -1149,11 +1192,29 @@ from preconfirmed transactions that affect the requested account's balance.</p>
 <p><strong>Response</strong></p>
 <pre><code class="language-json">"0x..." // Return data from the call
 </code></pre>
-<p>When queried with the "pending" tag, the endpoint uses the preconfirmation cache state to return the call result. For
+<p>When queried with the "pending" tag, the endpoint uses the preconfirmation state state to return the call result. For
 this endpoint to work, the preconfirmation stream needs to include state differences for both accounts and storage
 after each flashblock.</p>
 <p>Similar to the current override functionality in <code>eth_call</code> where EVM transitions are executed on top of modified
 state, this implementation executes the call on top of the preconfirmation state changes.</p>
+<p><strong><code>eth_estimateGas</code></strong></p>
+<p>Generates and returns an estimate of how much gas is necessary to allow the
+transaction to complete considering the latest pre-confirmed state.</p>
+<p><strong>Request</strong></p>
+<pre><code class="language-json">{
+  "jsonrpc": "2.0",
+  "method": "eth_estimateGas",
+  "params": [{"from":"0x...","to":"0x...","value":"0x..."}, "pending"],
+  "id": 1
+}
+</code></pre>
+<p><strong>Response</strong></p>
+<pre><code class="language-json">{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": "0x..." // The estimated amount of gas required for the transaction, as a hexadecimal string.
+}
+</code></pre>
 <p><strong><code>eth_getCode</code></strong></p>
 <p><strong>Request</strong></p>
 <pre><code class="language-json">{
@@ -1166,7 +1227,7 @@ state, this implementation executes the call on top of the preconfirmation state
 <p><strong>Response</strong></p>
 <pre><code class="language-json">"0x..."// Contract bytecode
 </code></pre>
-<p>When queried with the "pending" tag, the endpoint returns the contract bytecode from the preconfirmation cache state.
+<p>When queried with the "pending" tag, the endpoint returns the contract bytecode from the preconfirmation state state.
 If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock with a non-null <code>code</code> field, the
 RPC provider can directly return this value without accessing the full state.</p>
 <p><strong><code>eth_getTransactionCount</code></strong></p>
@@ -1182,7 +1243,7 @@ RPC provider can directly return this value without accessing the full state.</p
 <pre><code class="language-json">"0x..."// Nonce value as a hex string
 </code></pre>
 <p>When queried with the "pending" tag, the endpoint returns the transaction count (nonce) of the account from the
-preconfirmation cache. If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock, the RPC
+preconfirmation state. If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock, the RPC
 provider can directly use the <code>nonce</code> field without additional state access.</p>
 <p><strong><code>eth_getStorageAt</code></strong></p>
 <p><strong>Request</strong></p>
@@ -1197,7 +1258,7 @@ provider can directly use the <code>nonce</code> field without additional stat
 <pre><code class="language-json">"0x..." // Storage value as a hex string
 </code></pre>
 <p>When queried with the "pending" tag, the endpoint returns the value from the specified storage slot using the
-preconfirmation cache state. If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock, the
+preconfirmation state state. If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock, the
 RPC provider scans the <code>storage_slots</code> list for the requested key and returns the corresponding value directly.</p>
 <h1 id="reliability-and-operational-considerations"><a class="header" href="#reliability-and-operational-considerations">Reliability and Operational Considerations</a></h1>
 <h2 id="transaction-propagation"><a class="header" href="#transaction-propagation">Transaction Propagation</a></h2>
@@ -1281,7 +1342,7 @@ enabled.</p>
 <h2 id="infrastructure-operators"><a class="header" href="#infrastructure-operators">Infrastructure Operators</a></h2>
 <p>For Sequencer Operators, Flashblocks and Rollup Boost can be enabled and disabled with no additional harm to the system.</p>
 <p>For RPC Operators, Flashblocks will require a modified RPC node that subscribes to the Flashblock stream in addition to
-maintaining a Preconfirmation cache and responding with the relevant data on request with the <code>pending</code> tag.</p>
+maintaining a Preconfirmation state and responding with the relevant data on request with the <code>pending</code> tag.</p>
 <h1 id="implementation"><a class="header" href="#implementation">Implementation</a></h1>
 <p>A feature complete implementation of all components described in this document can be found in the
 <a href="https://github.com/flashbots/">rollup-boost</a>
