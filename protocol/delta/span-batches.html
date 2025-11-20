@@ -521,7 +521,7 @@ epoch number cannot be older than the origin of parent block</li>
 </li>
 </ul>
 </li>
-<li>Max Sequencer time-drift checks:
+<li>Max Sequencer time-drift &amp; other L1 origin checks:
 <ul>
 <li>Note: The max time-drift is enforced for the <em>batch as a whole</em>, to keep the possible output variants small.</li>
 <li>Variables:
@@ -536,6 +536,7 @@ It may reach to the next origin outside the L1 origins of the span.</li>
 <ul>
 <li>For each <code>block_input</code> whose timestamp is greater than <code>safe_head.timestamp</code>:
 <ul>
+<li><code>block_input.l1_origin.number &lt; safe_head.l1_origin.number</code> -&gt; <code>drop</code>: enforce increasing L1 origins.</li>
 <li><code>block_input.timestamp &lt; block_input.origin.time</code> -&gt; <code>drop</code>: enforce the min L2 timestamp rule.</li>
 <li><code>block_input.timestamp &gt; block_input.origin.time + max_sequencer_drift</code>: enforce the L2 timestamp drift rule,
 but with exceptions to preserve above min L2 timestamp invariant:
