@@ -33,6 +33,7 @@ Filecoin
 Flashblock
 Flashblock's
 Flashblocks
+footgun
 Forkchoice
 Futex
 Futexes
