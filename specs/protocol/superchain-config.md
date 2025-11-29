@@ -5,6 +5,8 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Configuration Data Structure](#configuration-data-structure)
+  - [SuperchainDefinition](#superchaindefinition)
 - [Invariants](#invariants)
   - [iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism](#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism)
     - [Impact](#impact)
@@ -28,6 +30,34 @@
 
 The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains
 within a single Superchain network.
+
+## Configuration Data Structure
+
+The `SuperchainDefinition` type represents the configuration for a
+Superchain target, containing information about L1 contract addresses
+and network parameters.
+
+### SuperchainDefinition
+
+```javascript
+SuperchainDefinition {
+    Name                   string              // "mainnet", "sepolia"
+    ProtocolVersionsAddr   checksummedAddress  // protocol_versions_addr
+    SuperchainConfigAddr   checksummedAddress  // superchain_config_addr
+    OPContractsManagerAddr checksummedAddress  // op_contracts_manager_addr
+    Hardforks              Hardforks           // hardforks
+    L1                     SuperchainL1        // L1 chain information
+}
+```
+
+**Fields:**
+
+- `Name`: The name of the superchain (e.g., "mainnet", "sepolia")
+- `ProtocolVersionsAddr`: Address of the ProtocolVersions contract on L1
+- `SuperchainConfigAddr`: Address of the SuperchainConfig contract on L1
+- `OPContractsManagerAddr`: Address of the OP Contracts Manager on L1
+- `Hardforks`: Hardfork activation configuration for the superchain
+- `L1`: L1 chain information including chain ID, RPC endpoint, and explorer URL
 
 ## Invariants
 
