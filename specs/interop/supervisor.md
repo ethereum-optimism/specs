@@ -53,8 +53,11 @@
       - [-3209`XX` `FAILED_PRECONDITION` errors](#-3209xx-failed_precondition-errors)
         - [-320900 `OUT_OF_ORDER`](#-320900-out_of_order)
         - [-320901 `AWAITING_REPLACEMENT_BLOCK`](#-320901-awaiting_replacement_block)
+        - [-320902 `REWIND_FAILED`](#-320902-rewind_failed)
       - [-3210`XX` `ABORTED` errors](#-3210xx-aborted-errors)
         - [-321000 `ITER_STOP`](#-321000-iter_stop)
+        - [-321001 `INVALIDATED_READ`](#-321001-invalidated_read)
+        - [-321002 `ALREADY_INVALIDATING_READ`](#-321002-already_invalidating_read)
       - [-3211`XX` `OUT_OF_RANGE` errors](#-3211xx-out_of_range-errors)
         - [-321100 `OUT_OF_SCOPE`](#-321100-out_of_scope)
       - [-3212`XX` `UNIMPLEMENTED` errors](#-3212xx-unimplemented-errors)
@@ -421,12 +424,24 @@ Happens when you try to add data to the DB, but it does not actually fit onto th
 
 Happens when we know for sure that a replacement block is needed before progress can be made.
 
+###### -320902 `REWIND_FAILED`
+
+Happens when we fail to rewind the chain (reorg response).
+
 ##### -3210`XX` `ABORTED` errors
 
 ###### -321000 `ITER_STOP`
 
 Happens in iterator to indicate iteration has to stop.
 This error might only be used internally and not sent over the network.
+
+###### -321001 `INVALIDATED_READ`
+
+Happens when something was assumed from the DB, but then invalidated due to e.g. a reorg.
+
+###### -321002 `ALREADY_INVALIDATING_READ`
+
+Happens when something is being invalidated, and something else attempts to invalidate at the same time.
 
 ##### -3211`XX` `OUT_OF_RANGE` errors
 
