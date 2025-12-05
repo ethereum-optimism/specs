@@ -124,6 +124,7 @@ cellborder
 chainid
 Chainid
 checkpointed
+checksummedAddress
 clabby
 codehash
 configurables
