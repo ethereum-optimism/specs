@@ -44,9 +44,9 @@ and network parameters.
 ```javascript
 SuperchainDefinition {
     Name                   string
-    ProtocolVersionsAddr   checksummedAddress
-    SuperchainConfigAddr   checksummedAddress
-    OPContractsManagerAddr checksummedAddress
+    ProtocolVersionsAddr   address
+    SuperchainConfigAddr   address
+    OPContractsManagerAddr address
     Hardforks              Hardforks
     L1                     SuperchainL1
 }
@@ -103,7 +103,7 @@ SuperchainL1 {
 
 **Fields:**
 
-- `ChainID`: The chain ID of the L1 network (e.g., 1 for Ethereum mainnet, 11155111 for Sepolia)
+- `ChainID`: The chain ID of the L1 network (e.g. 1 for Ethereum mainnet, 11155111 for Sepolia)
 - `PublicRPC`: Public RPC endpoint URL for the L1 network
 - `Explorer`: Block explorer URL for the L1 network
 
