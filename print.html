@@ -5856,6 +5856,8 @@ If an unsupported syscall is encountered, the VM will raise an exception.</p>
 <tr><td>5034</td><td>nanosleep</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Preempts the active thread and returns 0.</td></tr>
 <tr><td>5222</td><td>clock_gettime</td><td>uint64 clock_id</td><td>uint64 addr</td><td>🚫</td><td>🚫</td><td>Supports <code>clock_id</code>'s <code>REALTIME</code>(0) and <code>MONOTONIC</code>(1). For other <code>clock_id</code>'s, sets errno to <code>0x16</code>.  Calculates a deterministic time value based on the state's <code>step</code> field and a constant <code>HZ</code> (10,000,000) where <code>HZ</code> represents the approximate clock rate (steps / second) of the FPVM:<br/><br/><code>seconds = step/HZ</code><br/><code>nsecs = (step % HZ) * 10^9/HZ</code><br/><br/>Seconds are set at memory address <code>addr</code> and nsecs are set at <code>addr + WordSize</code>.</td></tr>
 <tr><td>5038</td><td>getpid</td><td>🚫</td><td>🚫</td><td>🚫</td><td>🚫</td><td>Returns 0.</td></tr>
+<tr><td>5313</td><td>getrandom</td><td>char *buf</td><td>uint64 buflen</td><td>🚫</td><td>🚫</td><td>Generates pseudorandom bytes and writes them to the buffer at <code>buf</code>. Uses splitmix64 seeded with the current step count. Returns the number of bytes written, which is at most <code>buflen</code> and limited by alignment boundaries.</td></tr>
+<tr><td>5284</td><td>eventfd2</td><td>uint64 initval</td><td>int64 flags</td><td>🚫</td><td>🚫</td><td>Creates an eventfd file descriptor. Only non-blocking mode is supported: if <code>flags</code> does not include <code>EFD_NONBLOCK</code> (0x80), sets errno to <code>0x16</code>. On success, returns file descriptor 100.</td></tr>
 </tbody></table>
 </div><!-- cspell:enable -->
 <h3 id="noop-syscalls"><a class="header" href="#noop-syscalls">Noop Syscalls</a></h3>
@@ -5864,6 +5866,7 @@ If an unsupported syscall is encountered, the VM will raise an exception.</p>
 and errno (<code>$a3</code>) registers.</p>
 <div class="table-wrapper"><table><thead><tr><th>$v0</th><th>system call</th></tr></thead><tbody>
 <tr><td>5011</td><td>munmap</td></tr>
+<tr><td>5010</td><td>mprotect</td></tr>
 <tr><td>5196</td><td>sched_get_affinity</td></tr>
 <tr><td>5027</td><td>madvise</td></tr>
 <tr><td>5014</td><td>rt_sigprocmask</td></tr>
@@ -5882,7 +5885,6 @@ and errno (<code>$a3</code>) registers.</p>
 <tr><td>5287</td><td>pipe2</td></tr>
 <tr><td>5208</td><td>epoll_ctl</td></tr>
 <tr><td>5272</td><td>epoll_pwait</td></tr>
-<tr><td>5313</td><td>getrandom</td></tr>
 <tr><td>5061</td><td>uname</td></tr>
 <tr><td>5100</td><td>getuid</td></tr>
 <tr><td>5102</td><td>getgid</td></tr>
@@ -5906,6 +5908,7 @@ and errno (<code>$a3</code>) registers.</p>
 <tr><td>hint request</td><td>4</td><td>write-only. Used to provide <a href="fault-proof/../fault-proof/index.html#hinting">pre-image hints</a></td></tr>
 <tr><td>pre-image response</td><td>5</td><td>read-only. Used to <a href="fault-proof/../fault-proof/index.html#pre-image-communication">read pre-images</a>.</td></tr>
 <tr><td>pre-image request</td><td>6</td><td>write-only. Used to <a href="fault-proof/../fault-proof/index.html#pre-image-communication">request pre-images</a>.</td></tr>
+<tr><td>eventfd</td><td>100</td><td>read-write. Created by <code>eventfd2</code> syscall. Reads return <code>EAGAIN</code>. Writes return <code>EAGAIN</code>.</td></tr>
 </tbody></table>
 </div>
 <p>Syscalls referencing unknown file descriptors fail with an <code>EBADF</code> errno as done on Linux.</p>
