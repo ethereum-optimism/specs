@@ -153,10 +153,12 @@ discv
 disincentivized
 disputegamefactory
 doctoc
+EAGAIN
 ecpairing
 eigenda
 elif
 errno
+eventfd
 failovers
 fanout
 fastlz
