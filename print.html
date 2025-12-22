@@ -6565,7 +6565,28 @@ clone of the <code>GameType</code>'s pre-deployed implementation contract.</p>
 <p>The <code>rootClaim</code> of created dispute games can either be a claim that the creator agrees or disagrees with.
 This is an implementation detail that is left up to the <code>IDisputeGame</code> to handle within its <code>resolve</code> function.</p>
 <p>When the <code>DisputeGameFactory</code> creates a new <code>DisputeGame</code> contract, it calls <code>initialize()</code> on the clone to
-set up the game.</p>
+set up the game. The factory passes immutable arguments to the clone using the CWIA (Clone With Immutable Args)
+pattern. There are two CWIA layouts depending on whether the game type has implementation args configured:</p>
+<p><strong>Standard CWIA Layout</strong> (when <code>gameArgs[_gameType]</code> is empty):</p>
+<div class="table-wrapper"><table><thead><tr><th>Bytes</th><th>Description</th></tr></thead><tbody>
+<tr><td>[0, 20)</td><td>Game creator address</td></tr>
+<tr><td>[20, 52)</td><td>Root claim</td></tr>
+<tr><td>[52, 84)</td><td>Parent block hash at creation time</td></tr>
+<tr><td>[84, 84 + n)</td><td>Extra data (opaque)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Extended CWIA Layout</strong> (when <code>gameArgs[_gameType]</code> is non-empty):</p>
+<div class="table-wrapper"><table><thead><tr><th>Bytes</th><th>Description</th></tr></thead><tbody>
+<tr><td>[0, 20)</td><td>Game creator address</td></tr>
+<tr><td>[20, 52)</td><td>Root claim</td></tr>
+<tr><td>[52, 84)</td><td>Parent block hash at creation time</td></tr>
+<tr><td>[84, 88)</td><td>Game type</td></tr>
+<tr><td>[88, 88 + n)</td><td>Extra data (opaque)</td></tr>
+<tr><td>[88 + n, 88 + n + m)</td><td>Implementation args (opaque)</td></tr>
+</tbody></table>
+</div>
+<p>The implementation args allow chain-specific configuration to be passed to the game implementation at clone
+creation time, enabling a single implementation contract to be reused across different chain configurations.</p>
 <pre><code class="language-solidity">/// @title IDisputeGameFactory
 /// @notice The interface for a DisputeGameFactory contract.
 interface IDisputeGameFactory {
@@ -6579,6 +6600,11 @@ interface IDisputeGameFactory {
     /// @param impl The implementation contract for the given `GameType`.
     /// @param gameType The type of the DisputeGame.
     event ImplementationSet(address indexed impl, GameType indexed gameType);
+
+    /// @notice Emitted when a game type's implementation args are set
+    /// @param gameType The type of the DisputeGame.
+    /// @param args The constructor args for the game type.
+    event ImplementationArgsSet(GameType indexed gameType, bytes args);
 
     /// @notice Emitted when a game type's initialization bond is updated
     /// @param gameType The type of the DisputeGame.
@@ -6751,6 +6777,11 @@ interface IDisputeGame is IInitializable {
     /// @return l1Head_ The parent hash of the L1 block when the dispute game was created.
     function l1Head() external pure returns (Hash l1Head_);
 
+    /// @notice Getter for the L2 sequence number (typically the L2 block number).
+    /// @dev Extracted from the extra data supplied to the dispute game contract by the creator.
+    /// @return l2SequenceNumber_ The L2 sequence number for this dispute game.
+    function l2SequenceNumber() external pure returns (uint256 l2SequenceNumber_);
+
     /// @notice Getter for the extra data.
     /// @dev `clones-with-immutable-args` argument #4
     /// @return extraData_ Any extra data supplied to the dispute game contract by the creator.
@@ -6772,6 +6803,12 @@ interface IDisputeGame is IInitializable {
     /// @return rootClaim_ The root claim of the DisputeGame.
     /// @return extraData_ Any extra data supplied to the dispute game contract by the creator.
     function gameData() external view returns (GameType gameType_, Claim rootClaim_, bytes memory extraData_);
+
+    /// @notice Returns whether the game type was respected when this game was created.
+    /// @dev Used as a withdrawal finality condition - games created when their type wasn't
+    ///      respected cannot be used to finalize withdrawals.
+    /// @return wasRespected_ True if the game type was the respected game type when created.
+    function wasRespectedGameTypeWhenCreated() external view returns (bool wasRespected_);
 }
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
