@@ -108,6 +108,7 @@ Object:
 - `timeout`: `HexUint64` - optional, requests verification to still hold at `timestamp+timeout` (inclusive).
   The message expiry-window may invalidate messages.
   Default interpretation is a `0` timeout: what is valid at `timestamp` may not be valid at `timestamp+1`.
+- `chainId`: `ChainID` - optional, the chain ID of the executing message.
 
 #### `HexUint64`
 
