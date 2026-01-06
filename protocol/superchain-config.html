@@ -175,6 +175,13 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
+<li><a href="#configuration-data-structure">Configuration Data Structure</a>
+<ul>
+<li><a href="#superchaindefinition">SuperchainDefinition</a></li>
+<li><a href="#hardforks">Hardforks</a></li>
+<li><a href="#superchainl1">SuperchainL1</a></li>
+</ul>
+</li>
 <li><a href="#invariants">Invariants</a>
 <ul>
 <li><a href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a>
@@ -208,6 +215,67 @@
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains
 within a single Superchain network.</p>
+<h2 id="configuration-data-structure"><a class="header" href="#configuration-data-structure">Configuration Data Structure</a></h2>
+<p>The <code>SuperchainDefinition</code> type represents the configuration for a
+Superchain target, containing information about L1 contract addresses
+and network parameters.</p>
+<h3 id="superchaindefinition"><a class="header" href="#superchaindefinition">SuperchainDefinition</a></h3>
+<pre><code class="language-javascript">SuperchainDefinition {
+    Name                   string
+    ProtocolVersionsAddr   address
+    SuperchainConfigAddr   address
+    OPContractsManagerAddr address
+    Hardforks              Hardforks
+    L1                     SuperchainL1
+}
+</code></pre>
+<p><strong>Fields:</strong></p>
+<ul>
+<li><code>Name</code>: The name of the superchain (e.g., "mainnet", "sepolia")</li>
+<li><code>ProtocolVersionsAddr</code>: Address of the ProtocolVersions contract on L1</li>
+<li><code>SuperchainConfigAddr</code>: Address of the SuperchainConfig contract on L1</li>
+<li><code>OPContractsManagerAddr</code>: Address of the OP Contracts Manager on L1</li>
+<li><code>Hardforks</code>: Hardfork activation configuration for the superchain</li>
+<li><code>L1</code>: L1 chain information including chain ID, RPC endpoint, and explorer URL</li>
+</ul>
+<h3 id="hardforks"><a class="header" href="#hardforks">Hardforks</a></h3>
+<p>The <code>Hardforks</code> type contains optional activation timestamps for each network upgrade.</p>
+<pre><code class="language-javascript">Hardforks {
+    CanyonTime             uint64
+    DeltaTime              uint64
+    EcotoneTime            uint64
+    FjordTime              uint64
+    GraniteTime            uint64
+    HoloceneTime           uint64
+    IsthmusTime            uint64
+    InteropTime            uint64
+}
+</code></pre>
+<p><strong>Fields:</strong></p>
+<ul>
+<li><code>CanyonTime</code>: Activation timestamp for the Canyon upgrade</li>
+<li><code>DeltaTime</code>: Activation timestamp for the Delta upgrade</li>
+<li><code>EcotoneTime</code>: Activation timestamp for the Ecotone upgrade</li>
+<li><code>FjordTime</code>: Activation timestamp for the Fjord upgrade</li>
+<li><code>GraniteTime</code>: Activation timestamp for the Granite upgrade</li>
+<li><code>HoloceneTime</code>: Activation timestamp for the Holocene upgrade</li>
+<li><code>IsthmusTime</code>: Activation timestamp for the Isthmus upgrade</li>
+<li><code>InteropTime</code>: Activation timestamp for the Interop upgrade</li>
+</ul>
+<h3 id="superchainl1"><a class="header" href="#superchainl1">SuperchainL1</a></h3>
+<p>The <code>SuperchainL1</code> type contains L1 chain information for the superchain.</p>
+<pre><code class="language-javascript">SuperchainL1 {
+    ChainID   uint64
+    PublicRPC string
+    Explorer  string
+}
+</code></pre>
+<p><strong>Fields:</strong></p>
+<ul>
+<li><code>ChainID</code>: The chain ID of the L1 network (e.g. 1 for Ethereum mainnet, 11155111 for Sepolia)</li>
+<li><code>PublicRPC</code>: Public RPC endpoint URL for the L1 network</li>
+<li><code>Explorer</code>: Block explorer URL for the L1 network</li>
+</ul>
 <h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
 <h3 id="isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism"><a class="header" href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a></h3>
 <p>We require that the <code>SuperchainConfig</code> is constructed such that both the

@@ -213,9 +213,9 @@ when the <code>L2 Timestamp &gt;= activation time</code>.</p>
 </div>
 <p>Additionally,</p>
 <ul>
-<li><code>version</code> must be 0</li>
-<li><code>denominator</code> must be non-zero</li>
-<li>there is no additional data beyond these 9 bytes</li>
+<li><code>version</code> must be <code>0</code>,</li>
+<li><code>denominator</code> and <code>elasticity</code> must be non-zero,</li>
+<li>there is no additional data beyond these 9 bytes.</li>
 </ul>
 <p>Note that <code>extraData</code> has a maximum capacity of 32 bytes (to fit in the L1 beacon-chain <code>extraData</code> data-type) and its
 format may be modified/extended by future upgrades.</p>
