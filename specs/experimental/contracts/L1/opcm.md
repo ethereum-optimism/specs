@@ -39,6 +39,8 @@
     - [Impact](#impact-6)
   - [i01-008: Batch Operation Gas Efficiency](#i01-008-batch-operation-gas-efficiency)
     - [Impact](#impact-7)
+  - [i01-009: Time Independence](#i01-009-time-independence)
+    - [Impact](#impact-8)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -257,3 +259,22 @@ Multiple upgrade operations (approximately 5) should be executable within a sing
 
 If violated, upgrading multiple chains would require separate transactions, increasing operational
 complexity and cost but not blocking functionality.
+
+### i01-009: Time Independence
+
+OPCM behavior must not depend on time. Given the same inputs and environment state, OPCM must
+produce the same results regardless of when it is called. OPCM itself must not be the source of
+any time-dependent behavior.
+
+Individual contracts deployed or upgraded by OPCM may have time-dependent initialization behavior
+(e.g., storing a timestamp on first initialization). Such behavior must be carefully considered
+and clearly documented in those specific contracts. However, this time-dependence must originate
+from the contract's own logic, not from OPCM.
+
+#### Impact
+
+**Severity: High**
+
+If violated, OPCM behavior would become unpredictable and potentially exploitable. Time-dependent
+logic could cause operations to fail unexpectedly, create windows of vulnerability, or allow
+manipulation based on timing.
