@@ -142,6 +142,7 @@ deauthorize
 deauthorized
 delayedweth
 delegatecall
+delegatecalled
 DELEGATECALL
 delegatecalls
 delegatees
@@ -209,6 +210,7 @@ misattributed
 mmap
 mplex
 multiclient
+multisigs
 multisignature
 multistream
 Multistream
