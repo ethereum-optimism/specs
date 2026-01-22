@@ -87,8 +87,10 @@ interface of the upgrader rather than the contracts it deploys.
 
 A migration mechanism used during upgrades to set state values. Extra Instructions can be used to
 bootstrap new state that has no predecessor value (e.g., when an upgrade introduces a new variable)
-or to change state that already has a predecessor value. Extra Instructions are specific to the
-OPCM that defines them and must not apply to OPCMs of higher major versions.
+or to change state that already has a predecessor value. Each OPCM must specify which Extra
+Instructions are permitted, and those Extra Instructions must not be permitted in OPCMs of higher
+major versions. Permanent inputs should be added to the interface rather than implemented via Extra
+Instructions.
 
 ### Superchain ProxyAdmin Owner
 
