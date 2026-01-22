@@ -283,3 +283,16 @@ from the contract's own logic, not from OPCM.
 If violated, OPCM behavior would become unpredictable and potentially exploitable. Time-dependent
 logic could cause operations to fail unexpectedly, create windows of vulnerability, or allow
 manipulation based on timing.
+
+### i01-010: PermissionedDisputeGame Fallback Preservation
+
+Systems that use the FaultDisputeGame must also have a PermissionedDisputeGame. OPCM must not
+disable or remove the PermissionedDisputeGame from such systems.
+
+#### Impact
+
+**Severity: High**
+
+If violated, the system would lose its safe fallback mechanism. The PermissionedDisputeGame
+provides a trusted dispute resolution path that can be used if issues are discovered with the
+permissionless FaultDisputeGame, ensuring the system can continue operating safely.
