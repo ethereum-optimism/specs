@@ -52,11 +52,11 @@ references to the implementation contracts for that release.
 
 OPCM provides three core capabilities:
 
-- **System Deployment**: Deploying all contracts for a new OP Stack [System](#system) at the
+- **System Deployment**: Deploying all L1 contracts for a new OP Stack [System](#system) at the
   version the OPCM represents. This capability is permissionless.
-- **System Upgrade**: Upgrading an existing [System](#system) to the version the OPCM represents.
-  This capability is designed to be invoked via delegatecall by the ProxyAdmin owner, as OPCM
-  itself holds no special authority.
+- **System Upgrade**: Upgrading the L1 contracts of an existing [System](#system) to the version
+  the OPCM represents. This capability is designed to be invoked via delegatecall by the ProxyAdmin
+  owner, as OPCM itself holds no special authority.
 - **SuperchainConfig Upgrade**: Upgrading the SuperchainConfig contract. This capability is
   designed to be invoked via delegatecall by the
   [Superchain ProxyAdmin Owner](#superchain-proxyadmin-owner).
@@ -85,10 +85,10 @@ interface of the upgrader rather than the contracts it deploys.
 
 ### Extra Instructions
 
-A migration mechanism used during upgrades to bootstrap new state that has no predecessor value.
-When an upgrade introduces a new variable that did not exist in the previous version, Extra
-Instructions allow users to provide initial values for these variables. Extra Instructions are
-specific to the OPCM that defines them and must not apply to OPCMs of higher major versions.
+A migration mechanism used during upgrades to set state values. Extra Instructions can be used to
+bootstrap new state that has no predecessor value (e.g., when an upgrade introduces a new variable)
+or to change state that already has a predecessor value. Extra Instructions are specific to the
+OPCM that defines them and must not apply to OPCMs of higher major versions.
 
 ### Superchain ProxyAdmin Owner
 
@@ -100,12 +100,13 @@ ProxyAdmin owner separate from individual chain ProxyAdmin owners.
 
 ### a01-001: Ethereum Environment
 
-OPCM is designed to run on Ethereum networks. Behavior on non-Ethereum EVM chains is not guaranteed.
+OPCM is designed to run on Ethereum L1 mainnet and Sepolia. Behavior on other networks is not
+guaranteed.
 
 #### Mitigations
 
-- Documentation clearly states Ethereum as the target environment
-- Testing is performed against Ethereum mainnet and official testnets
+- Documentation clearly states Ethereum L1 mainnet and Sepolia as the target environments
+- Testing is performed against Ethereum L1 mainnet and Sepolia
 
 ### a01-002: Implementation Contracts Trusted
 
@@ -114,8 +115,8 @@ represent.
 
 #### Mitigations
 
-- Implementation contracts are deployed through audited deployment scripts
-- Verification scripts confirm deployed bytecode matches the release commit
+- Audited verification scripts confirm deployed bytecode matches the release commit. Verification
+  scripts must be re-audited when changed.
 - Implementation addresses are immutable once OPCM is deployed
 
 ### a01-003: Code at Release Commit is Safe
@@ -138,7 +139,6 @@ constraints.
 
 - System upgrade capability only functions when delegatecalled, as OPCM holds no authority itself
 - ProxyAdmin ownership is typically controlled by governance multisigs
-- Upgrade transactions are subject to timelock delays where applicable
 
 ### a01-005: Superchain ProxyAdmin Owner Trusted
 
@@ -202,10 +202,12 @@ transferring control to unauthorized parties or breaking the security model of t
 
 Chains must follow the correct upgrade flow. Valid upgrade paths are:
 
-- Same major version to a higher minor version (e.g., v1.2.0 to v1.3.0)
+- Same major version to a higher minor version (e.g., v1.2.0 to v1.3.0). Skipping minor versions is
+  permitted, as a new increased minor version represents a replacement of the previous minor
+  version.
 - Current major version to the next major version (e.g., v1.x.y to v2.0.0)
 
-Downgrades and skipping required OPCMs are not permitted.
+Downgrades and skipping major versions are not permitted.
 
 #### Impact
 
@@ -216,8 +218,8 @@ them in an unsupported or vulnerable state that diverges from the expected upgra
 
 ### i01-005: Initialization Safety
 
-Contracts deployed or upgraded by OPCM must never be left uninitialized or open to initialization
-by unauthorized parties.
+Contracts deployed or upgraded by OPCM must never be left uninitialized or open to
+re-initialization.
 
 #### Impact
 
@@ -228,7 +230,8 @@ ownership of critical system components or corrupting system state.
 
 ### i01-006: SuperchainConfig Backwards Compatibility
 
-SuperchainConfig must maintain backwards compatibility with all past versions of the OP Stack.
+SuperchainConfig must maintain backwards compatibility with all OP Stack versions starting from
+`op-contracts/v1.3.0` (MCP L1).
 
 #### Impact
 
