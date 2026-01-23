@@ -41,6 +41,8 @@
     - [Impact](#impact-7)
   - [i01-009: Time Independence](#i01-009-time-independence)
     - [Impact](#impact-8)
+  - [i01-010: PermissionedDisputeGame Fallback Preservation](#i01-010-permissioneddisputegame-fallback-preservation)
+    - [Impact](#impact-9)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
