@@ -73,6 +73,38 @@
       - [Impact](#impact-12)
     - [i06-006: Complete Upgrade Coverage](#i06-006-complete-upgrade-coverage)
       - [Impact](#impact-13)
+- [Network Upgrade Transaction Bundle](#network-upgrade-transaction-bundle)
+  - [Overview](#overview-4)
+  - [Definitions](#definitions-3)
+    - [Network Upgrade Transaction (NUT)](#network-upgrade-transaction-nut)
+    - [Fork Activation Block](#fork-activation-block)
+    - [Bundle Generation Script](#bundle-generation-script)
+    - [Transaction Nonce](#transaction-nonce)
+  - [Assumptions](#assumptions-3)
+    - [a01-001: Solidity Compiler is Deterministic](#a01-001-solidity-compiler-is-deterministic)
+      - [Mitigations](#mitigations-9)
+    - [a02-002: Bundle Generation Script is Pure](#a02-002-bundle-generation-script-is-pure)
+      - [Mitigations](#mitigations-10)
+    - [a03-003: Git Repository is Authoritative Source](#a03-003-git-repository-is-authoritative-source)
+      - [Mitigations](#mitigations-11)
+    - [a04-004: JSON Format is Correctly Parsed](#a04-004-json-format-is-correctly-parsed)
+      - [Mitigations](#mitigations-12)
+  - [Invariants](#invariants-3)
+    - [i01-001: Deterministic Bundle Generation](#i01-001-deterministic-bundle-generation)
+      - [Impact](#impact-14)
+    - [i02-002: Transaction Completeness](#i02-002-transaction-completeness)
+      - [Impact](#impact-15)
+    - [i03-003: Transaction Ordering](#i03-003-transaction-ordering)
+      - [Impact](#impact-16)
+    - [i04-004: Correct Nonce Sequencing](#i04-004-correct-nonce-sequencing)
+      - [Impact](#impact-17)
+    - [i05-005: Verifiable Against Source Code](#i05-005-verifiable-against-source-code)
+      - [Impact](#impact-18)
+    - [i06-006: Valid Transaction Format](#i06-006-valid-transaction-format)
+      - [Impact](#impact-19)
+  - [Bundle Format](#bundle-format)
+  - [Bundle Generation Process](#bundle-generation-process)
+  - [Bundle Verification Process](#bundle-verification-process)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -488,4 +520,230 @@ upgrade.
 If predeploys are skipped incorrectly, chains would have inconsistent contract versions, making it difficult to reason
 about protocol state. This violates the goal of bringing all chains to a consistent version and could cause unexpected
 behavior differences across chains.
+
+## Network Upgrade Transaction Bundle
+
+### Overview
+
+The Network Upgrade Transaction (NUT) Bundle is a JSON-formatted data structure containing the complete set of
+transactions that must be executed at a specific fork activation block. The bundle is generated deterministically from
+Solidity scripts, tracked in git, and executed by all L2 client implementations to upgrade predeploy contracts.
+
+The bundle format enables verification that upgrade transactions correspond to specific source code commits, ensuring
+transparency and auditability across all OP Stack chains executing the upgrade.
+
+### Definitions
+
+#### Network Upgrade Transaction (NUT)
+
+A system transaction injected by the protocol at a specific fork block height, executed with the
+[Depositor Account](#depositor-account) as the sender. These transactions bypass normal transaction pool processing and
+are deterministically included in the fork activation block.
+
+#### Fork Activation Block
+
+The L2 block at which a protocol upgrade becomes active, identified by a specific L2 block timestamp. This block
+contains the Network Upgrade Transactions that implement the protocol changes.
+
+#### Bundle Generation Script
+
+A Solidity script (typically using Forge scripting) that deterministically computes all transaction data for an
+upgrade. The script deploys contracts, computes addresses, and assembles transaction calldata without relying on
+execution in an EVM environment.
+
+#### Transaction Nonce
+
+The nonce value used for transactions sent by the [Depositor Account](#depositor-account). For upgrade transactions,
+nonces must be correctly sequenced to ensure all transactions execute in the proper order within the fork activation
+block.
+
+### Assumptions
+
+#### a01-001: Solidity Compiler is Deterministic
+
+The Solidity compiler produces identical bytecode when given identical source code and compiler settings. This enables
+verification that bundle contents match the source code on a specific commit.
+
+##### Mitigations
+
+- Use pinned compiler versions specified in foundry.toml
+- Compiler determinism is a core property of the Solidity toolchain
+- Bundle generation includes compiler version and settings in metadata
+- Verification process rebuilds contracts with identical settings and compares bytecode
+
+#### a02-002: Bundle Generation Script is Pure
+
+The [bundle generation script](#bundle-generation-script) does not depend on external state that could vary between
+executions. All addresses are computed deterministically using CREATE2, and all transaction data is derived from
+compiled bytecode.
+
+##### Mitigations
+
+- Bundle generation scripts are reviewed to ensure they contain no external dependencies
+- Scripts use only deterministic address computation (CREATE2)
+- Fork-based testing validates that generated bundles match expected outputs
+- CI validates bundle regeneration produces identical output
+
+#### a03-003: Git Repository is Authoritative Source
+
+The git repository containing the bundle JSON files and source code serves as the authoritative source of truth for
+upgrade transactions. The commit hash provides an immutable reference to the exact code that generated the bundle.
+
+##### Mitigations
+
+- Bundles are committed to git alongside the source code that generates them
+- The generation script commit hash is included in bundle metadata
+- Repository is hosted on GitHub with branch protection and audit logs
+- Multiple reviewers verify bundle contents before merge
+
+#### a04-004: JSON Format is Correctly Parsed
+
+All L2 client implementations (Go, Rust, etc.) correctly parse the JSON bundle format and extract transaction fields
+identically. Parsing inconsistencies would cause consensus failures.
+
+##### Mitigations
+
+- JSON schema is simple and uses standard field types
+- Test vectors validate parsing across client implementations
+- Fork-based testing exercises bundle execution in reference implementation
+- Bundle format follows existing NUT patterns used in previous forks
+
+### Invariants
+
+#### i01-001: Deterministic Bundle Generation
+
+Running the [bundle generation script](#bundle-generation-script) multiple times on the same source code commit MUST
+produce byte-for-byte identical JSON output. No aspect of bundle generation may depend on timestamps, random values, or
+external state.
+
+##### Impact
+
+**Severity: Critical**
+
+If bundle generation is non-deterministic, it becomes impossible to verify that a given bundle corresponds to specific
+source code. This breaks the trust model and makes it difficult to audit upgrade transactions, potentially allowing
+unverified or malicious transactions to be included in upgrades.
+
+#### i02-002: Transaction Completeness
+
+The bundle MUST contain all transactions required to complete the upgrade. Missing transactions would cause the upgrade
+to fail partially, leaving the system in an inconsistent state.
+
+##### Impact
+
+**Severity: Critical**
+
+If the bundle is incomplete, the fork activation would fail, potentially halting the chain or leaving predeploys in
+partially upgraded states. Recovery would require emergency intervention and could cause extended downtime.
+
+#### i03-003: Transaction Ordering
+
+Transactions in the bundle MUST be ordered such that dependencies are satisfied. For example, contract deployments MUST
+occur before transactions that call those contracts.
+
+##### Impact
+
+**Severity: Critical**
+
+If transactions are misordered, executions will fail when attempting to call non-existent contracts or reference
+incorrect addresses. This would cause the entire upgrade to fail at fork activation, halting the chain.
+
+#### i04-004: Correct Nonce Sequencing
+
+Transaction nonces for the [Depositor Account](#depositor-account) MUST form a contiguous sequence with no gaps or
+duplicates. Each transaction must use the next available nonce.
+
+##### Impact
+
+**Severity: Critical**
+
+If nonces are incorrect, transactions will fail to execute or execute in wrong order. Gap in nonces would cause
+subsequent transactions to fail. Duplicate nonces would cause only the first transaction to execute, failing the rest.
+
+#### i05-005: Verifiable Against Source Code
+
+Given the source code at a specific git commit, it MUST be possible to rebuild contracts, regenerate the bundle, and
+verify that it matches the committed bundle byte-for-byte.
+
+##### Impact
+
+**Severity: High**
+
+If bundles cannot be verified against source code, there is no way to audit what transactions will actually execute
+during the upgrade. This eliminates transparency and could allow unauthorized or malicious transactions to be included.
+
+#### i06-006: Valid Transaction Format
+
+All transactions in the bundle MUST conform to the expected transaction format for [Network Upgrade Transactions](#network-upgrade-transaction-nut),
+including correct sender ([Depositor Account](#depositor-account)), appropriate gas limits, and valid calldata encoding.
+
+##### Impact
+
+**Severity: Critical**
+
+If transactions are malformed, they will fail to execute at fork activation, causing the upgrade to fail and
+potentially halting the chain. Invalid gas limits could cause out-of-gas failures. Invalid calldata could cause
+execution reverts.
+
+### Bundle Format
+
+The bundle is a JSON file with the following structure:
+
+```json
+{
+  "metadata": {
+    "version": "1.0.0",
+    "fork": "ForkName",
+    "generatedAt": "2024-01-15T10:30:00Z",
+    "sourceCommit": "abc123def456...",
+    "compiler": {
+      "version": "0.8.25",
+      "settings": {...}
+    }
+  },
+  "transactions": [
+    {
+      "nonce": 0,
+      "to": "0x1234...",
+      "value": "0",
+      "data": "0xabcd...",
+      "gasLimit": "1000000"
+    }
+  ]
+}
+```
+
+**Field Requirements:**
+
+- `metadata.version`: Bundle format version for compatibility
+- `metadata.fork`: Name of the fork this bundle implements
+- `metadata.generatedAt`: ISO 8601 timestamp of generation (informational only, not used in determinism)
+- `metadata.sourceCommit`: Git commit hash of the source code that generated this bundle
+- `metadata.compiler`: Compiler version and settings used to build contracts
+- `transactions`: Array of transaction objects in execution order
+- `transactions[].nonce`: Nonce for the [Depositor Account](#depositor-account), starting from current nonce
+- `transactions[].to`: Target address (contract being called or deployed)
+- `transactions[].value`: ETH value to send (typically "0")
+- `transactions[].data`: Transaction calldata as hex string
+- `transactions[].gasLimit`: Gas limit for this transaction
+
+### Bundle Generation Process
+
+Bundle generation MUST follow this process:
+
+1. **Compile Contracts**: Build all contracts with deterministic compiler settings
+2. **Compute Addresses**: Calculate implementation addresses using CREATE2 with deterministic salts
+3. **Generate Transaction Data**: Construct calldata for each transaction using computed addresses
+4. **Assemble Bundle**: Create JSON structure with transactions in dependency order
+5. **Write Bundle File**: Output JSON to the designated path in the repository
+6. **Commit to Git**: Bundle file is committed alongside source code changes
+
+### Bundle Verification Process
+
+To verify a bundle matches source code:
+
+1. **Check Out Commit**: `git checkout <sourceCommit>`
+2. **Build Contracts**: Compile contracts using specified compiler version and settings
+3. **Regenerate Bundle**: Run the bundle generation script
+4. **Compare Output**: Verify byte-for-byte match with committed bundle
 
