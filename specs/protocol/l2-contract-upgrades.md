@@ -130,6 +130,38 @@
     - [i05-005: No Gas Refund Exploitation](#i05-005-no-gas-refund-exploitation)
       - [Impact](#impact-24)
   - [Gas Allocation Specification](#gas-allocation-specification)
+- [Upgrade Process](#upgrade-process)
+  - [Overview](#overview-6)
+  - [Definitions](#definitions-5)
+    - [Fork Activation Timestamp](#fork-activation-timestamp)
+    - [Upgrade Transaction Execution Order](#upgrade-transaction-execution-order)
+  - [Assumptions](#assumptions-5)
+    - [a01-001: Fork Activation Time is Coordinated](#a01-001-fork-activation-time-is-coordinated)
+      - [Mitigations](#mitigations-16)
+    - [a02-002: Node Operators Update Client Software](#a02-002-node-operators-update-client-software)
+      - [Mitigations](#mitigations-17)
+    - [a03-003: Testing Environments Match Production](#a03-003-testing-environments-match-production)
+      - [Mitigations](#mitigations-18)
+  - [Invariants](#invariants-5)
+    - [i01-001: Atomic Upgrade Execution](#i01-001-atomic-upgrade-execution)
+      - [Impact](#impact-25)
+    - [i02-002: Consistent Cross-Chain Execution](#i02-002-consistent-cross-chain-execution)
+      - [Impact](#impact-26)
+    - [i03-003: Upgrade Transactions Execute Before User Transactions](#i03-003-upgrade-transactions-execute-before-user-transactions)
+      - [Impact](#impact-27)
+    - [i04-004: Fork Activation is Irreversible](#i04-004-fork-activation-is-irreversible)
+      - [Impact](#impact-28)
+    - [i05-005: Verifiable Upgrade Execution](#i05-005-verifiable-upgrade-execution)
+      - [Impact](#impact-29)
+  - [Upgrade Lifecycle](#upgrade-lifecycle)
+    - [Phase 1: Development](#phase-1-development)
+    - [Phase 2: Bundle Generation](#phase-2-bundle-generation)
+    - [Phase 3: Testing](#phase-3-testing)
+    - [Phase 4: Review and Approval](#phase-4-review-and-approval)
+    - [Phase 5: Preparation](#phase-5-preparation)
+    - [Phase 6: Execution](#phase-6-execution)
+    - [Phase 7: Verification](#phase-7-verification)
+  - [Transaction Execution Sequence](#transaction-execution-sequence)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -931,3 +963,209 @@ The custom upgrade block gas allocation is implemented in the derivation pipelin
 - Gas allocation is applied when constructing the payload attributes for the fork activation block
 - The allocation mechanism follows patterns similar to previous fork activations
 
+## Upgrade Process
+
+### Overview
+
+The Upgrade Process defines the complete lifecycle of an L2 predeploy upgrade, from initial development through fork
+activation and execution. The process ensures that upgrades are developed safely, tested thoroughly, and executed
+deterministically across all OP Stack chains.
+
+This end-to-end process integrates all components of the upgrade system: contract development, bundle generation,
+testing, verification, and execution at fork activation.
+
+### Definitions
+
+#### Fork Activation Timestamp
+
+The L2 block timestamp at which a fork becomes active and upgrade transactions are executed. This timestamp is
+specified in the protocol configuration and used by the [derivation pipeline](#derivation-pipeline) to identify when to
+inject upgrade transactions.
+
+#### Upgrade Transaction Execution Order
+
+The sequence in which transactions from the [Network Upgrade Transaction Bundle](#network-upgrade-transaction-bundle)
+are executed within the fork activation block. The order is critical for satisfying dependencies between transactions.
+
+### Assumptions
+
+#### a01-001: Fork Activation Time is Coordinated
+
+All OP Stack chains coordinate fork activation times to enable consistent upgrade rollout. The fork activation
+timestamp is communicated well in advance of activation to allow node operators to prepare.
+
+##### Mitigations
+
+- Fork activation timestamps are published in protocol documentation and configuration files
+- Activation times are set far enough in advance to allow preparation
+- Multiple channels (documentation, social media, direct communication) are used to notify operators
+- Testnet activations occur before mainnet to validate timing and coordination
+
+#### a02-002: Node Operators Update Client Software
+
+Node operators running L2 nodes update their client software to versions that include the fork activation logic and
+upgrade transaction bundle before the fork activation time.
+
+##### Mitigations
+
+- Client releases include clear upgrade instructions and timeline
+- Breaking changes and required updates are communicated prominently
+- Testnet activations serve as final validation before mainnet
+- Monitoring systems alert operators of version mismatches
+
+#### a03-003: Testing Environments Match Production
+
+Fork-based testing environments accurately represent production chain state, allowing upgrade testing to catch issues
+that would occur in production.
+
+##### Mitigations
+
+- Fork tests use actual mainnet chain state as starting point
+- Testing validates against multiple chains with different configurations
+- CI/CD automatically runs fork tests against latest chain state
+- Manual testing on testnet chains before mainnet activation
+
+### Invariants
+
+#### i01-001: Atomic Upgrade Execution
+
+All transactions in the upgrade bundle MUST execute atomically within the [fork activation block](#fork-activation-block).
+If any transaction fails, the entire upgrade must fail, leaving all predeploys in their pre-upgrade state.
+
+##### Impact
+
+**Severity: Critical**
+
+If upgrades are not atomic, a partial upgrade could leave the system in an inconsistent state with some predeploys
+upgraded and others not. This would break protocol assumptions, potentially cause fund loss, and require emergency
+intervention to resolve.
+
+#### i02-002: Consistent Cross-Chain Execution
+
+All OP Stack chains executing the upgrade MUST produce identical post-upgrade state given identical pre-upgrade state.
+The upgrade must be deterministic regardless of chain-specific configuration (except for preserved network-specific
+configuration).
+
+##### Impact
+
+**Severity: Critical**
+
+If upgrades produce different results on different chains, it would violate the Superchain's goal of consistent L2
+contract versions. This would make it impossible to reason about protocol behavior across chains and could enable
+chain-specific exploits.
+
+#### i03-003: Upgrade Transactions Execute Before User Transactions
+
+All upgrade transactions MUST execute before any user-submitted transactions in the fork activation block. User
+transactions must interact with the post-upgrade contract state, not the pre-upgrade state.
+
+##### Impact
+
+**Severity: Critical**
+
+If user transactions could execute before or during upgrades, they would see inconsistent contract state and could
+exploit race conditions. This could enable theft of funds or manipulation of system contracts during the upgrade
+window.
+
+#### i04-004: Fork Activation is Irreversible
+
+Once a fork activation block is finalized, the upgrade cannot be rolled back. The upgraded predeploy state is
+permanent.
+
+##### Impact
+
+**Severity: High**
+
+This is by design, but emphasizes the importance of thorough testing. A flawed upgrade that reaches fork activation
+cannot be undone through the normal upgrade process. Recovery would require a new fork with corrective upgrades or, in
+extreme cases, a chain reorganization.
+
+#### i05-005: Verifiable Upgrade Execution
+
+After fork activation, it MUST be possible to verify that the executed upgrade transactions match the committed bundle
+and that the resulting contract state matches expectations.
+
+##### Impact
+
+**Severity: High**
+
+If upgrades cannot be verified post-execution, there is no way to audit whether the correct upgrade was performed or to
+diagnose issues that arise post-upgrade. This breaks transparency and makes troubleshooting extremely difficult.
+
+### Upgrade Lifecycle
+
+#### Phase 1: Development
+
+1. **Contract Development**: Implement changes to L2 predeploy contracts
+2. **Migration Logic**: Develop L2ContractsManager with configuration preservation logic
+3. **Unit Testing**: Test individual contracts and migration logic
+4. **Integration Testing**: Test interactions between upgraded contracts
+
+#### Phase 2: Bundle Generation
+
+1. **Compile Contracts**: Build all contracts with deterministic settings
+2. **Run Generation Script**: Execute [bundle generation script](#bundle-generation-script) to create JSON bundle
+3. **Validate Bundle**: Verify transaction ordering, nonce sequencing, and completeness
+4. **Commit Bundle**: Commit bundle JSON file alongside source code to git
+
+#### Phase 3: Testing
+
+1. **Fork Testing**: Execute bundle against forked mainnet state
+2. **Gas Profiling**: Measure gas consumption of all transactions
+3. **State Validation**: Verify post-upgrade state matches expectations
+4. **Multi-Chain Testing**: Test against different chain configurations
+5. **Testnet Deployment**: Execute upgrade on testnet at scheduled time
+
+#### Phase 4: Review and Approval
+
+1. **Code Review**: Review contract changes and migration logic
+2. **Bundle Verification**: Independent verification that bundle matches source code
+3. **Security Review**: Audit of upgrade logic and potential vulnerabilities
+4. **Governance Approval**: Approval to proceed with upgrade (where applicable)
+
+#### Phase 5: Preparation
+
+1. **Client Integration**: Integrate bundle into L2 client implementations
+2. **Client Release**: Release updated client software with fork activation logic
+3. **Documentation**: Publish upgrade documentation and operator instructions
+4. **Coordination**: Communicate fork activation time to all stakeholders
+
+#### Phase 6: Execution
+
+1. **Fork Activation**: At the [fork activation timestamp](#fork-activation-timestamp), the derivation pipeline:
+   - Identifies fork activation block by timestamp
+   - Applies [custom upgrade block gas allocation](#custom-upgrade-block-gas-limit)
+   - Injects upgrade transactions from bundle at the start of the block
+2. **Transaction Execution**: Transactions execute in sequence:
+   - Deploy [ConditionalDeployer](#conditionaldeployer) (if not already deployed)
+   - Deploy new implementation contracts via ConditionalDeployer
+   - Deploy new [L2ContractsManager](#l2contractsmanager)
+   - Upgrade [L2ProxyAdmin](#l2proxyadmin) to new implementation (if needed)
+   - Call `L2ProxyAdmin.upgradePredeploys()` with L2ContractsManager address
+   - L2ContractsManager executes via DELEGATECALL to upgrade all predeploys
+3. **User Transactions**: After all upgrade transactions complete, user transactions execute in the remainder of the
+   block
+
+#### Phase 7: Verification
+
+1. **Execution Verification**: Confirm all upgrade transactions succeeded
+2. **State Verification**: Verify predeploy implementations and configuration match expectations
+3. **Monitoring**: Monitor chain health and contract behavior post-upgrade
+4. **Issue Response**: Address any issues discovered post-upgrade
+
+### Transaction Execution Sequence
+
+Within the fork activation block, transactions execute in this order:
+
+1. **ConditionalDeployer Deployment** (if needed): Deploy the ConditionalDeployer contract
+2. **Implementation Deployments**: For each predeploy being upgraded, deploy new implementation via
+   ConditionalDeployer
+3. **L2ContractsManager Deployment**: Deploy the L2ContractsManager for this upgrade
+4. **ProxyAdmin Upgrade** (if needed): Upgrade the L2ProxyAdmin implementation
+5. **Batch Upgrade Execution**: Call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)` which:
+   - Executes DELEGATECALL to L2ContractsManager.upgrade()
+   - L2ContractsManager gathers configuration from existing predeploys
+   - For each predeploy, calls `proxy.upgradeTo()` or `proxy.upgradeToAndCall()`
+   - Verifies all upgrades completed successfully
+
+All of these transactions execute before any user-submitted transactions in the block.
