@@ -45,6 +45,34 @@
       - [Impact](#impact-6)
     - [i04-004: L2ContractsManager Address Immutability](#i04-004-l2contractsmanager-address-immutability)
       - [Impact](#impact-7)
+- [L2ContractsManager](#l2contractsmanager)
+  - [Overview](#overview-3)
+  - [Definitions](#definitions-2)
+    - [Network-Specific Configuration](#network-specific-configuration)
+    - [Feature Flag](#feature-flag)
+    - [Initialization Parameters](#initialization-parameters)
+  - [Assumptions](#assumptions-2)
+    - [a01-001: Existing Predeploys Provide Valid Configuration](#a01-001-existing-predeploys-provide-valid-configuration)
+      - [Mitigations](#mitigations-5)
+    - [a02-002: Implementation Addresses Are Pre-Computed Correctly](#a02-002-implementation-addresses-are-pre-computed-correctly)
+      - [Mitigations](#mitigations-6)
+    - [a03-003: Predeploy Proxies Are Upgradeable](#a03-003-predeploy-proxies-are-upgradeable)
+      - [Mitigations](#mitigations-7)
+    - [a04-004: Feature Flags Are Correctly Configured](#a04-004-feature-flags-are-correctly-configured)
+      - [Mitigations](#mitigations-8)
+  - [Invariants](#invariants-2)
+    - [i01-001: Deterministic Upgrade Execution](#i01-001-deterministic-upgrade-execution)
+      - [Impact](#impact-8)
+    - [i02-002: Configuration Preservation](#i02-002-configuration-preservation)
+      - [Impact](#impact-9)
+    - [i03-003: Upgrade Atomicity](#i03-003-upgrade-atomicity)
+      - [Impact](#impact-10)
+    - [i04-004: Correct Upgrade Method Selection](#i04-004-correct-upgrade-method-selection)
+      - [Impact](#impact-11)
+    - [i05-005: No Storage Corruption During DELEGATECALL](#i05-005-no-storage-corruption-during-delegatecall)
+      - [Impact](#impact-12)
+    - [i06-006: Complete Upgrade Coverage](#i06-006-complete-upgrade-coverage)
+      - [Impact](#impact-13)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -292,4 +320,172 @@ provided in the upgrade transaction and MUST NOT be modifiable through storage m
 
 If the L2ContractsManager address could be manipulated, an attacker could redirect the DELEGATECALL to a malicious
 contract, achieving the same impact as i01-001 (complete compromise of all predeploys).
+
+## L2ContractsManager
+
+### Overview
+
+The L2ContractsManager is a contract deployed fresh for each upgrade that contains the upgrade logic and coordination
+for a specific set of predeploy upgrades. When invoked via DELEGATECALL from the [L2ProxyAdmin](#l2proxyadmin), it
+gathers network-specific configuration from existing predeploys, computes new implementation addresses, and executes
+upgrade operations for all affected predeploys.
+
+Each L2ContractsManager instance is purpose-built for a specific upgrade, deployed via the
+[ConditionalDeployer](#conditionaldeployer), and referenced directly in the upgrade transaction. The contract is
+stateless and contains all upgrade logic in code, ensuring determinism and verifiability.
+
+### Definitions
+
+#### Network-Specific Configuration
+
+Configuration values that vary between L2 chains, such as custom gas token parameters, operator fee configurations, or
+chain-specific feature flags. These values are typically stored in system predeploys like `L1Block` and must be
+preserved across upgrades.
+
+#### Feature Flag
+
+A boolean or enumerated value that enables or disables optional protocol features. Feature flags allow different
+upgrade paths for development environments (alphanets), testing environments, and production chains. Flags are read
+from a dedicated FeatureFlags contract during upgrade execution.
+
+#### Initialization Parameters
+
+Constructor arguments or initializer function parameters required by a predeploy implementation. When a predeploy's
+implementation changes and requires new or updated initialization, the L2ContractsManager must call
+`upgradeToAndCall()` instead of `upgradeTo()` to pass these parameters.
+
+### Assumptions
+
+#### a01-001: Existing Predeploys Provide Valid Configuration
+
+The existing [predeploy](#predeploy) contracts contain valid [network-specific configuration](#network-specific-configuration)
+that can be read and used during the upgrade. Configuration values are accurate, properly formatted, and represent the
+intended chain configuration.
+
+##### Mitigations
+
+- Configuration is read from well-established predeploys that have been operating correctly
+- Fork-based testing validates configuration gathering against real chain state
+- The upgrade will fail deterministically if configuration reads return unexpected values
+- Configuration values are validated during the upgrade process
+
+#### a02-002: Implementation Addresses Are Pre-Computed Correctly
+
+The implementation addresses referenced by the L2ContractsManager are correctly pre-computed using the same CREATE2
+parameters that will be used by the [ConditionalDeployer](#conditionaldeployer). Address mismatches would cause
+proxies to point to incorrect or non-existent implementations.
+
+##### Mitigations
+
+- Implementation addresses are computed using deterministic CREATE2 formula during bundle generation
+- The same address computation logic is used in both bundle generation and the L2ContractsManager
+- Fork-based testing validates that all implementation addresses exist and contain expected bytecode
+- Address computation is isolated in shared libraries to prevent divergence
+
+#### a03-003: Predeploy Proxies Are Upgradeable
+
+All [predeploy](#predeploy) proxies targeted for upgrade support the `upgradeTo()` and `upgradeToAndCall()` functions
+and will accept upgrade calls from the [L2ProxyAdmin](#l2proxyadmin) executing the DELEGATECALL.
+
+##### Mitigations
+
+- All L2 predeploys use standardized proxy implementations with well-tested upgrade functions
+- Fork-based testing exercises upgrade operations against actual deployed proxies
+- Non-upgradeable predeploys are excluded from the upgrade process
+
+#### a04-004: Feature Flags Are Correctly Configured
+
+When [feature flags](#feature-flag) are used to customize upgrade behavior, the FeatureFlags contract is properly
+configured in the test/development environment and returns consistent values throughout the upgrade execution.
+
+##### Mitigations
+
+- Feature flag values are set using `vm.etch()` and `vm.store()` in forge-based test environments
+- Feature flag reads are idempotent and cannot be modified during upgrade execution
+- Production upgrades do not rely on feature flags; flags are only used in development/test environments
+- Fork tests validate feature flag behavior across different configurations
+
+### Invariants
+
+#### i01-001: Deterministic Upgrade Execution
+
+The L2ContractsManager's `upgrade()` function MUST execute deterministically, producing identical state changes when
+given identical pre-upgrade blockchain state. The function MUST NOT read external state that could vary between
+executions (timestamps, block hashes, etc.) and MUST NOT accept runtime parameters.
+
+##### Impact
+
+**Severity: Critical**
+
+If upgrade execution is non-deterministic, different L2 nodes could produce different post-upgrade states, causing
+consensus failures across the network. This would halt the chain and require emergency intervention to restore consensus.
+
+#### i02-002: Configuration Preservation
+
+All [network-specific configuration](#network-specific-configuration) that exists before the upgrade MUST be preserved
+in the upgraded predeploy implementations. Configuration values MUST be read from existing predeploys and properly
+passed to new implementations during upgrade.
+
+##### Impact
+
+**Severity: Critical**
+
+If configuration is not preserved, chains could lose critical settings like custom gas token addresses, operator fee
+parameters, or other chain-specific values. This could break fee calculations, disable custom functionality, or cause
+chains to operate incorrectly after upgrade.
+
+#### i03-003: Upgrade Atomicity
+
+All predeploy upgrades within a single L2ContractsManager execution MUST succeed or fail atomically. If any upgrade
+operation fails, the entire DELEGATECALL MUST revert, leaving all predeploys in their pre-upgrade state.
+
+##### Impact
+
+**Severity: Critical**
+
+If upgrades are not atomic, a partial failure could leave some predeploys upgraded and others not, creating an
+inconsistent system state. This could break inter-contract dependencies, violate protocol assumptions, and potentially
+enable exploits through inconsistent contract versions.
+
+#### i04-004: Correct Upgrade Method Selection
+
+For each predeploy being upgraded, the L2ContractsManager MUST correctly choose between `upgradeTo()` (for
+implementations with no new initialization) and `upgradeToAndCall()` (for implementations requiring initialization).
+The selection MUST match the requirements of the new implementation.
+
+##### Impact
+
+**Severity: Critical**
+
+If the wrong upgrade method is used, implementations requiring initialization would not be properly initialized
+(breaking functionality), or unnecessary initialization calls could trigger unintended behavior or reverts. Either
+scenario could break critical system contracts.
+
+#### i05-005: No Storage Corruption During DELEGATECALL
+
+When executing in the [L2ProxyAdmin](#l2proxyadmin) context via DELEGATECALL, the L2ContractsManager MUST NOT corrupt
+or modify the ProxyAdmin's own storage. All storage modifications must be directed to the predeploy proxies being
+upgraded.
+
+##### Impact
+
+**Severity: Critical**
+
+If the L2ContractsManager corrupts ProxyAdmin storage, it could change the ProxyAdmin's owner, disable future upgrade
+capability, or create exploitable conditions. This would compromise the entire upgrade system and potentially require
+L1-driven emergency recovery.
+
+#### i06-006: Complete Upgrade Coverage
+
+The L2ContractsManager MUST upgrade all predeploys intended for the upgrade. It MUST NOT skip predeploys that should
+be upgraded, even if their implementations are unchanged, to maintain consistency across all chains executing the
+upgrade.
+
+##### Impact
+
+**Severity: High**
+
+If predeploys are skipped incorrectly, chains would have inconsistent contract versions, making it difficult to reason
+about protocol state. This violates the goal of bringing all chains to a consistent version and could cause unexpected
+behavior differences across chains.
 
