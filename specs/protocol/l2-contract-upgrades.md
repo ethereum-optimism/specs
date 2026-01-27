@@ -105,6 +105,31 @@
   - [Bundle Format](#bundle-format)
   - [Bundle Generation Process](#bundle-generation-process)
   - [Bundle Verification Process](#bundle-verification-process)
+- [Custom Upgrade Block Gas Limit](#custom-upgrade-block-gas-limit)
+  - [Overview](#overview-5)
+  - [Definitions](#definitions-4)
+    - [System Transaction Gas Limit](#system-transaction-gas-limit)
+    - [Upgrade Block Gas Allocation](#upgrade-block-gas-allocation)
+    - [Derivation Pipeline](#derivation-pipeline)
+  - [Assumptions](#assumptions-4)
+    - [a01-001: Upgrade Gas Requirements Are Bounded](#a01-001-upgrade-gas-requirements-are-bounded)
+      - [Mitigations](#mitigations-13)
+    - [a02-002: Derivation Pipeline Correctly Allocates Gas](#a02-002-derivation-pipeline-correctly-allocates-gas)
+      - [Mitigations](#mitigations-14)
+    - [a03-003: Custom Gas Does Not Affect Consensus](#a03-003-custom-gas-does-not-affect-consensus)
+      - [Mitigations](#mitigations-15)
+  - [Invariants](#invariants-4)
+    - [i01-001: Sufficient Gas Availability](#i01-001-sufficient-gas-availability)
+      - [Impact](#impact-20)
+    - [i02-002: Deterministic Gas Allocation](#i02-002-deterministic-gas-allocation)
+      - [Impact](#impact-21)
+    - [i03-003: Gas Limit Independence from Block Gas Limit](#i03-003-gas-limit-independence-from-block-gas-limit)
+      - [Impact](#impact-22)
+    - [i04-004: Gas Allocation Only for Upgrade Blocks](#i04-004-gas-allocation-only-for-upgrade-blocks)
+      - [Impact](#impact-23)
+    - [i05-005: No Gas Refund Exploitation](#i05-005-no-gas-refund-exploitation)
+      - [Impact](#impact-24)
+  - [Gas Allocation Specification](#gas-allocation-specification)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -746,4 +771,163 @@ To verify a bundle matches source code:
 2. **Build Contracts**: Compile contracts using specified compiler version and settings
 3. **Regenerate Bundle**: Run the bundle generation script
 4. **Compare Output**: Verify byte-for-byte match with committed bundle
+
+## Custom Upgrade Block Gas Limit
+
+### Overview
+
+The Custom Upgrade Block Gas Limit mechanism provides guaranteed gas availability for executing upgrade transactions at
+fork activation, independent of the regular block gas limit and system transaction gas constraints. This ensures that
+complex multi-contract upgrades can execute completely within the [fork activation block](#fork-activation-block) without
+running out of gas.
+
+Standard L2 blocks are constrained by `systemTxMaxGas` (typically 1,000,000 gas), which is insufficient for executing
+the deployment and upgrade transactions in a typical predeploy upgrade. The custom gas limit bypasses this constraint
+for upgrade blocks specifically.
+
+### Definitions
+
+#### System Transaction Gas Limit
+
+The maximum gas available for system transactions (transactions from the [Depositor Account](#depositor-account)) in a
+normal L2 block, defined by `resourceConfig.systemTxMaxGas`. This limit is typically set to 1,000,000 gas.
+
+#### Upgrade Block Gas Allocation
+
+The total gas available for executing upgrade transactions in a [fork activation block](#fork-activation-block). This
+value is set significantly higher than the [system transaction gas limit](#system-transaction-gas-limit) to accommodate
+complex upgrade operations.
+
+#### Derivation Pipeline
+
+The component of L2 client implementations responsible for constructing L2 blocks from L1 data and protocol rules. The
+derivation pipeline determines block attributes including gas limits and inserts upgrade transactions at fork
+activations.
+
+### Assumptions
+
+#### a01-001: Upgrade Gas Requirements Are Bounded
+
+The gas required to execute all upgrade transactions in a [bundle](#network-upgrade-transaction-bundle) is finite and
+can be estimated before deployment. Upgrades do not contain unbounded loops or operations that could consume arbitrary
+amounts of gas.
+
+##### Mitigations
+
+- Fork-based testing measures actual gas consumption of upgrade transactions
+- Bundle generation process includes gas estimation for all transactions
+- Upgrade complexity is bounded by the number of predeploys and deployment operations
+- Gas profiling is performed during development to identify expensive operations
+
+#### a02-002: Derivation Pipeline Correctly Allocates Gas
+
+The [derivation pipeline](#derivation-pipeline) implementation correctly provides the custom gas allocation to upgrade
+blocks and does not incorrectly apply this allocation to non-upgrade blocks.
+
+##### Mitigations
+
+- Upgrade gas allocation is conditional on fork activation logic
+- Fork activation is determined by block timestamp, which is consensus-critical
+- Implementation is tested with fork activation scenarios
+- Multiple client implementations must agree on gas allocation behavior
+
+#### a03-003: Custom Gas Does Not Affect Consensus
+
+Providing additional gas for upgrade blocks does not violate consensus rules or create divergence between clients. The
+gas allocation is deterministic and applied consistently across all implementations.
+
+##### Mitigations
+
+- Gas allocation is part of the protocol specification
+- All client implementations follow the same derivation rules
+- Fork-based testing validates consensus across client implementations
+- Gas allocation logic is simple and deterministic
+
+### Invariants
+
+#### i01-001: Sufficient Gas Availability
+
+The [upgrade block gas allocation](#upgrade-block-gas-allocation) MUST be sufficient to execute all transactions in the
+[Network Upgrade Transaction Bundle](#network-upgrade-transaction-bundle) without running out of gas. No upgrade
+transaction should fail due to insufficient gas.
+
+##### Impact
+
+**Severity: Critical**
+
+If insufficient gas is allocated, upgrade transactions will fail mid-execution, leaving predeploys in partially
+upgraded or inconsistent states. This would halt the chain at fork activation and require emergency intervention to
+resolve.
+
+#### i02-002: Deterministic Gas Allocation
+
+The gas allocation for upgrade blocks MUST be deterministic and identical across all L2 nodes executing the fork
+activation. The allocation must depend only on consensus-critical inputs (fork identification) and not on
+node-specific state or configuration.
+
+##### Impact
+
+**Severity: Critical**
+
+If gas allocation is non-deterministic, different nodes could allocate different gas amounts, causing some nodes to
+successfully execute upgrades while others fail. This would cause a consensus failure and chain split.
+
+#### i03-003: Gas Limit Independence from Block Gas Limit
+
+The [upgrade block gas allocation](#upgrade-block-gas-allocation) MUST be independent of the chain's configured block
+gas limit and the [system transaction gas limit](#system-transaction-gas-limit). Upgrade transactions must execute even
+if block gas limits are set to minimum values.
+
+##### Impact
+
+**Severity: High**
+
+If upgrade gas depends on block gas limits, chains with lower gas limit configurations could fail to execute upgrades
+while chains with higher limits succeed. This would cause inconsistent upgrade execution across the Superchain and
+break the goal of deterministic upgrades.
+
+#### i04-004: Gas Allocation Only for Upgrade Blocks
+
+The custom gas allocation MUST only apply to [fork activation blocks](#fork-activation-block) containing upgrade
+transactions. Regular blocks must continue to use standard gas limits without modification.
+
+##### Impact
+
+**Severity: High**
+
+If custom gas allocation applies to non-upgrade blocks, it could enable DOS attacks by allowing transactions to consume
+excessive gas, bypass fee markets, or create blocks that are expensive to validate. This would compromise network
+security and performance.
+
+#### i05-005: No Gas Refund Exploitation
+
+The gas accounting for upgrade transactions MUST not be exploitable through gas refund mechanisms. The allocated gas is
+consumed by upgrade operations and cannot be reclaimed or used for unintended purposes.
+
+##### Impact
+
+**Severity: Medium**
+
+If gas refunds could be exploited, upgrade transactions might attempt to consume more gas than intended or manipulate
+gas accounting to break protocol assumptions. However, upgrade transactions are protocol-controlled and reviewed, so
+exploitation risk is limited.
+
+### Gas Allocation Specification
+
+The custom upgrade block gas allocation is implemented in the derivation pipeline with the following behavior:
+
+**Gas Allocation Value:**
+- The upgrade block gas allocation SHOULD be set to 50,000,000 gas (50M gas)
+- This value is significantly higher than typical upgrade requirements to provide safety margin
+- The specific value is hardcoded in the derivation pipeline for the corresponding fork
+
+**Allocation Conditions:**
+- Custom gas allocation MUST only apply when processing the fork activation block
+- Fork activation is identified by L2 block timestamp matching or exceeding the fork activation timestamp
+- Allocation applies to the entire upgrade transaction bundle, not per-transaction
+
+**Implementation Requirements:**
+- Implemented in `op-node/rollup/derive/attributes.go` or equivalent derivation logic
+- Gas allocation is applied when constructing the payload attributes for the fork activation block
+- The allocation mechanism follows patterns similar to previous fork activations
 
