@@ -67,7 +67,7 @@
       - [Impact](#impact-9)
     - [i03-003: Upgrade Atomicity](#i03-003-upgrade-atomicity)
       - [Impact](#impact-10)
-    - [i04-004: Correct Upgrade Method Selection](#i04-004-correct-upgrade-method-selection)
+    - [i04-004: Predeploy Reinitialization](#i04-004-predeploy-reinitialization)
       - [Impact](#impact-11)
     - [i05-005: No Storage Corruption During DELEGATECALL](#i05-005-no-storage-corruption-during-delegatecall)
       - [Impact](#impact-12)
@@ -447,19 +447,17 @@ If upgrades are not atomic, a partial failure could leave some predeploys upgrad
 inconsistent system state. This could break inter-contract dependencies, violate protocol assumptions, and potentially
 enable exploits through inconsistent contract versions.
 
-#### i04-004: Correct Upgrade Method Selection
+#### i04-004: Predeploy Reinitialization
 
-For each predeploy being upgraded, the L2ContractsManager MUST correctly choose between `upgradeTo()` (for
-implementations with no new initialization) and `upgradeToAndCall()` (for implementations requiring initialization).
-The selection MUST match the requirements of the new implementation.
+For each predeploy being upgraded, the L2ContractsManager MUST correctly reinitialize it using `upgradeToAndCall()` to initialize.
+
+If a predeploy is not initializable then `upgradeTo()` can be used.
 
 ##### Impact
 
 **Severity: Critical**
 
-If the wrong upgrade method is used, implementations requiring initialization would not be properly initialized
-(breaking functionality), or unnecessary initialization calls could trigger unintended behavior or reverts. Either
-scenario could break critical system contracts.
+If an upgradeable contract is not reinitialized its configuration values, and possible ownership control, can be manipulated.
 
 #### i05-005: No Storage Corruption During DELEGATECALL
 
@@ -488,4 +486,3 @@ upgrade.
 If predeploys are skipped incorrectly, chains would have inconsistent contract versions, making it difficult to reason
 about protocol state. This violates the goal of bringing all chains to a consistent version and could cause unexpected
 behavior differences across chains.
-
