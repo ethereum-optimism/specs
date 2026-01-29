@@ -480,4 +480,4 @@ all chains to a consistent version.
 ## Upgrade Execution
 
 The execution mechanism for L2 contract upgrades, including bundle format, gas allocation, and the complete upgrade
-lifecycle, is specified in the [L2 Upgrade Execution](./l2-upgrade-execution.md) specification.
+lifecycle, is specified in the [L2 Upgrade Execution](./l2-upgrades-1-execution.md) specification.
