@@ -248,8 +248,7 @@ address that would be computed by the [Deterministic Deployment Proxy](#determin
 **Severity: Critical**
 
 If address derivation is non-deterministic or inconsistent with CREATE2 semantics, upgrade transactions could deploy
-implementations to unexpected addresses. This would break proxy upgrade operations that expect implementations at
-specific predetermined addresses, potentially causing proxies to point to non-existent or incorrect implementations.
+implementations to unexpected addresses, breaking proxy upgrade operations.
 
 #### iCD-002: Idempotent Deployment Operations
 
@@ -262,8 +261,7 @@ a [CREATE2 Collision](#create2-collision).
 **Severity: Critical**
 
 If deployments are not idempotent, upgrade transactions that attempt to deploy unchanged implementations would revert
-or deploy the implementation to an unexpected address. In the latter case, the proxy would then be upgrade incorrectly,
-as we must predict the implementation address in advance in order to correctly generate the NUT bundle.
+or deploy the implementation to an unexpected address, breaking the upgrade.
 
 #### iCD-003: Non-Reverting Collision Handling
 
@@ -274,8 +272,7 @@ ConditionalDeployer MUST return successfully without reverting and without modif
 
 **Severity: Medium**
 
-If the collisions cause reverts, the following transactions can still proceed, however the presence of reverting
-transactions in an upgrade block is likely to lead to confusion.
+If collisions cause reverts, the presence of reverting transactions in an upgrade block would cause confusion.
 
 #### iCD-004: Collision Detection Accuracy
 
@@ -287,9 +284,8 @@ and false positives (detecting non-existent contracts) are both prohibited.
 
 **Severity: High**
 
-False negatives would cause the ConditionalDeployer to attempt redeployment to occupied addresses, resulting in
-failed deployments and breaking the upgrade process. False positives would prevent legitimate deployments from
-occurring, causing proxies to reference non-existent implementation addresses.
+False negatives would cause failed deployments while false positives would prevent legitimate deployments, both
+breaking the upgrade process.
 
 ## L2ProxyAdmin
 
@@ -366,9 +362,7 @@ address, including the current ProxyAdmin owner, can invoke this function.
 **Severity: Critical**
 
 If unauthorized addresses could call `upgradePredeploys()`, attackers could execute arbitrary upgrade logic by
-deploying a malicious L2ContractsManager and triggering upgrades to compromised implementations. This would allow
-complete takeover of all L2 predeploy contracts, enabling theft of funds, manipulation of system configuration, and
-protocol-level attacks.
+deploying a malicious L2ContractsManager, enabling complete takeover of all L2 predeploy contracts.
 
 #### iL2PA-002: Safe Delegation to L2ContractsManager
 
@@ -380,9 +374,8 @@ revert if the DELEGATECALL fails.
 
 **Severity: Critical**
 
-If the DELEGATECALL is not properly executed, upgrades could fail silently leaving proxies in inconsistent states, or
-worse, the ProxyAdmin's own storage could be corrupted. This could result in loss of admin control over predeploys or
-enable exploitation of corrupted state.
+If the DELEGATECALL is not properly executed, upgrades could fail silently or the ProxyAdmin's storage could be
+corrupted, resulting in loss of admin control over predeploys.
 
 #### iL2PA-003: Backwards Compatibility Maintained
 
@@ -394,9 +387,8 @@ MUST continue to work as before.
 
 **Severity: High**
 
-If backwards compatibility is broken, existing tooling, scripts, and contracts that interact with the ProxyAdmin could
-fail. This could prevent emergency responses, break operational procedures, and cause confusion during the transition
-to the new upgrade system.
+If backwards compatibility is broken, existing tooling and scripts that interact with the ProxyAdmin could fail,
+preventing emergency responses and breaking operational procedures.
 
 #### iL2PA-004: L2ContractsManager Address Immutability
 
@@ -408,7 +400,7 @@ provided in the upgrade transaction and MUST NOT be modifiable through storage m
 **Severity: Critical**
 
 If the L2ContractsManager address could be manipulated, an attacker could redirect the DELEGATECALL to a malicious
-contract, achieving the same impact as iL2PA-001 (complete compromise of all predeploys).
+contract, achieving complete compromise of all predeploys.
 
 ## L2ContractsManager
 
@@ -507,7 +499,7 @@ executions (timestamps, block hashes, etc.) and MUST NOT accept runtime paramete
 **Severity: Critical**
 
 If upgrade execution is non-deterministic, different L2 nodes could produce different post-upgrade states, causing
-consensus failures across the network. This would halt the chain and require emergency intervention to restore consensus.
+consensus failures and halting the chain.
 
 #### iL2CM-002: Configuration Preservation
 
@@ -519,9 +511,8 @@ passed to new implementations during upgrade.
 
 **Severity: Critical**
 
-If configuration is not preserved, chains could lose critical settings like custom gas token addresses, operator fee
-parameters, or other chain-specific values. This could break fee calculations, disable custom functionality, or cause
-chains to operate incorrectly after upgrade.
+If configuration is not preserved, chains could lose critical settings like custom gas token addresses or operator fee
+parameters, breaking fee calculations and chain-specific functionality.
 
 #### iL2CM-003: Upgrade Atomicity
 
@@ -533,8 +524,7 @@ operation fails, the entire DELEGATECALL MUST revert, leaving all predeploys in 
 **Severity: Critical**
 
 If upgrades are not atomic, a partial failure could leave some predeploys upgraded and others not, creating an
-inconsistent system state. This could break inter-contract dependencies, violate protocol assumptions, and potentially
-enable exploits through inconsistent contract versions.
+inconsistent system state that breaks inter-contract dependencies.
 
 #### iL2CM-004: Correct Upgrade Method Selection
 
@@ -546,9 +536,8 @@ The selection MUST match the requirements of the new implementation.
 
 **Severity: Critical**
 
-If the wrong upgrade method is used, implementations requiring initialization would not be properly initialized
-(breaking functionality), or unnecessary initialization calls could trigger unintended behavior or reverts. Either
-scenario could break critical system contracts.
+If the wrong upgrade method is used, implementations requiring initialization would not be properly initialized or
+unnecessary initialization calls could trigger reverts, breaking critical system contracts.
 
 #### iL2CM-005: No Storage Corruption During DELEGATECALL
 
@@ -560,9 +549,8 @@ upgraded.
 
 **Severity: Critical**
 
-If the L2ContractsManager corrupts ProxyAdmin storage, it could change the ProxyAdmin's owner, disable future upgrade
-capability, or create exploitable conditions. This would compromise the entire upgrade system and potentially require
-L1-driven emergency recovery.
+If the L2ContractsManager corrupts ProxyAdmin storage, it could change the ProxyAdmin's owner or disable future upgrade
+capability, compromising the entire upgrade system.
 
 #### iL2CM-006: Complete Upgrade Coverage
 
@@ -574,9 +562,8 @@ upgrade.
 
 **Severity: High**
 
-If predeploys are skipped incorrectly, chains would have inconsistent contract versions, making it difficult to reason
-about protocol state. This violates the goal of bringing all chains to a consistent version and could cause unexpected
-behavior differences across chains.
+If predeploys are skipped incorrectly, chains would have inconsistent contract versions, violating the goal of bringing
+all chains to a consistent version.
 
 ## Network Upgrade Transaction Bundle
 
@@ -678,8 +665,7 @@ external state.
 **Severity: Critical**
 
 If bundle generation is non-deterministic, it becomes impossible to verify that a given bundle corresponds to specific
-source code. This breaks the trust model and makes it difficult to audit upgrade transactions, potentially allowing
-unverified or malicious transactions to be included in upgrades.
+source code, potentially allowing unverified or malicious transactions to be included.
 
 #### iNUTB-002: Transaction Completeness
 
@@ -691,7 +677,7 @@ to fail partially, leaving the system in an inconsistent state.
 **Severity: Critical**
 
 If the bundle is incomplete, the fork activation would fail, potentially halting the chain or leaving predeploys in
-partially upgraded states. Recovery would require emergency intervention and could cause extended downtime.
+partially upgraded states.
 
 #### iNUTB-003: Transaction Ordering
 
@@ -702,8 +688,8 @@ occur before transactions that call those contracts.
 
 **Severity: Critical**
 
-If transactions are misordered, executions will fail when attempting to call non-existent contracts or reference
-incorrect addresses. This would cause the entire upgrade to fail at fork activation, halting the chain.
+If transactions are misordered, executions will fail when attempting to call non-existent contracts, causing the entire
+upgrade to fail at fork activation and halt the chain.
 
 #### iNUTB-004: Correct Nonce Sequencing
 
@@ -714,8 +700,7 @@ duplicates. Each transaction must use the next available nonce.
 
 **Severity: Critical**
 
-If nonces are incorrect, transactions will fail to execute or execute in wrong order. Gap in nonces would cause
-subsequent transactions to fail. Duplicate nonces would cause only the first transaction to execute, failing the rest.
+If nonces are incorrect, transactions will fail to execute or execute in wrong order, causing the upgrade to fail.
 
 #### iNUTB-005: Verifiable Against Source Code
 
@@ -726,8 +711,8 @@ verify that it matches the committed bundle byte-for-byte.
 
 **Severity: High**
 
-If bundles cannot be verified against source code, there is no way to audit what transactions will actually execute
-during the upgrade. This eliminates transparency and could allow unauthorized or malicious transactions to be included.
+If bundles cannot be verified against source code, there is no way to audit what transactions will execute during the
+upgrade, eliminating transparency.
 
 #### iNUTB-006: Valid Transaction Format
 
@@ -739,8 +724,7 @@ including correct sender ([Depositor Account](#depositor-account)), appropriate 
 **Severity: Critical**
 
 If transactions are malformed, they will fail to execute at fork activation, causing the upgrade to fail and
-potentially halting the chain. Invalid gas limits could cause out-of-gas failures. Invalid calldata could cause
-execution reverts.
+potentially halting the chain.
 
 ### Bundle Format
 
@@ -888,8 +872,7 @@ transaction should fail due to insufficient gas.
 **Severity: Critical**
 
 If insufficient gas is allocated, upgrade transactions will fail mid-execution, leaving predeploys in partially
-upgraded or inconsistent states. This would halt the chain at fork activation and require emergency intervention to
-resolve.
+upgraded states and halting the chain at fork activation.
 
 #### iUBGL-002: Deterministic Gas Allocation
 
@@ -901,8 +884,8 @@ node-specific state or configuration.
 
 **Severity: Critical**
 
-If gas allocation is non-deterministic, different nodes could allocate different gas amounts, causing some nodes to
-successfully execute upgrades while others fail. This would cause a consensus failure and chain split.
+If gas allocation is non-deterministic, different nodes could allocate different gas amounts, causing a consensus
+failure and chain split.
 
 #### iUBGL-003: Gas Limit Independence from Block Gas Limit
 
@@ -914,9 +897,8 @@ if block gas limits are set to minimum values.
 
 **Severity: High**
 
-If upgrade gas depends on block gas limits, chains with lower gas limit configurations could fail to execute upgrades
-while chains with higher limits succeed. This would cause inconsistent upgrade execution across the Superchain and
-break the goal of deterministic upgrades.
+If upgrade gas depends on block gas limits, chains with different configurations could have inconsistent upgrade
+execution, breaking the goal of deterministic upgrades across the Superchain.
 
 #### iUBGL-004: Gas Allocation Only for Upgrade Blocks
 
@@ -928,8 +910,7 @@ transactions. Regular blocks must continue to use standard gas limits without mo
 **Severity: High**
 
 If custom gas allocation applies to non-upgrade blocks, it could enable DOS attacks by allowing transactions to consume
-excessive gas, bypass fee markets, or create blocks that are expensive to validate. This would compromise network
-security and performance.
+excessive gas or bypass fee markets.
 
 #### iUBGL-005: No Gas Refund Exploitation
 
@@ -940,9 +921,8 @@ consumed by upgrade operations and cannot be reclaimed or used for unintended pu
 
 **Severity: Medium**
 
-If gas refunds could be exploited, upgrade transactions might attempt to consume more gas than intended or manipulate
-gas accounting to break protocol assumptions. However, upgrade transactions are protocol-controlled and reviewed, so
-exploitation risk is limited.
+If gas refunds could be exploited, upgrade transactions might consume more gas than intended or manipulate gas
+accounting to break protocol assumptions.
 
 ### Gas Allocation Specification
 
@@ -1037,8 +1017,7 @@ If any transaction fails, the entire upgrade must fail, leaving all predeploys i
 **Severity: Critical**
 
 If upgrades are not atomic, a partial upgrade could leave the system in an inconsistent state with some predeploys
-upgraded and others not. This would break protocol assumptions, potentially cause fund loss, and require emergency
-intervention to resolve.
+upgraded and others not, breaking protocol assumptions.
 
 #### iUP-002: Consistent Cross-Chain Execution
 
@@ -1051,8 +1030,7 @@ configuration).
 **Severity: Critical**
 
 If upgrades produce different results on different chains, it would violate the Superchain's goal of consistent L2
-contract versions. This would make it impossible to reason about protocol behavior across chains and could enable
-chain-specific exploits.
+contract versions, making it impossible to reason about protocol behavior across chains.
 
 #### iUP-003: Upgrade Transactions Execute Before User Transactions
 
@@ -1063,9 +1041,8 @@ transactions must interact with the post-upgrade contract state, not the pre-upg
 
 **Severity: Critical**
 
-If user transactions could execute before or during upgrades, they would see inconsistent contract state and could
-exploit race conditions. This could enable theft of funds or manipulation of system contracts during the upgrade
-window.
+If user transactions could execute before or during upgrades, they could exploit race conditions to manipulate system
+contracts or steal funds during the upgrade window.
 
 #### iUP-004: Fork Activation is Irreversible
 
@@ -1076,9 +1053,8 @@ permanent.
 
 **Severity: High**
 
-This is by design, but emphasizes the importance of thorough testing. A flawed upgrade that reaches fork activation
-cannot be undone through the normal upgrade process. Recovery would require a new fork with corrective upgrades or, in
-extreme cases, a chain reorganization.
+A flawed upgrade that reaches fork activation cannot be undone through the normal upgrade process and would require a
+new fork with corrective upgrades.
 
 #### iUP-005: Verifiable Upgrade Execution
 
@@ -1089,8 +1065,8 @@ and that the resulting contract state matches expectations.
 
 **Severity: High**
 
-If upgrades cannot be verified post-execution, there is no way to audit whether the correct upgrade was performed or to
-diagnose issues that arise post-upgrade. This breaks transparency and makes troubleshooting extremely difficult.
+If upgrades cannot be verified post-execution, there is no way to audit whether the correct upgrade was performed,
+breaking transparency and making troubleshooting difficult.
 
 ### Upgrade Lifecycle
 
