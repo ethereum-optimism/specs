@@ -99,6 +99,12 @@ address, and that attempting to deploy already-deployed bytecode succeeds silent
 This component enables upgrade transactions to unconditionally deploy for all implementation contracts without
 requiring developers to manually track which contracts have changed between upgrades.
 
+The ConditionalDeployer is included in the L2Genesis state to ensure availability for all future network upgrades. It is
+deployed as a preinstall at a deterministic address and does not require upgradeability.
+
+The deployment function returns an address for off-chain convenience, but this return value is not used in Network
+Upgrade Transactions, as deployment addresses must be pre-computed before transaction generation.
+
 ### Definitions
 
 #### CREATE2 Collision
@@ -294,6 +300,9 @@ corrupted, resulting in loss of admin control over predeploys.
 The upgraded L2ProxyAdmin implementation MUST maintain the existing interface for standard proxy administration
 functions. Existing functionality for upgrading individual proxies, changing proxy admins, and querying proxy state
 MUST continue to work as before.
+
+Note: Backwards compatibility requires maintaining the full ProxyAdmin interface, but does not require supporting
+upgrades of legacy proxy types (ResolvedDelegate and Chugsplash proxies).
 
 ##### Impact
 
