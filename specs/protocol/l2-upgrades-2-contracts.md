@@ -4,76 +4,75 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Overview](#overview)
-- [ConditionalDeployer](#conditionaldeployer)
-  - [Overview](#overview-1)
-  - [Definitions](#definitions)
-    - [CREATE2 Collision](#create2-collision)
-    - [Deterministic Deployment Proxy](#deterministic-deployment-proxy)
-  - [Assumptions](#assumptions)
-    - [aCD-001: Deterministic Deployment Proxy is Available and Correct](#acd-001-deterministic-deployment-proxy-is-available-and-correct)
-      - [Mitigations](#mitigations)
-    - [aCD-002: Initcode is Well-Formed](#acd-002-initcode-is-well-formed)
-      - [Mitigations](#mitigations-1)
-  - [Invariants](#invariants)
-    - [iCD-001: Deterministic Address Derivation](#icd-001-deterministic-address-derivation)
-      - [Impact](#impact)
-    - [iCD-002: Idempotent Deployment Operations](#icd-002-idempotent-deployment-operations)
-      - [Impact](#impact-1)
-    - [iCD-003: Non-Reverting Collision Handling](#icd-003-non-reverting-collision-handling)
-      - [Impact](#impact-2)
-    - [iCD-004: Collision Detection Accuracy](#icd-004-collision-detection-accuracy)
-      - [Impact](#impact-3)
-- [L2ProxyAdmin](#l2proxyadmin)
-  - [Overview](#overview-2)
-  - [Definitions](#definitions-1)
-    - [Depositor Account](#depositor-account)
-    - [Predeploy](#predeploy)
-  - [Assumptions](#assumptions-1)
-    - [aL2PA-001: Depositor Account is Controlled by Protocol](#al2pa-001-depositor-account-is-controlled-by-protocol)
-      - [Mitigations](#mitigations-2)
-    - [aL2PA-002: L2ContractsManager is Trusted](#al2pa-002-l2contractsmanager-is-trusted)
-      - [Mitigations](#mitigations-3)
-    - [aL2PA-003: Predeploy Proxies Follow Expected Patterns](#al2pa-003-predeploy-proxies-follow-expected-patterns)
-      - [Mitigations](#mitigations-4)
-  - [Invariants](#invariants-1)
-    - [iL2PA-001: Exclusive Depositor Authorization for Batch Upgrades](#il2pa-001-exclusive-depositor-authorization-for-batch-upgrades)
-      - [Impact](#impact-4)
-    - [iL2PA-002: Safe Delegation to L2ContractsManager](#il2pa-002-safe-delegation-to-l2contractsmanager)
-      - [Impact](#impact-5)
-    - [iL2PA-003: Backwards Compatibility Maintained](#il2pa-003-backwards-compatibility-maintained)
-      - [Impact](#impact-6)
-    - [iL2PA-004: L2ContractsManager Address Immutability](#il2pa-004-l2contractsmanager-address-immutability)
-      - [Impact](#impact-7)
-- [L2ContractsManager](#l2contractsmanager)
-  - [Overview](#overview-3)
-  - [Definitions](#definitions-2)
-    - [Network-Specific Configuration](#network-specific-configuration)
-    - [Feature Flag](#feature-flag)
-    - [Initialization Parameters](#initialization-parameters)
-  - [Assumptions](#assumptions-2)
-    - [aL2CM-001: Existing Predeploys Provide Valid Configuration](#al2cm-001-existing-predeploys-provide-valid-configuration)
-      - [Mitigations](#mitigations-5)
-    - [aL2CM-002: Implementation Addresses Are Pre-Computed Correctly](#al2cm-002-implementation-addresses-are-pre-computed-correctly)
-      - [Mitigations](#mitigations-6)
-    - [aL2CM-003: Predeploy Proxies Are Upgradeable](#al2cm-003-predeploy-proxies-are-upgradeable)
-      - [Mitigations](#mitigations-7)
-    - [aL2CM-004: Feature Flags Are Correctly Configured](#al2cm-004-feature-flags-are-correctly-configured)
-      - [Mitigations](#mitigations-8)
-  - [Invariants](#invariants-2)
-    - [iL2CM-001: Deterministic Upgrade Execution](#il2cm-001-deterministic-upgrade-execution)
-      - [Impact](#impact-8)
-    - [iL2CM-002: Configuration Preservation](#il2cm-002-configuration-preservation)
-      - [Impact](#impact-9)
-    - [iL2CM-003: Upgrade Atomicity](#il2cm-003-upgrade-atomicity)
-      - [Impact](#impact-10)
-    - [iL2CM-004: Correct Upgrade Method Selection](#il2cm-004-correct-upgrade-method-selection)
-      - [Impact](#impact-11)
-    - [iL2CM-005: No Storage Corruption During DELEGATECALL](#il2cm-005-no-storage-corruption-during-delegatecall)
-      - [Impact](#impact-12)
-    - [iL2CM-006: Complete Upgrade Coverage](#il2cm-006-complete-upgrade-coverage)
-      - [Impact](#impact-13)
-- [Upgrade Execution](#upgrade-execution)
+- [L2 Upgrade Contracts](#l2-upgrade-contracts)
+  - [Overview](#overview)
+  - [ConditionalDeployer](#conditionaldeployer)
+    - [Overview](#overview-1)
+    - [Definitions](#definitions)
+      - [CREATE2 Collision](#create2-collision)
+      - [Deterministic Deployment Proxy](#deterministic-deployment-proxy)
+    - [Assumptions](#assumptions)
+      - [aCD-001: Deterministic Deployment Proxy is Available and Correct](#acd-001-deterministic-deployment-proxy-is-available-and-correct)
+        - [Mitigations](#mitigations)
+      - [aCD-002: Initcode is Well-Formed](#acd-002-initcode-is-well-formed)
+        - [Mitigations](#mitigations-1)
+    - [Invariants](#invariants)
+      - [iCD-001: Deterministic Address Derivation](#icd-001-deterministic-address-derivation)
+        - [Impact](#impact)
+      - [iCD-002: Idempotent Deployment Operations](#icd-002-idempotent-deployment-operations)
+        - [Impact](#impact-1)
+      - [iCD-003: Non-Reverting Collision Handling](#icd-003-non-reverting-collision-handling)
+        - [Impact](#impact-2)
+      - [iCD-004: Collision Detection Accuracy](#icd-004-collision-detection-accuracy)
+        - [Impact](#impact-3)
+  - [L2ProxyAdmin](#l2proxyadmin)
+    - [Overview](#overview-2)
+    - [Definitions](#definitions-1)
+      - [Depositor Account](#depositor-account)
+      - [Predeploy](#predeploy)
+    - [Assumptions](#assumptions-1)
+      - [aL2PA-001: Depositor Account is Controlled by Protocol](#al2pa-001-depositor-account-is-controlled-by-protocol)
+        - [Mitigations](#mitigations-2)
+      - [aL2PA-002: L2ContractsManager does not Modify Storage](#al2pa-002-l2contractsmanager-does-not-modify-storage)
+        - [Mitigations](#mitigations-3)
+      - [aL2PA-003: Predeploy Proxies Follow Expected Patterns](#al2pa-003-predeploy-proxies-follow-expected-patterns)
+        - [Mitigations](#mitigations-4)
+    - [Invariants](#invariants-1)
+      - [iL2PA-001: Exclusive Depositor Authorization for Batch Upgrades](#il2pa-001-exclusive-depositor-authorization-for-batch-upgrades)
+        - [Impact](#impact-4)
+      - [iL2PA-002: Safe Delegation to L2ContractsManager](#il2pa-002-safe-delegation-to-l2contractsmanager)
+        - [Impact](#impact-5)
+      - [iL2PA-003: Backwards Compatibility Maintained](#il2pa-003-backwards-compatibility-maintained)
+        - [Impact](#impact-6)
+  - [L2ContractsManager](#l2contractsmanager)
+    - [Overview](#overview-3)
+    - [Definitions](#definitions-2)
+      - [Network-Specific Configuration](#network-specific-configuration)
+      - [Feature Flag](#feature-flag)
+      - [Initialization Parameters](#initialization-parameters)
+    - [Assumptions](#assumptions-2)
+      - [aL2CM-001: Existing Predeploys Provide Valid Configuration](#al2cm-001-existing-predeploys-provide-valid-configuration)
+        - [Mitigations](#mitigations-5)
+      - [aL2CM-002: Implementation Addresses Are Pre-Computed Correctly](#al2cm-002-implementation-addresses-are-pre-computed-correctly)
+        - [Mitigations](#mitigations-6)
+      - [aL2CM-003: Predeploy Proxies Are Upgradeable](#al2cm-003-predeploy-proxies-are-upgradeable)
+        - [Mitigations](#mitigations-7)
+      - [aL2CM-004: Feature Flags Are Correctly Configured](#al2cm-004-feature-flags-are-correctly-configured)
+        - [Mitigations](#mitigations-8)
+    - [Invariants](#invariants-2)
+      - [iL2CM-001: Deterministic Upgrade Execution](#il2cm-001-deterministic-upgrade-execution)
+        - [Impact](#impact-7)
+      - [iL2CM-002: Configuration Preservation](#il2cm-002-configuration-preservation)
+        - [Impact](#impact-8)
+      - [iL2CM-003: Upgrade Atomicity](#il2cm-003-upgrade-atomicity)
+        - [Impact](#impact-9)
+      - [iL2CM-004: Correct Upgrade Method Selection](#il2cm-004-correct-upgrade-method-selection)
+        - [Impact](#impact-10)
+      - [iL2CM-005: No Storage Corruption During DELEGATECALL](#il2cm-005-no-storage-corruption-during-delegatecall)
+        - [Impact](#impact-11)
+      - [iL2CM-006: Complete Upgrade Coverage](#il2cm-006-complete-upgrade-coverage)
+        - [Impact](#impact-12)
+  - [Upgrade Execution](#upgrade-execution)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -244,11 +243,11 @@ pipeline. No external parties can submit transactions from this address.
 - Transactions from this address can only originate from the protocol's derivation pipeline processing L1 deposit events
 - The address is hardcoded in the protocol specification and client implementations
 
-#### aL2PA-002: L2ContractsManager is Trusted
+#### aL2PA-002: L2ContractsManager does not Modify Storage
 
 The [L2ContractsManager](#l2contractsmanager) contract that receives the DELEGATECALL from `upgradePredeploys()`
 correctly implements the upgrade logic and does not perform malicious operations when executing in the context of the
-ProxyAdmin.
+L2ProxyAdmin.
 
 ##### Mitigations
 
@@ -279,14 +278,13 @@ address, including the current ProxyAdmin owner, can invoke this function.
 
 **Severity: Critical**
 
-If unauthorized addresses could call `upgradePredeploys()`, attackers could execute arbitrary upgrade logic by
-deploying a malicious L2ContractsManager, enabling complete takeover of all L2 predeploy contracts.
+If unauthorized addresses could call `upgradePredeploys()`, attackers could execute arbitrary upgrade, enabling
+complete takeover of all L2 predeploy contracts.
 
 #### iL2PA-002: Safe Delegation to L2ContractsManager
 
 When `upgradePredeploys()` executes a DELEGATECALL to the [L2ContractsManager](#l2contractsmanager), the call MUST
-preserve the ProxyAdmin's storage context and MUST properly handle success and failure conditions. The function MUST
-revert if the DELEGATECALL fails.
+preserve the ProxyAdmin's storage context.
 
 ##### Impact
 
@@ -311,25 +309,13 @@ upgrades of legacy proxy types (ResolvedDelegate and Chugsplash proxies).
 If backwards compatibility is broken, existing tooling and scripts that interact with the ProxyAdmin could fail,
 preventing emergency responses and breaking operational procedures.
 
-#### iL2PA-004: L2ContractsManager Address Immutability
-
-The address of the [L2ContractsManager](#l2contractsmanager) used by `upgradePredeploys()` MUST be deterministically
-provided in the upgrade transaction and MUST NOT be modifiable through storage manipulation during the DELEGATECALL.
-
-##### Impact
-
-**Severity: Critical**
-
-If the L2ContractsManager address could be manipulated, an attacker could redirect the DELEGATECALL to a malicious
-contract, achieving complete compromise of all predeploys.
-
 ## L2ContractsManager
 
 ### Overview
 
 The L2ContractsManager is a contract deployed fresh for each upgrade that contains the upgrade logic and coordination
 for a specific set of predeploy upgrades. When invoked via DELEGATECALL from the [L2ProxyAdmin](#l2proxyadmin), it
-gathers network-specific configuration from existing predeploys, computes new implementation addresses, and executes
+gathers network-specific configuration from existing predeploys, and executes
 upgrade operations for all affected predeploys.
 
 Each L2ContractsManager instance is purpose-built for a specific upgrade, deployed via the
@@ -352,9 +338,9 @@ from a dedicated FeatureFlags contract during upgrade execution.
 
 #### Initialization Parameters
 
-Constructor arguments or initializer function parameters required by a predeploy implementation. When a predeploy's
-implementation changes and requires new or updated initialization, the L2ContractsManager must call
-`upgradeToAndCall()` instead of `upgradeTo()` to pass these parameters.
+Constructor arguments or initializer function parameters required by a predeploy implementation. Similar to the OPCMv2
+implementation, we will assume that all config values are first read, and then contracts are reinitialized with
+those same parameters.
 
 ### Assumptions
 
@@ -368,8 +354,6 @@ intended chain configuration.
 
 - Configuration is read from well-established predeploys that have been operating correctly
 - Fork-based testing validates configuration gathering against real chain state
-- The upgrade will fail deterministically if configuration reads return unexpected values
-- Configuration values are validated during the upgrade process
 
 #### aL2CM-002: Implementation Addresses Are Pre-Computed Correctly
 
@@ -393,19 +377,17 @@ and will accept upgrade calls from the [L2ProxyAdmin](#l2proxyadmin) executing t
 
 - All L2 predeploys use standardized proxy implementations with well-tested upgrade functions
 - Fork-based testing exercises upgrade operations against actual deployed proxies
-- Non-upgradeable predeploys are excluded from the upgrade process
+- Non-upgradeable predeploys (if they exist) will be excluded from the upgrade process
 
 #### aL2CM-004: Feature Flags Are Correctly Configured
 
 When [feature flags](#feature-flag) are used to customize upgrade behavior, the FeatureFlags contract is properly
-configured in the test/development environment and returns consistent values throughout the upgrade execution.
+configured in the environment and returns consistent values throughout the upgrade execution.
+Production features which are enable must be exposed by the L1Block contract's interface.
 
 ##### Mitigations
 
-- Feature flag values are set using `vm.etch()` and `vm.store()` in forge-based test environments
-- Feature flag reads are idempotent and cannot be modified during upgrade execution
-- Production upgrades do not rely on feature flags; flags are only used in development/test environments
-- Fork tests validate feature flag behavior across different configurations
+- Fork and local testing validates feature flag behavior across different configurations
 
 ### Invariants
 
@@ -488,5 +470,10 @@ all chains to a consistent version.
 
 ## Upgrade Execution
 
-The execution mechanism for L2 contract upgrades, including bundle format, gas allocation, and the complete upgrade
-lifecycle, is specified in the [L2 Upgrade Execution](./l2-upgrades-1-execution.md) specification.
+The L2ContractsManager contract should be deployed with all implementation addresses provided to its constructor and
+stored in an `Implementations` struct. Where a dev feature or feature flag requires a different implementation, both
+implementations will be deployed and stored in the L2ContractsManager. The L2ContractsManager will contain branching
+logic which will enable a different implementation depending on the configured features.
+
+The upgrade flow of the L2ContractsManager will be similar to the OPCMv2, where the `FullConfig` is first collected from
+all contracts, and the config values are provided to the contract's `initializer()` method using `upgradeToAndCall()`.
