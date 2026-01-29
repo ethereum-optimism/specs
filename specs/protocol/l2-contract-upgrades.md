@@ -11,18 +11,18 @@
     - [CREATE2 Collision](#create2-collision)
     - [Deterministic Deployment Proxy](#deterministic-deployment-proxy)
   - [Assumptions](#assumptions)
-    - [a01-001: Deterministic Deployment Proxy is Available and Correct](#a01-001-deterministic-deployment-proxy-is-available-and-correct)
+    - [aCD-001: Deterministic Deployment Proxy is Available and Correct](#acd-001-deterministic-deployment-proxy-is-available-and-correct)
       - [Mitigations](#mitigations)
-    - [a02-002: Initcode is Well-Formed](#a02-002-initcode-is-well-formed)
+    - [aCD-002: Initcode is Well-Formed](#acd-002-initcode-is-well-formed)
       - [Mitigations](#mitigations-1)
   - [Invariants](#invariants)
-    - [i01-001: Deterministic Address Derivation](#i01-001-deterministic-address-derivation)
+    - [iCD-001: Deterministic Address Derivation](#icd-001-deterministic-address-derivation)
       - [Impact](#impact)
-    - [i02-002: Idempotent Deployment Operations](#i02-002-idempotent-deployment-operations)
+    - [iCD-002: Idempotent Deployment Operations](#icd-002-idempotent-deployment-operations)
       - [Impact](#impact-1)
-    - [i03-003: Non-Reverting Collision Handling](#i03-003-non-reverting-collision-handling)
+    - [iCD-003: Non-Reverting Collision Handling](#icd-003-non-reverting-collision-handling)
       - [Impact](#impact-2)
-    - [i04-004: Collision Detection Accuracy](#i04-004-collision-detection-accuracy)
+    - [iCD-004: Collision Detection Accuracy](#icd-004-collision-detection-accuracy)
       - [Impact](#impact-3)
 - [L2ProxyAdmin](#l2proxyadmin)
   - [Overview](#overview-2)
@@ -30,20 +30,20 @@
     - [Depositor Account](#depositor-account)
     - [Predeploy](#predeploy)
   - [Assumptions](#assumptions-1)
-    - [a01-001: Depositor Account is Controlled by Protocol](#a01-001-depositor-account-is-controlled-by-protocol)
+    - [aL2PA-001: Depositor Account is Controlled by Protocol](#al2pa-001-depositor-account-is-controlled-by-protocol)
       - [Mitigations](#mitigations-2)
-    - [a02-002: L2ContractsManager is Trusted](#a02-002-l2contractsmanager-is-trusted)
+    - [aL2PA-002: L2ContractsManager is Trusted](#al2pa-002-l2contractsmanager-is-trusted)
       - [Mitigations](#mitigations-3)
-    - [a03-003: Predeploy Proxies Follow Expected Patterns](#a03-003-predeploy-proxies-follow-expected-patterns)
+    - [aL2PA-003: Predeploy Proxies Follow Expected Patterns](#al2pa-003-predeploy-proxies-follow-expected-patterns)
       - [Mitigations](#mitigations-4)
   - [Invariants](#invariants-1)
-    - [i01-001: Exclusive Depositor Authorization for Batch Upgrades](#i01-001-exclusive-depositor-authorization-for-batch-upgrades)
+    - [iL2PA-001: Exclusive Depositor Authorization for Batch Upgrades](#il2pa-001-exclusive-depositor-authorization-for-batch-upgrades)
       - [Impact](#impact-4)
-    - [i02-002: Safe Delegation to L2ContractsManager](#i02-002-safe-delegation-to-l2contractsmanager)
+    - [iL2PA-002: Safe Delegation to L2ContractsManager](#il2pa-002-safe-delegation-to-l2contractsmanager)
       - [Impact](#impact-5)
-    - [i03-003: Backwards Compatibility Maintained](#i03-003-backwards-compatibility-maintained)
+    - [iL2PA-003: Backwards Compatibility Maintained](#il2pa-003-backwards-compatibility-maintained)
       - [Impact](#impact-6)
-    - [i04-004: L2ContractsManager Address Immutability](#i04-004-l2contractsmanager-address-immutability)
+    - [iL2PA-004: L2ContractsManager Address Immutability](#il2pa-004-l2contractsmanager-address-immutability)
       - [Impact](#impact-7)
 - [L2ContractsManager](#l2contractsmanager)
   - [Overview](#overview-3)
@@ -52,26 +52,26 @@
     - [Feature Flag](#feature-flag)
     - [Initialization Parameters](#initialization-parameters)
   - [Assumptions](#assumptions-2)
-    - [a01-001: Existing Predeploys Provide Valid Configuration](#a01-001-existing-predeploys-provide-valid-configuration)
+    - [aL2CM-001: Existing Predeploys Provide Valid Configuration](#al2cm-001-existing-predeploys-provide-valid-configuration)
       - [Mitigations](#mitigations-5)
-    - [a02-002: Implementation Addresses Are Pre-Computed Correctly](#a02-002-implementation-addresses-are-pre-computed-correctly)
+    - [aL2CM-002: Implementation Addresses Are Pre-Computed Correctly](#al2cm-002-implementation-addresses-are-pre-computed-correctly)
       - [Mitigations](#mitigations-6)
-    - [a03-003: Predeploy Proxies Are Upgradeable](#a03-003-predeploy-proxies-are-upgradeable)
+    - [aL2CM-003: Predeploy Proxies Are Upgradeable](#al2cm-003-predeploy-proxies-are-upgradeable)
       - [Mitigations](#mitigations-7)
-    - [a04-004: Feature Flags Are Correctly Configured](#a04-004-feature-flags-are-correctly-configured)
+    - [aL2CM-004: Feature Flags Are Correctly Configured](#al2cm-004-feature-flags-are-correctly-configured)
       - [Mitigations](#mitigations-8)
   - [Invariants](#invariants-2)
-    - [i01-001: Deterministic Upgrade Execution](#i01-001-deterministic-upgrade-execution)
+    - [iL2CM-001: Deterministic Upgrade Execution](#il2cm-001-deterministic-upgrade-execution)
       - [Impact](#impact-8)
-    - [i02-002: Configuration Preservation](#i02-002-configuration-preservation)
+    - [iL2CM-002: Configuration Preservation](#il2cm-002-configuration-preservation)
       - [Impact](#impact-9)
-    - [i03-003: Upgrade Atomicity](#i03-003-upgrade-atomicity)
+    - [iL2CM-003: Upgrade Atomicity](#il2cm-003-upgrade-atomicity)
       - [Impact](#impact-10)
-    - [i04-004: Correct Upgrade Method Selection](#i04-004-correct-upgrade-method-selection)
+    - [iL2CM-004: Correct Upgrade Method Selection](#il2cm-004-correct-upgrade-method-selection)
       - [Impact](#impact-11)
-    - [i05-005: No Storage Corruption During DELEGATECALL](#i05-005-no-storage-corruption-during-delegatecall)
+    - [iL2CM-005: No Storage Corruption During DELEGATECALL](#il2cm-005-no-storage-corruption-during-delegatecall)
       - [Impact](#impact-12)
-    - [i06-006: Complete Upgrade Coverage](#i06-006-complete-upgrade-coverage)
+    - [iL2CM-006: Complete Upgrade Coverage](#il2cm-006-complete-upgrade-coverage)
       - [Impact](#impact-13)
 - [Network Upgrade Transaction Bundle](#network-upgrade-transaction-bundle)
   - [Overview](#overview-4)
@@ -81,26 +81,26 @@
     - [Bundle Generation Script](#bundle-generation-script)
     - [Transaction Nonce](#transaction-nonce)
   - [Assumptions](#assumptions-3)
-    - [a01-001: Solidity Compiler is Deterministic](#a01-001-solidity-compiler-is-deterministic)
+    - [aNUTB-001: Solidity Compiler is Deterministic](#anutb-001-solidity-compiler-is-deterministic)
       - [Mitigations](#mitigations-9)
-    - [a02-002: Bundle Generation Script is Pure](#a02-002-bundle-generation-script-is-pure)
+    - [aNUTB-002: Bundle Generation Script is Pure](#anutb-002-bundle-generation-script-is-pure)
       - [Mitigations](#mitigations-10)
-    - [a03-003: Git Repository is Authoritative Source](#a03-003-git-repository-is-authoritative-source)
+    - [aNUTB-003: Git Repository is Authoritative Source](#anutb-003-git-repository-is-authoritative-source)
       - [Mitigations](#mitigations-11)
-    - [a04-004: JSON Format is Correctly Parsed](#a04-004-json-format-is-correctly-parsed)
+    - [aNUTB-004: JSON Format is Correctly Parsed](#anutb-004-json-format-is-correctly-parsed)
       - [Mitigations](#mitigations-12)
   - [Invariants](#invariants-3)
-    - [i01-001: Deterministic Bundle Generation](#i01-001-deterministic-bundle-generation)
+    - [iNUTB-001: Deterministic Bundle Generation](#inutb-001-deterministic-bundle-generation)
       - [Impact](#impact-14)
-    - [i02-002: Transaction Completeness](#i02-002-transaction-completeness)
+    - [iNUTB-002: Transaction Completeness](#inutb-002-transaction-completeness)
       - [Impact](#impact-15)
-    - [i03-003: Transaction Ordering](#i03-003-transaction-ordering)
+    - [iNUTB-003: Transaction Ordering](#inutb-003-transaction-ordering)
       - [Impact](#impact-16)
-    - [i04-004: Correct Nonce Sequencing](#i04-004-correct-nonce-sequencing)
+    - [iNUTB-004: Correct Nonce Sequencing](#inutb-004-correct-nonce-sequencing)
       - [Impact](#impact-17)
-    - [i05-005: Verifiable Against Source Code](#i05-005-verifiable-against-source-code)
+    - [iNUTB-005: Verifiable Against Source Code](#inutb-005-verifiable-against-source-code)
       - [Impact](#impact-18)
-    - [i06-006: Valid Transaction Format](#i06-006-valid-transaction-format)
+    - [iNUTB-006: Valid Transaction Format](#inutb-006-valid-transaction-format)
       - [Impact](#impact-19)
   - [Bundle Format](#bundle-format)
   - [Bundle Generation Process](#bundle-generation-process)
@@ -112,22 +112,22 @@
     - [Upgrade Block Gas Allocation](#upgrade-block-gas-allocation)
     - [Derivation Pipeline](#derivation-pipeline)
   - [Assumptions](#assumptions-4)
-    - [a01-001: Upgrade Gas Requirements Are Bounded](#a01-001-upgrade-gas-requirements-are-bounded)
+    - [aUBGL-001: Upgrade Gas Requirements Are Bounded](#aubgl-001-upgrade-gas-requirements-are-bounded)
       - [Mitigations](#mitigations-13)
-    - [a02-002: Derivation Pipeline Correctly Allocates Gas](#a02-002-derivation-pipeline-correctly-allocates-gas)
+    - [aUBGL-002: Derivation Pipeline Correctly Allocates Gas](#aubgl-002-derivation-pipeline-correctly-allocates-gas)
       - [Mitigations](#mitigations-14)
-    - [a03-003: Custom Gas Does Not Affect Consensus](#a03-003-custom-gas-does-not-affect-consensus)
+    - [aUBGL-003: Custom Gas Does Not Affect Consensus](#aubgl-003-custom-gas-does-not-affect-consensus)
       - [Mitigations](#mitigations-15)
   - [Invariants](#invariants-4)
-    - [i01-001: Sufficient Gas Availability](#i01-001-sufficient-gas-availability)
+    - [iUBGL-001: Sufficient Gas Availability](#iubgl-001-sufficient-gas-availability)
       - [Impact](#impact-20)
-    - [i02-002: Deterministic Gas Allocation](#i02-002-deterministic-gas-allocation)
+    - [iUBGL-002: Deterministic Gas Allocation](#iubgl-002-deterministic-gas-allocation)
       - [Impact](#impact-21)
-    - [i03-003: Gas Limit Independence from Block Gas Limit](#i03-003-gas-limit-independence-from-block-gas-limit)
+    - [iUBGL-003: Gas Limit Independence from Block Gas Limit](#iubgl-003-gas-limit-independence-from-block-gas-limit)
       - [Impact](#impact-22)
-    - [i04-004: Gas Allocation Only for Upgrade Blocks](#i04-004-gas-allocation-only-for-upgrade-blocks)
+    - [iUBGL-004: Gas Allocation Only for Upgrade Blocks](#iubgl-004-gas-allocation-only-for-upgrade-blocks)
       - [Impact](#impact-23)
-    - [i05-005: No Gas Refund Exploitation](#i05-005-no-gas-refund-exploitation)
+    - [iUBGL-005: No Gas Refund Exploitation](#iubgl-005-no-gas-refund-exploitation)
       - [Impact](#impact-24)
   - [Gas Allocation Specification](#gas-allocation-specification)
 - [Upgrade Process](#upgrade-process)
@@ -136,22 +136,22 @@
     - [Fork Activation Timestamp](#fork-activation-timestamp)
     - [Upgrade Transaction Execution Order](#upgrade-transaction-execution-order)
   - [Assumptions](#assumptions-5)
-    - [a01-001: Fork Activation Time is Coordinated](#a01-001-fork-activation-time-is-coordinated)
+    - [aUP-001: Fork Activation Time is Coordinated](#aup-001-fork-activation-time-is-coordinated)
       - [Mitigations](#mitigations-16)
-    - [a02-002: Node Operators Update Client Software](#a02-002-node-operators-update-client-software)
+    - [aUP-002: Node Operators Update Client Software](#aup-002-node-operators-update-client-software)
       - [Mitigations](#mitigations-17)
-    - [a03-003: Testing Environments Match Production](#a03-003-testing-environments-match-production)
+    - [aUP-003: Testing Environments Match Production](#aup-003-testing-environments-match-production)
       - [Mitigations](#mitigations-18)
   - [Invariants](#invariants-5)
-    - [i01-001: Atomic Upgrade Execution](#i01-001-atomic-upgrade-execution)
+    - [iUP-001: Atomic Upgrade Execution](#iup-001-atomic-upgrade-execution)
       - [Impact](#impact-25)
-    - [i02-002: Consistent Cross-Chain Execution](#i02-002-consistent-cross-chain-execution)
+    - [iUP-002: Consistent Cross-Chain Execution](#iup-002-consistent-cross-chain-execution)
       - [Impact](#impact-26)
-    - [i03-003: Upgrade Transactions Execute Before User Transactions](#i03-003-upgrade-transactions-execute-before-user-transactions)
+    - [iUP-003: Upgrade Transactions Execute Before User Transactions](#iup-003-upgrade-transactions-execute-before-user-transactions)
       - [Impact](#impact-27)
-    - [i04-004: Fork Activation is Irreversible](#i04-004-fork-activation-is-irreversible)
+    - [iUP-004: Fork Activation is Irreversible](#iup-004-fork-activation-is-irreversible)
       - [Impact](#impact-28)
-    - [i05-005: Verifiable Upgrade Execution](#i05-005-verifiable-upgrade-execution)
+    - [iUP-005: Verifiable Upgrade Execution](#iup-005-verifiable-upgrade-execution)
       - [Impact](#impact-29)
   - [Upgrade Lifecycle](#upgrade-lifecycle)
     - [Phase 1: Development](#phase-1-development)
@@ -211,7 +211,7 @@ Otherwise the ConditionalDeployer would not be required.
 
 ### Assumptions
 
-#### a01-001: Deterministic Deployment Proxy is Available and Correct
+#### aCD-001: Deterministic Deployment Proxy is Available and Correct
 
 The [Deterministic Deployment Proxy](#deterministic-deployment-proxy) exists at the expected address and correctly
 implements CREATE2 deployment semantics. The proxy must deterministically compute deployment addresses and execute
@@ -224,7 +224,7 @@ deployments as specified.
 - The proxy's behavior is verifiable by inspecting its bytecode and testing deployment operations
 - The proxy contract is immutable and cannot be upgraded or modified
 
-#### a02-002: Initcode is Well-Formed
+#### aCD-002: Initcode is Well-Formed
 
 Callers provide valid EVM initcode that, when executed, will either successfully deploy a contract or revert with a
 clear error. Malformed initcode that produces undefined behavior is not considered.
@@ -237,7 +237,7 @@ clear error. Malformed initcode that produces undefined behavior is not consider
 
 ### Invariants
 
-#### i01-001: Deterministic Address Derivation
+#### iCD-001: Deterministic Address Derivation
 
 For any given initcode and salt combination, the ConditionalDeployer MUST always compute the same deployment address,
 regardless of whether the contract has been previously deployed. The address calculation MUST match the CREATE2
@@ -251,7 +251,7 @@ If address derivation is non-deterministic or inconsistent with CREATE2 semantic
 implementations to unexpected addresses. This would break proxy upgrade operations that expect implementations at
 specific predetermined addresses, potentially causing proxies to point to non-existent or incorrect implementations.
 
-#### i02-002: Idempotent Deployment Operations
+#### iCD-002: Idempotent Deployment Operations
 
 Calling the ConditionalDeployer multiple times with identical initcode and salt MUST produce the same outcome: the
 first call deploys the contract, and subsequent calls succeed without modification. No operation should revert due to
@@ -265,7 +265,7 @@ If deployments are not idempotent, upgrade transactions that attempt to deploy u
 or deploy the implementation to an unexpected address. In the latter case, the proxy would then be upgrade incorrectly,
 as we must predict the implementation address in advance in order to correctly generate the NUT bundle.
 
-#### i03-003: Non-Reverting Collision Handling
+#### iCD-003: Non-Reverting Collision Handling
 
 When a [CREATE2 Collision](#create2-collision) is detected (contract already deployed at the target address), the
 ConditionalDeployer MUST return successfully without reverting and without modifying blockchain state.
@@ -277,7 +277,7 @@ ConditionalDeployer MUST return successfully without reverting and without modif
 If the collisions cause reverts, the following transactions can still proceed, however the presence of reverting
 transactions in an upgrade block is likely to lead to confusion.
 
-#### i04-004: Collision Detection Accuracy
+#### iCD-004: Collision Detection Accuracy
 
 The ConditionalDeployer MUST correctly distinguish between addresses where no contract exists (deploy needed) and
 addresses where a contract already exists (collision detected). False negatives (failing to detect existing contracts)
@@ -319,7 +319,7 @@ functionality and are typically deployed behind proxies to enable upgradability.
 
 ### Assumptions
 
-#### a01-001: Depositor Account is Controlled by Protocol
+#### aL2PA-001: Depositor Account is Controlled by Protocol
 
 The [Depositor Account](#depositor-account) is exclusively controlled by the L2 protocol's derivation and execution
 pipeline. No external parties can submit transactions from this address.
@@ -330,7 +330,7 @@ pipeline. No external parties can submit transactions from this address.
 - Transactions from this address can only originate from the protocol's derivation pipeline processing L1 deposit events
 - The address is hardcoded in the protocol specification and client implementations
 
-#### a02-002: L2ContractsManager is Trusted
+#### aL2PA-002: L2ContractsManager is Trusted
 
 The [L2ContractsManager](#l2contractsmanager) contract that receives the DELEGATECALL from `upgradePredeploys()`
 correctly implements the upgrade logic and does not perform malicious operations when executing in the context of the
@@ -343,7 +343,7 @@ ProxyAdmin.
 - Fork-based testing validates the complete upgrade execution before production deployment
 - The L2ContractsManager bytecode is verifiable against source code on a specific commit
 
-#### a03-003: Predeploy Proxies Follow Expected Patterns
+#### aL2PA-003: Predeploy Proxies Follow Expected Patterns
 
 [Predeploys](#predeploy) being upgraded follow the expected proxy patterns (ERC-1967 or similar) and correctly handle
 `upgradeTo()` and `upgradeToAndCall()` operations when called by the ProxyAdmin.
@@ -356,7 +356,7 @@ ProxyAdmin.
 
 ### Invariants
 
-#### i01-001: Exclusive Depositor Authorization for Batch Upgrades
+#### iL2PA-001: Exclusive Depositor Authorization for Batch Upgrades
 
 The `upgradePredeploys()` function MUST only be callable by the [Depositor Account](#depositor-account). No other
 address, including the current ProxyAdmin owner, can invoke this function.
@@ -370,7 +370,7 @@ deploying a malicious L2ContractsManager and triggering upgrades to compromised 
 complete takeover of all L2 predeploy contracts, enabling theft of funds, manipulation of system configuration, and
 protocol-level attacks.
 
-#### i02-002: Safe Delegation to L2ContractsManager
+#### iL2PA-002: Safe Delegation to L2ContractsManager
 
 When `upgradePredeploys()` executes a DELEGATECALL to the [L2ContractsManager](#l2contractsmanager), the call MUST
 preserve the ProxyAdmin's storage context and MUST properly handle success and failure conditions. The function MUST
@@ -384,7 +384,7 @@ If the DELEGATECALL is not properly executed, upgrades could fail silently leavi
 worse, the ProxyAdmin's own storage could be corrupted. This could result in loss of admin control over predeploys or
 enable exploitation of corrupted state.
 
-#### i03-003: Backwards Compatibility Maintained
+#### iL2PA-003: Backwards Compatibility Maintained
 
 The upgraded L2ProxyAdmin implementation MUST maintain the existing interface for standard proxy administration
 functions. Existing functionality for upgrading individual proxies, changing proxy admins, and querying proxy state
@@ -398,7 +398,7 @@ If backwards compatibility is broken, existing tooling, scripts, and contracts t
 fail. This could prevent emergency responses, break operational procedures, and cause confusion during the transition
 to the new upgrade system.
 
-#### i04-004: L2ContractsManager Address Immutability
+#### iL2PA-004: L2ContractsManager Address Immutability
 
 The address of the [L2ContractsManager](#l2contractsmanager) used by `upgradePredeploys()` MUST be deterministically
 provided in the upgrade transaction and MUST NOT be modifiable through storage manipulation during the DELEGATECALL.
@@ -408,7 +408,7 @@ provided in the upgrade transaction and MUST NOT be modifiable through storage m
 **Severity: Critical**
 
 If the L2ContractsManager address could be manipulated, an attacker could redirect the DELEGATECALL to a malicious
-contract, achieving the same impact as i01-001 (complete compromise of all predeploys).
+contract, achieving the same impact as iL2PA-001 (complete compromise of all predeploys).
 
 ## L2ContractsManager
 
@@ -445,7 +445,7 @@ implementation changes and requires new or updated initialization, the L2Contrac
 
 ### Assumptions
 
-#### a01-001: Existing Predeploys Provide Valid Configuration
+#### aL2CM-001: Existing Predeploys Provide Valid Configuration
 
 The existing [predeploy](#predeploy) contracts contain valid [network-specific configuration](#network-specific-configuration)
 that can be read and used during the upgrade. Configuration values are accurate, properly formatted, and represent the
@@ -458,7 +458,7 @@ intended chain configuration.
 - The upgrade will fail deterministically if configuration reads return unexpected values
 - Configuration values are validated during the upgrade process
 
-#### a02-002: Implementation Addresses Are Pre-Computed Correctly
+#### aL2CM-002: Implementation Addresses Are Pre-Computed Correctly
 
 The implementation addresses referenced by the L2ContractsManager are correctly pre-computed using the same CREATE2
 parameters that will be used by the [ConditionalDeployer](#conditionaldeployer). Address mismatches would cause
@@ -471,7 +471,7 @@ proxies to point to incorrect or non-existent implementations.
 - Fork-based testing validates that all implementation addresses exist and contain expected bytecode
 - Address computation is isolated in shared libraries to prevent divergence
 
-#### a03-003: Predeploy Proxies Are Upgradeable
+#### aL2CM-003: Predeploy Proxies Are Upgradeable
 
 All [predeploy](#predeploy) proxies targeted for upgrade support the `upgradeTo()` and `upgradeToAndCall()` functions
 and will accept upgrade calls from the [L2ProxyAdmin](#l2proxyadmin) executing the DELEGATECALL.
@@ -482,7 +482,7 @@ and will accept upgrade calls from the [L2ProxyAdmin](#l2proxyadmin) executing t
 - Fork-based testing exercises upgrade operations against actual deployed proxies
 - Non-upgradeable predeploys are excluded from the upgrade process
 
-#### a04-004: Feature Flags Are Correctly Configured
+#### aL2CM-004: Feature Flags Are Correctly Configured
 
 When [feature flags](#feature-flag) are used to customize upgrade behavior, the FeatureFlags contract is properly
 configured in the test/development environment and returns consistent values throughout the upgrade execution.
@@ -496,7 +496,7 @@ configured in the test/development environment and returns consistent values thr
 
 ### Invariants
 
-#### i01-001: Deterministic Upgrade Execution
+#### iL2CM-001: Deterministic Upgrade Execution
 
 The L2ContractsManager's `upgrade()` function MUST execute deterministically, producing identical state changes when
 given identical pre-upgrade blockchain state. The function MUST NOT read external state that could vary between
@@ -509,7 +509,7 @@ executions (timestamps, block hashes, etc.) and MUST NOT accept runtime paramete
 If upgrade execution is non-deterministic, different L2 nodes could produce different post-upgrade states, causing
 consensus failures across the network. This would halt the chain and require emergency intervention to restore consensus.
 
-#### i02-002: Configuration Preservation
+#### iL2CM-002: Configuration Preservation
 
 All [network-specific configuration](#network-specific-configuration) that exists before the upgrade MUST be preserved
 in the upgraded predeploy implementations. Configuration values MUST be read from existing predeploys and properly
@@ -523,7 +523,7 @@ If configuration is not preserved, chains could lose critical settings like cust
 parameters, or other chain-specific values. This could break fee calculations, disable custom functionality, or cause
 chains to operate incorrectly after upgrade.
 
-#### i03-003: Upgrade Atomicity
+#### iL2CM-003: Upgrade Atomicity
 
 All predeploy upgrades within a single L2ContractsManager execution MUST succeed or fail atomically. If any upgrade
 operation fails, the entire DELEGATECALL MUST revert, leaving all predeploys in their pre-upgrade state.
@@ -536,7 +536,7 @@ If upgrades are not atomic, a partial failure could leave some predeploys upgrad
 inconsistent system state. This could break inter-contract dependencies, violate protocol assumptions, and potentially
 enable exploits through inconsistent contract versions.
 
-#### i04-004: Correct Upgrade Method Selection
+#### iL2CM-004: Correct Upgrade Method Selection
 
 For each predeploy being upgraded, the L2ContractsManager MUST correctly choose between `upgradeTo()` (for
 implementations with no new initialization) and `upgradeToAndCall()` (for implementations requiring initialization).
@@ -550,7 +550,7 @@ If the wrong upgrade method is used, implementations requiring initialization wo
 (breaking functionality), or unnecessary initialization calls could trigger unintended behavior or reverts. Either
 scenario could break critical system contracts.
 
-#### i05-005: No Storage Corruption During DELEGATECALL
+#### iL2CM-005: No Storage Corruption During DELEGATECALL
 
 When executing in the [L2ProxyAdmin](#l2proxyadmin) context via DELEGATECALL, the L2ContractsManager MUST NOT corrupt
 or modify the ProxyAdmin's own storage. All storage modifications must be directed to the predeploy proxies being
@@ -564,7 +564,7 @@ If the L2ContractsManager corrupts ProxyAdmin storage, it could change the Proxy
 capability, or create exploitable conditions. This would compromise the entire upgrade system and potentially require
 L1-driven emergency recovery.
 
-#### i06-006: Complete Upgrade Coverage
+#### iL2CM-006: Complete Upgrade Coverage
 
 The L2ContractsManager MUST upgrade all predeploys intended for the upgrade. It MUST NOT skip predeploys that should
 be upgraded, even if their implementations are unchanged, to maintain consistency across all chains executing the
@@ -616,7 +616,7 @@ block.
 
 ### Assumptions
 
-#### a01-001: Solidity Compiler is Deterministic
+#### aNUTB-001: Solidity Compiler is Deterministic
 
 The Solidity compiler produces identical bytecode when given identical source code and compiler settings. This enables
 verification that bundle contents match the source code on a specific commit.
@@ -628,7 +628,7 @@ verification that bundle contents match the source code on a specific commit.
 - Bundle generation includes compiler version and settings in metadata
 - Verification process rebuilds contracts with identical settings and compares bytecode
 
-#### a02-002: Bundle Generation Script is Pure
+#### aNUTB-002: Bundle Generation Script is Pure
 
 The [bundle generation script](#bundle-generation-script) does not depend on external state that could vary between
 executions. All addresses are computed deterministically using CREATE2, and all transaction data is derived from
@@ -641,7 +641,7 @@ compiled bytecode.
 - Fork-based testing validates that generated bundles match expected outputs
 - CI validates bundle regeneration produces identical output
 
-#### a03-003: Git Repository is Authoritative Source
+#### aNUTB-003: Git Repository is Authoritative Source
 
 The git repository containing the bundle JSON files and source code serves as the authoritative source of truth for
 upgrade transactions. The commit hash provides an immutable reference to the exact code that generated the bundle.
@@ -653,7 +653,7 @@ upgrade transactions. The commit hash provides an immutable reference to the exa
 - Repository is hosted on GitHub with branch protection and audit logs
 - Multiple reviewers verify bundle contents before merge
 
-#### a04-004: JSON Format is Correctly Parsed
+#### aNUTB-004: JSON Format is Correctly Parsed
 
 All L2 client implementations (Go, Rust, etc.) correctly parse the JSON bundle format and extract transaction fields
 identically. Parsing inconsistencies would cause consensus failures.
@@ -667,7 +667,7 @@ identically. Parsing inconsistencies would cause consensus failures.
 
 ### Invariants
 
-#### i01-001: Deterministic Bundle Generation
+#### iNUTB-001: Deterministic Bundle Generation
 
 Running the [bundle generation script](#bundle-generation-script) multiple times on the same source code commit MUST
 produce byte-for-byte identical JSON output. No aspect of bundle generation may depend on timestamps, random values, or
@@ -681,7 +681,7 @@ If bundle generation is non-deterministic, it becomes impossible to verify that 
 source code. This breaks the trust model and makes it difficult to audit upgrade transactions, potentially allowing
 unverified or malicious transactions to be included in upgrades.
 
-#### i02-002: Transaction Completeness
+#### iNUTB-002: Transaction Completeness
 
 The bundle MUST contain all transactions required to complete the upgrade. Missing transactions would cause the upgrade
 to fail partially, leaving the system in an inconsistent state.
@@ -693,7 +693,7 @@ to fail partially, leaving the system in an inconsistent state.
 If the bundle is incomplete, the fork activation would fail, potentially halting the chain or leaving predeploys in
 partially upgraded states. Recovery would require emergency intervention and could cause extended downtime.
 
-#### i03-003: Transaction Ordering
+#### iNUTB-003: Transaction Ordering
 
 Transactions in the bundle MUST be ordered such that dependencies are satisfied. For example, contract deployments MUST
 occur before transactions that call those contracts.
@@ -705,7 +705,7 @@ occur before transactions that call those contracts.
 If transactions are misordered, executions will fail when attempting to call non-existent contracts or reference
 incorrect addresses. This would cause the entire upgrade to fail at fork activation, halting the chain.
 
-#### i04-004: Correct Nonce Sequencing
+#### iNUTB-004: Correct Nonce Sequencing
 
 Transaction nonces for the [Depositor Account](#depositor-account) MUST form a contiguous sequence with no gaps or
 duplicates. Each transaction must use the next available nonce.
@@ -717,7 +717,7 @@ duplicates. Each transaction must use the next available nonce.
 If nonces are incorrect, transactions will fail to execute or execute in wrong order. Gap in nonces would cause
 subsequent transactions to fail. Duplicate nonces would cause only the first transaction to execute, failing the rest.
 
-#### i05-005: Verifiable Against Source Code
+#### iNUTB-005: Verifiable Against Source Code
 
 Given the source code at a specific git commit, it MUST be possible to rebuild contracts, regenerate the bundle, and
 verify that it matches the committed bundle byte-for-byte.
@@ -729,7 +729,7 @@ verify that it matches the committed bundle byte-for-byte.
 If bundles cannot be verified against source code, there is no way to audit what transactions will actually execute
 during the upgrade. This eliminates transparency and could allow unauthorized or malicious transactions to be included.
 
-#### i06-006: Valid Transaction Format
+#### iNUTB-006: Valid Transaction Format
 
 All transactions in the bundle MUST conform to the expected transaction format for [Network Upgrade Transactions](#network-upgrade-transaction-nut),
 including correct sender ([Depositor Account](#depositor-account)), appropriate gas limits, and valid calldata encoding.
@@ -838,7 +838,7 @@ activations.
 
 ### Assumptions
 
-#### a01-001: Upgrade Gas Requirements Are Bounded
+#### aUBGL-001: Upgrade Gas Requirements Are Bounded
 
 The gas required to execute all upgrade transactions in a [bundle](#network-upgrade-transaction-bundle) is finite and
 can be estimated before deployment. Upgrades do not contain unbounded loops or operations that could consume arbitrary
@@ -851,7 +851,7 @@ amounts of gas.
 - Upgrade complexity is bounded by the number of predeploys and deployment operations
 - Gas profiling is performed during development to identify expensive operations
 
-#### a02-002: Derivation Pipeline Correctly Allocates Gas
+#### aUBGL-002: Derivation Pipeline Correctly Allocates Gas
 
 The [derivation pipeline](#derivation-pipeline) implementation correctly provides the custom gas allocation to upgrade
 blocks and does not incorrectly apply this allocation to non-upgrade blocks.
@@ -863,7 +863,7 @@ blocks and does not incorrectly apply this allocation to non-upgrade blocks.
 - Implementation is tested with fork activation scenarios
 - Multiple client implementations must agree on gas allocation behavior
 
-#### a03-003: Custom Gas Does Not Affect Consensus
+#### aUBGL-003: Custom Gas Does Not Affect Consensus
 
 Providing additional gas for upgrade blocks does not violate consensus rules or create divergence between clients. The
 gas allocation is deterministic and applied consistently across all implementations.
@@ -877,7 +877,7 @@ gas allocation is deterministic and applied consistently across all implementati
 
 ### Invariants
 
-#### i01-001: Sufficient Gas Availability
+#### iUBGL-001: Sufficient Gas Availability
 
 The [upgrade block gas allocation](#upgrade-block-gas-allocation) MUST be sufficient to execute all transactions in the
 [Network Upgrade Transaction Bundle](#network-upgrade-transaction-bundle) without running out of gas. No upgrade
@@ -891,7 +891,7 @@ If insufficient gas is allocated, upgrade transactions will fail mid-execution, 
 upgraded or inconsistent states. This would halt the chain at fork activation and require emergency intervention to
 resolve.
 
-#### i02-002: Deterministic Gas Allocation
+#### iUBGL-002: Deterministic Gas Allocation
 
 The gas allocation for upgrade blocks MUST be deterministic and identical across all L2 nodes executing the fork
 activation. The allocation must depend only on consensus-critical inputs (fork identification) and not on
@@ -904,7 +904,7 @@ node-specific state or configuration.
 If gas allocation is non-deterministic, different nodes could allocate different gas amounts, causing some nodes to
 successfully execute upgrades while others fail. This would cause a consensus failure and chain split.
 
-#### i03-003: Gas Limit Independence from Block Gas Limit
+#### iUBGL-003: Gas Limit Independence from Block Gas Limit
 
 The [upgrade block gas allocation](#upgrade-block-gas-allocation) MUST be independent of the chain's configured block
 gas limit and the [system transaction gas limit](#system-transaction-gas-limit). Upgrade transactions must execute even
@@ -918,7 +918,7 @@ If upgrade gas depends on block gas limits, chains with lower gas limit configur
 while chains with higher limits succeed. This would cause inconsistent upgrade execution across the Superchain and
 break the goal of deterministic upgrades.
 
-#### i04-004: Gas Allocation Only for Upgrade Blocks
+#### iUBGL-004: Gas Allocation Only for Upgrade Blocks
 
 The custom gas allocation MUST only apply to [fork activation blocks](#fork-activation-block) containing upgrade
 transactions. Regular blocks must continue to use standard gas limits without modification.
@@ -931,7 +931,7 @@ If custom gas allocation applies to non-upgrade blocks, it could enable DOS atta
 excessive gas, bypass fee markets, or create blocks that are expensive to validate. This would compromise network
 security and performance.
 
-#### i05-005: No Gas Refund Exploitation
+#### iUBGL-005: No Gas Refund Exploitation
 
 The gas accounting for upgrade transactions MUST not be exploitable through gas refund mechanisms. The allocated gas is
 consumed by upgrade operations and cannot be reclaimed or used for unintended purposes.
@@ -989,7 +989,7 @@ are executed within the fork activation block. The order is critical for satisfy
 
 ### Assumptions
 
-#### a01-001: Fork Activation Time is Coordinated
+#### aUP-001: Fork Activation Time is Coordinated
 
 All OP Stack chains coordinate fork activation times to enable consistent upgrade rollout. The fork activation
 timestamp is communicated well in advance of activation to allow node operators to prepare.
@@ -1001,7 +1001,7 @@ timestamp is communicated well in advance of activation to allow node operators 
 - Multiple channels (documentation, social media, direct communication) are used to notify operators
 - Testnet activations occur before mainnet to validate timing and coordination
 
-#### a02-002: Node Operators Update Client Software
+#### aUP-002: Node Operators Update Client Software
 
 Node operators running L2 nodes update their client software to versions that include the fork activation logic and
 upgrade transaction bundle before the fork activation time.
@@ -1013,7 +1013,7 @@ upgrade transaction bundle before the fork activation time.
 - Testnet activations serve as final validation before mainnet
 - Monitoring systems alert operators of version mismatches
 
-#### a03-003: Testing Environments Match Production
+#### aUP-003: Testing Environments Match Production
 
 Fork-based testing environments accurately represent production chain state, allowing upgrade testing to catch issues
 that would occur in production.
@@ -1027,7 +1027,7 @@ that would occur in production.
 
 ### Invariants
 
-#### i01-001: Atomic Upgrade Execution
+#### iUP-001: Atomic Upgrade Execution
 
 All transactions in the upgrade bundle MUST execute atomically within the [fork activation block](#fork-activation-block).
 If any transaction fails, the entire upgrade must fail, leaving all predeploys in their pre-upgrade state.
@@ -1040,7 +1040,7 @@ If upgrades are not atomic, a partial upgrade could leave the system in an incon
 upgraded and others not. This would break protocol assumptions, potentially cause fund loss, and require emergency
 intervention to resolve.
 
-#### i02-002: Consistent Cross-Chain Execution
+#### iUP-002: Consistent Cross-Chain Execution
 
 All OP Stack chains executing the upgrade MUST produce identical post-upgrade state given identical pre-upgrade state.
 The upgrade must be deterministic regardless of chain-specific configuration (except for preserved network-specific
@@ -1054,7 +1054,7 @@ If upgrades produce different results on different chains, it would violate the 
 contract versions. This would make it impossible to reason about protocol behavior across chains and could enable
 chain-specific exploits.
 
-#### i03-003: Upgrade Transactions Execute Before User Transactions
+#### iUP-003: Upgrade Transactions Execute Before User Transactions
 
 All upgrade transactions MUST execute before any user-submitted transactions in the fork activation block. User
 transactions must interact with the post-upgrade contract state, not the pre-upgrade state.
@@ -1067,7 +1067,7 @@ If user transactions could execute before or during upgrades, they would see inc
 exploit race conditions. This could enable theft of funds or manipulation of system contracts during the upgrade
 window.
 
-#### i04-004: Fork Activation is Irreversible
+#### iUP-004: Fork Activation is Irreversible
 
 Once a fork activation block is finalized, the upgrade cannot be rolled back. The upgraded predeploy state is
 permanent.
@@ -1080,7 +1080,7 @@ This is by design, but emphasizes the importance of thorough testing. A flawed u
 cannot be undone through the normal upgrade process. Recovery would require a new fork with corrective upgrades or, in
 extreme cases, a chain reorganization.
 
-#### i05-005: Verifiable Upgrade Execution
+#### iUP-005: Verifiable Upgrade Execution
 
 After fork activation, it MUST be possible to verify that the executed upgrade transactions match the committed bundle
 and that the resulting contract state matches expectations.
