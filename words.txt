@@ -89,6 +89,7 @@ Superchain
 Superchain's
 Syscalls
 Typehash
+UBGL
 UPGRADER
 UPNP
 Unichain
@@ -96,6 +97,7 @@ Unsubmitted
 addi
 airgap
 Airgap
+alphanets
 altda
 basefee
 Basefee
@@ -207,6 +209,7 @@ meshsub
 messagepasser
 messsage
 misattributed
+misordered
 mmap
 mplex
 multiclient
@@ -219,6 +222,7 @@ nanosleep
 newrank
 nodehash
 noops
+NUTB
 offchain
 opstack
 outputroot
