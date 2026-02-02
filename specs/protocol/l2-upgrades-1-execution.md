@@ -445,8 +445,8 @@ Bundle generation MUST follow this process:
 
 To verify a bundle matches source code:
 
-1. **Check Out Commit**: `git checkout <sourceCommit>`
-2. **Build Contracts**: Compile contracts using specified compiler version and settings
+1. **Check Out Commit**: Check out the commit specified in the upgrade release documentation
+2. **Build Contracts**: Compile contracts using the build process documented in the repository
 3. **Regenerate Bundle**: Run the bundle generation script
 4. **Compare Output**: Verify byte-for-byte match with committed bundle
 
