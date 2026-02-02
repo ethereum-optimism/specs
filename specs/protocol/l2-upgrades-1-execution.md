@@ -17,6 +17,8 @@
         - [Mitigations](#mitigations-1)
       - [aUP-003: Net-new Configuration Values will not be Set During Upgrades](#aup-003-net-new-configuration-values-will-not-be-set-during-upgrades)
         - [Mitigations](#mitigations-2)
+      - [aUP-004: Transaction Payloads are Identical Across Chains](#aup-004-transaction-payloads-are-identical-across-chains)
+        - [Mitigations](#mitigations-3)
     - [Invariants](#invariants)
       - [iUP-001: Atomic Upgrade Execution](#iup-001-atomic-upgrade-execution)
         - [Impact](#impact)
@@ -36,13 +38,13 @@
       - [Bundle Generation Script](#bundle-generation-script)
     - [Assumptions](#assumptions-1)
       - [aNUTB-001: Solidity Compiler is Deterministic](#anutb-001-solidity-compiler-is-deterministic)
-        - [Mitigations](#mitigations-3)
-      - [aNUTB-002: Bundle Generation Script is Pure](#anutb-002-bundle-generation-script-is-pure)
         - [Mitigations](#mitigations-4)
-      - [aNUTB-003: Git Repository is Authoritative Source](#anutb-003-git-repository-is-authoritative-source)
+      - [aNUTB-002: Bundle Generation Script is Pure](#anutb-002-bundle-generation-script-is-pure)
         - [Mitigations](#mitigations-5)
-      - [aNUTB-004: JSON Format is Correctly Parsed](#anutb-004-json-format-is-correctly-parsed)
+      - [aNUTB-003: Git Repository is Authoritative Source](#anutb-003-git-repository-is-authoritative-source)
         - [Mitigations](#mitigations-6)
+      - [aNUTB-004: JSON Format is Correctly Parsed](#anutb-004-json-format-is-correctly-parsed)
+        - [Mitigations](#mitigations-7)
     - [Invariants](#invariants-1)
       - [iNUTB-001: Deterministic Bundle Generation](#inutb-001-deterministic-bundle-generation)
         - [Impact](#impact-4)
@@ -65,9 +67,9 @@
       - [Derivation Pipeline](#derivation-pipeline)
     - [Assumptions](#assumptions-2)
       - [aUBGL-001: Upgrade Gas Requirements Are Bounded](#aubgl-001-upgrade-gas-requirements-are-bounded)
-        - [Mitigations](#mitigations-7)
-      - [aUBGL-003: Custom Gas Does Not Affect Consensus](#aubgl-003-custom-gas-does-not-affect-consensus)
         - [Mitigations](#mitigations-8)
+      - [aUBGL-003: Custom Gas Does Not Affect Consensus](#aubgl-003-custom-gas-does-not-affect-consensus)
+        - [Mitigations](#mitigations-9)
     - [Invariants](#invariants-2)
       - [iUBGL-001: Sufficient Gas Availability](#iubgl-001-sufficient-gas-availability)
         - [Impact](#impact-9)
@@ -255,7 +257,7 @@ Within the fork activation block, transactions will execute in this order:
 
 All of these transactions execute before any user-submitted transactions in the block.
 
-Note: Transactions which are labeled as "one-time only" unquote" are necessary to enable infrastructure which will support this mechanism of upgrades in general. Once these steps are complete they do not need to be included in future upgrades.
+**Note:** Transactions which are labeled as "one-time only" are necessary to enable infrastructure which will support this mechanism of upgrades in general. Once these steps are complete they do not need to be included in future upgrades.
 
 ## Network Upgrade Transaction Bundle
 
