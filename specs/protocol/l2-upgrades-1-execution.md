@@ -4,79 +4,80 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Overview](#overview)
-- [Upgrade Process](#upgrade-process)
-  - [Overview](#overview-1)
-  - [Definitions](#definitions)
-    - [Fork Activation Timestamp](#fork-activation-timestamp)
-  - [Assumptions](#assumptions)
-    - [aUP-001: Fork Activation Time is Coordinated](#aup-001-fork-activation-time-is-coordinated)
-      - [Mitigations](#mitigations)
-    - [aUP-002: Testing Environments Match Production](#aup-002-testing-environments-match-production)
-      - [Mitigations](#mitigations-1)
-    - [aUP-003: Net-new Configuration Values will not be Set During Upgrades](#aup-003-net-new-configuration-values-will-not-be-set-during-upgrades)
-      - [Mitigations](#mitigations-2)
-  - [Invariants](#invariants)
-    - [iUP-001: Atomic Upgrade Execution](#iup-001-atomic-upgrade-execution)
-      - [Impact](#impact)
-    - [iUP-002: Deterministic Execution](#iup-002-deterministic-execution)
-      - [Impact](#impact-1)
-    - [iUP-003: Network-specific configuration must be preserved](#iup-003-network-specific-configuration-must-be-preserved)
-      - [Impact](#impact-2)
-    - [iUP-004: Verifiable Upgrade Execution](#iup-004-verifiable-upgrade-execution)
-      - [Impact](#impact-3)
-  - [Upgrade Release Process](#upgrade-release-process)
-  - [Transaction Execution Sequence](#transaction-execution-sequence)
-- [Network Upgrade Transaction Bundle](#network-upgrade-transaction-bundle)
-  - [Overview](#overview-2)
-  - [Definitions](#definitions-1)
-    - [Network Upgrade Transaction (NUT)](#network-upgrade-transaction-nut)
-    - [Fork Activation Block](#fork-activation-block)
-    - [Bundle Generation Script](#bundle-generation-script)
-  - [Assumptions](#assumptions-1)
-    - [aNUTB-001: Solidity Compiler is Deterministic](#anutb-001-solidity-compiler-is-deterministic)
-      - [Mitigations](#mitigations-3)
-    - [aNUTB-002: Bundle Generation Script is Pure](#anutb-002-bundle-generation-script-is-pure)
-      - [Mitigations](#mitigations-4)
-    - [aNUTB-003: Git Repository is Authoritative Source](#anutb-003-git-repository-is-authoritative-source)
-      - [Mitigations](#mitigations-5)
-    - [aNUTB-004: JSON Format is Correctly Parsed](#anutb-004-json-format-is-correctly-parsed)
-      - [Mitigations](#mitigations-6)
-  - [Invariants](#invariants-1)
-    - [iNUTB-001: Deterministic Bundle Generation](#inutb-001-deterministic-bundle-generation)
-      - [Impact](#impact-4)
-    - [iNUTB-002: Transaction Completeness](#inutb-002-transaction-completeness)
-      - [Impact](#impact-5)
-    - [iNUTB-003: Transaction Ordering](#inutb-003-transaction-ordering)
-      - [Impact](#impact-6)
-    - [iNUTB-004: Valid Transaction Format](#inutb-004-valid-transaction-format)
-      - [Impact](#impact-7)
-    - [iNUTB-005: Upgrade transactions do not revert](#inutb-005-upgrade-transactions-do-not-revert)
-      - [Impact](#impact-8)
-  - [Bundle Format](#bundle-format)
-  - [Bundle Generation Process](#bundle-generation-process)
-  - [Bundle Verification Process](#bundle-verification-process)
-- [Custom Upgrade Block Gas Limit](#custom-upgrade-block-gas-limit)
-  - [Overview](#overview-3)
-  - [Definitions](#definitions-2)
-    - [System Transaction Gas Limit](#system-transaction-gas-limit)
-    - [Upgrade Block Gas Allocation](#upgrade-block-gas-allocation)
-    - [Derivation Pipeline](#derivation-pipeline)
-  - [Assumptions](#assumptions-2)
-    - [aUBGL-001: Upgrade Gas Requirements Are Bounded](#aubgl-001-upgrade-gas-requirements-are-bounded)
-      - [Mitigations](#mitigations-7)
-    - [aUBGL-003: Custom Gas Does Not Affect Consensus](#aubgl-003-custom-gas-does-not-affect-consensus)
-      - [Mitigations](#mitigations-8)
-  - [Invariants](#invariants-2)
-    - [iUBGL-001: Sufficient Gas Availability](#iubgl-001-sufficient-gas-availability)
-      - [Impact](#impact-9)
-    - [iUBGL-002: Deterministic Gas Allocation](#iubgl-002-deterministic-gas-allocation)
-      - [Impact](#impact-10)
-    - [iUBGL-003: Gas Limit Independence from Block Gas Limit](#iubgl-003-gas-limit-independence-from-block-gas-limit)
-      - [Impact](#impact-11)
-    - [iUBGL-004: Gas Allocation Only for Upgrade Blocks](#iubgl-004-gas-allocation-only-for-upgrade-blocks)
-      - [Impact](#impact-12)
-  - [Gas Allocation Specification](#gas-allocation-specification)
+- [L2 Upgrade Execution](#l2-upgrade-execution)
+  - [Overview](#overview)
+  - [Upgrade Process](#upgrade-process)
+    - [Overview](#overview-1)
+    - [Definitions](#definitions)
+      - [Fork Activation Timestamp](#fork-activation-timestamp)
+    - [Assumptions](#assumptions)
+      - [aUP-001: Fork Activation Time is Coordinated](#aup-001-fork-activation-time-is-coordinated)
+        - [Mitigations](#mitigations)
+      - [aUP-002: Testing Environments Match Production](#aup-002-testing-environments-match-production)
+        - [Mitigations](#mitigations-1)
+      - [aUP-003: Net-new Configuration Values will not be Set During Upgrades](#aup-003-net-new-configuration-values-will-not-be-set-during-upgrades)
+        - [Mitigations](#mitigations-2)
+    - [Invariants](#invariants)
+      - [iUP-001: Atomic Upgrade Execution](#iup-001-atomic-upgrade-execution)
+        - [Impact](#impact)
+      - [iUP-002: Deterministic Execution](#iup-002-deterministic-execution)
+        - [Impact](#impact-1)
+      - [iUP-003: Network-specific configuration must be preserved](#iup-003-network-specific-configuration-must-be-preserved)
+        - [Impact](#impact-2)
+      - [iUP-004: Verifiable Upgrade Execution](#iup-004-verifiable-upgrade-execution)
+        - [Impact](#impact-3)
+    - [Upgrade Release Process](#upgrade-release-process)
+    - [Transaction Execution Sequence](#transaction-execution-sequence)
+  - [Network Upgrade Transaction Bundle](#network-upgrade-transaction-bundle)
+    - [Overview](#overview-2)
+    - [Definitions](#definitions-1)
+      - [Network Upgrade Transaction (NUT)](#network-upgrade-transaction-nut)
+      - [Fork Activation Block](#fork-activation-block)
+      - [Bundle Generation Script](#bundle-generation-script)
+    - [Assumptions](#assumptions-1)
+      - [aNUTB-001: Solidity Compiler is Deterministic](#anutb-001-solidity-compiler-is-deterministic)
+        - [Mitigations](#mitigations-3)
+      - [aNUTB-002: Bundle Generation Script is Pure](#anutb-002-bundle-generation-script-is-pure)
+        - [Mitigations](#mitigations-4)
+      - [aNUTB-003: Git Repository is Authoritative Source](#anutb-003-git-repository-is-authoritative-source)
+        - [Mitigations](#mitigations-5)
+      - [aNUTB-004: JSON Format is Correctly Parsed](#anutb-004-json-format-is-correctly-parsed)
+        - [Mitigations](#mitigations-6)
+    - [Invariants](#invariants-1)
+      - [iNUTB-001: Deterministic Bundle Generation](#inutb-001-deterministic-bundle-generation)
+        - [Impact](#impact-4)
+      - [iNUTB-002: Transaction Completeness](#inutb-002-transaction-completeness)
+        - [Impact](#impact-5)
+      - [iNUTB-003: Transaction Ordering](#inutb-003-transaction-ordering)
+        - [Impact](#impact-6)
+      - [iNUTB-004: Valid Transaction Format](#inutb-004-valid-transaction-format)
+        - [Impact](#impact-7)
+      - [iNUTB-005: Upgrade transactions do not revert](#inutb-005-upgrade-transactions-do-not-revert)
+        - [Impact](#impact-8)
+    - [Bundle Format](#bundle-format)
+    - [Bundle Generation Process](#bundle-generation-process)
+    - [Bundle Verification Process](#bundle-verification-process)
+  - [Custom Upgrade Block Gas Limit](#custom-upgrade-block-gas-limit)
+    - [Overview](#overview-3)
+    - [Definitions](#definitions-2)
+      - [System Transaction Gas Limit](#system-transaction-gas-limit)
+      - [Upgrade Block Gas Allocation](#upgrade-block-gas-allocation)
+      - [Derivation Pipeline](#derivation-pipeline)
+    - [Assumptions](#assumptions-2)
+      - [aUBGL-001: Upgrade Gas Requirements Are Bounded](#aubgl-001-upgrade-gas-requirements-are-bounded)
+        - [Mitigations](#mitigations-7)
+      - [aUBGL-003: Custom Gas Does Not Affect Consensus](#aubgl-003-custom-gas-does-not-affect-consensus)
+        - [Mitigations](#mitigations-8)
+    - [Invariants](#invariants-2)
+      - [iUBGL-001: Sufficient Gas Availability](#iubgl-001-sufficient-gas-availability)
+        - [Impact](#impact-9)
+      - [iUBGL-002: Deterministic Gas Allocation](#iubgl-002-deterministic-gas-allocation)
+        - [Impact](#impact-10)
+      - [iUBGL-003: Gas Limit Independence from Block Gas Limit](#iubgl-003-gas-limit-independence-from-block-gas-limit)
+        - [Impact](#impact-11)
+      - [iUBGL-004: Gas Allocation Only for Upgrade Blocks](#iubgl-004-gas-allocation-only-for-upgrade-blocks)
+        - [Impact](#impact-12)
+    - [Gas Allocation Specification](#gas-allocation-specification)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -118,7 +119,7 @@ timestamp is communicated well in advance of activation to allow node operators 
 
 ##### Mitigations
 
-- Fork activation timestamps are published in protocol documentation and configuration files
+- Fork activation timestamps are define in the superchain-registry
 - Activation times are set and communicated far enough in advance to allow preparation
 
 #### aUP-002: Testing Environments Match Production
@@ -226,11 +227,13 @@ The upgrade process follows this flow:
 
 Within the fork activation block, transactions will execute in this order:
 
-1. **ConditionalDeployer Deployment** (if needed): Deploy the ConditionalDeployer contract
+0. **L1 Info Deposit transaction**: This is the transaction which occurs at the start of each block, it is unchanged by
+  this work.
+1. **ConditionalDeployer Deployment** (one-time only): Deploy the ConditionalDeployer contract
 2. **Implementation Deployments**: For each predeploy being upgraded, deploy new implementation via
    ConditionalDeployer
-3. **L2ContractsManager Deployment**: Deploy the L2ContractsManager for this upgrade
-4. **ProxyAdmin Upgrade** (if needed): Upgrade the L2ProxyAdmin implementation
+3. **ProxyAdmin Upgrade** (one-time only): Upgrade the L2ProxyAdmin implementation
+4. **L2ContractsManager Deployment**: Deploy the L2ContractsManager for this upgrade
 5. **Batch Upgrade Execution**: Call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)` which:
    - Executes DELEGATECALL to L2ContractsManager.upgrade()
    - L2ContractsManager gathers configuration from existing predeploys
@@ -238,6 +241,8 @@ Within the fork activation block, transactions will execute in this order:
    - Verifies all upgrades completed successfully
 
 All of these transactions execute before any user-submitted transactions in the block.
+
+Note: Transactions which are labeled as "one-time only" unquote" are necessary to enable infrastructure which will support this mechanism of upgrades in general. Once these steps are complete they do not need to be included in future upgrades.
 
 ## Network Upgrade Transaction Bundle
 
