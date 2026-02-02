@@ -131,9 +131,9 @@ that would occur in production.
 
 ##### Mitigations
 
-- Fork tests use actual mainnet chain state as starting point
-- Testing validates against multiple chains with different configurations
-- CI/CD automatically runs fork tests against latest chain state
+- Fork tests should use actual mainnet chain state (e.g., OP Mainnet) as a starting point
+- Testing should validate against chains with different configurations (e.g., custom gas token, alt-DA)
+- CI/CD should run fork tests to catch regressions
 - Manual testing on testnet chains before mainnet activation
 
 #### aUP-003: Net-new Configuration Values will not be Set During Upgrades
@@ -217,24 +217,12 @@ The upgrade process follows this flow:
    `packages/contracts-bedrock/snapshots/current-l2-upgrade-bundle.json` (or similar). CI will enforce that this
    bundle always corresponds with bundle generated from the source code in the current commit.
 
-2. **Bundle Canonicalization**: Prior to cutting a contracts release, the `current-l2-upgrade-bundle.json` should
-   be copied to a new file named for the corresponding upgrade (ie. `holocene-upgrade-bundle.json`). The contracts
-   release should then be cut.
+2. **Continuous Release Readiness**: Contracts should always be release-ready. New functionality should be behind
+   feature flags that are only activated after a fork. This approach means there is no need to copy the bundle to a
+   separate fork-named file during development iteration. The `current-l2-upgrade-bundle.json` is always the
+   authoritative source that gets released with each contracts version.
 
-   TBD how to handle tag selection here, some thoughts:
-   For `op-deployer` it's easiest to build with with a single tag at a time, so the ideal is that all contracts
-   (both L1 and L2) be releasable within a given commit (which also matches the Always Be Release Ready goal).
-   However the current semver convention increments the major version every time we deploy a new OPCM in order to
-   upgrade L1 contracts. Perhaps we move to a double semver release like `op-contracts/v6.0.0-v1.0.0`
-   (`op-contracts/{{L1-Semver}}-{{L2-Semver}}`)?
-   Perhaps `op-deployer` should just be able to manage separate L1 and L2 contract releases
-   (op-contracts-l1/v6.0.0 and op-contracts-l2/v1.0.0)?
-   It might seem like it makes sense to have the the L2 contracts just get tagged by the op-node release, but that
-   breaks the current op-deployer release flow which releases on top of a contracts release.
-
-3. **Client Integration**: The canonical bundle is integrated into L2 client implementations and released with fork
-   activation logic. TBD how the client should actually consume the canonical bundle. Does the contracts package
-   become a dep, or does the build just grab the json and embed it in the binary?
+3. **Client Integration**: The canonical bundle JSON is embedded into L2 client binaries at build time.
 
 4. **Fork Activation**: At the [fork activation timestamp](#fork-activation-timestamp), nodes execute the bundle transactions.
 
@@ -464,6 +452,11 @@ without running out of gas.
 Standard L2 blocks are constrained by `systemTxMaxGas` (typically 1,000,000 gas), which is insufficient for executing
 the deployment and upgrade transactions in a typical predeploy upgrade. The custom gas limit bypasses this constraint
 for upgrade blocks specifically.
+
+Note: In practice, past upgrades that consumed more than 1M gas were possible because remaining gas in the block
+(after the ~20M user deposit gas allocation) was also available. However, this relied on the implicit assumption
+that chains had sufficient gas available via their block gas limit. This specification makes the gas allocation
+explicit to avoid such implicit dependencies.
 
 ### Definitions
 
