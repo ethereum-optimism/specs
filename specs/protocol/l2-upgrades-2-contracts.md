@@ -356,14 +356,15 @@ intended chain configuration.
 
 #### aL2CM-002: Implementation Addresses Are Pre-Computed Correctly
 
-The implementation addresses referenced by the L2ContractsManager are correctly pre-computed using the same CREATE2
-parameters that will be used by the [ConditionalDeployer](#conditionaldeployer). Address mismatches would cause
-proxies to point to incorrect or non-existent implementations.
+The implementation addresses used by the L2ContractsManager are pre-computed by the off-chain bundle generation script
+using the same CREATE2 parameters that will be used by the [ConditionalDeployer](#conditionaldeployer). The
+L2ContractsManager receives these addresses via its constructor and does not compute them. Address mismatches would
+cause proxies to point to incorrect or non-existent implementations.
 
 ##### Mitigations
 
-- Implementation addresses are computed using deterministic CREATE2 formula during bundle generation
-- The same address computation logic is used in both bundle generation and the L2ContractsManager
+- Implementation addresses are computed off-chain using deterministic CREATE2 formula during bundle generation
+- The computed addresses are provided to the L2ContractsManager constructor at deployment time
 - Fork-based testing validates that all implementation addresses exist and contain expected bytecode
 - Address computation is isolated in shared libraries to prevent divergence
 

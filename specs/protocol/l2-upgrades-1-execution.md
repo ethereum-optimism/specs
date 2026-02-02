@@ -143,6 +143,18 @@ initially be set to a default which applies to all chains.
 
 - All previous hard fork activate contract upgrades have met this assumption.
 
+#### aUP-004: Transaction Payloads are Identical Across Chains
+
+The upgrade transaction payloads are identical for all chains executing the upgrade. While there may be
+ephemeral differences in execution state (such as data read from existing contracts), the transaction
+data itself is deterministic and chain-independent.
+
+##### Mitigations
+
+- Bundle generation uses only deterministic inputs (CREATE2 addresses, compiled bytecode)
+- CI validates bundle determinism through repeated generation
+- Fork tests validate execution across different chain configurations
+
 ### Invariants
 
 #### iUP-001: Atomic Upgrade Execution
@@ -190,7 +202,8 @@ and that the resulting contract state matches expectations.
 **Severity: High**
 
 If upgrades cannot be verified post-execution, there is no way to audit whether the correct upgrade was performed,
-breaking transparency and making troubleshooting difficult.
+breaking transparency and making troubleshooting difficult. If post-execution verification reveals that contracts do not
+match expectations, this would violate other invariants and likely require another upgrade to address the issues.
 
 ### Upgrade Release Process
 
@@ -392,22 +405,15 @@ The bundle is a JSON file with the following structure:
 ```json
 {
   "metadata": {
-    "version": "1.0.0",
-    "fork": "ForkName",
-    "generatedAt": "2024-01-15T10:30:00Z",
-    "sourceCommit": "abc123def456...",
-    "compiler": {
-      "version": "0.8.25",
-      "settings": {...}
-    }
+    "version": "1.0.0"
   },
   "transactions": [
     {
-      "nonce": 0,
       "to": "0x1234...",
-      "value": "0",
       "data": "0xabcd...",
-      "gasLimit": "1000000"
+      "gasLimit": "1000000",
+      "value": "0",
+      "from": "0x0000000000000000000000000000000000000000"
     }
   ]
 }
@@ -415,18 +421,15 @@ The bundle is a JSON file with the following structure:
 
 **Field Requirements:**
 
-- `metadata.version`: Bundle format version for compatibility
-- `metadata.fork`: Name of the fork this bundle implements
-- `metadata.generatedAt`: ISO 8601 timestamp of generation (informational only, not used in determinism)
-- `metadata.sourceCommit`: Git commit hash of the source code that generated this bundle.
-- `metadata.compiler`: Compiler version and settings used to build contracts
+- `metadata.version`: Bundle format version for compatibility tracking
 - `transactions`: Array of transaction objects in execution order
-- `transactions[].nonce`: Nonce for the [Depositor Account](./l2-upgrades-2-contracts.md#depositor-account), starting
-  from current nonce
 - `transactions[].to`: Target address (contract being called or deployed)
-- `transactions[].value`: ETH value to send (typically "0")
 - `transactions[].data`: Transaction calldata as hex string
 - `transactions[].gasLimit`: Gas limit for this transaction
+- `transactions[].value`: (Optional) ETH value to send, defaults to "0" if omitted
+- `transactions[].from`: (Optional) Sender address. Defaults to the [Depositor Account](./l2-upgrades-2-contracts.md#depositor-account).
+  Must be set to `address(0)` for the L2ProxyAdmin upgrade transaction to utilize the zero-address upgrade path in the
+  Proxy.sol implementation
 
 ### Bundle Generation Process
 
