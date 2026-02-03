@@ -83,8 +83,9 @@ implementation and upgrade paths written in Solidity, ensuring determinism, veri
 client implementations.
 
 The upgrade system maintains the existing pattern of injecting Network Upgrade Transactions at specific fork block
-heights while improving the development and testing process. Upgrade transactions are defined in JSON bundles that are
-tracked in git, generated from Solidity scripts, and executed deterministically at fork activation.
+heights while improving the development and testing process. Upgrade transactions are defined in JSON bundles (see
+[Bundle Format](./l2-upgrades-1-execution.md#bundle-format)) that are tracked in git, generated from Solidity scripts,
+and executed deterministically at fork activation.
 
 ## ConditionalDeployer
 
@@ -299,7 +300,8 @@ functions. Existing functionality for upgrading individual proxies, changing pro
 MUST continue to work as before.
 
 Note: Backwards compatibility requires maintaining the full ProxyAdmin interface, but does not require supporting
-upgrades of legacy proxy types (ResolvedDelegate and Chugsplash proxies).
+upgrades of legacy proxy types (ResolvedDelegate and Chugsplash proxies). Currently, no predeploy uses these legacy
+proxy types.
 
 ##### Impact
 
@@ -383,7 +385,7 @@ and will accept upgrade calls from the [L2ProxyAdmin](#l2proxyadmin) executing t
 
 When [feature flags](#feature-flag) are used to customize upgrade behavior, the FeatureFlags contract is properly
 configured in the environment and returns consistent values throughout the upgrade execution.
-Production features which are enable must be exposed by the L1Block contract's interface.
+Production features which are enabled must be exposed by the L1Block contract's interface.
 
 ##### Mitigations
 

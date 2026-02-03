@@ -121,7 +121,7 @@ timestamp is communicated well in advance of activation to allow node operators 
 
 ##### Mitigations
 
-- Fork activation timestamps are define in the superchain-registry
+- Fork activation timestamps are defined in the superchain-registry
 - Activation times are set and communicated far enough in advance to allow preparation
 
 #### aUP-002: Testing Environments Match Production
@@ -278,7 +278,8 @@ contains the Network Upgrade Transactions that implement the protocol changes.
 #### Bundle Generation Script
 
 A Solidity script (typically using Forge scripting) that deterministically computes all transaction data for an
-upgrade. The script deploys contracts, computes addresses, and assembles transaction calldata.
+upgrade. The script computes CREATE2 addresses, generates deployment initcode, and assembles transaction calldata
+into a JSON file written to disk.
 
 ### Assumptions
 
