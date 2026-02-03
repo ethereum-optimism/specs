@@ -413,7 +413,7 @@ The bundle is a JSON file with the following structure:
 
 - `metadata.version`: Bundle format version for compatibility tracking
 - `transactions`: Array of transaction objects in execution order
-- `transactions[].to`: Target address (contract being called or deployed)
+- `transactions[].to`: Target address (contract being called)
 - `transactions[].data`: Transaction calldata as hex string
 - `transactions[].gasLimit`: Gas limit for this transaction
 - `transactions[].value`: (Optional) ETH value to send, defaults to "0" if omitted
