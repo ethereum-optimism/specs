@@ -173,14 +173,16 @@ contract, causing the L1 Attributes deposit transactions to fail.
 
 #### iUP-002: Deterministic Execution
 
-The upgrade must be deterministic, regardless of chain-specific configuration, or chain state at the time of
-execution.
+The upgrade transactions must be deterministically generated across all chains, regardless of chain-specific
+configuration or chain state at the time of execution. The transaction payloads (calldata) must be identical
+across all chains. While execution may result in different storage or memory state (e.g., contracts storing
+`block.number` or reading existing chain-specific configuration), the transaction calldata itself must be identical.
 
 ##### Impact
 
 **Severity: Critical**
 
-Non-determinism could result in a chain split.
+Non-determinism in transaction payloads could result in a chain split.
 
 #### iUP-003: Network-specific configuration must be preserved
 
@@ -293,6 +295,18 @@ verification that bundle contents match the source code on a specific commit.
 
 - Use pinned compiler versions specified in foundry.toml
 - Verification process rebuilds contracts with identical settings and compares bytecode
+
+#### aNUTB-001b: Build Toolchain is Not Compromised
+
+The Solidity compiler (solc), Forge, and other build tools used to compile contracts and generate bundles are not
+compromised and produce trustworthy output. Compromised build tools could inject malicious code or alter bytecode.
+
+##### Mitigations
+
+- Use pinned, verified versions of build tools from official sources
+- Build in isolated, reproducible environments
+- Multiple independent parties verify bundle generation
+- Compare bytecode against known-good reference builds
 
 #### aNUTB-002: Bundle Generation Script is Pure
 
@@ -565,9 +579,9 @@ The custom upgrade block gas allocation is implemented in the derivation pipelin
 
 **Gas Allocation Value:**
 
-- The upgrade block gas allocation SHOULD be set to 50,000,000 gas (50M gas)
-- This value is significantly higher than typical upgrade requirements to provide safety margin
-- The specific value is hardcoded in the derivation pipeline for the corresponding fork
+- The upgrade block gas allocation is specified in the bundle JSON for each upgrade
+- The value should be set significantly higher than the measured gas consumption to provide safety margin
+- The specific value is read from the bundle and applied by the derivation pipeline for the corresponding fork
 
 **Allocation Conditions:**
 
