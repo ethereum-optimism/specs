@@ -245,7 +245,8 @@ Within the fork activation block, transactions will execute in this order:
 
 All of these transactions execute before any user-submitted transactions in the block.
 
-**Note:** Transactions which are labeled as "one-time only" are necessary to enable infrastructure which will support this mechanism of upgrades in general. Once these steps are complete they do not need to be included in future upgrades.
+**Note:** Transactions which are labeled as "one-time only" are necessary to enable infrastructure which will support this mechanism of upgrades in general. 
+  Once these steps are complete they do not need to be included in future upgrades, thus they should be kept out of the bundle itself and instead hardcoded in the client implementation.
 
 ## Network Upgrade Transaction Bundle
 
