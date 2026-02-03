@@ -237,7 +237,7 @@ Within the fork activation block, transactions will execute in this order:
    ConditionalDeployer
 3. **ProxyAdmin Upgrade** (one-time only): Upgrade the L2ProxyAdmin implementation
 4. **L2ContractsManager Deployment**: Deploy the L2ContractsManager for this upgrade
-5. **Batch Upgrade Execution**: Call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)` which:
+5. **Upgrade Execution**: Call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)` which will atomically:
    - Executes DELEGATECALL to L2ContractsManager.upgrade()
    - L2ContractsManager gathers configuration from existing predeploys
    - For each predeploy, calls `proxy.upgradeTo()` or `proxy.upgradeToAndCall()`
