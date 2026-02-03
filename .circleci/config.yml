@@ -11,6 +11,16 @@ executors:
 
 commands:
 
+  install-npm-deps:
+    description: "Install npm dependencies"
+    steps:
+      - run:
+          name: install npm dependencies
+          command: |
+            npm install -g corepack
+            corepack enable
+            pnpm install --frozen-lockfile
+
   notify-failures-on-develop:
     description: "Notify Slack"
     parameters:
@@ -29,6 +39,7 @@ jobs:
     executor: default
     steps:
       - utils/checkout-with-mise
+      - install-npm-deps
       - run:
           name: markdown lint
           command: just lint-specs-md-check

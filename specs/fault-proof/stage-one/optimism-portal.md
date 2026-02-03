@@ -37,19 +37,16 @@
   - [initialize](#initialize)
   - [paused](#paused)
   - [guardian](#guardian)
+  - [ethLockbox](#ethlockbox)
   - [proofMaturityDelaySeconds](#proofmaturitydelayseconds)
-  - [superRootsActive](#superrootsactive)
   - [disputeGameFactory](#disputegamefactory)
   - [disputeGameFinalityDelaySeconds](#disputegamefinalitydelayseconds)
   - [respectedGameType](#respectedgametype)
   - [respectedGameTypeUpdatedAt](#respectedgametypeupdatedat)
   - [l2Sender](#l2sender)
-  - [proveWithdrawalTransaction (Super Roots)](#provewithdrawaltransaction-super-roots)
-  - [proveWithdrawalTransaction (Output Roots)](#provewithdrawaltransaction-output-roots)
+  - [proveWithdrawalTransaction](#provewithdrawaltransaction)
   - [checkWithdrawal](#checkwithdrawal)
   - [finalizeWithdrawalTransaction](#finalizewithdrawaltransaction)
-  - [migrateLiquidity](#migrateliquidity)
-  - [migrateToSuperRoots](#migratetosuperroots)
   - [donateETH](#donateeth)
   - [finalizeWithdrawalTransactionExternalProof](#finalizewithdrawaltransactionexternalproof)
   - [numProofSubmitters](#numproofsubmitters)
@@ -322,10 +319,9 @@ see this as a critical system risk.
 ### initialize
 
 - MUST only be callable by the ProxyAdmin or its owner.
-- MUST only be triggerable once.
 - MUST set the value of the `SystemConfig` contract.
 - MUST set the value of the `AnchorStateRegistry` contract.
-- MUST set the value of the `ETHLockbox` contract.
+- MUST assert that the ETHLockbox state is valid based on the feature flag.
 - MUST set the value of the [L2 Withdrawal Sender](#l2-withdrawal-sender) variable to the default
   value if the value is not set already.
 - MUST initialize the resource metering configuration.
@@ -338,14 +334,14 @@ Returns the current state of the `SystemConfig.paused()` function.
 
 Returns the address of the Guardian as per `SystemConfig.guardian()`.
 
+### ethLockbox
+
+Returns the address of the ETHLockbox configured for this contract. If the contract has not been
+configured for this OptimismPortal, this function will return `address(0)`.
+
 ### proofMaturityDelaySeconds
 
 Returns the value of the [Proof Maturity Delay](#proof-maturity-delay).
-
-### superRootsActive
-
-Returns the value of the `superRootsActive` variable which determines if the `OptimismPortal` will
-use the standard Output Root proof or the Super Root proof.
 
 ### disputeGameFactory
 
@@ -382,41 +378,11 @@ has not been initialized then this value will be `address(0)` and should not be 
 `OptimismPortal` is not currently executing an withdrawal transaction then this value will be
 `0x000000000000000000000000000000000000dEaD` and should not be used.
 
-### proveWithdrawalTransaction (Super Roots)
+### proveWithdrawalTransaction
 
-Allows a user to [prove](#proven-withdrawal) a withdrawal transaction within an `OptimismPortal`
-that uses dispute games that argue over [Super Roots](#super-root).
+Allows a user to [prove](#proven-withdrawal) a withdrawal transaction.
 
-- MUST revert if the withdrawal target is an [unsafe target](#unsafe-target).
-- MUST revert if the withdrawal is being proven against a game that is not a
-  [Proper Game](./anchor-state-registry.md#proper-game).
-- MUST revert if the withdrawal is being proven against a game that is not a
-  [Respected Game](./anchor-state-registry.md#respected-game).
-- MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
-  Challenger.
-- MUST revert if `superRootsActive` is `false`.
-- MUST revert if the proof provided by the user of the preimage of the Super Root that the dispute
-  game argues about is invalid. This proof is verified by hashing the user-provided Super Root
-  preimage and comparing them to the Super Root in the referenced dispute game.
-- MUST revert if the pointer index of the Output Root inside of the Super Root provided by the user
-  is beyond the size of the Output Roots array or points to a chain ID other than the chain ID
-  stored within the `SystemConfig` contract for the `OptimismPortal`.
-- MUST revert if the proof provided by the user of the preimage of the Output Root is invalid. This
-  proof is verified by hashing the user-provided preimage and comparing them to the Output Root.
-- MUST revert if the provided merkle trie proof that the withdrawal was included within the root
-  claim of the provided dispute game is invalid.
-- MUST otherwise store a record of the withdrawal proof that includes the hash of the proven  
-  withdrawal, the address of the game against which it was proven, and the block timestamp at which
-  the proof transaction was submitted.
-- MUST add the proof submitter to the list of submitters for this withdrawal hash.
-- MUST emit a `WithdrawalProven` event with the withdrawal hash, sender, and target.
-- MUST emit a `WithdrawalProvenExtension1` event with the withdrawal hash and proof submitter address.
-
-### proveWithdrawalTransaction (Output Roots)
-
-Allows a user to [prove](#proven-withdrawal) a withdrawal transaction within an `OptimismPortal`
-that uses dispute games that argue over [Output Roots](#output-root).
-
+- MUST revert if the system is paused.
 - MUST revert if the withdrawal target is an [Unsafe Target](#unsafe-target).
 - MUST revert if the withdrawal is being proven against a game that is not a
   [Proper Game](./anchor-state-registry.md#proper-game).
@@ -424,13 +390,14 @@ that uses dispute games that argue over [Output Roots](#output-root).
   [Respected Game](./anchor-state-registry.md#respected-game).
 - MUST revert if the withdrawal is being proven against a game that has resolved in favor of the
   Challenger.
-- MUST revert if `superRootsActive` is `true`.
+- MUST revert if the current timestamp is less than or equal to the dispute game's creation
+  timestamp.
 - MUST revert if the proof provided by the user of the preimage of the Output Root that the dispute
   game argues about is invalid. This proof is verified by hashing the user-provided preimage and
   comparing them to the root claim of the referenced dispute game.
 - MUST revert if the provided merkle trie proof that the withdrawal was included within the root
   claim of the provided dispute game is invalid.
-- MUST otherwise store a record of the withdrawal proof that includes the hash of the proven  
+- MUST otherwise store a record of the withdrawal proof that includes the hash of the proven
   withdrawal, the address of the game against which it was proven, and the block timestamp at which
   the proof transaction was submitted.
 - MUST add the proof submitter to the list of submitters for this withdrawal hash.
@@ -456,42 +423,8 @@ Checks that a withdrawal transaction can be [finalized](#finalized-withdrawal).
 
 Allows a user to [finalize](#finalized-withdrawal) a withdrawal transaction.
 
-- MUST revert if the function is called while a previous withdrawal is being executed.
-- MUST revert if the withdrawal being finalized does not pass `checkWithdrawal`.
-- MUST mark the withdrawal as finalized.
-- MUST set the L2 Withdrawal Sender variable correctly.
-- MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.
-- MUST execute the withdrawal transaction by executing a contract call to the target address with
-  the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
-  specified by the withdrawal.
-- MUST unset the L2 Withdrawal Sender after the withdrawal call.
-- MUST emit a `WithdrawalFinalized` event with the withdrawal hash and success status.
-- MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails.
-- MUST revert if the withdrawal call fails and the transaction origin is the estimation address, to
-  help determine exact gas costs.
-
-### migrateLiquidity
-
-Allows the ProxyAdmin owner to migrate the total ETH balance to the ETHLockbox contract.
-
-- MUST revert if called by any address other than the ProxyAdmin owner.
-- MUST transfer the entire ETH balance of the OptimismPortal to the ETHLockbox contract.
-- MUST emit an ETHMigrated event with the ETHLockbox address and the migrated ETH amount.
-- MAY be called even if the system is paused.
-
-### migrateToSuperRoots
-
-Allows the ProxyAdmin owner to migrate the OptimismPortal to use a new ETHLockbox, point at a new
-AnchorStateRegistry, and start using the Super Roots proof method.
-
-- MUST revert if the system is paused.
-- MUST revert if called by any address other than the ProxyAdmin owner.
-- MUST revert if the new AnchorStateRegistry is the same as the current one.
-- MUST update the ETHLockbox address to the provided new ETHLockbox address.
-- MUST update the AnchorStateRegistry address to the provided new AnchorStateRegistry address.
-- MUST set the superRootsActive flag to true, enabling Super Roots proof method.
-- MUST emit a PortalMigrated event with the old and new ETHLockbox and AnchorStateRegistry
-  addresses.
+- MUST delegate to `finalizeWithdrawalTransactionExternalProof` with `msg.sender` as the proof
+  submitter.
 
 ### donateETH
 
@@ -508,17 +441,19 @@ by another address.
 
 - MUST revert if the system is paused.
 - MUST revert if the function is called while a previous withdrawal is being executed.
-- MUST revert if the target address is an [Unsafe Target](#unsafe-target).
-- MUST revert if the withdrawal being finalized does not pass `checkWithdrawal` when using the specified proof submitter.
+- MUST revert if the withdrawal target is an [Unsafe Target](#unsafe-target).
+- MUST revert if the withdrawal being finalized does not pass `checkWithdrawal`.
 - MUST mark the withdrawal as finalized.
+- MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value AND the OptimismPortal
+  has an ETHLockbox configured AND the ETHLockbox system feature is active.
 - MUST set the L2 Withdrawal Sender variable correctly.
-- MUST unlock ETH from the ETHLockbox if the withdrawal includes an ETH value.
 - MUST execute the withdrawal transaction by executing a contract call to the target address with
   the data and ETH value specified within the withdrawal using AT LEAST the minimum amount of gas
   specified by the withdrawal.
 - MUST unset the L2 Withdrawal Sender after the withdrawal call.
 - MUST emit a `WithdrawalFinalized` event with the withdrawal hash and success status.
-- MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails.
+- MUST lock any unused ETH back into the ETHLockbox if the call to the target address fails AND the
+  OptimismPortal has an ETHLockbox configured AND the ETHLockbox system feature is active.
 - MUST revert if the withdrawal call fails and the transaction origin is the estimation address, to
   help determine exact gas costs.
 
@@ -571,10 +506,12 @@ deriving deposit transactions. Note that if a deposit is made by a contract, its
 address will be aliased when retrieved using `tx.origin` or `msg.sender`. Consider
 using the CrossDomainMessenger contracts for a simpler developer experience.
 
-- MUST lock any ETH value (msg.value) in the ETHLockbox contract.
-- MUST apply resource metering to the gas limit parameter to prevent spam.
+- MUST lock any ETH value (msg.value) in the ETHLockbox contract if the OptimismPortal has an
+  ETHLockbox configured AND the ETHLockbox system feature is active.
 - MUST revert if the target address is not address(0) for contract creations.
 - MUST revert if the gas limit provided is below the [minimum gas limit](#minimum-gas-limit).
 - MUST revert if the calldata is too large (> 120,000 bytes).
 - MUST transform the sender address to its alias if the caller is a contract.
-- MUST emit a TransactionDeposited event with the from address, to address, deposit version, and opaque data.
+- MUST apply resource metering to the gas limit parameter.
+- MUST emit a TransactionDeposited event with the from address, to address, deposit version, and
+  opaque data.

@@ -19,6 +19,7 @@
     - [interop_invalidateBlock](#interop_invalidateblock)
     - [interop_provideL1](#interop_providel1)
     - [interop_reset](#interop_reset)
+    - [interop_resetPreInterop](#interop_resetpreinterop)
   - [DB](#db)
     - [interop_updateCrossSafe](#interop_updatecrosssafe)
     - [interop_updateCrossUnsafe](#interop_updatecrossunsafe)
@@ -56,7 +57,7 @@ the file containing the jwt secret should be provided to the supervisor instance
 ## Node `->` Supervisor
 
 Events that a supervisor should subscribe to, originating from the node, handled by the supervisor. For the used types,
-refer [this](#Types) section.
+refer [this](#types) section.
 
 Every event sent from the node is of type `ManagedEvent` whose fields are populated with the events that occurred. All
 non-null events are sent at once. The other fields are omitted.
@@ -193,6 +194,14 @@ payload (lUnsafe, xUnsafe, lSafe, xSafe, finalized: BlockID)
 Forces a reset to a specific local-unsafe/local-safe/finalized starting point only if the blocks did exist. Resets may
 override local-unsafe, to reset the very end of the chain. Resets may override local-safe, since post-interop we need
 the local-safe block derivation to continue.
+
+#### interop_resetPreInterop
+
+```javascript
+payload()
+```
+
+Forces a pre-interop reset on the node. It means resetting the node to a state before the Interop upgrade
 
 ### DB
 
