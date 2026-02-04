@@ -57,6 +57,8 @@
       - [Impact](#impact-7)
     - [iNUTB-005: Upgrade transactions do not revert](#inutb-005-upgrade-transactions-do-not-revert)
       - [Impact](#impact-8)
+    - [iNUTB-006: Deterministic Kona Program Build](#inutb-006-deterministic-kona-program-build)
+      - [Impact](#impact-9)
   - [Bundle Format](#bundle-format)
   - [Bundle Generation Process](#bundle-generation-process)
   - [Bundle Verification Process](#bundle-verification-process)
@@ -73,13 +75,13 @@
       - [Mitigations](#mitigations-10)
   - [Invariants](#invariants-2)
     - [iUBGL-001: Sufficient Gas Availability](#iubgl-001-sufficient-gas-availability)
-      - [Impact](#impact-9)
-    - [iUBGL-002: Deterministic Gas Allocation](#iubgl-002-deterministic-gas-allocation)
       - [Impact](#impact-10)
-    - [iUBGL-003: Gas Limit Independence from Block Gas Limit](#iubgl-003-gas-limit-independence-from-block-gas-limit)
+    - [iUBGL-002: Deterministic Gas Allocation](#iubgl-002-deterministic-gas-allocation)
       - [Impact](#impact-11)
-    - [iUBGL-004: Gas Allocation Only for Upgrade Blocks](#iubgl-004-gas-allocation-only-for-upgrade-blocks)
+    - [iUBGL-003: Gas Limit Independence from Block Gas Limit](#iubgl-003-gas-limit-independence-from-block-gas-limit)
       - [Impact](#impact-12)
+    - [iUBGL-004: Gas Allocation Only for Upgrade Blocks](#iubgl-004-gas-allocation-only-for-upgrade-blocks)
+      - [Impact](#impact-13)
   - [Gas Allocation Specification](#gas-allocation-specification)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -406,6 +408,21 @@ The upgrade transactions must successfully execute without reverting.
 **Severity: Critical**
 
 Reverting would likely cause a chain halt.
+
+#### iNUTB-006: Deterministic Kona Program Build
+
+For a given commit, the build process MUST produce a byte-identical kona program artifact across all builds,
+regardless of environment or timing. Any non-determinism in the build (e.g., unstable codegen, random iteration
+order over NUC struct fields, unstable sorting, unused current timestamps) violates this invariant and breaks
+prestate reproducibility.
+
+##### Impact
+
+**Severity: Critical**
+
+Non-deterministic builds prevent verification that a given kona program corresponds to specific source code,
+undermining prestate reproducibility and making it impossible to independently verify the correctness of fault
+proofs. This could allow unverified or compromised program artifacts to be used in the system.
 
 ### Bundle Format
 
