@@ -424,6 +424,8 @@ Non-deterministic builds prevent verification that a given kona program correspo
 undermining prestate reproducibility and making it impossible to independently verify the correctness of fault
 proofs. This could allow unverified or compromised program artifacts to be used in the system.
 
+Note: the preimage-reproducibility CCI workflow mitigates this.
+
 ### Bundle Format
 
 The bundle is a JSON file with the following structure:
