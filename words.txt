@@ -107,6 +107,7 @@ bitlists
 blobbasefee
 BLOBBASEFEE
 blobdata
+blobhash
 blockhash
 Blockhash
 blockheaders
