@@ -206,7 +206,8 @@
 <li><a href="#l1-block-header-blockhash"><code>l1-block-header &lt;blockhash&gt;</code></a></li>
 <li><a href="#l1-transactions-blockhash"><code>l1-transactions &lt;blockhash&gt;</code></a></li>
 <li><a href="#l1-receipts-blockhash"><code>l1-receipts &lt;blockhash&gt;</code></a></li>
-<li><a href="#l1-precompile-precompile--inputbytes"><code>l1-precompile &lt;precompile ++ inputbytes&gt;</code></a></li>
+<li><a href="#l1-blob-blobhash--metadata"><code>l1-blob &lt;blobhash ++ metadata&gt;</code></a></li>
+<li><a href="#l1-precompile-v2-address--requiredgas--inputbytes"><code>l1-precompile-v2 &lt;address ++ requiredGas ++ inputbytes&gt;</code></a></li>
 <li><a href="#l2-block-header-blockhash-chainid"><code>l2-block-header &lt;blockhash&gt; &lt;chainID&gt;?</code></a></li>
 <li><a href="#l2-transactions-blockhash-chainid"><code>l2-transactions &lt;blockhash&gt; &lt;chainID&gt;?</code></a></li>
 <li><a href="#l2-receipts-blockhash-chainid"><code>l2-receipts &lt;blockhash&gt; &lt;chainID&gt;</code></a></li>
@@ -521,10 +522,34 @@ prepare the RLP pre-images of each of them, including transactions-list MPT node
 <h4 id="l1-receipts-blockhash"><a class="header" href="#l1-receipts-blockhash"><code>l1-receipts &lt;blockhash&gt;</code></a></h4>
 <p>Requests the host to prepare the list of receipts of the L1 block with <code>&lt;blockhash&gt;</code>:
 prepare the RLP pre-images of each of them, including receipts-list MPT nodes.</p>
-<h4 id="l1-precompile-precompile--inputbytes"><a class="header" href="#l1-precompile-precompile--inputbytes"><code>l1-precompile &lt;precompile ++ inputbytes&gt;</code></a></h4>
-<p>Requests the host to prepare the result of an L1 call to the <code>precompile</code> address given
-<code>&lt;inputbytes&gt;</code> as the input. The host also prepares a <a href="#type-2-global-keccak256-key">global keccak256 preimage</a>
-of the hint data <code>&lt;precompile ++ inputbytes&gt;</code>.</p>
+<h4 id="l1-blob-blobhash--metadata"><a class="header" href="#l1-blob-blobhash--metadata"><code>l1-blob &lt;blobhash ++ metadata&gt;</code></a></h4>
+<p>Requests the host to prepare EIP-4844 blob data for fault proof verification.</p>
+<p>The hint data consists of 48 bytes concatenated together:</p>
+<ul>
+<li>Bytes 0-31: Blob version hash (32 bytes) - the keccak256 hash of the KZG commitment with version byte prefix</li>
+<li>Bytes 32-39: Blob index within the block (8-byte big-endian uint64)</li>
+<li>Bytes 40-47: L1 block timestamp (8-byte big-endian uint64)</li>
+</ul>
+<p>The host will:</p>
+<ol>
+<li>Fetch the blob from the L1 beacon chain using the timestamp and blob hash</li>
+<li>Compute the KZG commitment and prepare it as a <a href="#type-3-global-generic-key">SHA256 preimage</a></li>
+<li>Prepare all 4096 field elements of the blob as <a href="#type-5-global-eip-4844-point-evaluation-key">Blob-type preimages</a>,
+keyed by <code>keccak256(commitment || rootOfUnity[i])</code> for evaluation at the standard roots of unity</li>
+</ol>
+<p>This hint is required for verifying transactions that use EIP-4844 blob data (post-Ecotone).</p>
+<h4 id="l1-precompile-v2-address--requiredgas--inputbytes"><a class="header" href="#l1-precompile-v2-address--requiredgas--inputbytes"><code>l1-precompile-v2 &lt;address ++ requiredGas ++ inputbytes&gt;</code></a></h4>
+<p>Requests the host to prepare the result of an L1 precompile call with gas validation.</p>
+<p>The hint data format:</p>
+<ul>
+<li>Bytes 0-19: Precompile address (20 bytes)</li>
+<li>Bytes 20-27: Required gas (8-byte big-endian uint64)</li>
+<li>Bytes 28+: Input bytes</li>
+</ul>
+<p>The host validates the precompile address against an allowlist of accelerated precompiles and
+prepares a <a href="#type-6-global-precompile-key">precompile-type preimage</a> of the execution result.
+The <code>requiredGas</code> parameter allows the preimage oracle to enforce complete precompile execution.</p>
+<p>This supersedes the earlier <code>l1-precompile &lt;precompile ++ inputbytes&gt;</code> format which did not include gas validation.</p>
 <h4 id="l2-block-header-blockhash-chainid"><a class="header" href="#l2-block-header-blockhash-chainid"><code>l2-block-header &lt;blockhash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 block header RLP pre-image of the block <code>&lt;blockhash&gt;</code>.</p>
 <p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
