@@ -23,11 +23,10 @@ social consensus MUST be used to determine the chain that represents the canonic
 particularly impacts the block builder as they SHOULD use the chain id to assist in validation
 of executing messages.
 
-The dependency set is configured on a per cluster basis. All chains that are in the dependency set
-can accept initiating messages from any other chain in the dependency set, resulting in a mesh.
+Chains implicitly belong to their own Dependency Set.
 
-The chain id of the local chain MUST be considered as part of its own dependency set. This allows a chain
-to consume logs that it has produced much more cheaply than providing a block hash proof.
+Chains define their own dependency sets, but by convention chains are intended to
+depend on one another in interop.
 
 ## Chain ID
 
@@ -46,13 +45,6 @@ It is a known issue that not all software in the Ethereum ecosystem can handle 3
 
 The dependency set is managed in the client software. Adding a chain to the dependency set is
 considered an upgrade to the network. It is not possible to remove chains from the dependency set.
-
-## Future Considerations
-
-### Layer 1 as Part of the Dependency Set
-
-The layer one MAY be part of the dependency set in the future. This means that any event
-created on layer one is consumable on layer two.
 
 ## Security Considerations
 
