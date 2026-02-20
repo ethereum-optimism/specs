@@ -125,13 +125,40 @@ verified against the Merkle root.
 
 ## Chain Re-Organization
 
+Note: As of the current state of this PR, it is possible for "reorg" and "replacement" to be used as interchangable terms.
+
 [reorg]: glossary.md#chain-re-organization
 
-A re-organization, or re-org for short, is whenever the head of a blockchain (its last block) changes (as dictated by
-the [fork choice rule][fork-choice-rule]) to a block that is not a child of the previous head.
+A re-organization, or re-org for short, is whenever a Node on the blockchain changes (as dictated by
+the [fork choice rule][fork-choice-rule]) the head block (or multiple blocks) with other blocks.
 
-L1 re-orgs can happen because of network conditions or attacks. L2 re-orgs are a consequence of L1 re-orgs, mediated via
+Reorgs are related to a reselection of branch on a node when there is some form of equivocation. Reorgs may not be seen
+by all nodes on the network, if those nodes picked the correct branch to begin with (for example, if they are syncing
+well after the reorg occured, only the canonical branch is available).
+
+The following are types of reorgs which can be experienced by a node:
+- Unsafe -> Unsafe Reorg. When the block builder equivocates, a node could accept one unsafe block, and then reject it for
+another unsafe block. As implemented today this is not the behavior of Nodes: the Unsafe Chain Consensus is
+First-Block-Wins, because the Sequencer is expected *not* to equivocate.
+- Unsafe -> Safe Reorg. When the L1 batch data creates a chain which disagrees with the Unsafe Chain currently on the Node,
+the Safe Chain always wins.
+- L1 Reorg. A reorg on the L1 can occur, which may change the L2 Safe Data which has been posted. This is mediated via
 [L2 chain derivation][derivation].
+
+[replacement]: glossary.md#replacement
+
+A replacement is similar to a reorg in that it changes the historical view of the chain
+held by a Node. *Unlike* a reorg, a replacement is handled as part of [L2 chain derivation][derivation]. 
+A replacement is seen on all Nodes on the network, because it is based on
+L1 published batch data, which all nodes consume in order to derive.
+
+The following are types of reorgs which can be experienced by a node:
+- Derivation Replacement. When a batch contains invalid data, it is immediately replaced
+by a deposit-only block. This is atomic: the replacement can occur as soon as the batch content is considered.
+- Interop Replacement. When L1 data reveals that some interop dependency is invalid, 
+the block with the invalid message is replaced by a deposit-only block. The block which is replaced,
+and all blocks which come from it, are no longer part of the canonical chain, even though they may appear
+locally valid for several L1 blocks.
 
 ## Predeployed Contract ("Predeploy")
 
