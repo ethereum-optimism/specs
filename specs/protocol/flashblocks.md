@@ -711,8 +711,7 @@ sequenceDiagram
         EE-->>BB: Execution results (state root, receipts, gas used)
 
         Note over BB: Construct Flashblock Delta
-        BB->>BB: Assemble FlashblocksPayloadV1 (state_root, receipts_root, logs_bloom, gas_used, block_hash, txs,
-withdrawals, metadata)
+        BB->>BB: Assemble FlashblocksPayloadV1 (state_root, receipts_root, logs_bloom, gas_used, block_hash, txs, withdrawals, metadata)
 
         BB->>RB: Submit FlashblocksPayloadV1
         RB-->>BB: Acknowledge reception (async)
