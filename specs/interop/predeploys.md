@@ -44,7 +44,6 @@
   - [Overview](#overview-2)
 - [OptimismMintableERC20Factory](#optimismmintableerc20factory)
   - [OptimismMintableERC20](#optimismmintableerc20)
-  - [Updates](#updates)
   - [Functions](#functions-2)
     - [`createOptimismMintableERC20WithDecimals`](#createoptimismmintableerc20withdecimals)
     - [`createOptimismMintableERC20`](#createoptimismmintableerc20)
@@ -53,7 +52,7 @@
     - [`OptimismMintableERC20Created`](#optimismmintableerc20created)
     - [`StandardL2TokenCreated`](#standardl2tokencreated)
 - [L2StandardBridge](#l2standardbridge)
-  - [Updates](#updates-1)
+  - [Updates](#updates)
     - [convert](#convert)
     - [`Converted`](#converted)
   - [Invariants](#invariants)
@@ -637,12 +636,6 @@ allows for the `L2StandardBridge` to mint
 and burn tokens, depending on whether the user is
 depositing from L1 to L2 or withdrawing from L2 to L1.
 
-### Updates
-
-The `OptimismMintableERC20Factory` is updated to include a `deployments` mapping
-that stores the `remoteToken` address for each deployed `OptimismMintableERC20`.
-This is essential for the liquidity migration process defined in the liquidity migration spec.
-
 ### Functions
 
 #### `createOptimismMintableERC20WithDecimals`
@@ -664,7 +657,6 @@ createOptimismMintableERC20WithDecimals(address _remoteToken, string memory _nam
 - The salt MUST be computed by applying `keccak256` to the `abi.encode`
   of the four input parameters (`_remoteToken`, `_name`, `_symbol`, and `_decimals`).
   This ensures a unique `OptimismMintableERC20` for each set of ERC20 metadata.
-- The function MUST store the `_remoteToken` address for each deployed `OptimismMintableERC20` in a `deployments` mapping.
 
 #### `createOptimismMintableERC20`
 
