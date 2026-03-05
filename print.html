@@ -5374,11 +5374,10 @@ prepare the RLP pre-images of each of them, including transactions-list MPT node
 prepare the RLP pre-images of each of them, including receipts-list MPT nodes.</p>
 <h4 id="l1-blob-blobhash--metadata"><a class="header" href="#l1-blob-blobhash--metadata"><code>l1-blob &lt;blobhash ++ metadata&gt;</code></a></h4>
 <p>Requests the host to prepare EIP-4844 blob data for fault proof verification.</p>
-<p>The hint data consists of 48 bytes concatenated together:</p>
+<p>The hint data consists of 40 bytes concatenated together:</p>
 <ul>
 <li>Bytes 0-31: Blob version hash (32 bytes) - the keccak256 hash of the KZG commitment with version byte prefix</li>
-<li>Bytes 32-39: Blob index within the block (8-byte big-endian uint64)</li>
-<li>Bytes 40-47: L1 block timestamp (8-byte big-endian uint64)</li>
+<li>Bytes 32-39: L1 block timestamp (8-byte big-endian uint64)</li>
 </ul>
 <p>The host will:</p>
 <ol>
