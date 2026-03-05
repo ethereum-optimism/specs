@@ -418,11 +418,10 @@ prepare the RLP pre-images of each of them, including receipts-list MPT nodes.
 
 Requests the host to prepare EIP-4844 blob data for fault proof verification.
 
-The hint data consists of 48 bytes concatenated together:
+The hint data consists of 40 bytes concatenated together:
 
 - Bytes 0-31: Blob version hash (32 bytes) - the keccak256 hash of the KZG commitment with version byte prefix
-- Bytes 32-39: Blob index within the block (8-byte big-endian uint64)
-- Bytes 40-47: L1 block timestamp (8-byte big-endian uint64)
+- Bytes 32-39: L1 block timestamp (8-byte big-endian uint64)
 
 The host will:
 
