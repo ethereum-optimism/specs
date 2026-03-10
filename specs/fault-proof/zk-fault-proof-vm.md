@@ -17,7 +17,7 @@
 
 ## Overview
 
-A ZK fault proof VM is a succinct proof system that verifies an L2 state transition as a single
+A ZK fault proof VM is a succinct proof system that verifies an L2 state transition through a single
 cryptographic proof rather than an interactive bisection game. It consists of two components:
 
 - ZK Program: an off-chain circuit that re-executes the L2 derivation and state transition and
@@ -36,9 +36,9 @@ provided the verifier is sound.
 ## ZK Program
 
 The ZK program is the circuit executed off-chain to generate a proof. It takes a set of
-[public values](#inputs) as inputs and verifies that applying L2 derivation to the starting state
-yields the claimed output root at the specified L2 block number, given the observed L1 data up
-to `l1Head`.
+[public values](#inputs) as inputs and verifies that applying L2 derivation and executing the
+resulting transactions against the starting state yields the claimed output root at the specified
+L2 block number, given the observed L1 data up to `l1Head`.
 
 The program is the ZK equivalent of the [Fault Proof Program](index.md#fault-proof-program): it
 runs the same L2 derivation logic (`op-node` + `op-geth`) but inside a zkVM, producing a proof
@@ -62,8 +62,8 @@ game state and passed to the verifier:
 
 ### Output
 
-The program produces no explicit output beyond the proof itself. A proof that passes on-chain
-verification is the sole signal of correctness: it means the L2 derivation from
+The program produces a proof that commits to the [public values](#inputs). A proof that passes
+on-chain verification is the sole signal of correctness: it means the L2 derivation from
 `startingOutputRoot` under the given `l1Head` yields exactly `rootClaim` at `l2SequenceNumber`
 on chain `l2ChainId`.
 

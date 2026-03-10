@@ -25,6 +25,8 @@ The concrete deployment for the initial release uses Succinct's PLONK verifier f
 
 ```solidity
 interface IZKVerifier {
+    function verifierType() external view returns (bytes32);
+
     function verify(
         bytes32 programId,
         bytes calldata publicValues,
@@ -32,6 +34,10 @@ interface IZKVerifier {
     ) external view;
 }
 ```
+
+`verifierType()` returns a `bytes32` identifier for the underlying proving system (e.g.,
+`keccak256("SP1_PLONK")`). It allows callers to inspect which backend is deployed without
+parsing the contract bytecode.
 
 | Parameter      | Description                                                                          |
 | -------------- | ------------------------------------------------------------------------------------ |

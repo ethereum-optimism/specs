@@ -13,6 +13,7 @@
   - [Parent Game](#parent-game)
   - [Challenge Deadline](#challenge-deadline)
   - [Prove Deadline](#prove-deadline)
+  - [Absolute Prestate](#absolute-prestate)
   - [Game Over](#game-over)
 - [Contracts Involved](#contracts-involved)
 - [Actors](#actors)
@@ -99,6 +100,12 @@ The timestamp after which a game can no longer be challenged. Computed as
 The timestamp after which a challenged game can no longer receive a proof submission. Set to
 `block.timestamp + maxProveDuration` when `challenge()` is called, resetting the prior challenge
 deadline.
+
+### Absolute Prestate
+
+A `bytes32` value that uniquely identifies the ZK program version being proven. It serves as the
+program identity passed to `IZKVerifier.verify()` and is injected into each game instance via the
+CWIA game args. See [Absolute Prestate](../../zk-fault-proof-vm.md#absolute-prestate) for details.
 
 ### Game Over
 

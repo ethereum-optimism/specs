@@ -55,7 +55,7 @@ any of the following checks fail:
 - Parent MUST be the same game type (`ZK_GAME_TYPE`).
 - Parent MUST NOT have resolved as `CHALLENGER_WINS`.
 - Parent's `l2SequenceNumber` MUST be at or above the anchor state's `l2SequenceNumber`.
-- Parent's `l2SequenceNumber` MUST be strictly less than this game's `l2SequenceNumber`.
+- The game's `l2SequenceNumber` MUST be strictly greater than the parent's `l2SequenceNumber`.
 
 The `isGameRespected` check on the parent is intentionally omitted. The respected game type gates
 which games can finalize withdrawals (via `isGameClaimValid`), but MUST NOT prevent in-progress
@@ -67,6 +67,7 @@ Challenging is fully permissionless. Anyone may call `challenge()` before the ch
 The call MUST include `challengerBond` ETH, which `challenge()` deposits into `DelayedWETH` on
 the caller's behalf.
 
+- `challenge()` MUST revert if `gameOver()` returns `true`.
 - Only one challenge is allowed per game.
 - Calling `challenge()` resets the deadline to `block.timestamp + maxProveDuration`.
 
@@ -75,7 +76,8 @@ the caller's behalf.
 Proving is fully permissionless. Anyone may call `prove(proofBytes)` at any point before the
 current deadline, regardless of whether the game has been challenged.
 
-- If `proofSubmitted == true` already, `prove()` MUST revert.
+- `prove()` MUST revert if `gameOver()` returns `true` (covers both an already-submitted proof
+  and an expired deadline).
 - The verifier call MUST revert for invalid proofs.
 - On success, `proofSubmitted` is set to `true` and `gameOver()` returns `true` immediately.
 - If the game was challenged and the prover is different from the proposer, the prover earns
