@@ -17,6 +17,18 @@
 
 ## State Transitions
 
+The game tracks its lifecycle through a `GameStatus` enum:
+
+```solidity
+enum GameStatus {
+    Unchallenged,                    // Initial state after initialize()
+    UnchallengedAndValidProofProvided,
+    Challenged,
+    ChallengedAndValidProofProvided,
+    Resolved
+}
+```
+
 ```
 GameCreation ──► Unchallenged ──► Challenged ──► ChallengedAndValidProofProvided ──► Resolved
                       │    │           │
@@ -79,7 +91,9 @@ current deadline, regardless of whether the game has been challenged.
 - `prove()` MUST revert if `gameOver()` returns `true` (covers both an already-submitted proof
   and an expired deadline).
 - The verifier call MUST revert for invalid proofs.
-- On success, `proofSubmitted` is set to `true` and `gameOver()` returns `true` immediately.
+- On success, `status` transitions to `UnchallengedAndValidProofProvided` or
+  `ChallengedAndValidProofProvided` (depending on whether the game was challenged), and
+  `gameOver()` returns `true` immediately.
 - If the game was challenged and the prover is different from the proposer, the prover earns
   `challengerBond` upon resolution.
 
@@ -88,6 +102,7 @@ current deadline, regardless of whether the game has been challenged.
 Resolution is permissionless. Anyone may call `resolve()` once `gameOver()` returns `true` and
 the parent game is resolved.
 
+- `resolve()` MUST revert if `resolvedAt != 0` (i.e., game is already resolved).
 - The parent game MUST be resolved before the child.
 - If the parent resolved as `CHALLENGER_WINS`, the child inherits `CHALLENGER_WINS` regardless of
   its own proof status.

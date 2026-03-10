@@ -111,7 +111,7 @@ CWIA game args. See [Absolute Prestate](../../zk-fault-proof-vm.md#absolute-pres
 
 The condition under which a game can be resolved. `gameOver()` returns `true` when:
 
-- A valid proof has been submitted (`proofSubmitted == true`), or
+- `status` is `UnchallengedAndValidProofProvided` or `ChallengedAndValidProofProvided`, or
 - The current deadline has expired.
 
 ## Contracts Involved

@@ -46,7 +46,8 @@ parsing the contract bytecode.
 | `proof`        | The raw proof blob submitted by the prover.                                          |
 
 The verifier MUST revert on an invalid proof. A call that returns without reverting is treated as
-proof acceptance; the game will set `proofSubmitted = true` and mark itself as game over.
+proof acceptance; the game will transition `status` to `UnchallengedAndValidProofProvided` or
+`ChallengedAndValidProofProvided` and mark itself as game over.
 
 ## Usage in `prove()`
 
