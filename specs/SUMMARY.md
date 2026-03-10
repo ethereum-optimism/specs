@@ -20,7 +20,7 @@
   - [Flashblocks](./protocol/flashblocks.md)
   - [Fault Proof](fault-proof/index.md)
     - [Cannon Fault Proof VM](fault-proof/cannon-fault-proof-vm.md)
-    - [ZK Fault Proof VM](fault-proof/zk-vm.md)
+    - [ZK Fault Proof VM](fault-proof/zk-fault-proof-vm.md)
     - [Stage One Decentralization](fault-proof/stage-one/index.md)
       - [Anchor State Registry](fault-proof/stage-one/anchor-state-registry.md)
       - [Dispute Game Interface](fault-proof/stage-one/dispute-game-interface.md)

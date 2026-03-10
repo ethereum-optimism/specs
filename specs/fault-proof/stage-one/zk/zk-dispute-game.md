@@ -53,7 +53,7 @@ valid proof and the challenger wins. Resolution is permissionless once the game 
 parent game is resolved.
 
 The proving system is accessed through the generic [`IZKVerifier`](zk-interface.md) interface.
-The first supported backend is SP1 (PLONK) by Succinct. See [ZK Fault Proof VM](../../zk-vm.md)
+The first supported backend is SP1 (PLONK) by Succinct. See [ZK Fault Proof VM](../../zk-fault-proof-vm.md)
 for details on the off-chain proving component.
 
 For the full game lifecycle and bond accounting see [Game Mechanics](game-mechanics.md).

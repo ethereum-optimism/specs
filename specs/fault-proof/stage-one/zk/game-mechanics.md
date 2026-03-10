@@ -47,13 +47,15 @@ reference a parent game.
 
 ### Parent Validation
 
-When a parent is referenced (`parentIndex != type(uint32).max`), the following checks MUST pass:
+When a parent is referenced (`parentIndex != type(uint32).max`), `initialize()` MUST revert if
+any of the following checks fail:
 
 - Parent MUST NOT be blacklisted.
 - Parent MUST NOT be retired (i.e., `createdAt > retirementTimestamp`).
 - Parent MUST be the same game type (`ZK_GAME_TYPE`).
 - Parent MUST NOT have resolved as `CHALLENGER_WINS`.
 - Parent's `l2SequenceNumber` MUST be at or above the anchor state's `l2SequenceNumber`.
+- Parent's `l2SequenceNumber` MUST be strictly less than this game's `l2SequenceNumber`.
 
 The `isGameRespected` check on the parent is intentionally omitted. The respected game type gates
 which games can finalize withdrawals (via `isGameClaimValid`), but MUST NOT prevent in-progress
@@ -61,8 +63,9 @@ proposal chains from being completed after a game type transition.
 
 ## Challenge
 
-Challenging is fully permissionless. Anyone may call `challenge()` before the challenge deadline
-by depositing `challengerBond` into `DelayedWETH`.
+Challenging is fully permissionless. Anyone may call `challenge()` before the challenge deadline.
+The call MUST include `challengerBond` ETH, which `challenge()` deposits into `DelayedWETH` on
+the caller's behalf.
 
 - Only one challenge is allowed per game.
 - Calling `challenge()` resets the deadline to `block.timestamp + maxProveDuration`.
@@ -138,7 +141,8 @@ After resolution, bonds are distributed through a two-phase process identical to
 **`claimCredit(recipient)`**:
 
 1. Triggers `closeGame()` if not yet closed.
-2. Calls `DelayedWETH.unlock(recipient)` to queue the withdrawal.
+2. Calls `DelayedWETH.unlock(recipient)` to queue the withdrawal. If `recipient` has no credit
+   allocated by this game, the unlock has no effect.
 3. After the `DelayedWETH` delay, `withdraw()` transfers ETH to the recipient.
 
 The `DelayedWETH` delay allows the Guardian to pause and freeze funds if a critical issue is

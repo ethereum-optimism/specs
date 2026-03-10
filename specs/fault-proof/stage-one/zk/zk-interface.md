@@ -14,11 +14,12 @@
 ## Overview
 
 `IZKVerifier` is the on-chain interface that decouples `ZKDisputeGame` from any specific proving
-system. The game never calls a verifier directly by name; it always goes through this interface,
-which allows the verifier to be swapped without redeploying the game implementation.
+system. The game always casts the configured verifier address to `IZKVerifier` and calls `verify()`
+through the interface, rather than depending on a concrete verifier type. This allows the verifier
+to be swapped without redeploying the game implementation.
 
 The concrete deployment for the initial release uses Succinct's PLONK verifier for
-[SP1](../../zk-vm.md#sp1-plonk).
+[SP1](../../zk-fault-proof-vm.md#sp1-plonk).
 
 ## Interface
 
@@ -69,7 +70,7 @@ function prove(bytes calldata _proofBytes) external {
 All public value fields are read from immutable on-chain game state, so no caller-supplied data
 influences what the verifier checks.
 
-See [ZK Program Inputs](../../zk-vm.md#inputs) for the meaning of each public value field.
+See [ZK Program Inputs](../../zk-fault-proof-vm.md#inputs) for the meaning of each public value field.
 
 ## Verifier Upgrade Path
 
