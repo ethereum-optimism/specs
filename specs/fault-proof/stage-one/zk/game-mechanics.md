@@ -19,11 +19,11 @@
 
 ```
 GameCreation ──► Unchallenged ──► Challenged ──► ChallengedAndValidProofProvided ──► Resolved
-                      │                │
-                      ▼                └────────────────────────────────────────────► Resolved
+                      │    │           │
+                      │    │           └────────────────────────────────────────────► Resolved
+                      │    └─ (deadline expires) ──────────────────────────────────► Resolved
+                      ▼
          UnchallengedAndValidProofProvided ──────────────────────────────────────────► Resolved
-                      │
-                      └─ (deadline expires) ──────────────────────────────────────────► Resolved
 ```
 
 | Transition                                         | Trigger                                            |

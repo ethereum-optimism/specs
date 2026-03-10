@@ -35,7 +35,7 @@ interface IZKVerifier {
 | Parameter      | Description                                                                          |
 | -------------- | ------------------------------------------------------------------------------------ |
 | `programId`    | Corresponds to `absolutePrestate()` in the dispute game — identifies the ZK program. |
-| `publicValues` | ABI-encoded public inputs committed to by the proof (see [Usage in `prove()`]).     |
+| `publicValues` | ABI-encoded public inputs committed to by the proof (see [Usage in `prove()`](#usage-in-prove)). |
 | `proof`        | The raw proof blob submitted by the prover.                                          |
 
 The verifier MUST revert on an invalid proof. A call that returns without reverting is treated as
