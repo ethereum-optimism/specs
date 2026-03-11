@@ -31,11 +31,12 @@ enum GameStatus {
 
 ```
 GameCreation ──► Unchallenged ──► Challenged ──► ChallengedAndValidProofProvided ──► Resolved
-                      │    │           │
-                      │    │           └────────────────────────────────────────────► Resolved
-                      │    └─ (deadline expires) ──────────────────────────────────► Resolved
-                      ▼
-         UnchallengedAndValidProofProvided ──────────────────────────────────────────► Resolved
+                      │                │
+                      │                └─ (deadline expires) ──────────────────────► Resolved
+                      │
+                      ├─ (deadline expires) ──────────────────────────────────────► Resolved
+                      │
+                      └──► UnchallengedAndValidProofProvided ─────────────────────► Resolved
 ```
 
 | Transition                                         | Trigger                                            |
@@ -56,6 +57,13 @@ required `initBond`. The factory deploys an MCP clone, which then validates the 
 
 A game may start from the anchor state by setting `parentIndex = type(uint32).max`, or it may
 reference a parent game.
+
+The `_extraData` passed to `DisputeGameFactory.create()` has this layout:
+
+| Field               | Type      | Description                                        |
+| ------------------- | --------- | -------------------------------------------------- |
+| `l2SequenceNumber`  | `uint256` | L2 block number asserted by this game's root claim |
+| `parentIndex`       | `uint32`  | Index of the parent game; `type(uint32).max` if starting from the anchor state |
 
 ### Parent Validation
 
@@ -141,6 +149,7 @@ Complete distribution scenarios:
 | Parent `CHALLENGER_WINS`, child unchallenged | NORMAL | nothing (burned)            | —                           | —                |
 | Game blacklisted                             | REFUND | `initBond`                  | `challengerBond`            | —                |
 | Game retired                                 | REFUND | `initBond`                  | `challengerBond`            | —                |
+| Game type changed mid-play                   | REFUND | `initBond`                  | `challengerBond`            | —                |
 
 ## Closing
 
