@@ -39,6 +39,7 @@ footgun
 Forkchoice
 Futex
 Futexes
+Gcfg
 Hardfork
 Holesky
 IERC
