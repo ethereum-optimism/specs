@@ -24,8 +24,8 @@ The concrete deployment for the initial release uses Succinct's PLONK verifier f
 ## Interface
 
 ```solidity
-interface IZKVerifier {
-    function verifierType() external view returns (bytes32);
+interface IZKVerifier is ISemver {
+    function verifierType() external pure returns (string memory);
 
     function verify(
         bytes32 programId,
@@ -35,9 +35,8 @@ interface IZKVerifier {
 }
 ```
 
-`verifierType()` returns a `bytes32` identifier for the underlying proving system (e.g.,
-`keccak256("SP1_PLONK")`). It allows callers to inspect which backend is deployed without
-parsing the contract bytecode.
+`verifierType()` returns a string identifying the proving system (e.g., `"SP1_PLONK"`). Callers
+can use it to check which backend is deployed without inspecting the bytecode.
 
 | Parameter      | Description                                                                          |
 | -------------- | ------------------------------------------------------------------------------------ |
@@ -74,8 +73,9 @@ function prove(bytes calldata _proofBytes) external {
 }
 ```
 
-All public value fields are read from immutable on-chain game state, so no caller-supplied data
-influences what the verifier checks.
+All public values come from immutable on-chain game state, so no caller-supplied data affects what
+the verifier checks. `l1Head` is set to `blockhash(block.number - 1)` in `initialize()`, which
+runs in the same transaction as the clone deployment in `DisputeGameFactory.create()`.
 
 See [ZK Program Inputs](../../zk-fault-proof-vm.md#inputs) for the meaning of each public value field.
 
