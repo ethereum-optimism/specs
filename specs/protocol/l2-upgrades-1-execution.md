@@ -236,11 +236,12 @@ Within the fork activation block, transactions will execute in this order:
 0. **L1 Info Deposit transaction**: This is the transaction which occurs at the start of each block, it is unchanged by
   this work.
 1. **ConditionalDeployer Deployment** (one-time only): Deploy the ConditionalDeployer contract
-2. **Implementation Deployments**: For each predeploy being upgraded, deploy new implementation via
+2. **ConditionalDeployer Upgrade** (one-time only): Upgrade the ConditionalDeployer implementation
+3. **Implementation Deployments**: For each predeploy being upgraded, deploy new implementation via
    ConditionalDeployer
-3. **ProxyAdmin Upgrade** (one-time only): Upgrade the L2ProxyAdmin implementation
-4. **L2ContractsManager Deployment**: Deploy the L2ContractsManager for this upgrade
-5. **Upgrade Execution**: Call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)` which will atomically:
+4. **ProxyAdmin Upgrade** (one-time only): Upgrade the L2ProxyAdmin implementation
+5. **L2ContractsManager Deployment**: Deploy the L2ContractsManager for this upgrade
+6. **Upgrade Execution**: Call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)` which will atomically:
    - Executes DELEGATECALL to L2ContractsManager.upgrade()
    - L2ContractsManager gathers configuration from existing predeploys
    - For each predeploy, calls `proxy.upgradeTo()` or `proxy.upgradeToAndCall()`
@@ -421,7 +422,6 @@ The bundle is a JSON file with the following structure:
       "to": "0x1234...",
       "data": "0xabcd...",
       "gasLimit": "1000000",
-      "value": "0",
       "from": "0x0000000000000000000000000000000000000000"
     }
   ]
@@ -435,10 +435,12 @@ The bundle is a JSON file with the following structure:
 - `transactions[].to`: Target address (contract being called)
 - `transactions[].data`: Transaction calldata as hex string
 - `transactions[].gasLimit`: Gas limit for this transaction
-- `transactions[].value`: (Optional) ETH value to send, defaults to "0" if omitted
 - `transactions[].from`: (Optional) Sender address. Defaults to the [Depositor Account](./l2-upgrades-2-contracts.md#depositor-account).
   Must be set to `address(0)` for the L2ProxyAdmin upgrade transaction to utilize the zero-address upgrade path in the
   Proxy.sol implementation
+
+A `value` field MUST NOT be included in transaction objects. All NUT transactions are calls with zero ETH value, which
+is enforced by the execution layer rather than specified per-transaction.
 
 ### Bundle Generation Process
 
