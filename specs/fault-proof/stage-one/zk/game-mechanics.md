@@ -29,7 +29,7 @@ enum GameStatus {
 }
 ```
 
-```
+```text
 GameCreation ──► Unchallenged ──► Challenged ──► ChallengedAndValidProofProvided ──► Resolved
                       │                │
                       │                └─ (deadline expires) ──────────────────────► Resolved
