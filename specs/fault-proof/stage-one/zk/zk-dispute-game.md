@@ -33,6 +33,8 @@
     - [Mitigations](#mitigations-4)
   - [aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency](#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency)
     - [Mitigations](#mitigations-5)
+  - [aZKG-007: Proof Generation Is Feasible Within the Prove Window](#azkg-007-proof-generation-is-feasible-within-the-prove-window)
+    - [Mitigations](#mitigations-6)
 - [Invariants](#invariants)
   - [iZKG-001: A Valid Proof Always Wins](#izkg-001-a-valid-proof-always-wins)
     - [Impact](#impact)
@@ -50,6 +52,14 @@
     - [Impact](#impact-6)
   - [iZKG-008: Blacklisted and Retired Games Enter REFUND Mode](#izkg-008-blacklisted-and-retired-games-enter-refund-mode)
     - [Impact](#impact-7)
+  - [iZKG-009: Child Resolution Requires Resolved Parent](#izkg-009-child-resolution-requires-resolved-parent)
+    - [Impact](#impact-8)
+  - [iZKG-010: At Most One Challenge Per Game](#izkg-010-at-most-one-challenge-per-game)
+    - [Impact](#impact-9)
+  - [iZKG-011: Bond Conservation](#izkg-011-bond-conservation)
+    - [Impact](#impact-10)
+  - [iZKG-012: Monotonic State Progression](#izkg-012-monotonic-state-progression)
+    - [Impact](#impact-11)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -286,8 +296,22 @@ negligible.
 - A rational proposer would never use a parent whose `l2SequenceNumber` is below the anchor, as
   it unnecessarily increases the proving range.
 - [Parent validation](game-mechanics.md#parent-validation) requires the parent's
-  `l2SequenceNumber` to be at or above the anchor state, preventing chains from building on stale
-  starting points.
+  `l2SequenceNumber` to be strictly above the anchor state, preventing chains from building on
+  stale starting points.
+
+### aZKG-007: Proof Generation Is Feasible Within the Prove Window
+
+A prover with access to the required L1 and L2 data can generate a valid proof within
+`maxProveDuration` under normal operating conditions.
+
+#### Mitigations
+
+- `maxProveDuration` must be set with headroom above worst-case proving times, to account for
+  prover network latency, queue depth, and hardware variability.
+- Multiple independent provers (whether incentivized by bonds or operated by the proposer
+  directly) reduce the risk of a single point of failure in proof delivery.
+- Off-chain monitoring on the ratio of successful `prove()` calls to challenged games can detect
+  when proving infrastructure is unable to keep up with the configured window.
 
 ## Invariants
 
@@ -298,7 +322,7 @@ If a valid ZK proof is submitted before the current deadline, the game MUST reso
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 A violation lets a correct proposer be cheated out of their bond, breaking the economic security
 of the game and the correctness of withdrawal finalization.
@@ -310,7 +334,7 @@ produce `CHALLENGER_WINS`.
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 A violation would allow invalid output roots to be finalized on L1, enabling theft of funds from
 the bridge.
@@ -322,10 +346,11 @@ hold raw ETH bonds.
 
 #### Impact
 
-**Severity: High**
+**Severity: Critical**
 
-Raw ETH bonds would bypass the Guardian's ability to freeze funds post-resolution, removing the
-last line of defense against exploitation of a newly discovered bug.
+Raw ETH bonds held directly in the game contract cannot be recovered — the contract is immutable
+and non-upgradeable, so any ETH stuck in it is permanently lost. This also bypasses the
+Guardian's ability to freeze funds post-resolution.
 
 ### iZKG-004: Permissionless Participation
 
@@ -346,7 +371,7 @@ If a parent game resolves as `CHALLENGER_WINS`, all child games MUST also resolv
 
 #### Impact
 
-**Severity: Critical**
+**Severity: High**
 
 Failure to propagate would allow a chain of games to finalize an output root that descends from
 an invalid state, enabling withdrawal of funds that do not exist on L2.
@@ -364,8 +389,7 @@ during an active security incident.
 
 ### iZKG-007: Only Finalized Games Can Close
 
-`closeGame()` MUST revert unless
-`block.timestamp - resolvedAt > DISPUTE_GAME_FINALITY_DELAY_SECONDS`.
+`closeGame()` MUST revert unless `AnchorStateRegistry.isFinalized(this)` returns `true`.
 
 #### Impact
 
@@ -385,3 +409,55 @@ the original depositors rather than distributed to winners.
 
 Failure to refund would cause honest participants to lose bonds when the Guardian must invalidate
 a game for safety reasons unrelated to the game's correctness.
+
+### iZKG-009: Child Resolution Requires Resolved Parent
+
+`resolve()` MUST revert if the parent game has not yet resolved. The resolution dependency chain
+MUST be honored in topological order.
+
+#### Impact
+
+**Severity: Critical**
+
+Without this, iZKG-005 cannot hold. A child could resolve as `DEFENDER_WINS` and finalize a
+withdrawal before the parent is invalidated, allowing funds to be withdrawn against an output root
+that descends from an invalid state.
+
+### iZKG-010: At Most One Challenge Per Game
+
+`challenge()` MUST revert if the game has already been challenged (i.e., the game is not in the
+`Unchallenged` state).
+
+#### Impact
+
+**Severity: High**
+
+A second challenge could reset the prove deadline and give challengers unbounded time to delay
+resolution, overwrite the original challenger's address and steal their bond credit, or produce
+double the bond liability in `DelayedWETH` with only one `challengerBond` deposited.
+
+### iZKG-011: Bond Conservation
+
+For any resolved game, the sum of all bonds distributed plus any amount sent to `address(0)` MUST
+equal `initBond + challengerBond` (or `initBond` alone if the game was never challenged). No value
+may be created from nothing or permanently locked beyond the defined burn path.
+
+#### Impact
+
+**Severity: High**
+
+A violation means either fund loss for participants (bonds locked forever with no recipient) or an
+exploitable source of unbacked ETH withdrawals from `DelayedWETH`.
+
+### iZKG-012: Monotonic State Progression
+
+The game `status` MUST only advance forward through the state machine. No transition from a later
+state back to an earlier one is permitted (e.g., `Challenged → Unchallenged` is invalid).
+
+#### Impact
+
+**Severity: High**
+
+State regression would corrupt deadline logic (the prove deadline is set when `challenge()` is
+called) and bond accounting (bonds are allocated per state transition). Functions that use game
+status as a guard could be re-entered in unexpected ways if the state can regress.

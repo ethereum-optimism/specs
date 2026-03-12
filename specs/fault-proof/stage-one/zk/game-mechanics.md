@@ -62,7 +62,7 @@ The `_extraData` passed to `DisputeGameFactory.create()` has this layout:
 
 | Field               | Type      | Description                                        |
 | ------------------- | --------- | -------------------------------------------------- |
-| `l2SequenceNumber`  | `uint256` | L2 block number asserted by this game's root claim |
+| `l2SequenceNumber`  | `uint64`  | L2 block number asserted by this game's root claim |
 | `parentIndex`       | `uint32`  | Index of the parent game; `type(uint32).max` if starting from the anchor state |
 
 ### Parent Validation
@@ -74,7 +74,7 @@ any of the following checks fail:
 - Parent MUST NOT be retired (i.e., `createdAt > retirementTimestamp`).
 - Parent MUST be the same game type (`ZK_GAME_TYPE`).
 - Parent MUST NOT have resolved as `CHALLENGER_WINS`.
-- Parent's `l2SequenceNumber` MUST be at or above the anchor state's `l2SequenceNumber`.
+- Parent's `l2SequenceNumber` MUST be strictly above the anchor state's `l2SequenceNumber`.
 - The game's `l2SequenceNumber` MUST be strictly greater than the parent's `l2SequenceNumber`.
 
 The `isGameRespected` check on the parent is intentionally omitted. The respected game type gates
@@ -87,7 +87,7 @@ Challenging is fully permissionless. Anyone may call `challenge()` before the ch
 The call MUST include `challengerBond` ETH, which `challenge()` deposits into `DelayedWETH` on
 the caller's behalf.
 
-- `challenge()` MUST revert if `gameOver()` returns `true`.
+- `challenge()` MUST revert if the game is not in the `Unchallenged` state.
 - Only one challenge is allowed per game.
 - Calling `challenge()` resets the deadline to `block.timestamp + maxProveDuration`.
 
@@ -102,8 +102,6 @@ current deadline, regardless of whether the game has been challenged.
 - On success, `status` transitions to `UnchallengedAndValidProofProvided` or
   `ChallengedAndValidProofProvided` (depending on whether the game was challenged), and
   `gameOver()` returns `true` immediately.
-- If the game was challenged and the prover is different from the proposer, the prover earns
-  `challengerBond` upon resolution.
 
 ## Resolution
 
@@ -111,7 +109,7 @@ Resolution is permissionless. Anyone may call `resolve()` once `gameOver()` retu
 the parent game is resolved.
 
 - `resolve()` MUST revert if `resolvedAt != 0` (i.e., game is already resolved).
-- The parent game MUST be resolved before the child.
+- `resolve()` MUST revert if the parent game is not yet resolved.
 - If the parent resolved as `CHALLENGER_WINS`, the child inherits `CHALLENGER_WINS` regardless of
   its own proof status.
 - Otherwise (parent `DEFENDER_WINS`), the outcome is determined as follows:
@@ -124,7 +122,7 @@ the parent game is resolved.
 | Challenged, valid proof, prover == proposer              | `DEFENDER_WINS`   | Proposer recovers `initBond + challengerBond`                  |
 | Challenged, valid proof, prover != proposer              | `DEFENDER_WINS`   | Proposer recovers `initBond`; prover receives `challengerBond` |
 | Parent resolved as `CHALLENGER_WINS`, child challenged   | `CHALLENGER_WINS` | Challenger receives `initBond + challengerBond`                |
-| Parent resolved as `CHALLENGER_WINS`, child unchallenged | `CHALLENGER_WINS` | `initBond` is burned                                           |
+| Parent resolved as `CHALLENGER_WINS`, child unchallenged | `CHALLENGER_WINS` | `initBond` is sent to `address(0)`                             |
 
 ### Bond Distribution
 
@@ -146,10 +144,9 @@ Complete distribution scenarios:
 | Challenged, proof, prover == proposer        | NORMAL | `initBond + challengerBond` | nothing                     | _(same)_         |
 | Challenged, proof, prover != proposer        | NORMAL | `initBond`                  | nothing                     | `challengerBond` |
 | Parent `CHALLENGER_WINS`, child challenged   | NORMAL | nothing                     | `initBond + challengerBond` | —                |
-| Parent `CHALLENGER_WINS`, child unchallenged | NORMAL | nothing (burned)            | —                           | —                |
+| Parent `CHALLENGER_WINS`, child unchallenged | NORMAL | sent to `address(0)`        | —                           | —                |
 | Game blacklisted                             | REFUND | `initBond`                  | `challengerBond`            | —                |
 | Game retired                                 | REFUND | `initBond`                  | `challengerBond`            | —                |
-| Game type changed mid-play                   | REFUND | `initBond`                  | `challengerBond`            | —                |
 
 ## Closing
 
@@ -160,7 +157,7 @@ After resolution, bonds are distributed through a two-phase process identical to
 
 - MUST revert if `AnchorStateRegistry` is paused.
 - MUST revert with `GameNotResolved` if `resolvedAt == 0`.
-- MUST wait for the finality delay: `block.timestamp - resolvedAt > DISPUTE_GAME_FINALITY_DELAY_SECONDS`.
+- MUST revert if `AnchorStateRegistry.isFinalized(this)` returns `false`.
 - If the game has a Valid Claim, registers the game as the new anchor state via `AnchorStateRegistry`.
 - Determines NORMAL or REFUND mode and unlocks bonds in `DelayedWETH` accordingly.
 
@@ -168,8 +165,12 @@ After resolution, bonds are distributed through a two-phase process identical to
 
 1. Triggers `closeGame()` if not yet closed.
 2. Calls `DelayedWETH.unlock(recipient)` to queue the withdrawal. If `recipient` has no credit
-   allocated by this game, the unlock has no effect.
-3. After the `DelayedWETH` delay, `withdraw()` transfers ETH to the recipient.
+   allocated by this game, the unlock call is a no-op and the function does NOT revert. This
+   allows op-challenger to call `claimCredit` to close the game without knowing in advance whether
+   the recipient has outstanding credit.
+3. Calls `DelayedWETH.withdraw(recipient)` to transfer ETH to the recipient. This call MUST revert
+   if the recipient has no credit to withdraw, if the credit is not yet available (i.e., the
+   `DelayedWETH` delay has not elapsed), or if the ETH transfer fails.
 
 The `DelayedWETH` delay allows the Guardian to pause and freeze funds if a critical issue is
 discovered post-resolution.
