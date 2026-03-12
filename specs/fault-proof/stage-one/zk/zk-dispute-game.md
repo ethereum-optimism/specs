@@ -163,16 +163,16 @@ The condition under which a game can be resolved. `gameOver()` returns `true` wh
 
 The following fields are packed into `gameArgs` in order:
 
-| Field                  | Type       | Description                                                            |
-| ---------------------- | ---------- | ---------------------------------------------------------------------- |
-| `absolutePrestate`     | `bytes32`  | ZK program identity (e.g., SP1 verification key)                       |
-| `verifier`             | `address`  | Address of the `IZKVerifier` contract                                  |
-| `maxChallengeDuration` | `Duration` | Time window for challenges after game creation                         |
-| `maxProveDuration`     | `Duration` | Time window for proof submission after a challenge                     |
-| `challengerBond`       | `uint256`  | Bond required to challenge a proposal                                  |
-| `anchorStateRegistry`  | `address`  | Address of `AnchorStateRegistry`                                       |
-| `weth`                 | `address`  | Address of per-chain `DelayedWETH`                                     |
-| `l2ChainId`            | `uint256`  | L2 chain identifier, sourced from `SystemConfig`                       |
+| Field                  | Type       | Description                                        |
+| ---------------------- | ---------- | -------------------------------------------------- |
+| `absolutePrestate`     | `bytes32`  | ZK program identity (e.g., SP1 verification key)   |
+| `verifier`             | `address`  | Address of the `IZKVerifier` contract              |
+| `maxChallengeDuration` | `Duration` | Time window for challenges after game creation     |
+| `maxProveDuration`     | `Duration` | Time window for proof submission after a challenge |
+| `challengerBond`       | `uint256`  | Bond required to challenge a proposal              |
+| `anchorStateRegistry`  | `address`  | Address of `AnchorStateRegistry`                   |
+| `weth`                 | `address`  | Address of per-chain `DelayedWETH`                 |
+| `l2ChainId`            | `uint256`  | L2 chain identifier, sourced from `SystemConfig`   |
 
 `anchorStateRegistry`, `weth`, and `l2ChainId` are injected by `OPContractManager._makeGameArgs()`
 directly from the chain's existing deployment.

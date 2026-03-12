@@ -60,10 +60,10 @@ reference a parent game.
 
 The `_extraData` passed to `DisputeGameFactory.create()` has this layout:
 
-| Field               | Type      | Description                                        |
-| ------------------- | --------- | -------------------------------------------------- |
-| `l2SequenceNumber`  | `uint64`  | L2 block number asserted by this game's root claim |
-| `parentIndex`       | `uint32`  | Index of the parent game; `type(uint32).max` if starting from the anchor state |
+| Field              | Type     | Description                                                                    |
+| ------------------ | -------- | ------------------------------------------------------------------------------ |
+| `l2SequenceNumber` | `uint64` | L2 block number asserted by this game's root claim                             |
+| `parentIndex`      | `uint32` | Index of the parent game; `type(uint32).max` if starting from the anchor state |
 
 ### Parent Validation
 
