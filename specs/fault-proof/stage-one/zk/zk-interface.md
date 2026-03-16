@@ -74,8 +74,8 @@ function prove(bytes calldata _proofBytes) external {
 ```
 
 All public values come from immutable on-chain game state, so no caller-supplied data affects what
-the verifier checks. `l1Head` is set to `blockhash(block.number - 1)` in `initialize()`, which
-runs in the same transaction as the clone deployment in `DisputeGameFactory.create()`.
+the verifier checks. `l1Head` is captured as `blockhash(block.number - 1)` by
+`DisputeGameFactory.create()` and packed into the clone's CWIA data.
 
 See [ZK Program Inputs](../../zk-fault-proof-vm.md#inputs) for the meaning of each public value field.
 

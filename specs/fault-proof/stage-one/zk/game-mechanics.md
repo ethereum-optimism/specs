@@ -65,6 +65,12 @@ The `_extraData` passed to `DisputeGameFactory.create()` has this layout:
 | `l2SequenceNumber` | `uint64` | L2 block number asserted by this game's root claim                             |
 | `parentIndex`      | `uint32` | Index of the parent game; `type(uint32).max` if starting from the anchor state |
 
+During `initialize()`, the game snapshots whether its game type is the currently respected game type
+(`wasRespectedGameTypeWhenCreated`). `AnchorStateRegistry.isGameClaimValid()` reads this flag when
+determining if a game's root claim can advance the anchor state or finalize withdrawals via the
+Portal. The snapshot ensures that a game type transition does not retroactively invalidate games
+that were created under the previous respected type.
+
 ### Parent Validation
 
 When a parent is referenced (`parentIndex != type(uint32).max`), `initialize()` MUST revert if
@@ -88,6 +94,7 @@ The call MUST include `challengerBond` ETH, which `challenge()` deposits into `D
 the caller's behalf.
 
 - `challenge()` MUST revert if the game is not in the `Unchallenged` state.
+- `challenge()` MUST revert if `gameOver()` returns `true`.
 - Only one challenge is allowed per game.
 - Calling `challenge()` resets the deadline to `block.timestamp + maxProveDuration`.
 
