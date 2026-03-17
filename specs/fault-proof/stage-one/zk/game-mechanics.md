@@ -103,6 +103,8 @@ the caller's behalf.
 Proving is fully permissionless. Anyone may call `prove(proofBytes)` at any point before the
 current deadline, regardless of whether the game has been challenged.
 
+- `prove()` MUST revert if the game is already resolved (i.e., `status != IN_PROGRESS`).
+- `prove()` MUST revert if the parent game has resolved as `CHALLENGER_WINS`.
 - `prove()` MUST revert if `gameOver()` returns `true` (covers both an already-submitted proof
   and an expired deadline).
 - The verifier call MUST revert for invalid proofs.
