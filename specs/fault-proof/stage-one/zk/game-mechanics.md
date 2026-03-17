@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [State Transitions](#state-transitions)
@@ -93,8 +94,8 @@ Challenging is fully permissionless. Anyone may call `challenge()` before the ch
 The call MUST include `challengerBond` ETH, which `challenge()` deposits into `DelayedWETH` on
 the caller's behalf.
 
-- `challenge()` MUST revert if the game is not in the `Unchallenged` state.
 - `challenge()` MUST revert if `gameOver()` returns `true`.
+- `challenge()` MUST revert if the game is not in the `Unchallenged` state.
 - Only one challenge is allowed per game.
 - Calling `challenge()` resets the deadline to `block.timestamp + maxProveDuration`.
 
