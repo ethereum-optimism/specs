@@ -14,6 +14,7 @@
 - [Proof Generation](#proof-generation)
 - [Invariants](#invariants)
   - [iZKVM-001: Private Inputs Must Be Anchored to Public Values](#izkvm-001-private-inputs-must-be-anchored-to-public-values)
+    - [Impact](#impact)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -99,7 +100,8 @@ with the PLONK backend.
 Proofs are generated off-chain by a prover that:
 
 1. Fetches the required L1 and L2 data up to `l1Head`.
-2. Executes the ZK program inside the zkVM with the public values as inputs and provides the required L1 and L2 data as private values to the ZK program.
+2. Executes the ZK program inside the zkVM with the public values as inputs and provides the
+   required L1 and L2 data as private values to the ZK program.
 3. Produces a proof blob (`proofBytes`).
 4. Submits the proof on-chain via `ZKDisputeGame.prove(proofBytes)`.
 
