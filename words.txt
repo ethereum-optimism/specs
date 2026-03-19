@@ -309,6 +309,4 @@ wakeup
 wighawag
 yamux
 yourfork
-zkvm
-ZKVM
 zkVM
