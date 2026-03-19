@@ -155,7 +155,7 @@ The condition under which a game can be resolved. `gameOver()` returns `true` wh
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **Proposer**                | Fully permissionless. Creates games via `DisputeGameFactory.create()` with the required `initBond`.                         |
 | **Challenger**              | Fully permissionless. Disputes a proposal by calling `challenge()` and depositing `challengerBond`.                         |
-| **Prover**                  | Fully permissionless. Submits a valid ZK proof via `prove(proofBytes)`. May be the same address as the proposer.            |
+| **Prover**                  | Fully permissionless. Submits a valid ZK proof via `prove(proofBytes)`. May be the same address as the proposer or the challenger. |
 | **Guardian**                | Pauses the system, blacklists games, sets the respected game type, and retires old games via `updateRetirementTimestamp()`. |
 | **OPCM / ProxyAdmin Owner** | Deploys implementations, configures game types in the factory, and manages `absolutePrestate` and verifier versions.        |
 
@@ -287,9 +287,11 @@ types before fraudulent games achieve Valid Claims.
 
 ### aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency
 
-Under normal operation, the anchor state advances on a timescale (12+ hours minimum) that is much
-larger than typical proposal frequency (e.g., 1 hour), making orphan risk from parent validation
-negligible.
+There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
+game that passes the finality delay can call `closeGame()` and advance it. However, the minimum
+time for a game to advance the anchor state is `maxChallengeDuration + DISPUTE_GAME_FINALITY_DELAY_SECONDS`
+(12+ hours in practice), and under normal operation this is expected to be much larger than typical
+proposal frequency (e.g., 1 hour), making orphan risk from parent validation negligible.
 
 #### Mitigations
 

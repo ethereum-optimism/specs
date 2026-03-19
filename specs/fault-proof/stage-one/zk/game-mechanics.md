@@ -103,10 +103,9 @@ the caller's behalf.
 Proving is fully permissionless. Anyone may call `prove(proofBytes)` at any point before the
 current deadline, regardless of whether the game has been challenged.
 
-- `prove()` MUST revert if the game is already resolved (i.e., `status != IN_PROGRESS`).
 - `prove()` MUST revert if the parent game has resolved as `CHALLENGER_WINS`.
-- `prove()` MUST revert if `gameOver()` returns `true` (covers both an already-submitted proof
-  and an expired deadline).
+- `prove()` MUST revert if `gameOver()` returns `true` (covers an already-submitted proof,
+  an expired deadline, and a resolved game).
 - The verifier call MUST revert for invalid proofs.
 - On success, `status` transitions to `UnchallengedAndValidProofProvided` or
   `ChallengedAndValidProofProvided` (depending on whether the game was challenged), and
@@ -172,14 +171,21 @@ After resolution, bonds are distributed through a two-phase process identical to
 
 **`claimCredit(recipient)`**:
 
-1. Triggers `closeGame()` if not yet closed.
-2. Calls `DelayedWETH.unlock(recipient)` to queue the withdrawal. If `recipient` has no credit
-   allocated by this game, the unlock call is a no-op and the function does NOT revert. This
-   allows op-challenger to call `claimCredit` to close the game without knowing in advance whether
-   the recipient has outstanding credit.
-3. Calls `DelayedWETH.withdraw(recipient)` to transfer ETH to the recipient. This call MUST revert
-   if the recipient has no credit to withdraw, if the credit is not yet available (i.e., the
-   `DelayedWETH` delay has not elapsed), or if the ETH transfer fails.
+Uses a two-phase `DelayedWETH` withdrawal pattern and MUST NOT revert if the game was open before
+the call, allowing op-challenger to use it solely to close the game without knowing in advance
+whether the recipient has outstanding credit.
+
+1. Records whether the game was open (`bondDistributionMode == UNDECIDED`) before the call.
+2. Triggers `closeGame()` if not yet closed. `closeGame()` handles bond unlocks in `DelayedWETH`.
+3. **Phase 1 — unlock:** If `recipient` still has credit allocated by this game, zeroes it out and
+   calls `DelayedWETH.unlock(recipient, amount)`, then returns. A second call is required to
+   complete the withdrawal once the `DelayedWETH` delay has elapsed.
+4. **Phase 2 — withdraw:** If credit has already been zeroed (phase 1 completed), checks
+   `DelayedWETH` for a pending withdrawal amount. If the amount is zero and the game was open
+   before this call, returns without reverting (so `closeGame()` state changes persist). If the
+   amount is zero and the game was already closed, reverts with `NoCreditToClaim`. Otherwise,
+   calls `DelayedWETH.withdraw(recipient)` and transfers ETH to the recipient, reverting on
+   transfer failure.
 
 The `DelayedWETH` delay allows the Guardian to pause and freeze funds if a critical issue is
 discovered post-resolution.

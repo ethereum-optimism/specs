@@ -12,6 +12,8 @@
 - [Reference Implementation](#reference-implementation)
   - [SP1 (PLONK)](#sp1-plonk)
 - [Proof Generation](#proof-generation)
+- [Invariants](#invariants)
+  - [iZKVM-001: Private Inputs Must Be Anchored to Public Values](#izkvm-001-private-inputs-must-be-anchored-to-public-values)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -41,7 +43,7 @@ resulting transactions against the starting state yields the claimed output root
 L2 block number, given the observed L1 data up to `l1Head`.
 
 The program is the ZK equivalent of the [Fault Proof Program](index.md#fault-proof-program): it
-runs the same L2 derivation logic (`op-node` + `op-geth`) but inside a zkVM, producing a proof
+runs the same L2 derivation logic as the fault proof program but inside a zkVM, producing a proof
 instead of an interactive trace.
 
 ### Inputs
@@ -97,9 +99,28 @@ with the PLONK backend.
 Proofs are generated off-chain by a prover that:
 
 1. Fetches the required L1 and L2 data up to `l1Head`.
-2. Executes the ZK program inside the zkVM with the public values as inputs.
+2. Executes the ZK program inside the zkVM with the public values as inputs and provides the required L1 and L2 data as private values to the ZK program.
 3. Produces a proof blob (`proofBytes`).
 4. Submits the proof on-chain via `ZKDisputeGame.prove(proofBytes)`.
 
 Proof generation is permissionless: any party may generate and submit a proof. In practice the
 proposer or a third-party proving service will act as prover.
+
+## Invariants
+
+### iZKVM-001: Private Inputs Must Be Anchored to Public Values
+
+The ZK program receives private inputs (block and transaction data needed to replay the state
+transition) that are known only to the prover and never seen by the on-chain verifier. The ZK
+program MUST verify that all private inputs are directly derived from or cryptographically linked
+to the public values (e.g. by hashing block data and comparing against `l1Head`, or verifying
+that blocks form a chain rooted at `startingOutputRoot`). The ZK program MUST NOT trust any
+private input without an explicit check against a public value.
+
+#### Impact
+
+**Severity: Critical**
+
+A violation means a malicious prover can supply manipulated private inputs that lead to a
+proof that verifies on-chain but represents an invalid state transition, enabling finalization
+of a fraudulent output root.
