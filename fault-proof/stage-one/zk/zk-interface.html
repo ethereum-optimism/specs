@@ -1,0 +1,304 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>IZKVerifier Interface - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/fault-proof/stage-one/zk/zk-interface.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="izkverifier-interface"><a class="header" href="#izkverifier-interface">IZKVerifier Interface</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#interface">Interface</a></li>
+<li><a href="#usage-in-prove">Usage in <code>prove()</code></a></li>
+<li><a href="#verifier-upgrade-path">Verifier Upgrade Path</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p><code>IZKVerifier</code> is the on-chain interface that decouples <code>ZKDisputeGame</code> from any specific proving
+system. The game always casts the configured verifier address to <code>IZKVerifier</code> and calls <code>verify()</code>
+through the interface, rather than depending on a concrete verifier type. This allows the verifier
+to be swapped without redeploying the game implementation.</p>
+<p>The concrete deployment for the initial release uses Succinct's PLONK verifier for
+<a href="../../zk-fault-proof-vm.html#sp1-plonk">SP1</a>.</p>
+<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
+<pre><code class="language-solidity">interface IZKVerifier is ISemver {
+    function verifierType() external pure returns (string memory);
+
+    function verify(
+        bytes32 programId,
+        bytes calldata publicValues,
+        bytes calldata proof
+    ) external view;
+}
+</code></pre>
+<p><code>verifierType()</code> returns a string identifying the proving system (e.g., <code>"SP1_PLONK"</code>). Callers
+can use it to check which backend is deployed without inspecting the bytecode.</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>programId</code></td><td>Corresponds to <code>absolutePrestate()</code> in the dispute game — identifies the ZK program.</td></tr>
+<tr><td><code>publicValues</code></td><td>ABI-encoded public inputs committed to by the proof (see <a href="#usage-in-prove">Usage in <code>prove()</code></a>).</td></tr>
+<tr><td><code>proof</code></td><td>The raw proof blob submitted by the prover.</td></tr>
+</tbody></table>
+</div>
+<p>The verifier MUST revert on an invalid proof. A call that returns without reverting is treated as
+proof acceptance; the game will transition <code>status</code> to <code>UnchallengedAndValidProofProvided</code> or
+<code>ChallengedAndValidProofProvided</code> and mark itself as game over.</p>
+<h2 id="usage-in-prove"><a class="header" href="#usage-in-prove">Usage in <code>prove()</code></a></h2>
+<p><code>ZKDisputeGame.prove()</code> constructs <code>publicValues</code> from on-chain game state and forwards them to
+the verifier:</p>
+<pre><code class="language-solidity">function prove(bytes calldata _proofBytes) external {
+    bytes memory publicValues = abi.encode(
+        l1Head(),
+        startingOutputRoot(),
+        rootClaim(),
+        l2SequenceNumber(),
+        l2ChainId()
+    );
+
+    IZKVerifier(verifier()).verify(
+        absolutePrestate(),
+        publicValues,
+        _proofBytes
+    );
+
+    // record proof submission and set game over
+}
+</code></pre>
+<p>All public values come from immutable on-chain game state, so no caller-supplied data affects what
+the verifier checks. <code>l1Head</code> is captured as <code>blockhash(block.number - 1)</code> by
+<code>DisputeGameFactory.create()</code> and packed into the clone's CWIA data.</p>
+<p>See <a href="../../zk-fault-proof-vm.html#inputs">ZK Program Inputs</a> for the meaning of each public value field.</p>
+<h2 id="verifier-upgrade-path"><a class="header" href="#verifier-upgrade-path">Verifier Upgrade Path</a></h2>
+<p>The <code>verifier</code> and <code>absolutePrestate</code> fields live in the CWIA game args (see
+<a href="zk-dispute-game.html#game-args-layout">Game Args Layout</a>), so they can be updated per chain
+without redeploying the <code>ZKDisputeGame</code> implementation.</p>
+<p>Upgrade process:</p>
+<ol>
+<li>Deploy a new verifier contract.</li>
+<li>If the ZK program changed, compute a new <code>absolutePrestate</code>.</li>
+<li>OPCM updates the game args with the new <code>verifier</code> and/or <code>absolutePrestate</code>.</li>
+<li>In-progress games play out under the old configuration.</li>
+<li>New games use the updated configuration.</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../fault-proof/stage-one/zk/game-mechanics.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../fault-proof/stage-one/bridge-integration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../fault-proof/stage-one/zk/game-mechanics.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../fault-proof/stage-one/bridge-integration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

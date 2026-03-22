@@ -1,0 +1,340 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ZK Fault Proof VM - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/fault-proof/zk-fault-proof-vm.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="zk-fault-proof-vm"><a class="header" href="#zk-fault-proof-vm">ZK Fault Proof VM</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#zk-program">ZK Program</a>
+<ul>
+<li><a href="#inputs">Inputs</a></li>
+<li><a href="#output">Output</a></li>
+</ul>
+</li>
+<li><a href="#absolute-prestate">Absolute Prestate</a></li>
+<li><a href="#reference-implementation">Reference Implementation</a>
+<ul>
+<li><a href="#sp1-plonk">SP1 (PLONK)</a></li>
+</ul>
+</li>
+<li><a href="#proof-generation">Proof Generation</a></li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#izkvm-001-private-inputs-must-be-anchored-to-public-values">iZKVM-001: Private Inputs Must Be Anchored to Public Values</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>A ZK fault proof VM is a succinct proof system that verifies an L2 state transition through a single
+cryptographic proof rather than an interactive bisection game. It consists of two components:</p>
+<ul>
+<li>ZK Program: an off-chain circuit that re-executes the L2 derivation and state transition and
+produces a succinct proof of correctness.</li>
+<li>On-chain Verifier: a smart contract (see <a href="stage-one/zk/zk-interface.html"><code>IZKVerifier</code></a>) that
+checks the proof and the committed public values in a single call.</li>
+</ul>
+<p>This is the ZK analogue of the <a href="cannon-fault-proof-vm.html">Cannon Fault Proof VM</a>. While Cannon
+bisects an execution trace down to a single MIPS instruction and proves it on L1, the ZK VM proves
+the entire block range — from a starting output root to a claimed output root — in one shot.</p>
+<p>Unlike interactive fault proofs, the ZK VM requires no multi-round on-chain interaction. A single
+<code>prove()</code> call to the dispute game is sufficient to cryptographically establish correctness,
+provided the verifier is sound.</p>
+<h2 id="zk-program"><a class="header" href="#zk-program">ZK Program</a></h2>
+<p>The ZK program is the circuit executed off-chain to generate a proof. It takes a set of
+<a href="#inputs">public values</a> as inputs and verifies that applying L2 derivation and executing the
+resulting transactions against the starting state yields the claimed output root at the specified
+L2 block number, given the observed L1 data up to <code>l1Head</code>.</p>
+<p>The program is the ZK equivalent of the <a href="index.html#fault-proof-program">Fault Proof Program</a>: it
+runs the same L2 derivation logic as the fault proof program but inside a zkVM, producing a proof
+instead of an interactive trace.</p>
+<h3 id="inputs"><a class="header" href="#inputs">Inputs</a></h3>
+<p>The following public values are committed to by the ZK proof. They are constructed on-chain from
+game state and passed to the verifier:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>l1Head</code></td><td><code>bytes32</code></td><td>L1 block hash at which the L1 state was sampled. Authenticates all observed L1 data.</td></tr>
+<tr><td><code>startingOutputRoot</code></td><td><code>bytes32</code></td><td>Output root of the parent game (or anchor state if <code>parentIndex == type(uint32).max</code>).</td></tr>
+<tr><td><code>rootClaim</code></td><td><code>bytes32</code></td><td>The output root being asserted by this game.</td></tr>
+<tr><td><code>l2SequenceNumber</code></td><td><code>uint256</code></td><td>L2 block number corresponding to <code>rootClaim</code>.</td></tr>
+<tr><td><code>l2ChainId</code></td><td><code>uint256</code></td><td>L2 chain identifier. Replaces <code>rollupConfigHash</code> to avoid JSON serialization fragility.</td></tr>
+</tbody></table>
+</div>
+<p><code>l2ChainId</code> scopes the proof to a specific chain. Config changes that affect execution semantics
+(e.g. a hard fork) are absorbed into a new <code>absolutePrestate</code>, not a new <code>l2ChainId</code>.</p>
+<h3 id="output"><a class="header" href="#output">Output</a></h3>
+<p>The program produces a proof that commits to the <a href="#inputs">public values</a>. A proof that passes
+on-chain verification is the sole signal of correctness: it means the L2 derivation from
+<code>startingOutputRoot</code> under the given <code>l1Head</code> yields exactly <code>rootClaim</code> at <code>l2SequenceNumber</code>
+on chain <code>l2ChainId</code>.</p>
+<h2 id="absolute-prestate"><a class="header" href="#absolute-prestate">Absolute Prestate</a></h2>
+<p>The <code>absolutePrestate</code> is a <code>bytes32</code> value that uniquely identifies the ZK program version
+being proven. Two different programs MUST NOT share the same <code>absolutePrestate</code>.</p>
+<p>It serves as the program identity in <a href="stage-one/zk/zk-interface.html"><code>IZKVerifier.verify</code></a> and is
+injected into each game instance via the CWIA game args.</p>
+<p>For SP1 deployments, <code>absolutePrestate</code> corresponds to the program's verification key
+(<code>programVKey</code>), which is derived deterministically from the circuit binary and structure.</p>
+<p>Program updates (e.g. a bug fix or a new hard fork) MUST produce a new <code>absolutePrestate</code>.
+OPCM manages <code>absolutePrestate</code> per chain; updates require governance.</p>
+<h2 id="reference-implementation"><a class="header" href="#reference-implementation">Reference Implementation</a></h2>
+<h3 id="sp1-plonk"><a class="header" href="#sp1-plonk">SP1 (PLONK)</a></h3>
+<p>The initial reference implementation uses <a href="https://github.com/succinctlabs/sp1">SP1</a> by Succinct
+with the PLONK backend.</p>
+<ul>
+<li>The ZK program is compiled to run inside the SP1 zkVM.</li>
+<li><code>absolutePrestate</code> = the SP1 program verification key (<code>programVKey</code>).</li>
+<li>The on-chain verifier is Succinct's PLONK verifier, wrapped behind the <code>IZKVerifier</code> interface.</li>
+</ul>
+<h2 id="proof-generation"><a class="header" href="#proof-generation">Proof Generation</a></h2>
+<p>Proofs are generated off-chain by a prover that:</p>
+<ol>
+<li>Fetches the required L1 and L2 data up to <code>l1Head</code>.</li>
+<li>Executes the ZK program inside the zkVM with the public values as inputs and provides the
+required L1 and L2 data as private values to the ZK program.</li>
+<li>Produces a proof blob (<code>proofBytes</code>).</li>
+<li>Submits the proof on-chain via <code>ZKDisputeGame.prove(proofBytes)</code>.</li>
+</ol>
+<p>Proof generation is permissionless: any party may generate and submit a proof. In practice the
+proposer or a third-party proving service will act as prover.</p>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="izkvm-001-private-inputs-must-be-anchored-to-public-values"><a class="header" href="#izkvm-001-private-inputs-must-be-anchored-to-public-values">iZKVM-001: Private Inputs Must Be Anchored to Public Values</a></h3>
+<p>The ZK program receives private inputs (block and transaction data needed to replay the state
+transition) that are known only to the prover and never seen by the on-chain verifier. The ZK
+program MUST verify that all private inputs are directly derived from or cryptographically linked
+to the public values (e.g. by hashing block data and comparing against <code>l1Head</code>, or verifying
+that blocks form a chain rooted at <code>startingOutputRoot</code>). The ZK program MUST NOT trust any
+private input without an explicit check against a public value.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>A violation means a malicious prover can supply manipulated private inputs that lead to a
+proof that verifies on-chain but represents an invalid state transition, enabling finalization
+of a fraudulent output root.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../fault-proof/cannon-fault-proof-vm.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../fault-proof/stage-one/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../fault-proof/cannon-fault-proof-vm.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../fault-proof/stage-one/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+        <script src="../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

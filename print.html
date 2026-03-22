@@ -6048,6 +6048,120 @@ tests and defense mechanisms that must necessarily be employed by MTCannon users
 against compiler bugs should also suffice to surface bugs that would break these compiler assumptions. Stated simply, MTCannon
 can rely on specific compiler behaviors because users inherently must employ safety nets to guard against compiler bugs.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="zk-fault-proof-vm"><a class="header" href="#zk-fault-proof-vm">ZK Fault Proof VM</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="fault-proof/zk-fault-proof-vm.html#overview">Overview</a></li>
+<li><a href="fault-proof/zk-fault-proof-vm.html#zk-program">ZK Program</a>
+<ul>
+<li><a href="fault-proof/zk-fault-proof-vm.html#inputs">Inputs</a></li>
+<li><a href="fault-proof/zk-fault-proof-vm.html#output">Output</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/zk-fault-proof-vm.html#absolute-prestate">Absolute Prestate</a></li>
+<li><a href="fault-proof/zk-fault-proof-vm.html#reference-implementation">Reference Implementation</a>
+<ul>
+<li><a href="fault-proof/zk-fault-proof-vm.html#sp1-plonk">SP1 (PLONK)</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/zk-fault-proof-vm.html#proof-generation">Proof Generation</a></li>
+<li><a href="fault-proof/zk-fault-proof-vm.html#invariants">Invariants</a>
+<ul>
+<li><a href="fault-proof/zk-fault-proof-vm.html#izkvm-001-private-inputs-must-be-anchored-to-public-values">iZKVM-001: Private Inputs Must Be Anchored to Public Values</a>
+<ul>
+<li><a href="fault-proof/zk-fault-proof-vm.html#impact">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-14"><a class="header" href="#overview-14">Overview</a></h2>
+<p>A ZK fault proof VM is a succinct proof system that verifies an L2 state transition through a single
+cryptographic proof rather than an interactive bisection game. It consists of two components:</p>
+<ul>
+<li>ZK Program: an off-chain circuit that re-executes the L2 derivation and state transition and
+produces a succinct proof of correctness.</li>
+<li>On-chain Verifier: a smart contract (see <a href="fault-proof/stage-one/zk/zk-interface.html"><code>IZKVerifier</code></a>) that
+checks the proof and the committed public values in a single call.</li>
+</ul>
+<p>This is the ZK analogue of the <a href="fault-proof/cannon-fault-proof-vm.html">Cannon Fault Proof VM</a>. While Cannon
+bisects an execution trace down to a single MIPS instruction and proves it on L1, the ZK VM proves
+the entire block range — from a starting output root to a claimed output root — in one shot.</p>
+<p>Unlike interactive fault proofs, the ZK VM requires no multi-round on-chain interaction. A single
+<code>prove()</code> call to the dispute game is sufficient to cryptographically establish correctness,
+provided the verifier is sound.</p>
+<h2 id="zk-program"><a class="header" href="#zk-program">ZK Program</a></h2>
+<p>The ZK program is the circuit executed off-chain to generate a proof. It takes a set of
+<a href="fault-proof/zk-fault-proof-vm.html#inputs">public values</a> as inputs and verifies that applying L2 derivation and executing the
+resulting transactions against the starting state yields the claimed output root at the specified
+L2 block number, given the observed L1 data up to <code>l1Head</code>.</p>
+<p>The program is the ZK equivalent of the <a href="fault-proof/index.html#fault-proof-program">Fault Proof Program</a>: it
+runs the same L2 derivation logic as the fault proof program but inside a zkVM, producing a proof
+instead of an interactive trace.</p>
+<h3 id="inputs"><a class="header" href="#inputs">Inputs</a></h3>
+<p>The following public values are committed to by the ZK proof. They are constructed on-chain from
+game state and passed to the verifier:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>l1Head</code></td><td><code>bytes32</code></td><td>L1 block hash at which the L1 state was sampled. Authenticates all observed L1 data.</td></tr>
+<tr><td><code>startingOutputRoot</code></td><td><code>bytes32</code></td><td>Output root of the parent game (or anchor state if <code>parentIndex == type(uint32).max</code>).</td></tr>
+<tr><td><code>rootClaim</code></td><td><code>bytes32</code></td><td>The output root being asserted by this game.</td></tr>
+<tr><td><code>l2SequenceNumber</code></td><td><code>uint256</code></td><td>L2 block number corresponding to <code>rootClaim</code>.</td></tr>
+<tr><td><code>l2ChainId</code></td><td><code>uint256</code></td><td>L2 chain identifier. Replaces <code>rollupConfigHash</code> to avoid JSON serialization fragility.</td></tr>
+</tbody></table>
+</div>
+<p><code>l2ChainId</code> scopes the proof to a specific chain. Config changes that affect execution semantics
+(e.g. a hard fork) are absorbed into a new <code>absolutePrestate</code>, not a new <code>l2ChainId</code>.</p>
+<h3 id="output"><a class="header" href="#output">Output</a></h3>
+<p>The program produces a proof that commits to the <a href="fault-proof/zk-fault-proof-vm.html#inputs">public values</a>. A proof that passes
+on-chain verification is the sole signal of correctness: it means the L2 derivation from
+<code>startingOutputRoot</code> under the given <code>l1Head</code> yields exactly <code>rootClaim</code> at <code>l2SequenceNumber</code>
+on chain <code>l2ChainId</code>.</p>
+<h2 id="absolute-prestate"><a class="header" href="#absolute-prestate">Absolute Prestate</a></h2>
+<p>The <code>absolutePrestate</code> is a <code>bytes32</code> value that uniquely identifies the ZK program version
+being proven. Two different programs MUST NOT share the same <code>absolutePrestate</code>.</p>
+<p>It serves as the program identity in <a href="fault-proof/stage-one/zk/zk-interface.html"><code>IZKVerifier.verify</code></a> and is
+injected into each game instance via the CWIA game args.</p>
+<p>For SP1 deployments, <code>absolutePrestate</code> corresponds to the program's verification key
+(<code>programVKey</code>), which is derived deterministically from the circuit binary and structure.</p>
+<p>Program updates (e.g. a bug fix or a new hard fork) MUST produce a new <code>absolutePrestate</code>.
+OPCM manages <code>absolutePrestate</code> per chain; updates require governance.</p>
+<h2 id="reference-implementation"><a class="header" href="#reference-implementation">Reference Implementation</a></h2>
+<h3 id="sp1-plonk"><a class="header" href="#sp1-plonk">SP1 (PLONK)</a></h3>
+<p>The initial reference implementation uses <a href="https://github.com/succinctlabs/sp1">SP1</a> by Succinct
+with the PLONK backend.</p>
+<ul>
+<li>The ZK program is compiled to run inside the SP1 zkVM.</li>
+<li><code>absolutePrestate</code> = the SP1 program verification key (<code>programVKey</code>).</li>
+<li>The on-chain verifier is Succinct's PLONK verifier, wrapped behind the <code>IZKVerifier</code> interface.</li>
+</ul>
+<h2 id="proof-generation"><a class="header" href="#proof-generation">Proof Generation</a></h2>
+<p>Proofs are generated off-chain by a prover that:</p>
+<ol>
+<li>Fetches the required L1 and L2 data up to <code>l1Head</code>.</li>
+<li>Executes the ZK program inside the zkVM with the public values as inputs and provides the
+required L1 and L2 data as private values to the ZK program.</li>
+<li>Produces a proof blob (<code>proofBytes</code>).</li>
+<li>Submits the proof on-chain via <code>ZKDisputeGame.prove(proofBytes)</code>.</li>
+</ol>
+<p>Proof generation is permissionless: any party may generate and submit a proof. In practice the
+proposer or a third-party proving service will act as prover.</p>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="izkvm-001-private-inputs-must-be-anchored-to-public-values"><a class="header" href="#izkvm-001-private-inputs-must-be-anchored-to-public-values">iZKVM-001: Private Inputs Must Be Anchored to Public Values</a></h3>
+<p>The ZK program receives private inputs (block and transaction data needed to replay the state
+transition) that are known only to the prover and never seen by the on-chain verifier. The ZK
+program MUST verify that all private inputs are directly derived from or cryptographically linked
+to the public values (e.g. by hashing block data and comparing against <code>l1Head</code>, or verifying
+that blocks form a chain rooted at <code>startingOutputRoot</code>). The ZK program MUST NOT trust any
+private input without an explicit check against a public value.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>A violation means a malicious prover can supply manipulated private inputs that lead to a
+proof that verifies on-chain but represents an invalid state transition, enabling finalization
+of a fraudulent output root.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <!-- DOCTOC SKIP -->
 <h1 id="stage-one-decentralization"><a class="header" href="#stage-one-decentralization">Stage One Decentralization</a></h1>
 <p>This section of the specification contains the system design for stage one decentralization, with a fault-proof system
@@ -6158,7 +6272,7 @@ withdrawals on L1.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-14"><a class="header" href="#overview-14">Overview</a></h2>
+<h2 id="overview-15"><a class="header" href="#overview-15">Overview</a></h2>
 <p>The <code>AnchorStateRegistry</code> was designed as a registry where <code>DisputeGame</code> contracts could store and
 register their results so that these results could be used as the starting states for new
 <code>DisputeGame</code> instances. These starting states, called "anchor states", allow new <code>DisputeGame</code>
@@ -6321,11 +6435,11 @@ must be invalidated before the pause is deactivated.</p>
 <li>Incident response plan</li>
 <li>Monitoring</li>
 </ul>
-<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h2 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h2>
 <h3 id="iasr-001-games-are-represented-as-proper-games-accurately"><a class="header" href="#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001: Games are represented as Proper Games accurately</a></h3>
 <p>When asked if a game is a Proper Game, the <code>AnchorStateRegistry</code> must serve a response that is
 identical to the response that would be given by a perfect oracle for this query.</p>
-<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
 future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
@@ -6345,7 +6459,7 @@ that a game has a Truly Valid Claim but the <code>AnchorStateRegistry</code> rep
 a Valid Claim. This permits the <code>AnchorStateRegistry</code> and system-wide safety net actions to err on
 the side of caution.</p>
 <p>In a nutshell, the set of Valid Claims is a subset of the set of Truly Valid Claims.</p>
-<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, then any component that relies on the correctness of this function may
 allow actions to occur based on invalid dispute games.</p>
@@ -6374,7 +6488,7 @@ blacklisted games and retired games to remain the Anchor Game if they are alread
 This is because we assume games that become the Anchor Game would be invalidated <em>before</em> becoming
 the Anchor Game. After the game becomes the Anchor Game, it would be possible to use that game to
 execute withdrawals from the system, which would already be a critical bug in the system.</p>
-<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, an invalid Anchor Game could be used as the starting state for new
 Dispute Game instances. This would lead games to resolve incorrectly.</p>
@@ -6390,7 +6504,7 @@ blacklisted must not be used as the Anchor Game, must not be considered Valid Ga
 be usable to prove or finalize withdrawals. Any game created before a transaction that updates the
 retirement timestamp must not be set as the Anchor Game, must not be considered Valid Games, and
 must not be usable to prove or finalize withdrawals.</p>
-<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
 <p><strong>Severity: High/Critical</strong></p>
 <p>If this invariant is broken, the Anchor Game could be set to an incorrect value, which would cause
 future Dispute Game instances to use an incorrect starting state. This would lead games to resolve
@@ -6405,7 +6519,7 @@ finalize withdrawals with invalidated games would be considered Critical Severit
 older than 6 months from the current timestamp. This time constraint is necessary because the fault
 proof VM must walk backwards through L1 blocks to verify derivation, and processing 7 months worth
 of L1 blocks approaches the maximum time available to challengers in the dispute game process.</p>
-<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, challengers will be unable to participate in fault proofs within the
 allotted response time, and resolution would require intervention from the Proxy Admin Owner.</p>
@@ -6544,7 +6658,7 @@ to the current anchor state's L2 block height.</li>
 <li><a href="fault-proof/stage-one/dispute-game-interface.html#disputegame-interface"><code>DisputeGame</code> Interface</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-15"><a class="header" href="#overview-15">Overview</a></h2>
+<h2 id="overview-16"><a class="header" href="#overview-16">Overview</a></h2>
 <p>A dispute game is played between multiple parties when contesting the truthiness
 of a claim. In the context of an optimistic rollup, claims are made about the
 state of the layer two network to enable withdrawals to the layer one. A proposer
@@ -6917,7 +7031,7 @@ interface IDisputeGame is IInitializable {
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- Glossary References -->
-<h2 id="overview-16"><a class="header" href="#overview-16">Overview</a></h2>
+<h2 id="overview-17"><a class="header" href="#overview-17">Overview</a></h2>
 <p>The Fault Dispute Game (FDG) is a specific type of <a href="fault-proof/stage-one/dispute-game-interface.html">dispute game</a> that verifies the
 validity of a root claim by iteratively bisecting over <a href="fault-proof/stage-one/../../glossary.html#l2-output-root">output roots</a> and execution traces of single
 block state transitions down to a single instruction step. It relies on a Virtual Machine (VM) to falsify invalid
@@ -7358,7 +7472,7 @@ Finalization</a>.</p>
 <li><a href="fault-proof/stage-one/honest-challenger-fdg.html#resolution">Resolution</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-17"><a class="header" href="#overview-17">Overview</a></h2>
+<h2 id="overview-18"><a class="header" href="#overview-18">Overview</a></h2>
 <p>The honest challenger is an agent interacting in the <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a>
 that supports honest claims and disputes false claims.
 An honest challenger strives to ensure a correct, truthful, game resolution.
@@ -7376,7 +7490,7 @@ For verifying the legitimacy of claims, it relies on a synced, trusted rollup no
 as well as a trace provider (ex: <a href="fault-proof/stage-one/../cannon-fault-proof-vm.html">Cannon</a>).
 The trace provider must be configured with the <a href="fault-proof/stage-one/fault-dispute-game.html#execution-trace">ABSOLUTE_PRESTATE</a>
 of the game being interacted with to generate the traces needed to make truthful claims.</p>
-<h2 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h2>
+<h2 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h2>
 <p>To ensure an accurate and incentive compatible fault dispute system, the honest challenger behavior must preserve
 three invariants for any game:</p>
 <ol>
@@ -7475,7 +7589,7 @@ challengers are economically incentivized to resolve the game promptly to captur
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-18"><a class="header" href="#overview-18">Overview</a></h2>
+<h2 id="overview-19"><a class="header" href="#overview-19">Overview</a></h2>
 <p>Bonds is an add-on to the core <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a>. The core game mechanics are
 designed to ensure honesty as the best response to winning subgames. By introducing financial incentives,
 Bonds makes it worthwhile for honest challengers to participate.
@@ -7673,6 +7787,681 @@ over multiple timezones.</p>
     end
 </pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="zk-dispute-game"><a class="header" href="#zk-dispute-game">ZK Dispute Game</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#overview">Overview</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#definitions">Definitions</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#zkdisputegame">ZKDisputeGame</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mcp-clone">MCP Clone</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#game-args-cwia">Game Args (CWIA)</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#l2-sequence-number">L2 Sequence Number</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#parent-game">Parent Game</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#challenge-deadline">Challenge Deadline</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#prove-deadline">Prove Deadline</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#absolute-prestate">Absolute Prestate</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#game-over">Game Over</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#contracts-involved">Contracts Involved</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#actors">Actors</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#game-args-layout">Game Args Layout</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#opcm-integration">OPCM Integration</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#zkdisputegameconfig">ZKDisputeGameConfig</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#azkg-001-zk-verifier-soundness">aZKG-001: ZK Verifier Soundness</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#azkg-002-absolute-prestate-uniquely-identifies-the-zk-program">aZKG-002: Absolute Prestate Uniquely Identifies the ZK Program</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#azkg-003-parent-chaining-preserves-correctness">aZKG-003: Parent Chaining Preserves Correctness</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#azkg-004-bonds-are-economically-rational">aZKG-004: Bonds Are Economically Rational</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#azkg-005-guardian-acts-honestly-and-timely">aZKG-005: Guardian Acts Honestly and Timely</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mitigations-4">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency">aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mitigations-5">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#azkg-007-proof-generation-is-feasible-within-the-prove-window">aZKG-007: Proof Generation Is Feasible Within the Prove Window</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#mitigations-6">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#invariants">Invariants</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-001-a-valid-proof-always-wins">iZKG-001: A Valid Proof Always Wins</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-002-a-game-without-a-valid-proof-and-with-a-challenger-resolves-as-challenger_wins">iZKG-002: A Game Without a Valid Proof and With a Challenger Resolves as CHALLENGER_WINS</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-003-bond-safety-via-delayedweth">iZKG-003: Bond Safety via DelayedWETH</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-004-permissionless-participation">iZKG-004: Permissionless Participation</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-005-parent-invalidity-propagates-to-children">iZKG-005: Parent Invalidity Propagates to Children</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-4">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-006-closegame-reverts-when-paused">iZKG-006: closeGame Reverts When Paused</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-5">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-007-only-finalized-games-can-close">iZKG-007: Only Finalized Games Can Close</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-6">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-008-blacklisted-and-retired-games-enter-refund-mode">iZKG-008: Blacklisted and Retired Games Enter REFUND Mode</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-7">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-009-child-resolution-requires-resolved-parent">iZKG-009: Child Resolution Requires Resolved Parent</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-8">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-010-at-most-one-challenge-per-game">iZKG-010: At Most One Challenge Per Game</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-9">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-011-bond-conservation">iZKG-011: Bond Conservation</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-10">Impact</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#izkg-012-monotonic-state-progression">iZKG-012: Monotonic State Progression</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-dispute-game.html#impact-11">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-20"><a class="header" href="#overview-20">Overview</a></h2>
+<p>The <code>ZKDisputeGame</code> is a dispute game that resolves disputes in a single round using ZK
+(zero-knowledge) proofs, registered as game type <code>10</code>. It integrates into the same OP Stack
+dispute infrastructure — <code>DisputeGameFactory</code>, <code>AnchorStateRegistry</code>, <code>DelayedWETH</code>, and
+<code>OPContractsManager</code>.</p>
+<p>A proposer posts an output root with a bond. Anyone can challenge it by depositing a challenger
+bond. If no challenge is submitted before the challenge window expires, the proposer wins by
+default. If a challenge is submitted, there are two possible outcomes: either a prover submits a
+valid ZK proof to defend the claim and the proposer wins, or the proving window expires without a
+valid proof and the challenger wins. Resolution is permissionless once the game is over and the
+parent game is resolved.</p>
+<p>The proving system is accessed through the generic <a href="fault-proof/stage-one/zk/zk-interface.html"><code>IZKVerifier</code></a> interface.
+The first supported backend is SP1 (PLONK) by Succinct. See <a href="fault-proof/stage-one/zk/../../zk-fault-proof-vm.html">ZK Fault Proof VM</a>
+for details on the off-chain proving component.</p>
+<p>For the full game lifecycle and bond accounting see <a href="fault-proof/stage-one/zk/game-mechanics.html">Game Mechanics</a>.</p>
+<h2 id="definitions-3"><a class="header" href="#definitions-3">Definitions</a></h2>
+<h3 id="zkdisputegame"><a class="header" href="#zkdisputegame">ZKDisputeGame</a></h3>
+<p>The smart contract implementing the single-round ZK dispute protocol. Each game instance is a
+lightweight <a href="fault-proof/stage-one/zk/zk-dispute-game.html#mcp-clone">MCP clone</a> of a shared implementation contract, deployed by
+<code>DisputeGameFactory</code>.</p>
+<h3 id="mcp-clone"><a class="header" href="#mcp-clone">MCP Clone</a></h3>
+<p>A minimal proxy clone (ERC-1167) created by <code>DisputeGameFactory</code> that shares the <code>ZKDisputeGame</code>
+implementation bytecode but has its own per-chain configuration appended as immutable constructor
+arguments via the Clones-with-Immutable-Args (CWIA) pattern.</p>
+<h3 id="game-args-cwia"><a class="header" href="#game-args-cwia">Game Args (CWIA)</a></h3>
+<p>The per-chain configuration bytes appended to each MCP clone by <code>DisputeGameFactory</code>. Enable a
+single implementation contract to serve every chain. See <a href="fault-proof/stage-one/zk/zk-dispute-game.html#game-args-layout">Game Args Layout</a>
+for the full field breakdown.</p>
+<h3 id="l2-sequence-number"><a class="header" href="#l2-sequence-number">L2 Sequence Number</a></h3>
+<p>The L2 block number asserted by a game's root claim. Used to validate parent–child ordering and
+to verify that a parent's proven state falls within or above the anchor state.</p>
+<h3 id="parent-game"><a class="header" href="#parent-game">Parent Game</a></h3>
+<p>A previously created <code>ZKDisputeGame</code> whose proven output root serves as the starting state for a
+new game's ZK proof. A game with <code>parentIndex == type(uint32).max</code> starts from the anchor state
+directly.</p>
+<h3 id="challenge-deadline"><a class="header" href="#challenge-deadline">Challenge Deadline</a></h3>
+<p>The timestamp after which a game can no longer be challenged. Computed as
+<code>createdAt + maxChallengeDuration</code>.</p>
+<h3 id="prove-deadline"><a class="header" href="#prove-deadline">Prove Deadline</a></h3>
+<p>The timestamp after which a challenged game can no longer receive a proof submission. Set to
+<code>block.timestamp + maxProveDuration</code> when <code>challenge()</code> is called, resetting the prior challenge
+deadline.</p>
+<h3 id="absolute-prestate-1"><a class="header" href="#absolute-prestate-1">Absolute Prestate</a></h3>
+<p>A <code>bytes32</code> value that uniquely identifies the ZK program version being proven. It serves as the
+program identity passed to <code>IZKVerifier.verify()</code> and is injected into each game instance via the
+CWIA game args. See <a href="fault-proof/stage-one/zk/../../zk-fault-proof-vm.html#absolute-prestate">Absolute Prestate</a> for details.</p>
+<h3 id="game-over"><a class="header" href="#game-over">Game Over</a></h3>
+<p>The condition under which a game can be resolved. <code>gameOver()</code> returns <code>true</code> when:</p>
+<ul>
+<li><code>status</code> is <code>UnchallengedAndValidProofProvided</code> or <code>ChallengedAndValidProofProvided</code>, or</li>
+<li>The current deadline has expired.</li>
+</ul>
+<h2 id="contracts-involved"><a class="header" href="#contracts-involved">Contracts Involved</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Contract</th><th>Role</th></tr></thead><tbody>
+<tr><td><strong>ZKDisputeGame</strong> (clones)</td><td>Per-proposal game instance. Runs the challenge → prove → resolve lifecycle and tracks bond accounting.</td></tr>
+<tr><td><strong>ZKDisputeGame</strong> (implementation)</td><td>Shared bytecode base for MCP clones. Deployed and upgraded by OPCM.</td></tr>
+<tr><td><strong>DisputeGameFactory</strong></td><td>Creates MCP clones via <code>create(...)</code>. Appends per-chain <code>gameArgs</code> (CWIA).</td></tr>
+<tr><td><strong>AnchorStateRegistry</strong></td><td>Source of truth for finalization, anchor state, respected game type, and blacklisting. Enforces pause checks.</td></tr>
+<tr><td><strong>DelayedWETH</strong></td><td>Bond custody with a deposit → unlock → withdraw lifecycle. Provides a time window for the Guardian to freeze funds post-resolution.</td></tr>
+<tr><td><strong>IZKVerifier</strong></td><td>Generic verifier interface. The concrete deployment for the initial release uses Succinct's PLONK verifier.</td></tr>
+</tbody></table>
+</div>
+<h2 id="actors-1"><a class="header" href="#actors-1">Actors</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Actor</th><th>Role</th></tr></thead><tbody>
+<tr><td><strong>Proposer</strong></td><td>Fully permissionless. Creates games via <code>DisputeGameFactory.create()</code> with the required <code>initBond</code>.</td></tr>
+<tr><td><strong>Challenger</strong></td><td>Fully permissionless. Disputes a proposal by calling <code>challenge()</code> and depositing <code>challengerBond</code>.</td></tr>
+<tr><td><strong>Prover</strong></td><td>Fully permissionless. Submits a valid ZK proof via <code>prove(proofBytes)</code>. May be the same address as the proposer or the challenger.</td></tr>
+<tr><td><strong>Guardian</strong></td><td>Pauses the system, blacklists games, sets the respected game type, and retires old games via <code>updateRetirementTimestamp()</code>.</td></tr>
+<tr><td><strong>OPCM / ProxyAdmin Owner</strong></td><td>Deploys implementations, configures game types in the factory, and manages <code>absolutePrestate</code> and verifier versions.</td></tr>
+</tbody></table>
+</div>
+<h2 id="game-args-layout"><a class="header" href="#game-args-layout">Game Args Layout</a></h2>
+<p>The following fields are packed into <code>gameArgs</code> in order:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>absolutePrestate</code></td><td><code>bytes32</code></td><td>ZK program identity (e.g., SP1 verification key)</td></tr>
+<tr><td><code>verifier</code></td><td><code>address</code></td><td>Address of the <code>IZKVerifier</code> contract</td></tr>
+<tr><td><code>maxChallengeDuration</code></td><td><code>Duration</code></td><td>Time window for challenges after game creation</td></tr>
+<tr><td><code>maxProveDuration</code></td><td><code>Duration</code></td><td>Time window for proof submission after a challenge</td></tr>
+<tr><td><code>challengerBond</code></td><td><code>uint256</code></td><td>Bond required to challenge a proposal</td></tr>
+<tr><td><code>anchorStateRegistry</code></td><td><code>address</code></td><td>Address of <code>AnchorStateRegistry</code></td></tr>
+<tr><td><code>weth</code></td><td><code>address</code></td><td>Address of per-chain <code>DelayedWETH</code></td></tr>
+<tr><td><code>l2ChainId</code></td><td><code>uint256</code></td><td>L2 chain identifier, sourced from <code>SystemConfig</code></td></tr>
+</tbody></table>
+</div>
+<p><code>anchorStateRegistry</code>, <code>weth</code>, and <code>l2ChainId</code> are injected by <code>OPContractManager._makeGameArgs()</code>
+directly from the chain's existing deployment.</p>
+<h2 id="opcm-integration"><a class="header" href="#opcm-integration">OPCM Integration</a></h2>
+<p><code>ZKDisputeGame</code> integrates into OPCM v2 as game type <code>10</code> (<code>ZK_GAME_TYPE</code>) through the existing
+<code>DisputeGameConfig</code>, reusing the same pattern as Cannon and Permissioned Cannon.</p>
+<p>Three additions are required:</p>
+<ol>
+<li><code>ZKDisputeGame</code> is deployed once via the <code>DeployImplementations</code> script and tracked in
+<code>OPContractsManagerContainer.Implementations</code> alongside existing fault game implementations.</li>
+<li>A <code>ZKDisputeGameConfig</code> struct carries the per-chain parameters that the caller provides.
+OPCM's <code>_makeGameArgs()</code> decodes it, injects the chain-specific values it already knows,
+and packs the final CWIA bytes for the factory.</li>
+<li><code>ZK_GAME_TYPE</code> is added to the <code>validGameTypes</code> array in <code>_assertValidFullConfig()</code>.</li>
+</ol>
+<h3 id="zkdisputegameconfig"><a class="header" href="#zkdisputegameconfig">ZKDisputeGameConfig</a></h3>
+<pre><code class="language-solidity">struct ZKDisputeGameConfig {
+    Claim absolutePrestate;
+    address verifier;
+    Duration maxChallengeDuration;
+    Duration maxProveDuration;
+    uint256 challengerBond;
+}
+</code></pre>
+<pre><code class="language-solidity">if (_gcfg.gameType.raw() == GameTypes.ZK_GAME_TYPE.raw()) {
+    ZKDisputeGameConfig memory cfg = abi.decode(_gcfg.gameArgs, (ZKDisputeGameConfig));
+    return abi.encodePacked(
+        cfg.absolutePrestate,
+        cfg.verifier,
+        cfg.maxChallengeDuration,
+        cfg.maxProveDuration,
+        cfg.challengerBond,
+        address(_anchorStateRegistry),
+        address(_delayedWETH),
+        _l2ChainId
+    );
+}
+</code></pre>
+<h2 id="assumptions-1"><a class="header" href="#assumptions-1">Assumptions</a></h2>
+<h3 id="azkg-001-zk-verifier-soundness"><a class="header" href="#azkg-001-zk-verifier-soundness">aZKG-001: ZK Verifier Soundness</a></h3>
+<p>The <code>IZKVerifier</code> implementation is sound: it is computationally infeasible to produce a proof
+that passes <code>verify()</code> for an incorrect state transition.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>The PLONK verifier for SP1 is independently audited.</li>
+<li>The verifier address comes from <code>gameArgs</code>, managed by OPCM. Governance controls upgrades.</li>
+<li>The <code>IZKVerifier</code> interface intentionally decouples the game from any specific proving system,
+enabling a verifier swap without redeploying the game implementation.</li>
+</ul>
+<h3 id="azkg-002-absolute-prestate-uniquely-identifies-the-zk-program"><a class="header" href="#azkg-002-absolute-prestate-uniquely-identifies-the-zk-program">aZKG-002: Absolute Prestate Uniquely Identifies the ZK Program</a></h3>
+<p>The <code>absolutePrestate</code> value uniquely identifies the ZK program version. Two different programs
+MUST NOT share the same <code>absolutePrestate</code>.</p>
+<h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
+<ul>
+<li>For SP1, <code>absolutePrestate</code> corresponds to the program's verification key, which is derived from
+the program binary and circuit structure.</li>
+<li>OPCM manages <code>absolutePrestate</code> per chain; program updates require a corresponding
+<code>absolutePrestate</code> update via governance.</li>
+</ul>
+<h3 id="azkg-003-parent-chaining-preserves-correctness"><a class="header" href="#azkg-003-parent-chaining-preserves-correctness">aZKG-003: Parent Chaining Preserves Correctness</a></h3>
+<p>A chain of <code>ZKDisputeGame</code> instances resolving as <code>DEFENDER_WINS</code> implies that the final
+<code>rootClaim</code> is a valid output root, provided the initial parent started from a known-good anchor
+state.</p>
+<h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
+<ul>
+<li>Each proof commits to <code>startingOutputRoot</code> (the parent's claim) as a public value,
+cryptographically linking consecutive games.</li>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#parent-validation">Parent validation</a> at creation time prevents games from
+chaining off blacklisted, retired, or <code>CHALLENGER_WINS</code> parents.</li>
+<li>If a parent is blacklisted or retired after child games have been created, the Guardian MUST
+individually blacklist or retire those child games to place them in REFUND mode.</li>
+</ul>
+<h3 id="azkg-004-bonds-are-economically-rational"><a class="header" href="#azkg-004-bonds-are-economically-rational">aZKG-004: Bonds Are Economically Rational</a></h3>
+<p>The <code>initBond</code>, <code>challengerBond</code>, <code>maxChallengeDuration</code>, and <code>maxProveDuration</code> values are set
+such that honest participation is economically rational and griefing is costly.</p>
+<h4 id="mitigations-6"><a class="header" href="#mitigations-6">Mitigations</a></h4>
+<ul>
+<li>All bond and duration parameters are in <code>gameArgs</code> and can be tuned per chain by OPCM without
+redeploying the implementation.</li>
+<li>Benchmark proving costs and document standard values for common chain configurations,
+analogous to how fault proof bonds are standardized today.</li>
+<li>Bonds too low invite spam; bonds too high discourage honest participation. Durations must be
+long enough to allow proof generation but short enough to preserve withdrawal latency benefits.</li>
+</ul>
+<h3 id="azkg-005-guardian-acts-honestly-and-timely"><a class="header" href="#azkg-005-guardian-acts-honestly-and-timely">aZKG-005: Guardian Acts Honestly and Timely</a></h3>
+<p>The Guardian is trusted to pause the system, blacklist invalid games, and retire superseded game
+types before fraudulent games achieve Valid Claims.</p>
+<h4 id="mitigations-7"><a class="header" href="#mitigations-7">Mitigations</a></h4>
+<ul>
+<li>The <code>DISPUTE_GAME_FINALITY_DELAY_SECONDS</code> airgap between resolution and <code>closeGame</code> provides
+the Guardian a window to act.</li>
+<li><code>DelayedWETH</code> provides an additional window after <code>closeGame</code> to freeze funds.</li>
+</ul>
+<h3 id="azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency"><a class="header" href="#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency">aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency</a></h3>
+<p>There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
+game that passes the finality delay can call <code>closeGame()</code> and advance it. However, the minimum
+time for a game to advance the anchor state is <code>maxChallengeDuration + DISPUTE_GAME_FINALITY_DELAY_SECONDS</code>
+(12+ hours in practice), and under normal operation this is expected to be much larger than typical
+proposal frequency (e.g., 1 hour), making orphan risk from parent validation negligible.</p>
+<h4 id="mitigations-8"><a class="header" href="#mitigations-8">Mitigations</a></h4>
+<ul>
+<li>A rational proposer would never use a parent whose <code>l2SequenceNumber</code> is below the anchor, as
+it unnecessarily increases the proving range.</li>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#parent-validation">Parent validation</a> requires the parent's
+<code>l2SequenceNumber</code> to be strictly above the anchor state, preventing chains from building on
+stale starting points.</li>
+</ul>
+<h3 id="azkg-007-proof-generation-is-feasible-within-the-prove-window"><a class="header" href="#azkg-007-proof-generation-is-feasible-within-the-prove-window">aZKG-007: Proof Generation Is Feasible Within the Prove Window</a></h3>
+<p>A prover with access to the required L1 and L2 data can generate a valid proof within
+<code>maxProveDuration</code> under normal operating conditions.</p>
+<h4 id="mitigations-9"><a class="header" href="#mitigations-9">Mitigations</a></h4>
+<ul>
+<li><code>maxProveDuration</code> must be set with headroom above worst-case proving times, to account for
+prover network latency, queue depth, and hardware variability.</li>
+<li>Multiple independent provers (whether incentivized by bonds or operated by the proposer
+directly) reduce the risk of a single point of failure in proof delivery.</li>
+<li>Off-chain monitoring on the ratio of successful <code>prove()</code> calls to challenged games can detect
+when proving infrastructure is unable to keep up with the configured window.</li>
+</ul>
+<h2 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h2>
+<h3 id="izkg-001-a-valid-proof-always-wins"><a class="header" href="#izkg-001-a-valid-proof-always-wins">iZKG-001: A Valid Proof Always Wins</a></h3>
+<p>If a valid ZK proof is submitted before the current deadline, the game MUST resolve as
+<code>DEFENDER_WINS</code> (assuming a valid parent chain).</p>
+<h4 id="impact-6"><a class="header" href="#impact-6">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>A violation lets a correct proposer be cheated out of their bond, breaking the economic security
+of the game and the correctness of withdrawal finalization.</p>
+<h3 id="izkg-002-a-game-without-a-valid-proof-and-with-a-challenger-resolves-as-challenger_wins"><a class="header" href="#izkg-002-a-game-without-a-valid-proof-and-with-a-challenger-resolves-as-challenger_wins">iZKG-002: A Game Without a Valid Proof and With a Challenger Resolves as CHALLENGER_WINS</a></h3>
+<p>If a game was challenged and the prove deadline expires without a valid proof, <code>resolve()</code> MUST
+produce <code>CHALLENGER_WINS</code>.</p>
+<h4 id="impact-7"><a class="header" href="#impact-7">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>A violation would allow invalid output roots to be finalized on L1, enabling theft of funds from
+the bridge.</p>
+<h3 id="izkg-003-bond-safety-via-delayedweth"><a class="header" href="#izkg-003-bond-safety-via-delayedweth">iZKG-003: Bond Safety via DelayedWETH</a></h3>
+<p>All bonds MUST be deposited into and withdrawn from <code>DelayedWETH</code>. The game contract MUST NOT
+hold raw ETH bonds.</p>
+<h4 id="impact-8"><a class="header" href="#impact-8">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>Raw ETH bonds held directly in the game contract cannot be recovered — the contract is immutable
+and non-upgradeable, so any ETH stuck in it is permanently lost. This also bypasses the
+Guardian's ability to freeze funds post-resolution.</p>
+<h3 id="izkg-004-permissionless-participation"><a class="header" href="#izkg-004-permissionless-participation">iZKG-004: Permissionless Participation</a></h3>
+<p><code>create()</code>, <code>challenge()</code>, <code>prove()</code>, and <code>resolve()</code> MUST be callable by any address. No
+<code>AccessManager</code> or allowlist MAY gate these functions.</p>
+<h4 id="impact-9"><a class="header" href="#impact-9">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Permissioned access would reduce censorship resistance and deviate from the Stage 1 security
+model.</p>
+<h3 id="izkg-005-parent-invalidity-propagates-to-children"><a class="header" href="#izkg-005-parent-invalidity-propagates-to-children">iZKG-005: Parent Invalidity Propagates to Children</a></h3>
+<p>If a parent game resolves as <code>CHALLENGER_WINS</code>, all child games MUST also resolve as
+<code>CHALLENGER_WINS</code>, regardless of whether a valid proof was submitted for the child.</p>
+<h4 id="impact-10"><a class="header" href="#impact-10">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Failure to propagate would allow a chain of games to finalize an output root that descends from
+an invalid state, enabling withdrawal of funds that do not exist on L2.</p>
+<h3 id="izkg-006-closegame-reverts-when-paused"><a class="header" href="#izkg-006-closegame-reverts-when-paused">iZKG-006: closeGame Reverts When Paused</a></h3>
+<p><code>closeGame()</code> MUST revert if <code>AnchorStateRegistry</code> reports the system as paused.</p>
+<h4 id="impact-11"><a class="header" href="#impact-11">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Allowing bond distribution while paused would bypass the Guardian's ability to freeze funds
+during an active security incident.</p>
+<h3 id="izkg-007-only-finalized-games-can-close"><a class="header" href="#izkg-007-only-finalized-games-can-close">iZKG-007: Only Finalized Games Can Close</a></h3>
+<p><code>closeGame()</code> MUST revert unless <code>AnchorStateRegistry.isFinalized(this)</code> returns <code>true</code>.</p>
+<h4 id="impact-12"><a class="header" href="#impact-12">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Closing before the finality delay would remove the Guardian's window to blacklist or pause the
+game before funds are distributed.</p>
+<h3 id="izkg-008-blacklisted-and-retired-games-enter-refund-mode"><a class="header" href="#izkg-008-blacklisted-and-retired-games-enter-refund-mode">iZKG-008: Blacklisted and Retired Games Enter REFUND Mode</a></h3>
+<p>If a game is blacklisted or retired, <code>closeGame()</code> MUST enter REFUND mode: bonds are returned to
+the original depositors rather than distributed to winners.</p>
+<h4 id="impact-13"><a class="header" href="#impact-13">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Failure to refund would cause honest participants to lose bonds when the Guardian must invalidate
+a game for safety reasons unrelated to the game's correctness.</p>
+<h3 id="izkg-009-child-resolution-requires-resolved-parent"><a class="header" href="#izkg-009-child-resolution-requires-resolved-parent">iZKG-009: Child Resolution Requires Resolved Parent</a></h3>
+<p><code>resolve()</code> MUST revert if the parent game has not yet resolved. The resolution dependency chain
+MUST be honored in topological order.</p>
+<h4 id="impact-14"><a class="header" href="#impact-14">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>Without this, iZKG-005 cannot hold. A child could resolve as <code>DEFENDER_WINS</code> and finalize a
+withdrawal before the parent is invalidated, allowing funds to be withdrawn against an output root
+that descends from an invalid state.</p>
+<h3 id="izkg-010-at-most-one-challenge-per-game"><a class="header" href="#izkg-010-at-most-one-challenge-per-game">iZKG-010: At Most One Challenge Per Game</a></h3>
+<p><code>challenge()</code> MUST revert if the game has already been challenged (i.e., the game is not in the
+<code>Unchallenged</code> state).</p>
+<h4 id="impact-15"><a class="header" href="#impact-15">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>A second challenge could reset the prove deadline and give challengers unbounded time to delay
+resolution, overwrite the original challenger's address and steal their bond credit, or produce
+double the bond liability in <code>DelayedWETH</code> with only one <code>challengerBond</code> deposited.</p>
+<h3 id="izkg-011-bond-conservation"><a class="header" href="#izkg-011-bond-conservation">iZKG-011: Bond Conservation</a></h3>
+<p>For any resolved game, the sum of all bonds distributed plus any amount sent to <code>address(0)</code> MUST
+equal <code>initBond + challengerBond</code> (or <code>initBond</code> alone if the game was never challenged). No value
+may be created from nothing or permanently locked beyond the defined burn path.</p>
+<h4 id="impact-16"><a class="header" href="#impact-16">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>A violation means either fund loss for participants (bonds locked forever with no recipient) or an
+exploitable source of unbacked ETH withdrawals from <code>DelayedWETH</code>.</p>
+<h3 id="izkg-012-monotonic-state-progression"><a class="header" href="#izkg-012-monotonic-state-progression">iZKG-012: Monotonic State Progression</a></h3>
+<p>The game <code>status</code> MUST only advance forward through the state machine. No transition from a later
+state back to an earlier one is permitted (e.g., <code>Challenged → Unchallenged</code> is invalid).</p>
+<h4 id="impact-17"><a class="header" href="#impact-17">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>State regression would corrupt deadline logic (the prove deadline is set when <code>challenge()</code> is
+called) and bond accounting (bonds are allocated per state transition). Functions that use game
+status as a guard could be re-entered in unexpected ways if the state can regress.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="zk-dispute-game-mechanics"><a class="header" href="#zk-dispute-game-mechanics">ZK Dispute Game Mechanics</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#state-transitions">State Transitions</a></li>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#creation">Creation</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#parent-validation">Parent Validation</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#challenge">Challenge</a></li>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#proving">Proving</a></li>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#resolution">Resolution</a>
+<ul>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#bond-distribution">Bond Distribution</a></li>
+</ul>
+</li>
+<li><a href="fault-proof/stage-one/zk/game-mechanics.html#closing">Closing</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="state-transitions"><a class="header" href="#state-transitions">State Transitions</a></h2>
+<p>The game tracks its lifecycle through a <code>GameStatus</code> enum:</p>
+<pre><code class="language-solidity">enum GameStatus {
+    Unchallenged,                    // Initial state after initialize()
+    UnchallengedAndValidProofProvided,
+    Challenged,
+    ChallengedAndValidProofProvided,
+    Resolved
+}
+</code></pre>
+<pre><code class="language-text">GameCreation ──► Unchallenged ──► Challenged ──► ChallengedAndValidProofProvided ──► Resolved
+                      │                │
+                      │                └─ (deadline expires) ──────────────────────► Resolved
+                      │
+                      ├─ (deadline expires) ──────────────────────────────────────► Resolved
+                      │
+                      └──► UnchallengedAndValidProofProvided ─────────────────────► Resolved
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Transition</th><th>Trigger</th></tr></thead><tbody>
+<tr><td><code>GameCreation → Unchallenged</code></td><td><code>initialize()</code> called by <code>DisputeGameFactory</code></td></tr>
+<tr><td><code>Unchallenged → Challenged</code></td><td><code>challenge()</code> called before the challenge deadline</td></tr>
+<tr><td><code>Unchallenged → UnchallengedAndValidProofProvided</code></td><td><code>prove()</code> succeeds</td></tr>
+<tr><td><code>Unchallenged → Resolved</code></td><td>Deadline expires and <code>resolve()</code> is called</td></tr>
+<tr><td><code>Challenged → ChallengedAndValidProofProvided</code></td><td><code>prove()</code> succeeds</td></tr>
+<tr><td><code>Challenged → Resolved</code></td><td>Prove deadline expires and <code>resolve()</code> is called</td></tr>
+<tr><td><code>UnchallengedAndValidProofProvided → Resolved</code></td><td><code>resolve()</code> is called</td></tr>
+<tr><td><code>ChallengedAndValidProofProvided → Resolved</code></td><td><code>resolve()</code> is called</td></tr>
+</tbody></table>
+</div>
+<h2 id="creation"><a class="header" href="#creation">Creation</a></h2>
+<p>Game creation is fully permissionless. Anyone may call <code>DisputeGameFactory.create()</code> with the
+required <code>initBond</code>. The factory deploys an MCP clone, which then validates the proposal.</p>
+<p>A game may start from the anchor state by setting <code>parentIndex = type(uint32).max</code>, or it may
+reference a parent game.</p>
+<p>The <code>_extraData</code> passed to <code>DisputeGameFactory.create()</code> has this layout:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>l2SequenceNumber</code></td><td><code>uint64</code></td><td>L2 block number asserted by this game's root claim</td></tr>
+<tr><td><code>parentIndex</code></td><td><code>uint32</code></td><td>Index of the parent game; <code>type(uint32).max</code> if starting from the anchor state</td></tr>
+</tbody></table>
+</div>
+<p>During <code>initialize()</code>, the game snapshots whether its game type is the currently respected game type
+(<code>wasRespectedGameTypeWhenCreated</code>). <code>AnchorStateRegistry.isGameClaimValid()</code> reads this flag when
+determining if a game's root claim can advance the anchor state or finalize withdrawals via the
+Portal. The snapshot ensures that a game type transition does not retroactively invalidate games
+that were created under the previous respected type.</p>
+<h3 id="parent-validation"><a class="header" href="#parent-validation">Parent Validation</a></h3>
+<p>When a parent is referenced (<code>parentIndex != type(uint32).max</code>), <code>initialize()</code> MUST revert if
+any of the following checks fail:</p>
+<ul>
+<li>Parent MUST NOT be blacklisted.</li>
+<li>Parent MUST NOT be retired (i.e., <code>createdAt &gt; retirementTimestamp</code>).</li>
+<li>Parent MUST be the same game type (<code>ZK_GAME_TYPE</code>).</li>
+<li>Parent MUST NOT have resolved as <code>CHALLENGER_WINS</code>.</li>
+<li>Parent's <code>l2SequenceNumber</code> MUST be strictly above the anchor state's <code>l2SequenceNumber</code>.</li>
+<li>The game's <code>l2SequenceNumber</code> MUST be strictly greater than the parent's <code>l2SequenceNumber</code>.</li>
+</ul>
+<p>The <code>isGameRespected</code> check on the parent is intentionally omitted. The respected game type gates
+which games can finalize withdrawals (via <code>isGameClaimValid</code>), but MUST NOT prevent in-progress
+proposal chains from being completed after a game type transition.</p>
+<h2 id="challenge"><a class="header" href="#challenge">Challenge</a></h2>
+<p>Challenging is fully permissionless. Anyone may call <code>challenge()</code> before the challenge deadline.
+The call MUST include <code>challengerBond</code> ETH, which <code>challenge()</code> deposits into <code>DelayedWETH</code> on
+the caller's behalf.</p>
+<ul>
+<li><code>challenge()</code> MUST revert if <code>gameOver()</code> returns <code>true</code>.</li>
+<li><code>challenge()</code> MUST revert if the game is not in the <code>Unchallenged</code> state.</li>
+<li>Only one challenge is allowed per game.</li>
+<li>Calling <code>challenge()</code> resets the deadline to <code>block.timestamp + maxProveDuration</code>.</li>
+</ul>
+<h2 id="proving"><a class="header" href="#proving">Proving</a></h2>
+<p>Proving is fully permissionless. Anyone may call <code>prove(proofBytes)</code> at any point before the
+current deadline, regardless of whether the game has been challenged.</p>
+<ul>
+<li><code>prove()</code> MUST revert if the parent game has resolved as <code>CHALLENGER_WINS</code>.</li>
+<li><code>prove()</code> MUST revert if <code>gameOver()</code> returns <code>true</code> (covers an already-submitted proof,
+an expired deadline, and a resolved game).</li>
+<li>The verifier call MUST revert for invalid proofs.</li>
+<li>On success, <code>status</code> transitions to <code>UnchallengedAndValidProofProvided</code> or
+<code>ChallengedAndValidProofProvided</code> (depending on whether the game was challenged), and
+<code>gameOver()</code> returns <code>true</code> immediately.</li>
+</ul>
+<h2 id="resolution-2"><a class="header" href="#resolution-2">Resolution</a></h2>
+<p>Resolution is permissionless. Anyone may call <code>resolve()</code> once <code>gameOver()</code> returns <code>true</code> and
+the parent game is resolved.</p>
+<ul>
+<li><code>resolve()</code> MUST revert if <code>resolvedAt != 0</code> (i.e., game is already resolved).</li>
+<li><code>resolve()</code> MUST revert if the parent game is not yet resolved.</li>
+<li>If the parent resolved as <code>CHALLENGER_WINS</code>, the child inherits <code>CHALLENGER_WINS</code> regardless of
+its own proof status.</li>
+<li>Otherwise (parent <code>DEFENDER_WINS</code>), the outcome is determined as follows:</li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>Game state at resolution</th><th>Outcome</th><th>Bond distribution</th></tr></thead><tbody>
+<tr><td>Unchallenged, deadline expired</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond</code></td></tr>
+<tr><td>Unchallenged, valid proof provided</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond</code>; prover receives nothing</td></tr>
+<tr><td>Challenged, no proof by deadline</td><td><code>CHALLENGER_WINS</code></td><td>Challenger receives <code>initBond + challengerBond</code></td></tr>
+<tr><td>Challenged, valid proof, prover == proposer</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond + challengerBond</code></td></tr>
+<tr><td>Challenged, valid proof, prover != proposer</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond</code>; prover receives <code>challengerBond</code></td></tr>
+<tr><td>Parent resolved as <code>CHALLENGER_WINS</code>, child challenged</td><td><code>CHALLENGER_WINS</code></td><td>Challenger receives <code>initBond + challengerBond</code></td></tr>
+<tr><td>Parent resolved as <code>CHALLENGER_WINS</code>, child unchallenged</td><td><code>CHALLENGER_WINS</code></td><td><code>initBond</code> is sent to <code>address(0)</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="bond-distribution"><a class="header" href="#bond-distribution">Bond Distribution</a></h3>
+<p>Bond distribution follows a NORMAL or REFUND mode determined by <code>isGameProper</code> (evaluated in
+<code>closeGame</code>):</p>
+<div class="table-wrapper"><table><thead><tr><th>Mode</th><th>Condition</th><th>Effect</th></tr></thead><tbody>
+<tr><td><strong>NORMAL</strong></td><td>Game is Proper (registered, not blacklisted, not retired, not paused)</td><td>Bonds go to winners as described above</td></tr>
+<tr><td><strong>REFUND</strong></td><td>Game is blacklisted, retired, or otherwise improper</td><td><code>initBond</code> returned to proposer; <code>challengerBond</code> returned to challenger</td></tr>
+</tbody></table>
+</div>
+<p>Complete distribution scenarios:</p>
+<div class="table-wrapper"><table><thead><tr><th>Scenario</th><th>Mode</th><th>Proposer gets</th><th>Challenger gets</th><th>Prover gets</th></tr></thead><tbody>
+<tr><td>Unchallenged, deadline expires</td><td>NORMAL</td><td><code>initBond</code></td><td>—</td><td>—</td></tr>
+<tr><td>Unchallenged, proof provided</td><td>NORMAL</td><td><code>initBond</code></td><td>—</td><td>nothing</td></tr>
+<tr><td>Challenged, no proof</td><td>NORMAL</td><td>nothing</td><td><code>initBond + challengerBond</code></td><td>—</td></tr>
+<tr><td>Challenged, proof, prover == proposer</td><td>NORMAL</td><td><code>initBond + challengerBond</code></td><td>nothing</td><td><em>(same)</em></td></tr>
+<tr><td>Challenged, proof, prover != proposer</td><td>NORMAL</td><td><code>initBond</code></td><td>nothing</td><td><code>challengerBond</code></td></tr>
+<tr><td>Parent <code>CHALLENGER_WINS</code>, child challenged</td><td>NORMAL</td><td>nothing</td><td><code>initBond + challengerBond</code></td><td>—</td></tr>
+<tr><td>Parent <code>CHALLENGER_WINS</code>, child unchallenged</td><td>NORMAL</td><td>sent to <code>address(0)</code></td><td>—</td><td>—</td></tr>
+<tr><td>Game blacklisted</td><td>REFUND</td><td><code>initBond</code></td><td><code>challengerBond</code></td><td>—</td></tr>
+<tr><td>Game retired</td><td>REFUND</td><td><code>initBond</code></td><td><code>challengerBond</code></td><td>—</td></tr>
+</tbody></table>
+</div>
+<h2 id="closing"><a class="header" href="#closing">Closing</a></h2>
+<p>After resolution, bonds are distributed through a two-phase process identical to the
+<code>FaultDisputeGame</code>:</p>
+<p><strong><code>closeGame()</code></strong> (permissionless, also called internally by <code>claimCredit</code>):</p>
+<ul>
+<li>MUST revert if <code>AnchorStateRegistry</code> is paused.</li>
+<li>MUST revert with <code>GameNotResolved</code> if <code>resolvedAt == 0</code>.</li>
+<li>MUST revert if <code>AnchorStateRegistry.isFinalized(this)</code> returns <code>false</code>.</li>
+<li>If the game has a Valid Claim, registers the game as the new anchor state via <code>AnchorStateRegistry</code>.</li>
+<li>Determines NORMAL or REFUND mode and unlocks bonds in <code>DelayedWETH</code> accordingly.</li>
+</ul>
+<p><strong><code>claimCredit(recipient)</code></strong>:</p>
+<p>Uses a two-phase <code>DelayedWETH</code> withdrawal pattern and MUST NOT revert if the game was open before
+the call, allowing op-challenger to use it solely to close the game without knowing in advance
+whether the recipient has outstanding credit.</p>
+<ol>
+<li>Records whether the game was open (<code>bondDistributionMode == UNDECIDED</code>) before the call.</li>
+<li>Triggers <code>closeGame()</code> if not yet closed. <code>closeGame()</code> handles bond unlocks in <code>DelayedWETH</code>.</li>
+<li><strong>Phase 1 — unlock:</strong> If <code>recipient</code> still has credit allocated by this game, zeroes it out and
+calls <code>DelayedWETH.unlock(recipient, amount)</code>, then returns. A second call is required to
+complete the withdrawal once the <code>DelayedWETH</code> delay has elapsed.</li>
+<li><strong>Phase 2 — withdraw:</strong> If credit has already been zeroed (phase 1 completed), checks
+<code>DelayedWETH</code> for a pending withdrawal amount. If the amount is zero and the game was open
+before this call, returns without reverting (so <code>closeGame()</code> state changes persist). If the
+amount is zero and the game was already closed, reverts with <code>NoCreditToClaim</code>. Otherwise,
+calls <code>DelayedWETH.withdraw(recipient)</code> and transfers ETH to the recipient, reverting on
+transfer failure.</li>
+</ol>
+<p>The <code>DelayedWETH</code> delay allows the Guardian to pause and freeze funds if a critical issue is
+discovered post-resolution.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="izkverifier-interface"><a class="header" href="#izkverifier-interface">IZKVerifier Interface</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="fault-proof/stage-one/zk/zk-interface.html#overview">Overview</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-interface.html#interface">Interface</a></li>
+<li><a href="fault-proof/stage-one/zk/zk-interface.html#usage-in-prove">Usage in <code>prove()</code></a></li>
+<li><a href="fault-proof/stage-one/zk/zk-interface.html#verifier-upgrade-path">Verifier Upgrade Path</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
+<p><code>IZKVerifier</code> is the on-chain interface that decouples <code>ZKDisputeGame</code> from any specific proving
+system. The game always casts the configured verifier address to <code>IZKVerifier</code> and calls <code>verify()</code>
+through the interface, rather than depending on a concrete verifier type. This allows the verifier
+to be swapped without redeploying the game implementation.</p>
+<p>The concrete deployment for the initial release uses Succinct's PLONK verifier for
+<a href="fault-proof/stage-one/zk/../../zk-fault-proof-vm.html#sp1-plonk">SP1</a>.</p>
+<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
+<pre><code class="language-solidity">interface IZKVerifier is ISemver {
+    function verifierType() external pure returns (string memory);
+
+    function verify(
+        bytes32 programId,
+        bytes calldata publicValues,
+        bytes calldata proof
+    ) external view;
+}
+</code></pre>
+<p><code>verifierType()</code> returns a string identifying the proving system (e.g., <code>"SP1_PLONK"</code>). Callers
+can use it to check which backend is deployed without inspecting the bytecode.</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>programId</code></td><td>Corresponds to <code>absolutePrestate()</code> in the dispute game — identifies the ZK program.</td></tr>
+<tr><td><code>publicValues</code></td><td>ABI-encoded public inputs committed to by the proof (see <a href="fault-proof/stage-one/zk/zk-interface.html#usage-in-prove">Usage in <code>prove()</code></a>).</td></tr>
+<tr><td><code>proof</code></td><td>The raw proof blob submitted by the prover.</td></tr>
+</tbody></table>
+</div>
+<p>The verifier MUST revert on an invalid proof. A call that returns without reverting is treated as
+proof acceptance; the game will transition <code>status</code> to <code>UnchallengedAndValidProofProvided</code> or
+<code>ChallengedAndValidProofProvided</code> and mark itself as game over.</p>
+<h2 id="usage-in-prove"><a class="header" href="#usage-in-prove">Usage in <code>prove()</code></a></h2>
+<p><code>ZKDisputeGame.prove()</code> constructs <code>publicValues</code> from on-chain game state and forwards them to
+the verifier:</p>
+<pre><code class="language-solidity">function prove(bytes calldata _proofBytes) external {
+    bytes memory publicValues = abi.encode(
+        l1Head(),
+        startingOutputRoot(),
+        rootClaim(),
+        l2SequenceNumber(),
+        l2ChainId()
+    );
+
+    IZKVerifier(verifier()).verify(
+        absolutePrestate(),
+        publicValues,
+        _proofBytes
+    );
+
+    // record proof submission and set game over
+}
+</code></pre>
+<p>All public values come from immutable on-chain game state, so no caller-supplied data affects what
+the verifier checks. <code>l1Head</code> is captured as <code>blockhash(block.number - 1)</code> by
+<code>DisputeGameFactory.create()</code> and packed into the clone's CWIA data.</p>
+<p>See <a href="fault-proof/stage-one/zk/../../zk-fault-proof-vm.html#inputs">ZK Program Inputs</a> for the meaning of each public value field.</p>
+<h2 id="verifier-upgrade-path"><a class="header" href="#verifier-upgrade-path">Verifier Upgrade Path</a></h2>
+<p>The <code>verifier</code> and <code>absolutePrestate</code> fields live in the CWIA game args (see
+<a href="fault-proof/stage-one/zk/zk-dispute-game.html#game-args-layout">Game Args Layout</a>), so they can be updated per chain
+without redeploying the <code>ZKDisputeGame</code> implementation.</p>
+<p>Upgrade process:</p>
+<ol>
+<li>Deploy a new verifier contract.</li>
+<li>If the ZK program changed, compute a new <code>absolutePrestate</code>.</li>
+<li>OPCM updates the game args with the new <code>verifier</code> and/or <code>absolutePrestate</code>.</li>
+<li>In-progress games play out under the old configuration.</li>
+<li>New games use the updated configuration.</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="bridge-integration"><a class="header" href="#bridge-integration">Bridge Integration</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -7723,7 +8512,7 @@ over multiple timezones.</p>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- all glossary references -->
 <!-- all links -->
-<h2 id="overview-19"><a class="header" href="#overview-19">Overview</a></h2>
+<h2 id="overview-22"><a class="header" href="#overview-22">Overview</a></h2>
 <p>With fault proofs, the withdrawal path changes such that withdrawals submitted to the <code>OptimismPortal</code> are proven
 against <a href="fault-proof/stage-one/../../glossary.html#l2-output-root-proposals">output proposals</a> submitted as a <a href="fault-proof/stage-one/fault-dispute-game.html"><code>FaultDisputeGame</code></a> prior to being finalized. Output
 proposals are now finalized whenever a dispute game resolves in their favor.</p>
@@ -7806,7 +8595,7 @@ mapping(IDisputeGame =&gt; bool) public disputeGameBlacklist;
 <h3 id="provewithdrawaltransaction-modifications"><a class="header" href="#provewithdrawaltransaction-modifications"><code>proveWithdrawalTransaction</code> modifications</a></h3>
 <p>Proving a withdrawal transaction now proves against an output root in a dispute game, rather than one in the
 <code>L2OutputOracle</code>.</p>
-<h4 id="interface"><a class="header" href="#interface">Interface</a></h4>
+<h4 id="interface-1"><a class="header" href="#interface-1">Interface</a></h4>
 <p>The type signature of the function does not change, but the purpose of the second argument transitions from providing
 an index within the <code>L2OutputOracle</code>'s <code>l2Outputs</code> array to an index within the <code>DisputeGameFactory</code>'s list of created
 games.</p>
@@ -8000,7 +8789,7 @@ address public immutable CHALLENGER;
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-20"><a class="header" href="#overview-20">Overview</a></h2>
+<h2 id="overview-23"><a class="header" href="#overview-23">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is the primary interface for deposits and withdrawals between the L1
 and L2 chains within an OP Stack system. The <code>OptimismPortal</code> contract allows users to create
 "deposit transactions" on the L1 chain that are automatically executed on the L2 chain within a
@@ -8008,7 +8797,7 @@ bounded amount of time. Additionally, the <code>OptimismPortal</code> contract a
 withdrawal transactions by proving that such a withdrawal was initiated on the L2 chain. The
 <code>OptimismPortal</code> verifies the correctness of these withdrawal transactions against Output Roots
 that have been declared valid by the L1 Fault Proof system.</p>
-<h2 id="definitions-3"><a class="header" href="#definitions-3">Definitions</a></h2>
+<h2 id="definitions-4"><a class="header" href="#definitions-4">Definitions</a></h2>
 <h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay">Proof Maturity Delay</a></h3>
 <p>The <strong>Proof Maturity Delay</strong> is the minimum amount of time that a withdrawal must be a
 <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a> before it can be finalized.</p>
@@ -8124,7 +8913,7 @@ root timestamp.</p>
   );
 }
 </code></pre>
-<h2 id="assumptions-1"><a class="header" href="#assumptions-1">Assumptions</a></h2>
+<h2 id="assumptions-2"><a class="header" href="#assumptions-2">Assumptions</a></h2>
 <h3 id="aop-001-dispute-game-contracts-properly-report-important-properties"><a class="header" href="#aop-001-dispute-game-contracts-properly-report-important-properties">aOP-001: Dispute Game contracts properly report important properties</a></h3>
 <p>We assume that the <code>FaultDisputeGame</code> and <code>PermissionedDisputeGame</code> contracts properly and
 faithfully report the following properties:</p>
@@ -8140,7 +8929,7 @@ faithfully report the following properties:</p>
 </ul>
 <p>We also specifically assume that the game creation timestamp and the resolution timestamp are not
 set to values in the future.</p>
-<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<h4 id="mitigations-10"><a class="header" href="#mitigations-10">Mitigations</a></h4>
 <ul>
 <li>Existing audit on the <code>FaultDisputeGame</code> contract</li>
 <li>Integration testing</li>
@@ -8148,7 +8937,7 @@ set to values in the future.</p>
 <h3 id="aop-002-disputegamefactory-properly-reports-its-created-games"><a class="header" href="#aop-002-disputegamefactory-properly-reports-its-created-games">aOP-002: DisputeGameFactory properly reports its created games</a></h3>
 <p>We assume that the <code>DisputeGameFactory</code> contract properly and faithfully reports the games it has
 created.</p>
-<h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
+<h4 id="mitigations-11"><a class="header" href="#mitigations-11">Mitigations</a></h4>
 <ul>
 <li>Existing audit on the <code>DisputeGameFactory</code> contract</li>
 <li>Integration testing</li>
@@ -8164,7 +8953,7 @@ elapsed UNLESS the Pause Mechanism is active. Therefore, in the absence of the P
 parties responsible for game invalidation have exactly the Dispute Game Finality Delay to
 invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
 incorrectly resolving games must be invalidated before the pause is deactivated.</p>
-<h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
+<h4 id="mitigations-12"><a class="header" href="#mitigations-12">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
 <li>Incident response plan</li>
@@ -8175,18 +8964,18 @@ incorrectly resolving games must be invalidated before the pause is deactivated.
 <li><a href="fault-proof/stage-one/./anchor-state-registry.html#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001</a></li>
 <li><a href="fault-proof/stage-one/./anchor-state-registry.html#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002</a></li>
 </ul>
-<h2 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h2>
+<h2 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h2>
 <h3 id="iop-001-invalid-withdrawals-can-never-be-finalized"><a class="header" href="#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a></h3>
 <p>We require that <a href="fault-proof/stage-one/optimism-portal.html#invalid-withdrawal">Invalid Withdrawals</a> can never be
 <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a> for any reason.</p>
-<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<h4 id="impact-18"><a class="header" href="#impact-18">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, any number of arbitrarily bad outcomes could happen. Most obviously,
 we would expect all bridge systems relying on the <code>OptimismPortal</code> to be immediately compromised.</p>
 <h3 id="iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time"><a class="header" href="#iop-002-valid-withdrawals-can-always-be-finalized-in-bounded-time">iOP-002: Valid Withdrawals can always be finalized in bounded time</a></h3>
 <p>We require that <a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawals</a> can always be
 <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a> within some reasonable, bounded amount of time.</p>
-<h4 id="impact-6"><a class="header" href="#impact-6">Impact</a></h4>
+<h4 id="impact-19"><a class="header" href="#impact-19">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, we would expect that users are unable to withdraw bridged assets. We
 see this as a critical system risk.</p>
@@ -8372,7 +9161,7 @@ opaque data.</li>
 <li><a href="protocol/precompiles.html#p256verify">P256VERIFY</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
+<h2 id="overview-24"><a class="header" href="#overview-24">Overview</a></h2>
 <p><a href="protocol/../glossary.html#precompiled-contract-precompile">Precompiled contracts</a> exist on OP-Stack chains at
 predefined addresses. They are similar to predeploys but are implemented as native code in the EVM as opposed to
 bytecode. Precompiles are used for computationally expensive operations, that would be cost prohibitive to implement
@@ -8421,7 +9210,7 @@ the OP-Stack protocol in the Fjord release. The op-geth implementation is
 <li><a href="protocol/predeploys.html#operator-fee-vault">Operator Fee Vault</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-22"><a class="header" href="#overview-22">Overview</a></h2>
+<h2 id="overview-25"><a class="header" href="#overview-25">Overview</a></h2>
 <p><a href="protocol/../glossary.html#predeployed-contract-predeploy">Predeployed smart contracts</a> exist on Optimism
 at predetermined addresses in the genesis state. They are similar to precompiles but instead run
 directly in the EVM instead of running native code outside of the EVM.</p>
@@ -8676,7 +9465,7 @@ Ecotone network upgrade and is specified in <a href="https://eips.ethereum.org/E
 <li><a href="protocol/preinstalls.html#erc-4337-v070-sendercreator">ERC-4337 v0.7.0 SenderCreator</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-23"><a class="header" href="#overview-23">Overview</a></h2>
+<h2 id="overview-26"><a class="header" href="#overview-26">Overview</a></h2>
 <p><a href="protocol/../glossary.html#preinstalled-contract-preinstall">Preinstalled smart contracts</a> exist on Optimism
 at predetermined addresses in the genesis state. They are similar to precompiles but instead run
 directly in the EVM instead of running native code outside of the EVM and are developed by third
@@ -8867,7 +9656,7 @@ which is explicitly not <code>EntryPoint</code> itself.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-24"><a class="header" href="#overview-24">Overview</a></h2>
+<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
 <p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains
 within a single Superchain network.</p>
 <h2 id="configuration-data-structure"><a class="header" href="#configuration-data-structure">Configuration Data Structure</a></h2>
@@ -8931,12 +9720,12 @@ and network parameters.</p>
 <li><code>PublicRPC</code>: Public RPC endpoint URL for the L1 network</li>
 <li><code>Explorer</code>: Block explorer URL for the L1 network</li>
 </ul>
-<h2 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h2>
+<h2 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h2>
 <h3 id="isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism"><a class="header" href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a></h3>
 <p>We require that the <code>SuperchainConfig</code> is constructed such that both the
 <a href="protocol/./stage-1.html#guardian">Guardian</a> and the <a href="protocol/./stage-1.html#pause-deputy">Pause Deputy</a> must be able to
 trigger the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> at any time.</p>
-<h4 id="impact-7"><a class="header" href="#impact-7">Impact</a></h4>
+<h4 id="impact-20"><a class="header" href="#impact-20">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>Existing recovery runbooks would not function as expected if the <code>SuperchainConfig</code> prevented one
 of these actors from triggering the pause as needed.</p>
@@ -8944,7 +9733,7 @@ of these actors from triggering the pause as needed.</p>
 <p>We require that the <code>SuperchainConfig</code> is constructed such that the
 <a href="protocol/./stage-1.html#guardian">Guardian</a> must be able to unpause or extend the
 <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> at any time.</p>
-<h4 id="impact-8"><a class="header" href="#impact-8">Impact</a></h4>
+<h4 id="impact-21"><a class="header" href="#impact-21">Impact</a></h4>
 <p><strong>Severity: Medium</strong></p>
 <p>If the Pause Mechanism cannot be reset then it cannot be used again without intervention from the
 <a href="protocol/./stage-1.html#proxy-admin-owner">Proxy Admin Owner</a>. We consider this to be a Medium severity
@@ -9068,7 +9857,7 @@ expiration for the specific identifier provided.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-25"><a class="header" href="#overview-25">Overview</a></h2>
+<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
 <p>Superchain upgrades, also known as forks or hardforks, implement consensus-breaking changes.</p>
 <p>A Superchain upgrade requires the node software to support up to a given Protocol Version.
 The version indicates support, the upgrade indicates the activation of new functionality.</p>
@@ -9317,12 +10106,12 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-26"><a class="header" href="#overview-26">Overview</a></h2>
+<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
 <p>The <code>SystemConfig</code> is a contract on L1 that can emit rollup configuration changes as log events.
 The rollup <a href="protocol/derivation.html">block derivation process</a> picks up on these log events and applies the
 changes. <code>SystemConfig</code> generally acts as the source of truth for configuration values within an
 OP Stack chain.</p>
-<h2 id="definitions-4"><a class="header" href="#definitions-4">Definitions</a></h2>
+<h2 id="definitions-5"><a class="header" href="#definitions-5">Definitions</a></h2>
 <h3 id="batch-inbox"><a class="header" href="#batch-inbox">Batch Inbox</a></h3>
 <p>The <strong>Batch Inbox</strong> is the address that Sequencer transaction batches are published to. Sequencers
 publish transactions to the Batch Inbox by setting it as the <code>to</code> address on a transaction
@@ -10229,12 +11018,12 @@ according to the steps in the <a href="protocol/safe-extensions.html#deploying-t
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
+<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
 <p>This document describes the requirements necessary for an OP Stack implementation to satisfy the
 Stage 1 decentralization requirements <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">as defined by L2BEAT</a>. It also defines the specific
 roles and capabilities for an OP Stack chain in the standard configuration that will satisfy these
 requirements.</p>
-<h2 id="definitions-5"><a class="header" href="#definitions-5">Definitions</a></h2>
+<h2 id="definitions-6"><a class="header" href="#definitions-6">Definitions</a></h2>
 <h3 id="withdrawal-liveness"><a class="header" href="#withdrawal-liveness">Withdrawal Liveness</a></h3>
 <p><strong>Withdrawal Liveness</strong> is the ability for users to execute valid withdrawals out of any contract
 that stores ETH or tokens within an OP Chain's set of smart contracts. We tend to refer to
@@ -10418,7 +11207,7 @@ assign this role to any actor it deems fit to utilize the role without violating
 listed as "Out of Protocol", because the decision to follow the version signals in the contract is
 optional. It is included here for completeness, but it does not impact
 <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> or <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a>.</p>
-<h2 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h2>
+<h2 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h2>
 <h3 id="is1-001"><a class="header" href="#is1-001">iS1-001</a></h3>
 <p>A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs).</p>
 <p>This is the core invariant for Stage 1 and aligns with <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">the definition by L2BEAT</a> from
@@ -10426,7 +11215,7 @@ January 2025. We can define additional properties about roles specific to the OP
 they align with this invariant. Note that this invariant does NOT consider the impact of bugs in
 smart contracts on the rest of the protocol. That is, this invariant only holds strongly under the
 assumption that no such bugs exist.</p>
-<h3 id="impact-9"><a class="header" href="#impact-9">Impact</a></h3>
+<h3 id="impact-22"><a class="header" href="#impact-22">Impact</a></h3>
 <p><strong>Severity: High/Critical</strong></p>
 <p>If broken, it must be assumed that <em>some</em> other actor has the ability to cause a permanent
 <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> or <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failure. We
@@ -10437,7 +11226,7 @@ becomes Critical if the actor that has this ability is not another reasonably tr
 only cause a <em>temporary</em> <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> failure. This is required
 because the Security Council must explicitly trigger any action that results either an indefinite
 Withdrawal Liveness failure or a <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failure.</p>
-<h4 id="impact-10"><a class="header" href="#impact-10">Impact</a></h4>
+<h4 id="impact-23"><a class="header" href="#impact-23">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant were broken, the Pause Deputy could be able to cause either a
 <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> failure or a permanent Withdrawal Liveness failure. Either
@@ -10447,7 +11236,7 @@ failure mode would be a violation of the definition of Stage 1 as of <a href="ht
 at any time. This condition is necessary to prevent a misbehaving Pause Deputy from continuing to
 trigger the <a href="protocol/stage-1.html#pause-mechanism">Pause Mechanism</a> when this would not be desired by the Guardian
 itself.</p>
-<h4 id="impact-11"><a class="header" href="#impact-11">Impact</a></h4>
+<h4 id="impact-24"><a class="header" href="#impact-24">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant were broken, assuming that <a href="protocol/stage-1.html#is1-002-the-pause-deputy-can-only-cause-a-temporary-withdrawal-liveness-failure">iS1-002</a> the Pause Deputy would potentially
 be able to repeatedly trigger the Pause Mechanism even if the Guardian does not want this to
@@ -10573,7 +11362,7 @@ renew the pause to allow the system to operate if truly necessary.</p>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="status"><a class="header" href="#status">Status</a></h2>
 <p>Proposed</p>
-<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
+<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
 <p>The <code>DeputyPauseModule</code> is a <a href="https://docs.safe.global/advanced/smart-account-modules">Safe Module</a> designed to be installed into the Security
 Council Guardian Safe that allows a dedicated Deputy address to create an ECDSA signature that
 authorizes the execution of the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a>. The
@@ -10588,7 +11377,7 @@ contract. The <code>DeputyPauseModule</code> allows basic parameters to be modif
 directly without needing to deploy a new instance of the contract. Additionally, the address of the
 module itself is only utilized within the Optimism Foundation Operations Safe and can be safely
 replaced.</p>
-<h2 id="assumptions-2"><a class="header" href="#assumptions-2">Assumptions</a></h2>
+<h2 id="assumptions-3"><a class="header" href="#assumptions-3">Assumptions</a></h2>
 <blockquote>
 <p><strong>NOTE</strong>: Assumptions are utilized by specific invariants and do not apply globally. Invariants
 typically only rely on a subset of the following assumptions. Different invariants may rely on
@@ -10615,7 +11404,7 @@ such a pause.</p>
 <li>Address of the <code>SuperchainConfig</code> contract.</li>
 <li>Address of the Deputy account.</li>
 </ul>
-<h4 id="mitigations-6"><a class="header" href="#mitigations-6">Mitigations</a></h4>
+<h4 id="mitigations-13"><a class="header" href="#mitigations-13">Mitigations</a></h4>
 <ul>
 <li>Verify a signature from the Deputy in the contract constructor.</li>
 <li>Verify the configured values in the deployment script.</li>
@@ -10623,7 +11412,7 @@ such a pause.</p>
 </ul>
 <h3 id="adpm-002-deputy-key-is-not-compromised"><a class="header" href="#adpm-002-deputy-key-is-not-compromised">aDPM-002: Deputy key is not compromised</a></h3>
 <p>We assume that the Deputy key is maintained securely and is not compromised by a malicious actor.</p>
-<h4 id="mitigations-7"><a class="header" href="#mitigations-7">Mitigations</a></h4>
+<h4 id="mitigations-14"><a class="header" href="#mitigations-14">Mitigations</a></h4>
 <ul>
 <li>Enforce strong access control around the Deputy key.</li>
 <li>Monitoring for any usage of the Deputy key.</li>
@@ -10631,14 +11420,14 @@ such a pause.</p>
 </ul>
 <h3 id="adpm-003-deputy-key-is-not-deleted"><a class="header" href="#adpm-003-deputy-key-is-not-deleted">aDPM-003: Deputy key is not deleted</a></h3>
 <p>We assume that the Deputy key has not been deleted by a malicious actor.</p>
-<h4 id="mitigations-8"><a class="header" href="#mitigations-8">Mitigations</a></h4>
+<h4 id="mitigations-15"><a class="header" href="#mitigations-15">Mitigations</a></h4>
 <ul>
 <li>Maintain duplicate copies of the key in multiple secure locations.</li>
 </ul>
 <h3 id="adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time"><a class="header" href="#adpm-004-ethereum-will-not-censor-transactions-for-extended-periods-of-time">aDPM-004: Ethereum will not censor transactions for extended periods of time</a></h3>
 <p>We assume that Ethereum will not censor transactions for an extended period of time and that any
 transaction submitted to the network can be processed within a reasonable time bound (e.g., 1h).</p>
-<h4 id="mitigations-9"><a class="header" href="#mitigations-9">Mitigations</a></h4>
+<h4 id="mitigations-16"><a class="header" href="#mitigations-16">Mitigations</a></h4>
 <ul>
 <li>Extremely high priority fee if necessary.</li>
 </ul>
@@ -10646,7 +11435,7 @@ transaction submitted to the network can be processed within a reasonable time b
 <p>We assume that both the <code>ECDSA</code> library and the <code>EIP712</code> contract provided by OpenZeppelin V4 at
 commit <a href="https://github.com/OpenZeppelin/openzeppelin-contracts/tree/ecd2ca2c">ecd2ca2c</a> (v4.7.3) are free of any critical bugs that would cause their
 behaviors to diverge from their specified behaviors.</p>
-<h4 id="mitigations-10"><a class="header" href="#mitigations-10">Mitigations</a></h4>
+<h4 id="mitigations-17"><a class="header" href="#mitigations-17">Mitigations</a></h4>
 <ul>
 <li>Existing audits/safety processes for OpenZeppelin V4.</li>
 </ul>
@@ -10654,13 +11443,13 @@ behaviors to diverge from their specified behaviors.</p>
 <p>We assume that the Safe contract implementations used by the Security Council Safe and Optimism
 Foundation Operations Safe are free of any critical bugs that would cause their behaviors to
 diverge from their specified behaviors.</p>
-<h4 id="mitigations-11"><a class="header" href="#mitigations-11">Mitigations</a></h4>
+<h4 id="mitigations-18"><a class="header" href="#mitigations-18">Mitigations</a></h4>
 <ul>
 <li>Existing audits/safety processes for Safe.</li>
 </ul>
 <h3 id="adpm-008-deputy-key-is-capable-of-creating-signatures"><a class="header" href="#adpm-008-deputy-key-is-capable-of-creating-signatures">aDPM-008: Deputy key is capable of creating signatures</a></h3>
 <p>We assume that the Deputy key configured is actually capable of creating signatures.</p>
-<h4 id="mitigations-12"><a class="header" href="#mitigations-12">Mitigations</a></h4>
+<h4 id="mitigations-19"><a class="header" href="#mitigations-19">Mitigations</a></h4>
 <ul>
 <li>Signature verification when changing Deputy key.</li>
 </ul>
@@ -10670,7 +11459,7 @@ diverge from their specified behaviors.</p>
 short, bounded amount of time (30 minutes) of its authorization by the standard process that
 approves the usage of this pause. That is, after the pause is authorized, it should be possible to
 execute the pause in under 30 minutes under all circumstances.</p>
-<h4 id="impact-12"><a class="header" href="#impact-12">Impact</a></h4>
+<h4 id="impact-25"><a class="header" href="#impact-25">Impact</a></h4>
 <p><strong>Severity: High (estimated)</strong></p>
 <p>If this invariant is broken, various recovery options that rely on fast activation of the pause may
 fail. We estimate the severity of this invariant being broken to be high but final severity will
@@ -10685,7 +11474,7 @@ depend on the formalization of other invariants that rely on this one.</p>
 <h3 id="iscp-002-pause-is-not-activated-outside-of-the-standard-process"><a class="header" href="#iscp-002-pause-is-not-activated-outside-of-the-standard-process">iSCP-002: Pause is not activated outside of the standard process</a></h3>
 <p>We must maintain that the pause is not activated outside of the standard process that approves the
 usage of the pause.</p>
-<h4 id="impact-13"><a class="header" href="#impact-13">Impact</a></h4>
+<h4 id="impact-26"><a class="header" href="#impact-26">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, all components that rely on the pause would be placed into a paused
 state unexpectedly. This would cause a temporary liveness failure for withdrawals through the
@@ -10704,14 +11493,14 @@ Guardian.</p>
 execute an action on behalf of the Deputy if the account has a valid authorization signature from
 the Deputy for that action. No account may act through the module other than with the explicit
 authorization of the Deputy.</p>
-<h4 id="impact-14"><a class="header" href="#impact-14">Impact</a></h4>
+<h4 id="impact-27"><a class="header" href="#impact-27">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, accounts other than the Deputy would be able to carry out the actions
 allowed by this module. Assuming that
 <a href="protocol/deputy-pause-module.html#idpm-002-deputy-must-only-be-able-to-trigger-the-pause">iDPM-002</a> holds, this
 means that an account other than the Deputy would be able to trigger the pause, presumably without
 the authorization of the social consensus process that typically triggers this pause.</p>
-<h4 id="mitigations-13"><a class="header" href="#mitigations-13">Mitigations</a></h4>
+<h4 id="mitigations-20"><a class="header" href="#mitigations-20">Mitigations</a></h4>
 <ul>
 <li>Signature verification on the pause action.</li>
 <li>Monitoring for pause triggering actions.</li>
@@ -10724,11 +11513,11 @@ the authorization of the social consensus process that typically triggers this p
 <p>The Deputy must only be able to trigger the pause action by causing the module to call the <code>pause</code>
 function on the <code>SuperchainConfig</code>. The Deputy must not be able to trigger any other privileged
 action on behalf of the Guardian.</p>
-<h4 id="impact-15"><a class="header" href="#impact-15">Impact</a></h4>
+<h4 id="impact-28"><a class="header" href="#impact-28">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, the Deputy would be able to cause the Optimism Foundation Operations
 Safe to execute some unknown set of possible actions. We would treat this as a critical risk.</p>
-<h4 id="mitigations-14"><a class="header" href="#mitigations-14">Mitigations</a></h4>
+<h4 id="mitigations-21"><a class="header" href="#mitigations-21">Mitigations</a></h4>
 <ul>
 <li>Strict auditing and verification of the <code>DeputyPauseModule</code>.</li>
 </ul>
@@ -10741,12 +11530,12 @@ Safe to execute some unknown set of possible actions. We would treat this as a c
 private key is compromised. Other than the total deletion of the Deputy key, there should not be
 any condition in the contract itself that would prevent the key from being able to quickly and
 efficiently execute the pause action.</p>
-<h4 id="impact-16"><a class="header" href="#impact-16">Impact</a></h4>
+<h4 id="impact-29"><a class="header" href="#impact-29">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, we would not be able to provide the system-level invariant that the
 Deputy account can always be used to trigger the pause within a bounded amount of time of the
 decision being made to carry out this action.</p>
-<h4 id="mitigations-15"><a class="header" href="#mitigations-15">Mitigations</a></h4>
+<h4 id="mitigations-22"><a class="header" href="#mitigations-22">Mitigations</a></h4>
 <ul>
 <li>Signature-based verification to bypass draining attacks.</li>
 <li>Strict auditing and verification of the <code>DeputyPauseModule</code>.</li>
@@ -10764,13 +11553,13 @@ decision being made to carry out this action.</p>
 identified by its chain ID. An authorization created for one <code>DeputyPauseModule</code> must not be
 reusable on any other <code>DeputyPauseModule</code>. An authorization must be usable once and the same
 authorization must not be usable again in any <code>DeputyPauseModule</code>.</p>
-<h4 id="impact-17"><a class="header" href="#impact-17">Impact</a></h4>
+<h4 id="impact-30"><a class="header" href="#impact-30">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, a Deputy authorization created by the same Deputy address for
 another <code>DeputyPauseModule</code> or a previous authorization for the same module could be reused and
 would result in the pause being triggered outside of the standard process by which such a pause is
 approved.</p>
-<h4 id="mitigations-16"><a class="header" href="#mitigations-16">Mitigations</a></h4>
+<h4 id="mitigations-23"><a class="header" href="#mitigations-23">Mitigations</a></h4>
 <ul>
 <li>EIP-712 signature verification including a specific contract address and chain ID.</li>
 <li>Enforce unique nonces on signatures to prevent signature reuse within the same contract.</li>
@@ -10783,13 +11572,13 @@ approved.</p>
 <h3 id="idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily"><a class="header" href="#idpm-005-foundation-safe-must-be-able-to-change-the-deputy-account-easily">iDPM-005: Foundation Safe must be able to change the Deputy account easily</a></h3>
 <p>The Foundation Safe must be able to change the address of the Deputy account without significant
 operational overhead.</p>
-<h3 id="impact-18"><a class="header" href="#impact-18">Impact</a></h3>
+<h3 id="impact-31"><a class="header" href="#impact-31">Impact</a></h3>
 <p><strong>Severity: Medium</strong></p>
 <p>If this invariant is broken, it would not be possible for the Safe account to easily rotate the
 Deputy account if the account is compromised. This creates operational overhead but is not a
 security risk as we assume that the Safe code does not have bugs and therefore the Safe can always
 remove the module if necessary.</p>
-<h3 id="mitigations-17"><a class="header" href="#mitigations-17">Mitigations</a></h3>
+<h3 id="mitigations-24"><a class="header" href="#mitigations-24">Mitigations</a></h3>
 <ul>
 <li>Authorized function to change the Deputy address.</li>
 </ul>
@@ -10855,7 +11644,7 @@ identifier and was produced by the private key corresponding to the Deputy addre
 <li><a href="protocol/regolith/overview.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
+<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
 <p>The Regolith upgrade, named after a material best described as "deposited dust on top of a layer of bedrock",
 implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
 the Bedrock Optimism Goerli testnet.</p>
@@ -11721,7 +12510,7 @@ when a user already submitted the EIP transaction before the upgrade.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
+<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
 <p>On the Ecotone activation block, and if Ecotone is not activated at Genesis,
 the L1 Attributes Transaction includes a call to <code>setL1BlockValues()</code>
 because the L1 Attributes transaction precedes the <a href="protocol/ecotone/derivation.html#network-upgrade-automation-transactions">Ecotone Upgrade Transactions</a>,
@@ -12649,7 +13438,7 @@ search any further back, so we go back a channel timeout before the finalized L2
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
+<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
 <p>The EIP-1559 parameters are encoded in the block header's <code>extraData</code> field and can be configured dynamically through
 the <code>SystemConfig</code>.</p>
 <h2 id="timestamp-activation-1"><a class="header" href="#timestamp-activation-1">Timestamp Activation</a></h2>
@@ -12749,7 +13538,7 @@ contract values to the block builder via <code>PayloadAttributesV3</code> parame
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
+<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
 <p>The <code>SystemConfig</code> is updated to allow for dynamic EIP-1559 parameters.</p>
 <h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
 <p>When the configuration is updated, a <a href="protocol/holocene/../system-config.html#system-config-updates"><code>ConfigUpdate</code></a> event
@@ -12777,7 +13566,7 @@ world of many chains.</p>
 <p>A new <code>SystemConfig</code> <code>UpdateType</code> is introduced that enables the modification of
 <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> parameters. This allows for the chain
 operator to modify the <code>BASE_FEE_MAX_CHANGE_DENOMINATOR</code> and the <code>ELASTICITY_MULTIPLIER</code>.</p>
-<h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
+<h3 id="interface-2"><a class="header" href="#interface-2">Interface</a></h3>
 <h4 id="eip-1559-params"><a class="header" href="#eip-1559-params">EIP-1559 Params</a></h4>
 <h5 id="seteip1559params-1"><a class="header" href="#seteip1559params-1"><code>setEIP1559Params</code></a></h5>
 <p>This function MUST only be callable by the chain governor.</p>
@@ -12965,7 +13754,7 @@ or later before Pectra activates on L1.</p>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
-<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
+<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
 <p>The storage root of the <code>L2ToL1MessagePasser</code> is included in the block header's
 <code>withdrawalRoot</code> field.</p>
 <h2 id="timestamp-activation-2"><a class="header" href="#timestamp-activation-2">Timestamp Activation</a></h2>
@@ -13472,7 +14261,7 @@ the Isthmus activation time.</p>
 <li><a href="protocol/isthmus/l1-attributes.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
+<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
 <p>The L1 block attributes transaction is updated to include the operator fee parameters.</p>
 <div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
 <tr><td>{0x098999be}</td><td></td><td>0-3</td><td>n/a</td></tr>
@@ -13530,9 +14319,9 @@ from the <a href="protocol/isthmus/./system-config.html"><code>SystemConfig</cod
 <li><a href="protocol/isthmus/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
+<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
 <h3 id="l1block-1"><a class="header" href="#l1block-1">L1Block</a></h3>
-<h4 id="interface-2"><a class="header" href="#interface-2">Interface</a></h4>
+<h4 id="interface-3"><a class="header" href="#interface-3">Interface</a></h4>
 <h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
 <p>This function is meant to be called once on the activation block of the Isthmus network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
@@ -13602,7 +14391,7 @@ and <code>operatorFeeConstant</code> (<code>uint64</code>) to <code>SystemConfig
 <h3 id="modifying-operator-fee-parameters"><a class="header" href="#modifying-operator-fee-parameters">Modifying Operator Fee Parameters</a></h3>
 <p>A new <code>SystemConfig</code> <code>UpdateType</code> is introduced that enables the modification of
 the <code>operatorFeeScalar</code> and <code>operatorFeeConstant</code> by the <code>SystemConfig</code> owner.</p>
-<h3 id="interface-3"><a class="header" href="#interface-3">Interface</a></h3>
+<h3 id="interface-4"><a class="header" href="#interface-4">Interface</a></h3>
 <h4 id="operator-fee-parameters"><a class="header" href="#operator-fee-parameters">Operator fee parameters</a></h4>
 <h5 id="operatorfeescalar"><a class="header" href="#operatorfeescalar"><code>operatorFeeScalar</code></a></h5>
 <p>This function returns the currently configured operator fee scalar.</p>
@@ -14016,7 +14805,7 @@ computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: Gas Pri
 <li><a href="protocol/jovian/l1-attributes.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-36"><a class="header" href="#overview-36">Overview</a></h2>
+<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
 <p>The L1 block attributes transaction is updated to include the DA footprint gas scalar.</p>
 <div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
 <tr><td>{0x3db6be2b}</td><td></td><td>0-3</td><td>n/a</td></tr>
@@ -14121,7 +14910,7 @@ world of many chains.</p>
 to derive the configuration from L1 logs.</p>
 <p>Implementations MUST incorporate the configured value into the block header <code>extraData</code> as specified in
 <code>./exec-engine.md</code>. Until the first such event is emitted, a default value of <code>0</code> should be used.</p>
-<h3 id="interface-4"><a class="header" href="#interface-4">Interface</a></h3>
+<h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
 <h4 id="minimum-base-fee-parameters"><a class="header" href="#minimum-base-fee-parameters">Minimum Base Fee Parameters</a></h4>
 <h5 id="minbasefee"><a class="header" href="#minbasefee"><code>minBaseFee</code></a></h5>
 <p>This function returns the currently configured minimum base fee in wei.</p>
@@ -14142,7 +14931,7 @@ MUST be emitted with the following parameters:</p>
 <h3 id="modifying-da-footprint-gas-scalar"><a class="header" href="#modifying-da-footprint-gas-scalar">Modifying DA Footprint Gas Scalar</a></h3>
 <p>Upon update, the contract emits the <code>ConfigUpdate</code> event above, enabling nodes
 to derive the configuration from L1 logs.</p>
-<h3 id="interface-5"><a class="header" href="#interface-5">Interface</a></h3>
+<h3 id="interface-6"><a class="header" href="#interface-6">Interface</a></h3>
 <h4 id="da-footprint-gas-scalar-parameters"><a class="header" href="#da-footprint-gas-scalar-parameters">DA Footprint Gas Scalar Parameters</a></h4>
 <h5 id="dafootprintgasscalar"><a class="header" href="#dafootprintgasscalar"><code>daFootprintGasScalar</code></a></h5>
 <p>This function returns the currently configured DA footprint gas scalar.</p>
@@ -14172,7 +14961,7 @@ to derive the configuration from L1 logs.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-37"><a class="header" href="#overview-37">Overview</a></h2>
+<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -14307,18 +15096,18 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
+<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
 <p>The <code>MintManager</code> contract serves as the owner of the <a href="governance/./gov-token.html">GovernanceToken</a> and controls the token
 inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
 period between mints. The contract is upgradeable, allowing the owner to transfer control to a new <code>MintManager</code>
 implementation if changes to the inflation schedule are required.</p>
-<h2 id="definitions-6"><a class="header" href="#definitions-6">Definitions</a></h2>
+<h2 id="definitions-7"><a class="header" href="#definitions-7">Definitions</a></h2>
 <h3 id="mint-cap"><a class="header" href="#mint-cap">Mint Cap</a></h3>
 <p>The maximum percentage of the total token supply that can be minted in a single minting operation. Set to 2%
 (represented as 20/1000 with 4 decimal precision).</p>
 <h3 id="mint-period"><a class="header" href="#mint-period">Mint Period</a></h3>
 <p>The minimum time interval that must elapse between consecutive minting operations. Set to 365 days.</p>
-<h2 id="assumptions-3"><a class="header" href="#assumptions-3">Assumptions</a></h2>
+<h2 id="assumptions-4"><a class="header" href="#assumptions-4">Assumptions</a></h2>
 <h3 id="amm-001-governancetoken-implements-required-functions-correctly"><a class="header" href="#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a></h3>
 <p>The <code>GovernanceToken</code> contract correctly implements the <code>mint(address,uint256)</code> function, <code>transferOwnership(address)</code>
 function, and <code>totalSupply()</code> view function according to their expected behavior. Specifically:</p>
@@ -14327,7 +15116,7 @@ function, and <code>totalSupply()</code> view function according to their expect
 <li><code>totalSupply()</code> accurately returns the current total supply of tokens</li>
 <li><code>transferOwnership()</code> transfers ownership to the specified address</li>
 </ul>
-<h4 id="mitigations-18"><a class="header" href="#mitigations-18">Mitigations</a></h4>
+<h4 id="mitigations-25"><a class="header" href="#mitigations-25">Mitigations</a></h4>
 <ul>
 <li>The <code>GovernanceToken</code> contract is part of the same protocol and is subject to the same security audits</li>
 <li>The interface is well-defined in <code>IGovernanceToken.sol</code></li>
@@ -14337,7 +15126,7 @@ function, and <code>totalSupply()</code> view function according to their expect
 <p>The EVM <code>block.timestamp</code> value is sufficiently reliable for enforcing the 365-day minting period. While miners can
 manipulate timestamps within a small range (~15 seconds), this manipulation is negligible compared to the 365-day
 period.</p>
-<h4 id="mitigations-19"><a class="header" href="#mitigations-19">Mitigations</a></h4>
+<h4 id="mitigations-26"><a class="header" href="#mitigations-26">Mitigations</a></h4>
 <ul>
 <li>The 365-day period is long enough that minor timestamp manipulation has no practical impact</li>
 <li>Ethereum consensus rules limit timestamp manipulation</li>
@@ -14347,7 +15136,7 @@ period.</p>
 <p>The contract owner (typically a governance multisig or DAO) will only call <code>mint()</code> and <code>upgrade()</code> functions in
 accordance with governance decisions and the protocol's established rules. The owner will not abuse their authority
 to mint excessive tokens or transfer ownership to malicious addresses.</p>
-<h4 id="mitigations-20"><a class="header" href="#mitigations-20">Mitigations</a></h4>
+<h4 id="mitigations-27"><a class="header" href="#mitigations-27">Mitigations</a></h4>
 <ul>
 <li>Owner is expected to be a governance-controlled address (e.g., multisig or Governor contract)</li>
 <li>All minting operations are subject to the on-chain mint cap and time restrictions</li>
@@ -14357,7 +15146,7 @@ to mint excessive tokens or transfer ownership to malicious addresses.</p>
 <h3 id="amm-004-valid-successor-mintmanager"><a class="header" href="#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a></h3>
 <p>When upgrading, the owner will provide a valid, non-zero address for the new <code>MintManager</code> contract. The successor
 contract will be properly implemented and tested before the upgrade is executed.</p>
-<h4 id="mitigations-21"><a class="header" href="#mitigations-21">Mitigations</a></h4>
+<h4 id="mitigations-28"><a class="header" href="#mitigations-28">Mitigations</a></h4>
 <ul>
 <li>Governance processes include review and testing of new MintManager implementations</li>
 <li>The upgrade transaction is subject to governance approval and timelock mechanisms</li>
@@ -14368,13 +15157,13 @@ contract will be properly implemented and tested before the upgrade is executed.
 <ul>
 <li><a href="governance/./gov-token.html">GovernanceToken</a> - The ERC20Votes token that this contract has permission to mint</li>
 </ul>
-<h2 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h2>
+<h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
 <h3 id="imm-001-mint-cap-enforcement"><a class="header" href="#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a></h3>
 <p>No single minting operation can mint more than the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> of the current total token supply.</p>
 <p><strong>Full Description:</strong>
 Any call to <code>mint()</code> MUST enforce that the requested mint amount does not exceed the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a>. This
 ensures that token inflation is bounded and predictable.</p>
-<h4 id="impact-19"><a class="header" href="#impact-19">Impact</a></h4>
+<h4 id="impact-32"><a class="header" href="#impact-32">Impact</a></h4>
 <p><strong>Severity: Medium</strong></p>
 <p>If this invariant is violated, the owner could mint an unlimited number of tokens, leading to:</p>
 <ul>
@@ -14391,7 +15180,7 @@ The contract enforces this invariant on-chain, providing defense-in-depth agains
 <p><strong>Full Description:</strong>
 Any call to <code>mint()</code> MUST revert if the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has not elapsed since the last mint. This ensures
 that minting operations are rate-limited, preventing rapid inflation even if the owner attempts multiple mints.</p>
-<h4 id="impact-20"><a class="header" href="#impact-20">Impact</a></h4>
+<h4 id="impact-33"><a class="header" href="#impact-33">Impact</a></h4>
 <p><strong>Severity: Medium</strong></p>
 <p>If this invariant is violated, the owner could:</p>
 <ul>
@@ -14408,7 +15197,7 @@ The contract enforces this invariant on-chain, providing defense-in-depth agains
 <p><strong>Full Description:</strong>
 The <code>mint()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the address returned by
 <code>owner()</code> can execute minting operations. Any call from a non-owner address MUST revert.</p>
-<h4 id="impact-21"><a class="header" href="#impact-21">Impact</a></h4>
+<h4 id="impact-34"><a class="header" href="#impact-34">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is violated:</p>
 <ul>
@@ -14423,7 +15212,7 @@ The <code>mint()</code> function MUST be protected by the <code>onlyOwner</code>
 The <code>upgrade()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the current owner can
 initiate an upgrade to a new <code>MintManager</code> implementation. This prevents unauthorized parties from taking control of
 the token minting authority.</p>
-<h4 id="impact-22"><a class="header" href="#impact-22">Impact</a></h4>
+<h4 id="impact-35"><a class="header" href="#impact-35">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is violated:</p>
 <ul>
@@ -14581,7 +15370,7 @@ the token minting authority.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
+<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
 <h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
@@ -14627,7 +15416,7 @@ configurability.</p>
 <li><code>setConfig(SET_REMOTE_CHAIN_ID)</code></li>
 </ul>
 <p>These actions MAY only be triggered if there is a diff to the value.</p>
-<h3 id="interface-6"><a class="header" href="#interface-6">Interface</a></h3>
+<h3 id="interface-7"><a class="header" href="#interface-7">Interface</a></h3>
 <h4 id="fee-vault-config"><a class="header" href="#fee-vault-config">Fee Vault Config</a></h4>
 <p>For each <code>FeeVault</code>, there is a setter for its config. The arguments to the setter include
 the <code>RECIPIENT</code>, the <code>MIN_WITHDRAWAL_AMOUNT</code> and the <code>WithdrawalNetwork</code>.
@@ -14644,7 +15433,7 @@ Each of these functions should be <code>public</code> and only callable by the c
 </code></pre>
 <h2 id="optimismportal-2"><a class="header" href="#optimismportal-2"><code>OptimismPortal</code></a></h2>
 <p>The <code>OptimismPortal</code> is updated to emit a special system <code>TransactionDeposited</code> event.</p>
-<h3 id="interface-7"><a class="header" href="#interface-7">Interface</a></h3>
+<h3 id="interface-8"><a class="header" href="#interface-8">Interface</a></h3>
 <h4 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h4>
 <p>The <code>setConfig</code> function MUST only be callable by the <code>SystemConfig</code>. This ensures that the <code>SystemConfig</code>
 is the single source of truth for chain operator ownership.</p>
@@ -14686,7 +15475,7 @@ that call the L2 <code>ProxyAdmin</code>.</p>
 <tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="interface-8"><a class="header" href="#interface-8">Interface</a></h3>
+<h3 id="interface-9"><a class="header" href="#interface-9">Interface</a></h3>
 <pre><code class="language-solidity">function upgrader() public view returns (address)
 </code></pre>
 <h3 id="initialization-4"><a class="header" href="#initialization-4">Initialization</a></h3>
@@ -14756,7 +15545,7 @@ system or a chain governor can issue upgrades to the predeploys.</p>
 </ul>
 <p>Each slot MUST have a defined <code>ConfigType</code> that authorizes the setting of the storage slot
 via a deposit transaction from the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="interface-9"><a class="header" href="#interface-9">Interface</a></h4>
+<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
 <h5 id="setisthmus-1"><a class="header" href="#setisthmus-1"><code>setIsthmus</code></a></h5>
 <p>This function is meant to be called once on the activation block of the holocene network upgrade.
 It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
@@ -14777,7 +15566,7 @@ contract by removing the need for special getters for each piece of config.</p>
 <p>The caller needs to ABI decode the data into the desired type.</p>
 <h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
 <p>The following changes apply to each of the <code>BaseFeeVault</code>, the <code>L1FeeVault</code> and the <code>SequencerFeeVault</code>.</p>
-<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
+<h4 id="interface-11"><a class="header" href="#interface-11">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract:</p>
 <ul>
 <li><code>recipient()(address)</code></li>
@@ -14796,21 +15585,21 @@ contract by removing the need for special getters for each piece of config.</p>
 <pre><code class="language-solidity">function config()(address,uint256,WithdrawalNetwork)
 </code></pre>
 <h3 id="l2crossdomainmessenger-1"><a class="header" href="#l2crossdomainmessenger-1">L2CrossDomainMessenger</a></h3>
-<h4 id="interface-11"><a class="header" href="#interface-11">Interface</a></h4>
+<h4 id="interface-12"><a class="header" href="#interface-12">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherMessenger()(address)</code></li>
 <li><code>OTHER_MESSENGER()(address)</code></li>
 </ul>
 <h3 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h3>
-<h4 id="interface-12"><a class="header" href="#interface-12">Interface</a></h4>
+<h4 id="interface-13"><a class="header" href="#interface-13">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherBridge()(address)</code></li>
 <li><code>OTHER_BRIDGE()(address)</code></li>
 </ul>
 <h3 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h3>
-<h4 id="interface-13"><a class="header" href="#interface-13">Interface</a></h4>
+<h4 id="interface-14"><a class="header" href="#interface-14">Interface</a></h4>
 <p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)</code>:</p>
 <ul>
 <li><code>otherBridge()(address)</code></li>
@@ -14855,7 +15644,7 @@ a future hardfork.</p>
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
+<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -15563,7 +16352,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -15648,7 +16437,7 @@ bareChecksum = H(idLogHash ++ idChainID)
 typeByte = 0x03
 checksum = typeByte ++ bareChecksum[1:]
 </code></pre>
-<h3 id="assumptions-4"><a class="header" href="#assumptions-4">Assumptions</a></h3>
+<h3 id="assumptions-5"><a class="header" href="#assumptions-5">Assumptions</a></h3>
 <h4 id="gas-schedule-dependencies"><a class="header" href="#gas-schedule-dependencies">Gas Schedule Dependencies</a></h4>
 <p>The <code>CrossL2Inbox</code> contract's validation mechanism relies on precise gas cost calculations for storage operations.</p>
 <p><code>SLOAD</code> operations cost 2100 gas for cold access and 100 gas for warm access.</p>
@@ -15708,7 +16497,7 @@ Identifier identifier = abi.decode(log.data, (Identifier));
 <p>Emitting the hash of the message is more efficient than emitting the
 message in its entirety. Equality with the initiating message can be handled off-chain through
 hash comparison.</p>
-<h3 id="reference-implementation"><a class="header" href="#reference-implementation">Reference implementation</a></h3>
+<h3 id="reference-implementation-1"><a class="header" href="#reference-implementation-1">Reference implementation</a></h3>
 <p>A simple implementation of the <code>validateMessage</code> function is included below.</p>
 <pre><code class="language-solidity">function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
   bytes32 checksum = calculateChecksum(_id, _msgHash);
@@ -15902,7 +16691,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-42"><a class="header" href="#overview-42">Overview</a></h3>
+<h3 id="overview-45"><a class="header" href="#overview-45">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -15969,7 +16758,7 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-43"><a class="header" href="#overview-43">Overview</a></h3>
+<h3 id="overview-46"><a class="header" href="#overview-46">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -16067,7 +16856,7 @@ with <code>convert</code>.</p>
 </code></pre>
 <p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
 <code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
-<h3 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h3>
+<h3 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h3>
 <p>The <code>convert</code> function conserves the following invariants:</p>
 <ul>
 <li>Conservation of amount:
@@ -16125,7 +16914,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-44"><a class="header" href="#overview-44">Overview</a></h3>
+<h3 id="overview-47"><a class="header" href="#overview-47">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -16197,7 +16986,7 @@ sequenceDiagram
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h3 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h3>
+<h3 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h3>
 <p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -16272,7 +17061,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -16572,7 +17361,7 @@ inclusion.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <p>The supervisor is an implementation detail of OP Stack native interop and is not the only
 architecture that can be used to implement it. The supervisor is responsible for indexing
 data from all of the chains in a cluster so that the <a href="interop/./verifier.html#safety">safety level</a>
@@ -17126,7 +17915,7 @@ OutputV0 {
 <li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>Interop introduces the Super Fault Dispute Game as a
 new <a href="interop/../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
 pre-interop <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
@@ -17242,7 +18031,7 @@ program identifying the type of step to perform based on the agreed prestate.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainTokenBridge</code>.
@@ -17498,7 +18287,7 @@ but revert on the destination chain, and could never be successfully replayed.</
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <p>The <code>ETHLiquidity</code> contract is a predeploy that manages native ETH liquidity for cross-chain
 transfers within the Superchain interop set. It works in conjunction with the
 <code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
@@ -17513,7 +18302,7 @@ transfer mechanism.</p>
 <tr><td>Initial Balance</td><td><code>type(uint248).max</code> wei</td></tr>
 </tbody></table>
 </div>
-<h2 id="definitions-7"><a class="header" href="#definitions-7">Definitions</a></h2>
+<h2 id="definitions-8"><a class="header" href="#definitions-8">Definitions</a></h2>
 <h3 id="eth-liquidity"><a class="header" href="#eth-liquidity">ETH Liquidity</a></h3>
 <p>ETH Liquidity refers to the availability of native ETH on a particular chain. The <code>ETHLiquidity</code>
 contract manages this liquidity by providing a mechanism to burn and mint ETH as needed for
@@ -17526,33 +18315,33 @@ a cross-chain transfer.</p>
 <p>Liquidity Burning is the process of depositing ETH into the <code>ETHLiquidity</code> contract. This operation
 is performed when ETH is being sent from a source chain to a destination chain as part of a
 cross-chain transfer.</p>
-<h2 id="assumptions-5"><a class="header" href="#assumptions-5">Assumptions</a></h2>
+<h2 id="assumptions-6"><a class="header" href="#assumptions-6">Assumptions</a></h2>
 <h3 id="ael-001-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#ael-001-safesend-correctly-transfers-eth-to-recipients">aEL-001: SafeSend correctly transfers ETH to recipients</a></h3>
 <p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
 for valid addresses.</p>
-<h4 id="mitigations-22"><a class="header" href="#mitigations-22">Mitigations</a></h4>
+<h4 id="mitigations-29"><a class="header" href="#mitigations-29">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h2>
+<h2 id="invariants-10"><a class="header" href="#invariants-10">Invariants</a></h2>
 <h3 id="iel-001-eth-balance-is-always-sufficient-for-minting--burning"><a class="header" href="#iel-001-eth-balance-is-always-sufficient-for-minting--burning">iEL-001: ETH balance is always sufficient for minting / burning</a></h3>
 <p>The <code>ETHLiquidity</code> contract must always have enough ETH to fulfill all legitimate minting / burning
 requests.</p>
-<h4 id="impact-23"><a class="header" href="#impact-23">Impact</a></h4>
+<h4 id="impact-36"><a class="header" href="#impact-36">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, the cross-chain ETH transfer mechanism would fail, potentially leading
 to users being unable to receive their ETH on destination chains.</p>
 <h3 id="iel-002-only-authorized-contracts-can-call-mint-and-burn"><a class="header" href="#iel-002-only-authorized-contracts-can-call-mint-and-burn">iEL-002: Only authorized contracts can call mint and burn</a></h3>
 <p>The <code>mint</code> and <code>burn</code> functions must only be callable by authorized contracts (specifically the
 <code>SuperchainETHBridge</code>).</p>
-<h4 id="impact-24"><a class="header" href="#impact-24">Impact</a></h4>
+<h4 id="impact-37"><a class="header" href="#impact-37">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, unauthorized parties could mint ETH without burning an equivalent
 amount on a source chain, leading to inflation.</p>
 <h3 id="iel-003-contract-balance-never-overflows"><a class="header" href="#iel-003-contract-balance-never-overflows">iEL-003: Contract balance never overflows</a></h3>
 <p>The <code>ETHLiquidity</code> contract's balance must never overflow due to excessive burning operations.</p>
-<h4 id="impact-25"><a class="header" href="#impact-25">Impact</a></h4>
+<h4 id="impact-38"><a class="header" href="#impact-38">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, the contract could reach an invalid state, potentially disrupting the
 cross-chain ETH transfer mechanism. The invariant that avoids overflow is maintained by
@@ -17660,7 +18449,7 @@ do not break this invariant.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <p>The <code>SuperchainETHBridge</code> is a predeploy contract that facilitates cross-chain ETH bridging within
 the Superchain interop set. It serves as an abstraction layer on top of the
 <code>L2toL2CrossDomainMessenger</code> specifically designed for native ETH transfers between chains. The
@@ -17673,7 +18462,7 @@ withdrawals, see the <a href="interop/./eth-lockbox.html"><code>ETHLockbox</code
 <tr><td><code>SuperchainETHBridge</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="definitions-8"><a class="header" href="#definitions-8">Definitions</a></h2>
+<h2 id="definitions-9"><a class="header" href="#definitions-9">Definitions</a></h2>
 <h3 id="eth-bridging"><a class="header" href="#eth-bridging">ETH Bridging</a></h3>
 <p>ETH Bridging refers to the process of transferring native ETH from one chain to another within the
 Superchain interop set. This process involves burning ETH on the source chain and minting an
@@ -17692,11 +18481,11 @@ burned from the user's account and a cross-chain message is sent to the destinat
 <h3 id="destination-chain"><a class="header" href="#destination-chain">Destination Chain</a></h3>
 <p>The Destination Chain is the chain to which ETH is being transferred. On this chain, ETH is sent
 to the recipient's account based on the cross-chain message received from the source chain.</p>
-<h2 id="assumptions-6"><a class="header" href="#assumptions-6">Assumptions</a></h2>
+<h2 id="assumptions-7"><a class="header" href="#assumptions-7">Assumptions</a></h2>
 <h3 id="aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages"><a class="header" href="#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001: L2ToL2CrossDomainMessenger properly delivers messages</a></h3>
 <p>We assume that the <code>L2ToL2CrossDomainMessenger</code> contract properly and faithfully delivers messages
 between chains, maintaining the integrity and authenticity of the message contents.</p>
-<h4 id="mitigations-23"><a class="header" href="#mitigations-23">Mitigations</a></h4>
+<h4 id="mitigations-30"><a class="header" href="#mitigations-30">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>L2ToL2CrossDomainMessenger</code> contract</li>
 <li>Audits of the messaging protocol</li>
@@ -17705,7 +18494,7 @@ between chains, maintaining the integrity and authenticity of the message conten
 <h3 id="aseb-002-ethliquidity-contract-maintains-sufficient-liquidity"><a class="header" href="#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002: <code>ETHLiquidity</code> contract maintains sufficient liquidity</a></h3>
 <p>We assume that the <code>ETHLiquidity</code> contract maintains sufficient liquidity to fulfill all valid ETH
 minting requests. This is ensured by initializing the contract with <code>type(uint248).max</code> wei.</p>
-<h4 id="mitigations-24"><a class="header" href="#mitigations-24">Mitigations</a></h4>
+<h4 id="mitigations-31"><a class="header" href="#mitigations-31">Mitigations</a></h4>
 <ul>
 <li>Total ETH supply is much less than the initial balance of the <code>ETHLiquidity</code> contract</li>
 <li>Contract is initially initialized with <code>type(uint248).max</code> wei and can hold up to
@@ -17714,16 +18503,16 @@ minting requests. This is ensured by initializing the contract with <code>type(u
 <h3 id="aseb-003-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#aseb-003-safesend-correctly-transfers-eth-to-recipients">aSEB-003: <code>SafeSend</code> correctly transfers ETH to recipients</a></h3>
 <p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
 for valid addresses.</p>
-<h4 id="mitigations-25"><a class="header" href="#mitigations-25">Mitigations</a></h4>
+<h4 id="mitigations-32"><a class="header" href="#mitigations-32">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h2>
+<h2 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h2>
 <h3 id="iseb-001-eth-sent-equals-eth-received"><a class="header" href="#iseb-001-eth-sent-equals-eth-received">iSEB-001: ETH sent equals ETH received</a></h3>
 <p>The amount of ETH sent from the source chain must equal the amount of ETH received on the
 destination chain for any given cross-chain transfer.</p>
-<h4 id="impact-26"><a class="header" href="#impact-26">Impact</a></h4>
+<h4 id="impact-39"><a class="header" href="#impact-39">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, users could receive more or less ETH than they sent, leading to
 inflation or loss of funds.</p>
@@ -17735,7 +18524,7 @@ inflation or loss of funds.</p>
 <h3 id="iseb-002-only-authorized-contracts-can-call-relayeth"><a class="header" href="#iseb-002-only-authorized-contracts-can-call-relayeth">iSEB-002: Only authorized contracts can call <code>relayETH</code></a></h3>
 <p>The <code>relayETH</code> function must only be callable by the <code>L2ToL2CrossDomainMessenger</code> contract, and the
 cross-domain sender must be the <code>SuperchainETHBridge</code> contract on the source chain.</p>
-<h4 id="impact-27"><a class="header" href="#impact-27">Impact</a></h4>
+<h4 id="impact-40"><a class="header" href="#impact-40">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, unauthorized parties could mint ETH on the destination chain without
 burning an equivalent amount on the source chain, leading to inflation.</p>
@@ -17745,7 +18534,7 @@ burning an equivalent amount on the source chain, leading to inflation.</p>
 </ul>
 <h3 id="iseb-003-eth-cannot-be-sent-to-the-zero-address"><a class="header" href="#iseb-003-eth-cannot-be-sent-to-the-zero-address">iSEB-003: ETH cannot be sent to the zero address</a></h3>
 <p>The <code>sendETH</code> function must revert if the recipient address is the zero address.</p>
-<h4 id="impact-28"><a class="header" href="#impact-28">Impact</a></h4>
+<h4 id="impact-41"><a class="header" href="#impact-41">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, ETH could be sent to the zero address, effectively burning it without
 the possibility of recovery.</p>
@@ -17812,7 +18601,7 @@ ID.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
 <p>ETH is bridged between chains within the Superchain interop set by using the <code>SuperchainETHBridge</code>
 predeploy for message passing and the <code>ETHLiquidity</code> contract for supplying native ETH liquidity.</p>
 <h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
@@ -17899,11 +18688,11 @@ sequenceDiagram
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
+<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
-<h2 id="invariants-10"><a class="header" href="#invariants-10">Invariants</a></h2>
+<h2 id="invariants-12"><a class="header" href="#invariants-12">Invariants</a></h2>
 <ul>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
@@ -18172,7 +18961,7 @@ needing to execute increasingly long chain histories.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
+<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -18244,7 +19033,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
+<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -18292,7 +19081,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">event ETHMigrated(uint256 amount);
 </code></pre>
-<h2 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h2>
+<h2 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h2>
 <ul>
 <li>
 <p>Deposits MUST lock the ETH in the <code>ETHLockbox</code></p>
@@ -18359,7 +19148,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
+<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -18482,7 +19271,7 @@ from and the amount of ETH received.</li>
 <p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
 <pre><code class="language-solidity">event LiquidityReceived(ETHLockbox indexed lockbox, uint256 amount);
 </code></pre>
-<h2 id="invariants-12"><a class="header" href="#invariants-12">Invariants</a></h2>
+<h2 id="invariants-14"><a class="header" href="#invariants-14">Invariants</a></h2>
 <h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>
 <ul>
 <li>
@@ -18653,7 +19442,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
+<h2 id="overview-59"><a class="header" href="#overview-59">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -18682,7 +19471,7 @@ function superchainConfig() external view returns (ISuperchainConfig);
 function version() external view returns (string memory);
 </code></pre>
 <h2 id="deployment"><a class="header" href="#deployment">Deployment</a></h2>
-<h3 id="interface-14"><a class="header" href="#interface-14">Interface</a></h3>
+<h3 id="interface-15"><a class="header" href="#interface-15">Interface</a></h3>
 <h4 id="deploy-1"><a class="header" href="#deploy-1"><code>deploy</code></a></h4>
 <p>The <code>deploy</code> method is used to deploy the full set of L1 contracts required to setup a new OP Stack
 chain that complies with the <a href="experimental/../protocol/configurability.html">standard configuration</a>. It has the following interface:</p>
@@ -18780,7 +19569,7 @@ if this property is not preserved in future versions of the OP Contracts Manager
 </li>
 </ul>
 <h2 id="upgrading"><a class="header" href="#upgrading">Upgrading</a></h2>
-<h3 id="interface-15"><a class="header" href="#interface-15">Interface</a></h3>
+<h3 id="interface-16"><a class="header" href="#interface-16">Interface</a></h3>
 <h4 id="upgrade-4"><a class="header" href="#upgrade-4"><code>upgrade</code></a></h4>
 <p>The <code>upgrade</code> method is used by the Proxy Admin Owner to upgrade the full set of L1 contracts for
 all chains that it controls.</p>
@@ -18832,7 +19621,7 @@ function, increasing the cost and reducing the number of OP Chains which can be 
 <p>Because different OP Chains within a Superchain may use different dispute game types, and are
 expected to move from a permissioned to permissionless game over time, an <code>addGameType()</code> method is
 provided to enable adding a new game type to multiple games at once.</p>
-<h3 id="interface-16"><a class="header" href="#interface-16">Interface</a></h3>
+<h3 id="interface-17"><a class="header" href="#interface-17">Interface</a></h3>
 <h4 id="addgametype"><a class="header" href="#addgametype"><code>addGameType</code></a></h4>
 <p>The <code>addGameType</code> method is used to orchestrate the actions required to add a new game type to one
 or more chains.</p>
@@ -18951,7 +19740,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
+<h2 id="overview-60"><a class="header" href="#overview-60">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -19055,20 +19844,20 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
+<h2 id="overview-61"><a class="header" href="#overview-61">Overview</a></h2>
 <p>The LivenessGuard tracks the liveness of Safe multisig owners by recording timestamps when owners sign transactions or
 explicitly demonstrate activity. It serves as a monitoring mechanism to identify inactive owners who may have lost
 access to their keys.</p>
-<h2 id="definitions-9"><a class="header" href="#definitions-9">Definitions</a></h2>
+<h2 id="definitions-10"><a class="header" href="#definitions-10">Definitions</a></h2>
 <h3 id="liveness-timestamp"><a class="header" href="#liveness-timestamp">Liveness Timestamp</a></h3>
 <p>The most recent block timestamp at which an owner either signed a Safe transaction or called the <code>showLiveness</code>
 function. This timestamp is publicly queryable via the <code>lastLive</code> mapping.</p>
-<h2 id="assumptions-7"><a class="header" href="#assumptions-7">Assumptions</a></h2>
+<h2 id="assumptions-8"><a class="header" href="#assumptions-8">Assumptions</a></h2>
 <p>N/A</p>
-<h2 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h2>
+<h2 id="invariants-15"><a class="header" href="#invariants-15">Invariants</a></h2>
 <h3 id="i01-001-liveness-tracking-accuracy"><a class="header" href="#i01-001-liveness-tracking-accuracy">i01-001: Liveness tracking accuracy</a></h3>
 <p>Owner activity is accurately tracked and properly synchronized with the Safe's owner set.</p>
-<h4 id="impact-29"><a class="header" href="#impact-29">Impact</a></h4>
+<h4 id="impact-42"><a class="header" href="#impact-42">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If liveness tracking is inaccurate, inactive owners could appear active (preventing their removal) or active owners
 could appear inactive (enabling improper removal). This undermines the entire liveness monitoring mechanism and could
@@ -19076,7 +19865,7 @@ lead to unauthorized changes to the Safe's owner set.</p>
 <h3 id="i02-002-liveness-demonstration-capability"><a class="header" href="#i02-002-liveness-demonstration-capability">i02-002: Liveness demonstration capability</a></h3>
 <p>Owners are always capable of showing liveness if the owner is actually live. The guard never prevents legitimate owners
 from demonstrating their liveness through either transaction signatures or direct <code>showLiveness</code> calls.</p>
-<h4 id="impact-30"><a class="header" href="#impact-30">Impact</a></h4>
+<h4 id="impact-43"><a class="header" href="#impact-43">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If legitimate owners cannot demonstrate liveness, they could be incorrectly identified as inactive and removed from the
 Safe. This could lead to loss of access to the Safe's assets and functionality, potentially causing permanent fund
