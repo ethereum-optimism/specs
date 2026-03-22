@@ -39,6 +39,7 @@ footgun
 Forkchoice
 Futex
 Futexes
+Gcfg
 Hardfork
 Holesky
 IERC
@@ -308,3 +309,4 @@ wakeup
 wighawag
 yamux
 yourfork
+zkVM
