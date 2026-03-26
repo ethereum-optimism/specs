@@ -591,9 +591,10 @@ The custom upgrade block gas allocation is implemented in the derivation pipelin
 
 **Gas Allocation Value:**
 
-- The upgrade block gas allocation is specified in the bundle JSON for each upgrade
-- The value should be set significantly higher than the measured gas consumption to provide safety margin
-- The specific value is read from the bundle and applied by the derivation pipeline for the corresponding fork
+- The upgrade block gas allocation is computed by summing the `gasLimit` of all transactions in the bundle
+- Individual transaction gas limits should be set significantly higher than the measured gas consumption to provide
+  safety margin
+- The derivation pipeline computes the total and adds it to the block gas limit for the fork activation block
 
 **Allocation Conditions:**
 
