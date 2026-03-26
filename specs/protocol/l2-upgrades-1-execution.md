@@ -437,10 +437,10 @@ Fields within each transaction object MUST be serialized in alphabetical order (
 - `metadata.version`: Bundle format version for compatibility tracking
 - `transactions`: Array of transaction objects in execution order
 - `transactions[].data`: Transaction calldata as hex string
-- `transactions[].from`: Sender address. Set to the
-  [Depositor Account](./l2-upgrades-2-contracts.md#depositor-account) for most transactions. Must be set to
-  `address(0)` for L2ProxyAdmin and ConditionalDeployer upgrade transactions to utilize the zero-address upgrade
-  path in the Proxy.sol implementation
+- `transactions[].from`: Sender address. Defaults to the
+  [Depositor Account](./l2-upgrades-2-contracts.md#depositor-account). Must be set to `address(0)` for
+  L2ProxyAdmin and ConditionalDeployer upgrade transactions to utilize the zero-address upgrade path in the
+  Proxy.sol implementation
 - `transactions[].gasLimit`: Gas limit for this transaction
 - `transactions[].intent`: Human-readable description of the transaction's purpose, used for documentation and
   debugging
