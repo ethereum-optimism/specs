@@ -429,9 +429,6 @@ The bundle is a JSON file with the following structure:
 }
 ```
 
-Fields within each transaction object MUST be serialized in alphabetical order (`data`, `from`, `gasLimit`,
-`intent`, `to`) to ensure deterministic JSON output.
-
 **Field Requirements:**
 
 - `metadata.version`: Bundle format version for compatibility tracking
