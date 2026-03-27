@@ -419,10 +419,11 @@ The bundle is a JSON file with the following structure:
   },
   "transactions": [
     {
-      "to": "0x1234...",
       "data": "0xabcd...",
-      "gasLimit": "1000000",
-      "from": "0x0000000000000000000000000000000000000000"
+      "from": "0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001",
+      "gasLimit": 1000000,
+      "intent": "Deploy Example Implementation",
+      "to": "0x1234..."
     }
   ]
 }
@@ -432,12 +433,15 @@ The bundle is a JSON file with the following structure:
 
 - `metadata.version`: Bundle format version for compatibility tracking
 - `transactions`: Array of transaction objects in execution order
-- `transactions[].to`: Target address (contract being called)
 - `transactions[].data`: Transaction calldata as hex string
-- `transactions[].gasLimit`: Gas limit for this transaction
-- `transactions[].from`: (Optional) Sender address. Defaults to the [Depositor Account](./l2-upgrades-2-contracts.md#depositor-account).
-  Must be set to `address(0)` for the L2ProxyAdmin upgrade transaction to utilize the zero-address upgrade path in the
+- `transactions[].from`: Sender address. Defaults to the
+  [Depositor Account](./l2-upgrades-2-contracts.md#depositor-account). Must be set to `address(0)` for
+  L2ProxyAdmin and ConditionalDeployer upgrade transactions to utilize the zero-address upgrade path in the
   Proxy.sol implementation
+- `transactions[].gasLimit`: Gas limit for this transaction
+- `transactions[].intent`: Human-readable description of the transaction's purpose, used for documentation and
+  debugging
+- `transactions[].to`: Target address (contract being called)
 
 A `value` field MUST NOT be included in transaction objects. All NUT transactions are calls with zero ETH value, which
 is enforced by the execution layer rather than specified per-transaction.
@@ -584,9 +588,10 @@ The custom upgrade block gas allocation is implemented in the derivation pipelin
 
 **Gas Allocation Value:**
 
-- The upgrade block gas allocation is specified in the bundle JSON for each upgrade
-- The value should be set significantly higher than the measured gas consumption to provide safety margin
-- The specific value is read from the bundle and applied by the derivation pipeline for the corresponding fork
+- The upgrade block gas allocation is computed by summing the `gasLimit` of all transactions in the bundle
+- Individual transaction gas limits should be set significantly higher than the measured gas consumption to provide
+  safety margin
+- The derivation pipeline computes the total and adds it to the block gas limit for the fork activation block
 
 **Allocation Conditions:**
 
