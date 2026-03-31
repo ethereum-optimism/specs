@@ -36,7 +36,8 @@ In the activation block, there are two possibilities:
 and therefore no L1 Block Attributes transaction to consider.
 - If Jovian activates after genesis [`setL1BlockValuesIsthmus()`](../isthmus/l1-attributes.md) method must be used.
  This is because the L1 Block contract will not yet have been upgraded.
-In each subsequent L2 block, the setL1BlockValuesJovian() method must be used. When using this method, the pre-Jovian values are migrated over 1:1 and the transaction also sets daFootprintGasScalar to the value from the SystemConfig.
+
+- In each subsequent L2 block, the setL1BlockValuesJovian() method must be used. When using this method, the pre-Jovian values are migrated over 1:1 and the transaction also sets daFootprintGasScalar to the value from the SystemConfig.
 In each subsequent L2 block, the `setL1BlockValuesJovian()` method must be used.
 
 When using this method, the pre-Jovian values are migrated over 1:1
