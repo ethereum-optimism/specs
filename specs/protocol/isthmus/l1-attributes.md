@@ -35,7 +35,6 @@ In the activation block, there are two possibilities:
 and therefore no L1 Block Attributes transaction to consider.
 - If Isthmus activates after genesis [`setL1BlockValuesEcotone()`](../ecotone/l1-attributes.md)
 method must be used. This is because the L1 Block contract will not yet have been upgraded.
-
 - In each subsequent L2 block, the setL1BlockValuesJovian() method must be used. This method ensures that the daFootprintGasScalar and tokenRatio parameters are correctly propagated alongside the existing operator fee scalars.
 
 When using this method, the pre-Isthmus values are migrated over 1:1
