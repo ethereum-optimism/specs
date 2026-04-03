@@ -87,6 +87,7 @@
     - [Predeploys](./interop/predeploys.md)
     - [Sequencer](./interop/sequencer.md)
     - [Verifier](./interop/verifier.md)
+    - [Super Root](./interop/superroot.md)
     - [Fault Proof](./interop/fault-proof.md)
     - [Token Bridging](./interop/token-bridging.md)
     - [ETH Liquidity](./interop/eth-liquidity.md)
