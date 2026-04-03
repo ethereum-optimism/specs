@@ -175,7 +175,7 @@ The full version is retrieved based on the preceding lookup entry and optional c
 
 The checksum is iteratively constructed:
 this allows services to work with intermediate implied data.
-E.g. the supervisor does not persist the `origin` or `msgHash`,
+E.g. a verifier may not persist the `origin` or `msgHash`,
 but does store a `logHash`.
 
 ```text
