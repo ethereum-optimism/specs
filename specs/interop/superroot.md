@@ -5,17 +5,10 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Super Root Computation](#super-root-computation)
-  - [SuperV1](#superv1)
 - [RPC API](#rpc-api)
-  - [Common Types](#common-types)
-    - [`ChainID`](#chainid)
-    - [`Hash`](#hash)
-    - [`BlockID`](#blockid)
+  - [Types](#types)
     - [`OutputV0`](#outputv0)
     - [`OutputWithRequiredL1`](#outputwithrequiredl1)
-    - [`ChainIDAndOutput`](#chainidandoutput)
-    - [`SuperV1`](#superv1-1)
     - [`SuperRootResponseData`](#superrootresponsedata)
   - [Methods](#methods)
     - [`superroot_atTimestamp`](#superroot_attimestamp)
@@ -29,72 +22,29 @@
 
 ## Overview
 
-The super root is a commitment to the combined verified state of all chains in a
-[dependency set](./dependency-set.md) at a given timestamp. It is used by the
-[fault proof](./fault-proof.md) to reason about the global state across chains,
-and serves as the anchor for proposals in the Super Fault Dispute Game.
+The [super root](../fault-proof/stage-one/optimism-portal.md#super-root) is a commitment to the
+combined verified state of all chains in a [dependency set](./dependency-set.md) at a given timestamp.
+Any consensus client that verifies output roots across chains with interop needs access to the
+super root to confirm published roots.
+
+This document specifies the RPC API for querying the super root and per-chain output root data.
+
+## RPC API
 
 The super root API provides callers with the verified super root at a requested timestamp
 when available, along with sync status information and per-chain optimistic output roots
 that may not yet be fully verified.
 
-## Super Root Computation
+For common types (`ChainID`, `Hash`, `BlockID`, `HexUint64`) see the
+existing [type definitions](../glossary.md). The `SuperV1` and `ChainIDAndOutput` structures
+used in the response match the encoding defined in the
+[Super Output specification](../fault-proof/stage-one/optimism-portal.md#super-output).
 
-### SuperV1
-
-The super root is the `keccak256` hash of a versioned encoding of the global state.
-
-The `SuperV1` encoding is:
-
-| Field       | Type                  | Size    | Description                             |
-| ----------- | --------------------- | ------- | --------------------------------------- |
-| `version`   | `uint8`               | 1 byte  | Always `1` for `SuperV1`                |
-| `timestamp` | `uint64 (big-endian)` | 8 bytes | The L2 timestamp of the super root      |
-| `chains`    | `[]ChainIDAndOutput`  | 64 bytes each | Per-chain output roots, see below |
-
-Each `ChainIDAndOutput` entry is:
-
-| Field        | Type      | Size     | Description                                       |
-| ------------ | --------- | -------- | ------------------------------------------------- |
-| `chainID`    | `bytes32` | 32 bytes | Chain ID, big-endian, zero-padded to 32 bytes     |
-| `outputRoot` | `bytes32` | 32 bytes | The chain's [L2 output root][l2-output] at or before `timestamp` |
-
-Chains MUST be sorted in ascending order by chain ID.
-
-The minimum valid encoding contains exactly one chain (73 bytes total).
-
-The super root hash is computed as:
-
-```text
-superRoot = keccak256(version ++ timestamp ++ chain[0].chainID ++ chain[0].outputRoot ++ ...)
-```
-
-[l2-output]: ../glossary.md#l2-output-root
-
-## RPC API
-
-### Common Types
-
-#### `ChainID`
-
-`STRING`: Hex-encoded big-endian number, variable length up to 256 bits, prefixed with `0x`.
-
-#### `Hash`
-
-`STRING`: Hex-encoded, fixed-length, representing 32 bytes, prefixed with `0x`.
-
-#### `BlockID`
-
-`OBJECT`:
-
-- `hash`: `Hash` - block hash
-- `number`: `NUMBER` - block number
-
-A zero `BlockID` has a `hash` of `0x0000...0000` and a `number` of `0`.
+### Types
 
 #### `OutputV0`
 
-The [L2 output root][l2-output] preimage.
+The [L2 output root](../glossary.md#l2-output-root) preimage.
 
 `OBJECT`:
 
@@ -112,22 +62,6 @@ Per-chain optimistic output data.
 - `output_root`: `Hash` - `keccak256` hash of the marshaled output
 - `required_l1`: `BlockID` - the minimum L1 block required to derive this output
 
-#### `ChainIDAndOutput`
-
-`OBJECT`:
-
-- `chainID`: `ChainID`
-- `output`: `Hash` - the output root
-
-#### `SuperV1`
-
-The super root preimage.
-
-`OBJECT`:
-
-- `timestamp`: `HexUint64`
-- `chains`: `ARRAY` of `ChainIDAndOutput`
-
 #### `SuperRootResponseData`
 
 Verified super root data. Present only when all chains in the dependency set
@@ -137,7 +71,7 @@ have verified data at the requested timestamp.
 
 - `verified_required_l1`: `BlockID` - the minimum L1 block at which all chains
   can be fully verified at this timestamp
-- `super`: `SuperV1` - the super root preimage
+- `super`: `SuperV1` - the [super root](../fault-proof/stage-one/optimism-portal.md#super-output) preimage
 - `super_root`: `Hash` - the `keccak256` hash of the encoded `SuperV1`
 
 ### Methods
@@ -185,9 +119,16 @@ across all chains, providing a conservative view of global progress.
 #### Optimistic Data
 
 The `optimistic_at_timestamp` map is populated per-chain. Each chain that has
-derived a local-safe block at the requested timestamp is included, regardless
-of whether its executing messages have been verified. Chains that have not yet
-derived a block at the requested timestamp are omitted from the map.
+a derived block at the requested timestamp is included, regardless of whether
+its executing messages have been verified. Chains that have not yet derived a
+block at the requested timestamp are omitted from the map.
+
+If a block at the requested timestamp has been
+[replaced](./derivation.md#replacing-invalid-blocks) due to invalid executing
+messages, the optimistic output is the **original** (pre-replacement) block's
+output — representing the chain state as if verification had succeeded and no
+replacement occurred. For blocks that have not been replaced, the optimistic
+output is the current local-safe block's output.
 
 This data is useful for consumers that want to act on the most recent state
 before full cross-chain verification completes.
