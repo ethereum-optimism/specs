@@ -375,7 +375,7 @@ of the executing message by recomputing the checksum from the full version.
 The full version is retrieved based on the preceding lookup entry and optional chain-ID extension.</p>
 <p>The checksum is iteratively constructed:
 this allows services to work with intermediate implied data.
-E.g. the supervisor does not persist the <code>origin</code> or <code>msgHash</code>,
+E.g. a verifier may not persist the <code>origin</code> or <code>msgHash</code>,
 but does store a <code>logHash</code>.</p>
 <pre><code class="language-text"># Syntax:
 #   H(bytes): keccak256 hash function

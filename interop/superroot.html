@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Fault Proof - OP Stack Specification</title>
+        <title>Super Root - OP Stack Specification</title>
 
 
         <!-- Custom HTML head -->
@@ -139,7 +139,7 @@
                         <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/fault-proof.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/superroot.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -169,119 +169,167 @@
                 <div id="content" class="content">
                     <main>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="fault-proof"><a class="header" href="#fault-proof">Fault Proof</a></h1>
+<h1 id="super-root"><a class="header" href="#super-root">Super Root</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#super-root-state-transition">Super Root State Transition</a>
+<li><a href="#rpc-api">RPC API</a>
 <ul>
-<li><a href="#transition-state">Transition State</a></li>
-<li><a href="#invalid-state">Invalid State</a></li>
-<li><a href="#local-safe-block-derivation">Local Safe Block Derivation</a></li>
-<li><a href="#consolidation">Consolidation</a></li>
+<li><a href="#types">Types</a>
+<ul>
+<li><a href="#outputv0"><code>OutputV0</code></a></li>
+<li><a href="#outputwithrequiredl1"><code>OutputWithRequiredL1</code></a></li>
+<li><a href="#superrootresponsedata"><code>SuperRootResponseData</code></a></li>
 </ul>
 </li>
-<li><a href="#fault-proof-program-state-transition">Fault Proof Program State Transition</a></li>
-<li><a href="#security-considerations">Security Considerations</a></li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#superroot_attimestamp"><code>superroot_atTimestamp</code></a></li>
+</ul>
+</li>
+<li><a href="#response-behavior">Response Behavior</a>
+<ul>
+<li><a href="#sync-status-fields">Sync Status Fields</a></li>
+<li><a href="#optimistic-data">Optimistic Data</a></li>
+<li><a href="#verified-data">Verified Data</a></li>
+<li><a href="#errors">Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>Interop introduces the Super Fault Dispute Game as a
-new <a href="../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
-pre-interop <a href="../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
+<p>The <a href="../fault-proof/stage-one/optimism-portal.html#super-root">super root</a> is a commitment to the
+combined verified state of all chains in a <a href="./dependency-set.html">dependency set</a> at a given timestamp.
+Any consensus client that verifies output roots across chains with interop needs access to the
+super root to confirm published roots.</p>
+<p>This document specifies the RPC API for querying the super root and per-chain output root data.</p>
+<h2 id="rpc-api"><a class="header" href="#rpc-api">RPC API</a></h2>
+<p>The super root API provides callers with the verified super root at a requested timestamp
+when available, along with sync status information and per-chain optimistic output roots
+that may not yet be fully verified.</p>
+<p>For common types (<code>ChainID</code>, <code>Hash</code>, <code>BlockID</code>, <code>HexUint64</code>) see the
+existing <a href="../glossary.html">type definitions</a>. The <code>SuperV1</code> and <code>ChainIDAndOutput</code> structures
+used in the response match the encoding defined in the
+<a href="../fault-proof/stage-one/optimism-portal.html#super-output">Super Output specification</a>.</p>
+<h3 id="types"><a class="header" href="#types">Types</a></h3>
+<h4 id="outputv0"><a class="header" href="#outputv0"><code>OutputV0</code></a></h4>
+<p>The <a href="../glossary.html#l2-output-root">L2 output root</a> preimage.</p>
+<p><code>OBJECT</code>:</p>
 <ul>
-<li>Claims at and above the split depth are commitments to the state within the super root state transition described
-below instead of output roots.</li>
-<li>The L2 block number is replaced by the timestamp of the proposed super root.
+<li><code>stateRoot</code>: <code>Hash</code></li>
+<li><code>messagePasserStorageRoot</code>: <code>Hash</code></li>
+<li><code>blockHash</code>: <code>Hash</code></li>
+</ul>
+<h4 id="outputwithrequiredl1"><a class="header" href="#outputwithrequiredl1"><code>OutputWithRequiredL1</code></a></h4>
+<p>Per-chain optimistic output data.</p>
+<p><code>OBJECT</code>:</p>
 <ul>
-<li>The <code>l2BlockNumber()</code> method has been renamed <code>l2SequenceNumber()</code> in <code>IDisputeGame</code> interface to reflect that this
-is an arbitrary identifier within the fully ordered sequence of chain states.</li>
+<li><code>output</code>: <code>OutputV0</code> - the output root preimage</li>
+<li><code>output_root</code>: <code>Hash</code> - <code>keccak256</code> hash of the marshaled output</li>
+<li><code>required_l1</code>: <code>BlockID</code> - the minimum L1 block required to derive this output</li>
 </ul>
-</li>
-<li>The <a href="../fault-proof/stage-one/fault-dispute-game.html#l2-block-number-challenge">L2 block number challenge</a> is removed.
-The super root state transition is now able to invalidate all proposals with an incorrect proposal timestamp as part
-of the state transition.</li>
-<li>While claims in the bottom half of the game still commit to the state of the FPVM, the fault proof program being
-executed changes to verify the disputed step of the super root state transition instead of the application of a
-disputed L2 block.</li>
-<li>The L2 block number preimage oracle local key now always provides the timestamp of the proposal.</li>
-<li>The L2 chain ID preimage oracle local key is no longer used and is never populated by the dispute game.</li>
-</ul>
-<h2 id="super-root-state-transition"><a class="header" href="#super-root-state-transition">Super Root State Transition</a></h2>
-<p>The super fault dispute game defines a state transition from the current anchor state super root to the canonical super
-root at the game's proposal timestamp, if one can be derived from the available L1 data or the invalid state if not.</p>
-<p>As the valid state transition always extends to the game proposal's timestamp, proposing a super root with a timestamp
-less than or greater than game's proposal timestamp will be found to be invalid. Similarly any root claim that is the
-hash of a <code>TransitionState</code> will be found to be invalid.</p>
-<p>To reduce the amount of processing required in a single invocation of the FPVM, the state transition breaks the
-transition from the super root at one timestamp to the super root at the next timestamp into 128 steps. The claims for
-these intermediate steps are <code>keccak256</code> hash of a <a href="#transition-state">transition state</a>. These 128 steps repeat to
-transition between the super root at each timestamp from the anchor state until the proposal time is reached.</p>
-<h3 id="transition-state"><a class="header" href="#transition-state">Transition State</a></h3>
-<p>A transition state is RLP encoded data consisting of:</p>
+<h4 id="superrootresponsedata"><a class="header" href="#superrootresponsedata"><code>SuperRootResponseData</code></a></h4>
+<p>Verified super root data. Present only when all chains in the dependency set
+have verified data at the requested timestamp.</p>
+<p><code>OBJECT</code>:</p>
 <ul>
-<li><code>SuperOutput []byte</code> - the encoded super output at the immediately prior timestamp. This is the super root that is
-being transformed <em>from</em>.</li>
-<li><code>PendingProgress []LocalSafeBlock</code> - the next block derived for each chain from L1 batch data, prior to validating
-executing messages.
+<li><code>verified_required_l1</code>: <code>BlockID</code> - the minimum L1 block at which all chains
+can be fully verified at this timestamp</li>
+<li><code>super</code>: <code>SuperV1</code> - the <a href="../fault-proof/stage-one/optimism-portal.html#super-output">super root</a> preimage</li>
+<li><code>super_root</code>: <code>Hash</code> - the <code>keccak256</code> hash of the encoded <code>SuperV1</code></li>
+</ul>
+<h3 id="methods"><a class="header" href="#methods">Methods</a></h3>
+<h4 id="superroot_attimestamp"><a class="header" href="#superroot_attimestamp"><code>superroot_atTimestamp</code></a></h4>
+<p>Returns the super root state at the given timestamp, along with sync status
+and per-chain optimistic output data.</p>
+<p>Parameters:</p>
 <ul>
-<li><code>LocalSafeBlock</code> is two <code>bytes32</code> RLP encoded, the first being the block hash and the second the output root for
-the block.</li>
+<li><code>timestamp</code>: <code>HexUint64</code> - the L2 timestamp to query</li>
 </ul>
-</li>
-<li><code>Step</code> a <code>uint64</code> recording the number of steps applied to this <code>TransitionState</code> since the <code>SuperOutput</code>.</li>
-</ul>
-<h3 id="invalid-state"><a class="header" href="#invalid-state">Invalid State</a></h3>
-<p>The invalid state is defined as <code>keccak256(utf8("invalid"))</code>. This state is used to indicate a state transition where
-there is no possible valid proposal. The dispute game contract MUST prevent a game from being created where the root
-claim is the invalid state.</p>
-<p>When the prestate is the invalid state, the post state is also the invalid state.</p>
-<h3 id="local-safe-block-derivation"><a class="header" href="#local-safe-block-derivation">Local Safe Block Derivation</a></h3>
-<p>The first 127 steps derive the next local safe block for one chain in the super root using
-the <a href="../protocol/derivation.html">derivation process</a>. Chains are processed in the order they appear in the super root
-(ascending order of chain ID). The <code>Step</code> is incremented after each step.</p>
-<p>For each step, the valid post state <code>TransitionState</code> is calculated by the algorithm:</p>
+<p>Returns:</p>
+<p><code>OBJECT</code>:</p>
 <ul>
-<li>If the prestate is a SuperRoot, convert it to a <code>TransitionState</code> with <code>Step = 0</code> and <code>PendingProgress</code> an empty
-array.</li>
-<li>If <code>Step</code> is less than the number of chains included in <code>SuperOutput</code>, derive the next local safe block for the chain
-at
-index <code>Step</code> in the <code>SuperRoot</code> using the <a href="../protocol/derivation.html">derivation process</a>. Executing messages are not
-checked at this stage.
+<li><code>current_l1</code>: <code>BlockID</code> - the highest L1 block that has been fully processed
+by all chains in the dependency set. This is the minimum <code>currentL1</code> across all chains.</li>
+<li><code>safe_timestamp</code>: <code>NUMBER</code> - the highest L2 timestamp that is cross-safe across
+all chains. This is the minimum per-chain cross-safe L2 head timestamp.</li>
+<li><code>local_safe_timestamp</code>: <code>NUMBER</code> - the highest L2 timestamp that is local-safe
+across all chains. This is the minimum per-chain local-safe L2 head timestamp.</li>
+<li><code>finalized_timestamp</code>: <code>NUMBER</code> - the highest L2 timestamp that is finalized
+across all chains. This is the minimum per-chain finalized L2 head timestamp.</li>
+<li><code>chain_ids</code>: <code>ARRAY</code> of <code>ChainID</code> - the chain IDs in the dependency set,
+sorted in ascending order.</li>
+<li><code>optimistic_at_timestamp</code>: <code>OBJECT</code> with <code>ChainID</code> keys and <code>OutputWithRequiredL1</code>
+values - per-chain optimistic output data at the requested timestamp.</li>
+<li><code>data</code>: <code>SuperRootResponseData</code> or <code>null</code> - the verified super root data.
+<code>null</code> when verified data is not yet available for all chains.</li>
+</ul>
+<h3 id="response-behavior"><a class="header" href="#response-behavior">Response Behavior</a></h3>
+<h4 id="sync-status-fields"><a class="header" href="#sync-status-fields">Sync Status Fields</a></h4>
+<p>The fields <code>current_l1</code>, <code>safe_timestamp</code>, <code>local_safe_timestamp</code>,
+<code>finalized_timestamp</code>, and <code>chain_ids</code> are always populated. They reflect
+the aggregate sync state across all chains in the dependency set at the time of the call,
+independent of the requested timestamp.</p>
+<p>Each timestamp field is the minimum of that safety level's L2 head timestamp
+across all chains, providing a conservative view of global progress.</p>
+<h4 id="optimistic-data"><a class="header" href="#optimistic-data">Optimistic Data</a></h4>
+<p>The <code>optimistic_at_timestamp</code> map is populated per-chain. Each chain that has
+a derived block at the requested timestamp is included, regardless of whether
+its executing messages have been verified. Chains that have not yet derived a
+block at the requested timestamp are omitted from the map.</p>
+<p>If a block at the requested timestamp has been
+<a href="./derivation.html#replacing-invalid-blocks">replaced</a> due to invalid executing
+messages, the optimistic output is the <strong>original</strong> (pre-replacement) block's
+output — representing the chain state as if verification had succeeded and no
+replacement occurred. For blocks that have not been replaced, the optimistic
+output is the current local-safe block's output.</p>
+<p>This data is useful for consumers that want to act on the most recent state
+before full cross-chain verification completes.</p>
+<h4 id="verified-data"><a class="header" href="#verified-data">Verified Data</a></h4>
+<p>The <code>data</code> field is non-null only when <strong>all</strong> chains in the dependency set have
+fully verified data at the requested timestamp. "Verified" means:</p>
 <ul>
-<li>No block is derived if <code>Step</code> is greater than the number of chains in the super root.</li>
-<li>If the derivation process is unable to derive the next L1 block because the L1 head is reached, the post state is
-the <a href="#invalid-state">invalid state</a></li>
+<li>The block at the requested timestamp has been derived.</li>
+<li>All executing messages in the block (and its transitive dependencies) have been
+validated across the dependency set.</li>
+<li>Any blocks containing invalid executing messages have been replaced using
+<a href="../protocol/holocene/derivation.html#engine-queue">Holocene Replacement</a>.</li>
 </ul>
-</li>
-<li>Increment <code>Step</code></li>
+<p>When <code>data</code> is present:</p>
+<ul>
+<li><code>data.super_root</code> is the canonical super root hash at the requested timestamp.</li>
+<li><code>data.verified_required_l1</code> is the minimum L1 block that includes
+all batch data necessary to reproduce this verified state.</li>
+<li><code>data.super</code> contains the full preimage, allowing callers to independently
+recompute the super root hash.</li>
 </ul>
-<p>Since one step is required per chain in the dependency set, the current dispute game can support a maximum of 127 chains
-in the dependency set. If a greater number of chains are required in the future the number of steps can be increased.</p>
-<h3 id="consolidation"><a class="header" href="#consolidation">Consolidation</a></h3>
-<p>When the prestate is a <code>TransitionState</code> with <code>Step = 127</code>, the validity of executing messages is checked and any
-local safe blocks found to contain invalid executing messages are replaced with deposit only blocks. This includes
-recursively replacing any blocks with executing messages that became invalid because of another block being replaced.</p>
-<p>The post state is defined as a super output where <code>timestamp</code> is the <code>SuperOutput</code> timestamp + 1, and the output roots
-are set to the output roots of the validated blocks (including any required replacements).</p>
-<h2 id="fault-proof-program-state-transition"><a class="header" href="#fault-proof-program-state-transition">Fault Proof Program State Transition</a></h2>
-<p>Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
-<a href="../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a>. A single <strong>ABSOLUTE_PRESTATE</strong> continues to be used, with the fault proof
-program identifying the type of step to perform based on the agreed prestate.</p>
-<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
-<p>TODO</p>
+<p>When <code>data</code> is null, the super root at the requested timestamp is not yet
+known. Callers should retry after the node has made further sync progress.
+The <code>safe_timestamp</code> field indicates the highest timestamp at which
+verified data is currently available.</p>
+<h4 id="errors"><a class="header" href="#errors">Errors</a></h4>
+<p>The method returns an RPC error if:</p>
+<ul>
+<li>An internal error occurs while querying chain state (e.g. database failure,
+unreachable chain node). Transient <code>NotFound</code> conditions for individual chains
+do not produce errors; they result in the chain being excluded from
+<code>optimistic_at_timestamp</code> and <code>data</code> being null.</li>
+<li>The dependency set is empty (no chains configured).</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../interop/superroot.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../interop/verifier.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../interop/token-bridging.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../interop/fault-proof.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -291,11 +339,11 @@ program identifying the type of step to perform based on the agreed prestate.</p
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../interop/superroot.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../interop/verifier.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../interop/token-bridging.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../interop/fault-proof.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

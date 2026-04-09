@@ -177,15 +177,7 @@
 <li><a href="#overview">Overview</a></li>
 <li><a href="#invariants">Invariants</a></li>
 <li><a href="#activation-block">Activation Block</a></li>
-<li><a href="#replacing-invalid-blocks">Replacing Invalid Blocks</a>
-<ul>
-<li><a href="#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a>
-<ul>
-<li><a href="#optimistic-block-source-hash">Optimistic Block Source-hash</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a href="#replacing-invalid-blocks">Replacing Invalid Blocks</a></li>
 <li><a href="#network-upgrade-transactions">Network Upgrade Transactions</a>
 <ul>
 <li><a href="#l2tol2crossdomainmessenger-deployment">L2ToL2CrossDomainMessenger Deployment</a></li>
@@ -257,35 +249,9 @@ following the batch-dropping rules introduced in the
 <h2 id="replacing-invalid-blocks"><a class="header" href="#replacing-invalid-blocks">Replacing Invalid Blocks</a></h2>
 <p>When the <a href="./messaging.html#resolving-cross-chain-safety">cross chain dependency resolution</a> determines
 that a block contains an <a href="./messaging.html#invalid-messages">invalid message</a>, the block is replaced
-by a block with the same inputs, except for the transactions included. The transactions from the
-original block are trimmed to include only deposit transactions plus an
-<a href="#optimistic-block-deposited-transaction">optimistic block info deposit transaction</a>, which is appended
-to the trimmed transaction list.</p>
-<h3 id="optimistic-block-deposited-transaction"><a class="header" href="#optimistic-block-deposited-transaction">Optimistic Block Deposited Transaction</a></h3>
-<p>An Optimistic Block Deposited Transaction is a system deposited transaction,
-inserted into the replacement block,
-to signal when a previously derived local-safe block (the "optimistic" block) was invalidated.</p>
-<p>This transaction MUST have the following values:</p>
-<ol>
-<li><code>from</code> is <code>0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002</code>, like the address of the
-<a href="../protocol/deposits.html#l1-attributes-depositor-account">L1 Attributes depositor account</a>, but incremented by 1</li>
-<li><code>to</code> is <code>0x0000000000000000000000000000000000000000</code> (the zero address as no EVM code execution is expected).</li>
-<li><code>mint</code> is <code>0</code></li>
-<li><code>value</code> is <code>0</code></li>
-<li><code>gasLimit</code> is set <code>36000</code> gas, to cover intrinsic costs, processing costs, and margin for change.</li>
-<li><code>isSystemTx</code> is set to <code>false</code>.</li>
-<li><code>data</code> is the preimage of the <a href="../glossary.html#l2-output-root-proposals">L2 output root</a>
-of the replaced block. i.e. <code>version_byte || payload</code> without applying the <code>keccak256</code> hashing.</li>
-<li><code>sourceHash</code> is computed with a new deposit source-hash domain, see below.</li>
-</ol>
-<p>This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
-<code>gasLimit</code>, as it is considered part of state-transition processing.</p>
-<h4 id="optimistic-block-source-hash"><a class="header" href="#optimistic-block-source-hash">Optimistic Block Source-hash</a></h4>
-<p>The source hash is <a href="../protocol/deposits.html#source-hash-computation">computed</a>
-with a source-hash domain: <code>4</code> (instead of <code>1</code>),
-combined with the <a href="../glossary.html#l2-output-root-proposals">L2 output root</a> of the optimistic block that was invalidated.</p>
-<p>The source-hash is thus computed as:
-<code>keccak256(bytes32(uint256(4)), outputRoot))</code>.</p>
+using <a href="../protocol/holocene/derivation.html#engine-queue">Holocene Replacement</a>.
+The replacement block has the same attributes, except the transaction list is trimmed
+to include only deposit transactions.</p>
 <h2 id="network-upgrade-transactions"><a class="header" href="#network-upgrade-transactions">Network Upgrade Transactions</a></h2>
 <p>The interop network upgrade timestamp defines the timestamp at which all functionality in this document is considered
 the consensus rules for an OP Stack based network.</p>
