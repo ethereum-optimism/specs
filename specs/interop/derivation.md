@@ -8,8 +8,6 @@
 - [Invariants](#invariants)
 - [Activation Block](#activation-block)
 - [Replacing Invalid Blocks](#replacing-invalid-blocks)
-  - [Optimistic Block Deposited Transaction](#optimistic-block-deposited-transaction)
-    - [Optimistic Block Source-hash](#optimistic-block-source-hash)
 - [Network Upgrade Transactions](#network-upgrade-transactions)
   - [L2ToL2CrossDomainMessenger Deployment](#l2tol2crossdomainmessenger-deployment)
   - [L2ToL2CrossDomainMessenger Proxy Update](#l2tol2crossdomainmessenger-proxy-update)
@@ -77,43 +75,9 @@ The activation block has several special properties and constraints:
 
 When the [cross chain dependency resolution](./messaging.md#resolving-cross-chain-safety) determines
 that a block contains an [invalid message](./messaging.md#invalid-messages), the block is replaced
-by a block with the same inputs, except for the transactions included. The transactions from the
-original block are trimmed to include only deposit transactions plus an
-[optimistic block info deposit transaction](#optimistic-block-deposited-transaction), which is appended
-to the trimmed transaction list.
-
-### Optimistic Block Deposited Transaction
-
-An Optimistic Block Deposited Transaction is a system deposited transaction,
-inserted into the replacement block,
-to signal when a previously derived local-safe block (the "optimistic" block) was invalidated.
-
-This transaction MUST have the following values:
-
-1. `from` is `0xdeaddeaddeaddeaddeaddeaddeaddeaddead0002`, like the address of the
-   [L1 Attributes depositor account](../protocol/deposits.md#l1-attributes-depositor-account), but incremented by 1
-2. `to` is `0x0000000000000000000000000000000000000000` (the zero address as no EVM code execution is expected).
-3. `mint` is `0`
-4. `value` is `0`
-5. `gasLimit` is set `36000` gas, to cover intrinsic costs, processing costs, and margin for change.
-6. `isSystemTx` is set to `false`.
-7. `data` is the preimage of the [L2 output root]
-   of the replaced block. i.e. `version_byte || payload` without applying the `keccak256` hashing.
-8. `sourceHash` is computed with a new deposit source-hash domain, see below.
-
-This system-initiated transaction for L1 attributes is not charged any ETH for its allocated
-`gasLimit`, as it is considered part of state-transition processing.
-
-[L2 output root]: ../glossary.md#l2-output-root-proposals
-
-#### Optimistic Block Source-hash
-
-The source hash is [computed](../protocol/deposits.md#source-hash-computation)
-with a source-hash domain: `4` (instead of `1`),
-combined with the [L2 output root] of the optimistic block that was invalidated.
-
-The source-hash is thus computed as:
-`keccak256(bytes32(uint256(4)), outputRoot))`.
+using [Holocene Replacement](../protocol/holocene/derivation.md#engine-queue).
+The replacement block has the same attributes, except the transaction list is trimmed
+to include only deposit transactions.
 
 ## Network Upgrade Transactions
 
