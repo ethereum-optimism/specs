@@ -283,6 +283,7 @@ structs
 subgame
 subgames
 superchain
+superroot
 superfactory
 syscall
 syscalls
