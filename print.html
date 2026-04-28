@@ -14938,6 +14938,45 @@ to derive the configuration from L1 logs.</p>
 <pre><code class="language-solidity">function daFootprintGasScalar() external view returns (uint16);
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="karst-network-upgrade"><a class="header" href="#karst-network-upgrade">Karst Network Upgrade</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/karst/overview.html#execution-layer">Execution Layer</a></li>
+<li><a href="protocol/karst/overview.html#consensus-layer">Consensus Layer</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>This document is not finalized and should be considered experimental.</p>
+<h2 id="execution-layer-7"><a class="header" href="#execution-layer-7">Execution Layer</a></h2>
+<ul>
+<li><a href="protocol/karst/./exec-engine.html#precompile-input-size-restrictions">Reduce <code>bn256Pairing</code> precompile input size</a></li>
+</ul>
+<h2 id="consensus-layer-9"><a class="header" href="#consensus-layer-9">Consensus Layer</a></h2>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="karst-execution-engine"><a class="header" href="#karst-execution-engine">Karst: Execution Engine</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/karst/exec-engine.html#evm-changes">EVM Changes</a>
+<ul>
+<li><a href="protocol/karst/exec-engine.html#precompile-input-size-restrictions">Precompile Input Size Restrictions</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="evm-changes-3"><a class="header" href="#evm-changes-3">EVM Changes</a></h2>
+<h3 id="precompile-input-size-restrictions-1"><a class="header" href="#precompile-input-size-restrictions-1">Precompile Input Size Restrictions</a></h3>
+<p>The <code>bn256Pairing</code> precompile input size is reduced from the
+<a href="protocol/karst/../jovian/exec-engine.html#precompile-input-size-restrictions">Jovian limit</a> of 81,984 bytes (427 pairs) to
+57,600 bytes (300 pairs).</p>
+<p>The lower limit restores Jovian-era headroom under the
+<a href="https://eips.ethereum.org/EIPS/eip-7825">EIP-7825</a> L1 transaction gas cap, accommodating the
+<a href="https://eips.ethereum.org/EIPS/eip-7904">EIP-7904</a> pairing cost increase plus plausible variance without
+requiring a further adjustment.</p>
+<p>The other variable-input precompile limits are unchanged from Jovian.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="governance-token-2"><a class="header" href="#governance-token-2">Governance Token</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
