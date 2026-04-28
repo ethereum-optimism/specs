@@ -13,4 +13,6 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
+- [Reduce `bn256Pairing` precompile input size](./exec-engine.md#precompile-input-size-restrictions)
+
 ## Consensus Layer
