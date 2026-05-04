@@ -18,6 +18,8 @@
       - [Derivation](./protocol/derivation.md)
     - [Batch Submitter](./protocol/batcher.md)
   - [Flashblocks](./protocol/flashblocks.md)
+  - [Post-Execution Transactions](./protocol/post-exec.md)
+    - [Sequencer-Defined Metering](./protocol/sdm.md)
   - [Fault Proof](fault-proof/index.md)
     - [Cannon Fault Proof VM](fault-proof/cannon-fault-proof-vm.md)
     - [ZK Fault Proof VM](fault-proof/zk-fault-proof-vm.md)
