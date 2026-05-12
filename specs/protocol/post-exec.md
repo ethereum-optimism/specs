@@ -197,7 +197,7 @@ identical to those of an EIP-1559 receipt:
 - `logsBloom`
 - `logs`
 
-A post-exec transaction is constructed by the protocol, executes synthetically, emits no logs, and consumes no gas
+A post-exec transaction is constructed by the protocol, does not execute, emits no logs, and consumes no gas.  It is metadata.
 pool, so:
 
 - `postStateOrStatus` MUST encode success ([EIP-658] status `1`).
