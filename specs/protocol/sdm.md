@@ -79,7 +79,7 @@ A version-1 payload is invalid if any of the following hold:
 
 1. `gasRefundEntries` is empty.
 2. Any `SDMGasEntry` has `gasRefund == 0`.
-3. Entries are not strictly ordered by increasing `index`.
+3. Entries are not ordered by strictly increasing `index`.
 4. Any entry's `index` does not refer to a [`Normal`](#transaction-classification) transaction in the block.
 
 The envelope-level rules in [post-exec.md § Block-Level Structural Rules](./post-exec.md#block-level-structural-rules)
