@@ -97,7 +97,7 @@ Every transaction in the block is classified as exactly one of:
 | `PostExec` | The post-exec transaction (type `0x7D`).              | No               |
 
 Deposits buy gas on L1 and have no L2-side gas-price to refund. The post-exec transaction carries SDM data only;
-it charges no fees and consumes no gas.
+it charges no fees, consumes no gas and is not executed as code.
 
 ## Gas Refund Semantics
 
