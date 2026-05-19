@@ -10,7 +10,7 @@
 - [Path A: SFDG → SuperZKDG (Isolated Chain)](#path-a-sfdg-%E2%86%92-superzkdg-isolated-chain)
 - [Path B: SPDG → SuperZKDG (Isolated Chain)](#path-b-spdg-%E2%86%92-superzkdg-isolated-chain)
 - [Path C: SFDG → SuperZKDG (Interop Set)](#path-c-sfdg-%E2%86%92-superzkdg-interop-set)
-  - [Shared Infrastructure and Idempotent Reinitialization](#shared-infrastructure-and-idempotent-reinitialization)
+  - [Shared Infrastructure and Idempotent Upgrades](#shared-infrastructure-and-idempotent-upgrades)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
