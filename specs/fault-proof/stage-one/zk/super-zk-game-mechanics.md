@@ -94,7 +94,7 @@ The `_extraData` passed to `DisputeGameFactory.create()` has a variable-length l
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `l2SequenceNumber` | `uint256` | Super root timestamp asserted by this game's root claim. Constrained to `uint64` range. |
+| `l2SequenceNumber` | `uint64` | Super root timestamp asserted by this game's root claim. |
 | `parentIndex` | `uint32` | Index of the parent game; `type(uint32).max` if starting from the anchor state |
 | `superRootProof` | `bytes` | ABI-encoded `SuperRootProof` preimage committed to by `rootClaim` |
 

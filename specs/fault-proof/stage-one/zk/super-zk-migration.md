@@ -7,9 +7,9 @@
 - [Overview](#overview)
 - [In-Flight Withdrawal Safety](#in-flight-withdrawal-safety)
 - [Common Mechanics](#common-mechanics)
-- [Path A: SFDG → SuperZKDG (Isolated Chain)](#path-a-sfdg-%E2%86%92-superzkdg-isolated-chain)
-- [Path B: SPDG → SuperZKDG (Isolated Chain)](#path-b-spdg-%E2%86%92-superzkdg-isolated-chain)
-- [Path C: SFDG → SuperZKDG (Interop Set)](#path-c-sfdg-%E2%86%92-superzkdg-interop-set)
+- [Path A: SFDG → SZKDG (Isolated Chain)](#path-a-sfdg-%E2%86%92-szkdg-isolated-chain)
+- [Path B: SPDG → SZKDG (Isolated Chain)](#path-b-spdg-%E2%86%92-szkdg-isolated-chain)
+- [Path C: Shared SFDG → Shared SZKDG](#path-c-shared-sfdg-%E2%86%92-shared-szkdg)
   - [Shared Infrastructure and Idempotent Upgrades](#shared-infrastructure-and-idempotent-upgrades)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -22,9 +22,9 @@ supported:
 
 | Path | Source | Target | Context |
 | --- | --- | --- | --- |
-| **A** | `SuperFaultDisputeGame` (SFDG) | `SuperZKDisputeGame` (SuperZKDG) | Isolated chain |
-| **B** | `SuperPermissionedDisputeGame` (SPDG) | `SuperZKDisputeGame` (SuperZKDG) | Isolated chain |
-| **C** | `SuperFaultDisputeGame` (SFDG) | `SuperZKDisputeGame` (SuperZKDG) | Interop set (e.g., OPM + Unichain) |
+| **A** | `SuperFaultDisputeGame` (SFDG) | `SuperZKDisputeGame` (SZKDG) | Isolated chain |
+| **B** | `SuperPermissionedDisputeGame` (SPDG) | `SuperZKDisputeGame` (SZKDG) | Isolated chain |
+| **C** | `SuperFaultDisputeGame` (SFDG) | `SuperZKDisputeGame` (SZKDG) | Interop set (e.g., OPM + Unichain) |
 
 All paths share the same core mechanics. Path-specific differences are concentrated in a small
 number of steps.
@@ -33,13 +33,13 @@ number of steps.
 
 MCP clones embed the implementation address at deployment time. Old SFDG/SPDG game clones created
 before the migration retain their original implementation bytecode forever. New game clones
-created after `setImplementation()` in `DisputeGameFactory` use the `SuperZKDG` implementation.
+created after `setImplementation()` in `DisputeGameFactory` use the `SZKDG` implementation.
 
 `wasRespectedGameTypeWhenCreated` is snapshotted at game creation. `AnchorStateRegistry.isGameClaimValid()`
 reads this flag during withdrawal finalization. Games created under the old respected type remain
 valid for in-flight withdrawal finalization even after the migration.
 
-`rootClaimByChainId` is declared on all game types in scope (SFDG, SPDG, SuperZKDG). The Portal
+`rootClaimByChainId` is declared on all game types in scope (SFDG, SPDG, SZKDG). The Portal
 calls it on all games whose type is in the `isSuperGame` allowlist. Old games already return the
 correct answer via their existing implementation. No special handling is needed for pre-migration
 games during Portal withdrawal verification.
@@ -78,19 +78,19 @@ The following steps are executed in every migration path via `OPCMv2.upgrade()`:
    ```
 
 5. **Add `SUPER_ZK_GAME_TYPE` to `GameTypes.isSuperGame()`.** Required for `OptimismPortal`
-   to call `rootClaimByChainId` on `SuperZKDG` games during withdrawal verification. If this was
-   already shipped at initial `SuperZKDG` launch, this step is a no-op.
+   to call `rootClaimByChainId` on `SZKDG` games during withdrawal verification. If this was
+   already shipped at initial `SZKDG` launch, this step is a no-op.
 
 6. **Reinitialize `AnchorStateRegistry` (no-op for these paths).** Both SFDG and SPDG already
-   commit to super roots — the same `bytes32` hash format that `SuperZKDG` uses as its starting
-   state. The existing anchor root is therefore a valid starting point for `SuperZKDG` parent
+   commit to super roots — the same `bytes32` hash format that `SZKDG` uses as its starting
+   state. The existing anchor root is therefore a valid starting point for `SZKDG` parent
    validation without modification. No ASR reinitializer is required for Path A, B, or C.
 
    > **Note:** An ASR reinitializer would only be necessary when migrating from a classic
    > `FaultDisputeGame` (which commits to a per-chain output root rather than a super root). That
    > path is not in scope here.
 
-## Path A: SFDG → SuperZKDG (Isolated Chain)
+## Path A: SFDG → SZKDG (Isolated Chain)
 
 Single chain with its own `DisputeGameFactory`, `AnchorStateRegistry`, and `OptimismPortal`.
 
@@ -99,7 +99,7 @@ Execute [Common Mechanics](#common-mechanics) in a single `OPCMv2.upgrade()` cal
 The ASR reinitializer fires once. No idempotency concerns arise since there is only one chain in
 scope.
 
-## Path B: SPDG → SuperZKDG (Isolated Chain)
+## Path B: SPDG → SZKDG (Isolated Chain)
 
 Single chain currently using the permissioned dispute game, migrating to permissionless ZK proofs.
 
@@ -113,9 +113,12 @@ following additional considerations:
   operational and funded before the respected game type is switched. This is the chain operator's
   responsibility and is not enforced by OPCM, but MUST be verified prior to executing the upgrade.
 
-## Path C: SFDG → SuperZKDG (Interop Set)
+## Path C: Shared SFDG → Shared SZKDG
 
-Multiple chains (e.g., OPM + Unichain) sharing a single `DisputeGameFactory`,
+> **Note:** This path is intended as future work. The design below documents the intended approach
+> but has not yet been implemented.
+
+This case covers chains sharing a single `DisputeGameFactory`,
 `AnchorStateRegistry`, and `ETHLockbox` under the interop model.
 
 Execute [Common Mechanics](#common-mechanics). Because multiple chains share the same
@@ -135,7 +138,7 @@ this game type").
 
 Option 2 — Multi-chain bulk function: Introduce a function that accepts multiple `SystemConfig`
 addresses, upgrades shared infrastructure once, and handles per-chain state in a loop. This
-follows the existing bulk migration patterns but is scoped to the SFDG → SuperZKDG transition.
+follows the existing bulk migration patterns but is scoped to the SFDG → SZKDG transition.
 
 The choice between these options is left to the OPCM implementation. Either approach MUST
 guarantee that shared infrastructure (ASR, ETHLockbox) is updated exactly once, regardless of

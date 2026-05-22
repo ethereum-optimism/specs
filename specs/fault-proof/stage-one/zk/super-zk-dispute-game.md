@@ -347,6 +347,7 @@ if (_gcfg.gameType.raw() == GameTypes.SUPER_ZK_GAME_TYPE.raw()) {
         cfg.maxChallengeDuration,
         cfg.maxProveDuration,
         cfg.challengerBond,
+        uint256(0), // l2ChainId; zero for parity with SuperFaultDisputeGame — chain scoping is provided by the SuperRootProof preimage
         address(_anchorStateRegistry),
         address(_delayedWETH)
     );
