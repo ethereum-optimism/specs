@@ -16,3 +16,5 @@ This document is not finalized and should be considered experimental.
 - [Reduce `bn256Pairing` precompile input size](./exec-engine.md#precompile-input-size-restrictions)
 
 ## Consensus Layer
+
+- [Network upgrade transactions](./derivation.md#network-upgrade-transactions) applied during derivation
