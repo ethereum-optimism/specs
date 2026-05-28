@@ -4,7 +4,8 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Activation Block Rules](#activation-block-rules)
+- [Derivation](#derivation)
+  - [Activation Block Rules](#activation-block-rules)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -24,10 +25,10 @@ These transactions can be classified into the following groups:
 
 1. **ConditionalDeployer Deployment**: One transaction to deploy the ConditionalDeployer contract
 2. **ConditionalDeployer Upgrade** One transaction to upgrade a new predeploy to the ConditionalDeployer implementation
-3. **Implementation Deployments**: One transaction for _each_ predeploy being upgraded, to deploy its implementation 
+3. **Implementation Deployments**: One transaction for _each_ predeploy being upgraded, to deploy its implementation  
   (26 total)
-5. **ProxyAdmin Upgrade** One transactions to upgrade the L2ProxyAdmin implementation
-6. **L2ContractsManager Deployment**: One transaction to deploy the L2ContractsManager for this upgrade
-7. **Upgrade Execution**: One transactions to call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)`
+4. **ProxyAdmin Upgrade** One transactions to upgrade the L2ProxyAdmin implementation
+5. **L2ContractsManager Deployment**: One transaction to deploy the L2ContractsManager for this upgrade
+6. **Upgrade Execution**: One transactions to call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)`
 
 More information regarding the upgrade path implemented by the bundle transactions can be found in [L2 Upgrade Execution](../../protocol/l2-upgrades-1-execution.md).
