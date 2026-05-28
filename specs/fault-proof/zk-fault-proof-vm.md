@@ -1,4 +1,4 @@
-# Super ZK Fault Proof VM
+# ZK Fault Proof VM
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -13,26 +13,26 @@
   - [SP1 (PLONK)](#sp1-plonk)
 - [Proof Generation](#proof-generation)
 - [Invariants](#invariants)
-  - [iSZKVM-001: Private Inputs Must Be Anchored to Public Values](#iszkvm-001-private-inputs-must-be-anchored-to-public-values)
+  - [iZKVM-001: Private Inputs Must Be Anchored to Public Values](#izkvm-001-private-inputs-must-be-anchored-to-public-values)
     - [Impact](#impact)
-  - [iSZKVM-002: Super Root Preimage Must Commit to All Chain Outputs](#iszkvm-002-super-root-preimage-must-commit-to-all-chain-outputs)
+  - [iZKVM-002: Super Root Preimage Must Commit to All Chain Outputs](#izkvm-002-super-root-preimage-must-commit-to-all-chain-outputs)
     - [Impact](#impact-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
 
-The Super ZK Fault Proof VM is a succinct proof system that verifies a super root state
+The ZK Fault Proof VM is a succinct proof system that verifies a super root state
 transition across all chains in the interop set through a single cryptographic proof. It consists
 of two components:
 
 - ZK Program: an off-chain circuit that re-executes the derivation and state transitions for all
   chains in the interop set and produces a succinct proof of correctness.
-- On-chain Verifier: a smart contract (see [`IZKVerifier`](stage-one/zk/super-zk-interface.md))
+- On-chain Verifier: a smart contract (see [`IZKVerifier`](stage-one/zk/zk-interface.md))
   that checks the proof and the committed public values in a single call.
 
 This is the ZK analogue of `SuperFaultDisputeGame`. Where the fault proof bisects an execution
-trace down to a single instruction, the Super ZK VM proves the entire block range across all
+trace down to a single instruction, the ZK VM proves the entire block range across all
 chains — from one super root to the next — in a single on-chain call.
 
 In a standalone deployment (single chain), the interop set contains exactly one chain. The program
@@ -75,7 +75,7 @@ The `absolutePrestate` is a `bytes32` value that uniquely identifies the ZK prog
 proven. Two different programs MUST NOT share the same `absolutePrestate`.
 
 It serves as the program identity in
-[`IZKVerifier.verify`](stage-one/zk/super-zk-interface.md) and is injected into each game
+[`IZKVerifier.verify`](stage-one/zk/zk-interface.md) and is injected into each game
 instance via the CWIA game args.
 
 For SP1 deployments, `absolutePrestate` corresponds to the program's verification key
@@ -106,14 +106,14 @@ Proofs are generated off-chain by a prover that:
 3. Executes the ZK program inside the zkVM with the public values as inputs and provides the
    required L1 and L2 data as private values to the ZK program.
 4. Produces a proof blob (`proofBytes`).
-5. Submits the proof on-chain via `SuperZKDisputeGame.prove(proofBytes)`.
+5. Submits the proof on-chain via `ZKDisputeGame.prove(proofBytes)`.
 
 Proof generation is permissionless: any party may generate and submit a proof. In practice the
 proposer or a third-party proving service will act as prover.
 
 ## Invariants
 
-### iSZKVM-001: Private Inputs Must Be Anchored to Public Values
+### iZKVM-001: Private Inputs Must Be Anchored to Public Values
 
 The ZK program receives private inputs (block and transaction data for all chains) that are known
 only to the prover and never seen by the on-chain verifier. The ZK program MUST verify that all
@@ -130,7 +130,7 @@ A violation means a malicious prover can supply manipulated private inputs that 
 that verifies on-chain but represents an invalid state transition, and enable finalization of a
 fraudulent super root.
 
-### iSZKVM-002: Super Root Preimage Must Commit to All Chain Outputs
+### iZKVM-002: Super Root Preimage Must Commit to All Chain Outputs
 
 The ZK program MUST verify the output root of every chain listed in the `SuperRootProof` preimage
 and MUST produce a `rootClaim` that is the hash of that complete preimage. Omitting any chain from

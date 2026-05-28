@@ -30,6 +30,7 @@
       - [ZK Dispute Game](fault-proof/stage-one/zk/zk-dispute-game.md)
         - [Game Mechanics](fault-proof/stage-one/zk/game-mechanics.md)
         - [IZKVerifier Interface](fault-proof/stage-one/zk/zk-interface.md)
+        - [Migration](fault-proof/stage-one/zk/zk-migration.md)
       - [Bridge Integration](fault-proof/stage-one/bridge-integration.md)
       - [Optimism Portal](fault-proof/stage-one/optimism-portal.md)
   - [Precompiles](./protocol/precompiles.md)

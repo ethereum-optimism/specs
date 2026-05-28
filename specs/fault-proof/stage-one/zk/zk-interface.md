@@ -13,13 +13,13 @@
 
 ## Overview
 
-`IZKVerifier` is the on-chain interface that decouples `SuperZKDisputeGame` from any specific
+`IZKVerifier` is the on-chain interface that decouples `ZKDisputeGame` from any specific
 proving system. The game always casts the configured verifier address to `IZKVerifier` and calls
 `verify()` through the interface, rather than depending on a concrete verifier type. The verifier
 can be swapped without redeploying the game implementation.
 
 The concrete deployment for the initial release uses Succinct's PLONK verifier for
-[SP1](../../super-zk-fault-proof-vm.md#sp1-plonk).
+[SP1](../../zk-fault-proof-vm.md#sp1-plonk).
 
 ## Interface
 
@@ -50,7 +50,7 @@ proof acceptance; the game will set `claimData.prover = msg.sender` and transiti
 
 ## Usage in `prove()`
 
-`SuperZKDisputeGame.prove()` constructs `publicValues` from on-chain game state and forwards them
+`ZKDisputeGame.prove()` constructs `publicValues` from on-chain game state and forwards them
 to the verifier:
 
 ```solidity
@@ -91,14 +91,14 @@ CWIA data.
 Note: `l2ChainId` is encoded as `uint256(0)` in the public values. In the super-root model, chain
 scoping is provided by the `SuperRootProof` preimage committed to by `rootClaim`, so no specific
 chain ID is meaningful here. The field is kept for parity with `SuperFaultDisputeGame` but is
-always zero. See [ZK Program Inputs](../../super-zk-fault-proof-vm.md#inputs) for the full public
+always zero. See [ZK Program Inputs](../../zk-fault-proof-vm.md#inputs) for the full public
 values specification.
 
 ## Verifier Upgrade Path
 
 The `verifier` and `absolutePrestate` fields live in the CWIA game args (see
-[CWIA Layout](super-zk-dispute-game.md#cwia-layout)), so they can be updated per chain
-without redeploying the `SuperZKDisputeGame` implementation.
+[CWIA Layout](zk-dispute-game.md#cwia-layout)), so they can be updated per chain
+without redeploying the `ZKDisputeGame` implementation.
 
 Upgrade process:
 

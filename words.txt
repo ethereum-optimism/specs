@@ -82,9 +82,6 @@ SFDG
 SLOAD
 SPDG
 SUPC
-SZKG
-SZKDG
-SZKVM
 Sched
 Shapella
 Singlethreaded

@@ -1,4 +1,4 @@
-# Super ZK Dispute Game Mechanics
+# ZK Dispute Game Mechanics
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -30,7 +30,7 @@ enum GameStatus {
 }
 ```
 
-**`ProposalStatus`** (internal, defined in `SuperZKDisputeGame`): tracks the proposal's internal
+**`ProposalStatus`** (internal, defined in `ZKDisputeGame`): tracks the proposal's internal
 lifecycle independently of the resolution outcome.
 
 ```solidity
@@ -116,7 +116,7 @@ any of the following checks fail:
 
 - Parent MUST NOT be blacklisted.
 - Parent MUST NOT be retired (i.e., `createdAt > retirementTimestamp`).
-- Parent MUST be the same game type (`SUPER_ZK_GAME_TYPE`).
+- Parent MUST be the same game type (`ZK_GAME_TYPE`).
 - Parent MUST NOT have resolved as `CHALLENGER_WINS`.
 - Parent's `l2SequenceNumber` (timestamp) MUST be strictly above the anchor state's
   `l2SequenceNumber`.
