@@ -19,7 +19,7 @@ set of deposit transaction-based upgrade transactions are deterministically gene
 The contents of the transaction are defined by the file
 [`karst_upgrade_bundle.json`](https://github.com/ethereum-optimism/optimism/blob/dab30cd9a988f04b3d72cfea873d32f888aed8c5/op-core/nuts/bundles/karst_nut_bundle.json#L1)
 in the monorepo, which contains 31 transactions. In addition to the contents of the files, the consensus layer
-node MUST also append the string "Karst: " at the front of the intent string.
+node MUST also prepend the string "Karst: " at the front of the intent string.
 
 These transactions can be classified into the following groups:
 
@@ -31,4 +31,4 @@ These transactions can be classified into the following groups:
 5. **L2ContractsManager Deployment**: One transaction to deploy the L2ContractsManager for this upgrade
 6. **Upgrade Execution**: One transactions to call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)`
 
-More information regarding the upgrade path implemented by the bundle transactions can be found in [L2 Upgrade Execution](../../protocol/l2-upgrades-1-execution.md).
+More information regarding the upgrade path implemented by the bundle transactions can be found in [L2 Upgrade Execution](../l2-upgrades-1-execution.md).
