@@ -24,10 +24,10 @@
 
 <!-- All glossary references in this file. -->
 
-[g-deposited]: ../glossary.md#deposited-transaction
-[g-post-exec-tx]: ../glossary.md#post-execution-transaction
-[g-post-exec-payload]: ../glossary.md#post-exec-payload
-[g-post-exec-schema-version]: ../glossary.md#post-exec-payload-schema-version
+[g-deposited]: ../../glossary.md#deposited-transaction
+[g-post-exec-tx]: ../../glossary.md#post-execution-transaction
+[g-post-exec-payload]: ../../glossary.md#post-exec-payload
+[g-post-exec-schema-version]: ../../glossary.md#post-exec-payload-schema-version
 
 ## Overview
 
@@ -43,12 +43,13 @@ document specifies the version-1 payload and how clients apply the included refu
 
 ## Activation
 
-SDM is gated by a per-chain timestamp activation rule. When SDM is active for a block, the block MAY contain a
-post-exec transaction; when SDM is inactive, the block MUST NOT contain a post-exec transaction (see
+SDM activates with the [Lagoon network upgrade](./overview.md) and is gated by the Lagoon activation timestamp.
+When SDM is active for a block, the block MAY contain a post-exec transaction; when SDM is inactive, the block MUST
+NOT contain a post-exec transaction (see
 [post-exec.md § Block-Level Structural Rules](./post-exec.md#block-level-structural-rules)).
 
-SDM has no scheduled hardfork activation. It MUST NOT activate as part of any hardfork up to and including Karst.
-Until SDM is scheduled into a hardfork, every production block MUST be produced and validated with SDM inactive.
+Before the Lagoon activation timestamp, every block MUST be produced and validated with SDM inactive, identically
+to a chain that has never specified SDM.
 
 ## Payload Schema (Version 1)
 
@@ -83,8 +84,8 @@ A version-1 payload is invalid if any of the following hold:
 4. Any entry's `index` does not refer to a [`Normal`](#transaction-classification) transaction in the block.
 
 The envelope-level rules in [post-exec.md § Block-Level Structural Rules](./post-exec.md#block-level-structural-rules)
-apply in addition to the rules above. If the sequencer assigns no gas refunds, the block has no post-exec
-transaction.
+apply in addition to the rules above. As long as SDM is the only active payload schema: if the sequencer assigns
+no gas refunds, the block has no post-exec transaction.
 
 ## Transaction Classification
 
@@ -175,10 +176,10 @@ The value is sourced from the embedded post-exec payload's `gasRefundEntries` fo
 
 ## Backwards Compatibility
 
-Until SDM is scheduled into a hardfork, blocks are produced and validated identically to a chain that has never
+Before the Lagoon activation timestamp, blocks are produced and validated identically to a chain that has never
 specified SDM: no post-exec transactions appear, no canonical-gas adjustment is performed, and no settlement runs.
 
-When SDM is scheduled, two changes become observable:
+From the Lagoon activation timestamp, two changes become observable:
 
 - A `0x7D` transaction may appear at the end of any block produced after activation, exposed through the same
   transaction-list interfaces used today.
@@ -190,8 +191,10 @@ propagate over the public transaction-gossip protocol.
 
 ## Security Considerations
 
-**Sequencer-defined amounts.** Refund amounts are part of the sequencer's block data. Consensus only constrains their
-encoding, target transaction, and application bounds.
+**Sequencer-defined amounts.** Refund amounts are part of the sequencer's block data. The only consensus-defined
+constraints are on their encoding, their target transaction (`Normal` only), and the application bounds
+(`refund(i) <= evmGasUsed(i)` and no settlement underflow); otherwise the sequencer has complete freedom to
+allocate refunds according to arbitrary policy.
 
 **Cross-block replay.** The post-exec transaction's `blockNumber` field anchors each payload to its containing
 block. A payload from one block re-injected into another fails the envelope `blockNumber` check.

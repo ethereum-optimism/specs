@@ -24,18 +24,23 @@
 
 <!-- All glossary references in this file. -->
 
-[g-transaction-type]: ../glossary.md#transaction-type
-[g-sequencer]: ../glossary.md#sequencer
-[g-post-exec-payload]: ../glossary.md#post-exec-payload
-[g-post-exec-schema-version]: ../glossary.md#post-exec-payload-schema-version
-[g-sdm]: ../glossary.md#sequencer-defined-metering
+[g-transaction-type]: ../../glossary.md#transaction-type
+[g-sequencer]: ../../glossary.md#sequencer
+[g-deposited]: ../../glossary.md#deposited-transaction
+[g-post-exec-payload]: ../../glossary.md#post-exec-payload
+[g-post-exec-schema-version]: ../../glossary.md#post-exec-payload-schema-version
+[g-sdm]: ../../glossary.md#sequencer-defined-metering
 
 ## Overview
 
 Post-execution transactions are an [EIP-2718] [transaction type][g-transaction-type] that allows a block to carry
-sequencer-provided consensus data. Unlike user-submitted transactions, a post-exec transaction is synthesized by the
-[sequencer][g-sequencer] and appended to the block as its final transaction. A verifier applies the data from the
-post-execution transaction as part of the block's state transition.
+sequencer-provided consensus data. Unlike user-submitted transactions or [deposited transactions][g-deposited], a
+post-exec transaction is synthesized by the [sequencer][g-sequencer] and appended to the block as its final
+transaction. A verifier applies the data from the post-execution transaction as part of the block's state
+transition.
+
+The post-exec transaction type is introduced by the [Lagoon network upgrade](./overview.md), together with its
+first payload schema. Before the Lagoon activation timestamp a block MUST NOT contain a `0x7D` transaction.
 
 The post-exec transaction is a generic envelope: it carries a versioned [post-exec payload][g-post-exec-payload]
 whose interpretation is defined by separate policy specifications. Today only one schema is defined,
@@ -56,7 +61,7 @@ A post-execution transaction is an [EIP-2718] typed transaction with type byte `
 
 Type byte `0x7D` was selected because EIP-2718 transaction type identifiers may use values up to `0x7F`; choosing a
 high identifier minimizes the chance of collision with future Ethereum L1 transaction types. `0x7E` is reserved for
-[deposited transactions](./deposits.md#the-deposited-transaction-type), and `0x7F` is left unused in case it is
+[deposited transactions](../deposits.md#the-deposited-transaction-type), and `0x7F` is left unused in case it is
 later assigned to a variable-length encoding scheme.
 
 ### Encoding
@@ -147,8 +152,8 @@ The leading two fields define the envelope; all remaining fields belong to the s
 
 ### Schema Version
 
-`version` is the [post-exec payload schema version][g-post-exec-schema-version]. When the payload schema needs to
-gain or change fields, a new version number is assigned and the new layout is documented as a
+`version` is the [post-exec payload schema version][g-post-exec-schema-version]. When the new payload schema calls
+for additional or different fields, a new version number is assigned and the new layout is documented as a
 [defined schema version](#defined-schema-versions).
 
 ### Block Number
@@ -165,11 +170,12 @@ The normative rule that `blockNumber` equals the containing block's number is st
 
 ### Defined Schema Versions
 
-| `version` | Schema                                 | Status       |
-| --------- | -------------------------------------- | ------------ |
-| `1`       | [Sequencer-Defined Metering](./sdm.md) | Experimental |
+| `version` | Schema                                 |
+| --------- | -------------------------------------- |
+| `1`       | [Sequencer-Defined Metering](./sdm.md) |
 
-No other schema versions are currently defined.
+No other schema versions are currently defined. SDM (`version = 1`) is introduced by the
+[Lagoon network upgrade](./overview.md); see [Overview](#overview).
 
 ## Block-Level Structural Rules
 
@@ -197,8 +203,8 @@ identical to those of an EIP-1559 receipt:
 - `logsBloom`
 - `logs`
 
-A post-exec transaction is constructed by the protocol, does not execute, emits no logs, and consumes no gas.  It is metadata.
-pool, so:
+A post-exec transaction is constructed by the protocol, does not execute, emits no logs, and consumes no gas pool.
+It is metadata, so:
 
 - `postStateOrStatus` MUST encode success ([EIP-658] status `1`).
 - `logs` MUST be empty.
@@ -221,7 +227,7 @@ user transactions and any deposited transactions.
 
 The L1 batcher transaction format is unaffected: post-exec transactions appear inside L2 blocks, never as L1
 batcher transactions. The future-tx-type decoding range described in
-[derivation.md](./derivation.md#on-future-proof-transaction-log-derivation) governs L1 receipts only and is
+[derivation.md](../derivation.md#on-future-proof-transaction-log-derivation) governs L1 receipts only and is
 unchanged.
 
 ## Rationale

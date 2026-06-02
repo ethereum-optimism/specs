@@ -74,8 +74,7 @@
   - [Unsafe Sync](#unsafe-sync)
 - [Execution Engine Concepts](#execution-engine-concepts)
   - [Execution Engine](#execution-engine)
-- [Post-Execution Transactions](#post-execution-transactions)
-  - [Post-Execution Transaction](#post-execution-transaction)
+- [Post-Execution Transaction](#post-execution-transaction)
   - [Post-Exec Payload](#post-exec-payload)
   - [Post-Exec Payload Schema Version](#post-exec-payload-schema-version)
   - [Sequencer-Defined Metering](#sequencer-defined-metering)
@@ -841,21 +840,14 @@ In these specifications, "execution engine" always refer to the L2 execution eng
 
 ---
 
-# Post-Execution Transactions
-
-[post-exec]: glossary.md#post-execution-transactions
-
-A class of [EIP-2718] [transaction types][transaction-type] that carry sequencer-provided consensus data.
-Post-execution transactions are emitted by the [sequencer], are appended to a block after the last user transaction,
-and are not propagated through the public mempool.
-
-## Post-Execution Transaction
+# Post-Execution Transaction
 
 [post-exec-tx]: glossary.md#post-execution-transaction
 
 The _post-execution transaction_, _post-exec transaction_, or _post-exec tx_ is the [EIP-2718] transaction with
-type byte `0x7D`. At most one post-exec transaction may appear in a block, and when present it MUST be the final
-transaction in the block.
+type byte `0x7D` that carries sequencer-provided consensus data. It is emitted by the [sequencer] and appended to a
+block after the last user transaction; at most one may appear in a block, when present it MUST be the final
+transaction in the block, and it is not propagated through the public mempool.
 
 A post-exec transaction has no signer, no nonce, no fee, and consumes no block gas; it carries a single payload
 field (a [post-exec payload](#post-exec-payload)) that clients apply as part of the block's canonical state
@@ -863,7 +855,7 @@ transition.
 
 See the [post-exec specification][spec-post-exec].
 
-[spec-post-exec]: ./protocol/post-exec.md
+[spec-post-exec]: ./protocol/lagoon/post-exec.md
 
 ## Post-Exec Payload
 
@@ -881,7 +873,7 @@ A monotonically assigned identifier that selects the field layout of a [post-exe
 Schema versions are described in the [post-exec specification][spec-post-exec]; the version-1 schema is defined by
 the [Sequencer-Defined Metering][spec-sdm] specification.
 
-[spec-sdm]: ./protocol/sdm.md
+[spec-sdm]: ./protocol/lagoon/sdm.md
 
 ## Sequencer-Defined Metering
 
