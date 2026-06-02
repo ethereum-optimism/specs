@@ -41,6 +41,7 @@
   - [System Config](./protocol/system-config.md)
   - [Configurability](./protocol/configurability.md)
   - [Safe Extensions](./protocol/safe-extensions.md)
+    - [Safer Safes](./protocol/safer-safes.md)
     - [Stage 1 Roles and Requirements](./protocol/stage-1.md)
     - [Deputy Pause Module](./protocol/deputy-pause-module.md)
   - [L2 Upgrades]()
