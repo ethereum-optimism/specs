@@ -73,7 +73,8 @@ The EIP-2718 encoding of a post-exec transaction is:
 ```
 
 where `rlp_encoded_payload` is the RLP encoding of the [post-exec payload][post-exec-payload-envelope] as a list,
-and `||` denotes byte concatenation. The transaction encoding contains no outer list around the payload.
+and `||` denotes byte concatenation. The type byte is immediately followed by the payload's own RLP list; the
+payload is not wrapped in an additional outer RLP list.
 
 ### Transaction Hash
 
@@ -83,8 +84,10 @@ The transaction hash of a post-exec transaction is:
 keccak256(0x7D || rlp_encoded_payload)
 ```
 
-The hash is computed over the full EIP-2718 encoding, so the type byte is included in the hash preimage. The
-payload's [block number](#block-number) is what distinguishes otherwise identical payloads in different blocks.
+The hash is computed over the full EIP-2718 encoding, so the type byte is included in the hash preimage. Because
+the hash is a function of the payload alone, the payload's [block number](#block-number) is what distinguishes
+payloads anchored to different block numbers. (Two blocks at the same height on competing forks that carry an
+identical payload share the same post-exec transaction hash, exactly as a regular transaction would.)
 
 ### Transaction Field Projections
 
@@ -115,7 +118,9 @@ not by this envelope.
 
 A post-exec transaction has no signer. It is authorized by the protocol — by virtue of being synthesized by the
 sequencer at a position that satisfies the [block-level structural rules](#block-level-structural-rules) — rather
-than by a signature.
+than by a signature. Authorization is inherited from the transport rather than from a per-transaction signature:
+unsafe blocks are gossiped in payloads signed by the sequencer, and safe blocks are derived from batches submitted
+by the (signed) batcher transaction. The post-exec transaction is trusted because the block that contains it is.
 
 For compatibility with tooling that expects an ECDSA signature on every typed transaction:
 
@@ -161,7 +166,7 @@ for additional or different fields, a new version number is assigned and the new
 `blockNumber` anchors the payload to the L2 block number of the containing block. The anchoring serves two
 purposes:
 
-1. It guarantees that two otherwise identical payloads produced for different blocks have distinct
+1. It guarantees that otherwise identical payloads anchored to different block numbers have distinct
    [transaction hashes](#transaction-hash).
 2. It detects misordered or replayed payloads at decode time, before any schema-specific validation runs.
 
@@ -221,9 +226,10 @@ transactions whose execution the schema describes, as defined by the active sche
 
 ## Derivation
 
-Post-exec transactions are L2-only and are not derived from L1. They are constructed by the sequencer during block
-production and are included in the block payload that is submitted to the data availability layer alongside the
-user transactions and any deposited transactions.
+Post-exec transactions are constructed by the sequencer during block production and travel inside the L2 block
+body — through both the unsafe p2p payload and the L1 batch — rather than being synthesized from L1 events the way
+deposited transactions are. They are included in the block payload that is submitted to the data availability
+layer alongside the user transactions and any deposited transactions.
 
 The L1 batcher transaction format is unaffected: post-exec transactions appear inside L2 blocks, never as L1
 batcher transactions. The future-tx-type decoding range described in

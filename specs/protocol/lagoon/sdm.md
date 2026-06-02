@@ -140,16 +140,22 @@ Let `r = refund(i)`, `p` be the transaction's [EIP-1559] effective gas price, `b
 | Base fee vault                    | debit      | `r * b`                                                             |
 | Operator fee vault (post-Isthmus) | debit      | `operatorFee(evmGasUsed) - operatorFee(canonicalGasUsed)`           |
 
-The sender credit equals the sum of the recipient debits. The L1 fee vault is not adjusted: L1 cost is independent
-of L2 gas usage.
+The sender credit equals the sum of the recipient debits. This identity relies on `p >= b`, which holds for every
+transaction that can be included: an [EIP-1559] transaction has `p = b + min(maxPriorityFeePerGas, maxFeePerGas - b) >= b`,
+and a legacy transaction must have `gasPrice >= b` to be included. Hence `max(p - b, 0) = p - b` and
+`r * (p - b) + r * b = r * p`. The `max(p - b, 0)` form guards only the boundary `p = b` (e.g. a legacy
+transaction whose gas price equals the base fee), where the priority tip — and therefore the beneficiary debit —
+is zero. The L1 fee vault is not adjusted: L1 cost is independent of L2 gas usage.
 
 ### Application Rules
 
 Settlement is applied after the transaction's EVM frame finishes and before the transaction state delta is
 committed. It is atomic with the transaction and does not produce a separate receipt.
 
-If any debit would underflow, the block is invalid. In normal operation this cannot occur, because each recipient
-was just paid the corresponding amount by the EVM in the same transaction.
+If any debit would underflow, the block is invalid. For any payload that respects `refund(i) <= evmGasUsed(i)`,
+this cannot occur, because each recipient was just paid the corresponding amount by the EVM in the same
+transaction; an underflow therefore indicates a malformed or adversarial payload rather than a reachable state of
+honest execution.
 
 ## Producer and Verifier
 
@@ -172,7 +178,9 @@ The JSON-RPC receipts returned for `Normal` transactions are extended with a sin
 | `opGasRefund` | `Quantity` (`uint64`) or `null` | The SDM gas refund credited to the transaction, or `null` when SDM was inactive for the block or the transaction had no refund. |
 
 The value is sourced from the embedded post-exec payload's `gasRefundEntries` for the transaction's `index`.
-`opGasRefund` is not part of the receipt's RLP encoding and is not committed to the receipts trie.
+`opGasRefund` is not part of the receipt's RLP encoding and is not committed to the receipts trie. Because it is
+an additional JSON-RPC field outside the consensus receipt, existing receipt tooling that ignores unknown fields
+(e.g. `cast receipt`) is unaffected; only consumers that opt in observe it.
 
 ## Backwards Compatibility
 
