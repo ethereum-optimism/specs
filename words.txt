@@ -53,6 +53,7 @@ MCOPY
 Mdiamond
 Merkle
 Mintable
+MODEXP
 Multicall
 Multistream
 OPCM
