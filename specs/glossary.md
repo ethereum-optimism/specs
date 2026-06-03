@@ -78,6 +78,7 @@
   - [Post-Exec Payload](#post-exec-payload)
   - [Post-Exec Payload Schema Version](#post-exec-payload-schema-version)
   - [Sequencer-Defined Metering](#sequencer-defined-metering)
+  - [Canonical Gas](#canonical-gas)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -882,6 +883,18 @@ the [Sequencer-Defined Metering][spec-sdm] specification.
 _Sequencer-Defined Metering_ (_SDM_) is the [post-exec payload schema version](#post-exec-payload-schema-version) 1
 policy. SDM lets the sequencer include per-transaction gas refunds that adjust canonical gas accounting and fee
 settlement.
+
+See the [SDM specification][spec-sdm].
+
+## Canonical Gas
+
+[canonical-gas]: glossary.md#canonical-gas
+
+Under [Sequencer-Defined Metering](#sequencer-defined-metering), the gas a transaction is accounted for after its
+gas refund is applied: `canonicalGasUsed = evmGasUsed - refund`, where `evmGasUsed` is the raw gas reported by the
+EVM. Canonical gas is the value recorded in transaction receipts and summed into the block's `cumulativeGasUsed`
+and `gasUsed`. It is distinct from the raw EVM gas, and unrelated to the "canonical chain" sense of _canonical_
+used elsewhere in this glossary.
 
 See the [SDM specification][spec-sdm].
 

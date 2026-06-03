@@ -28,6 +28,7 @@
 [g-post-exec-tx]: ../../glossary.md#post-execution-transaction
 [g-post-exec-payload]: ../../glossary.md#post-exec-payload
 [g-post-exec-schema-version]: ../../glossary.md#post-exec-payload-schema-version
+[g-canonical-gas]: ../../glossary.md#canonical-gas
 
 ## Overview
 
@@ -111,6 +112,11 @@ The refund value is sequencer-defined block data. Clients use the included value
 validating the block.
 
 ## Canonical Gas
+
+[Canonical gas][g-canonical-gas] is the gas a `Normal` transaction is accounted for under SDM: the gas the EVM
+reports minus the SDM refund applied to it. It is the value written to receipts and summed into the block's
+`cumulativeGasUsed` and `gasUsed`, as distinct from `evmGasUsed` (the raw gas the EVM reports before any SDM
+adjustment). It is unrelated to the "canonical chain" sense of _canonical_ used elsewhere in these specs.
 
 For each `Normal` transaction at index `i`:
 
