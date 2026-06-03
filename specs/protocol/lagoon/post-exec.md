@@ -8,7 +8,7 @@
 - [The Post-Execution Transaction Type](#the-post-execution-transaction-type)
   - [Encoding](#encoding)
   - [Transaction Hash](#transaction-hash)
-  - [Transaction Field Projections](#transaction-field-projections)
+  - [Generic Transaction Interface Representation](#generic-transaction-interface-representation)
   - [Signer and Signature](#signer-and-signature)
   - [Mempool and Propagation](#mempool-and-propagation)
 - [Post-Exec Payload Envelope](#post-exec-payload-envelope)
@@ -89,26 +89,25 @@ the hash is a function of the payload alone, the payload's [block number](#block
 payloads anchored to different block numbers. (Two blocks at the same height on competing forks that carry an
 identical payload share the same post-exec transaction hash, exactly as a regular transaction would.)
 
-### Transaction Field Projections
+### Generic Transaction Interface Representation
 
-Many of the fields a transaction is normally expected to expose are inapplicable to a post-exec transaction. When a
-post-exec transaction is observed through a generic transaction interface, its fields project as follows:
+A post-exec transaction carries only a versioned [post-exec payload][post-exec-payload-envelope]; it has none of
+the fields a user transaction carries (nonce, gas price, recipient, signature, …). When surfaced through a generic
+transaction interface (e.g. `eth_getTransactionByHash`), it is represented by a minimal object containing only:
 
-| Field                  | Value                                                       |
-| ---------------------- | ----------------------------------------------------------- |
-| `chainId`              | absent (`null`)                                             |
-| `nonce`                | `0`                                                         |
-| `gasLimit` / `gas`     | `0`                                                         |
-| `gasPrice`             | `0`                                                         |
-| `maxFeePerGas`         | `0`                                                         |
-| `maxPriorityFeePerGas` | `0`                                                         |
-| `maxFeePerBlobGas`     | absent                                                      |
-| `to`                   | `0x0000000000000000000000000000000000000000` (zero address) |
-| `value`                | `0`                                                         |
-| `accessList`           | absent                                                      |
-| `authorizationList`    | absent                                                      |
-| `blobVersionedHashes`  | absent                                                      |
-| `input`                | the RLP-encoded payload bytes                               |
+| Field   | Value                                                       |
+| ------- | ----------------------------------------------------------- |
+| `type`  | `0x7D`                                                      |
+| `hash`  | the [transaction hash](#transaction-hash)                   |
+| `from`  | `0x0000000000000000000000000000000000000000` (zero address) |
+| `gas`   | `0`                                                         |
+| `value` | `0`                                                         |
+| `input` | the RLP-encoded payload bytes                               |
+
+Standard transaction fields that do not apply — including `nonce`, `chainId`, `gasPrice`, `maxFeePerGas`,
+`maxPriorityFeePerGas`, `to`, `accessList`, and the signature fields — are omitted, not reported with placeholder
+values. Block-context fields (`blockHash`, `blockNumber`, `transactionIndex`) are populated as for any other
+included transaction.
 
 A post-exec transaction never charges fees, never debits or credits an account by virtue of being a transaction,
 and consumes no gas from the block gas pool. Any side effects on account balances are defined by the active schema,
@@ -122,13 +121,10 @@ than by a signature. Authorization is inherited from the transport rather than f
 unsafe blocks are gossiped in payloads signed by the sequencer, and safe blocks are derived from batches submitted
 by the (signed) batcher transaction. The post-exec transaction is trusted because the block that contains it is.
 
-For compatibility with tooling that expects an ECDSA signature on every typed transaction:
-
-- The recovered sender address is the zero address `0x0000000000000000000000000000000000000000`.
-- The signature triple `(v, r, s)` is reported as `(0, 0, 0)` in API responses.
-
-The signature triple is not part of the EIP-2718 encoding of a post-exec transaction and is not included in the
-transaction hash preimage.
+A post-exec transaction has no signature: there is no `(v, r, s)` triple in its EIP-2718 encoding and none in the
+transaction-hash preimage. The recovered sender is the zero address `0x0000000000000000000000000000000000000000`,
+surfaced as the `from` field of the transaction object; the signature fields themselves are omitted from
+transaction responses rather than reported as zero.
 
 ### Mempool and Propagation
 
