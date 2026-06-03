@@ -204,8 +204,8 @@ identical to those of an EIP-1559 receipt:
 - `logsBloom`
 - `logs`
 
-A post-exec transaction is constructed by the protocol, does not execute, emits no logs, and consumes no gas pool.
-It is metadata, so:
+A post-exec transaction is constructed by the protocol; it is not executed as EVM code, emits no logs, and
+consumes no gas from the block gas pool, so its own receipt is trivial:
 
 - `postStateOrStatus` MUST encode success ([EIP-658] status `1`).
 - `logs` MUST be empty.
@@ -214,9 +214,12 @@ It is metadata, so:
   any L2 block the post-exec transaction has at least one preceding transaction — the L1 attributes deposit — so
   there is always a previous receipt to inherit from.)
 
-The post-exec receipt participates in the block's receipts trie like any other receipt. Schema-specific data is
-not surfaced through the post-exec receipt itself; it is surfaced through extensions to the receipts of the user
-transactions whose execution the schema describes, as defined by the active schema.
+The post-exec receipt participates in the block's receipts trie like any other receipt. The post-exec transaction
+is not inert, however: the payload it carries is consensus-critical and drives state changes under the active
+schema — for SDM, the per-transaction fee [settlement](./sdm.md#settlement). By the rules of that schema those
+balance changes are applied atomically with the user transactions they refund, so they belong to those
+transactions' state deltas rather than a separate post-exec state transition; schema-specific data is likewise
+surfaced through extensions to those user transactions' receipts, not the post-exec receipt itself.
 
 [EIP-658]: https://eips.ethereum.org/EIPS/eip-658
 
