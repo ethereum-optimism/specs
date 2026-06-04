@@ -33,11 +33,10 @@
 
 ## Overview
 
-Post-execution transactions are an [EIP-2718] [transaction type][g-transaction-type] that allows a block to carry
-sequencer-provided consensus data. Unlike user-submitted transactions or [deposited transactions][g-deposited], a
-post-exec transaction is synthesized by the [sequencer][g-sequencer] and appended to the block as its final
-transaction. A verifier applies the data from the post-execution transaction as part of the block's state
-transition.
+Post-execution transactions are an [EIP-2718] [transaction type][g-transaction-type] that lets a block carry
+sequencer-provided consensus data. Unlike user-submitted or [deposited transactions][g-deposited], a post-exec
+transaction is created by the [sequencer][g-sequencer] and appended to the block as its final transaction. A
+verifier applies its data as part of the block's state transition.
 
 The post-exec transaction type is introduced by the [Lagoon network upgrade](./overview.md), together with its
 first payload schema. Before the Lagoon activation timestamp a block MUST NOT contain a `0x7D` transaction.
@@ -109,22 +108,20 @@ Standard transaction fields that do not apply — including `nonce`, `chainId`, 
 values. Block-context fields (`blockHash`, `blockNumber`, `transactionIndex`) are populated as for any other
 included transaction.
 
-A post-exec transaction never charges fees, never debits or credits an account by virtue of being a transaction,
-and consumes no gas from the block gas pool. Any side effects on account balances are defined by the active schema,
+A post-exec transaction never charges fees, never debits or credits an account simply by being included, and
+consumes no gas from the block gas pool. Any side effects on account balances are defined by the active schema,
 not by this envelope.
 
 ### Signer and Signature
 
-A post-exec transaction has no signer. It is authorized by the protocol — by virtue of being synthesized by the
-sequencer at a position that satisfies the [block-level structural rules](#block-level-structural-rules) — rather
-than by a signature. Authorization is inherited from the transport rather than from a per-transaction signature:
-unsafe blocks are gossiped in payloads signed by the sequencer, and safe blocks are derived from batches submitted
-by the (signed) batcher transaction. The post-exec transaction is trusted because the block that contains it is.
+A post-exec transaction has no signer and no signature: there is no `(v, r, s)` triple in its EIP-2718 encoding or
+in the transaction-hash preimage. Rather than a per-transaction signature, it is trusted because the block that
+contains it is — unsafe blocks are gossiped in payloads signed by the sequencer, and safe blocks are derived from
+the (signed) batcher transaction. The sequencer places it at a position that satisfies the
+[block-level structural rules](#block-level-structural-rules).
 
-A post-exec transaction has no signature: there is no `(v, r, s)` triple in its EIP-2718 encoding and none in the
-transaction-hash preimage. The recovered sender is the zero address `0x0000000000000000000000000000000000000000`,
-surfaced as the `from` field of the transaction object; the signature fields themselves are omitted from
-transaction responses rather than reported as zero.
+Its recovered sender is the zero address `0x0000000000000000000000000000000000000000`, surfaced as the transaction
+object's `from` field. The signature fields are omitted from transaction responses rather than reported as zero.
 
 ### Mempool and Propagation
 
@@ -205,7 +202,7 @@ identical to those of an EIP-1559 receipt:
 - `logs`
 
 A post-exec transaction is constructed by the protocol; it is not executed as EVM code, emits no logs, and
-consumes no gas from the block gas pool, so its own receipt is trivial:
+consumes no gas from the block gas pool, so its own receipt records none of these:
 
 - `postStateOrStatus` MUST encode success ([EIP-658] status `1`).
 - `logs` MUST be empty.
@@ -214,12 +211,11 @@ consumes no gas from the block gas pool, so its own receipt is trivial:
   any L2 block the post-exec transaction has at least one preceding transaction — the L1 attributes deposit — so
   there is always a previous receipt to inherit from.)
 
-The post-exec receipt participates in the block's receipts trie like any other receipt. The post-exec transaction
-is not inert, however: the payload it carries is consensus-critical and drives state changes under the active
-schema — for SDM, the per-transaction fee [settlement](./sdm.md#settlement). By the rules of that schema those
-balance changes are applied atomically with the user transactions they refund, so they belong to those
-transactions' state deltas rather than a separate post-exec state transition; schema-specific data is likewise
-surfaced through extensions to those user transactions' receipts, not the post-exec receipt itself.
+The post-exec receipt participates in the block's receipts trie like any other receipt. The transaction's payload,
+however, is consensus-critical and drives state changes under the active schema — for SDM, the per-transaction fee
+[settlement](./sdm.md#settlement). Those changes are applied atomically with the transactions they refund, so they
+belong to those transactions' state deltas, not to a separate post-exec state transition. Schema-specific data is
+likewise surfaced on those transactions' receipts, not on the post-exec receipt.
 
 [EIP-658]: https://eips.ethereum.org/EIPS/eip-658
 

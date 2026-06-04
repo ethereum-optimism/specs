@@ -2,7 +2,6 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 **Table of Contents**
 
 - [Overview](#overview)
@@ -34,8 +33,8 @@
 ## Overview
 
 Sequencer-Defined Metering (SDM) is the version-1 [post-exec payload schema][g-post-exec-schema-version]. It lets
-the sequencer attach per-transaction gas refunds to a block. These refunds reduce the canonical gas used by standard
-Ethereum transactions and reconcile the resulting fee balances.
+the sequencer attach per-transaction gas refunds to a block. Each refund lowers the gas a transaction is charged
+for and rebalances the fees it already paid.
 
 Refund data is carried by a [post-exec transaction][g-post-exec-tx] (`0x7D`) appended to the block as its final
 transaction. The post-exec envelope and structural rules are specified in [post-exec.md](./post-exec.md); this
@@ -168,8 +167,8 @@ honest execution.
 
 Under SDM:
 
-- The sequencer executes the block, chooses the non-zero `gasRefundEntries`, and appends a post-exec transaction iff
-  the entry list is non-empty.
+- The sequencer executes the block, chooses the non-zero `gasRefundEntries`, and appends a post-exec transaction if
+  and only if the entry list is non-empty.
 - A verifier enforces the post-exec envelope rules and the SDM [validity rules](#validity-rules), then applies the
   refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage.
 
