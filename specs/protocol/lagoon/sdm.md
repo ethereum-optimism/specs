@@ -2,6 +2,7 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**
 
 - [Overview](#overview)
@@ -33,8 +34,8 @@
 ## Overview
 
 Sequencer-Defined Metering (SDM) is the version-1 [post-exec payload schema][g-post-exec-schema-version]. It lets
-the sequencer attach per-transaction gas refunds to a block. These refunds reduce the canonical gas used by regular
-transactions and reconcile the resulting fee balances.
+the sequencer attach per-transaction gas refunds to a block. These refunds reduce the canonical gas used by standard
+Ethereum transactions and reconcile the resulting fee balances.
 
 Refund data is carried by a [post-exec transaction][g-post-exec-tx] (`0x7D`) appended to the block as its final
 transaction. The post-exec envelope and structural rules are specified in [post-exec.md](./post-exec.md); this
@@ -82,7 +83,7 @@ A version-1 payload is invalid if any of the following hold:
 1. `gasRefundEntries` is empty.
 2. Any `SDMGasEntry` has `gasRefund == 0`.
 3. Entries are not ordered by strictly increasing `index`.
-4. Any entry's `index` does not refer to a [`Normal`](#transaction-classification) transaction in the block.
+4. Any entry's `index` does not refer to a standard Ethereum transaction in the block.
 
 The envelope-level rules in [post-exec.md § Block-Level Structural Rules](./post-exec.md#block-level-structural-rules)
 apply in addition to the rules above. As long as SDM is the only active payload schema: if the sequencer assigns
@@ -94,7 +95,7 @@ Every transaction in the block is classified as exactly one of:
 
 | Kind       | Source                                                | May have refund? |
 | ---------- | ----------------------------------------------------- | ---------------- |
-| `Normal`   | A regular user transaction.                           | Yes              |
+|            | A standard Ethereum transaction.                      | Yes              |
 | `Deposit`  | A [deposited transaction][g-deposited] (type `0x7E`). | No               |
 | `PostExec` | The post-exec transaction (type `0x7D`).              | No               |
 
@@ -103,7 +104,7 @@ it charges no fees, consumes no gas and is not executed as code.
 
 ## Gas Refund Semantics
 
-For each `Normal` transaction at index `i`, define `refund(i)` as:
+For each standard Ethereum transaction at index `i`, define `refund(i)` as:
 
 - the `gasRefund` value in the payload entry whose `index == i`, if one exists; otherwise
 - `0`.
@@ -113,25 +114,25 @@ validating the block.
 
 ## Canonical Gas
 
-[Canonical gas][g-canonical-gas] is the gas a `Normal` transaction is accounted for under SDM: the gas the EVM
+[Canonical gas][g-canonical-gas] is the gas a standard Ethereum transaction is accounted for under SDM: the gas the EVM
 reports minus the SDM refund applied to it. It is the value written to receipts and summed into the block's
 `cumulativeGasUsed` and `gasUsed`, as distinct from `evmGasUsed` (the raw gas the EVM reports before any SDM
 adjustment). It is unrelated to the "canonical chain" sense of _canonical_ used elsewhere in these specs.
 
-For each `Normal` transaction at index `i`:
+For each standard Ethereum transaction at index `i`:
 
 - `evmGasUsed(i)` is the gas used reported by the EVM after execution, before any SDM adjustment.
 - `refund(i)` MUST be less than or equal to `evmGasUsed(i)`.
 - `canonicalGasUsed(i) = evmGasUsed(i) - refund(i)`.
 
 The receipt of transaction `i` reports `canonicalGasUsed(i)` as its gas-used field. The block's `cumulativeGasUsed`
-and `gasUsed` are computed using `canonicalGasUsed` for `Normal` transactions and `evmGasUsed` for `Deposit`
+and `gasUsed` are computed using `canonicalGasUsed` for standard Ethereum transactions and `evmGasUsed` for `Deposit`
 transactions. The post-exec transaction contributes zero gas (see [post-exec.md § Receipt](./post-exec.md#receipt)).
 
 ## Settlement
 
-Because the EVM initially charges fees using `evmGasUsed(i)`, SDM applies a balance settlement for every `Normal`
-transaction with `refund(i) > 0`.
+Because the EVM initially charges fees using `evmGasUsed(i)`, SDM applies a balance settlement for every standard
+Ethereum transaction with `refund(i) > 0`.
 
 ### Per-Recipient Deltas
 
@@ -177,7 +178,7 @@ Under SDM:
 The post-exec transaction's own receipt carries no SDM-specific fields (see
 [post-exec.md § Receipt](./post-exec.md#receipt)).
 
-The JSON-RPC receipts returned for `Normal` transactions are extended with a single additional field:
+The JSON-RPC receipts returned for standard Ethereum transactions are extended with a single additional field:
 
 | Field         | Type                            | Description                                                                                                                     |
 | ------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -197,7 +198,7 @@ From the Lagoon activation timestamp, two changes become observable:
 
 - A `0x7D` transaction may appear at the end of any block produced after activation, exposed through the same
   transaction-list interfaces used today.
-- The receipts of `Normal` transactions in such blocks gain the `opGasRefund` field; clients that ignore unknown
+- The receipts of standard Ethereum transactions in such blocks gain the `opGasRefund` field; clients that ignore unknown
   fields are unaffected.
 
 Mempool and transaction-pool interfaces are unchanged: post-exec transactions are not user-submittable and do not
@@ -206,7 +207,7 @@ propagate over the public transaction-gossip protocol.
 ## Security Considerations
 
 **Sequencer-defined amounts.** Refund amounts are part of the sequencer's block data. The only consensus-defined
-constraints are on their encoding, their target transaction (`Normal` only), and the application bounds
+constraints are on their encoding, their target transaction (standard Ethereum transactions only), and the application bounds
 (`refund(i) <= evmGasUsed(i)` and no settlement underflow); otherwise the sequencer has complete freedom to
 allocate refunds according to arbitrary policy.
 
