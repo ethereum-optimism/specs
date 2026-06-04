@@ -143,16 +143,16 @@ Let `r = refund(i)`, `p` be the transaction's [EIP-1559] effective gas price, `b
 | Recipient                         | Adjustment | Amount                                                              |
 | --------------------------------- | ---------- | ------------------------------------------------------------------- |
 | Sender (`tx.from`)                | credit     | `r * p + (operatorFee(evmGasUsed) - operatorFee(canonicalGasUsed))` |
-| Block beneficiary                 | debit      | `r * max(p - b, 0)`                                                 |
+| Block beneficiary                 | debit      | `r * (p - b)`                                                       |
 | Base fee vault                    | debit      | `r * b`                                                             |
 | Operator fee vault (post-Isthmus) | debit      | `operatorFee(evmGasUsed) - operatorFee(canonicalGasUsed)`           |
 
-The sender credit equals the sum of the recipient debits. This identity relies on `p >= b`, which holds for every
-transaction that can be included: an [EIP-1559] transaction has `p = b + min(maxPriorityFeePerGas, maxFeePerGas - b) >= b`,
-and a legacy transaction must have `gasPrice >= b` to be included. Hence `max(p - b, 0) = p - b` and
-`r * (p - b) + r * b = r * p`. The `max(p - b, 0)` form guards only the boundary `p = b` (e.g. a legacy
-transaction whose gas price equals the base fee), where the priority tip — and therefore the beneficiary debit —
-is zero. The L1 fee vault is not adjusted: L1 cost is independent of L2 gas usage.
+The sender credit equals the sum of the recipient debits: `r * (p - b) + r * b = r * p`. This identity relies on
+`p >= b`, which holds for every transaction that can be included: an [EIP-1559] transaction has
+`p = b + min(maxPriorityFeePerGas, maxFeePerGas - b) >= b`, and a legacy transaction must have `gasPrice >= b` to
+be included. Hence `p - b >= 0`, so the beneficiary debit is never negative; at the boundary `p = b` (e.g. a legacy
+transaction whose gas price equals the base fee) the priority tip — and therefore the beneficiary debit — is zero.
+The L1 fee vault is not adjusted: L1 cost is independent of L2 gas usage.
 
 ### Application Rules
 
