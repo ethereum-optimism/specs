@@ -1,0 +1,408 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Post-Execution Transactions - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/lagoon/post-exec.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="post-execution-transactions"><a class="header" href="#post-execution-transactions">Post-Execution Transactions</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#the-post-execution-transaction-type">The Post-Execution Transaction Type</a>
+<ul>
+<li><a href="#encoding">Encoding</a></li>
+<li><a href="#transaction-hash">Transaction Hash</a></li>
+<li><a href="#generic-transaction-interface-representation">Generic Transaction Interface Representation</a></li>
+<li><a href="#signer-and-signature">Signer and Signature</a></li>
+<li><a href="#mempool-and-propagation">Mempool and Propagation</a></li>
+</ul>
+</li>
+<li><a href="#post-exec-payload-envelope">Post-Exec Payload Envelope</a>
+<ul>
+<li><a href="#schema-version">Schema Version</a></li>
+<li><a href="#block-number">Block Number</a></li>
+<li><a href="#defined-schema-versions">Defined Schema Versions</a></li>
+</ul>
+</li>
+<li><a href="#block-level-structural-rules">Block-Level Structural Rules</a></li>
+<li><a href="#receipt">Receipt</a></li>
+<li><a href="#derivation">Derivation</a></li>
+<li><a href="#rationale">Rationale</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Post-execution transactions are an <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> <a href="../../glossary.html#transaction-type">transaction type</a> that lets a block carry
+sequencer-provided consensus data. Unlike user-submitted or <a href="../../glossary.html#deposited-transaction">deposited transactions</a>, a post-exec
+transaction is created by the <a href="../../glossary.html#sequencer">sequencer</a> and appended to the block as its final transaction. A
+verifier applies its data as part of the block's state transition.</p>
+<p>The post-exec transaction type is introduced by the <a href="./overview.html">Lagoon network upgrade</a>, together with its
+first payload schema. Before the Lagoon activation timestamp a block MUST NOT contain a <code>0x7D</code> transaction.</p>
+<p>The post-exec transaction is a generic envelope: it carries a versioned <a href="../../glossary.html#post-exec-payload">post-exec payload</a>
+whose interpretation is defined by separate policy specifications. Today only one schema is defined,
+<a href="../../glossary.html#sequencer-defined-metering">Sequencer-Defined Metering</a> (<code>version = 1</code>), specified in <a href="./sdm.html">sdm.md</a>. Future policies extend
+this document by defining additional <a href="../../glossary.html#post-exec-payload-schema-version">schema versions</a>.</p>
+<p>This document specifies the envelope: the transaction type, the encoding, and the structural invariants that hold
+regardless of the active schema. It does <strong>not</strong> specify what the payload fields mean — that is the responsibility
+of the active schema's specification.</p>
+<h2 id="the-post-execution-transaction-type"><a class="header" href="#the-post-execution-transaction-type">The Post-Execution Transaction Type</a></h2>
+<p>A post-execution transaction is an <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> typed transaction with type byte <code>0x7D</code> (decimal 125).</p>
+<p>Type byte <code>0x7D</code> was selected because EIP-2718 transaction type identifiers may use values up to <code>0x7F</code>; choosing a
+high identifier minimizes the chance of collision with future Ethereum L1 transaction types. <code>0x7E</code> is reserved for
+<a href="../deposits.html#the-deposited-transaction-type">deposited transactions</a>, and <code>0x7F</code> is left unused in case it is
+later assigned to a variable-length encoding scheme.</p>
+<h3 id="encoding"><a class="header" href="#encoding">Encoding</a></h3>
+<p>The EIP-2718 encoding of a post-exec transaction is:</p>
+<pre><code class="language-text">0x7D || rlp_encoded_payload
+</code></pre>
+<p>where <code>rlp_encoded_payload</code> is the RLP encoding of the <a href="#post-exec-payload-envelope">post-exec payload</a> as a list,
+and <code>||</code> denotes byte concatenation. The type byte is immediately followed by the payload's own RLP list; the
+payload is not wrapped in an additional outer RLP list.</p>
+<h3 id="transaction-hash"><a class="header" href="#transaction-hash">Transaction Hash</a></h3>
+<p>The transaction hash of a post-exec transaction is:</p>
+<pre><code class="language-text">keccak256(0x7D || rlp_encoded_payload)
+</code></pre>
+<p>The hash is computed over the full EIP-2718 encoding, so the type byte is included in the hash preimage. Because
+the hash is a function of the payload alone, the payload's <a href="#block-number">block number</a> is what distinguishes
+payloads anchored to different block numbers. (Two blocks at the same height on competing forks that carry an
+identical payload share the same post-exec transaction hash, exactly as a regular transaction would.)</p>
+<h3 id="generic-transaction-interface-representation"><a class="header" href="#generic-transaction-interface-representation">Generic Transaction Interface Representation</a></h3>
+<p>A post-exec transaction carries only a versioned <a href="#post-exec-payload-envelope">post-exec payload</a>; it has none of
+the fields a user transaction carries (nonce, gas price, recipient, signature, …). When surfaced through a generic
+transaction interface (e.g. <code>eth_getTransactionByHash</code>), it is represented by a minimal object containing only:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>type</code></td><td><code>0x7D</code></td></tr>
+<tr><td><code>hash</code></td><td>the <a href="#transaction-hash">transaction hash</a></td></tr>
+<tr><td><code>from</code></td><td><code>0x0000000000000000000000000000000000000000</code> (zero address)</td></tr>
+<tr><td><code>gas</code></td><td><code>0</code></td></tr>
+<tr><td><code>value</code></td><td><code>0</code></td></tr>
+<tr><td><code>input</code></td><td>the RLP-encoded payload bytes</td></tr>
+</tbody></table>
+</div>
+<p>Standard transaction fields that do not apply — including <code>nonce</code>, <code>chainId</code>, <code>gasPrice</code>, <code>maxFeePerGas</code>,
+<code>maxPriorityFeePerGas</code>, <code>to</code>, <code>accessList</code>, and the signature fields — are omitted, not reported with placeholder
+values. Block-context fields (<code>blockHash</code>, <code>blockNumber</code>, <code>transactionIndex</code>) are populated as for any other
+included transaction.</p>
+<p>A post-exec transaction never charges fees, never debits or credits an account simply by being included, and
+consumes no gas from the block gas pool. Any side effects on account balances are defined by the active schema,
+not by this envelope.</p>
+<h3 id="signer-and-signature"><a class="header" href="#signer-and-signature">Signer and Signature</a></h3>
+<p>A post-exec transaction has no signer and no signature: there is no <code>(v, r, s)</code> triple in its EIP-2718 encoding or
+in the transaction-hash preimage. Rather than a per-transaction signature, it is trusted because the block that
+contains it is — unsafe blocks are gossiped in payloads signed by the sequencer, and safe blocks are derived from
+the (signed) batcher transaction. The sequencer places it at a position that satisfies the
+<a href="#block-level-structural-rules">block-level structural rules</a>.</p>
+<p>Its recovered sender is the zero address <code>0x0000000000000000000000000000000000000000</code>, surfaced as the transaction
+object's <code>from</code> field. The signature fields are omitted from transaction responses rather than reported as zero.</p>
+<h3 id="mempool-and-propagation"><a class="header" href="#mempool-and-propagation">Mempool and Propagation</a></h3>
+<p>A post-exec transaction is constructed by the sequencer as part of block production. Nodes MUST NOT accept
+post-exec transactions through public transaction-pool interfaces (e.g. <code>eth_sendRawTransaction</code>) and MUST NOT
+propagate them through transaction-gossip protocols. A post-exec transaction reaches verifiers only by being
+included in a block.</p>
+<h2 id="post-exec-payload-envelope"><a class="header" href="#post-exec-payload-envelope">Post-Exec Payload Envelope</a></h2>
+<p>The post-exec payload is RLP-encoded as a list whose first two fields are fixed:</p>
+<pre><code class="language-text">[version, blockNumber, ...schema-defined fields...]
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>version</code></td><td><code>uint8</code></td><td><a href="#schema-version">Schema version</a> selecting the layout of the trailing fields.</td></tr>
+<tr><td><code>blockNumber</code></td><td><code>uint64</code></td><td>The L2 block number this payload is anchored to.</td></tr>
+<tr><td><em>trailing</em></td><td><em>varies</em></td><td>Defined by the active <a href="#defined-schema-versions">schema version</a>.</td></tr>
+</tbody></table>
+</div>
+<p>The leading two fields define the envelope; all remaining fields belong to the schema selected by <code>version</code>.</p>
+<h3 id="schema-version"><a class="header" href="#schema-version">Schema Version</a></h3>
+<p><code>version</code> is the <a href="../../glossary.html#post-exec-payload-schema-version">post-exec payload schema version</a>. When the new payload schema calls
+for additional or different fields, a new version number is assigned and the new layout is documented as a
+<a href="#defined-schema-versions">defined schema version</a>.</p>
+<h3 id="block-number"><a class="header" href="#block-number">Block Number</a></h3>
+<p><code>blockNumber</code> anchors the payload to the L2 block number of the containing block. The anchoring serves two
+purposes:</p>
+<ol>
+<li>It guarantees that otherwise identical payloads anchored to different block numbers have distinct
+<a href="#transaction-hash">transaction hashes</a>.</li>
+<li>It detects misordered or replayed payloads at decode time, before any schema-specific validation runs.</li>
+</ol>
+<p>The normative rule that <code>blockNumber</code> equals the containing block's number is stated in
+<a href="#block-level-structural-rules">Block-Level Structural Rules</a>.</p>
+<h3 id="defined-schema-versions"><a class="header" href="#defined-schema-versions">Defined Schema Versions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th><code>version</code></th><th>Schema</th></tr></thead><tbody>
+<tr><td><code>1</code></td><td><a href="./sdm.html">Sequencer-Defined Metering</a></td></tr>
+</tbody></table>
+</div>
+<p>No other schema versions are currently defined. SDM (<code>version = 1</code>) is introduced by the
+<a href="./overview.html">Lagoon network upgrade</a>; see <a href="#overview">Overview</a>.</p>
+<h2 id="block-level-structural-rules"><a class="header" href="#block-level-structural-rules">Block-Level Structural Rules</a></h2>
+<p>The following rules hold for every block, regardless of which schema version is active. Any violation invalidates
+the block.</p>
+<ol>
+<li><strong>At most one.</strong> A block contains at most one transaction with type byte <code>0x7D</code>.</li>
+<li><strong>Last in block.</strong> When a <code>0x7D</code> transaction is present, it MUST be the final transaction of the block.</li>
+<li><strong>Anchored to block.</strong> The <code>blockNumber</code> field of the embedded payload MUST equal the L2 block number of the
+containing block.</li>
+<li><strong>Recognized schema.</strong> The payload's <code>version</code> MUST be a <a href="#defined-schema-versions">defined schema version</a>.</li>
+<li><strong>Schema must be active.</strong> When no schema version is active for the block's timestamp, the block MUST NOT
+contain a <code>0x7D</code> transaction.</li>
+</ol>
+<p>Schema-specific validity rules (e.g. constraints on the trailing fields) are layered on top of these envelope rules
+and are specified by each schema's document. Both layers MUST hold for the block to be valid.</p>
+<h2 id="receipt"><a class="header" href="#receipt">Receipt</a></h2>
+<p>A post-exec transaction emits a receipt with type byte <code>0x7D</code>. The RLP-encoded consensus fields of the receipt are
+identical to those of an EIP-1559 receipt:</p>
+<ul>
+<li><code>postStateOrStatus</code> (<a href="https://eips.ethereum.org/EIPS/eip-658">EIP-658</a>)</li>
+<li><code>cumulativeGasUsed</code></li>
+<li><code>logsBloom</code></li>
+<li><code>logs</code></li>
+</ul>
+<p>A post-exec transaction is constructed by the protocol; it is not executed as EVM code, emits no logs, and
+consumes no gas from the block gas pool, so its own receipt records none of these:</p>
+<ul>
+<li><code>postStateOrStatus</code> MUST encode success (<a href="https://eips.ethereum.org/EIPS/eip-658">EIP-658</a> status <code>1</code>).</li>
+<li><code>logs</code> MUST be empty.</li>
+<li><code>logsBloom</code> MUST be the all-zero bloom filter.</li>
+<li><code>cumulativeGasUsed</code> MUST equal the <code>cumulativeGasUsed</code> of the immediately preceding transaction's receipt. (In
+any L2 block the post-exec transaction has at least one preceding transaction — the L1 attributes deposit — so
+there is always a previous receipt to inherit from.)</li>
+</ul>
+<p>The post-exec receipt participates in the block's receipts trie like any other receipt. The transaction's payload,
+however, is consensus-critical and drives state changes under the active schema — for SDM, the per-transaction fee
+<a href="./sdm.html#settlement">settlement</a>. Those changes are applied atomically with the transactions they refund, so they
+belong to those transactions' state deltas, not to a separate post-exec state transition. Schema-specific data is
+likewise surfaced on those transactions' receipts, not on the post-exec receipt.</p>
+<h2 id="derivation"><a class="header" href="#derivation">Derivation</a></h2>
+<p>Post-exec transactions are constructed by the sequencer during block production and travel inside the L2 block
+body — through both the unsafe p2p payload and the L1 batch — rather than being synthesized from L1 events the way
+deposited transactions are. They are included in the block payload that is submitted to the data availability
+layer alongside the user transactions and any deposited transactions.</p>
+<p>The L1 batcher transaction format is unaffected: post-exec transactions appear inside L2 blocks, never as L1
+batcher transactions. The future-tx-type decoding range described in
+<a href="../derivation.html#on-future-proof-transaction-log-derivation">derivation.md</a> governs L1 receipts only and is
+unchanged.</p>
+<h2 id="rationale"><a class="header" href="#rationale">Rationale</a></h2>
+<p><strong>Why a versioned payload.</strong> A <code>version</code> byte at the head of the payload lets the schema extend or replace its
+trailing fields without re-spending an EIP-2718 type byte.</p>
+<p><strong>Why last in block.</strong> Placing the post-exec transaction at the end of the block gives it a unique, predictable
+position and matches the natural "after everything else" semantics of the data it carries.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/lagoon/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/lagoon/sdm.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/lagoon/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/lagoon/sdm.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

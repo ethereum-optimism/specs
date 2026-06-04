@@ -15968,6 +15968,376 @@ node MUST also prepend the string "Karst: " at the front of the intent string.</
 </ol>
 <p>More information regarding the upgrade path implemented by the bundle transactions can be found in <a href="protocol/karst/../l2-upgrades-1-execution.html">L2 Upgrade Execution</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="lagoon-network-upgrade"><a class="header" href="#lagoon-network-upgrade">Lagoon Network Upgrade</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/lagoon/overview.html#execution-layer">Execution Layer</a></li>
+<li><a href="protocol/lagoon/overview.html#consensus-layer">Consensus Layer</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>This document is not finalized and should be considered experimental.</p>
+<h2 id="execution-layer-8"><a class="header" href="#execution-layer-8">Execution Layer</a></h2>
+<ul>
+<li><a href="protocol/lagoon/./post-exec.html">Post-Execution Transactions</a></li>
+<li><a href="protocol/lagoon/./sdm.html">Sequencer-Defined Metering</a></li>
+</ul>
+<h2 id="consensus-layer-10"><a class="header" href="#consensus-layer-10">Consensus Layer</a></h2>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="post-execution-transactions"><a class="header" href="#post-execution-transactions">Post-Execution Transactions</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/lagoon/post-exec.html#overview">Overview</a></li>
+<li><a href="protocol/lagoon/post-exec.html#the-post-execution-transaction-type">The Post-Execution Transaction Type</a>
+<ul>
+<li><a href="protocol/lagoon/post-exec.html#encoding">Encoding</a></li>
+<li><a href="protocol/lagoon/post-exec.html#transaction-hash">Transaction Hash</a></li>
+<li><a href="protocol/lagoon/post-exec.html#generic-transaction-interface-representation">Generic Transaction Interface Representation</a></li>
+<li><a href="protocol/lagoon/post-exec.html#signer-and-signature">Signer and Signature</a></li>
+<li><a href="protocol/lagoon/post-exec.html#mempool-and-propagation">Mempool and Propagation</a></li>
+</ul>
+</li>
+<li><a href="protocol/lagoon/post-exec.html#post-exec-payload-envelope">Post-Exec Payload Envelope</a>
+<ul>
+<li><a href="protocol/lagoon/post-exec.html#schema-version">Schema Version</a></li>
+<li><a href="protocol/lagoon/post-exec.html#block-number">Block Number</a></li>
+<li><a href="protocol/lagoon/post-exec.html#defined-schema-versions">Defined Schema Versions</a></li>
+</ul>
+</li>
+<li><a href="protocol/lagoon/post-exec.html#block-level-structural-rules">Block-Level Structural Rules</a></li>
+<li><a href="protocol/lagoon/post-exec.html#receipt">Receipt</a></li>
+<li><a href="protocol/lagoon/post-exec.html#derivation">Derivation</a></li>
+<li><a href="protocol/lagoon/post-exec.html#rationale">Rationale</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<p>Post-execution transactions are an <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> <a href="protocol/lagoon/../../glossary.html#transaction-type">transaction type</a> that lets a block carry
+sequencer-provided consensus data. Unlike user-submitted or <a href="protocol/lagoon/../../glossary.html#deposited-transaction">deposited transactions</a>, a post-exec
+transaction is created by the <a href="protocol/lagoon/../../glossary.html#sequencer">sequencer</a> and appended to the block as its final transaction. A
+verifier applies its data as part of the block's state transition.</p>
+<p>The post-exec transaction type is introduced by the <a href="protocol/lagoon/./overview.html">Lagoon network upgrade</a>, together with its
+first payload schema. Before the Lagoon activation timestamp a block MUST NOT contain a <code>0x7D</code> transaction.</p>
+<p>The post-exec transaction is a generic envelope: it carries a versioned <a href="protocol/lagoon/../../glossary.html#post-exec-payload">post-exec payload</a>
+whose interpretation is defined by separate policy specifications. Today only one schema is defined,
+<a href="protocol/lagoon/../../glossary.html#sequencer-defined-metering">Sequencer-Defined Metering</a> (<code>version = 1</code>), specified in <a href="protocol/lagoon/./sdm.html">sdm.md</a>. Future policies extend
+this document by defining additional <a href="protocol/lagoon/../../glossary.html#post-exec-payload-schema-version">schema versions</a>.</p>
+<p>This document specifies the envelope: the transaction type, the encoding, and the structural invariants that hold
+regardless of the active schema. It does <strong>not</strong> specify what the payload fields mean — that is the responsibility
+of the active schema's specification.</p>
+<h2 id="the-post-execution-transaction-type"><a class="header" href="#the-post-execution-transaction-type">The Post-Execution Transaction Type</a></h2>
+<p>A post-execution transaction is an <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> typed transaction with type byte <code>0x7D</code> (decimal 125).</p>
+<p>Type byte <code>0x7D</code> was selected because EIP-2718 transaction type identifiers may use values up to <code>0x7F</code>; choosing a
+high identifier minimizes the chance of collision with future Ethereum L1 transaction types. <code>0x7E</code> is reserved for
+<a href="protocol/lagoon/../deposits.html#the-deposited-transaction-type">deposited transactions</a>, and <code>0x7F</code> is left unused in case it is
+later assigned to a variable-length encoding scheme.</p>
+<h3 id="encoding-1"><a class="header" href="#encoding-1">Encoding</a></h3>
+<p>The EIP-2718 encoding of a post-exec transaction is:</p>
+<pre><code class="language-text">0x7D || rlp_encoded_payload
+</code></pre>
+<p>where <code>rlp_encoded_payload</code> is the RLP encoding of the <a href="protocol/lagoon/post-exec.html#post-exec-payload-envelope">post-exec payload</a> as a list,
+and <code>||</code> denotes byte concatenation. The type byte is immediately followed by the payload's own RLP list; the
+payload is not wrapped in an additional outer RLP list.</p>
+<h3 id="transaction-hash"><a class="header" href="#transaction-hash">Transaction Hash</a></h3>
+<p>The transaction hash of a post-exec transaction is:</p>
+<pre><code class="language-text">keccak256(0x7D || rlp_encoded_payload)
+</code></pre>
+<p>The hash is computed over the full EIP-2718 encoding, so the type byte is included in the hash preimage. Because
+the hash is a function of the payload alone, the payload's <a href="protocol/lagoon/post-exec.html#block-number">block number</a> is what distinguishes
+payloads anchored to different block numbers. (Two blocks at the same height on competing forks that carry an
+identical payload share the same post-exec transaction hash, exactly as a regular transaction would.)</p>
+<h3 id="generic-transaction-interface-representation"><a class="header" href="#generic-transaction-interface-representation">Generic Transaction Interface Representation</a></h3>
+<p>A post-exec transaction carries only a versioned <a href="protocol/lagoon/post-exec.html#post-exec-payload-envelope">post-exec payload</a>; it has none of
+the fields a user transaction carries (nonce, gas price, recipient, signature, …). When surfaced through a generic
+transaction interface (e.g. <code>eth_getTransactionByHash</code>), it is represented by a minimal object containing only:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>type</code></td><td><code>0x7D</code></td></tr>
+<tr><td><code>hash</code></td><td>the <a href="protocol/lagoon/post-exec.html#transaction-hash">transaction hash</a></td></tr>
+<tr><td><code>from</code></td><td><code>0x0000000000000000000000000000000000000000</code> (zero address)</td></tr>
+<tr><td><code>gas</code></td><td><code>0</code></td></tr>
+<tr><td><code>value</code></td><td><code>0</code></td></tr>
+<tr><td><code>input</code></td><td>the RLP-encoded payload bytes</td></tr>
+</tbody></table>
+</div>
+<p>Standard transaction fields that do not apply — including <code>nonce</code>, <code>chainId</code>, <code>gasPrice</code>, <code>maxFeePerGas</code>,
+<code>maxPriorityFeePerGas</code>, <code>to</code>, <code>accessList</code>, and the signature fields — are omitted, not reported with placeholder
+values. Block-context fields (<code>blockHash</code>, <code>blockNumber</code>, <code>transactionIndex</code>) are populated as for any other
+included transaction.</p>
+<p>A post-exec transaction never charges fees, never debits or credits an account simply by being included, and
+consumes no gas from the block gas pool. Any side effects on account balances are defined by the active schema,
+not by this envelope.</p>
+<h3 id="signer-and-signature"><a class="header" href="#signer-and-signature">Signer and Signature</a></h3>
+<p>A post-exec transaction has no signer and no signature: there is no <code>(v, r, s)</code> triple in its EIP-2718 encoding or
+in the transaction-hash preimage. Rather than a per-transaction signature, it is trusted because the block that
+contains it is — unsafe blocks are gossiped in payloads signed by the sequencer, and safe blocks are derived from
+the (signed) batcher transaction. The sequencer places it at a position that satisfies the
+<a href="protocol/lagoon/post-exec.html#block-level-structural-rules">block-level structural rules</a>.</p>
+<p>Its recovered sender is the zero address <code>0x0000000000000000000000000000000000000000</code>, surfaced as the transaction
+object's <code>from</code> field. The signature fields are omitted from transaction responses rather than reported as zero.</p>
+<h3 id="mempool-and-propagation"><a class="header" href="#mempool-and-propagation">Mempool and Propagation</a></h3>
+<p>A post-exec transaction is constructed by the sequencer as part of block production. Nodes MUST NOT accept
+post-exec transactions through public transaction-pool interfaces (e.g. <code>eth_sendRawTransaction</code>) and MUST NOT
+propagate them through transaction-gossip protocols. A post-exec transaction reaches verifiers only by being
+included in a block.</p>
+<h2 id="post-exec-payload-envelope"><a class="header" href="#post-exec-payload-envelope">Post-Exec Payload Envelope</a></h2>
+<p>The post-exec payload is RLP-encoded as a list whose first two fields are fixed:</p>
+<pre><code class="language-text">[version, blockNumber, ...schema-defined fields...]
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>version</code></td><td><code>uint8</code></td><td><a href="protocol/lagoon/post-exec.html#schema-version">Schema version</a> selecting the layout of the trailing fields.</td></tr>
+<tr><td><code>blockNumber</code></td><td><code>uint64</code></td><td>The L2 block number this payload is anchored to.</td></tr>
+<tr><td><em>trailing</em></td><td><em>varies</em></td><td>Defined by the active <a href="protocol/lagoon/post-exec.html#defined-schema-versions">schema version</a>.</td></tr>
+</tbody></table>
+</div>
+<p>The leading two fields define the envelope; all remaining fields belong to the schema selected by <code>version</code>.</p>
+<h3 id="schema-version"><a class="header" href="#schema-version">Schema Version</a></h3>
+<p><code>version</code> is the <a href="protocol/lagoon/../../glossary.html#post-exec-payload-schema-version">post-exec payload schema version</a>. When the new payload schema calls
+for additional or different fields, a new version number is assigned and the new layout is documented as a
+<a href="protocol/lagoon/post-exec.html#defined-schema-versions">defined schema version</a>.</p>
+<h3 id="block-number"><a class="header" href="#block-number">Block Number</a></h3>
+<p><code>blockNumber</code> anchors the payload to the L2 block number of the containing block. The anchoring serves two
+purposes:</p>
+<ol>
+<li>It guarantees that otherwise identical payloads anchored to different block numbers have distinct
+<a href="protocol/lagoon/post-exec.html#transaction-hash">transaction hashes</a>.</li>
+<li>It detects misordered or replayed payloads at decode time, before any schema-specific validation runs.</li>
+</ol>
+<p>The normative rule that <code>blockNumber</code> equals the containing block's number is stated in
+<a href="protocol/lagoon/post-exec.html#block-level-structural-rules">Block-Level Structural Rules</a>.</p>
+<h3 id="defined-schema-versions"><a class="header" href="#defined-schema-versions">Defined Schema Versions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th><code>version</code></th><th>Schema</th></tr></thead><tbody>
+<tr><td><code>1</code></td><td><a href="protocol/lagoon/./sdm.html">Sequencer-Defined Metering</a></td></tr>
+</tbody></table>
+</div>
+<p>No other schema versions are currently defined. SDM (<code>version = 1</code>) is introduced by the
+<a href="protocol/lagoon/./overview.html">Lagoon network upgrade</a>; see <a href="protocol/lagoon/post-exec.html#overview">Overview</a>.</p>
+<h2 id="block-level-structural-rules"><a class="header" href="#block-level-structural-rules">Block-Level Structural Rules</a></h2>
+<p>The following rules hold for every block, regardless of which schema version is active. Any violation invalidates
+the block.</p>
+<ol>
+<li><strong>At most one.</strong> A block contains at most one transaction with type byte <code>0x7D</code>.</li>
+<li><strong>Last in block.</strong> When a <code>0x7D</code> transaction is present, it MUST be the final transaction of the block.</li>
+<li><strong>Anchored to block.</strong> The <code>blockNumber</code> field of the embedded payload MUST equal the L2 block number of the
+containing block.</li>
+<li><strong>Recognized schema.</strong> The payload's <code>version</code> MUST be a <a href="protocol/lagoon/post-exec.html#defined-schema-versions">defined schema version</a>.</li>
+<li><strong>Schema must be active.</strong> When no schema version is active for the block's timestamp, the block MUST NOT
+contain a <code>0x7D</code> transaction.</li>
+</ol>
+<p>Schema-specific validity rules (e.g. constraints on the trailing fields) are layered on top of these envelope rules
+and are specified by each schema's document. Both layers MUST hold for the block to be valid.</p>
+<h2 id="receipt"><a class="header" href="#receipt">Receipt</a></h2>
+<p>A post-exec transaction emits a receipt with type byte <code>0x7D</code>. The RLP-encoded consensus fields of the receipt are
+identical to those of an EIP-1559 receipt:</p>
+<ul>
+<li><code>postStateOrStatus</code> (<a href="https://eips.ethereum.org/EIPS/eip-658">EIP-658</a>)</li>
+<li><code>cumulativeGasUsed</code></li>
+<li><code>logsBloom</code></li>
+<li><code>logs</code></li>
+</ul>
+<p>A post-exec transaction is constructed by the protocol; it is not executed as EVM code, emits no logs, and
+consumes no gas from the block gas pool, so its own receipt records none of these:</p>
+<ul>
+<li><code>postStateOrStatus</code> MUST encode success (<a href="https://eips.ethereum.org/EIPS/eip-658">EIP-658</a> status <code>1</code>).</li>
+<li><code>logs</code> MUST be empty.</li>
+<li><code>logsBloom</code> MUST be the all-zero bloom filter.</li>
+<li><code>cumulativeGasUsed</code> MUST equal the <code>cumulativeGasUsed</code> of the immediately preceding transaction's receipt. (In
+any L2 block the post-exec transaction has at least one preceding transaction — the L1 attributes deposit — so
+there is always a previous receipt to inherit from.)</li>
+</ul>
+<p>The post-exec receipt participates in the block's receipts trie like any other receipt. The transaction's payload,
+however, is consensus-critical and drives state changes under the active schema — for SDM, the per-transaction fee
+<a href="protocol/lagoon/./sdm.html#settlement">settlement</a>. Those changes are applied atomically with the transactions they refund, so they
+belong to those transactions' state deltas, not to a separate post-exec state transition. Schema-specific data is
+likewise surfaced on those transactions' receipts, not on the post-exec receipt.</p>
+<h2 id="derivation-4"><a class="header" href="#derivation-4">Derivation</a></h2>
+<p>Post-exec transactions are constructed by the sequencer during block production and travel inside the L2 block
+body — through both the unsafe p2p payload and the L1 batch — rather than being synthesized from L1 events the way
+deposited transactions are. They are included in the block payload that is submitted to the data availability
+layer alongside the user transactions and any deposited transactions.</p>
+<p>The L1 batcher transaction format is unaffected: post-exec transactions appear inside L2 blocks, never as L1
+batcher transactions. The future-tx-type decoding range described in
+<a href="protocol/lagoon/../derivation.html#on-future-proof-transaction-log-derivation">derivation.md</a> governs L1 receipts only and is
+unchanged.</p>
+<h2 id="rationale-8"><a class="header" href="#rationale-8">Rationale</a></h2>
+<p><strong>Why a versioned payload.</strong> A <code>version</code> byte at the head of the payload lets the schema extend or replace its
+trailing fields without re-spending an EIP-2718 type byte.</p>
+<p><strong>Why last in block.</strong> Placing the post-exec transaction at the end of the block gives it a unique, predictable
+position and matches the natural "after everything else" semantics of the data it carries.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="sequencer-defined-metering"><a class="header" href="#sequencer-defined-metering">Sequencer-Defined Metering</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="protocol/lagoon/sdm.html#overview">Overview</a></li>
+<li><a href="protocol/lagoon/sdm.html#activation">Activation</a></li>
+<li><a href="protocol/lagoon/sdm.html#payload-schema-version-1">Payload Schema (Version 1)</a>
+<ul>
+<li><a href="protocol/lagoon/sdm.html#sdmgasentry"><code>SDMGasEntry</code></a></li>
+<li><a href="protocol/lagoon/sdm.html#validity-rules">Validity Rules</a></li>
+</ul>
+</li>
+<li><a href="protocol/lagoon/sdm.html#transaction-classification">Transaction Classification</a></li>
+<li><a href="protocol/lagoon/sdm.html#gas-refund-semantics">Gas Refund Semantics</a></li>
+<li><a href="protocol/lagoon/sdm.html#canonical-gas">Canonical Gas</a></li>
+<li><a href="protocol/lagoon/sdm.html#settlement">Settlement</a>
+<ul>
+<li><a href="protocol/lagoon/sdm.html#per-recipient-deltas">Per-Recipient Deltas</a></li>
+<li><a href="protocol/lagoon/sdm.html#application-rules">Application Rules</a></li>
+</ul>
+</li>
+<li><a href="protocol/lagoon/sdm.html#producer-and-verifier">Producer and Verifier</a></li>
+<li><a href="protocol/lagoon/sdm.html#receipt-extension">Receipt Extension</a></li>
+<li><a href="protocol/lagoon/sdm.html#backwards-compatibility">Backwards Compatibility</a></li>
+<li><a href="protocol/lagoon/sdm.html#security-considerations">Security Considerations</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<p>Sequencer-Defined Metering (SDM) is the version-1 <a href="protocol/lagoon/../../glossary.html#post-exec-payload-schema-version">post-exec payload schema</a>. It lets
+the sequencer attach per-transaction gas refunds to a block. Each refund lowers the gas a transaction is charged
+for and rebalances the fees it already paid.</p>
+<p>Refund data is carried by a <a href="protocol/lagoon/../../glossary.html#post-execution-transaction">post-exec transaction</a> (<code>0x7D</code>) appended to the block as its final
+transaction. The post-exec envelope and structural rules are specified in <a href="protocol/lagoon/./post-exec.html">post-exec.md</a>; this
+document specifies the version-1 payload and how clients apply the included refunds.</p>
+<h2 id="activation-2"><a class="header" href="#activation-2">Activation</a></h2>
+<p>SDM activates with the <a href="protocol/lagoon/./overview.html">Lagoon network upgrade</a> and is gated by the Lagoon activation timestamp.
+When SDM is active for a block, the block MAY contain a post-exec transaction; when SDM is inactive, the block MUST
+NOT contain a post-exec transaction (see
+<a href="protocol/lagoon/./post-exec.html#block-level-structural-rules">post-exec.md § Block-Level Structural Rules</a>).</p>
+<p>Before the Lagoon activation timestamp, every block MUST be produced and validated with SDM inactive, identically
+to a chain that has never specified SDM.</p>
+<h2 id="payload-schema-version-1"><a class="header" href="#payload-schema-version-1">Payload Schema (Version 1)</a></h2>
+<p>When <code>version = 1</code>, the <a href="protocol/lagoon/../../glossary.html#post-exec-payload">post-exec payload</a> is RLP-encoded as:</p>
+<pre><code class="language-text">[version, blockNumber, gasRefundEntries]
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>version</code></td><td><code>uint8</code></td><td>MUST be <code>1</code>.</td></tr>
+<tr><td><code>blockNumber</code></td><td><code>uint64</code></td><td>The L2 block number containing this payload (see <a href="protocol/lagoon/./post-exec.html#block-number">post-exec.md § Block Number</a>).</td></tr>
+<tr><td><code>gasRefundEntries</code></td><td><code>list&lt;SDMGasEntry&gt;</code></td><td>Non-zero per-transaction gas refunds.</td></tr>
+</tbody></table>
+</div>
+<h3 id="sdmgasentry"><a class="header" href="#sdmgasentry"><code>SDMGasEntry</code></a></h3>
+<p>Each entry in <code>gasRefundEntries</code> is an RLP list of two fields:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>index</code></td><td><code>uint64</code></td><td>Transaction index within the block (zero-based).</td></tr>
+<tr><td><code>gasRefund</code></td><td><code>uint64</code></td><td>Gas refund for the transaction at <code>index</code>.</td></tr>
+</tbody></table>
+</div>
+<h3 id="validity-rules"><a class="header" href="#validity-rules">Validity Rules</a></h3>
+<p>A version-1 payload is invalid if any of the following hold:</p>
+<ol>
+<li><code>gasRefundEntries</code> is empty.</li>
+<li>Any <code>SDMGasEntry</code> has <code>gasRefund == 0</code>.</li>
+<li>Entries are not ordered by strictly increasing <code>index</code>.</li>
+<li>Any entry's <code>index</code> does not refer to a standard Ethereum transaction in the block.</li>
+</ol>
+<p>The envelope-level rules in <a href="protocol/lagoon/./post-exec.html#block-level-structural-rules">post-exec.md § Block-Level Structural Rules</a>
+apply in addition to the rules above. As long as SDM is the only active payload schema: if the sequencer assigns
+no gas refunds, the block has no post-exec transaction.</p>
+<h2 id="transaction-classification"><a class="header" href="#transaction-classification">Transaction Classification</a></h2>
+<p>Every transaction in the block is classified as exactly one of:</p>
+<div class="table-wrapper"><table><thead><tr><th>Kind</th><th>Source</th><th>May have refund?</th></tr></thead><tbody>
+<tr><td></td><td>A standard Ethereum transaction.</td><td>Yes</td></tr>
+<tr><td><code>Deposit</code></td><td>A <a href="protocol/lagoon/../../glossary.html#deposited-transaction">deposited transaction</a> (type <code>0x7E</code>).</td><td>No</td></tr>
+<tr><td><code>PostExec</code></td><td>The post-exec transaction (type <code>0x7D</code>).</td><td>No</td></tr>
+</tbody></table>
+</div>
+<p>Deposits buy gas on L1 and have no L2-side gas-price to refund. The post-exec transaction carries SDM data only;
+it charges no fees, consumes no gas and is not executed as code.</p>
+<h2 id="gas-refund-semantics"><a class="header" href="#gas-refund-semantics">Gas Refund Semantics</a></h2>
+<p>For each standard Ethereum transaction at index <code>i</code>, define <code>refund(i)</code> as:</p>
+<ul>
+<li>the <code>gasRefund</code> value in the payload entry whose <code>index == i</code>, if one exists; otherwise</li>
+<li><code>0</code>.</li>
+</ul>
+<p>The refund value is sequencer-defined block data. Clients use the included value directly when executing and
+validating the block.</p>
+<h2 id="canonical-gas"><a class="header" href="#canonical-gas">Canonical Gas</a></h2>
+<p><a href="protocol/lagoon/../../glossary.html#canonical-gas">Canonical gas</a> is the gas a standard Ethereum transaction is accounted for under SDM: the gas the EVM
+reports minus the SDM refund applied to it. It is the value written to receipts and summed into the block's
+<code>cumulativeGasUsed</code> and <code>gasUsed</code>, as distinct from <code>evmGasUsed</code> (the raw gas the EVM reports before any SDM
+adjustment). It is unrelated to the "canonical chain" sense of <em>canonical</em> used elsewhere in these specs.</p>
+<p>For each standard Ethereum transaction at index <code>i</code>:</p>
+<ul>
+<li><code>evmGasUsed(i)</code> is the gas used reported by the EVM after execution, before any SDM adjustment.</li>
+<li><code>refund(i)</code> MUST be less than or equal to <code>evmGasUsed(i)</code>.</li>
+<li><code>canonicalGasUsed(i) = evmGasUsed(i) - refund(i)</code>.</li>
+</ul>
+<p>The receipt of transaction <code>i</code> reports <code>canonicalGasUsed(i)</code> as its gas-used field. The block's <code>cumulativeGasUsed</code>
+and <code>gasUsed</code> are computed using <code>canonicalGasUsed</code> for standard Ethereum transactions and <code>evmGasUsed</code> for <code>Deposit</code>
+transactions. The post-exec transaction contributes zero gas (see <a href="protocol/lagoon/./post-exec.html#receipt">post-exec.md § Receipt</a>).</p>
+<h2 id="settlement"><a class="header" href="#settlement">Settlement</a></h2>
+<p>Because the EVM initially charges fees using <code>evmGasUsed(i)</code>, SDM applies a balance settlement for every standard
+Ethereum transaction with <code>refund(i) &gt; 0</code>.</p>
+<h3 id="per-recipient-deltas"><a class="header" href="#per-recipient-deltas">Per-Recipient Deltas</a></h3>
+<p>Let <code>r = refund(i)</code>, <code>p</code> be the transaction's <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> effective gas price, <code>b</code> be the block's base fee, and let
+<code>operatorFee(g)</code> be the operator fee charged by the L1Block precompile for gas usage <code>g</code> at the active spec
+(post-Isthmus).</p>
+<div class="table-wrapper"><table><thead><tr><th>Recipient</th><th>Adjustment</th><th>Amount</th></tr></thead><tbody>
+<tr><td>Sender (<code>tx.from</code>)</td><td>credit</td><td><code>r * p + (operatorFee(evmGasUsed) - operatorFee(canonicalGasUsed))</code></td></tr>
+<tr><td>Block beneficiary</td><td>debit</td><td><code>r * (p - b)</code></td></tr>
+<tr><td>Base fee vault</td><td>debit</td><td><code>r * b</code></td></tr>
+<tr><td>Operator fee vault (post-Isthmus)</td><td>debit</td><td><code>operatorFee(evmGasUsed) - operatorFee(canonicalGasUsed)</code></td></tr>
+</tbody></table>
+</div>
+<p>The sender credit equals the sum of the recipient debits: <code>r * (p - b) + r * b = r * p</code>. This identity relies on
+<code>p &gt;= b</code>, which holds for every transaction that can be included: an <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> transaction has
+<code>p = b + min(maxPriorityFeePerGas, maxFeePerGas - b) &gt;= b</code>, and a legacy transaction must have <code>gasPrice &gt;= b</code> to
+be included. Hence <code>p - b &gt;= 0</code>, so the beneficiary debit is never negative; at the boundary <code>p = b</code> (e.g. a legacy
+transaction whose gas price equals the base fee) the priority tip — and therefore the beneficiary debit — is zero.
+The L1 fee vault is not adjusted: L1 cost is independent of L2 gas usage.</p>
+<h3 id="application-rules"><a class="header" href="#application-rules">Application Rules</a></h3>
+<p>Settlement is applied after the transaction's EVM frame finishes and before the transaction state delta is
+committed. It is atomic with the transaction and does not produce a separate receipt.</p>
+<p>If any debit would underflow, the block is invalid. For any payload that respects <code>refund(i) &lt;= evmGasUsed(i)</code>,
+this cannot occur, because each recipient was just paid the corresponding amount by the EVM in the same
+transaction; an underflow therefore indicates a malformed or adversarial payload rather than a reachable state of
+honest execution.</p>
+<h2 id="producer-and-verifier"><a class="header" href="#producer-and-verifier">Producer and Verifier</a></h2>
+<p>Under SDM:</p>
+<ul>
+<li>The sequencer executes the block, chooses the non-zero <code>gasRefundEntries</code>, and appends a post-exec transaction if
+and only if the entry list is non-empty.</li>
+<li>A verifier enforces the post-exec envelope rules and the SDM <a href="protocol/lagoon/sdm.html#validity-rules">validity rules</a>, then applies the
+refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage.</li>
+</ul>
+<h2 id="receipt-extension"><a class="header" href="#receipt-extension">Receipt Extension</a></h2>
+<p>The post-exec transaction's own receipt carries no SDM-specific fields (see
+<a href="protocol/lagoon/./post-exec.html#receipt">post-exec.md § Receipt</a>).</p>
+<p>The JSON-RPC receipts returned for standard Ethereum transactions are extended with a single additional field:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>opGasRefund</code></td><td><code>Quantity</code> (<code>uint64</code>) or <code>null</code></td><td>The SDM gas refund credited to the transaction, or <code>null</code> when SDM was inactive for the block or the transaction had no refund.</td></tr>
+</tbody></table>
+</div>
+<p>The value is sourced from the embedded post-exec payload's <code>gasRefundEntries</code> for the transaction's <code>index</code>.
+<code>opGasRefund</code> is not part of the receipt's RLP encoding and is not committed to the receipts trie. Because it is
+an additional JSON-RPC field outside the consensus receipt, existing receipt tooling that ignores unknown fields
+(e.g. <code>cast receipt</code>) is unaffected; only consumers that opt in observe it.</p>
+<h2 id="backwards-compatibility-1"><a class="header" href="#backwards-compatibility-1">Backwards Compatibility</a></h2>
+<p>Before the Lagoon activation timestamp, blocks are produced and validated identically to a chain that has never
+specified SDM: no post-exec transactions appear, no canonical-gas adjustment is performed, and no settlement runs.</p>
+<p>From the Lagoon activation timestamp, two changes become observable:</p>
+<ul>
+<li>A <code>0x7D</code> transaction may appear at the end of any block produced after activation, exposed through the same
+transaction-list interfaces used today.</li>
+<li>The receipts of standard Ethereum transactions in such blocks gain the <code>opGasRefund</code> field; clients that ignore unknown
+fields are unaffected.</li>
+</ul>
+<p>Mempool and transaction-pool interfaces are unchanged: post-exec transactions are not user-submittable and do not
+propagate over the public transaction-gossip protocol.</p>
+<h2 id="security-considerations-5"><a class="header" href="#security-considerations-5">Security Considerations</a></h2>
+<p><strong>Sequencer-defined amounts.</strong> Refund amounts are part of the sequencer's block data. The only consensus-defined
+constraints are on their encoding, their target transaction (standard Ethereum transactions only), and the application bounds
+(<code>refund(i) &lt;= evmGasUsed(i)</code> and no settlement underflow); otherwise the sequencer has complete freedom to
+allocate refunds according to arbitrary policy.</p>
+<p><strong>Cross-block replay.</strong> The post-exec transaction's <code>blockNumber</code> field anchors each payload to its containing
+block. A payload from one block re-injected into another fails the envelope <code>blockNumber</code> check.</p>
+<p><strong>Settlement underflow.</strong> Any settlement debit underflow invalidates the block.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="governance-token-2"><a class="header" href="#governance-token-2">Governance Token</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -15991,7 +16361,7 @@ node MUST also prepend the string "Karst: " at the front of the intent string.</
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -16126,7 +16496,7 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>The <code>MintManager</code> contract serves as the owner of the <a href="governance/./gov-token.html">GovernanceToken</a> and controls the token
 inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
 period between mints. The contract is upgradeable, allowing the owner to transfer control to a new <code>MintManager</code>
@@ -16400,7 +16770,7 @@ the token minting authority.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
 <h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
@@ -16556,7 +16926,7 @@ rather than reading it from local state.</p>
 This means that it can be deterministically called by network upgrade transactions
 or by special deposit transactions emitted by the <code>OptimismPortal</code> that assume
 the identity of the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="rationale-8"><a class="header" href="#rationale-8">Rationale</a></h4>
+<h4 id="rationale-9"><a class="header" href="#rationale-9">Rationale</a></h4>
 <p>It is much easier to manage the overall roles of the full system under this model.
 The owner of the <code>ProxyAdmin</code> can upgrade any of the predeploys, meaning it can
 write storage slots that correspond to withdrawals. This ensures that only the
@@ -16638,7 +17008,7 @@ contract by removing the need for special getters for each piece of config.</p>
 <h3 id="optimismmintableerc721factory-1"><a class="header" href="#optimismmintableerc721factory-1">OptimismMintableERC721Factory</a></h3>
 <p>The chain id is no longer read from storage but instead is read from the <code>L1Block</code> contract by calling
 <code>L1Block.getConfig(ConfigType.REMOTE_CHAIN_ID)</code></p>
-<h2 id="security-considerations-5"><a class="header" href="#security-considerations-5">Security Considerations</a></h2>
+<h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
 <h3 id="governancetoken"><a class="header" href="#governancetoken">GovernanceToken</a></h3>
 <p>The predeploy defined by <code>GovernanceToken</code> should be an empty account until it is defined by
 a future hardfork.</p>
@@ -16674,7 +17044,7 @@ a future hardfork.</p>
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -16825,7 +17195,7 @@ or block number will be ignored during derivation and have no impact on the stat
 <p>The contract is deployed behind an upgradable proxy so the address can be hardcoded in the rollup config
 file and does not need to change. A future upgrade can add custom resolver functions to be chosen
 dynamically when a user calls the resolve function to support other alt DA solutions.</p>
-<h2 id="derivation-4"><a class="header" href="#derivation-4">Derivation</a></h2>
+<h2 id="derivation-5"><a class="header" href="#derivation-5">Derivation</a></h2>
 <p>Input data is retrieved during derivation of L2 blocks. The changes to the derivation pipeline
 when using the alt DA source are limited to wrapping the L1 based <code>DataAvailabilitySource</code> step
 in the pipeline with a module that enables pulling the data from the offchain DA source once
@@ -16911,7 +17281,7 @@ when that commitment can no longer be invalidated. Then finalization can proceed
 that an L2 block is derived from becomes finalized, the L2 block can be marked as finalized.</p>
 <p>The engine queue will maintain a longer buffer of L2 blocks waiting for the DA window to expire
 and the L1 block with the commitment to be finalized in order to signal finality.</p>
-<h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
+<h2 id="security-considerations-7"><a class="header" href="#security-considerations-7">Security Considerations</a></h2>
 <p>The Data Availability Challenge contract mitigates DoS vulnerability with a payable bond requirement making
 challenging the availability of a commitment at least as expensive as submitting the data onchain to resolve
 the challenge.
@@ -17017,7 +17387,7 @@ considered an upgrade to the network. It is not possible to remove chains from t
 <h3 id="layer-1-as-part-of-the-dependency-set"><a class="header" href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></h3>
 <p>The layer one MAY be part of the dependency set in the future. This means that any event
 created on layer one is consumable on layer two.</p>
-<h2 id="security-considerations-7"><a class="header" href="#security-considerations-7">Security Considerations</a></h2>
+<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
 <h3 id="dependency-set-size"><a class="header" href="#dependency-set-size">Dependency Set Size</a></h3>
 <p>It becomes increasingly expensive to fully validate the full cluster as the size of the dependency
 set grows. The proof system requires validating all of the chains so the size of the dependency
@@ -17237,7 +17607,7 @@ and thus a maximum inward degree of dependencies.</li>
 <li>Every block cannot depend on expired messages, as per the <a href="interop/messaging.html#message-expiry-invariant">Message expiry invariant</a>.</li>
 </ul>
 <p>The verifier is responsible for filtering out non-canonical parts of the graph.</p>
-<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
+<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
 <h3 id="cyclic-dependencies"><a class="header" href="#cyclic-dependencies">Cyclic dependencies</a></h3>
 <p>If there is a cycle in the dependency set, chains MUST still be able to promote unsafe blocks
 to safe blocks. A cycle in the dependency set happens anytime that two chains are in each other's
@@ -17382,7 +17752,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -17721,7 +18091,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-50"><a class="header" href="#overview-50">Overview</a></h3>
+<h3 id="overview-52"><a class="header" href="#overview-52">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -17788,7 +18158,7 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-51"><a class="header" href="#overview-51">Overview</a></h3>
+<h3 id="overview-53"><a class="header" href="#overview-53">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -17944,7 +18314,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-52"><a class="header" href="#overview-52">Overview</a></h3>
+<h3 id="overview-54"><a class="header" href="#overview-54">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -18063,7 +18433,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
+<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h1>
@@ -18091,7 +18461,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
+<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -18176,7 +18546,7 @@ messages will need to recursively check that all dependencies are safe.</p>
 <p>A shared sequencer can be built if the block builder is able to build the next canonical block
 for multiple chains. This can enable synchronous composability where transactions are able
 to execute across multiple chains at the same timestamp.</p>
-<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <h3 id="depending-on-preconfirmations"><a class="header" href="#depending-on-preconfirmations">Depending on Preconfirmations</a></h3>
 <p>If a local sequencer is accepting inbound cross chain transactions where the initiating message only has preconfirmation
 levels of security, this means that the remote sequencer can trigger a reorg on the local chain.</p>
@@ -18276,7 +18646,7 @@ to the block building code that the <a href="interop/./sequencer.html#direct-dep
 follows. The main difference is that the validity of included executing
 messages is verified, instead of verifying possible executing messages before
 inclusion.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="super-root-1"><a class="header" href="#super-root-1">Super Root</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -18310,7 +18680,7 @@ inclusion.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
+<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
 <p>The <a href="interop/../fault-proof/stage-one/optimism-portal.html#super-root">super root</a> is a commitment to the
 combined verified state of all chains in a <a href="interop/./dependency-set.html">dependency set</a> at a given timestamp.
 Any consensus client that verifies output roots across chains with interop needs access to the
@@ -18448,7 +18818,7 @@ do not produce errors; they result in the chain being excluded from
 <li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
+<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
 <p>Interop introduces the Super Fault Dispute Game as a
 new <a href="interop/../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
 pre-interop <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
@@ -18531,7 +18901,7 @@ are set to the output roots of the validated blocks (including any required repl
 <p>Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
 <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a>. A single <strong>ABSOLUTE_PRESTATE</strong> continues to be used, with the fault proof
 program identifying the type of step to perform based on the agreed prestate.</p>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
@@ -18564,7 +18934,7 @@ program identifying the type of step to perform based on the agreed prestate.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
+<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainTokenBridge</code>.
@@ -18820,7 +19190,7 @@ but revert on the destination chain, and could never be successfully replayed.</
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
+<h2 id="overview-59"><a class="header" href="#overview-59">Overview</a></h2>
 <p>The <code>ETHLiquidity</code> contract is a predeploy that manages native ETH liquidity for cross-chain
 transfers within the Superchain interop set. It works in conjunction with the
 <code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
@@ -18982,7 +19352,7 @@ do not break this invariant.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
+<h2 id="overview-60"><a class="header" href="#overview-60">Overview</a></h2>
 <p>The <code>SuperchainETHBridge</code> is a predeploy contract that facilitates cross-chain ETH bridging within
 the Superchain interop set. It serves as an abstraction layer on top of the
 <code>L2toL2CrossDomainMessenger</code> specifically designed for native ETH transfers between chains. The
@@ -19134,7 +19504,7 @@ ID.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-59"><a class="header" href="#overview-59">Overview</a></h2>
+<h2 id="overview-61"><a class="header" href="#overview-61">Overview</a></h2>
 <p>ETH is bridged between chains within the Superchain interop set by using the <code>SuperchainETHBridge</code>
 predeploy for message passing and the <code>ETHLiquidity</code> contract for supplying native ETH liquidity.</p>
 <h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
@@ -19180,7 +19550,7 @@ sequenceDiagram
   L2SBB--&gt;L2SBB: emit RelayETH(from, to, amount, source)
 </pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="derivation-5"><a class="header" href="#derivation-5">Derivation</a></h1>
+<h1 id="derivation-6"><a class="header" href="#derivation-6">Derivation</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -19213,7 +19583,7 @@ sequenceDiagram
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-60"><a class="header" href="#overview-60">Overview</a></h2>
+<h2 id="overview-62"><a class="header" href="#overview-62">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
@@ -19428,7 +19798,7 @@ of <code>1_000_000</code> even allowing for the gas used by the
 <tr><td><code>EXPIRY_WINDOW</code></td><td><code>604800 secs</code> (7 days)</td></tr>
 </tbody></table>
 </div>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
 <h3 id="depositing-an-executing-message"><a class="header" href="#depositing-an-executing-message">Depositing an Executing Message</a></h3>
 <p>Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
 If it were possible to deposit an invalid executing message, this would force the sequencer to reorg. It would
@@ -19460,7 +19830,7 @@ needing to execute increasingly long chain histories.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-61"><a class="header" href="#overview-61">Overview</a></h2>
+<h2 id="overview-63"><a class="header" href="#overview-63">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -19490,7 +19860,7 @@ and does not get stuck in the transaction pool.</p>
 should be maintained in the transaction pool.
 This leaves sufficient gas for the L1 attributes transaction (under 45,000 gas),
 the new deposit-context closing transaction (under 36,000 gas), and margin for error / change.</p>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
 <h3 id="mempool-denial-of-service"><a class="header" href="#mempool-denial-of-service">Mempool Denial of Service</a></h3>
 <p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
@@ -19532,7 +19902,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-62"><a class="header" href="#overview-62">Overview</a></h2>
+<h2 id="overview-64"><a class="header" href="#overview-64">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -19647,7 +20017,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-63"><a class="header" href="#overview-63">Overview</a></h2>
+<h2 id="overview-65"><a class="header" href="#overview-65">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -19941,7 +20311,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-64"><a class="header" href="#overview-64">Overview</a></h2>
+<h2 id="overview-66"><a class="header" href="#overview-66">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -20167,7 +20537,7 @@ arguments, unless otherwise specified in the table below.</li>
 <tr><td>l2ChainId</td><td>uint256</td><td>Chain ID of the L2 network</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<h2 id="security-considerations-16"><a class="header" href="#security-considerations-16">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
@@ -20239,7 +20609,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-65"><a class="header" href="#overview-65">Overview</a></h2>
+<h2 id="overview-67"><a class="header" href="#overview-67">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -20343,7 +20713,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-66"><a class="header" href="#overview-66">Overview</a></h2>
+<h2 id="overview-68"><a class="header" href="#overview-68">Overview</a></h2>
 <p>The LivenessGuard tracks the liveness of Safe multisig owners by recording timestamps when owners sign transactions or
 explicitly demonstrate activity. It serves as a monitoring mechanism to identify inactive owners who may have lost
 access to their keys.</p>
@@ -20553,6 +20923,14 @@ execution.</p>
 <li><a href="glossary.html#execution-engine">Execution Engine</a></li>
 </ul>
 </li>
+<li><a href="glossary.html#post-execution-transaction">Post-Execution Transaction</a>
+<ul>
+<li><a href="glossary.html#post-exec-payload">Post-Exec Payload</a></li>
+<li><a href="glossary.html#post-exec-payload-schema-version">Post-Exec Payload Schema Version</a></li>
+<li><a href="glossary.html#sequencer-defined-metering">Sequencer-Defined Metering</a></li>
+<li><a href="glossary.html#canonical-gas">Canonical Gas</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <hr />
@@ -20595,7 +20973,7 @@ available to improve the L2's UX.</p>
 (e.g. Solidity) implementation. Precompiles exist at predefined addresses. They are created and modified through
 network upgrades.</p>
 <p>All precompile contracts are specified in the <a href="./protocol/precompiles.html">precompiles specification</a>.</p>
-<h2 id="receipt"><a class="header" href="#receipt">Receipt</a></h2>
+<h2 id="receipt-1"><a class="header" href="#receipt-1">Receipt</a></h2>
 <p>A receipt is an output generated by a transaction, comprising a status code, the amount of gas used, a list of log
 entries, and a <a href="https://en.wikipedia.org/wiki/Bloom_filter">bloom filter</a> indexing these entries. Log entries are most notably used to encode <a href="https://docs.soliditylang.org/en/latest/contracts.html?highlight=events#events">Solidity events</a>.</p>
 <p>Receipts are not stored in blocks, but blocks store a <a href="glossary.html#merkle-patricia-trie">Merkle Patricia Trie root</a> for a tree containing the receipt
@@ -20969,6 +21347,36 @@ using transactions <a href="glossary.html#L2-chain-derivation">derived from L1 b
 <ul>
 <li>cf. <a href="./protocol/exec-engine.html">Execution Engine Specification</a></li>
 </ul>
+<hr />
+<h1 id="post-execution-transaction"><a class="header" href="#post-execution-transaction">Post-Execution Transaction</a></h1>
+<p>The <em>post-execution transaction</em>, <em>post-exec transaction</em>, or <em>post-exec tx</em> is the <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> transaction with
+type byte <code>0x7D</code> that carries sequencer-provided consensus data. It is emitted by the <a href="glossary.html#sequencer">sequencer</a> and appended to a
+block after the last user transaction; at most one may appear in a block, when present it MUST be the final
+transaction in the block, and it is not propagated through the public mempool.</p>
+<p>A post-exec transaction has no signer, no nonce, no fee, and consumes no block gas; it carries a single payload
+field (a <a href="glossary.html#post-exec-payload">post-exec payload</a>) that clients apply as part of the block's canonical state
+transition.</p>
+<p>See the <a href="./protocol/lagoon/post-exec.html">post-exec specification</a>.</p>
+<h2 id="post-exec-payload"><a class="header" href="#post-exec-payload">Post-Exec Payload</a></h2>
+<p>The <em>post-exec payload</em> is the data structure carried by a <a href="glossary.html#post-execution-transaction">post-exec transaction</a>.
+It is a versioned envelope: a <code>version</code> byte selects the payload schema, a <code>blockNumber</code> field anchors the payload
+to the containing block, and the remaining fields are defined by the active schema version.</p>
+<h2 id="post-exec-payload-schema-version"><a class="header" href="#post-exec-payload-schema-version">Post-Exec Payload Schema Version</a></h2>
+<p>A monotonically assigned identifier that selects the field layout of a <a href="glossary.html#post-exec-payload">post-exec payload</a>.
+Schema versions are described in the <a href="./protocol/lagoon/post-exec.html">post-exec specification</a>; the version-1 schema is defined by
+the <a href="./protocol/lagoon/sdm.html">Sequencer-Defined Metering</a> specification.</p>
+<h2 id="sequencer-defined-metering-1"><a class="header" href="#sequencer-defined-metering-1">Sequencer-Defined Metering</a></h2>
+<p><em>Sequencer-Defined Metering</em> (<em>SDM</em>) is the <a href="glossary.html#post-exec-payload-schema-version">post-exec payload schema version</a> 1
+policy. SDM lets the sequencer include per-transaction gas refunds that adjust canonical gas accounting and fee
+settlement.</p>
+<p>See the <a href="./protocol/lagoon/sdm.html">SDM specification</a>.</p>
+<h2 id="canonical-gas-1"><a class="header" href="#canonical-gas-1">Canonical Gas</a></h2>
+<p>Under <a href="glossary.html#sequencer-defined-metering">Sequencer-Defined Metering</a>, the gas a transaction is accounted for after its
+gas refund is applied: <code>canonicalGasUsed = evmGasUsed - refund</code>, where <code>evmGasUsed</code> is the raw gas reported by the
+EVM. Canonical gas is the value recorded in transaction receipts and summed into the block's <code>cumulativeGasUsed</code>
+and <code>gasUsed</code>. It is distinct from the raw EVM gas, and unrelated to the "canonical chain" sense of <em>canonical</em>
+used elsewhere in this glossary.</p>
+<p>See the <a href="./protocol/lagoon/sdm.html">SDM specification</a>.</p>
 <!-- Internal Links -->
 <!-- External Links -->
 

@@ -271,6 +271,14 @@
 <li><a href="#execution-engine">Execution Engine</a></li>
 </ul>
 </li>
+<li><a href="#post-execution-transaction">Post-Execution Transaction</a>
+<ul>
+<li><a href="#post-exec-payload">Post-Exec Payload</a></li>
+<li><a href="#post-exec-payload-schema-version">Post-Exec Payload Schema Version</a></li>
+<li><a href="#sequencer-defined-metering">Sequencer-Defined Metering</a></li>
+<li><a href="#canonical-gas">Canonical Gas</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <hr />
@@ -687,6 +695,36 @@ using transactions <a href="glossary.html#L2-chain-derivation">derived from L1 b
 <ul>
 <li>cf. <a href="./protocol/exec-engine.html">Execution Engine Specification</a></li>
 </ul>
+<hr />
+<h1 id="post-execution-transaction"><a class="header" href="#post-execution-transaction">Post-Execution Transaction</a></h1>
+<p>The <em>post-execution transaction</em>, <em>post-exec transaction</em>, or <em>post-exec tx</em> is the <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> transaction with
+type byte <code>0x7D</code> that carries sequencer-provided consensus data. It is emitted by the <a href="glossary.html#sequencer">sequencer</a> and appended to a
+block after the last user transaction; at most one may appear in a block, when present it MUST be the final
+transaction in the block, and it is not propagated through the public mempool.</p>
+<p>A post-exec transaction has no signer, no nonce, no fee, and consumes no block gas; it carries a single payload
+field (a <a href="#post-exec-payload">post-exec payload</a>) that clients apply as part of the block's canonical state
+transition.</p>
+<p>See the <a href="./protocol/lagoon/post-exec.html">post-exec specification</a>.</p>
+<h2 id="post-exec-payload"><a class="header" href="#post-exec-payload">Post-Exec Payload</a></h2>
+<p>The <em>post-exec payload</em> is the data structure carried by a <a href="#post-execution-transaction">post-exec transaction</a>.
+It is a versioned envelope: a <code>version</code> byte selects the payload schema, a <code>blockNumber</code> field anchors the payload
+to the containing block, and the remaining fields are defined by the active schema version.</p>
+<h2 id="post-exec-payload-schema-version"><a class="header" href="#post-exec-payload-schema-version">Post-Exec Payload Schema Version</a></h2>
+<p>A monotonically assigned identifier that selects the field layout of a <a href="#post-exec-payload">post-exec payload</a>.
+Schema versions are described in the <a href="./protocol/lagoon/post-exec.html">post-exec specification</a>; the version-1 schema is defined by
+the <a href="./protocol/lagoon/sdm.html">Sequencer-Defined Metering</a> specification.</p>
+<h2 id="sequencer-defined-metering"><a class="header" href="#sequencer-defined-metering">Sequencer-Defined Metering</a></h2>
+<p><em>Sequencer-Defined Metering</em> (<em>SDM</em>) is the <a href="#post-exec-payload-schema-version">post-exec payload schema version</a> 1
+policy. SDM lets the sequencer include per-transaction gas refunds that adjust canonical gas accounting and fee
+settlement.</p>
+<p>See the <a href="./protocol/lagoon/sdm.html">SDM specification</a>.</p>
+<h2 id="canonical-gas"><a class="header" href="#canonical-gas">Canonical Gas</a></h2>
+<p>Under <a href="#sequencer-defined-metering">Sequencer-Defined Metering</a>, the gas a transaction is accounted for after its
+gas refund is applied: <code>canonicalGasUsed = evmGasUsed - refund</code>, where <code>evmGasUsed</code> is the raw gas reported by the
+EVM. Canonical gas is the value recorded in transaction receipts and summed into the block's <code>cumulativeGasUsed</code>
+and <code>gasUsed</code>. It is distinct from the raw EVM gas, and unrelated to the "canonical chain" sense of <em>canonical</em>
+used elsewhere in this glossary.</p>
+<p>See the <a href="./protocol/lagoon/sdm.html">SDM specification</a>.</p>
 <!-- Internal Links -->
 <!-- External Links -->
 

@@ -1,0 +1,397 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Sequencer-Defined Metering - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/lagoon/sdm.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="sequencer-defined-metering"><a class="header" href="#sequencer-defined-metering">Sequencer-Defined Metering</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#activation">Activation</a></li>
+<li><a href="#payload-schema-version-1">Payload Schema (Version 1)</a>
+<ul>
+<li><a href="#sdmgasentry"><code>SDMGasEntry</code></a></li>
+<li><a href="#validity-rules">Validity Rules</a></li>
+</ul>
+</li>
+<li><a href="#transaction-classification">Transaction Classification</a></li>
+<li><a href="#gas-refund-semantics">Gas Refund Semantics</a></li>
+<li><a href="#canonical-gas">Canonical Gas</a></li>
+<li><a href="#settlement">Settlement</a>
+<ul>
+<li><a href="#per-recipient-deltas">Per-Recipient Deltas</a></li>
+<li><a href="#application-rules">Application Rules</a></li>
+</ul>
+</li>
+<li><a href="#producer-and-verifier">Producer and Verifier</a></li>
+<li><a href="#receipt-extension">Receipt Extension</a></li>
+<li><a href="#backwards-compatibility">Backwards Compatibility</a></li>
+<li><a href="#security-considerations">Security Considerations</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Sequencer-Defined Metering (SDM) is the version-1 <a href="../../glossary.html#post-exec-payload-schema-version">post-exec payload schema</a>. It lets
+the sequencer attach per-transaction gas refunds to a block. Each refund lowers the gas a transaction is charged
+for and rebalances the fees it already paid.</p>
+<p>Refund data is carried by a <a href="../../glossary.html#post-execution-transaction">post-exec transaction</a> (<code>0x7D</code>) appended to the block as its final
+transaction. The post-exec envelope and structural rules are specified in <a href="./post-exec.html">post-exec.md</a>; this
+document specifies the version-1 payload and how clients apply the included refunds.</p>
+<h2 id="activation"><a class="header" href="#activation">Activation</a></h2>
+<p>SDM activates with the <a href="./overview.html">Lagoon network upgrade</a> and is gated by the Lagoon activation timestamp.
+When SDM is active for a block, the block MAY contain a post-exec transaction; when SDM is inactive, the block MUST
+NOT contain a post-exec transaction (see
+<a href="./post-exec.html#block-level-structural-rules">post-exec.md § Block-Level Structural Rules</a>).</p>
+<p>Before the Lagoon activation timestamp, every block MUST be produced and validated with SDM inactive, identically
+to a chain that has never specified SDM.</p>
+<h2 id="payload-schema-version-1"><a class="header" href="#payload-schema-version-1">Payload Schema (Version 1)</a></h2>
+<p>When <code>version = 1</code>, the <a href="../../glossary.html#post-exec-payload">post-exec payload</a> is RLP-encoded as:</p>
+<pre><code class="language-text">[version, blockNumber, gasRefundEntries]
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>version</code></td><td><code>uint8</code></td><td>MUST be <code>1</code>.</td></tr>
+<tr><td><code>blockNumber</code></td><td><code>uint64</code></td><td>The L2 block number containing this payload (see <a href="./post-exec.html#block-number">post-exec.md § Block Number</a>).</td></tr>
+<tr><td><code>gasRefundEntries</code></td><td><code>list&lt;SDMGasEntry&gt;</code></td><td>Non-zero per-transaction gas refunds.</td></tr>
+</tbody></table>
+</div>
+<h3 id="sdmgasentry"><a class="header" href="#sdmgasentry"><code>SDMGasEntry</code></a></h3>
+<p>Each entry in <code>gasRefundEntries</code> is an RLP list of two fields:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>index</code></td><td><code>uint64</code></td><td>Transaction index within the block (zero-based).</td></tr>
+<tr><td><code>gasRefund</code></td><td><code>uint64</code></td><td>Gas refund for the transaction at <code>index</code>.</td></tr>
+</tbody></table>
+</div>
+<h3 id="validity-rules"><a class="header" href="#validity-rules">Validity Rules</a></h3>
+<p>A version-1 payload is invalid if any of the following hold:</p>
+<ol>
+<li><code>gasRefundEntries</code> is empty.</li>
+<li>Any <code>SDMGasEntry</code> has <code>gasRefund == 0</code>.</li>
+<li>Entries are not ordered by strictly increasing <code>index</code>.</li>
+<li>Any entry's <code>index</code> does not refer to a standard Ethereum transaction in the block.</li>
+</ol>
+<p>The envelope-level rules in <a href="./post-exec.html#block-level-structural-rules">post-exec.md § Block-Level Structural Rules</a>
+apply in addition to the rules above. As long as SDM is the only active payload schema: if the sequencer assigns
+no gas refunds, the block has no post-exec transaction.</p>
+<h2 id="transaction-classification"><a class="header" href="#transaction-classification">Transaction Classification</a></h2>
+<p>Every transaction in the block is classified as exactly one of:</p>
+<div class="table-wrapper"><table><thead><tr><th>Kind</th><th>Source</th><th>May have refund?</th></tr></thead><tbody>
+<tr><td></td><td>A standard Ethereum transaction.</td><td>Yes</td></tr>
+<tr><td><code>Deposit</code></td><td>A <a href="../../glossary.html#deposited-transaction">deposited transaction</a> (type <code>0x7E</code>).</td><td>No</td></tr>
+<tr><td><code>PostExec</code></td><td>The post-exec transaction (type <code>0x7D</code>).</td><td>No</td></tr>
+</tbody></table>
+</div>
+<p>Deposits buy gas on L1 and have no L2-side gas-price to refund. The post-exec transaction carries SDM data only;
+it charges no fees, consumes no gas and is not executed as code.</p>
+<h2 id="gas-refund-semantics"><a class="header" href="#gas-refund-semantics">Gas Refund Semantics</a></h2>
+<p>For each standard Ethereum transaction at index <code>i</code>, define <code>refund(i)</code> as:</p>
+<ul>
+<li>the <code>gasRefund</code> value in the payload entry whose <code>index == i</code>, if one exists; otherwise</li>
+<li><code>0</code>.</li>
+</ul>
+<p>The refund value is sequencer-defined block data. Clients use the included value directly when executing and
+validating the block.</p>
+<h2 id="canonical-gas"><a class="header" href="#canonical-gas">Canonical Gas</a></h2>
+<p><a href="../../glossary.html#canonical-gas">Canonical gas</a> is the gas a standard Ethereum transaction is accounted for under SDM: the gas the EVM
+reports minus the SDM refund applied to it. It is the value written to receipts and summed into the block's
+<code>cumulativeGasUsed</code> and <code>gasUsed</code>, as distinct from <code>evmGasUsed</code> (the raw gas the EVM reports before any SDM
+adjustment). It is unrelated to the "canonical chain" sense of <em>canonical</em> used elsewhere in these specs.</p>
+<p>For each standard Ethereum transaction at index <code>i</code>:</p>
+<ul>
+<li><code>evmGasUsed(i)</code> is the gas used reported by the EVM after execution, before any SDM adjustment.</li>
+<li><code>refund(i)</code> MUST be less than or equal to <code>evmGasUsed(i)</code>.</li>
+<li><code>canonicalGasUsed(i) = evmGasUsed(i) - refund(i)</code>.</li>
+</ul>
+<p>The receipt of transaction <code>i</code> reports <code>canonicalGasUsed(i)</code> as its gas-used field. The block's <code>cumulativeGasUsed</code>
+and <code>gasUsed</code> are computed using <code>canonicalGasUsed</code> for standard Ethereum transactions and <code>evmGasUsed</code> for <code>Deposit</code>
+transactions. The post-exec transaction contributes zero gas (see <a href="./post-exec.html#receipt">post-exec.md § Receipt</a>).</p>
+<h2 id="settlement"><a class="header" href="#settlement">Settlement</a></h2>
+<p>Because the EVM initially charges fees using <code>evmGasUsed(i)</code>, SDM applies a balance settlement for every standard
+Ethereum transaction with <code>refund(i) &gt; 0</code>.</p>
+<h3 id="per-recipient-deltas"><a class="header" href="#per-recipient-deltas">Per-Recipient Deltas</a></h3>
+<p>Let <code>r = refund(i)</code>, <code>p</code> be the transaction's <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> effective gas price, <code>b</code> be the block's base fee, and let
+<code>operatorFee(g)</code> be the operator fee charged by the L1Block precompile for gas usage <code>g</code> at the active spec
+(post-Isthmus).</p>
+<div class="table-wrapper"><table><thead><tr><th>Recipient</th><th>Adjustment</th><th>Amount</th></tr></thead><tbody>
+<tr><td>Sender (<code>tx.from</code>)</td><td>credit</td><td><code>r * p + (operatorFee(evmGasUsed) - operatorFee(canonicalGasUsed))</code></td></tr>
+<tr><td>Block beneficiary</td><td>debit</td><td><code>r * (p - b)</code></td></tr>
+<tr><td>Base fee vault</td><td>debit</td><td><code>r * b</code></td></tr>
+<tr><td>Operator fee vault (post-Isthmus)</td><td>debit</td><td><code>operatorFee(evmGasUsed) - operatorFee(canonicalGasUsed)</code></td></tr>
+</tbody></table>
+</div>
+<p>The sender credit equals the sum of the recipient debits: <code>r * (p - b) + r * b = r * p</code>. This identity relies on
+<code>p &gt;= b</code>, which holds for every transaction that can be included: an <a href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a> transaction has
+<code>p = b + min(maxPriorityFeePerGas, maxFeePerGas - b) &gt;= b</code>, and a legacy transaction must have <code>gasPrice &gt;= b</code> to
+be included. Hence <code>p - b &gt;= 0</code>, so the beneficiary debit is never negative; at the boundary <code>p = b</code> (e.g. a legacy
+transaction whose gas price equals the base fee) the priority tip — and therefore the beneficiary debit — is zero.
+The L1 fee vault is not adjusted: L1 cost is independent of L2 gas usage.</p>
+<h3 id="application-rules"><a class="header" href="#application-rules">Application Rules</a></h3>
+<p>Settlement is applied after the transaction's EVM frame finishes and before the transaction state delta is
+committed. It is atomic with the transaction and does not produce a separate receipt.</p>
+<p>If any debit would underflow, the block is invalid. For any payload that respects <code>refund(i) &lt;= evmGasUsed(i)</code>,
+this cannot occur, because each recipient was just paid the corresponding amount by the EVM in the same
+transaction; an underflow therefore indicates a malformed or adversarial payload rather than a reachable state of
+honest execution.</p>
+<h2 id="producer-and-verifier"><a class="header" href="#producer-and-verifier">Producer and Verifier</a></h2>
+<p>Under SDM:</p>
+<ul>
+<li>The sequencer executes the block, chooses the non-zero <code>gasRefundEntries</code>, and appends a post-exec transaction if
+and only if the entry list is non-empty.</li>
+<li>A verifier enforces the post-exec envelope rules and the SDM <a href="#validity-rules">validity rules</a>, then applies the
+refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage.</li>
+</ul>
+<h2 id="receipt-extension"><a class="header" href="#receipt-extension">Receipt Extension</a></h2>
+<p>The post-exec transaction's own receipt carries no SDM-specific fields (see
+<a href="./post-exec.html#receipt">post-exec.md § Receipt</a>).</p>
+<p>The JSON-RPC receipts returned for standard Ethereum transactions are extended with a single additional field:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>opGasRefund</code></td><td><code>Quantity</code> (<code>uint64</code>) or <code>null</code></td><td>The SDM gas refund credited to the transaction, or <code>null</code> when SDM was inactive for the block or the transaction had no refund.</td></tr>
+</tbody></table>
+</div>
+<p>The value is sourced from the embedded post-exec payload's <code>gasRefundEntries</code> for the transaction's <code>index</code>.
+<code>opGasRefund</code> is not part of the receipt's RLP encoding and is not committed to the receipts trie. Because it is
+an additional JSON-RPC field outside the consensus receipt, existing receipt tooling that ignores unknown fields
+(e.g. <code>cast receipt</code>) is unaffected; only consumers that opt in observe it.</p>
+<h2 id="backwards-compatibility"><a class="header" href="#backwards-compatibility">Backwards Compatibility</a></h2>
+<p>Before the Lagoon activation timestamp, blocks are produced and validated identically to a chain that has never
+specified SDM: no post-exec transactions appear, no canonical-gas adjustment is performed, and no settlement runs.</p>
+<p>From the Lagoon activation timestamp, two changes become observable:</p>
+<ul>
+<li>A <code>0x7D</code> transaction may appear at the end of any block produced after activation, exposed through the same
+transaction-list interfaces used today.</li>
+<li>The receipts of standard Ethereum transactions in such blocks gain the <code>opGasRefund</code> field; clients that ignore unknown
+fields are unaffected.</li>
+</ul>
+<p>Mempool and transaction-pool interfaces are unchanged: post-exec transactions are not user-submittable and do not
+propagate over the public transaction-gossip protocol.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<p><strong>Sequencer-defined amounts.</strong> Refund amounts are part of the sequencer's block data. The only consensus-defined
+constraints are on their encoding, their target transaction (standard Ethereum transactions only), and the application bounds
+(<code>refund(i) &lt;= evmGasUsed(i)</code> and no settlement underflow); otherwise the sequencer has complete freedom to
+allocate refunds according to arbitrary policy.</p>
+<p><strong>Cross-block replay.</strong> The post-exec transaction's <code>blockNumber</code> field anchors each payload to its containing
+block. A payload from one block re-injected into another fails the envelope <code>blockNumber</code> check.</p>
+<p><strong>Settlement underflow.</strong> Any settlement debit underflow invalidates the block.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/lagoon/post-exec.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../governance/gov-token.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/lagoon/post-exec.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../governance/gov-token.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>
