@@ -75,7 +75,7 @@ GameCreation ──► Unchallenged ──────────────�
 | `Unchallenged → Challenged` | `challenge()` called before deadline |
 | `Unchallenged → UnchallengedAndValidProofProvided` | `prove()` succeeds |
 | `Challenged → ChallengedAndValidProofProvided` | `prove()` succeeds |
-| Any terminal `ProposalStatus` → `Resolved` | `resolve()` succeeds |
+| Any non-terminal `ProposalStatus` → `Resolved` | `resolve()` succeeds |
 | `IN_PROGRESS → DEFENDER_WINS \| CHALLENGER_WINS` | `resolve()` succeeds |
 
 ## Creation

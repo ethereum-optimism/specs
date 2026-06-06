@@ -60,7 +60,6 @@ function prove(bytes calldata _proofBytes) external returns (ProposalStatus) {
         startingProposal.root,
         rootClaim(),
         l2SequenceNumber(),
-        uint256(0), // l2ChainId; always zero in the super-root model
         msg.sender
     );
 
@@ -80,7 +79,6 @@ function prove(bytes calldata _proofBytes) external returns (ProposalStatus) {
 | `startingProposal.root` | Storage (set in `initialize`) | Super root hash of the parent game's claim, or the anchor state if `parentIndex == type(uint32).max`. |
 | `rootClaim` | CWIA (immutable) | Super root hash being asserted by this game. |
 | `l2SequenceNumber` | CWIA (immutable) | Super root timestamp corresponding to `rootClaim`. |
-| `l2ChainId` | Constant (`0`) | Always zero in the super-root model; kept for parity with `SuperFaultDisputeGame`. Chain scoping is provided by the `SuperRootProof` preimage. |
 | `msg.sender` | Transaction | Address of the prover. Binds the proof to the submitter, preventing front-running: a proof is generated for a specific address and cannot be re-submitted by a different address without regenerating the entire proof. |
 
 All public values come from immutable CWIA data or storage set during `initialize()`, so no
@@ -88,11 +86,11 @@ caller-supplied data beyond `_proofBytes` affects what the verifier checks. `l1H
 as `blockhash(block.number - 1)` by `DisputeGameFactory.create()` and packed into the clone's
 CWIA data.
 
-Note: `l2ChainId` is encoded as `uint256(0)` in the public values. In the super-root model, chain
-scoping is provided by the `SuperRootProof` preimage committed to by `rootClaim`, so no specific
-chain ID is meaningful here. The field is kept for parity with `SuperFaultDisputeGame` but is
-always zero. See [ZK Program Inputs](../../zk-fault-proof-vm.md#inputs) for the full public
-values specification.
+Chain scoping is provided by the `SuperRootProof` preimage committed to by `rootClaim`; the
+`(chainId, outputRoot)` pairs in that preimage cover every chain in the interop set (or a single
+entry in standalone deployments), so no separate `l2ChainId` field is needed in the public values.
+See [ZK Program Inputs](../../zk-fault-proof-vm.md#inputs) for the full public values
+specification.
 
 ## Verifier Upgrade Path
 

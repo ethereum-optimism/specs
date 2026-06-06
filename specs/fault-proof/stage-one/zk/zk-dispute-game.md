@@ -233,9 +233,8 @@ Starting at offset `0x58`. The total byte count is returned by `_extraDataByteCo
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `l2SequenceNumber` | `uint256` | Super root timestamp. Constrained to `uint64` range. |
 | `parentIndex` | `uint32` | Index of the parent game; `type(uint32).max` if starting from the anchor state. |
-| `superRootProof` | `bytes` | ABI-encoded `SuperRootProof` preimage committed to by `rootClaim`. Variable length. |
+| `superRootProof` | `bytes` | ABI-encoded `SuperRootProof` preimage committed to by `rootClaim`. Variable length. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via `l2SequenceNumber()` for convenience. |
 
 `_preExtraDataByteCount()` returns the byte count of the fixed prefix (`0x58`).
 `_extraDataByteCount()` returns the total byte count of the variable extraData section.
@@ -347,7 +346,6 @@ if (_gcfg.gameType.raw() == GameTypes.ZK_GAME_TYPE.raw()) {
         cfg.maxChallengeDuration,
         cfg.maxProveDuration,
         cfg.challengerBond,
-        uint256(0), // l2ChainId; zero for parity with SuperFaultDisputeGame — chain scoping is provided by the SuperRootProof preimage
         address(_anchorStateRegistry),
         address(_delayedWETH)
     );
