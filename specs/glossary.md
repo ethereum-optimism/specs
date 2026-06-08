@@ -74,6 +74,11 @@
   - [Unsafe Sync](#unsafe-sync)
 - [Execution Engine Concepts](#execution-engine-concepts)
   - [Execution Engine](#execution-engine)
+- [Post-Execution Transaction](#post-execution-transaction)
+  - [Post-Exec Payload](#post-exec-payload)
+  - [Post-Exec Payload Schema Version](#post-exec-payload-schema-version)
+  - [Sequencer-Defined Metering](#sequencer-defined-metering)
+  - [Canonical Gas](#canonical-gas)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -833,6 +838,65 @@ using transactions [derived from L1 blocks][derivation].
 In these specifications, "execution engine" always refer to the L2 execution engine, unless otherwise specified.
 
 - cf. [Execution Engine Specification][exec-engine]
+
+---
+
+# Post-Execution Transaction
+
+[post-exec-tx]: glossary.md#post-execution-transaction
+
+The _post-execution transaction_, _post-exec transaction_, or _post-exec tx_ is the [EIP-2718] transaction with
+type byte `0x7D` that carries sequencer-provided consensus data. It is emitted by the [sequencer] and appended to a
+block after the last user transaction; at most one may appear in a block, when present it MUST be the final
+transaction in the block, and it is not propagated through the public mempool.
+
+A post-exec transaction has no signer, no nonce, no fee, and consumes no block gas; it carries a single payload
+field (a [post-exec payload](#post-exec-payload)) that clients apply as part of the block's canonical state
+transition.
+
+See the [post-exec specification][spec-post-exec].
+
+[spec-post-exec]: ./protocol/lagoon/post-exec.md
+
+## Post-Exec Payload
+
+[post-exec-payload]: glossary.md#post-exec-payload
+
+The _post-exec payload_ is the data structure carried by a [post-exec transaction](#post-execution-transaction).
+It is a versioned envelope: a `version` byte selects the payload schema, a `blockNumber` field anchors the payload
+to the containing block, and the remaining fields are defined by the active schema version.
+
+## Post-Exec Payload Schema Version
+
+[post-exec-schema-version]: glossary.md#post-exec-payload-schema-version
+
+A monotonically assigned identifier that selects the field layout of a [post-exec payload](#post-exec-payload).
+Schema versions are described in the [post-exec specification][spec-post-exec]; the version-1 schema is defined by
+the [Sequencer-Defined Metering][spec-sdm] specification.
+
+[spec-sdm]: ./protocol/lagoon/sdm.md
+
+## Sequencer-Defined Metering
+
+[sdm]: glossary.md#sequencer-defined-metering
+
+_Sequencer-Defined Metering_ (_SDM_) is the [post-exec payload schema version](#post-exec-payload-schema-version) 1
+policy. SDM lets the sequencer include per-transaction gas refunds that adjust canonical gas accounting and fee
+settlement.
+
+See the [SDM specification][spec-sdm].
+
+## Canonical Gas
+
+[canonical-gas]: glossary.md#canonical-gas
+
+Under [Sequencer-Defined Metering](#sequencer-defined-metering), the gas a transaction is accounted for after its
+gas refund is applied: `canonicalGasUsed = evmGasUsed - refund`, where `evmGasUsed` is the raw gas reported by the
+EVM. Canonical gas is the value recorded in transaction receipts and summed into the block's `cumulativeGasUsed`
+and `gasUsed`. It is distinct from the raw EVM gas, and unrelated to the "canonical chain" sense of _canonical_
+used elsewhere in this glossary.
+
+See the [SDM specification][spec-sdm].
 
 <!-- Internal Links -->
 

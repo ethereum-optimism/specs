@@ -53,6 +53,7 @@ MCOPY
 Mdiamond
 Merkle
 Mintable
+MODEXP
 Multicall
 Multistream
 OPCM
@@ -258,6 +259,7 @@ Randao
 RANDAO
 rankdir
 rbuilder
+rebalances
 redeployments
 rederiving
 reentrancy

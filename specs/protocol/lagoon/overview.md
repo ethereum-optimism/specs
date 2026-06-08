@@ -13,4 +13,7 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
+- [Post-Execution Transactions](./post-exec.md)
+- [Sequencer-Defined Metering](./sdm.md)
+
 ## Consensus Layer
