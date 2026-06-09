@@ -19,7 +19,6 @@
   - [`ExecutingMessage` Event](#executingmessage-event)
   - [Reference implementation](#reference-implementation)
   - [Deposit Handling](#deposit-handling)
-  - [`Identifier` Getters](#identifier-getters)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
   - [`sendMessage` Invariants](#sendmessage-invariants)
@@ -279,7 +278,7 @@ function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
 
   (bool _isSlotWarm,) = _isWarm(checksum);
 
-  if (!_isSlotWarm) revert NonDeclaredExecutingMessage();
+  if (!_isSlotWarm) revert NotInAccessList();
 
   emit ExecutingMessage(_msgHash, _id);
 }
@@ -325,11 +324,6 @@ Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event will 
 transaction did not declare an access list including the message checksum, as
 [described above](#type-3-checksum). Because deposit transactions do not have access lists,
 all calls to the `CrossL2Inbox` originating within a deposit transaction will revert.
-
-### `Identifier` Getters
-
-The `Identifier` MUST be exposed via `public` getters so that contracts can call back to authenticate
-properties about the `_msg`.
 
 ## L2ToL2CrossDomainMessenger
 
