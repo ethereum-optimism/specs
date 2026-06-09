@@ -279,7 +279,7 @@ the only difference.
 > match `rootClaim` and will therefore revert.
 
 `rootClaim` MUST NOT be interpreted as an L2 output root for any specific chain. Per-chain output
-roots are extracted via [`rootClaimByChainId`](#rootclaimbychain-id).
+roots are extracted via [`rootClaimByChainId`](#rootclaimbychainid).
 
 ## rootClaimByChainId
 
@@ -572,8 +572,9 @@ a game for safety reasons unrelated to the game's correctness.
 
 ### iZKG-009: Child Resolution Requires Resolved Parent
 
-`resolve()` MUST revert if the parent game's `status == GameStatus.IN_PROGRESS`. The resolution
-dependency chain MUST be honored in topological order.
+If a game references a parent (`parentIndex != type(uint32).max`), `resolve()` MUST revert
+while that parent's `status == GameStatus.IN_PROGRESS`. The resolution dependency chain MUST
+be honored in topological order.
 
 #### Impact
 
