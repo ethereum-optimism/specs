@@ -94,9 +94,8 @@ The `_extraData` passed to `DisputeGameFactory.create()` has a variable-length l
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `l2SequenceNumber` | `uint64` | Super root timestamp asserted by this game's root claim. |
 | `parentIndex` | `uint32` | Index of the parent game; `type(uint32).max` if starting from the anchor state |
-| `superRootProof` | `bytes` | ABI-encoded `SuperRootProof` preimage committed to by `rootClaim` |
+| `superRootProof` | `bytes` | ABI-encoded `SuperRootProof` preimage committed to by `rootClaim`. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via `l2SequenceNumber()` for convenience. |
 
 The variable-length layout is parsed via `_preExtraDataByteCount()` and `_extraDataByteCount()`
 helpers, following the same pattern as `SuperFaultDisputeGame`. All CWIA field offsets after
