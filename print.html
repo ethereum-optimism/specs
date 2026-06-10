@@ -15975,6 +15975,7 @@ node MUST also prepend the string "Karst: " at the front of the intent string.</
 <ul>
 <li><a href="protocol/lagoon/overview.html#execution-layer">Execution Layer</a></li>
 <li><a href="protocol/lagoon/overview.html#consensus-layer">Consensus Layer</a></li>
+<li><a href="protocol/lagoon/overview.html#smart-contracts">Smart Contracts</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <p>This document is not finalized and should be considered experimental.</p>
@@ -15982,8 +15983,40 @@ node MUST also prepend the string "Karst: " at the front of the intent string.</
 <ul>
 <li><a href="protocol/lagoon/./post-exec.html">Post-Execution Transactions</a></li>
 <li><a href="protocol/lagoon/./sdm.html">Sequencer-Defined Metering</a></li>
+<li>Interop:
+<ul>
+<li><a href="protocol/lagoon/../../interop/tx-pool.html">Transaction Pool</a></li>
+</ul>
+</li>
 </ul>
 <h2 id="consensus-layer-10"><a class="header" href="#consensus-layer-10">Consensus Layer</a></h2>
+<ul>
+<li>Interop:
+<ul>
+<li><a href="protocol/lagoon/../../interop/dependency-set.html">Dependency Set</a></li>
+<li><a href="protocol/lagoon/../../interop/derivation.html">Derivation</a></li>
+<li><a href="protocol/lagoon/../../interop/sequencer.html">Sequencer</a></li>
+<li><a href="protocol/lagoon/../../interop/verifier.html">Verifier</a></li>
+<li><a href="protocol/lagoon/../../interop/superroot.html">Super Root</a></li>
+<li><a href="protocol/lagoon/../../interop/fault-proof.html">Fault Proof</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="smart-contracts-3"><a class="header" href="#smart-contracts-3">Smart Contracts</a></h2>
+<ul>
+<li>Interop:
+<ul>
+<li><a href="protocol/lagoon/../../interop/messaging.html">Messaging</a></li>
+<li><a href="protocol/lagoon/../../interop/predeploys.html">Predeploys</a></li>
+<li><a href="protocol/lagoon/../../interop/token-bridging.html">Token Bridging</a></li>
+<li><a href="protocol/lagoon/../../interop/eth-liquidity.html">ETH Liquidity</a></li>
+<li><a href="protocol/lagoon/../../interop/superchain-eth-bridge.html">Superchain ETH Bridge</a></li>
+<li><a href="protocol/lagoon/../../interop/eth-bridging.html">ETH Bridging</a></li>
+<li><a href="protocol/lagoon/../../interop/optimism-portal.html">OptimismPortal</a></li>
+<li><a href="protocol/lagoon/../../interop/eth-lockbox.html">ETH Lockbox</a></li>
+</ul>
+</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="post-execution-transactions"><a class="header" href="#post-execution-transactions">Post-Execution Transactions</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -16338,960 +16371,6 @@ allocate refunds according to arbitrary policy.</p>
 block. A payload from one block re-injected into another fails the envelope <code>blockNumber</code> check.</p>
 <p><strong>Settlement underflow.</strong> Any settlement debit underflow invalidates the block.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="governance-token-2"><a class="header" href="#governance-token-2">Governance Token</a></h1>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="governance/gov-token.html#overview">Overview</a>
-<ul>
-<li><a href="governance/gov-token.html#token-minting">Token Minting</a></li>
-<li><a href="governance/gov-token.html#token-burning">Token Burning</a></li>
-<li><a href="governance/gov-token.html#voting-power">Voting Power</a>
-<ul>
-<li><a href="governance/gov-token.html#public-query-functions">Public Query Functions</a></li>
-</ul>
-</li>
-<li><a href="governance/gov-token.html#delegation">Delegation</a>
-<ul>
-<li><a href="governance/gov-token.html#basic-delegation">Basic Delegation</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
-<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
-<tr><td>Token name</td><td><code>Optimism</code></td></tr>
-<tr><td>Token symbol</td><td><code>OP</code></td></tr>
-<tr><td>Token decimals</td><td><code>18</code></td></tr>
-</tbody></table>
-</div>
-<p><code>GovernanceToken</code> is an <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> token contract that inherits from <code>ERC20Burnable</code>,
-<code>ERC20Votes</code>, and <code>Ownable</code>. It allows token holders to delegate their voting power to other addresses, enabling a representative
-voting system. The <code>GovernanceToken</code> currently only supports basic delegation whereby a user can delegate its entire token
-balance to a specific address for voting and votes cannot be re-delegated.</p>
-<h3 id="token-minting"><a class="header" href="#token-minting">Token Minting</a></h3>
-<p><code>GovernanceToken</code> MUST have a <code>mint(address,uint256)</code> function with external visibility that allows the <code>owner()</code> address
-to mint an arbitrary number of new tokens to a specific address. This function MUST only be called by the contract
-owner, the <code>MintManager</code>, as enforced by the <code>onlyOwner</code> modifier inherited from the <code>Ownable</code> contract.</p>
-<h3 id="token-burning"><a class="header" href="#token-burning">Token Burning</a></h3>
-<p>The contract MUST allow token holders to burn their own tokens using the inherited <code>burn(uint256)</code> or
-<code>burnFrom(address,uint256)</code> functions inherited from <code>ERC20Burnable</code>. Burn functions MUST NOT allow a user's balance to
-underflow and attempts to reduce balance below zero MUST revert.</p>
-<h3 id="voting-power"><a class="header" href="#voting-power">Voting Power</a></h3>
-<p>Each token corresponds to one unit of voting power. Token holders who wish to utilize their tokens for voting MUST delegate
-their voting power to an address (can be their own address). An active delegation MUST NOT prevent a user from transferring
-tokens. The <code>GovernanceToken</code> contract MUST offer public accessor functions for querying voting power, as outlined below.</p>
-<h4 id="public-query-functions"><a class="header" href="#public-query-functions">Public Query Functions</a></h4>
-<ul>
-<li><code>checkpoints(address,uint32) returns (Checkpoint)</code>
-<ul>
-<li>MUST retrieve the n-th Checkpoint for a given address.</li>
-</ul>
-</li>
-<li><code>numCheckpoints(address) returns (uint32)</code>
-<ul>
-<li>MUST retrieve the total number of Checkpoint objects for a given address.</li>
-</ul>
-</li>
-<li><code>delegates(address) returns (address)</code>
-<ul>
-<li>MUST retrieve the address that an account is delegating to.</li>
-</ul>
-</li>
-<li><code>getVotes() returns (uint256)</code>
-<ul>
-<li>MUST retrieve the current voting power of an address.</li>
-</ul>
-</li>
-<li><code>getPastVotes(address,uint256) returns (uint256)</code>
-<ul>
-<li>MUST retrieve the voting power of an address at specific block number in the past.</li>
-</ul>
-</li>
-<li><code>getPastTotalSupply(uint256) returns (uint256)</code>
-<ul>
-<li>MUST return the total token supply at a specific block number in the past.</li>
-</ul>
-</li>
-</ul>
-<h3 id="delegation"><a class="header" href="#delegation">Delegation</a></h3>
-<h4 id="basic-delegation"><a class="header" href="#basic-delegation">Basic Delegation</a></h4>
-<p>Vote power can be delegated either by calling the <code>delegate(address)</code> function directly (to delegate as the <code>msg.sender</code>)
-or by providing a signature to be used with function <code>delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)</code>,
-as inherited from <code>ERC20Votes</code>. Delegation through these functions is considered "basic delegation" as these functions will
-delegate the entirety of the user's available balance to the target address. Delegations cannot be re-delegated to another
-address.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="mintmanager"><a class="header" href="#mintmanager">MintManager</a></h1>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="governance/mint-manager.html#overview">Overview</a></li>
-<li><a href="governance/mint-manager.html#definitions">Definitions</a>
-<ul>
-<li><a href="governance/mint-manager.html#mint-cap">Mint Cap</a></li>
-<li><a href="governance/mint-manager.html#mint-period">Mint Period</a></li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#assumptions">Assumptions</a>
-<ul>
-<li><a href="governance/mint-manager.html#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a>
-<ul>
-<li><a href="governance/mint-manager.html#mitigations">Mitigations</a></li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a>
-<ul>
-<li><a href="governance/mint-manager.html#mitigations-1">Mitigations</a></li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a>
-<ul>
-<li><a href="governance/mint-manager.html#mitigations-2">Mitigations</a></li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a>
-<ul>
-<li><a href="governance/mint-manager.html#mitigations-3">Mitigations</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#dependencies">Dependencies</a></li>
-<li><a href="governance/mint-manager.html#invariants">Invariants</a>
-<ul>
-<li><a href="governance/mint-manager.html#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a>
-<ul>
-<li><a href="governance/mint-manager.html#impact">Impact</a></li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a>
-<ul>
-<li><a href="governance/mint-manager.html#impact-1">Impact</a></li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a>
-<ul>
-<li><a href="governance/mint-manager.html#impact-2">Impact</a></li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a>
-<ul>
-<li><a href="governance/mint-manager.html#impact-3">Impact</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="governance/mint-manager.html#function-specifications">Function Specifications</a>
-<ul>
-<li><a href="governance/mint-manager.html#constructor">constructor</a></li>
-<li><a href="governance/mint-manager.html#mint">mint</a></li>
-<li><a href="governance/mint-manager.html#upgrade">upgrade</a></li>
-</ul>
-</li>
-</ul>
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
-<p>The <code>MintManager</code> contract serves as the owner of the <a href="governance/./gov-token.html">GovernanceToken</a> and controls the token
-inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
-period between mints. The contract is upgradeable, allowing the owner to transfer control to a new <code>MintManager</code>
-implementation if changes to the inflation schedule are required.</p>
-<h2 id="definitions-11"><a class="header" href="#definitions-11">Definitions</a></h2>
-<h3 id="mint-cap"><a class="header" href="#mint-cap">Mint Cap</a></h3>
-<p>The maximum percentage of the total token supply that can be minted in a single minting operation. Set to 2%
-(represented as 20/1000 with 4 decimal precision).</p>
-<h3 id="mint-period"><a class="header" href="#mint-period">Mint Period</a></h3>
-<p>The minimum time interval that must elapse between consecutive minting operations. Set to 365 days.</p>
-<h2 id="assumptions-8"><a class="header" href="#assumptions-8">Assumptions</a></h2>
-<h3 id="amm-001-governancetoken-implements-required-functions-correctly"><a class="header" href="#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a></h3>
-<p>The <code>GovernanceToken</code> contract correctly implements the <code>mint(address,uint256)</code> function, <code>transferOwnership(address)</code>
-function, and <code>totalSupply()</code> view function according to their expected behavior. Specifically:</p>
-<ul>
-<li><code>mint()</code> increases the token balance of the specified account by the specified amount</li>
-<li><code>totalSupply()</code> accurately returns the current total supply of tokens</li>
-<li><code>transferOwnership()</code> transfers ownership to the specified address</li>
-</ul>
-<h4 id="mitigations-41"><a class="header" href="#mitigations-41">Mitigations</a></h4>
-<ul>
-<li>The <code>GovernanceToken</code> contract is part of the same protocol and is subject to the same security audits</li>
-<li>The interface is well-defined in <code>IGovernanceToken.sol</code></li>
-<li>The implementation follows OpenZeppelin's standard patterns</li>
-</ul>
-<h3 id="amm-002-block-timestamp-reliability"><a class="header" href="#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a></h3>
-<p>The EVM <code>block.timestamp</code> value is sufficiently reliable for enforcing the 365-day minting period. While miners can
-manipulate timestamps within a small range (~15 seconds), this manipulation is negligible compared to the 365-day
-period.</p>
-<h4 id="mitigations-42"><a class="header" href="#mitigations-42">Mitigations</a></h4>
-<ul>
-<li>The 365-day period is long enough that minor timestamp manipulation has no practical impact</li>
-<li>Ethereum consensus rules limit timestamp manipulation</li>
-<li>The time-based restriction is a rate limit, not a precise scheduling mechanism</li>
-</ul>
-<h3 id="amm-003-owner-acts-within-governance-constraints"><a class="header" href="#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a></h3>
-<p>The contract owner (typically a governance multisig or DAO) will only call <code>mint()</code> and <code>upgrade()</code> functions in
-accordance with governance decisions and the protocol's established rules. The owner will not abuse their authority
-to mint excessive tokens or transfer ownership to malicious addresses.</p>
-<h4 id="mitigations-43"><a class="header" href="#mitigations-43">Mitigations</a></h4>
-<ul>
-<li>Owner is expected to be a governance-controlled address (e.g., multisig or Governor contract)</li>
-<li>All minting operations are subject to the on-chain mint cap and time restrictions</li>
-<li>Ownership transfers are transparent on-chain and subject to community oversight</li>
-<li>The upgrade mechanism allows for replacing a compromised or malicious owner</li>
-</ul>
-<h3 id="amm-004-valid-successor-mintmanager"><a class="header" href="#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a></h3>
-<p>When upgrading, the owner will provide a valid, non-zero address for the new <code>MintManager</code> contract. The successor
-contract will be properly implemented and tested before the upgrade is executed.</p>
-<h4 id="mitigations-44"><a class="header" href="#mitigations-44">Mitigations</a></h4>
-<ul>
-<li>Governance processes include review and testing of new MintManager implementations</li>
-<li>The upgrade transaction is subject to governance approval and timelock mechanisms</li>
-<li>The contract enforces a basic check that the successor address is not the zero address</li>
-</ul>
-<h2 id="dependencies-11"><a class="header" href="#dependencies-11">Dependencies</a></h2>
-<p>This specification depends on:</p>
-<ul>
-<li><a href="governance/./gov-token.html">GovernanceToken</a> - The ERC20Votes token that this contract has permission to mint</li>
-</ul>
-<h2 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h2>
-<h3 id="imm-001-mint-cap-enforcement"><a class="header" href="#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a></h3>
-<p>No single minting operation can mint more than the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> of the current total token supply.</p>
-<p><strong>Full Description:</strong>
-Any call to <code>mint()</code> MUST enforce that the requested mint amount does not exceed the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a>. This
-ensures that token inflation is bounded and predictable.</p>
-<h4 id="impact-59"><a class="header" href="#impact-59">Impact</a></h4>
-<p><strong>Severity: Medium</strong></p>
-<p>If this invariant is violated, the owner could mint an unlimited number of tokens, leading to:</p>
-<ul>
-<li>Severe token dilution for existing holders</li>
-<li>Loss of governance voting power for existing token holders</li>
-<li>Destruction of the token's economic value</li>
-<li>Complete loss of trust in the protocol's governance system</li>
-</ul>
-<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
-If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
-The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
-<h3 id="imm-002-time-based-minting-restriction"><a class="header" href="#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a></h3>
-<p>Minting operations can only occur after the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has elapsed since the previous mint.</p>
-<p><strong>Full Description:</strong>
-Any call to <code>mint()</code> MUST revert if the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has not elapsed since the last mint. This ensures
-that minting operations are rate-limited, preventing rapid inflation even if the owner attempts multiple mints.</p>
-<h4 id="impact-60"><a class="header" href="#impact-60">Impact</a></h4>
-<p><strong>Severity: Medium</strong></p>
-<p>If this invariant is violated, the owner could:</p>
-<ul>
-<li>Mint the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> multiple times in rapid succession</li>
-<li>Cause uncontrolled inflation far exceeding the intended rate</li>
-<li>Undermine the predictability and transparency of the token supply schedule</li>
-<li>Violate the expectations of token holders regarding inflation rates</li>
-</ul>
-<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
-If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
-The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
-<h3 id="imm-003-exclusive-minting-authority"><a class="header" href="#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a></h3>
-<p>Only the contract owner can successfully call the <code>mint()</code> function to create new governance tokens.</p>
-<p><strong>Full Description:</strong>
-The <code>mint()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the address returned by
-<code>owner()</code> can execute minting operations. Any call from a non-owner address MUST revert.</p>
-<h4 id="impact-61"><a class="header" href="#impact-61">Impact</a></h4>
-<p><strong>Severity: Critical</strong></p>
-<p>If this invariant is violated:</p>
-<ul>
-<li>Unauthorized parties could mint tokens without governance approval</li>
-<li>The entire governance system would be compromised</li>
-<li>Token supply would become unpredictable and uncontrolled</li>
-<li>The economic security of the protocol would be destroyed</li>
-</ul>
-<h3 id="imm-004-ownership-transfer-control"><a class="header" href="#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a></h3>
-<p>Only the current contract owner can transfer ownership of the GovernanceToken to a new MintManager.</p>
-<p><strong>Full Description:</strong>
-The <code>upgrade()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the current owner can
-initiate an upgrade to a new <code>MintManager</code> implementation. This prevents unauthorized parties from taking control of
-the token minting authority.</p>
-<h4 id="impact-62"><a class="header" href="#impact-62">Impact</a></h4>
-<p><strong>Severity: Critical</strong></p>
-<p>If this invariant is violated:</p>
-<ul>
-<li>Attackers could transfer ownership to a malicious contract</li>
-<li>The governance system would lose control over token minting</li>
-<li>A malicious MintManager could mint unlimited tokens or implement harmful policies</li>
-<li>The protocol's governance would be permanently compromised</li>
-</ul>
-<h2 id="function-specifications"><a class="header" href="#function-specifications">Function Specifications</a></h2>
-<h3 id="constructor-3"><a class="header" href="#constructor-3">constructor</a></h3>
-<pre><code class="language-solidity">constructor(address _upgrader, address _governanceToken)
-</code></pre>
-<p>Initializes the <code>MintManager</code> contract with the specified owner and governance token.</p>
-<p><strong>Parameters:</strong></p>
-<ul>
-<li><code>_upgrader</code>: The address that will become the owner of this contract</li>
-<li><code>_governanceToken</code>: The address of the <code>GovernanceToken</code> contract that this manager will control</li>
-</ul>
-<p><strong>Behavior:</strong></p>
-<ul>
-<li>MUST call <code>transferOwnership(_upgrader)</code> to set the contract owner</li>
-<li>MUST set <code>governanceToken</code> to the provided <code>_governanceToken</code> address</li>
-<li>MUST initialize <code>mintPermittedAfter</code> to enable immediate first mint while enforcing restrictions on subsequent mints</li>
-<li>MUST NOT validate that <code>_upgrader</code> or <code>_governanceToken</code> are non-zero addresses (caller responsibility)</li>
-</ul>
-<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
-<pre><code class="language-solidity">function mint(address _account, uint256 _amount) public onlyOwner
-</code></pre>
-<p>Mints new governance tokens to the specified account, subject to time and cap restrictions.</p>
-<p><strong>Parameters:</strong></p>
-<ul>
-<li><code>_account</code>: The address that will receive the newly minted tokens</li>
-<li><code>_amount</code>: The number of tokens to mint (in wei, with 18 decimals)</li>
-</ul>
-<p><strong>Behavior:</strong></p>
-<ul>
-<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
-<li>MUST revert if the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has not elapsed since the last mint</li>
-<li>MUST revert if <code>_amount</code> exceeds the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a></li>
-<li>MUST set <code>mintPermittedAfter</code> to <code>block.timestamp + MINT_PERIOD</code> to enforce the next <a href="governance/mint-manager.html#mint-period">Mint Period</a></li>
-<li>MUST call <code>governanceToken.mint(_account, _amount)</code> to perform the actual minting</li>
-</ul>
-<h3 id="upgrade-2"><a class="header" href="#upgrade-2">upgrade</a></h3>
-<pre><code class="language-solidity">function upgrade(address _newMintManager) public onlyOwner
-</code></pre>
-<p>Transfers ownership of the <code>GovernanceToken</code> to a new <code>MintManager</code> contract, effectively upgrading the minting system.</p>
-<p><strong>Parameters:</strong></p>
-<ul>
-<li><code>_newMintManager</code>: The address of the new <code>MintManager</code> contract that will become the owner of the <code>GovernanceToken</code></li>
-</ul>
-<p><strong>Behavior:</strong></p>
-<ul>
-<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
-<li>MUST revert if <code>_newMintManager == address(0)</code></li>
-<li>MUST call <code>governanceToken.transferOwnership(_newMintManager)</code> to transfer ownership</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="standard-l2-genesis"><a class="header" href="#standard-l2-genesis">Standard L2 Genesis</a></h1>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#overview">Overview</a></li>
-<li><a href="experimental/standard-l2-genesis.html#chain-constants-on-l1">Chain Constants on L1</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#configtype"><code>ConfigType</code></a></li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#systemconfig"><code>SystemConfig</code></a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#configupdate"><code>ConfigUpdate</code></a></li>
-<li><a href="experimental/standard-l2-genesis.html#initialization">Initialization</a></li>
-<li><a href="experimental/standard-l2-genesis.html#interface">Interface</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#fee-vault-config">Fee Vault Config</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#setbasefeevaultconfig"><code>setBaseFeeVaultConfig</code></a></li>
-<li><a href="experimental/standard-l2-genesis.html#setl1feevaultconfig"><code>setL1FeeVaultConfig</code></a></li>
-<li><a href="experimental/standard-l2-genesis.html#setsequencerfeevaultconfig"><code>setSequencerFeeVaultConfig</code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#optimismportal"><code>OptimismPortal</code></a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#interface-1">Interface</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#setconfig"><code>setConfig</code></a></li>
-<li><a href="experimental/standard-l2-genesis.html#upgrade"><code>upgrade</code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#superchainconfig">SuperchainConfig</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#superchainconfig-constants">SuperchainConfig Constants</a></li>
-<li><a href="experimental/standard-l2-genesis.html#interface-2">Interface</a></li>
-<li><a href="experimental/standard-l2-genesis.html#initialization-1">Initialization</a></li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#deterministic-genesis-state">Deterministic genesis state</a></li>
-<li><a href="experimental/standard-l2-genesis.html#chain-constants-on-l2">Chain Constants on L2</a></li>
-<li><a href="experimental/standard-l2-genesis.html#predeploys">Predeploys</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#proxyadmin">ProxyAdmin</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#rationale">Rationale</a></li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#l1block">L1Block</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#storage">Storage</a></li>
-<li><a href="experimental/standard-l2-genesis.html#interface-3">Interface</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#setisthmus"><code>setIsthmus</code></a></li>
-<li><a href="experimental/standard-l2-genesis.html#setconfig-1"><code>setConfig</code></a></li>
-<li><a href="experimental/standard-l2-genesis.html#getconfig"><code>getConfig</code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#feevault">FeeVault</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#interface-4">Interface</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#config"><code>config</code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#l2crossdomainmessenger">L2CrossDomainMessenger</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#interface-5">Interface</a></li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#l2erc721bridge">L2ERC721Bridge</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#interface-6">Interface</a></li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#l2standardbridge">L2StandardBridge</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#interface-7">Interface</a></li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#optimismmintableerc721factory">OptimismMintableERC721Factory</a></li>
-</ul>
-</li>
-<li><a href="experimental/standard-l2-genesis.html#security-considerations">Security Considerations</a>
-<ul>
-<li><a href="experimental/standard-l2-genesis.html#governancetoken">GovernanceToken</a></li>
-</ul>
-</li>
-</ul>
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
-<p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
-configurability.</p>
-<h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
-<h3 id="configtype"><a class="header" href="#configtype"><code>ConfigType</code></a></h3>
-<p>The <code>ConfigType</code> enum represents configuration that can be modified.</p>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>GAS_PAYING_TOKEN</code></td><td><code>uint8(0)</code></td><td>Modifies the gas paying token for the chain</td></tr>
-<tr><td><code>BASE_FEE_VAULT_CONFIG</code></td><td><code>uint8(1)</code></td><td>Sets the Fee Vault Config for the <code>BaseFeeVault</code></td></tr>
-<tr><td><code>L1_FEE_VAULT_CONFIG</code></td><td><code>uint8(2)</code></td><td>Sets the Fee Vault Config for the <code>L1FeeVault</code></td></tr>
-<tr><td><code>SEQUENCER_FEE_VAULT_CONFIG</code></td><td><code>uint8(3)</code></td><td>Sets the Fee Vault Config for the <code>SequencerFeeVault</code></td></tr>
-<tr><td><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></td><td><code>uint8(4)</code></td><td>Sets the <code>L1CrossDomainMessenger</code> address</td></tr>
-<tr><td><code>L1_ERC_721_BRIDGE_ADDRESS</code></td><td><code>uint8(5)</code></td><td>Sets the <code>L1ERC721Bridge</code> address</td></tr>
-<tr><td><code>L1_STANDARD_BRIDGE_ADDRESS</code></td><td><code>uint8(6)</code></td><td>Sets the <code>L1StandardBridge</code> address</td></tr>
-<tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>uint8(7)</code></td><td>Sets the chain id of the base chain</td></tr>
-</tbody></table>
-</div>
-<h2 id="systemconfig"><a class="header" href="#systemconfig"><code>SystemConfig</code></a></h2>
-<h3 id="configupdate-4"><a class="header" href="#configupdate-4"><code>ConfigUpdate</code></a></h3>
-<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
-<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
-<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
-<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
-<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
-<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
-</tbody></table>
-</div>
-<h3 id="initialization-3"><a class="header" href="#initialization-3">Initialization</a></h3>
-<p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
-<ul>
-<li><code>emit ConfigUpdate.BATCHER</code></li>
-<li><code>emit ConfigUpdate.FEE_SCALARS</code></li>
-<li><code>emit ConfigUpdate.GAS_LIMIT</code></li>
-<li><code>emit ConfigUpdate.UNSAFE_BLOCK_SIGNER</code></li>
-<li><code>emit ConfigUpdate.EIP_1559_PARAMS</code></li>
-<li><code>setConfig(SET_GAS_PAYING_TOKEN)</code></li>
-<li><code>setConfig(SET_BASE_FEE_VAULT_CONFIG)</code></li>
-<li><code>setConfig(SET_L1_FEE_VAULT_CONFIG)</code></li>
-<li><code>setConfig(SET_SEQUENCER_FEE_VAULT_CONFIG)</code></li>
-<li><code>setConfig(SET_L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code></li>
-<li><code>setConfig(SET_L1_ERC_721_BRIDGE_ADDRESS)</code></li>
-<li><code>setConfig(SET_L1_STANDARD_BRIDGE_ADDRESS)</code></li>
-<li><code>setConfig(SET_REMOTE_CHAIN_ID)</code></li>
-</ul>
-<p>These actions MAY only be triggered if there is a diff to the value.</p>
-<h3 id="interface-7"><a class="header" href="#interface-7">Interface</a></h3>
-<h4 id="fee-vault-config"><a class="header" href="#fee-vault-config">Fee Vault Config</a></h4>
-<p>For each <code>FeeVault</code>, there is a setter for its config. The arguments to the setter include
-the <code>RECIPIENT</code>, the <code>MIN_WITHDRAWAL_AMOUNT</code> and the <code>WithdrawalNetwork</code>.
-Each of these functions should be <code>public</code> and only callable by the chain governor.</p>
-<p>Each function calls <code>OptimismPortal.setConfig(ConfigType,bytes)</code> with its corresponding <code>ConfigType</code>.</p>
-<h5 id="setbasefeevaultconfig"><a class="header" href="#setbasefeevaultconfig"><code>setBaseFeeVaultConfig</code></a></h5>
-<pre><code class="language-solidity">function setBaseFeeVaultConfig(address,uint256,WithdrawalNetwork)
-</code></pre>
-<h5 id="setl1feevaultconfig"><a class="header" href="#setl1feevaultconfig"><code>setL1FeeVaultConfig</code></a></h5>
-<pre><code class="language-solidity">function setL1FeeVaultConfig(address,uint256,WithdrawalNetwork)
-</code></pre>
-<h5 id="setsequencerfeevaultconfig"><a class="header" href="#setsequencerfeevaultconfig"><code>setSequencerFeeVaultConfig</code></a></h5>
-<pre><code class="language-solidity">function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
-</code></pre>
-<h2 id="optimismportal-2"><a class="header" href="#optimismportal-2"><code>OptimismPortal</code></a></h2>
-<p>The <code>OptimismPortal</code> is updated to emit a special system <code>TransactionDeposited</code> event.</p>
-<h3 id="interface-8"><a class="header" href="#interface-8">Interface</a></h3>
-<h4 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h4>
-<p>The <code>setConfig</code> function MUST only be callable by the <code>SystemConfig</code>. This ensures that the <code>SystemConfig</code>
-is the single source of truth for chain operator ownership.</p>
-<pre><code class="language-solidity">function setConfig(ConfigType,bytes)
-</code></pre>
-<p>This function emits a <code>TransactionDeposited</code> event.</p>
-<pre><code class="language-solidity">event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
-</code></pre>
-<p>The following fields are included:</p>
-<ul>
-<li><code>from</code> is the <code>DEPOSITOR_ACCOUNT</code></li>
-<li><code>to</code> is <code>Predeploys.L1Block</code></li>
-<li><code>version</code> is <code>uint256(0)</code></li>
-<li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
-is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is <code>abi.encodeCall(L1Block.setConfig, (_type, _value))</code></li>
-</ul>
-<h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
-<p>The <code>upgrade</code> function MUST only be callable by the <code>UPGRADER</code> role as defined
-in the <a href="experimental/standard-l2-genesis.html#superchainconfig"><code>SuperchainConfig</code></a>.</p>
-<pre><code class="language-solidity">function upgrade(bytes memory _data) external
-</code></pre>
-<p>This function emits a <code>TransactionDeposited</code> event.</p>
-<pre><code class="language-solidity">event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
-</code></pre>
-<p>The following fields are included:</p>
-<ul>
-<li><code>from</code> is the <code>DEPOSITOR_ACCOUNT</code></li>
-<li><code>to</code> is <code>Predeploys.ProxyAdmin</code></li>
-<li><code>version</code> is <code>uint256(0)</code></li>
-<li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
-is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is the data passed into <code>upgrade</code>.</li>
-</ul>
-<h2 id="superchainconfig-3"><a class="header" href="#superchainconfig-3">SuperchainConfig</a></h2>
-<p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
-to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
-that call the L2 <code>ProxyAdmin</code>.</p>
-<h3 id="superchainconfig-constants"><a class="header" href="#superchainconfig-constants">SuperchainConfig Constants</a></h3>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
-<tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
-</tbody></table>
-</div>
-<h3 id="interface-9"><a class="header" href="#interface-9">Interface</a></h3>
-<pre><code class="language-solidity">function upgrader() public view returns (address)
-</code></pre>
-<h3 id="initialization-4"><a class="header" href="#initialization-4">Initialization</a></h3>
-<p>The <code>upgrader</code> can only be set during initialization.</p>
-<h2 id="deterministic-genesis-state"><a class="header" href="#deterministic-genesis-state">Deterministic genesis state</a></h2>
-<p>This upgrade enables a deterministic L2 genesis state by moving all network
-specific configuration out of the initial L2 genesis state. All network specific
-configuration is sourced from deposit transactions during the initialization
-of the <code>SystemConfig</code>.</p>
-<h2 id="chain-constants-on-l2"><a class="header" href="#chain-constants-on-l2">Chain Constants on L2</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
-<tr><td><code>ConfigType</code></td><td><code>uint8</code></td><td>An enum representing the type of config being set</td></tr>
-<tr><td><code>WithdrawalNetwork</code></td><td><code>uint8(0)</code> or <code>uint8(1)</code></td><td><code>0</code> means withdraw to L1, <code>1</code> means withdraw to L2</td></tr>
-<tr><td><code>RECIPIENT</code></td><td><code>address</code></td><td>The account that will receive funds sent out of the <code>FeeVault</code></td></tr>
-<tr><td><code>MIN_WITHDRAWAL_AMOUNT</code></td><td><code>uint256</code></td><td>The minimum amount of native asset held in the <code>FeeVault</code> before withdrawal is authorized</td></tr>
-<tr><td>Fee Vault Config</td><td><code>bytes32</code></td><td><code>bytes32((WithdrawalNetwork &lt;&lt; 248) || uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) || uint256(uint160(RECIPIENT)))</code></td></tr>
-<tr><td><code>BASE_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.basefeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>BaseFeeVault</code></td></tr>
-<tr><td><code>L1_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.l1feevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>L1FeeVault</code></td></tr>
-<tr><td><code>SEQUENCER_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.sequencerfeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>SequencerFeeVault</code></td></tr>
-<tr><td><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1crossdomainmessengeraddress")) - 1)</code></td><td><code>abi.encode(address(L1CrossDomainMessengerProxy))</code></td></tr>
-<tr><td><code>L1_ERC_721_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1erc721bridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1ERC721BridgeProxy))</code></td></tr>
-<tr><td><code>L1_STANDARD_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1standardbridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1StandardBridgeProxy))</code></td></tr>
-<tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>bytes32(uint256(keccak256("opstack.remotechainid")) - 1)</code></td><td>Chain ID of the remote chain</td></tr>
-</tbody></table>
-</div>
-<h2 id="predeploys-3"><a class="header" href="#predeploys-3">Predeploys</a></h2>
-<p>All network specific configuration is moved to a single contract, the <code>L1Block</code> predeploy.
-All predeploys make calls to the <code>L1Block</code> contract to fetch network specific configuration
-rather than reading it from local state.</p>
-<pre class="mermaid">graph LR
-  subgraph L1
-  SystemConfig -- &quot;setConfig(uint8,bytes)&quot; --&gt; OptimismPortal
-  end
-  subgraph L2
-  L1Block
-  BaseFeeVault -- &quot;getConfig(ConfigType.GAS_PAYING_TOKEN)(address,uint256,uint8)&quot; --&gt; L1Block
-  SequencerFeeVault -- &quot;getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
-  L1FeeVault -- &quot;getConfig(ConfigType.L1_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
-  L2CrossDomainMessenger -- &quot;getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)(address)&quot; --&gt; L1Block
-  L2StandardBridge -- &quot;getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
-  L2ERC721Bridge -- &quot;getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
-  OptimismMintableERC721Factory -- &quot;getConfig(ConfigType.REMOTE_CHAIN_ID)(uint256)&quot; --&gt; L1Block
-  end
-  OptimismPortal -- &quot;setConfig(uint8,bytes)&quot; --&gt; L1Block
-</pre>
-<h3 id="proxyadmin-1"><a class="header" href="#proxyadmin-1">ProxyAdmin</a></h3>
-<p>The <code>ProxyAdmin</code> is updated to have its <code>owner</code> be the <code>DEPOSITOR_ACCOUNT</code>.
-This means that it can be deterministically called by network upgrade transactions
-or by special deposit transactions emitted by the <code>OptimismPortal</code> that assume
-the identity of the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="rationale-9"><a class="header" href="#rationale-9">Rationale</a></h4>
-<p>It is much easier to manage the overall roles of the full system under this model.
-The owner of the <code>ProxyAdmin</code> can upgrade any of the predeploys, meaning it can
-write storage slots that correspond to withdrawals. This ensures that only the
-system or a chain governor can issue upgrades to the predeploys.</p>
-<h3 id="l1block-2"><a class="header" href="#l1block-2">L1Block</a></h3>
-<h4 id="storage"><a class="header" href="#storage">Storage</a></h4>
-<p>The following storage slots are defined:</p>
-<ul>
-<li><code>BASE_FEE_VAULT_CONFIG</code></li>
-<li><code>L1_FEE_VAULT_CONFIG</code></li>
-<li><code>SEQUENCER_FEE_VAULT_CONFIG</code></li>
-<li><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></li>
-<li><code>L1_ERC_721_BRIDGE_ADDRESS</code></li>
-<li><code>L1_STANDARD_BRIDGE_ADDRESS</code></li>
-<li><code>REMOTE_CHAIN_ID</code></li>
-</ul>
-<p>Each slot MUST have a defined <code>ConfigType</code> that authorizes the setting of the storage slot
-via a deposit transaction from the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
-<h5 id="setisthmus-1"><a class="header" href="#setisthmus-1"><code>setIsthmus</code></a></h5>
-<p>This function is meant to be called once on the activation block of the holocene network upgrade.
-It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
-call each getter for the network specific config and set the returndata into storage.</p>
-<h5 id="setconfig-1"><a class="header" href="#setconfig-1"><code>setConfig</code></a></h5>
-<p>This function MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code>. It modifies the storage directly
-of the <code>L1Block</code> contract. It MUST handle all defined <code>ConfigType</code>s. To ensure a simple ABI, the
-<code>bytes</code> value MUST be abi decoded based on the <code>ConfigType</code>.</p>
-<pre><code class="language-solidity">function setConfig(ConfigType,bytes)
-</code></pre>
-<p>Note that <code>ConfigType</code> is an enum which is an alias for a <code>uint8</code>.</p>
-<h5 id="getconfig"><a class="header" href="#getconfig"><code>getConfig</code></a></h5>
-<p>This function is called by each contract with the appropriate <code>ConfigType</code> to fetch
-the network specific configuration. Using this pattern reduces the ABI of the <code>L1Block</code>
-contract by removing the need for special getters for each piece of config.</p>
-<pre><code class="language-solidity">function getConfig(ConfigType)(bytes)
-</code></pre>
-<p>The caller needs to ABI decode the data into the desired type.</p>
-<h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
-<p>The following changes apply to each of the <code>BaseFeeVault</code>, the <code>L1FeeVault</code> and the <code>SequencerFeeVault</code>.</p>
-<h4 id="interface-11"><a class="header" href="#interface-11">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract:</p>
-<ul>
-<li><code>recipient()(address)</code></li>
-<li><code>withdrawalNetwork()(WithdrawalNetwork)</code></li>
-<li><code>minWithdrawalAmount()(uint256)</code></li>
-<li><code>withdraw()</code></li>
-</ul>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Call</th></tr></thead><tbody>
-<tr><td><code>BaseFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.BASE_FEE_VAULT_CONFIG)</code></td></tr>
-<tr><td><code>SequencerFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)</code></td></tr>
-<tr><td><code>L1FeeVault</code></td><td><code>L1Block.getConfig(ConfigType.L1_FEE_VAULT_CONFIG)</code></td></tr>
-</tbody></table>
-</div>
-<h5 id="config"><a class="header" href="#config"><code>config</code></a></h5>
-<p>A new function is added to fetch the full Fee Vault Config.</p>
-<pre><code class="language-solidity">function config()(address,uint256,WithdrawalNetwork)
-</code></pre>
-<h3 id="l2crossdomainmessenger-1"><a class="header" href="#l2crossdomainmessenger-1">L2CrossDomainMessenger</a></h3>
-<h4 id="interface-12"><a class="header" href="#interface-12">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code>:</p>
-<ul>
-<li><code>otherMessenger()(address)</code></li>
-<li><code>OTHER_MESSENGER()(address)</code></li>
-</ul>
-<h3 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h3>
-<h4 id="interface-13"><a class="header" href="#interface-13">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)</code>:</p>
-<ul>
-<li><code>otherBridge()(address)</code></li>
-<li><code>OTHER_BRIDGE()(address)</code></li>
-</ul>
-<h3 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h3>
-<h4 id="interface-14"><a class="header" href="#interface-14">Interface</a></h4>
-<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)</code>:</p>
-<ul>
-<li><code>otherBridge()(address)</code></li>
-<li><code>OTHER_BRIDGE()(address)</code></li>
-</ul>
-<h3 id="optimismmintableerc721factory-1"><a class="header" href="#optimismmintableerc721factory-1">OptimismMintableERC721Factory</a></h3>
-<p>The chain id is no longer read from storage but instead is read from the <code>L1Block</code> contract by calling
-<code>L1Block.getConfig(ConfigType.REMOTE_CHAIN_ID)</code></p>
-<h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
-<h3 id="governancetoken"><a class="header" href="#governancetoken">GovernanceToken</a></h3>
-<p>The predeploy defined by <code>GovernanceToken</code> should be an empty account until it is defined by
-a future hardfork.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="alt-da-mode"><a class="header" href="#alt-da-mode">Alt-DA Mode</a></h1>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<p><strong>Table of Contents</strong></p>
-<ul>
-<li><a href="experimental/alt-da.html#overview">Overview</a></li>
-<li><a href="experimental/alt-da.html#input-commitment-submission">Input Commitment Submission</a>
-<ul>
-<li><a href="experimental/alt-da.html#example-commitments">Example Commitments</a></li>
-</ul>
-</li>
-<li><a href="experimental/alt-da.html#da-server">DA Server</a></li>
-<li><a href="experimental/alt-da.html#data-availability-challenge-contract">Data Availability Challenge Contract</a>
-<ul>
-<li><a href="experimental/alt-da.html#parameters">Parameters</a></li>
-</ul>
-</li>
-<li><a href="experimental/alt-da.html#derivation">Derivation</a></li>
-<li><a href="experimental/alt-da.html#fault-proof">Fault Proof</a>
-<ul>
-<li><a href="experimental/alt-da.html#l2-input-commitment"><code>l2-input &lt;commitment&gt;</code></a></li>
-<li><a href="experimental/alt-da.html#l1-challenge-status-commitment-blocknumber"><code>l1-challenge-status &lt;commitment&gt; &lt;blocknumber&gt;</code></a></li>
-</ul>
-</li>
-<li><a href="experimental/alt-da.html#safety-and-finality">Safety and Finality</a></li>
-<li><a href="experimental/alt-da.html#security-considerations">Security Considerations</a></li>
-</ul>
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
-While it has received initial review from core contributors, it is still undergoing testing,
-and may have bugs or other issues.</p>
-<h2 id="overview-50"><a class="header" href="#overview-50">Overview</a></h2>
-<p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
-The protocol guarantees availability with a challenge contract on L1 where users
-can challenge the availability of input data used to derive the chain.
-Challenging an input commitment means forcing providers to submit the input data on chain
-to prove the data is available during a time period. We call the period during which any party
-can challenge a commitment <code>challenge_window</code> and the period during which any party
-can submit the input data to resolve the challenge <code>resolve_window</code>.
-If a challenge is not resolved by the time <code>resolve_window</code> of L1 blocks have passed,
-chain derivation must be reset, omitting the input data when rederiving therefore causing a reorg.</p>
-<h2 id="input-commitment-submission"><a class="header" href="#input-commitment-submission">Input Commitment Submission</a></h2>
-<p>The <a href="experimental/../protocol/derivation.html#batch-submission">batching</a> and compression of input data remain unchanged. When a batch is ready
-to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
-commitment (specified below) is submitted as the batcher inbox transaction call data.</p>
-<p>Commitment txdata introduces version <code>1</code> to the <a href="experimental/../protocol/derivation.html#batcher-transaction-format">transaction format</a>, in order to interpret
-the txdata as a commitment during the l1 retrieval step of the derivation pipeline:</p>
-<div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>tx_data</code></th></tr></thead><tbody>
-<tr><td>1</td><td><code>encoded_commitment</code></td></tr>
-</tbody></table>
-</div>
-<p>The <code>derivationVersion0</code> byte is still prefixed to the input data stored in the DA provider so the frames
-can be decoded downstream.</p>
-<p>Commitments are encoded as <code>commitment_type_byte ++ commitment_bytes</code>, where <code>commitment_bytes</code> depends
-on the <code>commitment_type_byte</code> where [0, 128) are reserved for official implementations:</p>
-<div class="table-wrapper"><table><thead><tr><th><code>commitment_type</code></th><th><code>commitment</code></th></tr></thead><tbody>
-<tr><td>0</td><td><code>keccak256(tx_payload)</code></td></tr>
-<tr><td>1</td><td><code>da-service</code></td></tr>
-</tbody></table>
-</div>
-<p>The <code>da-service</code> commitment is as follows: <code>da_layer_byte ++ payload</code>.
-The DA layer byte must be initially restricted to the range <code>[0, 127)</code>.
-This specification will not apportion DA layer bytes, but different DA layers should coordinate to ensure that the
-DA layer bytes do not conflict. DA Layers can do so in
-<a href="https://github.com/ethereum-optimism/specs/discussions/135">this discussion</a>.
-The payload is a bytestring which is up to the DA layer to specify.
-The DA server should be able to parse the payload, find the data on the DA layer, and verify that the data returned
-from the DA layer matches what was committed to in the payload.</p>
-<p>The batcher SHOULD cap input payloads to the maximum L1 tx size or the input will be skipped
-during derivation. See <a href="experimental/alt-da.html#derivation">derivation section</a> for more details.</p>
-<p>The batcher SHOULD NOT submit a commitment onchain unless input data was successfully stored on the service.
-In addition, a DA provider storage service SHOULD return an error response if it is unable to properly
-store the request payload so as to signal to the batcher to retry.
-Input commitments submitted onchain without proper storage on the DA provider service are subject to
-challenges if the input cannot be retrieved during the challenge window, as detailed in the following section.</p>
-<h3 id="example-commitments"><a class="header" href="#example-commitments">Example Commitments</a></h3>
-<div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>commitment_type</code></th><th><code>da_layer_byte</code></th><th><code>payload</code></th></tr></thead><tbody>
-<tr><td>0</td><td></td><td></td><td>frames</td></tr>
-<tr><td>1</td><td>0</td><td></td><td>keccak_commitment</td></tr>
-<tr><td>1</td><td>1</td><td>0</td><td>eigenda_commitment</td></tr>
-<tr><td>1</td><td>1</td><td>0x0a</td><td>avail_commitment</td></tr>
-<tr><td>1</td><td>1</td><td>0x0c</td><td>celestia_commitment</td></tr>
-<tr><td>1</td><td>1</td><td>...</td><td>altda_commitment</td></tr>
-</tbody></table>
-</div>
-<h2 id="da-server"><a class="header" href="#da-server">DA Server</a></h2>
-<p>Input data is uploaded to the storage layer via plain HTTP calls to the DA server.</p>
-<p>This service is responsible to interacting with the Data Availability Layer (DA layer).
-The layer could be a content addressable storage layer like IPFS or any S3 compatible storage
-or it could a specific DA focused blockchain.
-Content addressed systems like S3 should use the first <code>put/&lt;hex_encoded_commitment&gt;</code>
-because they can pre-compute the commitment.
-Blockchain based DA layers should use <code>put</code> and then submit the returned commitment to L1.
-Because commitments can include the block height or hash, the commitment cannot be computed prior to submitting
-it to the DA Layer.</p>
-<p>Any DA provider can implement the following endpoints to receive and serve input data:</p>
-<ul>
-<li>
-<pre><code class="language-text">Request:
-  POST /put/&lt;hex_encoded_commitment&gt;
-  Content-Type: application/octet-stream
-  Body: &lt;preimage_bytes&gt;
-
-Response:
-  200 OK
-</code></pre>
-</li>
-<li>
-<pre><code class="language-text">Request:
-  POST /put
-  Content-Type: application/octet-stream
-  Body: &lt;preimage_bytes&gt;
-
-Response:
-  200 OK
-  Content-Type: application/octet-stream
-  Body: &lt;hex_encoded_commitment&gt;
-</code></pre>
-</li>
-<li>
-<pre><code class="language-text">Request:
-  GET /get/&lt;hex_encoded_commitment&gt;
-
-Response:
-  200 OK
-  Content-Type: application/octet-stream
-  Body: &lt;preimage_bytes&gt;
-</code></pre>
-</li>
-</ul>
-<h2 id="data-availability-challenge-contract"><a class="header" href="#data-availability-challenge-contract">Data Availability Challenge Contract</a></h2>
-<h3 id="parameters-1"><a class="header" href="#parameters-1">Parameters</a></h3>
-<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td>fixedResolutionCost</td><td><code>uint256</code></td><td>Fixed gas cost of resolving a challenge, set to 72925</td></tr>
-<tr><td>variableResolutionCost</td><td><code>uint256</code></td><td>Upper limit gas cost per byte scaled by precision constant, set to 16640</td></tr>
-<tr><td>variableResolutionCostPrecision</td><td><code>uint256</code></td><td>Precision of the variable resolution cost, set to 1000</td></tr>
-</tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td>challengeWindow</td><td><code>uint256</code></td><td>Number of L1 blocks whereby a commitment MAY be challenged after it's included onchain</td></tr>
-<tr><td>resolveWindow</td><td><code>uint256</code></td><td>Number of L1 blocks whereby input data SHOULD be submitted onchain after a challenge</td></tr>
-<tr><td>bondSize</td><td><code>uint256</code></td><td>Bond amount in Wei posted by the challenger so that bondSize &gt;= resolveCost</td></tr>
-<tr><td>resolverRefundFactor</td><td><code>uint256</code></td><td>Factor defining the portion of the resolving cost refunded to the resolver</td></tr>
-</tbody></table>
-</div>
-<p>Data availability is guaranteed via a permissionless challenge contract on the L1 chain.
-Users have a set number of L1 blocks (<code>challengeWindow</code>) during which they are able to call
-the <code>challenge</code> method of the contract with the following inputs:</p>
-<p><strong>Note:</strong> Resolving Input Data through the Data Availability Challenge Contract is implemented
-only for <code>type=0 (keccak)</code> commitments. This is because <code>type=1 (da-service)</code> commitments are designed to be
-handled by a DA Server which is responsible for the mapping between commitment and input data.
-Due to this "generic" handling nature, there is currently no on-chain mechanism to verify commitments.</p>
-<pre><code class="language-solidity">function challenge(uint256 challengedBlockNumber, bytes calldata challengedCommitment) external payable
-</code></pre>
-<ul>
-<li>The L1 block number in which it was included.</li>
-<li>Versioned commitment bytes (i.e. <code>0 ++ keccak256(frame.. )</code>)</li>
-</ul>
-<p>Users with access to the input data then have another window of L1 blocks (<code>resolveWindow</code>)
-during which they can submit it as calldata to the chain by calling the <code>resolve</code> method of the contract.
-If the data is not included onchain by the time the resolve window is elapsed, derivation of the L2 canonical chain
-will reorg starting from this first block derived from the challenged input data to the last block derived from the
-L1 block at which it expired. See more details about <a href="experimental/alt-da.html#derivation">Derivation</a> in the following section.</p>
-<pre><code class="language-solidity">function resolve(uint256 challengedBlockNumber, bytes calldata challengedCommitment, bytes calldata resolveData) external
-</code></pre>
-<p>In order to challenge a commitment, users deposit a bond amount where <code>bond &gt;= resolve_tx_gas_cost</code>.
-If the gas cost of resolving the challenge was lower than the bond, the difference is reimbursed to the challenger where
-<code>cost = (fixedResolutionCost + preImageLength * variableResolutionCost / variableResolutionCostPrecision) * gasPrice</code>
-and the rest of the bond is burnt. If the challenge is not resolved in time and expired,
-the bond is returned and can be withdrawn by the challenger or used to challenge another commitment.
-<code>bondSize</code> can be updated by the contract owner similar to <a href="experimental/../protocol/system-config.html">SystemConfig</a> variables.
-See <a href="experimental/alt-da.html#security-considerations">Security Considerations</a> for more details on bond management.</p>
-<p>The state of all challenges can be read from the contract state or by syncing contract events.
-<code>challengeWindow</code> and <code>resolveWindow</code> are constant values that currently cannot be changed
-unless the contract is upgraded. A dynamic window mechanism may be explored in the future.</p>
-<p>Any challenge with a properly encoded commitment, a bond amount associated with the challenger
-address and a block number within the challenge window is accepted by the contract.
-However, a challenge is only valid if the commitment and block number pairing map to a valid commitment
-and its L1 origin block number during derivation. Challenges associated with an illegal commitment
-or block number will be ignored during derivation and have no impact on the state of the chain.</p>
-<p>The contract is deployed behind an upgradable proxy so the address can be hardcoded in the rollup config
-file and does not need to change. A future upgrade can add custom resolver functions to be chosen
-dynamically when a user calls the resolve function to support other alt DA solutions.</p>
-<h2 id="derivation-5"><a class="header" href="#derivation-5">Derivation</a></h2>
-<p>Input data is retrieved during derivation of L2 blocks. The changes to the derivation pipeline
-when using the alt DA source are limited to wrapping the L1 based <code>DataAvailabilitySource</code> step
-in the pipeline with a module that enables pulling the data from the offchain DA source once
-we've extracted the commitment from L1 DA.</p>
-<p>Similarly to L1 based DA, for each L1 block we open a calldata source to retrieve the input commitments
-from the transactions and use each commitment with its l1 origin block number to resolve
-the input data from the storage service. To enable smooth transition between alt-da and rollup mode, any L1 data
-retrieved from the batcher inbox that is not prefixed with <code>txDataVersion1</code> is forwarded downstream
-to be parsed as input frames or skipped as invalid data.</p>
-<p>In addition, we filter events from the DA Challenge contract included in the block
-and sync a local state of challenged input commitments. As the derivation pipeline steps through
-<code>challenge_window + resolve_window</code> amount of L1 blocks, any challenge marked as active
-becomes expired causing a reset of the derivation pipeline.</p>
-<pre><code class="language-solidity">// The status enum of a DA Challenge event
-enum ChallengeStatus {
-    Uninitialized,
-    Active,
-    Resolved,
-    Expired
-}
-
-// DA Challenge event filtered
-event ChallengeStatusChanged(
-  bytes indexed challengedCommitment, uint256 indexed challengedBlockNumber, ChallengeStatus status
-);
-
-</code></pre>
-<p>Derivation can either be driven by new L1 blocks or restarted (reset) from the L1 origin of the last
-L2 safe head known by the execution engine. The model here is of weak subjectivity whereby a new node
-coming onto the network can connect to at least 1 honest peer and sync blocks in the <code>challenge_window</code>
-to reconstruct the same state as the rest of the network. As with <a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a>,
-applications SHOULD take on the burden of storing historical data relevant to themselves beyond
-the challenge window.</p>
-<p>When stepping through new L1 origin blocks, input data is loaded from the DA storage service.
-If the service responds with a 404 (not found) error, derivation stalls and the DA Manager
-starts a detached traversal of new L1 blocks until:</p>
-<ul>
-<li>An <code>Active</code> challenge event is found, detached L1 traversal continues:
-<ul>
-<li>A <code>Resolved</code> challenge event is found: derivation continues with the input data submitted onchain.</li>
-<li>A high enough L1 block is reached such as <code>latest_l1 - pipeline_l1_origin = resolve_window_size</code>:
-input data is skipped from the derivation output.</li>
-</ul>
-</li>
-<li>Data is never challenged, derivation returns critical error.</li>
-</ul>
-<p>When <a href="experimental/../protocol/derivation.html#resetting-the-pipeline">derivation is reset</a>, the pipeline steps through previously seen L1 origins so that:
-<code>sync_starting_point = latest_l1_block - (challenge_window_size + resolve_window_size + sequencer_window_size)</code>.
-In that case, the DA manager has already synced the state of challenges during the range of L1 blocks traversed
-so the pipeline can either skip commitments with expired challenges and reorg the L2 chain
-or load input data from the resolving transaction calldata.
-In addition, an expired challenge will reorg out <code>[r_start, r_end]</code> L2 blocks so that <code>r_start</code> is the first
-block derived from the expired challenge's input and <code>r_end</code> the last L2 block derived before the pipeline
-was reset.</p>
-<p>Derivation MUST skip input data such as <code>input_data_size &gt; MAX_L1_TX_SIZE</code> where <code>MAX_L1_TX_SIZE</code> is a consensus
-constant of 130672 bytes when <code>commitment_type == 0</code>. Different DA layers can potentially resolve the challenge
-without immediately loading all of the data onto L1 in a single transaction &amp; therefore are exempt from this limit.
-In theory <code>MAX_L1_TX_SIZE</code> could be increased up to <code>(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost</code>
-based on the cost of resolving challenges in the contract implementation however to make challenging accessible
-it is capped based on geth's txMaxSize.
-130672 is chosen as 131072 - 400. Geth rejects transactions from the mempool with a total serialized size over 131072.
-400 bytes are allocated as overhead (signature, to address, metadata).</p>
-<h2 id="fault-proof-1"><a class="header" href="#fault-proof-1">Fault Proof</a></h2>
-<p>The derivation pipeline is integrated with <a href="experimental/../fault-proof/index.html">fault proofs</a> by adding additional hint types to the
-preimage oracle in order to query the input data from the DA provider as well as onchain challenge status.</p>
-<h3 id="l2-input-commitment"><a class="header" href="#l2-input-commitment"><code>l2-input &lt;commitment&gt;</code></a></h3>
-<p>The input data stored on the DA storage for the given <code>&lt;commitment&gt;</code>.</p>
-<h3 id="l1-challenge-status-commitment-blocknumber"><a class="header" href="#l1-challenge-status-commitment-blocknumber"><code>l1-challenge-status &lt;commitment&gt; &lt;blocknumber&gt;</code></a></h3>
-<p>The status of the challenge for the given <code>&lt;commitment&gt;</code> at the given <code>&lt;blocknumber&gt;</code> on the L1
-DataAvailabilityChallenge contract.</p>
-<h2 id="safety-and-finality"><a class="header" href="#safety-and-finality">Safety and Finality</a></h2>
-<p>Similarly to rollup mode, the engine queue labels any new blocks derived from input data with a commitment
-on the L1 chain as “safe”. Although labeled as “safe”, the chain might still reorg in case of a faulty DA provider
-and users must use the “finalized” label for a guarantee that their state cannot revert.</p>
-<p>With Alt-DA mode on, the engine queue does receive finality signals from the L1 RPC AND
-from the DA manager that keeps track of challenges.
-The DA manager maintains an internal state of all the input commitments in the current <code>challengeWindow</code>
-as they are validated by the derivation pipeline.</p>
-<p>The L2 chain can be marked as finalized when the L1 block in which commitments can no longer be invalidated
-becomes finalized. Without Alt-DA Mode, L2 blocks are safe when the batch is on L1. Plasma commitments are
-only "optimistically safe" when the commitment is found in a L1 block. Commitments then become safe
-when that commitment can no longer be invalidated. Then finalization can proceed as normal: when the L1 block
-that an L2 block is derived from becomes finalized, the L2 block can be marked as finalized.</p>
-<p>The engine queue will maintain a longer buffer of L2 blocks waiting for the DA window to expire
-and the L1 block with the commitment to be finalized in order to signal finality.</p>
-<h2 id="security-considerations-7"><a class="header" href="#security-considerations-7">Security Considerations</a></h2>
-<p>The Data Availability Challenge contract mitigates DoS vulnerability with a payable bond requirement making
-challenging the availability of a commitment at least as expensive as submitting the data onchain to resolve
-the challenge.
-In addition, the reward is not net positive for the <a href="https://arxiv.org/abs/1809.09044">fisherman</a>
-who forced the release of data by challenging thus preventing money pump vulnerability
-while still making challenging affordable to altruistic fishermen and users who desire to pay
-to guarantee data availability on L1.
-Lastly, if needed a <code>resolver_refund_factor</code> can be dialed up such as <code>resolver_refund_factor * resolving_cost</code>
-is refunded to the resolver (where <code>0 &lt;= refund_factor &lt;= 1</code>) while the rest of the bond is burnt.</p>
-<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <!-- DOCTOC SKIP -->
 <h1 id="interop"><a class="header" href="#interop">Interop</a></h1>
 <p>The ability for a blockchain to easily read the state of another blockchain is called interoperability.
@@ -17387,7 +16466,7 @@ considered an upgrade to the network. It is not possible to remove chains from t
 <h3 id="layer-1-as-part-of-the-dependency-set"><a class="header" href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></h3>
 <p>The layer one MAY be part of the dependency set in the future. This means that any event
 created on layer one is consumable on layer two.</p>
-<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
+<h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
 <h3 id="dependency-set-size"><a class="header" href="#dependency-set-size">Dependency Set Size</a></h3>
 <p>It becomes increasingly expensive to fully validate the full cluster as the size of the dependency
 set grows. The proof system requires validating all of the chains so the size of the dependency
@@ -17607,7 +16686,7 @@ and thus a maximum inward degree of dependencies.</li>
 <li>Every block cannot depend on expired messages, as per the <a href="interop/messaging.html#message-expiry-invariant">Message expiry invariant</a>.</li>
 </ul>
 <p>The verifier is responsible for filtering out non-canonical parts of the graph.</p>
-<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
+<h2 id="security-considerations-7"><a class="header" href="#security-considerations-7">Security Considerations</a></h2>
 <h3 id="cyclic-dependencies"><a class="header" href="#cyclic-dependencies">Cyclic dependencies</a></h3>
 <p>If there is a cycle in the dependency set, chains MUST still be able to promote unsafe blocks
 to safe blocks. A cycle in the dependency set happens anytime that two chains are in each other's
@@ -17618,7 +16697,7 @@ dependencies are thus said to be transitive.
 Without validating the transitive dependencies,
 the verifier relies on the verification work of the nodes that it sources its direct dependencies from.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="predeploys-4"><a class="header" href="#predeploys-4">Predeploys</a></h1>
+<h1 id="predeploys-3"><a class="header" href="#predeploys-3">Predeploys</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -17752,7 +16831,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -17837,7 +16916,7 @@ bareChecksum = H(idLogHash ++ idChainID)
 typeByte = 0x03
 checksum = typeByte ++ bareChecksum[1:]
 </code></pre>
-<h3 id="assumptions-9"><a class="header" href="#assumptions-9">Assumptions</a></h3>
+<h3 id="assumptions-8"><a class="header" href="#assumptions-8">Assumptions</a></h3>
 <h4 id="gas-schedule-dependencies"><a class="header" href="#gas-schedule-dependencies">Gas Schedule Dependencies</a></h4>
 <p>The <code>CrossL2Inbox</code> contract's validation mechanism relies on precise gas cost calculations for storage operations.</p>
 <p><code>SLOAD</code> operations cost 2100 gas for cold access and 100 gas for warm access.</p>
@@ -18091,7 +17170,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-52"><a class="header" href="#overview-52">Overview</a></h3>
+<h3 id="overview-48"><a class="header" href="#overview-48">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -18158,7 +17237,7 @@ and deployer<code>is the</code>msg.sender`.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-53"><a class="header" href="#overview-53">Overview</a></h3>
+<h3 id="overview-49"><a class="header" href="#overview-49">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -18223,7 +17302,7 @@ by <code>_remoteToken</code>, <code>_name</code> and <code>_symbol</code> and fi
 This event exists for backward compatibility with legacy version.</p>
 <pre><code class="language-solidity">event StandardL2TokenCreated(address indexed remoteToken, address indexed localToken);
 </code></pre>
-<h2 id="l2standardbridge-2"><a class="header" href="#l2standardbridge-2">L2StandardBridge</a></h2>
+<h2 id="l2standardbridge-1"><a class="header" href="#l2standardbridge-1">L2StandardBridge</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000010</code></td></tr>
 </tbody></table>
@@ -18256,7 +17335,7 @@ with <code>convert</code>.</p>
 </code></pre>
 <p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
 <code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
-<h3 id="invariants-12"><a class="header" href="#invariants-12">Invariants</a></h3>
+<h3 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h3>
 <p>The <code>convert</code> function conserves the following invariants:</p>
 <ul>
 <li>Conservation of amount:
@@ -18314,7 +17393,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-54"><a class="header" href="#overview-54">Overview</a></h3>
+<h3 id="overview-50"><a class="header" href="#overview-50">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -18386,7 +17465,7 @@ sequenceDiagram
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h3 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h3>
+<h3 id="invariants-12"><a class="header" href="#invariants-12">Invariants</a></h3>
 <p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -18433,7 +17512,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
+<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h1>
@@ -18461,7 +17540,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
+<h2 id="overview-51"><a class="header" href="#overview-51">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -18546,7 +17625,7 @@ messages will need to recursively check that all dependencies are safe.</p>
 <p>A shared sequencer can be built if the block builder is able to build the next canonical block
 for multiple chains. This can enable synchronous composability where transactions are able
 to execute across multiple chains at the same timestamp.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
+<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
 <h3 id="depending-on-preconfirmations"><a class="header" href="#depending-on-preconfirmations">Depending on Preconfirmations</a></h3>
 <p>If a local sequencer is accepting inbound cross chain transactions where the initiating message only has preconfirmation
 levels of security, this means that the remote sequencer can trigger a reorg on the local chain.</p>
@@ -18646,7 +17725,7 @@ to the block building code that the <a href="interop/./sequencer.html#direct-dep
 follows. The main difference is that the validity of included executing
 messages is verified, instead of verifying possible executing messages before
 inclusion.</p>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="super-root-1"><a class="header" href="#super-root-1">Super Root</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -18680,7 +17759,7 @@ inclusion.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
+<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
 <p>The <a href="interop/../fault-proof/stage-one/optimism-portal.html#super-root">super root</a> is a commitment to the
 combined verified state of all chains in a <a href="interop/./dependency-set.html">dependency set</a> at a given timestamp.
 Any consensus client that verifies output roots across chains with interop needs access to the
@@ -18800,7 +17879,7 @@ do not produce errors; they result in the chain being excluded from
 <li>The dependency set is empty (no chains configured).</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h1>
+<h1 id="fault-proof-1"><a class="header" href="#fault-proof-1">Fault Proof</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -18818,7 +17897,7 @@ do not produce errors; they result in the chain being excluded from
 <li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <p>Interop introduces the Super Fault Dispute Game as a
 new <a href="interop/../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
 pre-interop <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
@@ -18901,7 +17980,7 @@ are set to the output roots of the validated blocks (including any required repl
 <p>Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
 <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a>. A single <strong>ABSOLUTE_PRESTATE</strong> continues to be used, with the fault proof
 program identifying the type of step to perform based on the agreed prestate.</p>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
@@ -18934,7 +18013,7 @@ program identifying the type of step to perform based on the agreed prestate.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
+<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainTokenBridge</code>.
@@ -19190,7 +18269,7 @@ but revert on the destination chain, and could never be successfully replayed.</
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-59"><a class="header" href="#overview-59">Overview</a></h2>
+<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
 <p>The <code>ETHLiquidity</code> contract is a predeploy that manages native ETH liquidity for cross-chain
 transfers within the Superchain interop set. It works in conjunction with the
 <code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
@@ -19205,7 +18284,7 @@ transfer mechanism.</p>
 <tr><td>Initial Balance</td><td><code>type(uint248).max</code> wei</td></tr>
 </tbody></table>
 </div>
-<h2 id="definitions-12"><a class="header" href="#definitions-12">Definitions</a></h2>
+<h2 id="definitions-11"><a class="header" href="#definitions-11">Definitions</a></h2>
 <h3 id="eth-liquidity"><a class="header" href="#eth-liquidity">ETH Liquidity</a></h3>
 <p>ETH Liquidity refers to the availability of native ETH on a particular chain. The <code>ETHLiquidity</code>
 contract manages this liquidity by providing a mechanism to burn and mint ETH as needed for
@@ -19218,33 +18297,33 @@ a cross-chain transfer.</p>
 <p>Liquidity Burning is the process of depositing ETH into the <code>ETHLiquidity</code> contract. This operation
 is performed when ETH is being sent from a source chain to a destination chain as part of a
 cross-chain transfer.</p>
-<h2 id="assumptions-10"><a class="header" href="#assumptions-10">Assumptions</a></h2>
+<h2 id="assumptions-9"><a class="header" href="#assumptions-9">Assumptions</a></h2>
 <h3 id="ael-001-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#ael-001-safesend-correctly-transfers-eth-to-recipients">aEL-001: SafeSend correctly transfers ETH to recipients</a></h3>
 <p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
 for valid addresses.</p>
-<h4 id="mitigations-45"><a class="header" href="#mitigations-45">Mitigations</a></h4>
+<h4 id="mitigations-41"><a class="header" href="#mitigations-41">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-14"><a class="header" href="#invariants-14">Invariants</a></h2>
+<h2 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h2>
 <h3 id="iel-001-eth-balance-is-always-sufficient-for-minting--burning"><a class="header" href="#iel-001-eth-balance-is-always-sufficient-for-minting--burning">iEL-001: ETH balance is always sufficient for minting / burning</a></h3>
 <p>The <code>ETHLiquidity</code> contract must always have enough ETH to fulfill all legitimate minting / burning
 requests.</p>
-<h4 id="impact-63"><a class="header" href="#impact-63">Impact</a></h4>
+<h4 id="impact-59"><a class="header" href="#impact-59">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, the cross-chain ETH transfer mechanism would fail, potentially leading
 to users being unable to receive their ETH on destination chains.</p>
 <h3 id="iel-002-only-authorized-contracts-can-call-mint-and-burn"><a class="header" href="#iel-002-only-authorized-contracts-can-call-mint-and-burn">iEL-002: Only authorized contracts can call mint and burn</a></h3>
 <p>The <code>mint</code> and <code>burn</code> functions must only be callable by authorized contracts (specifically the
 <code>SuperchainETHBridge</code>).</p>
-<h4 id="impact-64"><a class="header" href="#impact-64">Impact</a></h4>
+<h4 id="impact-60"><a class="header" href="#impact-60">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, unauthorized parties could mint ETH without burning an equivalent
 amount on a source chain, leading to inflation.</p>
 <h3 id="iel-003-contract-balance-never-overflows"><a class="header" href="#iel-003-contract-balance-never-overflows">iEL-003: Contract balance never overflows</a></h3>
 <p>The <code>ETHLiquidity</code> contract's balance must never overflow due to excessive burning operations.</p>
-<h4 id="impact-65"><a class="header" href="#impact-65">Impact</a></h4>
+<h4 id="impact-61"><a class="header" href="#impact-61">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, the contract could reach an invalid state, potentially disrupting the
 cross-chain ETH transfer mechanism. The invariant that avoids overflow is maintained by
@@ -19252,7 +18331,7 @@ cross-chain ETH transfer mechanism. The invariant that avoids overflow is mainta
 integrate with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that such future contracts
 do not break this invariant.</p>
 <h2 id="function-specification-4"><a class="header" href="#function-specification-4">Function Specification</a></h2>
-<h3 id="mint-1"><a class="header" href="#mint-1">mint</a></h3>
+<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
 <p>Withdraws ETH from the <code>ETHLiquidity</code> contract equal to the <code>_amount</code> and sends it to the
 <code>msg.sender</code>.</p>
 <pre><code class="language-solidity">function mint(uint256 _amount) external
@@ -19352,7 +18431,7 @@ do not break this invariant.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-60"><a class="header" href="#overview-60">Overview</a></h2>
+<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
 <p>The <code>SuperchainETHBridge</code> is a predeploy contract that facilitates cross-chain ETH bridging within
 the Superchain interop set. It serves as an abstraction layer on top of the
 <code>L2toL2CrossDomainMessenger</code> specifically designed for native ETH transfers between chains. The
@@ -19365,7 +18444,7 @@ withdrawals, see the <a href="interop/./eth-lockbox.html"><code>ETHLockbox</code
 <tr><td><code>SuperchainETHBridge</code> Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="definitions-13"><a class="header" href="#definitions-13">Definitions</a></h2>
+<h2 id="definitions-12"><a class="header" href="#definitions-12">Definitions</a></h2>
 <h3 id="eth-bridging"><a class="header" href="#eth-bridging">ETH Bridging</a></h3>
 <p>ETH Bridging refers to the process of transferring native ETH from one chain to another within the
 Superchain interop set. This process involves burning ETH on the source chain and minting an
@@ -19384,11 +18463,11 @@ burned from the user's account and a cross-chain message is sent to the destinat
 <h3 id="destination-chain"><a class="header" href="#destination-chain">Destination Chain</a></h3>
 <p>The Destination Chain is the chain to which ETH is being transferred. On this chain, ETH is sent
 to the recipient's account based on the cross-chain message received from the source chain.</p>
-<h2 id="assumptions-11"><a class="header" href="#assumptions-11">Assumptions</a></h2>
+<h2 id="assumptions-10"><a class="header" href="#assumptions-10">Assumptions</a></h2>
 <h3 id="aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages"><a class="header" href="#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001: L2ToL2CrossDomainMessenger properly delivers messages</a></h3>
 <p>We assume that the <code>L2ToL2CrossDomainMessenger</code> contract properly and faithfully delivers messages
 between chains, maintaining the integrity and authenticity of the message contents.</p>
-<h4 id="mitigations-46"><a class="header" href="#mitigations-46">Mitigations</a></h4>
+<h4 id="mitigations-42"><a class="header" href="#mitigations-42">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>L2ToL2CrossDomainMessenger</code> contract</li>
 <li>Audits of the messaging protocol</li>
@@ -19397,7 +18476,7 @@ between chains, maintaining the integrity and authenticity of the message conten
 <h3 id="aseb-002-ethliquidity-contract-maintains-sufficient-liquidity"><a class="header" href="#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002: <code>ETHLiquidity</code> contract maintains sufficient liquidity</a></h3>
 <p>We assume that the <code>ETHLiquidity</code> contract maintains sufficient liquidity to fulfill all valid ETH
 minting requests. This is ensured by initializing the contract with <code>type(uint248).max</code> wei.</p>
-<h4 id="mitigations-47"><a class="header" href="#mitigations-47">Mitigations</a></h4>
+<h4 id="mitigations-43"><a class="header" href="#mitigations-43">Mitigations</a></h4>
 <ul>
 <li>Total ETH supply is much less than the initial balance of the <code>ETHLiquidity</code> contract</li>
 <li>Contract is initially initialized with <code>type(uint248).max</code> wei and can hold up to
@@ -19406,20 +18485,20 @@ minting requests. This is ensured by initializing the contract with <code>type(u
 <h3 id="aseb-003-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#aseb-003-safesend-correctly-transfers-eth-to-recipients">aSEB-003: <code>SafeSend</code> correctly transfers ETH to recipients</a></h3>
 <p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
 for valid addresses.</p>
-<h4 id="mitigations-48"><a class="header" href="#mitigations-48">Mitigations</a></h4>
+<h4 id="mitigations-44"><a class="header" href="#mitigations-44">Mitigations</a></h4>
 <ul>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-15"><a class="header" href="#invariants-15">Invariants</a></h2>
+<h2 id="invariants-14"><a class="header" href="#invariants-14">Invariants</a></h2>
 <h3 id="iseb-001-eth-sent-equals-eth-received"><a class="header" href="#iseb-001-eth-sent-equals-eth-received">iSEB-001: ETH sent equals ETH received</a></h3>
 <p>The amount of ETH sent from the source chain must equal the amount of ETH received on the
 destination chain for any given cross-chain transfer.</p>
-<h4 id="impact-66"><a class="header" href="#impact-66">Impact</a></h4>
+<h4 id="impact-62"><a class="header" href="#impact-62">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, users could receive more or less ETH than they sent, leading to
 inflation or loss of funds.</p>
-<h4 id="dependencies-12"><a class="header" href="#dependencies-12">Dependencies</a></h4>
+<h4 id="dependencies-11"><a class="header" href="#dependencies-11">Dependencies</a></h4>
 <ul>
 <li><a href="interop/superchain-eth-bridge.html#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001</a></li>
 <li><a href="interop/superchain-eth-bridge.html#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002</a></li>
@@ -19427,21 +18506,21 @@ inflation or loss of funds.</p>
 <h3 id="iseb-002-only-authorized-contracts-can-call-relayeth"><a class="header" href="#iseb-002-only-authorized-contracts-can-call-relayeth">iSEB-002: Only authorized contracts can call <code>relayETH</code></a></h3>
 <p>The <code>relayETH</code> function must only be callable by the <code>L2ToL2CrossDomainMessenger</code> contract, and the
 cross-domain sender must be the <code>SuperchainETHBridge</code> contract on the source chain.</p>
-<h4 id="impact-67"><a class="header" href="#impact-67">Impact</a></h4>
+<h4 id="impact-63"><a class="header" href="#impact-63">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, unauthorized parties could mint ETH on the destination chain without
 burning an equivalent amount on the source chain, leading to inflation.</p>
-<h4 id="dependencies-13"><a class="header" href="#dependencies-13">Dependencies</a></h4>
+<h4 id="dependencies-12"><a class="header" href="#dependencies-12">Dependencies</a></h4>
 <ul>
 <li><a href="interop/superchain-eth-bridge.html#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001</a></li>
 </ul>
 <h3 id="iseb-003-eth-cannot-be-sent-to-the-zero-address"><a class="header" href="#iseb-003-eth-cannot-be-sent-to-the-zero-address">iSEB-003: ETH cannot be sent to the zero address</a></h3>
 <p>The <code>sendETH</code> function must revert if the recipient address is the zero address.</p>
-<h4 id="impact-68"><a class="header" href="#impact-68">Impact</a></h4>
+<h4 id="impact-64"><a class="header" href="#impact-64">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If this invariant is broken, ETH could be sent to the zero address, effectively burning it without
 the possibility of recovery.</p>
-<h4 id="dependencies-14"><a class="header" href="#dependencies-14">Dependencies</a></h4>
+<h4 id="dependencies-13"><a class="header" href="#dependencies-13">Dependencies</a></h4>
 <p>None</p>
 <h2 id="function-specification-5"><a class="header" href="#function-specification-5">Function Specification</a></h2>
 <h3 id="sendeth"><a class="header" href="#sendeth">sendETH</a></h3>
@@ -19504,7 +18583,7 @@ ID.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-61"><a class="header" href="#overview-61">Overview</a></h2>
+<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
 <p>ETH is bridged between chains within the Superchain interop set by using the <code>SuperchainETHBridge</code>
 predeploy for message passing and the <code>ETHLiquidity</code> contract for supplying native ETH liquidity.</p>
 <h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
@@ -19550,7 +18629,7 @@ sequenceDiagram
   L2SBB--&gt;L2SBB: emit RelayETH(from, to, amount, source)
 </pre>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="derivation-6"><a class="header" href="#derivation-6">Derivation</a></h1>
+<h1 id="derivation-5"><a class="header" href="#derivation-5">Derivation</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -19583,11 +18662,11 @@ sequenceDiagram
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-62"><a class="header" href="#overview-62">Overview</a></h2>
+<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
-<h2 id="invariants-16"><a class="header" href="#invariants-16">Invariants</a></h2>
+<h2 id="invariants-15"><a class="header" href="#invariants-15">Invariants</a></h2>
 <ul>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
@@ -19798,7 +18877,7 @@ of <code>1_000_000</code> even allowing for the gas used by the
 <tr><td><code>EXPIRY_WINDOW</code></td><td><code>604800 secs</code> (7 days)</td></tr>
 </tbody></table>
 </div>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <h3 id="depositing-an-executing-message"><a class="header" href="#depositing-an-executing-message">Depositing an Executing Message</a></h3>
 <p>Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
 If it were possible to deposit an invalid executing message, this would force the sequencer to reorg. It would
@@ -19830,7 +18909,7 @@ needing to execute increasingly long chain histories.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-63"><a class="header" href="#overview-63">Overview</a></h2>
+<h2 id="overview-59"><a class="header" href="#overview-59">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -19860,7 +18939,7 @@ and does not get stuck in the transaction pool.</p>
 should be maintained in the transaction pool.
 This leaves sufficient gas for the L1 attributes transaction (under 45,000 gas),
 the new deposit-context closing transaction (under 36,000 gas), and margin for error / change.</p>
-<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <h3 id="mempool-denial-of-service"><a class="header" href="#mempool-denial-of-service">Mempool Denial of Service</a></h3>
 <p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
@@ -19902,7 +18981,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-64"><a class="header" href="#overview-64">Overview</a></h2>
+<h2 id="overview-60"><a class="header" href="#overview-60">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -19950,7 +19029,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">event ETHMigrated(uint256 amount);
 </code></pre>
-<h2 id="invariants-17"><a class="header" href="#invariants-17">Invariants</a></h2>
+<h2 id="invariants-16"><a class="header" href="#invariants-16">Invariants</a></h2>
 <ul>
 <li>
 <p>Deposits MUST lock the ETH in the <code>ETHLockbox</code></p>
@@ -20017,7 +19096,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-65"><a class="header" href="#overview-65">Overview</a></h2>
+<h2 id="overview-61"><a class="header" href="#overview-61">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -20111,7 +19190,7 @@ from and the amount of ETH received.</li>
 </code></pre>
 <h4 id="paused-4"><a class="header" href="#paused-4"><code>paused</code></a></h4>
 <p>Returns whether the contract is paused, delegating to the SystemConfig.</p>
-<h4 id="superchainconfig-4"><a class="header" href="#superchainconfig-4"><code>superchainConfig</code></a></h4>
+<h4 id="superchainconfig-3"><a class="header" href="#superchainconfig-3"><code>superchainConfig</code></a></h4>
 <p>Returns the SuperchainConfig contract from the SystemConfig.</p>
 <h4 id="proxyadminowner-1"><a class="header" href="#proxyadminowner-1"><code>proxyAdminOwner</code></a></h4>
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
@@ -20140,7 +19219,7 @@ from and the amount of ETH received.</li>
 <p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
 <pre><code class="language-solidity">event LiquidityReceived(ETHLockbox indexed lockbox, uint256 amount);
 </code></pre>
-<h2 id="invariants-18"><a class="header" href="#invariants-18">Invariants</a></h2>
+<h2 id="invariants-17"><a class="header" href="#invariants-17">Invariants</a></h2>
 <h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>
 <ul>
 <li>
@@ -20245,6 +19324,960 @@ transferring the ETH liquidity from the both source <code>ETHLockbox</code> to t
 </ul>
 <p>This process ensures that the ETH liquidity is migrated from the source <code>ETHLockbox</code> to the correct destination <code>ETHLockbox</code>.</p>
 <p>These transactions SHOULD be executed atomically. A possible way is through the <code>OPCM</code> contract.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="governance-token-2"><a class="header" href="#governance-token-2">Governance Token</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="governance/gov-token.html#overview">Overview</a>
+<ul>
+<li><a href="governance/gov-token.html#token-minting">Token Minting</a></li>
+<li><a href="governance/gov-token.html#token-burning">Token Burning</a></li>
+<li><a href="governance/gov-token.html#voting-power">Voting Power</a>
+<ul>
+<li><a href="governance/gov-token.html#public-query-functions">Public Query Functions</a></li>
+</ul>
+</li>
+<li><a href="governance/gov-token.html#delegation">Delegation</a>
+<ul>
+<li><a href="governance/gov-token.html#basic-delegation">Basic Delegation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-62"><a class="header" href="#overview-62">Overview</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
+<tr><td>Token name</td><td><code>Optimism</code></td></tr>
+<tr><td>Token symbol</td><td><code>OP</code></td></tr>
+<tr><td>Token decimals</td><td><code>18</code></td></tr>
+</tbody></table>
+</div>
+<p><code>GovernanceToken</code> is an <a href="https://eips.ethereum.org/EIPS/eip-20">ERC20</a> token contract that inherits from <code>ERC20Burnable</code>,
+<code>ERC20Votes</code>, and <code>Ownable</code>. It allows token holders to delegate their voting power to other addresses, enabling a representative
+voting system. The <code>GovernanceToken</code> currently only supports basic delegation whereby a user can delegate its entire token
+balance to a specific address for voting and votes cannot be re-delegated.</p>
+<h3 id="token-minting"><a class="header" href="#token-minting">Token Minting</a></h3>
+<p><code>GovernanceToken</code> MUST have a <code>mint(address,uint256)</code> function with external visibility that allows the <code>owner()</code> address
+to mint an arbitrary number of new tokens to a specific address. This function MUST only be called by the contract
+owner, the <code>MintManager</code>, as enforced by the <code>onlyOwner</code> modifier inherited from the <code>Ownable</code> contract.</p>
+<h3 id="token-burning"><a class="header" href="#token-burning">Token Burning</a></h3>
+<p>The contract MUST allow token holders to burn their own tokens using the inherited <code>burn(uint256)</code> or
+<code>burnFrom(address,uint256)</code> functions inherited from <code>ERC20Burnable</code>. Burn functions MUST NOT allow a user's balance to
+underflow and attempts to reduce balance below zero MUST revert.</p>
+<h3 id="voting-power"><a class="header" href="#voting-power">Voting Power</a></h3>
+<p>Each token corresponds to one unit of voting power. Token holders who wish to utilize their tokens for voting MUST delegate
+their voting power to an address (can be their own address). An active delegation MUST NOT prevent a user from transferring
+tokens. The <code>GovernanceToken</code> contract MUST offer public accessor functions for querying voting power, as outlined below.</p>
+<h4 id="public-query-functions"><a class="header" href="#public-query-functions">Public Query Functions</a></h4>
+<ul>
+<li><code>checkpoints(address,uint32) returns (Checkpoint)</code>
+<ul>
+<li>MUST retrieve the n-th Checkpoint for a given address.</li>
+</ul>
+</li>
+<li><code>numCheckpoints(address) returns (uint32)</code>
+<ul>
+<li>MUST retrieve the total number of Checkpoint objects for a given address.</li>
+</ul>
+</li>
+<li><code>delegates(address) returns (address)</code>
+<ul>
+<li>MUST retrieve the address that an account is delegating to.</li>
+</ul>
+</li>
+<li><code>getVotes() returns (uint256)</code>
+<ul>
+<li>MUST retrieve the current voting power of an address.</li>
+</ul>
+</li>
+<li><code>getPastVotes(address,uint256) returns (uint256)</code>
+<ul>
+<li>MUST retrieve the voting power of an address at specific block number in the past.</li>
+</ul>
+</li>
+<li><code>getPastTotalSupply(uint256) returns (uint256)</code>
+<ul>
+<li>MUST return the total token supply at a specific block number in the past.</li>
+</ul>
+</li>
+</ul>
+<h3 id="delegation"><a class="header" href="#delegation">Delegation</a></h3>
+<h4 id="basic-delegation"><a class="header" href="#basic-delegation">Basic Delegation</a></h4>
+<p>Vote power can be delegated either by calling the <code>delegate(address)</code> function directly (to delegate as the <code>msg.sender</code>)
+or by providing a signature to be used with function <code>delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)</code>,
+as inherited from <code>ERC20Votes</code>. Delegation through these functions is considered "basic delegation" as these functions will
+delegate the entirety of the user's available balance to the target address. Delegations cannot be re-delegated to another
+address.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="mintmanager"><a class="header" href="#mintmanager">MintManager</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="governance/mint-manager.html#overview">Overview</a></li>
+<li><a href="governance/mint-manager.html#definitions">Definitions</a>
+<ul>
+<li><a href="governance/mint-manager.html#mint-cap">Mint Cap</a></li>
+<li><a href="governance/mint-manager.html#mint-period">Mint Period</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="governance/mint-manager.html#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a>
+<ul>
+<li><a href="governance/mint-manager.html#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#dependencies">Dependencies</a></li>
+<li><a href="governance/mint-manager.html#invariants">Invariants</a>
+<ul>
+<li><a href="governance/mint-manager.html#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a>
+<ul>
+<li><a href="governance/mint-manager.html#impact-3">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="governance/mint-manager.html#function-specifications">Function Specifications</a>
+<ul>
+<li><a href="governance/mint-manager.html#constructor">constructor</a></li>
+<li><a href="governance/mint-manager.html#mint">mint</a></li>
+<li><a href="governance/mint-manager.html#upgrade">upgrade</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-63"><a class="header" href="#overview-63">Overview</a></h2>
+<p>The <code>MintManager</code> contract serves as the owner of the <a href="governance/./gov-token.html">GovernanceToken</a> and controls the token
+inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
+period between mints. The contract is upgradeable, allowing the owner to transfer control to a new <code>MintManager</code>
+implementation if changes to the inflation schedule are required.</p>
+<h2 id="definitions-13"><a class="header" href="#definitions-13">Definitions</a></h2>
+<h3 id="mint-cap"><a class="header" href="#mint-cap">Mint Cap</a></h3>
+<p>The maximum percentage of the total token supply that can be minted in a single minting operation. Set to 2%
+(represented as 20/1000 with 4 decimal precision).</p>
+<h3 id="mint-period"><a class="header" href="#mint-period">Mint Period</a></h3>
+<p>The minimum time interval that must elapse between consecutive minting operations. Set to 365 days.</p>
+<h2 id="assumptions-11"><a class="header" href="#assumptions-11">Assumptions</a></h2>
+<h3 id="amm-001-governancetoken-implements-required-functions-correctly"><a class="header" href="#amm-001-governancetoken-implements-required-functions-correctly">aMM-001: GovernanceToken implements required functions correctly</a></h3>
+<p>The <code>GovernanceToken</code> contract correctly implements the <code>mint(address,uint256)</code> function, <code>transferOwnership(address)</code>
+function, and <code>totalSupply()</code> view function according to their expected behavior. Specifically:</p>
+<ul>
+<li><code>mint()</code> increases the token balance of the specified account by the specified amount</li>
+<li><code>totalSupply()</code> accurately returns the current total supply of tokens</li>
+<li><code>transferOwnership()</code> transfers ownership to the specified address</li>
+</ul>
+<h4 id="mitigations-45"><a class="header" href="#mitigations-45">Mitigations</a></h4>
+<ul>
+<li>The <code>GovernanceToken</code> contract is part of the same protocol and is subject to the same security audits</li>
+<li>The interface is well-defined in <code>IGovernanceToken.sol</code></li>
+<li>The implementation follows OpenZeppelin's standard patterns</li>
+</ul>
+<h3 id="amm-002-block-timestamp-reliability"><a class="header" href="#amm-002-block-timestamp-reliability">aMM-002: Block timestamp reliability</a></h3>
+<p>The EVM <code>block.timestamp</code> value is sufficiently reliable for enforcing the 365-day minting period. While miners can
+manipulate timestamps within a small range (~15 seconds), this manipulation is negligible compared to the 365-day
+period.</p>
+<h4 id="mitigations-46"><a class="header" href="#mitigations-46">Mitigations</a></h4>
+<ul>
+<li>The 365-day period is long enough that minor timestamp manipulation has no practical impact</li>
+<li>Ethereum consensus rules limit timestamp manipulation</li>
+<li>The time-based restriction is a rate limit, not a precise scheduling mechanism</li>
+</ul>
+<h3 id="amm-003-owner-acts-within-governance-constraints"><a class="header" href="#amm-003-owner-acts-within-governance-constraints">aMM-003: Owner acts within governance constraints</a></h3>
+<p>The contract owner (typically a governance multisig or DAO) will only call <code>mint()</code> and <code>upgrade()</code> functions in
+accordance with governance decisions and the protocol's established rules. The owner will not abuse their authority
+to mint excessive tokens or transfer ownership to malicious addresses.</p>
+<h4 id="mitigations-47"><a class="header" href="#mitigations-47">Mitigations</a></h4>
+<ul>
+<li>Owner is expected to be a governance-controlled address (e.g., multisig or Governor contract)</li>
+<li>All minting operations are subject to the on-chain mint cap and time restrictions</li>
+<li>Ownership transfers are transparent on-chain and subject to community oversight</li>
+<li>The upgrade mechanism allows for replacing a compromised or malicious owner</li>
+</ul>
+<h3 id="amm-004-valid-successor-mintmanager"><a class="header" href="#amm-004-valid-successor-mintmanager">aMM-004: Valid successor MintManager</a></h3>
+<p>When upgrading, the owner will provide a valid, non-zero address for the new <code>MintManager</code> contract. The successor
+contract will be properly implemented and tested before the upgrade is executed.</p>
+<h4 id="mitigations-48"><a class="header" href="#mitigations-48">Mitigations</a></h4>
+<ul>
+<li>Governance processes include review and testing of new MintManager implementations</li>
+<li>The upgrade transaction is subject to governance approval and timelock mechanisms</li>
+<li>The contract enforces a basic check that the successor address is not the zero address</li>
+</ul>
+<h2 id="dependencies-14"><a class="header" href="#dependencies-14">Dependencies</a></h2>
+<p>This specification depends on:</p>
+<ul>
+<li><a href="governance/./gov-token.html">GovernanceToken</a> - The ERC20Votes token that this contract has permission to mint</li>
+</ul>
+<h2 id="invariants-18"><a class="header" href="#invariants-18">Invariants</a></h2>
+<h3 id="imm-001-mint-cap-enforcement"><a class="header" href="#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a></h3>
+<p>No single minting operation can mint more than the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> of the current total token supply.</p>
+<p><strong>Full Description:</strong>
+Any call to <code>mint()</code> MUST enforce that the requested mint amount does not exceed the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a>. This
+ensures that token inflation is bounded and predictable.</p>
+<h4 id="impact-65"><a class="header" href="#impact-65">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is violated, the owner could mint an unlimited number of tokens, leading to:</p>
+<ul>
+<li>Severe token dilution for existing holders</li>
+<li>Loss of governance voting power for existing token holders</li>
+<li>Destruction of the token's economic value</li>
+<li>Complete loss of trust in the protocol's governance system</li>
+</ul>
+<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
+<h3 id="imm-002-time-based-minting-restriction"><a class="header" href="#imm-002-time-based-minting-restriction">iMM-002: Time-based minting restriction</a></h3>
+<p>Minting operations can only occur after the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has elapsed since the previous mint.</p>
+<p><strong>Full Description:</strong>
+Any call to <code>mint()</code> MUST revert if the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has not elapsed since the last mint. This ensures
+that minting operations are rate-limited, preventing rapid inflation even if the owner attempts multiple mints.</p>
+<h4 id="impact-66"><a class="header" href="#impact-66">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is violated, the owner could:</p>
+<ul>
+<li>Mint the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> multiple times in rapid succession</li>
+<li>Cause uncontrolled inflation far exceeding the intended rate</li>
+<li>Undermine the predictability and transparency of the token supply schedule</li>
+<li>Violate the expectations of token holders regarding inflation rates</li>
+</ul>
+<p>Note: This is rated Medium because it requires assumption aMM-003 (owner acts within governance constraints) to fail.
+If aMM-003 does not hold (i.e., the owner is malicious or compromised), this would be elevated to Critical severity.
+The contract enforces this invariant on-chain, providing defense-in-depth against governance failures.</p>
+<h3 id="imm-003-exclusive-minting-authority"><a class="header" href="#imm-003-exclusive-minting-authority">iMM-003: Exclusive minting authority</a></h3>
+<p>Only the contract owner can successfully call the <code>mint()</code> function to create new governance tokens.</p>
+<p><strong>Full Description:</strong>
+The <code>mint()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the address returned by
+<code>owner()</code> can execute minting operations. Any call from a non-owner address MUST revert.</p>
+<h4 id="impact-67"><a class="header" href="#impact-67">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated:</p>
+<ul>
+<li>Unauthorized parties could mint tokens without governance approval</li>
+<li>The entire governance system would be compromised</li>
+<li>Token supply would become unpredictable and uncontrolled</li>
+<li>The economic security of the protocol would be destroyed</li>
+</ul>
+<h3 id="imm-004-ownership-transfer-control"><a class="header" href="#imm-004-ownership-transfer-control">iMM-004: Ownership transfer control</a></h3>
+<p>Only the current contract owner can transfer ownership of the GovernanceToken to a new MintManager.</p>
+<p><strong>Full Description:</strong>
+The <code>upgrade()</code> function MUST be protected by the <code>onlyOwner</code> modifier, ensuring that only the current owner can
+initiate an upgrade to a new <code>MintManager</code> implementation. This prevents unauthorized parties from taking control of
+the token minting authority.</p>
+<h4 id="impact-68"><a class="header" href="#impact-68">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated:</p>
+<ul>
+<li>Attackers could transfer ownership to a malicious contract</li>
+<li>The governance system would lose control over token minting</li>
+<li>A malicious MintManager could mint unlimited tokens or implement harmful policies</li>
+<li>The protocol's governance would be permanently compromised</li>
+</ul>
+<h2 id="function-specifications"><a class="header" href="#function-specifications">Function Specifications</a></h2>
+<h3 id="constructor-3"><a class="header" href="#constructor-3">constructor</a></h3>
+<pre><code class="language-solidity">constructor(address _upgrader, address _governanceToken)
+</code></pre>
+<p>Initializes the <code>MintManager</code> contract with the specified owner and governance token.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_upgrader</code>: The address that will become the owner of this contract</li>
+<li><code>_governanceToken</code>: The address of the <code>GovernanceToken</code> contract that this manager will control</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST call <code>transferOwnership(_upgrader)</code> to set the contract owner</li>
+<li>MUST set <code>governanceToken</code> to the provided <code>_governanceToken</code> address</li>
+<li>MUST initialize <code>mintPermittedAfter</code> to enable immediate first mint while enforcing restrictions on subsequent mints</li>
+<li>MUST NOT validate that <code>_upgrader</code> or <code>_governanceToken</code> are non-zero addresses (caller responsibility)</li>
+</ul>
+<h3 id="mint-1"><a class="header" href="#mint-1">mint</a></h3>
+<pre><code class="language-solidity">function mint(address _account, uint256 _amount) public onlyOwner
+</code></pre>
+<p>Mints new governance tokens to the specified account, subject to time and cap restrictions.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_account</code>: The address that will receive the newly minted tokens</li>
+<li><code>_amount</code>: The number of tokens to mint (in wei, with 18 decimals)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
+<li>MUST revert if the <a href="governance/mint-manager.html#mint-period">Mint Period</a> has not elapsed since the last mint</li>
+<li>MUST revert if <code>_amount</code> exceeds the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a></li>
+<li>MUST set <code>mintPermittedAfter</code> to <code>block.timestamp + MINT_PERIOD</code> to enforce the next <a href="governance/mint-manager.html#mint-period">Mint Period</a></li>
+<li>MUST call <code>governanceToken.mint(_account, _amount)</code> to perform the actual minting</li>
+</ul>
+<h3 id="upgrade-2"><a class="header" href="#upgrade-2">upgrade</a></h3>
+<pre><code class="language-solidity">function upgrade(address _newMintManager) public onlyOwner
+</code></pre>
+<p>Transfers ownership of the <code>GovernanceToken</code> to a new <code>MintManager</code> contract, effectively upgrading the minting system.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_newMintManager</code>: The address of the new <code>MintManager</code> contract that will become the owner of the <code>GovernanceToken</code></li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the contract owner (enforced by <code>onlyOwner</code> modifier)</li>
+<li>MUST revert if <code>_newMintManager == address(0)</code></li>
+<li>MUST call <code>governanceToken.transferOwnership(_newMintManager)</code> to transfer ownership</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="standard-l2-genesis"><a class="header" href="#standard-l2-genesis">Standard L2 Genesis</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#overview">Overview</a></li>
+<li><a href="experimental/standard-l2-genesis.html#chain-constants-on-l1">Chain Constants on L1</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#configtype"><code>ConfigType</code></a></li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#systemconfig"><code>SystemConfig</code></a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#configupdate"><code>ConfigUpdate</code></a></li>
+<li><a href="experimental/standard-l2-genesis.html#initialization">Initialization</a></li>
+<li><a href="experimental/standard-l2-genesis.html#interface">Interface</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#fee-vault-config">Fee Vault Config</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#setbasefeevaultconfig"><code>setBaseFeeVaultConfig</code></a></li>
+<li><a href="experimental/standard-l2-genesis.html#setl1feevaultconfig"><code>setL1FeeVaultConfig</code></a></li>
+<li><a href="experimental/standard-l2-genesis.html#setsequencerfeevaultconfig"><code>setSequencerFeeVaultConfig</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#optimismportal"><code>OptimismPortal</code></a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#interface-1">Interface</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#setconfig"><code>setConfig</code></a></li>
+<li><a href="experimental/standard-l2-genesis.html#upgrade"><code>upgrade</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#superchainconfig">SuperchainConfig</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#superchainconfig-constants">SuperchainConfig Constants</a></li>
+<li><a href="experimental/standard-l2-genesis.html#interface-2">Interface</a></li>
+<li><a href="experimental/standard-l2-genesis.html#initialization-1">Initialization</a></li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#deterministic-genesis-state">Deterministic genesis state</a></li>
+<li><a href="experimental/standard-l2-genesis.html#chain-constants-on-l2">Chain Constants on L2</a></li>
+<li><a href="experimental/standard-l2-genesis.html#predeploys">Predeploys</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#proxyadmin">ProxyAdmin</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#rationale">Rationale</a></li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#l1block">L1Block</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#storage">Storage</a></li>
+<li><a href="experimental/standard-l2-genesis.html#interface-3">Interface</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#setisthmus"><code>setIsthmus</code></a></li>
+<li><a href="experimental/standard-l2-genesis.html#setconfig-1"><code>setConfig</code></a></li>
+<li><a href="experimental/standard-l2-genesis.html#getconfig"><code>getConfig</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#feevault">FeeVault</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#interface-4">Interface</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#config"><code>config</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#l2crossdomainmessenger">L2CrossDomainMessenger</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#interface-5">Interface</a></li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#l2erc721bridge">L2ERC721Bridge</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#interface-6">Interface</a></li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#l2standardbridge">L2StandardBridge</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#interface-7">Interface</a></li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#optimismmintableerc721factory">OptimismMintableERC721Factory</a></li>
+</ul>
+</li>
+<li><a href="experimental/standard-l2-genesis.html#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="experimental/standard-l2-genesis.html#governancetoken">GovernanceToken</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-64"><a class="header" href="#overview-64">Overview</a></h2>
+<p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
+configurability.</p>
+<h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
+<h3 id="configtype"><a class="header" href="#configtype"><code>ConfigType</code></a></h3>
+<p>The <code>ConfigType</code> enum represents configuration that can be modified.</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>GAS_PAYING_TOKEN</code></td><td><code>uint8(0)</code></td><td>Modifies the gas paying token for the chain</td></tr>
+<tr><td><code>BASE_FEE_VAULT_CONFIG</code></td><td><code>uint8(1)</code></td><td>Sets the Fee Vault Config for the <code>BaseFeeVault</code></td></tr>
+<tr><td><code>L1_FEE_VAULT_CONFIG</code></td><td><code>uint8(2)</code></td><td>Sets the Fee Vault Config for the <code>L1FeeVault</code></td></tr>
+<tr><td><code>SEQUENCER_FEE_VAULT_CONFIG</code></td><td><code>uint8(3)</code></td><td>Sets the Fee Vault Config for the <code>SequencerFeeVault</code></td></tr>
+<tr><td><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></td><td><code>uint8(4)</code></td><td>Sets the <code>L1CrossDomainMessenger</code> address</td></tr>
+<tr><td><code>L1_ERC_721_BRIDGE_ADDRESS</code></td><td><code>uint8(5)</code></td><td>Sets the <code>L1ERC721Bridge</code> address</td></tr>
+<tr><td><code>L1_STANDARD_BRIDGE_ADDRESS</code></td><td><code>uint8(6)</code></td><td>Sets the <code>L1StandardBridge</code> address</td></tr>
+<tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>uint8(7)</code></td><td>Sets the chain id of the base chain</td></tr>
+</tbody></table>
+</div>
+<h2 id="systemconfig"><a class="header" href="#systemconfig"><code>SystemConfig</code></a></h2>
+<h3 id="configupdate-4"><a class="header" href="#configupdate-4"><code>ConfigUpdate</code></a></h3>
+<p>The following <code>ConfigUpdate</code> event is defined where the <code>CONFIG_VERSION</code> is <code>uint256(0)</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>BATCHER</code></td><td><code>uint8(0)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the safe chain</td></tr>
+<tr><td><code>FEE_SCALARS</code></td><td><code>uint8(1)</code></td><td><code>(uint256(0x01) &lt;&lt; 248) | (uint256(_blobbasefeeScalar) &lt;&lt; 32) | _basefeeScalar</code></td><td>Modifies the fee scalars</td></tr>
+<tr><td><code>GAS_LIMIT</code></td><td><code>uint8(2)</code></td><td><code>abi.encode(uint64 _gasLimit)</code></td><td>Modifies the L2 gas limit</td></tr>
+<tr><td><code>UNSAFE_BLOCK_SIGNER</code></td><td><code>uint8(3)</code></td><td><code>abi.encode(address)</code></td><td>Modifies the account that is authorized to progress the unsafe chain</td></tr>
+<tr><td><code>EIP_1559_PARAMS</code></td><td><code>uint8(4)</code></td><td><code>uint256(uint64(uint32(_denominator))) &lt;&lt; 32 | uint64(uint32(_elasticity))</code></td><td>Modifies the EIP-1559 denominator and elasticity</td></tr>
+</tbody></table>
+</div>
+<h3 id="initialization-3"><a class="header" href="#initialization-3">Initialization</a></h3>
+<p>The following actions should happen during the initialization of the <code>SystemConfig</code>:</p>
+<ul>
+<li><code>emit ConfigUpdate.BATCHER</code></li>
+<li><code>emit ConfigUpdate.FEE_SCALARS</code></li>
+<li><code>emit ConfigUpdate.GAS_LIMIT</code></li>
+<li><code>emit ConfigUpdate.UNSAFE_BLOCK_SIGNER</code></li>
+<li><code>emit ConfigUpdate.EIP_1559_PARAMS</code></li>
+<li><code>setConfig(SET_GAS_PAYING_TOKEN)</code></li>
+<li><code>setConfig(SET_BASE_FEE_VAULT_CONFIG)</code></li>
+<li><code>setConfig(SET_L1_FEE_VAULT_CONFIG)</code></li>
+<li><code>setConfig(SET_SEQUENCER_FEE_VAULT_CONFIG)</code></li>
+<li><code>setConfig(SET_L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code></li>
+<li><code>setConfig(SET_L1_ERC_721_BRIDGE_ADDRESS)</code></li>
+<li><code>setConfig(SET_L1_STANDARD_BRIDGE_ADDRESS)</code></li>
+<li><code>setConfig(SET_REMOTE_CHAIN_ID)</code></li>
+</ul>
+<p>These actions MAY only be triggered if there is a diff to the value.</p>
+<h3 id="interface-7"><a class="header" href="#interface-7">Interface</a></h3>
+<h4 id="fee-vault-config"><a class="header" href="#fee-vault-config">Fee Vault Config</a></h4>
+<p>For each <code>FeeVault</code>, there is a setter for its config. The arguments to the setter include
+the <code>RECIPIENT</code>, the <code>MIN_WITHDRAWAL_AMOUNT</code> and the <code>WithdrawalNetwork</code>.
+Each of these functions should be <code>public</code> and only callable by the chain governor.</p>
+<p>Each function calls <code>OptimismPortal.setConfig(ConfigType,bytes)</code> with its corresponding <code>ConfigType</code>.</p>
+<h5 id="setbasefeevaultconfig"><a class="header" href="#setbasefeevaultconfig"><code>setBaseFeeVaultConfig</code></a></h5>
+<pre><code class="language-solidity">function setBaseFeeVaultConfig(address,uint256,WithdrawalNetwork)
+</code></pre>
+<h5 id="setl1feevaultconfig"><a class="header" href="#setl1feevaultconfig"><code>setL1FeeVaultConfig</code></a></h5>
+<pre><code class="language-solidity">function setL1FeeVaultConfig(address,uint256,WithdrawalNetwork)
+</code></pre>
+<h5 id="setsequencerfeevaultconfig"><a class="header" href="#setsequencerfeevaultconfig"><code>setSequencerFeeVaultConfig</code></a></h5>
+<pre><code class="language-solidity">function setSequencerFeeVaultConfig(address,uint256,WithdrawalNetwork)
+</code></pre>
+<h2 id="optimismportal-2"><a class="header" href="#optimismportal-2"><code>OptimismPortal</code></a></h2>
+<p>The <code>OptimismPortal</code> is updated to emit a special system <code>TransactionDeposited</code> event.</p>
+<h3 id="interface-8"><a class="header" href="#interface-8">Interface</a></h3>
+<h4 id="setconfig"><a class="header" href="#setconfig"><code>setConfig</code></a></h4>
+<p>The <code>setConfig</code> function MUST only be callable by the <code>SystemConfig</code>. This ensures that the <code>SystemConfig</code>
+is the single source of truth for chain operator ownership.</p>
+<pre><code class="language-solidity">function setConfig(ConfigType,bytes)
+</code></pre>
+<p>This function emits a <code>TransactionDeposited</code> event.</p>
+<pre><code class="language-solidity">event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
+</code></pre>
+<p>The following fields are included:</p>
+<ul>
+<li><code>from</code> is the <code>DEPOSITOR_ACCOUNT</code></li>
+<li><code>to</code> is <code>Predeploys.L1Block</code></li>
+<li><code>version</code> is <code>uint256(0)</code></li>
+<li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
+is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is <code>abi.encodeCall(L1Block.setConfig, (_type, _value))</code></li>
+</ul>
+<h4 id="upgrade-3"><a class="header" href="#upgrade-3"><code>upgrade</code></a></h4>
+<p>The <code>upgrade</code> function MUST only be callable by the <code>UPGRADER</code> role as defined
+in the <a href="experimental/standard-l2-genesis.html#superchainconfig"><code>SuperchainConfig</code></a>.</p>
+<pre><code class="language-solidity">function upgrade(bytes memory _data) external
+</code></pre>
+<p>This function emits a <code>TransactionDeposited</code> event.</p>
+<pre><code class="language-solidity">event TransactionDeposited(address indexed from, address indexed to, uint256 indexed version, bytes opaqueData);
+</code></pre>
+<p>The following fields are included:</p>
+<ul>
+<li><code>from</code> is the <code>DEPOSITOR_ACCOUNT</code></li>
+<li><code>to</code> is <code>Predeploys.ProxyAdmin</code></li>
+<li><code>version</code> is <code>uint256(0)</code></li>
+<li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
+is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is the data passed into <code>upgrade</code>.</li>
+</ul>
+<h2 id="superchainconfig-4"><a class="header" href="#superchainconfig-4">SuperchainConfig</a></h2>
+<p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
+to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
+that call the L2 <code>ProxyAdmin</code>.</p>
+<h3 id="superchainconfig-constants"><a class="header" href="#superchainconfig-constants">SuperchainConfig Constants</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
+<tr><td><code>UPGRADER_SLOT</code></td><td><code>bytes32(uint256(keccak256("superchainConfig.upgrader")) - 1)</code></td><td>Account that can call the L2 <code>ProxyAdmin</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="interface-9"><a class="header" href="#interface-9">Interface</a></h3>
+<pre><code class="language-solidity">function upgrader() public view returns (address)
+</code></pre>
+<h3 id="initialization-4"><a class="header" href="#initialization-4">Initialization</a></h3>
+<p>The <code>upgrader</code> can only be set during initialization.</p>
+<h2 id="deterministic-genesis-state"><a class="header" href="#deterministic-genesis-state">Deterministic genesis state</a></h2>
+<p>This upgrade enables a deterministic L2 genesis state by moving all network
+specific configuration out of the initial L2 genesis state. All network specific
+configuration is sourced from deposit transactions during the initialization
+of the <code>SystemConfig</code>.</p>
+<h2 id="chain-constants-on-l2"><a class="header" href="#chain-constants-on-l2">Chain Constants on L2</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th><th>Definition</th></tr></thead><tbody>
+<tr><td><code>ConfigType</code></td><td><code>uint8</code></td><td>An enum representing the type of config being set</td></tr>
+<tr><td><code>WithdrawalNetwork</code></td><td><code>uint8(0)</code> or <code>uint8(1)</code></td><td><code>0</code> means withdraw to L1, <code>1</code> means withdraw to L2</td></tr>
+<tr><td><code>RECIPIENT</code></td><td><code>address</code></td><td>The account that will receive funds sent out of the <code>FeeVault</code></td></tr>
+<tr><td><code>MIN_WITHDRAWAL_AMOUNT</code></td><td><code>uint256</code></td><td>The minimum amount of native asset held in the <code>FeeVault</code> before withdrawal is authorized</td></tr>
+<tr><td>Fee Vault Config</td><td><code>bytes32</code></td><td><code>bytes32((WithdrawalNetwork &lt;&lt; 248) || uint256(uint88(MIN_WITHDRAWAL_AMOUNT)) || uint256(uint160(RECIPIENT)))</code></td></tr>
+<tr><td><code>BASE_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.basefeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>BaseFeeVault</code></td></tr>
+<tr><td><code>L1_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.l1feevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>L1FeeVault</code></td></tr>
+<tr><td><code>SEQUENCER_FEE_VAULT_CONFIG</code></td><td><code>bytes32(uint256(keccak256("opstack.sequencerfeevaultconfig")) - 1)</code></td><td>The Fee Vault Config for the <code>SequencerFeeVault</code></td></tr>
+<tr><td><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1crossdomainmessengeraddress")) - 1)</code></td><td><code>abi.encode(address(L1CrossDomainMessengerProxy))</code></td></tr>
+<tr><td><code>L1_ERC_721_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1erc721bridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1ERC721BridgeProxy))</code></td></tr>
+<tr><td><code>L1_STANDARD_BRIDGE_ADDRESS</code></td><td><code>bytes32(uint256(keccak256("opstack.l1standardbridgeaddress")) - 1)</code></td><td><code>abi.encode(address(L1StandardBridgeProxy))</code></td></tr>
+<tr><td><code>REMOTE_CHAIN_ID</code></td><td><code>bytes32(uint256(keccak256("opstack.remotechainid")) - 1)</code></td><td>Chain ID of the remote chain</td></tr>
+</tbody></table>
+</div>
+<h2 id="predeploys-4"><a class="header" href="#predeploys-4">Predeploys</a></h2>
+<p>All network specific configuration is moved to a single contract, the <code>L1Block</code> predeploy.
+All predeploys make calls to the <code>L1Block</code> contract to fetch network specific configuration
+rather than reading it from local state.</p>
+<pre class="mermaid">graph LR
+  subgraph L1
+  SystemConfig -- &quot;setConfig(uint8,bytes)&quot; --&gt; OptimismPortal
+  end
+  subgraph L2
+  L1Block
+  BaseFeeVault -- &quot;getConfig(ConfigType.GAS_PAYING_TOKEN)(address,uint256,uint8)&quot; --&gt; L1Block
+  SequencerFeeVault -- &quot;getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
+  L1FeeVault -- &quot;getConfig(ConfigType.L1_FEE_VAULT_CONFIG)(address,uint256,uint8)&quot; --&gt; L1Block
+  L2CrossDomainMessenger -- &quot;getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)(address)&quot; --&gt; L1Block
+  L2StandardBridge -- &quot;getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
+  L2ERC721Bridge -- &quot;getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)(address)&quot; --&gt; L1Block
+  OptimismMintableERC721Factory -- &quot;getConfig(ConfigType.REMOTE_CHAIN_ID)(uint256)&quot; --&gt; L1Block
+  end
+  OptimismPortal -- &quot;setConfig(uint8,bytes)&quot; --&gt; L1Block
+</pre>
+<h3 id="proxyadmin-1"><a class="header" href="#proxyadmin-1">ProxyAdmin</a></h3>
+<p>The <code>ProxyAdmin</code> is updated to have its <code>owner</code> be the <code>DEPOSITOR_ACCOUNT</code>.
+This means that it can be deterministically called by network upgrade transactions
+or by special deposit transactions emitted by the <code>OptimismPortal</code> that assume
+the identity of the <code>DEPOSITOR_ACCOUNT</code>.</p>
+<h4 id="rationale-9"><a class="header" href="#rationale-9">Rationale</a></h4>
+<p>It is much easier to manage the overall roles of the full system under this model.
+The owner of the <code>ProxyAdmin</code> can upgrade any of the predeploys, meaning it can
+write storage slots that correspond to withdrawals. This ensures that only the
+system or a chain governor can issue upgrades to the predeploys.</p>
+<h3 id="l1block-2"><a class="header" href="#l1block-2">L1Block</a></h3>
+<h4 id="storage"><a class="header" href="#storage">Storage</a></h4>
+<p>The following storage slots are defined:</p>
+<ul>
+<li><code>BASE_FEE_VAULT_CONFIG</code></li>
+<li><code>L1_FEE_VAULT_CONFIG</code></li>
+<li><code>SEQUENCER_FEE_VAULT_CONFIG</code></li>
+<li><code>L1_CROSS_DOMAIN_MESSENGER_ADDRESS</code></li>
+<li><code>L1_ERC_721_BRIDGE_ADDRESS</code></li>
+<li><code>L1_STANDARD_BRIDGE_ADDRESS</code></li>
+<li><code>REMOTE_CHAIN_ID</code></li>
+</ul>
+<p>Each slot MUST have a defined <code>ConfigType</code> that authorizes the setting of the storage slot
+via a deposit transaction from the <code>DEPOSITOR_ACCOUNT</code>.</p>
+<h4 id="interface-10"><a class="header" href="#interface-10">Interface</a></h4>
+<h5 id="setisthmus-1"><a class="header" href="#setisthmus-1"><code>setIsthmus</code></a></h5>
+<p>This function is meant to be called once on the activation block of the holocene network upgrade.
+It MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code> once. When it is called, it MUST call
+call each getter for the network specific config and set the returndata into storage.</p>
+<h5 id="setconfig-1"><a class="header" href="#setconfig-1"><code>setConfig</code></a></h5>
+<p>This function MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code>. It modifies the storage directly
+of the <code>L1Block</code> contract. It MUST handle all defined <code>ConfigType</code>s. To ensure a simple ABI, the
+<code>bytes</code> value MUST be abi decoded based on the <code>ConfigType</code>.</p>
+<pre><code class="language-solidity">function setConfig(ConfigType,bytes)
+</code></pre>
+<p>Note that <code>ConfigType</code> is an enum which is an alias for a <code>uint8</code>.</p>
+<h5 id="getconfig"><a class="header" href="#getconfig"><code>getConfig</code></a></h5>
+<p>This function is called by each contract with the appropriate <code>ConfigType</code> to fetch
+the network specific configuration. Using this pattern reduces the ABI of the <code>L1Block</code>
+contract by removing the need for special getters for each piece of config.</p>
+<pre><code class="language-solidity">function getConfig(ConfigType)(bytes)
+</code></pre>
+<p>The caller needs to ABI decode the data into the desired type.</p>
+<h3 id="feevault"><a class="header" href="#feevault">FeeVault</a></h3>
+<p>The following changes apply to each of the <code>BaseFeeVault</code>, the <code>L1FeeVault</code> and the <code>SequencerFeeVault</code>.</p>
+<h4 id="interface-11"><a class="header" href="#interface-11">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract:</p>
+<ul>
+<li><code>recipient()(address)</code></li>
+<li><code>withdrawalNetwork()(WithdrawalNetwork)</code></li>
+<li><code>minWithdrawalAmount()(uint256)</code></li>
+<li><code>withdraw()</code></li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Call</th></tr></thead><tbody>
+<tr><td><code>BaseFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.BASE_FEE_VAULT_CONFIG)</code></td></tr>
+<tr><td><code>SequencerFeeVault</code></td><td><code>L1Block.getConfig(ConfigType.SEQUENCER_FEE_VAULT_CONFIG)</code></td></tr>
+<tr><td><code>L1FeeVault</code></td><td><code>L1Block.getConfig(ConfigType.L1_FEE_VAULT_CONFIG)</code></td></tr>
+</tbody></table>
+</div>
+<h5 id="config"><a class="header" href="#config"><code>config</code></a></h5>
+<p>A new function is added to fetch the full Fee Vault Config.</p>
+<pre><code class="language-solidity">function config()(address,uint256,WithdrawalNetwork)
+</code></pre>
+<h3 id="l2crossdomainmessenger-1"><a class="header" href="#l2crossdomainmessenger-1">L2CrossDomainMessenger</a></h3>
+<h4 id="interface-12"><a class="header" href="#interface-12">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_CROSS_DOMAIN_MESSENGER_ADDRESS)</code>:</p>
+<ul>
+<li><code>otherMessenger()(address)</code></li>
+<li><code>OTHER_MESSENGER()(address)</code></li>
+</ul>
+<h3 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h3>
+<h4 id="interface-13"><a class="header" href="#interface-13">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_ERC721_BRIDGE_ADDRESS)</code>:</p>
+<ul>
+<li><code>otherBridge()(address)</code></li>
+<li><code>OTHER_BRIDGE()(address)</code></li>
+</ul>
+<h3 id="l2standardbridge-2"><a class="header" href="#l2standardbridge-2">L2StandardBridge</a></h3>
+<h4 id="interface-14"><a class="header" href="#interface-14">Interface</a></h4>
+<p>The following functions are updated to read from the <code>L1Block</code> contract by calling <code>L1Block.getConfig(ConfigType.L1_STANDARD_BRIDGE_ADDRESS)</code>:</p>
+<ul>
+<li><code>otherBridge()(address)</code></li>
+<li><code>OTHER_BRIDGE()(address)</code></li>
+</ul>
+<h3 id="optimismmintableerc721factory-1"><a class="header" href="#optimismmintableerc721factory-1">OptimismMintableERC721Factory</a></h3>
+<p>The chain id is no longer read from storage but instead is read from the <code>L1Block</code> contract by calling
+<code>L1Block.getConfig(ConfigType.REMOTE_CHAIN_ID)</code></p>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h3 id="governancetoken"><a class="header" href="#governancetoken">GovernanceToken</a></h3>
+<p>The predeploy defined by <code>GovernanceToken</code> should be an empty account until it is defined by
+a future hardfork.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="alt-da-mode"><a class="header" href="#alt-da-mode">Alt-DA Mode</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="experimental/alt-da.html#overview">Overview</a></li>
+<li><a href="experimental/alt-da.html#input-commitment-submission">Input Commitment Submission</a>
+<ul>
+<li><a href="experimental/alt-da.html#example-commitments">Example Commitments</a></li>
+</ul>
+</li>
+<li><a href="experimental/alt-da.html#da-server">DA Server</a></li>
+<li><a href="experimental/alt-da.html#data-availability-challenge-contract">Data Availability Challenge Contract</a>
+<ul>
+<li><a href="experimental/alt-da.html#parameters">Parameters</a></li>
+</ul>
+</li>
+<li><a href="experimental/alt-da.html#derivation">Derivation</a></li>
+<li><a href="experimental/alt-da.html#fault-proof">Fault Proof</a>
+<ul>
+<li><a href="experimental/alt-da.html#l2-input-commitment"><code>l2-input &lt;commitment&gt;</code></a></li>
+<li><a href="experimental/alt-da.html#l1-challenge-status-commitment-blocknumber"><code>l1-challenge-status &lt;commitment&gt; &lt;blocknumber&gt;</code></a></li>
+</ul>
+</li>
+<li><a href="experimental/alt-da.html#safety-and-finality">Safety and Finality</a></li>
+<li><a href="experimental/alt-da.html#security-considerations">Security Considerations</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
+While it has received initial review from core contributors, it is still undergoing testing,
+and may have bugs or other issues.</p>
+<h2 id="overview-65"><a class="header" href="#overview-65">Overview</a></h2>
+<p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
+The protocol guarantees availability with a challenge contract on L1 where users
+can challenge the availability of input data used to derive the chain.
+Challenging an input commitment means forcing providers to submit the input data on chain
+to prove the data is available during a time period. We call the period during which any party
+can challenge a commitment <code>challenge_window</code> and the period during which any party
+can submit the input data to resolve the challenge <code>resolve_window</code>.
+If a challenge is not resolved by the time <code>resolve_window</code> of L1 blocks have passed,
+chain derivation must be reset, omitting the input data when rederiving therefore causing a reorg.</p>
+<h2 id="input-commitment-submission"><a class="header" href="#input-commitment-submission">Input Commitment Submission</a></h2>
+<p>The <a href="experimental/../protocol/derivation.html#batch-submission">batching</a> and compression of input data remain unchanged. When a batch is ready
+to be submitted to the inbox address, the data is uploaded to the DA storage layer instead, and a
+commitment (specified below) is submitted as the batcher inbox transaction call data.</p>
+<p>Commitment txdata introduces version <code>1</code> to the <a href="experimental/../protocol/derivation.html#batcher-transaction-format">transaction format</a>, in order to interpret
+the txdata as a commitment during the l1 retrieval step of the derivation pipeline:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>tx_data</code></th></tr></thead><tbody>
+<tr><td>1</td><td><code>encoded_commitment</code></td></tr>
+</tbody></table>
+</div>
+<p>The <code>derivationVersion0</code> byte is still prefixed to the input data stored in the DA provider so the frames
+can be decoded downstream.</p>
+<p>Commitments are encoded as <code>commitment_type_byte ++ commitment_bytes</code>, where <code>commitment_bytes</code> depends
+on the <code>commitment_type_byte</code> where [0, 128) are reserved for official implementations:</p>
+<div class="table-wrapper"><table><thead><tr><th><code>commitment_type</code></th><th><code>commitment</code></th></tr></thead><tbody>
+<tr><td>0</td><td><code>keccak256(tx_payload)</code></td></tr>
+<tr><td>1</td><td><code>da-service</code></td></tr>
+</tbody></table>
+</div>
+<p>The <code>da-service</code> commitment is as follows: <code>da_layer_byte ++ payload</code>.
+The DA layer byte must be initially restricted to the range <code>[0, 127)</code>.
+This specification will not apportion DA layer bytes, but different DA layers should coordinate to ensure that the
+DA layer bytes do not conflict. DA Layers can do so in
+<a href="https://github.com/ethereum-optimism/specs/discussions/135">this discussion</a>.
+The payload is a bytestring which is up to the DA layer to specify.
+The DA server should be able to parse the payload, find the data on the DA layer, and verify that the data returned
+from the DA layer matches what was committed to in the payload.</p>
+<p>The batcher SHOULD cap input payloads to the maximum L1 tx size or the input will be skipped
+during derivation. See <a href="experimental/alt-da.html#derivation">derivation section</a> for more details.</p>
+<p>The batcher SHOULD NOT submit a commitment onchain unless input data was successfully stored on the service.
+In addition, a DA provider storage service SHOULD return an error response if it is unable to properly
+store the request payload so as to signal to the batcher to retry.
+Input commitments submitted onchain without proper storage on the DA provider service are subject to
+challenges if the input cannot be retrieved during the challenge window, as detailed in the following section.</p>
+<h3 id="example-commitments"><a class="header" href="#example-commitments">Example Commitments</a></h3>
+<div class="table-wrapper"><table><thead><tr><th><code>version_byte</code></th><th><code>commitment_type</code></th><th><code>da_layer_byte</code></th><th><code>payload</code></th></tr></thead><tbody>
+<tr><td>0</td><td></td><td></td><td>frames</td></tr>
+<tr><td>1</td><td>0</td><td></td><td>keccak_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>0</td><td>eigenda_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>0x0a</td><td>avail_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>0x0c</td><td>celestia_commitment</td></tr>
+<tr><td>1</td><td>1</td><td>...</td><td>altda_commitment</td></tr>
+</tbody></table>
+</div>
+<h2 id="da-server"><a class="header" href="#da-server">DA Server</a></h2>
+<p>Input data is uploaded to the storage layer via plain HTTP calls to the DA server.</p>
+<p>This service is responsible to interacting with the Data Availability Layer (DA layer).
+The layer could be a content addressable storage layer like IPFS or any S3 compatible storage
+or it could a specific DA focused blockchain.
+Content addressed systems like S3 should use the first <code>put/&lt;hex_encoded_commitment&gt;</code>
+because they can pre-compute the commitment.
+Blockchain based DA layers should use <code>put</code> and then submit the returned commitment to L1.
+Because commitments can include the block height or hash, the commitment cannot be computed prior to submitting
+it to the DA Layer.</p>
+<p>Any DA provider can implement the following endpoints to receive and serve input data:</p>
+<ul>
+<li>
+<pre><code class="language-text">Request:
+  POST /put/&lt;hex_encoded_commitment&gt;
+  Content-Type: application/octet-stream
+  Body: &lt;preimage_bytes&gt;
+
+Response:
+  200 OK
+</code></pre>
+</li>
+<li>
+<pre><code class="language-text">Request:
+  POST /put
+  Content-Type: application/octet-stream
+  Body: &lt;preimage_bytes&gt;
+
+Response:
+  200 OK
+  Content-Type: application/octet-stream
+  Body: &lt;hex_encoded_commitment&gt;
+</code></pre>
+</li>
+<li>
+<pre><code class="language-text">Request:
+  GET /get/&lt;hex_encoded_commitment&gt;
+
+Response:
+  200 OK
+  Content-Type: application/octet-stream
+  Body: &lt;preimage_bytes&gt;
+</code></pre>
+</li>
+</ul>
+<h2 id="data-availability-challenge-contract"><a class="header" href="#data-availability-challenge-contract">Data Availability Challenge Contract</a></h2>
+<h3 id="parameters-1"><a class="header" href="#parameters-1">Parameters</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>fixedResolutionCost</td><td><code>uint256</code></td><td>Fixed gas cost of resolving a challenge, set to 72925</td></tr>
+<tr><td>variableResolutionCost</td><td><code>uint256</code></td><td>Upper limit gas cost per byte scaled by precision constant, set to 16640</td></tr>
+<tr><td>variableResolutionCostPrecision</td><td><code>uint256</code></td><td>Precision of the variable resolution cost, set to 1000</td></tr>
+</tbody></table>
+</div><div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>challengeWindow</td><td><code>uint256</code></td><td>Number of L1 blocks whereby a commitment MAY be challenged after it's included onchain</td></tr>
+<tr><td>resolveWindow</td><td><code>uint256</code></td><td>Number of L1 blocks whereby input data SHOULD be submitted onchain after a challenge</td></tr>
+<tr><td>bondSize</td><td><code>uint256</code></td><td>Bond amount in Wei posted by the challenger so that bondSize &gt;= resolveCost</td></tr>
+<tr><td>resolverRefundFactor</td><td><code>uint256</code></td><td>Factor defining the portion of the resolving cost refunded to the resolver</td></tr>
+</tbody></table>
+</div>
+<p>Data availability is guaranteed via a permissionless challenge contract on the L1 chain.
+Users have a set number of L1 blocks (<code>challengeWindow</code>) during which they are able to call
+the <code>challenge</code> method of the contract with the following inputs:</p>
+<p><strong>Note:</strong> Resolving Input Data through the Data Availability Challenge Contract is implemented
+only for <code>type=0 (keccak)</code> commitments. This is because <code>type=1 (da-service)</code> commitments are designed to be
+handled by a DA Server which is responsible for the mapping between commitment and input data.
+Due to this "generic" handling nature, there is currently no on-chain mechanism to verify commitments.</p>
+<pre><code class="language-solidity">function challenge(uint256 challengedBlockNumber, bytes calldata challengedCommitment) external payable
+</code></pre>
+<ul>
+<li>The L1 block number in which it was included.</li>
+<li>Versioned commitment bytes (i.e. <code>0 ++ keccak256(frame.. )</code>)</li>
+</ul>
+<p>Users with access to the input data then have another window of L1 blocks (<code>resolveWindow</code>)
+during which they can submit it as calldata to the chain by calling the <code>resolve</code> method of the contract.
+If the data is not included onchain by the time the resolve window is elapsed, derivation of the L2 canonical chain
+will reorg starting from this first block derived from the challenged input data to the last block derived from the
+L1 block at which it expired. See more details about <a href="experimental/alt-da.html#derivation">Derivation</a> in the following section.</p>
+<pre><code class="language-solidity">function resolve(uint256 challengedBlockNumber, bytes calldata challengedCommitment, bytes calldata resolveData) external
+</code></pre>
+<p>In order to challenge a commitment, users deposit a bond amount where <code>bond &gt;= resolve_tx_gas_cost</code>.
+If the gas cost of resolving the challenge was lower than the bond, the difference is reimbursed to the challenger where
+<code>cost = (fixedResolutionCost + preImageLength * variableResolutionCost / variableResolutionCostPrecision) * gasPrice</code>
+and the rest of the bond is burnt. If the challenge is not resolved in time and expired,
+the bond is returned and can be withdrawn by the challenger or used to challenge another commitment.
+<code>bondSize</code> can be updated by the contract owner similar to <a href="experimental/../protocol/system-config.html">SystemConfig</a> variables.
+See <a href="experimental/alt-da.html#security-considerations">Security Considerations</a> for more details on bond management.</p>
+<p>The state of all challenges can be read from the contract state or by syncing contract events.
+<code>challengeWindow</code> and <code>resolveWindow</code> are constant values that currently cannot be changed
+unless the contract is upgraded. A dynamic window mechanism may be explored in the future.</p>
+<p>Any challenge with a properly encoded commitment, a bond amount associated with the challenger
+address and a block number within the challenge window is accepted by the contract.
+However, a challenge is only valid if the commitment and block number pairing map to a valid commitment
+and its L1 origin block number during derivation. Challenges associated with an illegal commitment
+or block number will be ignored during derivation and have no impact on the state of the chain.</p>
+<p>The contract is deployed behind an upgradable proxy so the address can be hardcoded in the rollup config
+file and does not need to change. A future upgrade can add custom resolver functions to be chosen
+dynamically when a user calls the resolve function to support other alt DA solutions.</p>
+<h2 id="derivation-6"><a class="header" href="#derivation-6">Derivation</a></h2>
+<p>Input data is retrieved during derivation of L2 blocks. The changes to the derivation pipeline
+when using the alt DA source are limited to wrapping the L1 based <code>DataAvailabilitySource</code> step
+in the pipeline with a module that enables pulling the data from the offchain DA source once
+we've extracted the commitment from L1 DA.</p>
+<p>Similarly to L1 based DA, for each L1 block we open a calldata source to retrieve the input commitments
+from the transactions and use each commitment with its l1 origin block number to resolve
+the input data from the storage service. To enable smooth transition between alt-da and rollup mode, any L1 data
+retrieved from the batcher inbox that is not prefixed with <code>txDataVersion1</code> is forwarded downstream
+to be parsed as input frames or skipped as invalid data.</p>
+<p>In addition, we filter events from the DA Challenge contract included in the block
+and sync a local state of challenged input commitments. As the derivation pipeline steps through
+<code>challenge_window + resolve_window</code> amount of L1 blocks, any challenge marked as active
+becomes expired causing a reset of the derivation pipeline.</p>
+<pre><code class="language-solidity">// The status enum of a DA Challenge event
+enum ChallengeStatus {
+    Uninitialized,
+    Active,
+    Resolved,
+    Expired
+}
+
+// DA Challenge event filtered
+event ChallengeStatusChanged(
+  bytes indexed challengedCommitment, uint256 indexed challengedBlockNumber, ChallengeStatus status
+);
+
+</code></pre>
+<p>Derivation can either be driven by new L1 blocks or restarted (reset) from the L1 origin of the last
+L2 safe head known by the execution engine. The model here is of weak subjectivity whereby a new node
+coming onto the network can connect to at least 1 honest peer and sync blocks in the <code>challenge_window</code>
+to reconstruct the same state as the rest of the network. As with <a href="https://eips.ethereum.org/EIPS/eip-4844">EIP-4844</a>,
+applications SHOULD take on the burden of storing historical data relevant to themselves beyond
+the challenge window.</p>
+<p>When stepping through new L1 origin blocks, input data is loaded from the DA storage service.
+If the service responds with a 404 (not found) error, derivation stalls and the DA Manager
+starts a detached traversal of new L1 blocks until:</p>
+<ul>
+<li>An <code>Active</code> challenge event is found, detached L1 traversal continues:
+<ul>
+<li>A <code>Resolved</code> challenge event is found: derivation continues with the input data submitted onchain.</li>
+<li>A high enough L1 block is reached such as <code>latest_l1 - pipeline_l1_origin = resolve_window_size</code>:
+input data is skipped from the derivation output.</li>
+</ul>
+</li>
+<li>Data is never challenged, derivation returns critical error.</li>
+</ul>
+<p>When <a href="experimental/../protocol/derivation.html#resetting-the-pipeline">derivation is reset</a>, the pipeline steps through previously seen L1 origins so that:
+<code>sync_starting_point = latest_l1_block - (challenge_window_size + resolve_window_size + sequencer_window_size)</code>.
+In that case, the DA manager has already synced the state of challenges during the range of L1 blocks traversed
+so the pipeline can either skip commitments with expired challenges and reorg the L2 chain
+or load input data from the resolving transaction calldata.
+In addition, an expired challenge will reorg out <code>[r_start, r_end]</code> L2 blocks so that <code>r_start</code> is the first
+block derived from the expired challenge's input and <code>r_end</code> the last L2 block derived before the pipeline
+was reset.</p>
+<p>Derivation MUST skip input data such as <code>input_data_size &gt; MAX_L1_TX_SIZE</code> where <code>MAX_L1_TX_SIZE</code> is a consensus
+constant of 130672 bytes when <code>commitment_type == 0</code>. Different DA layers can potentially resolve the challenge
+without immediately loading all of the data onto L1 in a single transaction &amp; therefore are exempt from this limit.
+In theory <code>MAX_L1_TX_SIZE</code> could be increased up to <code>(tx_gas_limit - fixed_resolution_cost) / dynamic_resolution_cost</code>
+based on the cost of resolving challenges in the contract implementation however to make challenging accessible
+it is capped based on geth's txMaxSize.
+130672 is chosen as 131072 - 400. Geth rejects transactions from the mempool with a total serialized size over 131072.
+400 bytes are allocated as overhead (signature, to address, metadata).</p>
+<h2 id="fault-proof-2"><a class="header" href="#fault-proof-2">Fault Proof</a></h2>
+<p>The derivation pipeline is integrated with <a href="experimental/../fault-proof/index.html">fault proofs</a> by adding additional hint types to the
+preimage oracle in order to query the input data from the DA provider as well as onchain challenge status.</p>
+<h3 id="l2-input-commitment"><a class="header" href="#l2-input-commitment"><code>l2-input &lt;commitment&gt;</code></a></h3>
+<p>The input data stored on the DA storage for the given <code>&lt;commitment&gt;</code>.</p>
+<h3 id="l1-challenge-status-commitment-blocknumber"><a class="header" href="#l1-challenge-status-commitment-blocknumber"><code>l1-challenge-status &lt;commitment&gt; &lt;blocknumber&gt;</code></a></h3>
+<p>The status of the challenge for the given <code>&lt;commitment&gt;</code> at the given <code>&lt;blocknumber&gt;</code> on the L1
+DataAvailabilityChallenge contract.</p>
+<h2 id="safety-and-finality"><a class="header" href="#safety-and-finality">Safety and Finality</a></h2>
+<p>Similarly to rollup mode, the engine queue labels any new blocks derived from input data with a commitment
+on the L1 chain as “safe”. Although labeled as “safe”, the chain might still reorg in case of a faulty DA provider
+and users must use the “finalized” label for a guarantee that their state cannot revert.</p>
+<p>With Alt-DA mode on, the engine queue does receive finality signals from the L1 RPC AND
+from the DA manager that keeps track of challenges.
+The DA manager maintains an internal state of all the input commitments in the current <code>challengeWindow</code>
+as they are validated by the derivation pipeline.</p>
+<p>The L2 chain can be marked as finalized when the L1 block in which commitments can no longer be invalidated
+becomes finalized. Without Alt-DA Mode, L2 blocks are safe when the batch is on L1. Plasma commitments are
+only "optimistically safe" when the commitment is found in a L1 block. Commitments then become safe
+when that commitment can no longer be invalidated. Then finalization can proceed as normal: when the L1 block
+that an L2 block is derived from becomes finalized, the L2 block can be marked as finalized.</p>
+<p>The engine queue will maintain a longer buffer of L2 blocks waiting for the DA window to expire
+and the L1 block with the commitment to be finalized in order to signal finality.</p>
+<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<p>The Data Availability Challenge contract mitigates DoS vulnerability with a payable bond requirement making
+challenging the availability of a commitment at least as expensive as submitting the data onchain to resolve
+the challenge.
+In addition, the reward is not net positive for the <a href="https://arxiv.org/abs/1809.09044">fisherman</a>
+who forced the release of data by challenging thus preventing money pump vulnerability
+while still making challenging affordable to altruistic fishermen and users who desire to pay
+to guarantee data availability on L1.
+Lastly, if needed a <code>resolver_refund_factor</code> can be dialed up such as <code>resolver_refund_factor * resolving_cost</code>
+is refunded to the resolver (where <code>0 &lt;= refund_factor &lt;= 1</code>) while the rest of the bond is burnt.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="op-contracts-manager"><a class="header" href="#op-contracts-manager">OP Contracts Manager</a></h1>
 <p>The OP Contracts Manager is a contract that deploys the L1 contracts for an OP Stack chain in a single
