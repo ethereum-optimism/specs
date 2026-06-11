@@ -29,7 +29,8 @@ to consume logs that it has produced much more cheaply than providing a block ha
 
 ## Chain ID
 
-All chain IDs used in interop dependency sets must fit within a `uint64`. Software should be designed to support up to uint256 chain IDs.
+All chain IDs used in interop dependency sets must fit within a `uint64`.
+Software should be designed to support up to uint256 chain IDs.
 
 ## Updating the Dependency Set
 
