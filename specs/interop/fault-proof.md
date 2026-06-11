@@ -11,7 +11,6 @@
   - [Local Safe Block Derivation](#local-safe-block-derivation)
   - [Consolidation](#consolidation)
 - [Fault Proof Program State Transition](#fault-proof-program-state-transition)
-- [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -89,7 +88,7 @@ For each step, the valid post state `TransitionState` is calculated by the algor
 - Increment `Step`
 
 Since one step is required per chain in the dependency set, the current dispute game can support a maximum of 127 chains
-in the dependency set. If a greater number of chains are required in the future the number of steps can be increased.
+in the dependency set.
 
 ### Consolidation
 
@@ -105,9 +104,5 @@ are set to the output roots of the validated blocks (including any required repl
 Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
 [fault dispute game][fault-dispute-game]. A single **ABSOLUTE_PRESTATE** continues to be used, with the fault proof
 program identifying the type of step to perform based on the agreed prestate.
-
-## Security Considerations
-
-TODO
 
 [fault-dispute-game]: ../fault-proof/stage-one/fault-dispute-game.md

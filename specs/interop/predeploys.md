@@ -70,7 +70,6 @@
     - [`RelayedERC20`](#relayederc20)
   - [Diagram](#diagram)
   - [Invariants](#invariants-1)
-- [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -484,7 +483,7 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
-    emit RelayedMessage(_source, _nonce, messageHash, keccack256(returnData_));
+    emit RelayedMessage(_source, _nonce, messageHash, keccak256(returnData_));
 }
 ```
 
@@ -582,7 +581,7 @@ event OptimismSuperchainERC20Created(address indexed superchainToken, address in
 
 where `superchainToken` is the address of the newly deployed `OptimismSuperchainERC20`,
 `remoteToken` is the address of the corresponding token in L1,
-and deployer`is the`msg.sender`.
+and `deployer` is the `msg.sender`.
 
 ### Deployment Flow
 
@@ -952,7 +951,3 @@ The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require
 - Bridge Events:
   - `sendERC20()` should emit a `SentERC20` event.
   - `relayERC20()` should emit a `RelayedERC20` event.
-
-## Security Considerations
-
-TODO
