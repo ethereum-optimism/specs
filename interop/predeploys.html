@@ -199,7 +199,6 @@
 <li><a href="#executingmessage-event"><code>ExecutingMessage</code> Event</a></li>
 <li><a href="#reference-implementation">Reference implementation</a></li>
 <li><a href="#deposit-handling">Deposit Handling</a></li>
-<li><a href="#identifier-getters"><code>Identifier</code> Getters</a></li>
 </ul>
 </li>
 <li><a href="#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
@@ -454,7 +453,7 @@ hash comparison.</p>
 
   (bool _isSlotWarm,) = _isWarm(checksum);
 
-  if (!_isSlotWarm) revert NonDeclaredExecutingMessage();
+  if (!_isSlotWarm) revert NotInAccessList();
 
   emit ExecutingMessage(_msgHash, _id);
 }
@@ -493,9 +492,6 @@ from another chain, however <strong>any</strong> event emitted from <strong>any<
 transaction did not declare an access list including the message checksum, as
 <a href="#type-3-checksum">described above</a>. Because deposit transactions do not have access lists,
 all calls to the <code>CrossL2Inbox</code> originating within a deposit transaction will revert.</p>
-<h3 id="identifier-getters"><a class="header" href="#identifier-getters"><code>Identifier</code> Getters</a></h3>
-<p>The <code>Identifier</code> MUST be exposed via <code>public</code> getters so that contracts can call back to authenticate
-properties about the <code>_msg</code>.</p>
 <h2 id="l2tol2crossdomainmessenger"><a class="header" href="#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000023</code></td></tr>
