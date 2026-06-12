@@ -184,7 +184,6 @@
 </ul>
 </li>
 <li><a href="#fault-proof-program-state-transition">Fault Proof Program State Transition</a></li>
-<li><a href="#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
@@ -259,7 +258,7 @@ the <a href="#invalid-state">invalid state</a></li>
 <li>Increment <code>Step</code></li>
 </ul>
 <p>Since one step is required per chain in the dependency set, the current dispute game can support a maximum of 127 chains
-in the dependency set. If a greater number of chains are required in the future the number of steps can be increased.</p>
+in the dependency set.</p>
 <h3 id="consolidation"><a class="header" href="#consolidation">Consolidation</a></h3>
 <p>When the prestate is a <code>TransitionState</code> with <code>Step = 127</code>, the validity of executing messages is checked and any
 local safe blocks found to contain invalid executing messages are replaced with deposit only blocks. This includes
@@ -270,8 +269,6 @@ are set to the output roots of the validated blocks (including any required repl
 <p>Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
 <a href="../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a>. A single <strong>ABSOLUTE_PRESTATE</strong> continues to be used, with the fault proof
 program identifying the type of step to perform based on the agreed prestate.</p>
-<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
-<p>TODO</p>
 
                     </main>
 

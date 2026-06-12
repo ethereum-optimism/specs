@@ -300,7 +300,6 @@
 <li><a href="#invariants-1">Invariants</a></li>
 </ul>
 </li>
-<li><a href="#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
@@ -619,7 +618,7 @@ event along with its corresponding <a href="./messaging.html#message-payload">me
     (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
-    emit RelayedMessage(_source, _nonce, messageHash, keccack256(returnData_));
+    emit RelayedMessage(_source, _nonce, messageHash, keccak256(returnData_));
 }
 </code></pre>
 <p>Upon successful delivery, an event is emitted with useful information. Notably the hash of the <code>returnData</code> that
@@ -686,7 +685,7 @@ This implies that the same L1 token can have multiple <code>OptimismSuperchainER
 </code></pre>
 <p>where <code>superchainToken</code> is the address of the newly deployed <code>OptimismSuperchainERC20</code>,
 <code>remoteToken</code> is the address of the corresponding token in L1,
-and deployer<code>is the</code>msg.sender`.</p>
+and <code>deployer</code> is the <code>msg.sender</code>.</p>
 <h3 id="deployment-flow"><a class="header" href="#deployment-flow">Deployment Flow</a></h3>
 <pre class="mermaid">sequenceDiagram
   participant Alice
@@ -984,8 +983,6 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
-<p>TODO</p>
 
                     </main>
 

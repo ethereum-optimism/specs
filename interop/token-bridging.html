@@ -191,12 +191,6 @@
 <li><a href="#superchaintokenbridge"><code>SuperchainTokenBridge</code></a></li>
 <li><a href="#diagram">Diagram</a></li>
 <li><a href="#implementation">Implementation</a></li>
-<li><a href="#future-considerations">Future Considerations</a>
-<ul>
-<li><a href="#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></li>
-<li><a href="#concatenated-action">Concatenated Action</a></li>
-</ul>
-</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
@@ -324,80 +318,6 @@ function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 
   emit RelayedERC20(address(_token), _from, _to, _amount, _source);
 }
 </code></pre>
-<h2 id="future-considerations"><a class="header" href="#future-considerations">Future Considerations</a></h2>
-<h3 id="cross-chain-transferfrom"><a class="header" href="#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></h3>
-<p>In addition to standard locally initialized bridging,
-it is possible to allow contracts to be cross-chain interoperable.
-For example, a contract in chain A could send pre-approved funds
-from a user in chain B to a contract in chain C.</p>
-<p>For the moment, the standard will not include any specific functionality
-to facilitate such an action and rely on the usage of <code>Permit2</code> like this:</p>
-<pre class="mermaid">---
-config:
-  theme: dark
-  fontSize: 48 
----
-sequenceDiagram
-  participant from
-  participant Intermediate_A as Initiator
-  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
-  participant Inbox as CrossL2Inbox
-  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant Permit2
-  participant SuperERC20_B as SuperchainERC20 (Chain B)
-  participant Recipient as to
-
-  from-&gt;&gt;Intermediate_A: remoteTransferFrom(..., token, to, chainId, msg, signature)
-  Intermediate_A-&gt;&gt;Messenger_A: permit: sendMessage(chainId, message)
-  Inbox-&gt;&gt;Messenger_B: permit: relayMessage()
-  Messenger_B-&gt;&gt;Permit2: permitTransferFrom(msg, sig)
-  Permit2-&gt;&gt;SuperERC20_B: transferFrom(from, to, amount)
-
-</pre>
-<p>If, at some point in the future, these actions were to be included in the standard,
-a possible design could introduce a <code>remoteTransferFrom()</code> function.</p>
-<h3 id="concatenated-action"><a class="header" href="#concatenated-action">Concatenated Action</a></h3>
-<p>It is possible to have an additional input <code>bytes _data</code> in both <code>sendERC20()</code> and <code>relayERC20()</code> that would make an
-additional call to the <code>_to</code> address.
-This feature could be used for cross-chain concatenated actions,
-i.e. bridge funds and then do X.</p>
-<p>This approach has great potential but can also be achieved outside the standard in the following way:</p>
-<pre class="mermaid">---
-config:
-  theme: dark
-  fontSize: 48 
----
-sequenceDiagram
-  participant from
-  participant Intermediate_A as intermediate A
-  participant L2SBA as L2StandardBridge (Chain A)
-  participant SuperERC20_A as SuperchainERC20 (Chain A)
-  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
-  participant Inbox as CrossL2Inbox
-  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as L2StandardBridge (Chain B)
-  participant SuperERC20_B as SuperchainERC20 (Chain B)
-
-  from-&gt;&gt;Intermediate_A: sendWithData(data)
-  Intermediate_A-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
-  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount, sender)
-  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
-  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
-  Intermediate_A-&gt;&gt;Messenger_A: sendMessage(chainId, to, data)
-  Inbox-&gt;&gt;Messenger_B: relayMessage()
-  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount, sender)
-  Inbox-&gt;&gt;Messenger_B: relayMessage(): call
-  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
-  Messenger_B-&gt;&gt;to: call(data)
-</pre>
-<p>Adding the call to the standard would remove the dependence on the sequencer for
-proper transaction ordering at the sequencer level.
-However, it would also introduce additional risks for cross-chain fund transfers.
-Specifically, an incorrectly formatted call could burn funds on the initiating chain,
-but revert on the destination chain, and could never be successfully replayed.</p>
 
                     </main>
 

@@ -207,8 +207,7 @@ based on its level of safety, taking into account their risk profile and persona
 <p>Inputs correspond to the inputs to the state transition function while, outputs correspond to the side
 effects of the state transition function.</p>
 <p>Anything before <code>safe</code> technically uses a "preconfirmation" based security model which is not part
-of consensus. While useful to have definitions of the default meanings of these terms, they are
-technically policy and may be changed in the future.</p>
+of consensus. These definitions are policy rather than consensus rules.</p>
 <p>The <code>unsafe</code> label has the lowest latency while the <code>finalized</code> label has the highest latency.
 A set of invariants must be held true before an input or an output can be promoted to the next
 label, starting at <code>unsafe</code>.</p>
@@ -260,7 +259,7 @@ in a way where all of the data has been published to the data availability layer
 if the data is reorganized, then validators will be slashed.</p>
 <h3 id="honest-verifier"><a class="header" href="#honest-verifier">Honest Verifier</a></h3>
 <p>The honest verifier follows a naive verification algorithm that is similar
-to the block building code that the <a href="./sequencer.html#direct-dependency-confirmation">sequencer</a>
+to the block building code that the <a href="./sequencer.html#executing-message-validation">sequencer</a>
 follows. The main difference is that the validity of included executing
 messages is verified, instead of verifying possible executing messages before
 inclusion.</p>

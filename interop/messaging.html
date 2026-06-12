@@ -266,8 +266,8 @@ such that it can be distinguished from other duplicate messages within the same 
 <p>An executing message is represented by the <a href="./predeploys.html#executingmessage-event">ExecutingMessage event</a> that is emitted by
 the <code>CrossL2Inbox</code> predeploy. Contracts can introduce their own public
 entrypoints and solely trigger validation of the cross chain message with <a href="./predeploys.html#validatemessage">validateMessage</a>.</p>
-<p>We highly encourage the use of the <a href="./predeploys.html#l2tol2crossdomainmessenger"><code>L2toL2CrossDomainMessenger</code></a>
-over a custom messsage-executor contract.</p>
+<p>The <a href="./predeploys.html#l2tol2crossdomainmessenger"><code>L2toL2CrossDomainMessenger</code></a> is the recommended entrypoint
+for cross chain messaging, rather than a custom message-executor contract.</p>
 <p>All of the information required to satisfy the invariants MUST be included in this event.</p>
 <p>Both the block builder and the verifier use this information to ensure that all system invariants are held.</p>
 <p>The executing message is verified by checking if there is an existing initiating-message
@@ -277,13 +277,13 @@ do not count as executing messages.</p>
 <h2 id="messaging-invariants"><a class="header" href="#messaging-invariants">Messaging Invariants</a></h2>
 <ul>
 <li><a href="#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the initiating message MUST
-be less than or equal to the timestamp of the executing message as well as greater than the Interop Start Timestamp.</li>
+be less than or equal to the timestamp of the executing message as well as greater than the Lagoon activation timestamp.</li>
 <li><a href="#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
 <li><a href="#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
 message MUST be lower than the initiating message timestamp (as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
-<p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Interop upgrade timestamp
+<p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Lagoon activation timestamp
 and cannot come from a future block than the block of its executing message.</p>
 <p>This means that messages can only be initiated in blocks that come after the <a href="./derivation.html#activation-block">activation block</a>.
 Contract log events in the activation block are not valid initiating messages.</p>
@@ -299,9 +299,8 @@ this is verified with rules complementary to the timestamp invariant.</p>
 pipeline to know which chain to source the initiating message from. This also allows for chain operators
 to explicitly define the set of chains that they depend on.</p>
 <h3 id="message-expiry-invariant"><a class="header" href="#message-expiry-invariant">Message Expiry Invariant</a></h3>
-<p>Note: Message Expiry as property of the protocol is in active discussion.
-It helps set a strict bound on total messaging activity to support, but also limits use-cases.
-This trade-off is in review. This invariant may be ignored in initial interop testnets.</p>
+<p>Message expiry sets a strict bound on the total messaging activity the protocol must support,
+at the cost of limiting some use-cases.</p>
 <p>The expiry invariant invalidates inclusion of any executing message with
 <code>id.timestamp + EXPIRY_TIME &lt; executing_block.timestamp</code> where:</p>
 <ul>

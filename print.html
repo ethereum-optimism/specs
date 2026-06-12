@@ -16378,7 +16378,6 @@ Relatively trustless interop is possible between rollups by using L1 Ethereum as
 withdrawn from one chain to L1 and then deposited to another chain. The goal of OP Stack native interop
 is to enable cross chain messaging at a much lower latency than going through L1. Low latency interoperability
 allows for a horizontally scalable blockchain network.</p>
-<p>Note: this document references an "interop network upgrade" as a temporary name.</p>
 <div class="table-wrapper"><table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>
 <tr><td>Source Chain</td><td>A blockchain that includes an initiating message</td></tr>
 <tr><td>Destination Chain</td><td>A blockchain that includes an executing message</td></tr>
@@ -16426,11 +16425,6 @@ depth.</p>
 <ul>
 <li><a href="interop/dependency-set.html#chain-id">Chain ID</a></li>
 <li><a href="interop/dependency-set.html#updating-the-dependency-set">Updating the Dependency Set</a></li>
-<li><a href="interop/dependency-set.html#future-considerations">Future Considerations</a>
-<ul>
-<li><a href="interop/dependency-set.html#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></li>
-</ul>
-</li>
 <li><a href="interop/dependency-set.html#security-considerations">Security Considerations</a>
 <ul>
 <li><a href="interop/dependency-set.html#dependency-set-size">Dependency Set Size</a></li>
@@ -16451,21 +16445,11 @@ can accept initiating messages from any other chain in the dependency set, resul
 <p>The chain id of the local chain MUST be considered as part of its own dependency set. This allows a chain
 to consume logs that it has produced much more cheaply than providing a block hash proof.</p>
 <h2 id="chain-id-1"><a class="header" href="#chain-id-1">Chain ID</a></h2>
-<p>The concept of a chain id was introduced in <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> to prevent
-replay attacks between chains. This EIP does not specify the max size of a chain id, although
-<a href="https://eips.ethereum.org/EIPS/eip-2294">EIP-2294</a> attempts to add a maximum size. Since this EIP is
-stagnant, all representations of chain ids MUST be the <code>uint256</code> type.</p>
-<p>In the future, OP Stack chains reserve the right to use up to 32 bytes to represent a chain id. The
-configuration of the chain should deterministically map to a chain id and with careful architecture
-changes, all possible OP Stack chains in the superchain will be able to exist counterfactually.</p>
-<p>It is a known issue that not all software in the Ethereum ecosystem can handle 32 byte chain ids.</p>
+<p>All chain IDs used in interop dependency sets must fit within a <code>uint64</code>.
+Software should be designed to support up to uint256 chain IDs.</p>
 <h2 id="updating-the-dependency-set"><a class="header" href="#updating-the-dependency-set">Updating the Dependency Set</a></h2>
 <p>The dependency set is managed in the client software. Adding a chain to the dependency set is
 considered an upgrade to the network. It is not possible to remove chains from the dependency set.</p>
-<h2 id="future-considerations"><a class="header" href="#future-considerations">Future Considerations</a></h2>
-<h3 id="layer-1-as-part-of-the-dependency-set"><a class="header" href="#layer-1-as-part-of-the-dependency-set">Layer 1 as Part of the Dependency Set</a></h3>
-<p>The layer one MAY be part of the dependency set in the future. This means that any event
-created on layer one is consumable on layer two.</p>
 <h2 id="security-considerations-6"><a class="header" href="#security-considerations-6">Security Considerations</a></h2>
 <h3 id="dependency-set-size"><a class="header" href="#dependency-set-size">Dependency Set Size</a></h3>
 <p>It becomes increasingly expensive to fully validate the full cluster as the size of the dependency
@@ -16569,8 +16553,8 @@ such that it can be distinguished from other duplicate messages within the same 
 <p>An executing message is represented by the <a href="interop/./predeploys.html#executingmessage-event">ExecutingMessage event</a> that is emitted by
 the <code>CrossL2Inbox</code> predeploy. Contracts can introduce their own public
 entrypoints and solely trigger validation of the cross chain message with <a href="interop/./predeploys.html#validatemessage">validateMessage</a>.</p>
-<p>We highly encourage the use of the <a href="interop/./predeploys.html#l2tol2crossdomainmessenger"><code>L2toL2CrossDomainMessenger</code></a>
-over a custom messsage-executor contract.</p>
+<p>The <a href="interop/./predeploys.html#l2tol2crossdomainmessenger"><code>L2toL2CrossDomainMessenger</code></a> is the recommended entrypoint
+for cross chain messaging, rather than a custom message-executor contract.</p>
 <p>All of the information required to satisfy the invariants MUST be included in this event.</p>
 <p>Both the block builder and the verifier use this information to ensure that all system invariants are held.</p>
 <p>The executing message is verified by checking if there is an existing initiating-message
@@ -16580,13 +16564,13 @@ do not count as executing messages.</p>
 <h2 id="messaging-invariants"><a class="header" href="#messaging-invariants">Messaging Invariants</a></h2>
 <ul>
 <li><a href="interop/messaging.html#timestamp-invariant">Timestamp Invariant</a>: The timestamp at the time of inclusion of the initiating message MUST
-be less than or equal to the timestamp of the executing message as well as greater than the Interop Start Timestamp.</li>
+be less than or equal to the timestamp of the executing message as well as greater than the Lagoon activation timestamp.</li>
 <li><a href="interop/messaging.html#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
 <li><a href="interop/messaging.html#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
 message MUST be lower than the initiating message timestamp (as defined in the <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
-<p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Interop upgrade timestamp
+<p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Lagoon activation timestamp
 and cannot come from a future block than the block of its executing message.</p>
 <p>This means that messages can only be initiated in blocks that come after the <a href="interop/./derivation.html#activation-block">activation block</a>.
 Contract log events in the activation block are not valid initiating messages.</p>
@@ -16602,9 +16586,8 @@ this is verified with rules complementary to the timestamp invariant.</p>
 pipeline to know which chain to source the initiating message from. This also allows for chain operators
 to explicitly define the set of chains that they depend on.</p>
 <h3 id="message-expiry-invariant"><a class="header" href="#message-expiry-invariant">Message Expiry Invariant</a></h3>
-<p>Note: Message Expiry as property of the protocol is in active discussion.
-It helps set a strict bound on total messaging activity to support, but also limits use-cases.
-This trade-off is in review. This invariant may be ignored in initial interop testnets.</p>
+<p>Message expiry sets a strict bound on the total messaging activity the protocol must support,
+at the cost of limiting some use-cases.</p>
 <p>The expiry invariant invalidates inclusion of any executing message with
 <code>id.timestamp + EXPIRY_TIME &lt; executing_block.timestamp</code> where:</p>
 <ul>
@@ -16828,7 +16811,6 @@ the verifier relies on the verification work of the nodes that it sources its di
 <li><a href="interop/predeploys.html#invariants-1">Invariants</a></li>
 </ul>
 </li>
-<li><a href="interop/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
@@ -17147,7 +17129,7 @@ event along with its corresponding <a href="interop/./messaging.html#message-pay
     (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
-    emit RelayedMessage(_source, _nonce, messageHash, keccack256(returnData_));
+    emit RelayedMessage(_source, _nonce, messageHash, keccak256(returnData_));
 }
 </code></pre>
 <p>Upon successful delivery, an event is emitted with useful information. Notably the hash of the <code>returnData</code> that
@@ -17214,7 +17196,7 @@ This implies that the same L1 token can have multiple <code>OptimismSuperchainER
 </code></pre>
 <p>where <code>superchainToken</code> is the address of the newly deployed <code>OptimismSuperchainERC20</code>,
 <code>remoteToken</code> is the address of the corresponding token in L1,
-and deployer<code>is the</code>msg.sender`.</p>
+and <code>deployer</code> is the <code>msg.sender</code>.</p>
 <h3 id="deployment-flow"><a class="header" href="#deployment-flow">Deployment Flow</a></h3>
 <pre class="mermaid">sequenceDiagram
   participant Alice
@@ -17512,8 +17494,6 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </ul>
 </li>
 </ul>
-<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
-<p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="sequencer"><a class="header" href="#sequencer">Sequencer</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -17606,7 +17586,7 @@ for log in receipt.logs:
 
       # ensure the contents of the log are correct
       log = encode(filtered[0])
-      if message_hash != keccack256(log):
+      if message_hash != keccak256(log):
         return False
 
       block = eth.get_block_by_number(id.blocknumber)
@@ -17625,7 +17605,7 @@ messages will need to recursively check that all dependencies are safe.</p>
 <p>A shared sequencer can be built if the block builder is able to build the next canonical block
 for multiple chains. This can enable synchronous composability where transactions are able
 to execute across multiple chains at the same timestamp.</p>
-<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
+<h2 id="security-considerations-8"><a class="header" href="#security-considerations-8">Security Considerations</a></h2>
 <h3 id="depending-on-preconfirmations"><a class="header" href="#depending-on-preconfirmations">Depending on Preconfirmations</a></h3>
 <p>If a local sequencer is accepting inbound cross chain transactions where the initiating message only has preconfirmation
 levels of security, this means that the remote sequencer can trigger a reorg on the local chain.</p>
@@ -17668,8 +17648,7 @@ based on its level of safety, taking into account their risk profile and persona
 <p>Inputs correspond to the inputs to the state transition function while, outputs correspond to the side
 effects of the state transition function.</p>
 <p>Anything before <code>safe</code> technically uses a "preconfirmation" based security model which is not part
-of consensus. While useful to have definitions of the default meanings of these terms, they are
-technically policy and may be changed in the future.</p>
+of consensus. These definitions are policy rather than consensus rules.</p>
 <p>The <code>unsafe</code> label has the lowest latency while the <code>finalized</code> label has the highest latency.
 A set of invariants must be held true before an input or an output can be promoted to the next
 label, starting at <code>unsafe</code>.</p>
@@ -17721,11 +17700,11 @@ in a way where all of the data has been published to the data availability layer
 if the data is reorganized, then validators will be slashed.</p>
 <h3 id="honest-verifier"><a class="header" href="#honest-verifier">Honest Verifier</a></h3>
 <p>The honest verifier follows a naive verification algorithm that is similar
-to the block building code that the <a href="interop/./sequencer.html#direct-dependency-confirmation">sequencer</a>
+to the block building code that the <a href="interop/./sequencer.html#executing-message-validation">sequencer</a>
 follows. The main difference is that the validity of included executing
 messages is verified, instead of verifying possible executing messages before
 inclusion.</p>
-<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
+<h2 id="security-considerations-9"><a class="header" href="#security-considerations-9">Security Considerations</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="super-root-1"><a class="header" href="#super-root-1">Super Root</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -17894,7 +17873,6 @@ do not produce errors; they result in the chain being excluded from
 </ul>
 </li>
 <li><a href="interop/fault-proof.html#fault-proof-program-state-transition">Fault Proof Program State Transition</a></li>
-<li><a href="interop/fault-proof.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
@@ -17969,7 +17947,7 @@ the <a href="interop/fault-proof.html#invalid-state">invalid state</a></li>
 <li>Increment <code>Step</code></li>
 </ul>
 <p>Since one step is required per chain in the dependency set, the current dispute game can support a maximum of 127 chains
-in the dependency set. If a greater number of chains are required in the future the number of steps can be increased.</p>
+in the dependency set.</p>
 <h3 id="consolidation"><a class="header" href="#consolidation">Consolidation</a></h3>
 <p>When the prestate is a <code>TransitionState</code> with <code>Step = 127</code>, the validity of executing messages is checked and any
 local safe blocks found to contain invalid executing messages are replaced with deposit only blocks. This includes
@@ -17980,8 +17958,6 @@ are set to the output roots of the validated blocks (including any required repl
 <p>Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
 <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a>. A single <strong>ABSOLUTE_PRESTATE</strong> continues to be used, with the fault proof
 program identifying the type of step to perform based on the agreed prestate.</p>
-<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
-<p>TODO</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="token-bridging"><a class="header" href="#token-bridging">Token Bridging</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -18005,12 +17981,6 @@ program identifying the type of step to perform based on the agreed prestate.</p
 <li><a href="interop/token-bridging.html#superchaintokenbridge"><code>SuperchainTokenBridge</code></a></li>
 <li><a href="interop/token-bridging.html#diagram">Diagram</a></li>
 <li><a href="interop/token-bridging.html#implementation">Implementation</a></li>
-<li><a href="interop/token-bridging.html#future-considerations">Future Considerations</a>
-<ul>
-<li><a href="interop/token-bridging.html#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></li>
-<li><a href="interop/token-bridging.html#concatenated-action">Concatenated Action</a></li>
-</ul>
-</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
@@ -18138,80 +18108,6 @@ function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 
   emit RelayedERC20(address(_token), _from, _to, _amount, _source);
 }
 </code></pre>
-<h2 id="future-considerations-1"><a class="header" href="#future-considerations-1">Future Considerations</a></h2>
-<h3 id="cross-chain-transferfrom"><a class="header" href="#cross-chain-transferfrom">Cross Chain <code>transferFrom</code></a></h3>
-<p>In addition to standard locally initialized bridging,
-it is possible to allow contracts to be cross-chain interoperable.
-For example, a contract in chain A could send pre-approved funds
-from a user in chain B to a contract in chain C.</p>
-<p>For the moment, the standard will not include any specific functionality
-to facilitate such an action and rely on the usage of <code>Permit2</code> like this:</p>
-<pre class="mermaid">---
-config:
-  theme: dark
-  fontSize: 48 
----
-sequenceDiagram
-  participant from
-  participant Intermediate_A as Initiator
-  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
-  participant Inbox as CrossL2Inbox
-  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant Permit2
-  participant SuperERC20_B as SuperchainERC20 (Chain B)
-  participant Recipient as to
-
-  from-&gt;&gt;Intermediate_A: remoteTransferFrom(..., token, to, chainId, msg, signature)
-  Intermediate_A-&gt;&gt;Messenger_A: permit: sendMessage(chainId, message)
-  Inbox-&gt;&gt;Messenger_B: permit: relayMessage()
-  Messenger_B-&gt;&gt;Permit2: permitTransferFrom(msg, sig)
-  Permit2-&gt;&gt;SuperERC20_B: transferFrom(from, to, amount)
-
-</pre>
-<p>If, at some point in the future, these actions were to be included in the standard,
-a possible design could introduce a <code>remoteTransferFrom()</code> function.</p>
-<h3 id="concatenated-action"><a class="header" href="#concatenated-action">Concatenated Action</a></h3>
-<p>It is possible to have an additional input <code>bytes _data</code> in both <code>sendERC20()</code> and <code>relayERC20()</code> that would make an
-additional call to the <code>_to</code> address.
-This feature could be used for cross-chain concatenated actions,
-i.e. bridge funds and then do X.</p>
-<p>This approach has great potential but can also be achieved outside the standard in the following way:</p>
-<pre class="mermaid">---
-config:
-  theme: dark
-  fontSize: 48 
----
-sequenceDiagram
-  participant from
-  participant Intermediate_A as intermediate A
-  participant L2SBA as L2StandardBridge (Chain A)
-  participant SuperERC20_A as SuperchainERC20 (Chain A)
-  participant Messenger_A as L2ToL2CrossDomainMessenger (Chain A)
-  participant Inbox as CrossL2Inbox
-  participant Messenger_B as L2ToL2CrossDomainMessenger (Chain B)
-  participant L2SBB as L2StandardBridge (Chain B)
-  participant SuperERC20_B as SuperchainERC20 (Chain B)
-
-  from-&gt;&gt;Intermediate_A: sendWithData(data)
-  Intermediate_A-&gt;&gt;L2SBA: sendERC20To(tokenAddr, to, amount, chainID)
-  L2SBA-&gt;&gt;SuperERC20_A: crosschainBurn(from, amount)
-  SuperERC20_A--&gt;SuperERC20_A: emit CrosschainBurn(from, amount, sender)
-  L2SBA-&gt;&gt;Messenger_A: sendMessage(chainId, message)
-  L2SBA--&gt;L2SBA: emit SentERC20(tokenAddr, from, to, amount, destination)
-  Intermediate_A-&gt;&gt;Messenger_A: sendMessage(chainId, to, data)
-  Inbox-&gt;&gt;Messenger_B: relayMessage()
-  Messenger_B-&gt;&gt;L2SBB: relayERC20(tokenAddr, from, to, amount)
-  L2SBB-&gt;&gt;SuperERC20_B: crosschainMint(to, amount)
-  SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount, sender)
-  Inbox-&gt;&gt;Messenger_B: relayMessage(): call
-  L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
-  Messenger_B-&gt;&gt;to: call(data)
-</pre>
-<p>Adding the call to the standard would remove the dependence on the sequencer for
-proper transaction ordering at the sequencer level.
-However, it would also introduce additional risks for cross-chain fund transfers.
-Specifically, an incorrectly formatted call could burn funds on the initiating chain,
-but revert on the destination chain, and could never be successfully replayed.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="ethliquidity-1"><a class="header" href="#ethliquidity-1">ETHLiquidity</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -18687,8 +18583,8 @@ block height. This guarantees progression of the chain, ensuring that an infinit
 the same block in the proof system is not possible.</p>
 <h2 id="activation-block"><a class="header" href="#activation-block">Activation Block</a></h2>
 <p>The activation block is the first block that has a timestamp higher or equal to the
-interop network upgrade timestamp.
-The activation block timestamp may not exactly match the upgrade timestamp.</p>
+Lagoon activation timestamp.
+The activation block timestamp may not exactly match the Lagoon activation timestamp.</p>
 <p>The genesis block is not technically considered an activation-block, as forks are already active.
 However, the genesis block does not contain transactions, and thus also meets the activation criteria.</p>
 <p>The activation block has several special properties and constraints:</p>
@@ -18713,7 +18609,7 @@ using <a href="interop/../protocol/holocene/derivation.html#engine-queue">Holoce
 The replacement block has the same attributes, except the transaction list is trimmed
 to include only deposit transactions.</p>
 <h2 id="network-upgrade-transactions-1"><a class="header" href="#network-upgrade-transactions-1">Network Upgrade Transactions</a></h2>
-<p>The interop network upgrade timestamp defines the timestamp at which all functionality in this document is considered
+<p>The Lagoon activation timestamp defines the timestamp at which all functionality in this document is considered
 the consensus rules for an OP Stack based network.</p>
 <p>The upgrade transaction details below are based on a nightly release at commit
 hash <code>71c460ec7c7c05791ddd841b97bcb664a1f0c753</code>, and will be updated once a
@@ -18797,7 +18693,7 @@ In order to upgrade successfully the following invariant MUST be maintained:</p>
 this mean every upgrading chain MUST have their L2GasLimit set to greater than
 <code>24_320_000</code>.</p>
 <h2 id="crossl2inboxproxy-initialization"><a class="header" href="#crossl2inboxproxy-initialization">CrossL2InboxProxy Initialization</a></h2>
-<p>On the first block at or after the interop  <a href="interop/derivation.html#activation-block">activation block</a>, where the current chain is in a
+<p>On the first block at or after the <a href="interop/derivation.html#activation-block">activation block</a>, where the current chain is in a
 dependency set with two or more active chains, a deposit transaction based upgrade transaction is deterministically
 generated by the derivation pipeline:</p>
 <h3 id="crossl2inbox-deployment"><a class="header" href="#crossl2inbox-deployment">CrossL2Inbox Deployment</a></h3>
@@ -18847,7 +18743,7 @@ cast k $(jq -r ".deployedBytecode.object" packages/contracts-bedrock/forge-artif
 </code></pre>
 <h3 id="crossl2inbox-proxy-update"><a class="header" href="#crossl2inbox-proxy-update">CrossL2Inbox Proxy Update</a></h3>
 <p>This transaction updates the CrossL2Inbox Proxy ERC-1967
-implementation slot to point to the CrossL2Inbox deployment deployed at the interop activation block.</p>
+implementation slot to point to the CrossL2Inbox deployment deployed at the activation block.</p>
 <p>A deposit transaction is derived with the following attributes:</p>
 <ul>
 <li><code>from</code>: <code>0x0000000000000000000000000000000000000000</code></li>
@@ -18877,13 +18773,12 @@ of <code>1_000_000</code> even allowing for the gas used by the
 <tr><td><code>EXPIRY_WINDOW</code></td><td><code>604800 secs</code> (7 days)</td></tr>
 </tbody></table>
 </div>
-<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
+<h2 id="security-considerations-10"><a class="header" href="#security-considerations-10">Security Considerations</a></h2>
 <h3 id="depositing-an-executing-message"><a class="header" href="#depositing-an-executing-message">Depositing an Executing Message</a></h3>
 <p>Deposit transactions (force inclusion transactions) give censorship resistance to layer two networks.
 If it were possible to deposit an invalid executing message, this would force the sequencer to reorg. It would
 be fairly cheap to continuously deposit invalid executing messages through L1 and cause L2 liveness
-instability, therefore deposits are prevented from triggering executing messages.
-A future upgrade may enable deposits to trigger executing messages.</p>
+instability, therefore deposits are prevented from triggering executing messages.</p>
 <h3 id="expiry-window-1"><a class="header" href="#expiry-window-1">Expiry Window</a></h3>
 <p>The expiry window ensures that the proof can execute in a reasonable amount of time. <a href="https://eips.ethereum.org/EIPS/eip-2935"><code>EIP-2935</code></a> introduced
 the capability to traverse history with sub-linear complexity, however deep lookups remain expensive. App developers and
@@ -18939,7 +18834,7 @@ and does not get stuck in the transaction pool.</p>
 should be maintained in the transaction pool.
 This leaves sufficient gas for the L1 attributes transaction (under 45,000 gas),
 the new deposit-context closing transaction (under 36,000 gas), and margin for error / change.</p>
-<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
+<h2 id="security-considerations-11"><a class="header" href="#security-considerations-11">Security Considerations</a></h2>
 <h3 id="mempool-denial-of-service"><a class="header" href="#mempool-denial-of-service">Mempool Denial of Service</a></h3>
 <p>Since the validation of the executing message relies on a remote RPC request, this introduces a denial of
 service attack vector. The cost of network access is magnitudes larger than in memory validity checks.
@@ -19995,7 +19890,7 @@ contract by removing the need for special getters for each piece of config.</p>
 <h3 id="optimismmintableerc721factory-1"><a class="header" href="#optimismmintableerc721factory-1">OptimismMintableERC721Factory</a></h3>
 <p>The chain id is no longer read from storage but instead is read from the <code>L1Block</code> contract by calling
 <code>L1Block.getConfig(ConfigType.REMOTE_CHAIN_ID)</code></p>
-<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
+<h2 id="security-considerations-12"><a class="header" href="#security-considerations-12">Security Considerations</a></h2>
 <h3 id="governancetoken"><a class="header" href="#governancetoken">GovernanceToken</a></h3>
 <p>The predeploy defined by <code>GovernanceToken</code> should be an empty account until it is defined by
 a future hardfork.</p>
@@ -20268,7 +20163,7 @@ when that commitment can no longer be invalidated. Then finalization can proceed
 that an L2 block is derived from becomes finalized, the L2 block can be marked as finalized.</p>
 <p>The engine queue will maintain a longer buffer of L2 blocks waiting for the DA window to expire
 and the L1 block with the commitment to be finalized in order to signal finality.</p>
-<h2 id="security-considerations-15"><a class="header" href="#security-considerations-15">Security Considerations</a></h2>
+<h2 id="security-considerations-13"><a class="header" href="#security-considerations-13">Security Considerations</a></h2>
 <p>The Data Availability Challenge contract mitigates DoS vulnerability with a payable bond requirement making
 challenging the availability of a commitment at least as expensive as submitting the data onchain to resolve
 the challenge.
@@ -20570,7 +20465,7 @@ arguments, unless otherwise specified in the table below.</li>
 <tr><td>l2ChainId</td><td>uint256</td><td>Chain ID of the L2 network</td><td>Copied from existing <code>PermissionedGame</code></td></tr>
 </tbody></table>
 </div>
-<h2 id="security-considerations-16"><a class="header" href="#security-considerations-16">Security Considerations</a></h2>
+<h2 id="security-considerations-14"><a class="header" href="#security-considerations-14">Security Considerations</a></h2>
 <h3 id="chain-id-source-of-truth"><a class="header" href="#chain-id-source-of-truth">Chain ID Source of Truth</a></h3>
 <p>One of the implicit restrictions on chain ID is that <code>deploy</code> can only be called
 once per chain ID, because contract addresses are a function of chain ID. However,
