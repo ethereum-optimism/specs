@@ -111,6 +111,13 @@ For each standard Ethereum transaction at index `i`, define `refund(i)` as:
 The refund value is sequencer-defined block data. Clients use the included value directly when executing and
 validating the block.
 
+> **Refund policy.** Consensus applies `refund(i)` directly and does not define or re-derive the policy that produced
+> it (beyond the [validity rules](#validity-rules) and `refund(i) <= evmGasUsed(i)`). The version-1 policy is
+> **block-level warming**: it rebates the EIP-2929 cold→warm surcharge a transaction pays for re-touching state an
+> earlier transaction in the block warmed. To be correct it must rebate **only** accesses actually charged the cold
+> price — never a transaction's own intrinsically-warm `tx.sender`, `tx.to` (or created-contract address),
+> precompiles, coinbase, access-list entries, or EIP-7702 authorities, nor protocol fee-vault settlement writes.
+
 ## Canonical Gas
 
 [Canonical gas][g-canonical-gas] is the gas a standard Ethereum transaction is accounted for under SDM: the gas the EVM
