@@ -16289,6 +16289,14 @@ it charges no fees, consumes no gas and is not executed as code.</p>
 </ul>
 <p>The refund value is sequencer-defined block data. Clients use the included value directly when executing and
 validating the block.</p>
+<blockquote>
+<p><strong>Refund policy.</strong> Consensus applies <code>refund(i)</code> directly and does not define or re-derive the policy that produced
+it (beyond the <a href="protocol/lagoon/sdm.html#validity-rules">validity rules</a> and <code>refund(i) &lt;= evmGasUsed(i)</code>). The version-1 policy is
+<strong>block-level warming</strong>: it rebates the EIP-2929 cold→warm surcharge a transaction pays for re-touching state an
+earlier transaction in the block warmed. To be correct it must rebate <strong>only</strong> accesses actually charged the cold
+price — never a transaction's own intrinsically-warm <code>tx.sender</code>, <code>tx.to</code> (or created-contract address),
+precompiles, coinbase, access-list entries, or EIP-7702 authorities, nor protocol fee-vault settlement writes.</p>
+</blockquote>
 <h2 id="canonical-gas"><a class="header" href="#canonical-gas">Canonical Gas</a></h2>
 <p><a href="protocol/lagoon/../../glossary.html#canonical-gas">Canonical gas</a> is the gas a standard Ethereum transaction is accounted for under SDM: the gas the EVM
 reports minus the SDM refund applied to it. It is the value written to receipts and summed into the block's
