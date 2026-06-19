@@ -191,50 +191,81 @@
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="state-transitions"><a class="header" href="#state-transitions">State Transitions</a></h2>
-<p>The game tracks its lifecycle through a <code>GameStatus</code> enum:</p>
+<p>The game tracks its lifecycle through two enums:</p>
+<p><strong><code>GameStatus</code></strong> (external, defined in <code>Types.sol</code>): the authoritative resolution outcome read by
+<code>OptimismPortal</code> and <code>AnchorStateRegistry</code>.</p>
 <pre><code class="language-solidity">enum GameStatus {
-    Unchallenged,                    // Initial state after initialize()
-    UnchallengedAndValidProofProvided,
+    IN_PROGRESS,     // Default state; game has not yet resolved
+    CHALLENGER_WINS,
+    DEFENDER_WINS
+}
+</code></pre>
+<p><strong><code>ProposalStatus</code></strong> (internal, defined in <code>ZKDisputeGame</code>): tracks the proposal's internal
+lifecycle independently of the resolution outcome.</p>
+<pre><code class="language-solidity">enum ProposalStatus {
+    Unchallenged,
     Challenged,
+    UnchallengedAndValidProofProvided,
     ChallengedAndValidProofProvided,
     Resolved
 }
 </code></pre>
-<pre><code class="language-text">GameCreation ──► Unchallenged ──► Challenged ──► ChallengedAndValidProofProvided ──► Resolved
-                      │                │
-                      │                └─ (deadline expires) ──────────────────────► Resolved
-                      │
-                      ├─ (deadline expires) ──────────────────────────────────────► Resolved
-                      │
-                      └──► UnchallengedAndValidProofProvided ─────────────────────► Resolved
+<p><code>claimData.status</code> (<code>ProposalStatus</code>) transitions on <code>challenge()</code> and <code>prove()</code>. <code>status</code>
+(<code>GameStatus</code>) transitions only inside <code>resolve()</code>. These two state variables evolve independently
+and MUST NOT be conflated.</p>
+<pre><code class="language-text">                     claimData.status (ProposalStatus)
+
+GameCreation ──► Unchallenged ──────────────────────────────────────────────────────────┐
+                     │                                                                  │
+                     ├──► Challenged ──► ChallengedAndValidProofProvided ──────────────┤
+                     │         │                                                        │
+                     │         └─ (prove deadline expires) ─────────────────────────── ┤
+                     │                                                                  │
+                     └──► UnchallengedAndValidProofProvided ─────────────────────────── ┤
+                               │                                                        │
+                               └─ (challenge deadline expires) ────────────────────────┤
+                                                                                        ▼
+                                                                                    resolve()
+                                                                                        │
+                     status (GameStatus)                                                │
+                     IN_PROGRESS ───────────────────────────────────────────────────── ┤
+                                                                                        │
+                                                              ┌─── DEFENDER_WINS ◄──── ┤
+                                                              └─── CHALLENGER_WINS ◄── ┘
 </code></pre>
 <div class="table-wrapper"><table><thead><tr><th>Transition</th><th>Trigger</th></tr></thead><tbody>
 <tr><td><code>GameCreation → Unchallenged</code></td><td><code>initialize()</code> called by <code>DisputeGameFactory</code></td></tr>
-<tr><td><code>Unchallenged → Challenged</code></td><td><code>challenge()</code> called before the challenge deadline</td></tr>
+<tr><td><code>Unchallenged → Challenged</code></td><td><code>challenge()</code> called before deadline</td></tr>
 <tr><td><code>Unchallenged → UnchallengedAndValidProofProvided</code></td><td><code>prove()</code> succeeds</td></tr>
-<tr><td><code>Unchallenged → Resolved</code></td><td>Deadline expires and <code>resolve()</code> is called</td></tr>
 <tr><td><code>Challenged → ChallengedAndValidProofProvided</code></td><td><code>prove()</code> succeeds</td></tr>
-<tr><td><code>Challenged → Resolved</code></td><td>Prove deadline expires and <code>resolve()</code> is called</td></tr>
-<tr><td><code>UnchallengedAndValidProofProvided → Resolved</code></td><td><code>resolve()</code> is called</td></tr>
-<tr><td><code>ChallengedAndValidProofProvided → Resolved</code></td><td><code>resolve()</code> is called</td></tr>
+<tr><td>Any non-terminal <code>ProposalStatus</code> → <code>Resolved</code></td><td><code>resolve()</code> succeeds</td></tr>
+<tr><td><code>IN_PROGRESS → DEFENDER_WINS | CHALLENGER_WINS</code></td><td><code>resolve()</code> succeeds</td></tr>
 </tbody></table>
 </div>
 <h2 id="creation"><a class="header" href="#creation">Creation</a></h2>
 <p>Game creation is fully permissionless. Anyone may call <code>DisputeGameFactory.create()</code> with the
 required <code>initBond</code>. The factory deploys an MCP clone, which then validates the proposal.</p>
+<p><code>initBond</code> is the ETH value the proposer must send when creating a game. The factory forwards it
+to <code>initialize()</code> as <code>msg.value</code>. Its exact amount is set per deployment and can be updated by
+governance; the game contract reads it from the factory at creation time.</p>
 <p>A game may start from the anchor state by setting <code>parentIndex = type(uint32).max</code>, or it may
 reference a parent game.</p>
-<p>The <code>_extraData</code> passed to <code>DisputeGameFactory.create()</code> has this layout:</p>
+<p>The <code>_extraData</code> passed to <code>DisputeGameFactory.create()</code> has a variable-length layout:</p>
 <div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>l2SequenceNumber</code></td><td><code>uint64</code></td><td>L2 block number asserted by this game's root claim</td></tr>
 <tr><td><code>parentIndex</code></td><td><code>uint32</code></td><td>Index of the parent game; <code>type(uint32).max</code> if starting from the anchor state</td></tr>
+<tr><td><code>superRootProof</code></td><td><code>bytes</code></td><td>ABI-encoded <code>SuperRootProof</code> preimage committed to by <code>rootClaim</code>. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via <code>l2SequenceNumber()</code> for convenience.</td></tr>
 </tbody></table>
 </div>
-<p>During <code>initialize()</code>, the game snapshots whether its game type is the currently respected game type
-(<code>wasRespectedGameTypeWhenCreated</code>). <code>AnchorStateRegistry.isGameClaimValid()</code> reads this flag when
-determining if a game's root claim can advance the anchor state or finalize withdrawals via the
-Portal. The snapshot ensures that a game type transition does not retroactively invalidate games
-that were created under the previous respected type.</p>
+<p>The variable-length layout is parsed via <code>_preExtraDataByteCount()</code> and <code>_extraDataByteCount()</code>
+helpers, following the same pattern as <code>SuperFaultDisputeGame</code>. All CWIA field offsets after
+<code>extraData</code> are computed dynamically.</p>
+<p>During <code>initialize()</code>, the game:</p>
+<ol>
+<li>Validates the <code>SuperRootProof</code> preimage: <code>hashSuperRootProof(decode(extraData)) == rootClaim</code>.</li>
+<li>Snapshots <code>wasRespectedGameTypeWhenCreated</code>. <code>AnchorStateRegistry.isGameClaimValid()</code> reads
+this flag when determining if a game's root claim can advance the anchor state or finalize
+withdrawals via the Portal.</li>
+</ol>
 <h3 id="parent-validation"><a class="header" href="#parent-validation">Parent Validation</a></h3>
 <p>When a parent is referenced (<code>parentIndex != type(uint32).max</code>), <code>initialize()</code> MUST revert if
 any of the following checks fail:</p>
@@ -243,7 +274,8 @@ any of the following checks fail:</p>
 <li>Parent MUST NOT be retired (i.e., <code>createdAt &gt; retirementTimestamp</code>).</li>
 <li>Parent MUST be the same game type (<code>ZK_GAME_TYPE</code>).</li>
 <li>Parent MUST NOT have resolved as <code>CHALLENGER_WINS</code>.</li>
-<li>Parent's <code>l2SequenceNumber</code> MUST be strictly above the anchor state's <code>l2SequenceNumber</code>.</li>
+<li>Parent's <code>l2SequenceNumber</code> (timestamp) MUST be strictly above the anchor state's
+<code>l2SequenceNumber</code>.</li>
 <li>The game's <code>l2SequenceNumber</code> MUST be strictly greater than the parent's <code>l2SequenceNumber</code>.</li>
 </ul>
 <p>The <code>isGameRespected</code> check on the parent is intentionally omitted. The respected game type gates
@@ -255,7 +287,8 @@ The call MUST include <code>challengerBond</code> ETH, which <code>challenge()</
 the caller's behalf.</p>
 <ul>
 <li><code>challenge()</code> MUST revert if <code>gameOver()</code> returns <code>true</code>.</li>
-<li><code>challenge()</code> MUST revert if the game is not in the <code>Unchallenged</code> state.</li>
+<li><code>challenge()</code> MUST revert if <code>claimData.status != ProposalStatus.Unchallenged</code>.</li>
+<li><code>challenge()</code> MUST revert if <code>msg.value != challengerBond</code>.</li>
 <li>Only one challenge is allowed per game.</li>
 <li>Calling <code>challenge()</code> resets the deadline to <code>block.timestamp + maxProveDuration</code>.</li>
 </ul>
@@ -263,40 +296,53 @@ the caller's behalf.</p>
 <p>Proving is fully permissionless. Anyone may call <code>prove(proofBytes)</code> at any point before the
 current deadline, regardless of whether the game has been challenged.</p>
 <ul>
+<li><code>prove()</code> MUST revert if <code>status != GameStatus.IN_PROGRESS</code> (i.e., the game is already
+resolved).</li>
 <li><code>prove()</code> MUST revert if the parent game has resolved as <code>CHALLENGER_WINS</code>.</li>
-<li><code>prove()</code> MUST revert if <code>gameOver()</code> returns <code>true</code> (covers an already-submitted proof,
-an expired deadline, and a resolved game).</li>
+<li><code>prove()</code> MUST revert if <code>gameOver()</code> returns <code>true</code> (covers an already-submitted proof and an
+expired deadline).</li>
 <li>The verifier call MUST revert for invalid proofs.</li>
-<li>On success, <code>status</code> transitions to <code>UnchallengedAndValidProofProvided</code> or
-<code>ChallengedAndValidProofProvided</code> (depending on whether the game was challenged), and
-<code>gameOver()</code> returns <code>true</code> immediately.</li>
+<li>On success, <code>claimData.prover</code> is set to <code>msg.sender</code> and <code>claimData.status</code> transitions to
+<code>UnchallengedAndValidProofProvided</code> or <code>ChallengedAndValidProofProvided</code> (depending on whether
+the game was challenged). <code>gameOver()</code> returns <code>true</code> immediately after.</li>
+</ul>
+<p><code>gameOver()</code> returns <code>true</code> when:</p>
+<ul>
+<li><code>claimData.deadline &lt; block.timestamp</code>, OR</li>
+<li><code>claimData.prover != address(0)</code>.</li>
 </ul>
 <h2 id="resolution"><a class="header" href="#resolution">Resolution</a></h2>
 <p>Resolution is permissionless. Anyone may call <code>resolve()</code> once <code>gameOver()</code> returns <code>true</code> and
 the parent game is resolved.</p>
 <ul>
-<li><code>resolve()</code> MUST revert if <code>resolvedAt != 0</code> (i.e., game is already resolved).</li>
-<li><code>resolve()</code> MUST revert if the parent game is not yet resolved.</li>
+<li><code>resolve()</code> MUST revert if <code>status != GameStatus.IN_PROGRESS</code> (i.e., game is already resolved).</li>
+<li>If the game references a parent (<code>parentIndex != type(uint32).max</code>), <code>resolve()</code> MUST revert if
+the parent game's <code>status == GameStatus.IN_PROGRESS</code>.</li>
 <li>If the parent resolved as <code>CHALLENGER_WINS</code>, the child inherits <code>CHALLENGER_WINS</code> regardless of
 its own proof status.</li>
-<li>Otherwise (parent <code>DEFENDER_WINS</code>), the outcome is determined as follows:</li>
+<li>Otherwise (parent <code>DEFENDER_WINS</code>), the outcome is determined by <code>claimData.status</code>:</li>
 </ul>
-<div class="table-wrapper"><table><thead><tr><th>Game state at resolution</th><th>Outcome</th><th>Bond distribution</th></tr></thead><tbody>
-<tr><td>Unchallenged, deadline expired</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond</code></td></tr>
-<tr><td>Unchallenged, valid proof provided</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond</code>; prover receives nothing</td></tr>
-<tr><td>Challenged, no proof by deadline</td><td><code>CHALLENGER_WINS</code></td><td>Challenger receives <code>initBond + challengerBond</code></td></tr>
-<tr><td>Challenged, valid proof, prover == proposer</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond + challengerBond</code></td></tr>
-<tr><td>Challenged, valid proof, prover != proposer</td><td><code>DEFENDER_WINS</code></td><td>Proposer recovers <code>initBond</code>; prover receives <code>challengerBond</code></td></tr>
-<tr><td>Parent resolved as <code>CHALLENGER_WINS</code>, child challenged</td><td><code>CHALLENGER_WINS</code></td><td>Challenger receives <code>initBond + challengerBond</code></td></tr>
-<tr><td>Parent resolved as <code>CHALLENGER_WINS</code>, child unchallenged</td><td><code>CHALLENGER_WINS</code></td><td><code>initBond</code> is sent to <code>address(0)</code></td></tr>
+<div class="table-wrapper"><table><thead><tr><th><code>claimData.status</code> at resolution</th><th><code>GameStatus</code> outcome</th><th><code>normalModeCredit</code> allocation</th></tr></thead><tbody>
+<tr><td><code>Unchallenged</code> (deadline expired)</td><td><code>DEFENDER_WINS</code></td><td><code>gameCreator</code> ← <code>totalBonds</code></td></tr>
+<tr><td><code>UnchallengedAndValidProofProvided</code></td><td><code>DEFENDER_WINS</code></td><td><code>gameCreator</code> ← <code>totalBonds</code></td></tr>
+<tr><td><code>Challenged</code> (prove deadline expired)</td><td><code>CHALLENGER_WINS</code></td><td><code>challenger</code> ← <code>totalBonds</code></td></tr>
+<tr><td><code>ChallengedAndValidProofProvided</code>, prover == proposer</td><td><code>DEFENDER_WINS</code></td><td><code>prover</code> ← <code>totalBonds</code></td></tr>
+<tr><td><code>ChallengedAndValidProofProvided</code>, prover != proposer</td><td><code>DEFENDER_WINS</code></td><td><code>prover</code> ← <code>challengerBond</code>; <code>gameCreator</code> ← <code>totalBonds - challengerBond</code></td></tr>
+<tr><td>Parent <code>CHALLENGER_WINS</code>, child challenged</td><td><code>CHALLENGER_WINS</code></td><td><code>challenger</code> ← <code>totalBonds</code></td></tr>
+<tr><td>Parent <code>CHALLENGER_WINS</code>, child unchallenged</td><td><code>CHALLENGER_WINS</code></td><td><code>address(0)</code> ← <code>totalBonds</code> (burned)</td></tr>
 </tbody></table>
 </div>
+<p><code>totalBonds</code> equals <code>initBond</code> for unchallenged games and <code>initBond + challengerBond</code> for
+challenged games.</p>
+<p>Note: when a parent resolves as <code>CHALLENGER_WINS</code> and the child was never challenged,
+<code>claimData.challenger == address(0)</code>, so <code>normalModeCredit[address(0)] = totalBonds</code>. This credit
+is effectively burned inside <code>DelayedWETH</code> where the owner can recover it via <code>hold()</code>/<code>recover()</code>.</p>
 <h3 id="bond-distribution"><a class="header" href="#bond-distribution">Bond Distribution</a></h3>
 <p>Bond distribution follows a NORMAL or REFUND mode determined by <code>isGameProper</code> (evaluated in
 <code>closeGame</code>):</p>
 <div class="table-wrapper"><table><thead><tr><th>Mode</th><th>Condition</th><th>Effect</th></tr></thead><tbody>
-<tr><td><strong>NORMAL</strong></td><td>Game is Proper (registered, not blacklisted, not retired, not paused)</td><td>Bonds go to winners as described above</td></tr>
-<tr><td><strong>REFUND</strong></td><td>Game is blacklisted, retired, or otherwise improper</td><td><code>initBond</code> returned to proposer; <code>challengerBond</code> returned to challenger</td></tr>
+<tr><td><strong>NORMAL</strong></td><td>Game is proper (registered, not blacklisted, not retired, not paused)</td><td><code>normalModeCredit</code> allocations from <code>resolve()</code> are honored</td></tr>
+<tr><td><strong>REFUND</strong></td><td>Game is blacklisted, retired, or otherwise improper</td><td><code>refundModeCredit</code> is used: <code>initBond</code> returned to proposer; <code>challengerBond</code> returned to challenger</td></tr>
 </tbody></table>
 </div>
 <p>Complete distribution scenarios:</p>
@@ -307,32 +353,33 @@ its own proof status.</li>
 <tr><td>Challenged, proof, prover == proposer</td><td>NORMAL</td><td><code>initBond + challengerBond</code></td><td>nothing</td><td><em>(same)</em></td></tr>
 <tr><td>Challenged, proof, prover != proposer</td><td>NORMAL</td><td><code>initBond</code></td><td>nothing</td><td><code>challengerBond</code></td></tr>
 <tr><td>Parent <code>CHALLENGER_WINS</code>, child challenged</td><td>NORMAL</td><td>nothing</td><td><code>initBond + challengerBond</code></td><td>—</td></tr>
-<tr><td>Parent <code>CHALLENGER_WINS</code>, child unchallenged</td><td>NORMAL</td><td>sent to <code>address(0)</code></td><td>—</td><td>—</td></tr>
+<tr><td>Parent <code>CHALLENGER_WINS</code>, child unchallenged</td><td>NORMAL</td><td>burned to <code>address(0)</code></td><td>—</td><td>—</td></tr>
 <tr><td>Game blacklisted</td><td>REFUND</td><td><code>initBond</code></td><td><code>challengerBond</code></td><td>—</td></tr>
 <tr><td>Game retired</td><td>REFUND</td><td><code>initBond</code></td><td><code>challengerBond</code></td><td>—</td></tr>
 </tbody></table>
 </div>
 <h2 id="closing"><a class="header" href="#closing">Closing</a></h2>
-<p>After resolution, bonds are distributed through a two-phase process identical to the
-<code>FaultDisputeGame</code>:</p>
+<p>After resolution, bonds are distributed through a two-phase process.</p>
 <p><strong><code>closeGame()</code></strong> (permissionless, also called internally by <code>claimCredit</code>):</p>
 <ul>
+<li>Returns early if <code>bondDistributionMode</code> is already set (NORMAL or REFUND).</li>
 <li>MUST revert if <code>AnchorStateRegistry</code> is paused.</li>
 <li>MUST revert with <code>GameNotResolved</code> if <code>resolvedAt == 0</code>.</li>
-<li>MUST revert if <code>AnchorStateRegistry.isFinalized(this)</code> returns <code>false</code>.</li>
-<li>If the game has a Valid Claim, registers the game as the new anchor state via <code>AnchorStateRegistry</code>.</li>
-<li>Determines NORMAL or REFUND mode and unlocks bonds in <code>DelayedWETH</code> accordingly.</li>
+<li>MUST revert if <code>AnchorStateRegistry.isGameFinalized(this)</code> returns <code>false</code>.</li>
+<li>Attempts to register the game as the new anchor state via <code>AnchorStateRegistry.setAnchorState()</code>.
+This may silently fail if the game is not eligible; the failure is caught and ignored.</li>
+<li>Calls <code>AnchorStateRegistry.isGameProper(this)</code> to determine NORMAL or REFUND mode and sets
+<code>bondDistributionMode</code> accordingly.</li>
 </ul>
 <p><strong><code>claimCredit(recipient)</code></strong>:</p>
-<p>Uses a two-phase <code>DelayedWETH</code> withdrawal pattern and MUST NOT revert if the game was open before
-the call, allowing op-challenger to use it solely to close the game without knowing in advance
-whether the recipient has outstanding credit.</p>
+<p>Uses a two-phase <code>DelayedWETH</code> withdrawal pattern.</p>
 <ol>
 <li>Records whether the game was open (<code>bondDistributionMode == UNDECIDED</code>) before the call.</li>
-<li>Triggers <code>closeGame()</code> if not yet closed. <code>closeGame()</code> handles bond unlocks in <code>DelayedWETH</code>.</li>
-<li><strong>Phase 1 — unlock:</strong> If <code>recipient</code> still has credit allocated by this game, zeroes it out and
-calls <code>DelayedWETH.unlock(recipient, amount)</code>, then returns. A second call is required to
-complete the withdrawal once the <code>DelayedWETH</code> delay has elapsed.</li>
+<li>Triggers <code>closeGame()</code> if not yet closed.</li>
+<li><strong>Phase 1 — unlock:</strong> If <code>recipient</code> still has credit allocated by this game (checked against
+the active mode's credit mapping), zeroes out <strong>both</strong> <code>normalModeCredit[recipient]</code> and
+<code>refundModeCredit[recipient]</code>, then calls <code>DelayedWETH.unlock(recipient, amount)</code> and returns.
+A second call is required to complete the withdrawal once the <code>DelayedWETH</code> delay has elapsed.</li>
 <li><strong>Phase 2 — withdraw:</strong> If credit has already been zeroed (phase 1 completed), checks
 <code>DelayedWETH</code> for a pending withdrawal amount. If the amount is zero and the game was open
 before this call, returns without reverting (so <code>closeGame()</code> state changes persist). If the
