@@ -113,7 +113,7 @@ inside `disputeGameConfigs`.
 
 OPCM deploys proxies with CREATE2 using a salt derived from `msg.sender` and `saltMixer`, and no other inputs that
 change across executions.
-Given the same sender, config, and L1 state, the OPCM produces identical addresses.
+Given the same sender and config, against the same OPCM, the produced addresses are identical.
 
 #### Mitigations
 
@@ -145,8 +145,8 @@ The dry-run result is only trustworthy if the L1 RPC is not compromised and retu
 
 ### iPCD-001: Predicted addresses equal deployed addresses
 
-Given the same `from` address, `FullConfig`, and L1 state, the addresses returned by the dry-run MUST equal the
-addresses produced by the broadcast `OPCM.deploy()`.
+Given the same `from` address and `FullConfig`, against the same OPCM, the addresses returned by the
+dry-run MUST equal the addresses produced by the broadcast `OPCM.deploy()`.
 
 #### Impact
 
