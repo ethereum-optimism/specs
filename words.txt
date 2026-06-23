@@ -79,7 +79,9 @@ RPCN
 Randao
 Rollups
 SELFDESTRUCT
+SFDG
 SLOAD
+SPDG
 SUPC
 Sched
 Shapella
@@ -313,3 +315,5 @@ wighawag
 yamux
 yourfork
 zkVM
+ZKDG
+snapshotted

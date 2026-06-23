@@ -98,7 +98,7 @@ for log in receipt.logs:
 
       # ensure the contents of the log are correct
       log = encode(filtered[0])
-      if message_hash != keccack256(log):
+      if message_hash != keccak256(log):
         return False
 
       block = eth.get_block_by_number(id.blocknumber)
