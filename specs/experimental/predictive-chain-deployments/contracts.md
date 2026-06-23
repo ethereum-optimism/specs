@@ -16,14 +16,12 @@
   - [aPCD-003: Trusted L1 RPC](#apcd-003-trusted-l1-rpc)
     - [Mitigations](#mitigations-2)
 - [Invariants](#invariants)
-  - [iPCD-001: Predicted addresses equal deployed addresses](#ipcd-001-predicted-addresses-equal-deployed-addresses)
+  - [iPCD-001: Predicting the L1 addresses is a no-op](#ipcd-001-predicting-the-l1-addresses-is-a-no-op)
     - [Impact](#impact)
-  - [iPCD-002: Predicting the L1 addresses is a no-op](#ipcd-002-predicting-the-l1-addresses-is-a-no-op)
+  - [iPCD-002: Permissioned deployments remain valid](#ipcd-002-permissioned-deployments-remain-valid)
     - [Impact](#impact-1)
-  - [iPCD-003: Permissioned deployments remain valid](#ipcd-003-permissioned-deployments-remain-valid)
+  - [iPCD-003: Invalid configurations stay rejected](#ipcd-003-invalid-configurations-stay-rejected)
     - [Impact](#impact-2)
-  - [iPCD-004: Invalid configurations stay rejected](#ipcd-004-invalid-configurations-stay-rejected)
-    - [Impact](#impact-3)
 - [Change Specification](#change-specification)
   - [DeployOPChain script](#deployopchain-script)
     - [Address prediction](#address-prediction)
@@ -143,19 +141,7 @@ The dry-run result is only trustworthy if the L1 RPC is not compromised and retu
 
 ## Invariants
 
-### iPCD-001: Predicted addresses equal deployed addresses
-
-Given the same `from` address and `FullConfig`, against the same OPCM, the addresses returned by the
-dry-run MUST equal the addresses produced by the broadcast `OPCM.deploy()`.
-
-#### Impact
-
-**Severity: Critical**
-
-If violated, the L2 genesis built from the predicted L1 addresses would not match the deployed L1 system,
-producing an unusable chain and a dispute system seeded with an output root representing the wrong configuration.
-
-### iPCD-002: Predicting the L1 addresses is a no-op
+### iPCD-001: Predicting the L1 addresses is a no-op
 
 Running the prediction MUST NOT write any state to L1.
 
@@ -165,7 +151,7 @@ Running the prediction MUST NOT write any state to L1.
 
 A prediction that mutated state could change the very addresses it is meant to predict.
 
-### iPCD-003: Permissioned deployments remain valid
+### iPCD-002: Permissioned deployments remain valid
 
 The updated `_assertValidFullConfig` MUST still accept every `FullConfig` that was valid before this change.
 
@@ -175,7 +161,7 @@ The updated `_assertValidFullConfig` MUST still accept every `FullConfig` that w
 
 If violated, valid configurations for permissioned deployments would be blocked.
 
-### iPCD-004: Invalid configurations stay rejected
+### iPCD-003: Invalid configurations stay rejected
 
 The updated `_assertValidFullConfig` MUST still reject every `FullConfig` that was invalid before this change, apart
 from enabling a permissionless game type at initial deployment.
@@ -197,7 +183,7 @@ initial deployment.
 `DeployOPChain.s.sol` builds the `FullConfig` and runs `OPCM.deploy()`. `op-deployer` uses the same
 script for two roles: predicting the L1 addresses (a dry-run) and broadcasting the real deployment.
 Using the same script for both ensures the predicted addresses are equal to the deployed ones
-(see [iPCD-001](#ipcd-001-predicted-addresses-equal-deployed-addresses)).
+(see [iOPD-001](./op-deployer.md#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts)).
 
 #### Address prediction
 
@@ -226,7 +212,8 @@ In order to support permissionless deployments the script is updated to:
 - MUST pass the real genesis output root as `startingAnchorRoot` instead of the placeholder.
 - MUST continue to support permissioned-only deployments.
 - MUST use a `from` address consistent with the [address-prediction](#address-prediction) dry-run, so the deployed
-  addresses match the prediction (see [iPCD-001](#ipcd-001-predicted-addresses-equal-deployed-addresses)).
+  addresses match the prediction (see
+  [iOPD-001](./op-deployer.md#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts)).
 
 Carrying those values into the script requires extending its Solidity input struct. `Types.DeployOPChainInput`
 (`scripts/libraries/Types.sol`) today exposes only a single `disputeGameType` and

@@ -53,7 +53,7 @@ The prestate and the output root are then computed before the real deployment tr
 
 - Permissionless dispute games valid from L2 block 0 on mainnets, testnets, and devnets.
 - Minimal on-chain change, limited to relaxing OPCM's initial-deployment game-type validation. Existing permissioned
-  deployments remain valid (see [iPCD-003](./contracts.md#ipcd-003-permissioned-deployments-remain-valid)).
+  deployments remain valid (see [iPCD-002](./contracts.md#ipcd-002-permissioned-deployments-remain-valid)).
 - Deterministic, reproducible artifacts (predicted addresses, genesis, output root, prestate) given the same inputs.
 
 ## Non-goals

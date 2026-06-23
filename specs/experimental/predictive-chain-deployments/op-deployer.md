@@ -85,7 +85,7 @@ state, the pipeline reproduces identical artifacts: the predicted L1 addresses, 
 - The deployment logic is pinned to a specific monorepo commit, covering both `L2Genesis.s.sol` and the
   `OPCM.deploy()` code path.
 - Address prediction reuses the same `DeployOPChain` script that performs the broadcast (see
-  [iPCD-001](./contracts.md#ipcd-001-predicted-addresses-equal-deployed-addresses)).
+  [aPCD-001](./contracts.md#apcd-001-opcm-address-determinism)).
 - The prestate comes from the reproducible `reproducible-prestate-kona` recipe (see
   [aOPD-004](#aopd-004-the-prestate-build-is-reproducible)).
 
@@ -138,7 +138,7 @@ deploys. The L2 genesis is built from the predicted addresses, so any divergence
 If violated, the L2 genesis encodes the wrong L1 system and the dispute system is seeded for a configuration that was
 never deployed, making the chain unusable. The pre-broadcast preflight and post-deploy validation enforce this
 invariant, and the on-chain determinism it depends on is
-[iPCD-001](./contracts.md#ipcd-001-predicted-addresses-equal-deployed-addresses). See [FM2](#failure-modes) and
+[aPCD-001](./contracts.md#apcd-001-opcm-address-determinism). See [FM2](#failure-modes) and
 [FM3](#failure-modes).
 
 ### iOPD-002: `startingAnchorRoot` equals the genesis output root
