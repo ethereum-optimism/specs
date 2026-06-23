@@ -95,6 +95,8 @@ The [anchor block](./overview.md#anchor-block) chosen during `prepare` stays on 
 
 - Only blocks at the `safe` tag or deeper are eligible. Any attempt to use a shallower block fails the pipeline with a
   clear error.
+- A `BLOCKHASH` check in the deploy transaction reverts if the anchor is no longer retrievable, aborting before
+  `OPCM.deploy()` runs (see [FM1](#failure-modes)).
 
 ### aOPD-003: op-deployer state is trusted
 
@@ -229,6 +231,8 @@ initial deployment, are specified in [Contracts](./contracts.md#change-specifica
 
 ## Deployment guards
 
+- **Anchor `BLOCKHASH` check.** The deploy transaction reverts before `OPCM.deploy()` runs if the anchor block hash is
+  no longer retrievable, catching an L1 reorg past the anchor (see [FM1](#failure-modes)).
 - **Preflight + post-deploy validation.** Predicted addresses are re-validated before broadcast and the real addresses
   verified after, guarding against prediction drift and compromised RPCs.
 - **Alternate RPC cross-check.** The dry-run that produces the predicted addresses MAY be re-run against a second,
