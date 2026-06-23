@@ -53,8 +53,11 @@ three commands. The Solidity surface changes the pipeline drives are specified i
 
 ### op-deployer state
 
-`prepare` writes `genesis.json`, `rollup.json`, `depsets.json`, and the genesis output root. `prestate` writes the
-prestate hash. `continue` reads all of them. The state is the single source of truth for what `continue` broadcasts.
+`state.json` is op-deployer's canonical state file, written to the working directory alongside `intent.toml`. It is
+the only channel between the off-chain computation and the eventual broadcast. `prepare` records the predicted L1
+addresses, the L2 allocs, the anchor block reference, and the genesis [output root](./overview.md#output-root).
+`prestate` records the prestate hash. `continue` reads these to run its preflight, set `startingAnchorRoot` and
+`absolutePrestate`, and broadcast `OPCM.deploy()`.
 
 ### Anchor offset (`X`)
 
