@@ -11,7 +11,7 @@
 - [Assumptions](#assumptions)
   - [aPCD-001: OPCM address determinism](#apcd-001-opcm-address-determinism)
     - [Mitigations](#mitigations)
-  - [aPCD-002: Dry-run and broadcast use the same sender](#apcd-002-dry-run-and-broadcast-use-the-same-sender)
+  - [aPCD-002: Dry-run and broadcast use the same sender and `saltMixer`](#apcd-002-dry-run-and-broadcast-use-the-same-sender-and-saltmixer)
     - [Mitigations](#mitigations-1)
   - [aPCD-003: Trusted L1 RPC](#apcd-003-trusted-l1-rpc)
     - [Mitigations](#mitigations-2)
@@ -120,14 +120,14 @@ Given the same sender, config, and L1 state, the OPCM produces identical address
 - The dry-run executes the full `OPCM.deploy()` logic without broadcasting, exercising the same code path as the
   real broadcast.
 
-### aPCD-002: Dry-run and broadcast use the same sender
+### aPCD-002: Dry-run and broadcast use the same sender and `saltMixer`
 
-The address prediction is only valid if the dry-run uses the same `from` address as the eventual broadcast,
-since `msg.sender` is an input to the CREATE2 salt.
+The address prediction is only valid if the dry-run uses the same `from` address and `saltMixer` as the eventual broadcast,
+since `msg.sender` and `saltMixer` are inputs to the CREATE2 salt.
 
 #### Mitigations
 
-- op-deployer MUST use the same `from` address for the dry-run and the broadcast (see
+- op-deployer MUST use the same `from` address and `saltMixer` for the dry-run and the broadcast (see
   [FM2](./op-deployer.md#failure-modes)).
 - A pre-broadcast preflight re-checks the predicted addresses against current L1 state before deploying.
 
