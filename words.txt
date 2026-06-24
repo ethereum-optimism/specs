@@ -13,6 +13,7 @@ Chainid
 Coef
 Configurator
 Crosschain
+devnets
 DELEGATECALL
 DOCTOC
 Deauthorizes
@@ -20,6 +21,8 @@ Deauthorized
 Decentralizable
 Dencun
 Depositer
+depset
+depsets
 Discv
 Doubleword
 EBADF
@@ -43,12 +46,15 @@ Gcfg
 Hardfork
 Holesky
 IERC
+IETH
 IPFS
 IWANT
 Impls
 Initializable
 Keccak
+KONA
 Libp
+mainnets
 MCOPY
 Mdiamond
 Merkle
