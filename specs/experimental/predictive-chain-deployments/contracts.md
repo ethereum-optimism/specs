@@ -100,10 +100,10 @@ struct FullConfig {
 }
 ```
 
-Once the PCD pipeline has built the `startingAnchorRoot` and the per-game `absolutePrestate`, it fills these fields
-with real values instead of placeholders: `startingAnchorRoot` is the genesis
-[output root](./overview.md#output-root) with `l2SequenceNumber = 0`, and the per-game `absolutePrestate` is carried
-inside `disputeGameConfigs`.
+Once the PCD pipeline has built the `startingAnchorRoot` and the `absolutePrestate`, it fills these fields with real
+values instead of placeholders. `startingAnchorRoot` is the genesis [output root](./overview.md#output-root) with
+`l2SequenceNumber = 0`. The `absolutePrestate` is carried inside the permissionless `disputeGameConfigs`
+entry we are currently enabling.
 
 ## Assumptions
 
@@ -208,7 +208,7 @@ Today the script hard-codes a permissioned-only initial deployment:
 In order to support permissionless deployments the script is updated to:
 
 - MUST permit an arbitrary dispute game type as `startingRespectedGameType` at initial deployment.
-- MUST enable the permissionless `disputeGameConfigs` entries, each carrying its real `absolutePrestate`.
+- MUST enable the permissionless `disputeGameConfigs` entry, carrying its real `absolutePrestate`.
 - MUST pass the real genesis output root as `startingAnchorRoot` instead of the placeholder.
 - MUST continue to support permissioned-only deployments.
 - MUST use a `from` address consistent with the [address-prediction](#address-prediction) dry-run, so the deployed
@@ -217,8 +217,8 @@ In order to support permissionless deployments the script is updated to:
 
 Carrying those values into the script requires extending its Solidity input struct. `Types.DeployOPChainInput`
 (`scripts/libraries/Types.sol`) today exposes only a single `disputeGameType` and
-`disputeAbsolutePrestate`. It MUST gain a `startingAnchorRoot` field
-and per-game-type prestate hashes so a permissionless config can be included.
+`disputeAbsolutePrestate`. It MUST gain a `startingAnchorRoot` field and the permissionless game's prestate hash so a
+permissionless config can be included.
 
 ### OPCMv2 config validation
 

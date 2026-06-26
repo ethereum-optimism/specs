@@ -155,7 +155,7 @@ genesis cannot be proven, and fault proofs are broken from block 0.
 
 ### iOPD-003: `absolutePrestate` matches the committed chain config
 
-The prestate hash written to the [state](#op-deployer-state) and carried into each `disputeGameConfigs` entry MUST
+The prestate hash written to the [state](#op-deployer-state) and carried into the enabled permissionless `disputeGameConfigs` entry MUST
 equal the hash reproduced from the committed `genesis.json`, `rollup.json`, and `depsets.json`. Re-running `prepare`
 with a different anchor MUST invalidate a stale prestate before `continue` proceeds.
 
@@ -225,8 +225,8 @@ itself. It only commits the built hash into op-deployer state, which `continue` 
 
 Carrying the real anchor root and the prestate into `OPCM.deploy()` requires two changes on the op-deployer side:
 
-- The Go input struct for the OP Chain deployment gains a `StartingAnchorRoot` field and per-game-type prestate-hash
-  fields.
+- The Go input struct for the OP Chain deployment gains a `StartingAnchorRoot` field and a prestate-hash field for the
+  permissionless game.
 - op-deployer's chain orchestration code wires those fields through into the `FullConfig` eventually passed to OPCM.
 
 The matching Solidity changes, the `DeployOPChain` script and the relaxation that accepts a permissionless game type at
