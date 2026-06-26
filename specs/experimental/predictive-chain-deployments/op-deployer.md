@@ -155,8 +155,8 @@ genesis cannot be proven, and fault proofs are broken from block 0.
 
 ### iOPD-003: `absolutePrestate` matches the committed chain config
 
-The prestate hash written to the [state](#op-deployer-state) and carried into the enabled permissionless `disputeGameConfigs` entry MUST
-equal the hash reproduced from the committed `genesis.json`, `rollup.json`, and `depsets.json`. Re-running `prepare`
+The prestate hash written to the [state](#op-deployer-state) and carried into the enabled permissionless `disputeGameConfigs`
+entry MUST equal the hash reproduced from the committed `genesis.json`, `rollup.json`, and `depsets.json`. Re-running `prepare`
 with a different anchor MUST invalidate a stale prestate before `continue` proceeds.
 
 #### Impact
