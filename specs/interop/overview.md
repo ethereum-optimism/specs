@@ -8,8 +8,6 @@ withdrawn from one chain to L1 and then deposited to another chain. The goal of 
 is to enable cross chain messaging at a much lower latency than going through L1. Low latency interoperability
 allows for a horizontally scalable blockchain network.
 
-Note: this document references an "interop network upgrade" as a temporary name.
-
 | Term                | Definition                                                                                          |
 |---------------------|-----------------------------------------------------------------------------------------------------|
 | Source Chain        | A blockchain that includes an initiating message                                                    |

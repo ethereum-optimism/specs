@@ -104,8 +104,8 @@ An executing message is represented by the [ExecutingMessage event][event] that 
 the `CrossL2Inbox` predeploy. Contracts can introduce their own public
 entrypoints and solely trigger validation of the cross chain message with [validateMessage](./predeploys.md#validatemessage).
 
-We highly encourage the use of the [`L2toL2CrossDomainMessenger`](./predeploys.md#l2tol2crossdomainmessenger)
-over a custom messsage-executor contract.
+The [`L2toL2CrossDomainMessenger`](./predeploys.md#l2tol2crossdomainmessenger) is the recommended entrypoint
+for cross chain messaging, rather than a custom message-executor contract.
 
 All of the information required to satisfy the invariants MUST be included in this event.
 
@@ -122,14 +122,14 @@ do not count as executing messages.
 ## Messaging Invariants
 
 - [Timestamp Invariant](#timestamp-invariant): The timestamp at the time of inclusion of the initiating message MUST
-  be less than or equal to the timestamp of the executing message as well as greater than the Interop Start Timestamp.
+  be less than or equal to the timestamp of the executing message as well as greater than the Lagoon activation timestamp.
 - [ChainID Invariant](#chainid-invariant): The chain id of the initiating message MUST be in the dependency set
 - [Message Expiry Invariant](#message-expiry-invariant): The timestamp at the time of inclusion of the executing
   message MUST be lower than the initiating message timestamp (as defined in the [`Identifier`]) + `EXPIRY_TIME`.
 
 ### Timestamp Invariant
 
-The timestamp invariant ensures that initiating messages have a timestamp greater than the Interop upgrade timestamp
+The timestamp invariant ensures that initiating messages have a timestamp greater than the Lagoon activation timestamp
 and cannot come from a future block than the block of its executing message.
 
 This means that messages can only be initiated in blocks that come after the [activation block](./derivation.md#activation-block).
@@ -152,9 +152,8 @@ to explicitly define the set of chains that they depend on.
 
 ### Message Expiry Invariant
 
-Note: Message Expiry as property of the protocol is in active discussion.
-It helps set a strict bound on total messaging activity to support, but also limits use-cases.
-This trade-off is in review. This invariant may be ignored in initial interop testnets.
+Message expiry sets a strict bound on the total messaging activity the protocol must support,
+at the cost of limiting some use-cases.
 
 The expiry invariant invalidates inclusion of any executing message with
 `id.timestamp + EXPIRY_TIME < executing_block.timestamp` where:
