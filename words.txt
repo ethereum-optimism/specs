@@ -53,6 +53,7 @@ MCOPY
 Mdiamond
 Merkle
 Mintable
+MODEXP
 Multicall
 Multistream
 OPCM
@@ -78,7 +79,9 @@ RPCN
 Randao
 Rollups
 SELFDESTRUCT
+SFDG
 SLOAD
+SPDG
 SUPC
 Sched
 Shapella
@@ -256,6 +259,7 @@ Randao
 RANDAO
 rankdir
 rbuilder
+rebalances
 redeployments
 rederiving
 reentrancy
@@ -311,3 +315,5 @@ wighawag
 yamux
 yourfork
 zkVM
+ZKDG
+snapshotted

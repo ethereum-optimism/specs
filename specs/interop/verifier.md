@@ -37,8 +37,7 @@ Inputs correspond to the inputs to the state transition function while, outputs 
 effects of the state transition function.
 
 Anything before `safe` technically uses a "preconfirmation" based security model which is not part
-of consensus. While useful to have definitions of the default meanings of these terms, they are
-technically policy and may be changed in the future.
+of consensus. These definitions are policy rather than consensus rules.
 
 The `unsafe` label has the lowest latency while the `finalized` label has the highest latency.
 A set of invariants must be held true before an input or an output can be promoted to the next
@@ -101,7 +100,7 @@ if the data is reorganized, then validators will be slashed.
 ### Honest Verifier
 
 The honest verifier follows a naive verification algorithm that is similar
-to the block building code that the [sequencer](./sequencer.md#direct-dependency-confirmation)
+to the block building code that the [sequencer](./sequencer.md#executing-message-validation)
 follows. The main difference is that the validity of included executing
 messages is verified, instead of verifying possible executing messages before
 inclusion.

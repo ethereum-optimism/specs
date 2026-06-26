@@ -6,8 +6,6 @@
 
 - [Chain ID](#chain-id)
 - [Updating the Dependency Set](#updating-the-dependency-set)
-- [Future Considerations](#future-considerations)
-  - [Layer 1 as Part of the Dependency Set](#layer-1-as-part-of-the-dependency-set)
 - [Security Considerations](#security-considerations)
   - [Dependency Set Size](#dependency-set-size)
 
@@ -31,28 +29,13 @@ to consume logs that it has produced much more cheaply than providing a block ha
 
 ## Chain ID
 
-The concept of a chain id was introduced in [EIP-155](https://eips.ethereum.org/EIPS/eip-155) to prevent
-replay attacks between chains. This EIP does not specify the max size of a chain id, although
-[EIP-2294](https://eips.ethereum.org/EIPS/eip-2294) attempts to add a maximum size. Since this EIP is
-stagnant, all representations of chain ids MUST be the `uint256` type.
-
-In the future, OP Stack chains reserve the right to use up to 32 bytes to represent a chain id. The
-configuration of the chain should deterministically map to a chain id and with careful architecture
-changes, all possible OP Stack chains in the superchain will be able to exist counterfactually.
-
-It is a known issue that not all software in the Ethereum ecosystem can handle 32 byte chain ids.
+All chain IDs used in interop dependency sets must fit within a `uint64`.
+Software should be designed to support up to uint256 chain IDs.
 
 ## Updating the Dependency Set
 
 The dependency set is managed in the client software. Adding a chain to the dependency set is
 considered an upgrade to the network. It is not possible to remove chains from the dependency set.
-
-## Future Considerations
-
-### Layer 1 as Part of the Dependency Set
-
-The layer one MAY be part of the dependency set in the future. This means that any event
-created on layer one is consumable on layer two.
 
 ## Security Considerations
 

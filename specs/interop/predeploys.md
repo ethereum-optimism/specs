@@ -19,7 +19,6 @@
   - [`ExecutingMessage` Event](#executingmessage-event)
   - [Reference implementation](#reference-implementation)
   - [Deposit Handling](#deposit-handling)
-  - [`Identifier` Getters](#identifier-getters)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
   - [`relayMessage` Invariants](#relaymessage-invariants)
   - [`sendMessage` Invariants](#sendmessage-invariants)
@@ -70,7 +69,6 @@
     - [`RelayedERC20`](#relayederc20)
   - [Diagram](#diagram)
   - [Invariants](#invariants-1)
-- [Security Considerations](#security-considerations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -279,7 +277,7 @@ function validateMessage(Identifier calldata _id, bytes32 _msgHash) external {
 
   (bool _isSlotWarm,) = _isWarm(checksum);
 
-  if (!_isSlotWarm) revert NonDeclaredExecutingMessage();
+  if (!_isSlotWarm) revert NotInAccessList();
 
   emit ExecutingMessage(_msgHash, _id);
 }
@@ -325,11 +323,6 @@ Any call to the `CrossL2Inbox` that would emit an `ExecutingMessage` event will 
 transaction did not declare an access list including the message checksum, as
 [described above](#type-3-checksum). Because deposit transactions do not have access lists,
 all calls to the `CrossL2Inbox` originating within a deposit transaction will revert.
-
-### `Identifier` Getters
-
-The `Identifier` MUST be exposed via `public` getters so that contracts can call back to authenticate
-properties about the `_msg`.
 
 ## L2ToL2CrossDomainMessenger
 
@@ -484,7 +477,7 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
     (success, returnData_) = _target.call(_target, msg.value, _message);
     require(success);
     successfulMessages[messageHash] = true;
-    emit RelayedMessage(_source, _nonce, messageHash, keccack256(returnData_));
+    emit RelayedMessage(_source, _nonce, messageHash, keccak256(returnData_));
 }
 ```
 
@@ -582,7 +575,7 @@ event OptimismSuperchainERC20Created(address indexed superchainToken, address in
 
 where `superchainToken` is the address of the newly deployed `OptimismSuperchainERC20`,
 `remoteToken` is the address of the corresponding token in L1,
-and deployer`is the`msg.sender`.
+and `deployer` is the `msg.sender`.
 
 ### Deployment Flow
 
@@ -952,7 +945,3 @@ The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require
 - Bridge Events:
   - `sendERC20()` should emit a `SentERC20` event.
   - `relayERC20()` should emit a `RelayedERC20` event.
-
-## Security Considerations
-
-TODO
