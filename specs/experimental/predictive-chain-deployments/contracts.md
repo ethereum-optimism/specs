@@ -164,7 +164,7 @@ If violated, valid configurations for permissioned deployments would be blocked.
 ### iPCD-003: Invalid configurations stay rejected
 
 The updated `_assertValidFullConfig` MUST still reject every `FullConfig` that was invalid before this change, apart
-from enabling a permissionless game type at initial deployment.
+from enabling other dispute game types at initial deployment.
 
 #### Impact
 
