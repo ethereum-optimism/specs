@@ -207,7 +207,7 @@ Today the script hard-codes a permissioned-only initial deployment:
 
 In order to support permissionless deployments the script is updated to:
 
-- MUST permit a permissionless `startingRespectedGameType` (`CANNON_KONA` on the default path) at initial deployment.
+- MUST permit an arbitrary dispute game type as `startingRespectedGameType` at initial deployment.
 - MUST enable the permissionless `disputeGameConfigs` entries, each carrying its real `absolutePrestate`.
 - MUST pass the real genesis output root as `startingAnchorRoot` instead of the placeholder.
 - MUST continue to support permissioned-only deployments.
