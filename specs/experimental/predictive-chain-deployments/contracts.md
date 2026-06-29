@@ -143,13 +143,16 @@ The dry-run result is only trustworthy if the L1 RPC is not compromised and retu
 
 ### iPCD-001: Predicting the L1 addresses is a no-op
 
-Running the prediction MUST NOT write any state to L1.
+Running the prediction MUST NOT write any state to L1. A write could change the very addresses this stage is meant
+to predict.
 
 #### Impact
 
 **Severity: High**
 
-A prediction that mutated state could change the very addresses it is meant to predict.
+A L1 state write at prediction time also costs the deployer real ETH on what should be a dry-run. Worse, it deploys a
+chain that can never be used. Prediction runs before the prestate and the genesis output root are known, so the
+deployment would be seeded with neither.
 
 ### iPCD-002: Permissioned deployments remain valid
 
