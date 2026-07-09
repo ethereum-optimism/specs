@@ -100,6 +100,11 @@ with a total of `(4 * 31 + 3) * 1024 = 130048` bytes of data.
 
 When decoding a blob, the top-most two bits of each field-element must be 0,
 to make the encoding/decoding bijective.
+This is enforced for every field element except the first one:
+the first field element is special-cased for the version and length (see below),
+and its top-most two bits are ignored (masked to 0) on decode rather than validated.
+As a result, those two bits do not affect the decoded output and the encoding is not
+strictly bijective for the first field element; the encoder always writes them as 0.
 
 The first byte of rollup-data (second byte in first field element) is used as a version-byte.
 
