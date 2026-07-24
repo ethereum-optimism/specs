@@ -32,13 +32,11 @@
   - [optimismPortal](#optimismportal)
   - [optimismMintableERC20Factory](#optimismmintableerc20factory)
   - [getAddresses](#getaddresses)
-  - [batchInbox](#batchinbox)
   - [startBlock](#startblock)
   - [paused](#paused)
   - [superchainConfig](#superchainconfig)
   - [setUnsafeBlockSigner](#setunsafeblocksigner)
   - [setBatcherHash](#setbatcherhash)
-  - [setGasConfig](#setgasconfig)
   - [setGasConfigEcotone](#setgasconfigecotone)
   - [setGasLimit](#setgaslimit)
   - [setEIP1559Params](#seteip1559params)
@@ -105,7 +103,9 @@ Before the Ecotone upgrade, these include:
 After the Ecotone upgrade:
 
 - The **Scalar** attribute encodes additional scalar information in a versioned encoding scheme
-- The **Overhead** value is ignored and does not affect the L2 state-transition output
+- The **Overhead** value is ignored and does not affect the L2 state-transition output. As of
+  SystemConfig 4.0.0 it is also immutable, since `setGasConfig` was the only function that
+  wrote it and has been removed
 
 #### Post-Ecotone Scalar Encoding
 
@@ -201,9 +201,11 @@ If a System Config Update cannot be parsed for any reason, it is not applied and
 - MUST only be triggerable once.
 - MUST set the owner of the contract to the provided `_owner` address.
 - MUST set the SuperchainConfig contract address.
-- MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config, batch
-  inbox, L1 contract addresses, and L2 chain ID.
+- MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config,
+  L1 contract addresses, and L2 chain ID.
 - MUST set the start block to the current block number if it hasn't been set already.
+- MUST clear the legacy batch inbox storage slot. The OP Stack reads the batch inbox address from
+  the rollup configuration, so the value stored here was redundant and could drift from it.
 - MUST validate the resource configuration parameters against system constraints.
 
 ### upgrade
@@ -270,10 +272,6 @@ Returns the address of the OptimismMintableERC20Factory contract.
 
 Returns a consolidated struct containing all the L1 contract addresses.
 
-### batchInbox
-
-Returns the address of the [Batch Inbox](#batch-inbox).
-
 ### startBlock
 
 Returns the block number at which the op-node can start searching for logs.
@@ -317,15 +315,6 @@ Allows the owner to update the [Batcher Hash](#batcher-hash).
 - MUST revert if called by an address other than the owner.
 - MUST update the batcher hash.
 - MUST emit a ConfigUpdate event with the UpdateType.BATCHER type.
-
-### setGasConfig
-
-Allows the owner to update the gas configuration parameters (pre-Ecotone).
-
-- MUST revert if called by an address other than the owner.
-- MUST revert if the scalar exceeds the maximum allowed value (no upper 8 bits should be set).
-- MUST update the overhead and scalar values.
-- MUST emit a ConfigUpdate event with the UpdateType.FEE_SCALARS type.
 
 ### setGasConfigEcotone
 
