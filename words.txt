@@ -282,6 +282,7 @@ singlethreaded
 standardbridge
 standardbridgeaddress
 statelessly
+STATICCALL
 struct
 structs
 subgame
