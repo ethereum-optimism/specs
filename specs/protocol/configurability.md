@@ -87,8 +87,7 @@ The recommended way to deploy L1 contracts for an OP chain that meet the standar
 
 **Description:** L1 address where calldata/blobs are posted (
 see [Batcher Transaction](../glossary.md#batcher-transaction)). Defined in the rollup
-configuration; as of SystemConfig 4.0.0 it is no longer stored in or readable from the
-SystemConfig contract.<br/>
+configuration; as of `SystemConfig` v4.0.0 it is no longer stored onchain.<br/>
 **Administrator:** Static<br/>
 **Requirement:** Current convention is
 <code>versionByte &vert;&vert; keccak256(bytes32(chainId))\[:19\]</code>, where <code>&vert;&vert;</code> denotes
