@@ -105,7 +105,9 @@ Before the Ecotone upgrade, these include:
 After the Ecotone upgrade:
 
 - The **Scalar** attribute encodes additional scalar information in a versioned encoding scheme
-- The **Overhead** value is ignored and does not affect the L2 state-transition output
+- The **Overhead** value is ignored and does not affect the L2 state-transition output. As of
+  `SystemConfig` v4.0.0 it is also no longer writable, since `setGasConfig` was its only writer,
+  and `setGasConfigEcotone` emits zero in its place
 
 #### Post-Ecotone Scalar Encoding
 
@@ -183,7 +185,8 @@ In version `0`, the following update types are supported:
 - Type `0`: `batcherHash` overwrite, as `bytes32` payload
 - Type `1`: Pre-Ecotone, `overhead` and `scalar` overwrite, as two packed `uint256` entries. After
   Ecotone upgrade, `overhead` is ignored and `scalar` is interpreted as a versioned encoding that
-  updates `baseFeeScalar` and `blobBaseFeeScalar`
+  updates `baseFeeScalar` and `blobBaseFeeScalar`. As of `SystemConfig` v4.0.0 the `overhead` entry
+  is always zero, and the payload stays two words so its length is unchanged
 - Type `2`: `gasLimit` overwrite, as `uint64` payload
 - Type `3`: `unsafeBlockSigner` overwrite, as `address` payload
 - Type `4`: `eip1559Params` overwrite, as `uint256` payload encoding denomination and elasticity
@@ -195,14 +198,22 @@ If a System Config Update cannot be parsed for any reason, it is not applied and
 
 ## Function Specification
 
+Version markers below refer to op-contracts releases: `(+op-contracts/vX.Y.Z)` marks behavior
+introduced in that release, `(-op-contracts/vX.Y.Z)` marks behavior that applies before it. A
+version written as `SystemConfig` vX.Y.Z is the contract's own semver.
+
 ### initialize
 
 - MUST only be triggerable by the ProxyAdmin or its owner.
 - MUST only be triggerable once.
 - MUST set the owner of the contract to the provided `_owner` address.
 - MUST set the SuperchainConfig contract address.
-- MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config, batch
-  inbox, L1 contract addresses, and L2 chain ID.
+- MUST set the batcher hash, gas config, gas limit, unsafe block signer, resource config,
+  L1 contract addresses, and L2 chain ID.
+- (-op-contracts/v8.0.0) MUST set the [Batch Inbox](#batch-inbox) address.
+- (+op-contracts/v8.0.0) MUST clear the legacy batch inbox storage slot. The OP Stack reads the
+  batch inbox address from the rollup configuration, so the onchain copy was redundant and could
+  drift from it.
 - MUST set the start block to the current block number if it hasn't been set already.
 - MUST validate the resource configuration parameters against system constraints.
 
@@ -215,7 +226,7 @@ If a System Config Update cannot be parsed for any reason, it is not applied and
 
 ### setFeatureEnabled
 
-(+v4.1.0)
+(+op-contracts/v4.1.0)
 
 - Used to enable or disable a [Customizable Feature](#customizable-feature).
 - Takes a bytes32 feature string and a boolean as an input.
@@ -224,7 +235,7 @@ If a System Config Update cannot be parsed for any reason, it is not applied and
 
 ### isFeatureEnabled
 
-(+v4.1.0)
+(+op-contracts/v4.1.0)
 
 - Takes a bytes32 feature string as an input.
 - Returns true if the feature is enabled and false otherwise.
@@ -272,7 +283,9 @@ Returns a consolidated struct containing all the L1 contract addresses.
 
 ### batchInbox
 
-Returns the address of the [Batch Inbox](#batch-inbox).
+(-op-contracts/v8.0.0) Returns the address of the [Batch Inbox](#batch-inbox). Removed in
+`SystemConfig` v4.0.0, because the batch inbox address lives in the rollup configuration, which is
+what the OP Stack reads.
 
 ### startBlock
 
@@ -280,22 +293,22 @@ Returns the block number at which the op-node can start searching for logs.
 
 ### paused
 
-(-v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
+(-op-contracts/v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
 using the chain's `ETHLockbox` address as the [Pause Identifier](./stage-1.md#pause-identifier).
 Returns the current pause state of the system by checking if the `SuperchainConfig` is paused for
 this chain's `ETHLockbox`.
 
-(+v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
+(+op-contracts/v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
 using either the chain's `ETHLockbox` address or the chain's `OptimismPortal` address as the
 [Pause Identifier](./stage-1.md#pause-identifier).
 
-- (-v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
+- (-op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
   true OR if `SuperchainConfig.paused(address(0))` returns true.
-- (+v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
+- (+op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
   true AND the system is configured to use the `ETHLockbox` contract.
-- (+v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal())` returns true AND the
+- (+op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal())` returns true AND the
   system is NOT configured to use the `ETHLockbox` contract.
-- (+v4.1.0) MUST return true if `SuperchainConfig.paused(address(0))` returns true.
+- (+op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(address(0))` returns true.
 - MUST return false otherwise.
 
 ### superchainConfig
@@ -320,7 +333,8 @@ Allows the owner to update the [Batcher Hash](#batcher-hash).
 
 ### setGasConfig
 
-Allows the owner to update the gas configuration parameters (pre-Ecotone).
+(-op-contracts/v8.0.0) Allows the owner to update the gas configuration parameters (pre-Ecotone).
+Removed in `SystemConfig` v4.0.0; use [setGasConfigEcotone](#setgasconfigecotone) instead.
 
 - MUST revert if called by an address other than the owner.
 - MUST revert if the scalar exceeds the maximum allowed value (no upper 8 bits should be set).
