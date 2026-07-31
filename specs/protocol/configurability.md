@@ -83,10 +83,11 @@ The recommended way to deploy L1 contracts for an OP chain that meet the standar
 
 ## Consensus Parameters
 
-### [Batch Inbox address](https://github.com/ethereum-optimism/optimism/blob/c927ed9e8af501fd330349607a2b09a876a9a1fb/packages/contracts-bedrock/src/L1/SystemConfig.sol#L176)
+### Batch Inbox address
 
 **Description:** L1 address where calldata/blobs are posted (
-see [Batcher Transaction](../glossary.md#batcher-transaction)).<br/>
+see [Batcher Transaction](../glossary.md#batcher-transaction)). Defined in the rollup
+configuration; as of `SystemConfig` v4.0.0 it is no longer stored onchain.<br/>
 **Administrator:** Static<br/>
 **Requirement:** Current convention is
 <code>versionByte &vert;&vert; keccak256(bytes32(chainId))\[:19\]</code>, where <code>&vert;&vert;</code> denotes
