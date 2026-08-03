@@ -18,7 +18,8 @@ set of deposit transaction-based upgrade transactions are deterministically gene
 The contents of the transaction are defined by the file
 [`karst_upgrade_bundle.json`](https://github.com/ethereum-optimism/optimism/blob/dab30cd9a988f04b3d72cfea873d32f888aed8c5/op-core/nuts/bundles/karst_nut_bundle.json#L1)
 in the monorepo, which contains 31 transactions. In addition to the contents of the files, the consensus layer
-node MUST also prepend the string "Karst: " at the front of the intent string.
+node MUST prefix each intent string with `Karst <index>:` followed by a space, where `<index>` is the zero-based
+position of the transaction within the bundle.
 
 These transactions can be classified into the following groups:
 
