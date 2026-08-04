@@ -16,6 +16,7 @@
   - [Block Number](#block-number)
   - [Defined Schema Versions](#defined-schema-versions)
 - [Block-Level Structural Rules](#block-level-structural-rules)
+- [DA Footprint](#da-footprint)
 - [Receipt](#receipt)
 - [Derivation](#derivation)
 - [Rationale](#rationale)
@@ -191,6 +192,13 @@ the block.
 Schema-specific validity rules (e.g. constraints on the trailing fields) are layered on top of these envelope rules
 and are specified by each schema's document. Both layers MUST hold for the block to be valid.
 
+## DA Footprint
+
+The [Jovian DA footprint block limit](../jovian/exec-engine.md#da-footprint-block-limit) is modified to exclude
+post-exec transactions. When computing a block's `daFootprint`, clients MUST treat a post-exec transaction as
+having a DA footprint of zero. Clients MUST therefore skip transactions of type `0x7D` when accumulating the
+block's `daFootprint`, and a post-exec transaction's receipt MUST report `blobGasUsed` as zero.
+
 ## Receipt
 
 A post-exec transaction emits a receipt with type byte `0x7D`. The RLP-encoded consensus fields of the receipt are
@@ -238,3 +246,13 @@ trailing fields without re-spending an EIP-2718 type byte.
 
 **Why last in block.** Placing the post-exec transaction at the end of the block gives it a unique, predictable
 position and matches the natural "after everything else" semantics of the data it carries.
+
+**Why exclude post-exec transactions from the DA footprint.** A post-exec transaction is constructed only after
+the block's standard transactions have executed and its schema-defined payload is known. Including it in the DA
+footprint would require block builders to reserve or recompute footprint at finalization and would add a special
+late-stage accounting path for both producers and verifiers. Excluding it avoids that complexity at the cost of a
+small, bounded underestimate. A block contains at most one post-exec transaction, and the
+[version-1 SDM payload](./sdm.md#payload-schema-version-1) contains at most one bounded-size entry per standard
+transaction, so the omitted encoded data grows at most linearly with the number of transactions in the block. The
+DA footprint is an estimate rather than an exact
+compressed-size calculation, and this bounded error does not materially change its purpose as a block-level limit.
