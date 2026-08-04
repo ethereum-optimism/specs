@@ -16429,6 +16429,7 @@ node MUST also prepend the string "Karst: " at the front of the intent string.</
 </ul>
 </li>
 <li><a href="protocol/lagoon/post-exec.html#block-level-structural-rules">Block-Level Structural Rules</a></li>
+<li><a href="protocol/lagoon/post-exec.html#da-footprint">DA Footprint</a></li>
 <li><a href="protocol/lagoon/post-exec.html#receipt">Receipt</a></li>
 <li><a href="protocol/lagoon/post-exec.html#derivation">Derivation</a></li>
 <li><a href="protocol/lagoon/post-exec.html#rationale">Rationale</a></li>
@@ -16549,6 +16550,11 @@ contain a <code>0x7D</code> transaction.</li>
 </ol>
 <p>Schema-specific validity rules (e.g. constraints on the trailing fields) are layered on top of these envelope rules
 and are specified by each schema's document. Both layers MUST hold for the block to be valid.</p>
+<h2 id="da-footprint"><a class="header" href="#da-footprint">DA Footprint</a></h2>
+<p>The <a href="protocol/lagoon/../jovian/exec-engine.html#da-footprint-block-limit">Jovian DA footprint block limit</a> is modified to exclude
+post-exec transactions. When computing a block's <code>daFootprint</code>, clients MUST treat a post-exec transaction as
+having a DA footprint of zero. Clients MUST therefore skip transactions of type <code>0x7D</code> when accumulating the
+block's <code>daFootprint</code>, and a post-exec transaction's receipt MUST report <code>blobGasUsed</code> as zero.</p>
 <h2 id="receipt"><a class="header" href="#receipt">Receipt</a></h2>
 <p>A post-exec transaction emits a receipt with type byte <code>0x7D</code>. The RLP-encoded consensus fields of the receipt are
 identical to those of an EIP-1559 receipt:</p>
@@ -16587,6 +16593,15 @@ unchanged.</p>
 trailing fields without re-spending an EIP-2718 type byte.</p>
 <p><strong>Why last in block.</strong> Placing the post-exec transaction at the end of the block gives it a unique, predictable
 position and matches the natural "after everything else" semantics of the data it carries.</p>
+<p><strong>Why exclude post-exec transactions from the DA footprint.</strong> A post-exec transaction is constructed only after
+the block's standard transactions have executed and its schema-defined payload is known. Including it in the DA
+footprint would require block builders to reserve or recompute footprint at finalization and would add a special
+late-stage accounting path for both producers and verifiers. Excluding it avoids that complexity at the cost of a
+small, bounded underestimate. A block contains at most one post-exec transaction, and the
+<a href="protocol/lagoon/./sdm.html#payload-schema-version-1">version-1 SDM payload</a> contains at most one bounded-size entry per standard
+transaction, so the omitted encoded data grows at most linearly with the number of transactions in the block. The
+DA footprint is an estimate rather than an exact
+compressed-size calculation, and this bounded error does not materially change its purpose as a block-level limit.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="sequencer-defined-metering"><a class="header" href="#sequencer-defined-metering">Sequencer-Defined Metering</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
