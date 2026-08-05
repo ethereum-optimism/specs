@@ -739,11 +739,33 @@ safety margin</li>
 <li>Custom gas allocation MUST only apply when processing a fork activation block</li>
 <li>Fork activation is identified by L2 block timestamp matching or exceeding the fork activation timestamp</li>
 <li>Allocation applies to the entire upgrade transaction bundle, not per-transaction</li>
+<li>The allocation for a given fork MUST depend only on the fork identity, and MUST NOT vary with any other chain
+configuration. Where a fork's bundle is wrapped by transactions that only some chains emit — as Lagoon's is, by the
+<a href="../interop/derivation.html#dependency-set-conditional-transactions">dependency set conditional transactions</a> — the
+allocation MUST cover those transactions unconditionally. A chain that does not emit them carries the difference as
+unused headroom in its activation block. This follows from
+<a href="#iubgl-002-deterministic-gas-allocation">iUBGL-002</a>: the reversal below is computed from the rollup configuration
+and a block timestamp alone, so an allocation that varied with anything else could not be reversed correctly.</li>
+</ul>
+<p><strong>Reverting the Allocation:</strong></p>
+<p>The allocation raises the activation block's gas limit only. Because the gas limit is part of the system configuration
+that each subsequent block inherits, it MUST be removed again so that
+<a href="#iubgl-004-gas-allocation-only-for-upgrade-blocks">iUBGL-004</a> holds for the blocks that follow:</p>
+<ul>
+<li>When reconstructing the system configuration from a fork activation block, the allocation for that fork MUST be
+subtracted from the block's gas limit, yielding the steady-state gas limit that the next block is built on</li>
+<li>The block after the activation block therefore returns to the chain's configured gas limit</li>
+<li>The subtraction happens before any <code>SystemConfig</code> update from the same block's L1 origin is applied, so a
+<code>gasLimit</code> change taking effect in that block takes precedence over the reverted value</li>
+<li>Reconstruction MUST fail if the activation block's gas limit is below the fork's allocation, rather than
+wrapping around</li>
 </ul>
 <p><strong>Implementation Requirements:</strong></p>
 <ul>
 <li>Implemented in <code>op-node/rollup/derive/attributes.go</code> or equivalent derivation logic</li>
 <li>Gas allocation is applied when constructing the payload attributes for the fork activation block</li>
+<li>The reversal is applied when converting a block to a <code>SystemConfig</code> — <code>op-node/rollup/derive/payload_util.go</code> and
+<code>kona-protocol</code>'s <code>to_system_config</code> or equivalent</li>
 </ul>
 
                     </main>
