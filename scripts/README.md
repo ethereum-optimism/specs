@@ -18,7 +18,7 @@ This folder contains tooling to generate reproducible, copy‑pasteable markdown
 - **`run_gen_predeploy_docs.sh`**: Thin wrapper that:
   - Ensures a local venv (via `uv`), installs Python deps, and runs `gen_predeploy_docs.py` with your flags.
 
-- **`upgrades/*.sh`**: Per‑upgrade config files. These are consumed by `generate_upgrade_tx_specs.sh`. See `upgrades/interop.sh` for a concrete example.
+- **`upgrades/*.sh`**: Per‑upgrade config files. These are consumed by `generate_upgrade_tx_specs.sh`. See `upgrades/jovian.sh` for a concrete example.
 
 -- **`generate_upgrade_tx_specs.sh`**: Loads variables from a config file, and calls `run_gen_predeploy_docs.sh` once per contract that’s part of the upgrade, passing the right parameters.
 
@@ -32,16 +32,21 @@ Tip: Ensure the repo at `--optimism-repo-path` can build with `make build-contra
 
 ---
 
-## How to use `generate_upgrade_tx_specs.sh` (Interop example)
+## How to use `generate_upgrade_tx_specs.sh` (Jovian example)
 
-We’ll use `scripts/upgrades/interop.sh` as the example workflow.
+We’ll use `scripts/upgrades/jovian.sh` as the example workflow.
+
+Note: this generator produces per-transaction specs for forks that predate the
+[network upgrade transaction bundle](../specs/protocol/l2-upgrades-1-execution.md#network-upgrade-transaction-bundle).
+From Karst onward the upgrade transactions are defined by a bundle JSON in the monorepo, and the derivation spec
+references that file instead of enumerating each transaction.
 
 ### 1) Create a new upgrade config file
 
-Copy the Interop example config file to a new file under `scripts/upgrades/`, e.g.:
+Copy the Jovian example config file to a new file under `scripts/upgrades/`, e.g.:
 
 ```bash
-cp scripts/upgrades/gen_interop_upgrade_tx_specs.sh scripts/upgrades/gen_<yourfork>_upgrade_tx_specs.sh
+cp scripts/upgrades/jovian.sh scripts/upgrades/<yourfork>.sh
 ```
 
 ### 2) Check static configuration 
@@ -66,17 +71,16 @@ Edit your config file:
 - **`contracts` array**: One entry per contract, `"ContractName:ProxyAddress"`. If no proxy, you can still list it or comment unused lines.
 
 
-In `scripts/upgrades/interop.sh` these look like:
+In `scripts/upgrades/jovian.sh` these look like:
 
 ```bash
-GIT_COMMIT_HASH=71c460ec7c7c05791ddd841b97bcb664a1f0c753
+GIT_COMMIT_HASH=773798a67678ab28c3ef7ee3405f25c04616af19
 FROM_ADDRESS_NONCE=0
-FROM_ADDRESS=0x4220000000000000000000000000000000000000
-FORK_NAME=Interop
+FROM_ADDRESS=0x4210000000000000000000000000000000000006
+FORK_NAME=Jovian
 
 declare -a contracts=(
-    "CrossL2Inbox:0x4200000000000000000000000000000000000022"
-    "L2ToL2CrossDomainMessenger:0x4200000000000000000000000000000000000023"
+    "L1Block:0x4200000000000000000000000000000000000015"
 )
 ```
 
@@ -85,7 +89,7 @@ declare -a contracts=(
 From the `scripts` directory:
 
 ```bash
-bash generate_upgrade_tx_specs.sh ./upgrades/interop.sh
+bash generate_upgrade_tx_specs.sh ./upgrades/jovian.sh
 ```
 
 It will:
@@ -96,14 +100,14 @@ It will:
 Tip: Capture output for review:
 
 ```bash
-bash generate_upgrade_tx_specs.sh ./upgrades/interop.sh | tee /tmp/<yourfork>-gen.md
+bash generate_upgrade_tx_specs.sh ./upgrades/jovian.sh | tee /tmp/<yourfork>-gen.md
 ```
 
 ### 4) Paste into your derivation spec
 
 Copy the rendered markdown blocks into your fork’s derivation spec (e.g., `specs/<your-area>/derivation.md`) at the appropriate section.
 
-An example reference output is in the [Interop derivation spec](../specs/interop/derivation.md) starting with the “Generated with” marker (your output will include deployment and optional proxy‑update sections).
+An example reference output is in the [Jovian derivation spec](../specs/protocol/jovian/derivation.md) starting with the “Generated with” marker (your output will include deployment and optional proxy‑update sections).
 
 The generator also outputs instructions to verify `deployedAddress`, `sourceHash`, `data`, and `contract code hash` using `cast`, `jq`, and a specific commit of the Optimism repo.
 
