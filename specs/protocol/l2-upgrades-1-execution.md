@@ -593,8 +593,31 @@ The custom upgrade block gas allocation is implemented in the derivation pipelin
 - Custom gas allocation MUST only apply when processing a fork activation block
 - Fork activation is identified by L2 block timestamp matching or exceeding the fork activation timestamp
 - Allocation applies to the entire upgrade transaction bundle, not per-transaction
+- The allocation for a given fork MUST depend only on the fork identity, and MUST NOT vary with any other chain
+  configuration. Where a fork's bundle is wrapped by transactions that only some chains emit — as Lagoon's is, by the
+  [dependency set conditional transactions](../interop/derivation.md#dependency-set-conditional-transactions) — the
+  allocation MUST cover those transactions unconditionally. A chain that does not emit them carries the difference as
+  unused headroom in its activation block. This follows from
+  [iUBGL-002](#iubgl-002-deterministic-gas-allocation): the reversal below is computed from the rollup configuration
+  and a block timestamp alone, so an allocation that varied with anything else could not be reversed correctly.
+
+**Reverting the Allocation:**
+
+The allocation raises the activation block's gas limit only. Because the gas limit is part of the system configuration
+that each subsequent block inherits, it MUST be removed again so that
+[iUBGL-004](#iubgl-004-gas-allocation-only-for-upgrade-blocks) holds for the blocks that follow:
+
+- When reconstructing the system configuration from a fork activation block, the allocation for that fork MUST be
+  subtracted from the block's gas limit, yielding the steady-state gas limit that the next block is built on
+- The block after the activation block therefore returns to the chain's configured gas limit
+- The subtraction happens before any `SystemConfig` update from the same block's L1 origin is applied, so a
+  `gasLimit` change taking effect in that block takes precedence over the reverted value
+- Reconstruction MUST fail if the activation block's gas limit is below the fork's allocation, rather than
+  wrapping around
 
 **Implementation Requirements:**
 
 - Implemented in `op-node/rollup/derive/attributes.go` or equivalent derivation logic
 - Gas allocation is applied when constructing the payload attributes for the fork activation block
+- The reversal is applied when converting a block to a `SystemConfig` — `op-node/rollup/derive/payload_util.go` and
+  `kona-protocol`'s `to_system_config` or equivalent
