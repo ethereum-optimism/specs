@@ -21,7 +21,7 @@
 - [Invariants](#invariants)
   - [iOPD-001: The deployed L1 system matches the committed artifacts](#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts)
     - [Impact](#impact)
-  - [iOPD-002: `startingAnchorRoot` equals the genesis output root](#iopd-002-startinganchorroot-equals-the-genesis-output-root)
+  - [iOPD-002: `startingAnchorRoot` equals the committed starting anchor root](#iopd-002-startinganchorroot-equals-the-committed-starting-anchor-root)
     - [Impact](#impact-1)
   - [iOPD-003: `absolutePrestate` matches the committed chain config](#iopd-003-absoluteprestate-matches-the-committed-chain-config)
     - [Impact](#impact-2)
@@ -31,6 +31,7 @@
   - [prepare](#prepare)
   - [prestate](#prestate)
   - [continue](#continue)
+  - [Relationship to `apply`](#relationship-to-apply)
 - [Deployment guards](#deployment-guards)
 - [Genesis block header fields](#genesis-block-header-fields)
 - [depsets.json](#depsetsjson)
@@ -42,12 +43,12 @@
 ## Overview
 
 op-deployer orchestrates PCD by computing all chain artifacts off-chain before broadcasting, then submitting
-`OPCM.deploy()` with the real `startingAnchorRoot` and `absolutePrestate`. This replaces the previous
-`startingAnchorRoot = 0xdead` flow.
+`OPCM.deploy()` with the real [starting anchor root](./overview.md#starting-anchor-root) and
+[selected prestate](./overview.md#selected-prestate).
 
-The pipeline is three stages: `prepare` (off-chain computation), `prestate` (commit the prestate
-hash), and `continue` (re-validate and broadcast). This page specifies the orchestration and the behavior of the
-three commands. The Solidity surface changes the pipeline drives are specified in [Contracts](./contracts.md).
+The pipeline is three stages: `prepare` (off-chain computation), `prestate` (commit the prestate hash), and `continue`
+(re-validate and broadcast). This page specifies the orchestration and the behavior of the three commands. The
+Solidity surface changes the pipeline drives are specified in [Contracts](./contracts.md).
 
 ## Definitions
 
@@ -55,15 +56,19 @@ three commands. The Solidity surface changes the pipeline drives are specified i
 
 `state.json` is op-deployer's canonical state file, written to the working directory alongside `intent.toml`. It is
 the only channel between the off-chain computation and the eventual broadcast. `prepare` records the predicted L1
-addresses, the L2 allocs, the anchor block reference, and the genesis [output root](./overview.md#output-root).
+addresses, the L2 allocs, the anchor block reference, the genesis block hash, and the starting anchor root.
 `prestate` records the prestate hash. `continue` reads these to run its preflight, set `startingAnchorRoot` and
 `absolutePrestate`, and broadcast `OPCM.deploy()`.
 
 ### Anchor offset (`X`)
 
 The number of seconds added to the [anchor block](./overview.md#anchor-block) timestamp to set the L2 genesis
-timestamp: `genesis_time = l1AnchorBlock.timestamp + X`. The operator commits to `X` at deploy time. Every artifact
-that is built down the pipeline derives deterministically from it.
+timestamp: `genesis_time = l1AnchorBlock.timestamp + X`. The operator commits to `X` at deploy time.
+Every artifact that is built down the pipeline
+derives deterministically from it.
+
+`X` sizes the [deployment window](#deployment-window). It has to cover address prediction, the external prestate
+build, and the broadcast.
 
 ### Deployment window
 
@@ -78,7 +83,7 @@ to still be in the future when `OPCM.deploy()` is mined (see [FM5](#failure-mode
 Given the same [anchor block](./overview.md#anchor-block), [anchor offset](#anchor-offset-x), chain config, and L1
 state, the pipeline reproduces identical artifacts: the predicted L1 addresses, the
 [L2 allocs](./overview.md#l2-allocs), the [genesis block](./overview.md#genesis-block), its
-[output root](./overview.md#output-root), and the prestate hash.
+[starting anchor root](./overview.md#starting-anchor-root), and the prestate hash.
 
 #### Mitigations
 
@@ -86,6 +91,8 @@ state, the pipeline reproduces identical artifacts: the predicted L1 addresses, 
   `OPCM.deploy()` code path.
 - Address prediction reuses the same `DeployOPChain` script that performs the broadcast (see
   [aPCD-001](./contracts.md#apcd-001-opcm-address-determinism)).
+- The CREATE2 salt is generated once and persisted in state, so re-runs cannot derive a different one (see
+  [Salt Mixer](./overview.md#salt-mixer)).
 - The prestate comes from the reproducible `reproducible-prestate-kona` recipe (see
   [aOPD-004](#aopd-004-the-prestate-build-is-reproducible)).
 
@@ -98,8 +105,12 @@ The [anchor block](./overview.md#anchor-block) chosen during `prepare` stays on 
 
 - Only blocks at the `safe` tag or deeper are eligible. Any attempt to use a shallower block fails the pipeline with a
   clear error.
-- A `BLOCKHASH` check in the deploy transaction reverts if the anchor is no longer retrievable, aborting before
-  `OPCM.deploy()` runs (see [FM1](#failure-modes)).
+- An anchor supplied by hash is re-fetched by number and compared, since a hash lookup alone can return a block that
+  has already been reorg'd out.
+- `continue` re-fetches the `safe` tag and re-verifies the pinned anchor is canonical at its height immediately before
+  each broadcast, aborting the broadcast on drift (see [FM1](#failure-modes)).
+- The deployment receipt's block is checked to be canonical after the transaction is mined, catching a reorg that
+  lands after the pre-broadcast check.
 
 ### aOPD-003: op-deployer state is trusted
 
@@ -141,10 +152,17 @@ invariant, and the on-chain determinism it depends on is
 [aPCD-001](./contracts.md#apcd-001-opcm-address-determinism). See [FM2](#failure-modes) and
 [FM3](#failure-modes).
 
-### iOPD-002: `startingAnchorRoot` equals the genesis output root
+### iOPD-002: `startingAnchorRoot` equals the committed starting anchor root
 
-The `startingAnchorRoot` passed to `OPCM.deploy()` MUST equal the [output root](./overview.md#output-root) recomputed
-from the committed [genesis block](./overview.md#genesis-block), with `l2SequenceNumber = 0`.
+The `startingAnchorRoot` passed to `OPCM.deploy()` MUST equal the
+[starting anchor root](./overview.md#starting-anchor-root) recomputed from the committed
+[genesis block](./overview.md#genesis-block). Both the root and its `l2SequenceNumber` MUST match, and what they hold
+depends on the game family:
+
+- **Output root games.** The root is the chain's own genesis output root and `l2SequenceNumber` is `0`, the L2 genesis
+  block number.
+- **Super root games.** The root is one [super root](./overview.md#super-root) over the whole dependency set and
+  `l2SequenceNumber` is that super root's timestamp. Every member chain is seeded with the same pair.
 
 #### Impact
 
@@ -155,22 +173,26 @@ genesis cannot be proven, and fault proofs are broken from block 0.
 
 ### iOPD-003: `absolutePrestate` matches the committed chain config
 
-The prestate hash written to the [state](#op-deployer-state) and carried into the enabled permissionless `disputeGameConfigs`
-entry MUST equal the hash reproduced from the committed `genesis.json`, `rollup.json`, and `depsets.json`. Re-running `prepare`
-with a different anchor MUST invalidate a stale prestate before `continue` proceeds.
+The prestate hash written to the [state](#op-deployer-state) and carried into the enabled permissionless
+`disputeGameConfigs` entry MUST equal the hash reproduced from the committed `genesis.json`, `rollup.json`, and
+`depsets.json`. Re-running `prepare` MUST invalidate a stale prestate before `continue` proceeds.
 
 #### Impact
 
 **Severity: Critical**
 
 A mismatched prestate makes the two sides of a dispute disagree on the starting state. Fault proofs are broken from
-block 0, with no on-chain guard to catch it at deploy time. Recovering from this is expensive. See
-[FM4](#failure-modes) and [FM6](#failure-modes).
+block 0. Recovering from this is expensive.
+
+OPCM rejects a **zero** prestate on an enabled Cannon-family game (see
+[OPCMv2 config validation](./contracts.md#opcmv2-config-validation)), so an unset prestate cannot reach L1. It cannot
+reject a wrong one, since any nonzero value passes. Reproducing the prestate before `continue` is the only thing that
+catches a prestate that is set but incorrect. See [FM4](#failure-modes) and [FM6](#failure-modes).
 
 ### iOPD-004: A permissionless deployment requires a committed prestate
 
-`continue` MUST halt any attempt to make a permissionless deployment when the prestate is unset. A permissioned-only
-deployment carries no prestate and MUST be able to proceed without one.
+`continue` MUST halt any attempt to make a permissionless deployment when the prestate is unset.
+A permissioned-only deployment carries no selected prestate and MUST be able to proceed without one.
 
 #### Impact
 
@@ -186,61 +208,116 @@ command can run.
 
 ### prepare
 
-Off-chain computation of the genesis block. Outputs `genesis.json`, `rollup.json`, and `depsets.json`.
+Off-chain computation of the genesis block and the starting anchor root. Everything it derives goes into
+[op-deployer state](#op-deployer-state).
+
+`prepare` predicts against an already-deployed OPCM rather than deploying one, so the intent MUST pin both
+`opcmAddress` and `superchainConfigProxy`. `prepare` reads the implementation set and the game mode
+(`SUPER_ROOT_GAMES_MIGRATION`) off that OPCM and records them, and rejects a chain whose requested game type belongs
+to the other mode before doing any further work.
 
 - **Pick the anchor block.** Choose an L1 anchor block at the `safe` tag or deeper to avoid reorg invalidation. Its
   hash is baked into `rollup.json` and the prestate.
-- **Fix the genesis timestamp.** Set `genesis_time = l1AnchorBlock.timestamp + X`, where `X` is a configured offset.
-  The genesis timestamp is a direct input to the genesis block header, `stateRoot`, output root, and prestate hash. A
-  different timestamp changes every downstream artifact.
+- **Fix the genesis timestamp.** Set `genesis_time = l1AnchorBlock.timestamp + X`, where `X` is the
+  [anchor offset](#anchor-offset-x). The genesis timestamp is a direct input to the genesis block header, `stateRoot`,
+  output root, and prestate hash. A different timestamp changes every downstream artifact.
 - **Predict the L1 addresses.** Call the [contracts prediction path](./contracts.md#address-prediction), using the
   same `from` address as the eventual `OPCM.deploy()` broadcast.
 - **Compute the L2 allocs.** Execute `L2Genesis.s.sol` with the predicted L1 addresses.
 - **Build the genesis block** from the allocs, chain config, and `genesis_time`.
-- **Compute the genesis [output root](./overview.md#output-root).**
-- **Generate `depsets.json`.**
+- **Compute the [starting anchor root](./overview.md#starting-anchor-root).**
+- **Build the dependency set.**
+
+`prepare` MUST pin each chain's anchor block and genesis time on its first run and reuse that pair on every later run,
+so re-runs stay idempotent. It MUST fail when a per-chain `l1StartBlockHash` override conflicts with an already-pinned
+anchor, and when the pinned genesis time has fallen outside the [deployment window](#deployment-window).
+
+Any `prepare` run MUST invalidate every artifact derived from the predicted addresses for the chains it re-prepares:
+the committed prestate, the starting anchor root, the L2 allocs, and the genesis block hash. A
+re-run that reuses the pinned anchor still clears them, so **every `prepare` re-run forces a `prestate` re-run** (see
+[FM6](#failure-modes)).
 
 ### prestate
 
 The prestate is built **externally** by the monorepo's `reproducible-prestate-kona` recipe, from the `genesis.json`,
-`rollup.json`, and `depsets.json` that `prepare` produces. The `prestate` command does not compile or hash anything
-itself. It only commits the built hash into op-deployer state, which `continue` reads.
+`rollup.json`, and `depsets.json` rendered from the prepared state. The `prestate` command does not compile or hash
+anything itself. It only commits the built hash into op-deployer state, which `continue` reads.
 
-- MUST write the prestate hash to op-deployer state from one of two sources, treated identically:
-  - a **command flag** that passes the hash directly, or
-  - an **intent override** declared in the intent, which the command resolves.
-- MUST fail if neither source is provided.
-- If both are provided, it MUST fail when the two hashes disagree.
-- Re-running `prepare` with a different anchor MUST invalidate a previously-committed prestate and force a rebuild
-  before `continue` (see [FM6](#failure-modes)).
+- MUST write the prestate hash to op-deployer state from any of three sources:
+  - the `--dispute-absolute-prestate` **command flag**, or the matching environment variable,
+  - a **global intent override**, `globalDeployOverrides.faultGameAbsolutePrestate`, or
+  - a **per-chain intent override**, the chain's `deployOverrides.faultGameAbsolutePrestate`.
+- MUST fail when two or more sources are set and disagree.
+- MUST fail if no source is provided for a chain whose game type requires a prestate.
+- MUST reject the reserved [fallback prestate](./overview.md#fallback-prestate) value as a selected prestate.
+- A permissioned-only chain MUST be left without a selected prestate.
 
 ### continue
 
-- MUST re-check the predicted addresses against current L1 state (pre-broadcast preflight) and abort on mismatch.
-- MUST submit `OPCM.deploy()` with the `startingAnchorRoot` (the genesis output root) and `absolutePrestate`.
-- MUST run post-deploy validation: deployed addresses match the committed genesis, the anchor is seeded with the
-  genesis output root at `l2SequenceNumber = 0`, and the guardian and system-config addresses match the intent.
-- The prestate gate is conditional on a permissionless game type. A permissionless deployment MUST halt if the
-  prestate is unset, while a **permissioned-only** deployment can continue without one.
+`continue` deploys from the frozen `preparedDeployment` snapshot. It validates every pending chain before broadcasting
+any of them, so a configuration error stops the run before it can produce a partial deployment.
+
+**Before broadcasting any transaction:**
+
+- MUST verify the current intent still agrees with the frozen snapshot, and that the dependency set still matches.
+- MUST re-download both artifact bundles by locator and verify their content digests against the frozen values.
+- MUST fail when the deployer or OPCM differs from the one recorded by `prepare`.
+- MUST halt a permissionless deployment when the prestate is unset or holds the reserved fallback value. The prestate
+  gate is conditional on a permissionless game type: a **permissioned-only** deployment carries no selected prestate
+  and proceeds without one.
+- MUST halt a permissionless deployment when the starting anchor root is unset or still holds the `0xdead` placeholder.
+- MUST re-check the predicted addresses by simulating the deployment against a fresh fork of L1 (pre-broadcast
+  preflight) and abort on mismatch.
+- MUST verify the simulated broadcast is exactly one call, to the pinned OPCM, from the pinned deployer.
+
+**Broadcasting:**
+
+- MUST re-validate the pinned anchor block immediately before each send (see
+  [aOPD-002](#aopd-002-the-anchor-block-is-not-reorgd-during-the-deployment-window)).
+- MUST submit `OPCM.deploy()` with the `startingAnchorRoot` and `absolutePrestate` committed in state.
+- MUST verify the deployment receipt's block is canonical.
+
+**After broadcasting:**
+
+- MUST run post-deploy validation against live L1 state. This covers the deployed addresses and their code, the
+  starting anchor root and its `l2SequenceNumber`, the enabled game configurations and the prestate of both the
+  respected game and its guardian fallback, the `SystemConfig` / `OptimismPortal` / `AnchorStateRegistry` wiring, the
+  proxy implementations against the OPCM's own `implementations()`, the proxy admin owner, and the `SuperchainConfig`
+  attachment and guardian.
 
 Carrying the real anchor root and the prestate into `OPCM.deploy()` requires two changes on the op-deployer side:
 
-- The Go input struct for the OP Chain deployment gains a `StartingAnchorRoot` field and a prestate-hash field for the
-  permissionless game.
+- The Go input struct for the OP Chain deployment gains a `StartingAnchorRoot` field and a second prestate field for
+  the guardian fallback game.
 - op-deployer's chain orchestration code wires those fields through into the `FullConfig` eventually passed to OPCM.
 
 The matching Solidity changes, the `DeployOPChain` script and the relaxation that accepts a permissionless game type at
 initial deployment, are specified in [Contracts](./contracts.md#change-specification).
 
+### Relationship to `apply`
+
+`apply` remains the path for permissioned-only deployments and
+still broadcasts the `0xdead` placeholder anchor. It MUST reject a permissionless game type and direct the operator to
+the `prepare` flow.
+
+The two flows MUST NOT be mixed on one working directory. `prepare` MUST refuse a state produced by `apply`, and
+`apply` MUST refuse a prepared state.
+
+A permissioned-only chain may still go through `prepare` / `prestate` / `continue`. It carries no selected prestate
+and broadcasts the same `0xdead` placeholder anchor that `apply` would. The real anchor root is substituted only for
+permissionless deployments.
+
 ## Deployment guards
 
-- **Anchor `BLOCKHASH` check.** The deploy transaction reverts before `OPCM.deploy()` runs if the anchor block hash is
-  no longer retrievable, catching an L1 reorg past the anchor (see [FM1](#failure-modes)).
-- **Preflight + post-deploy validation.** Predicted addresses are re-validated before broadcast and the real addresses
-  verified after, guarding against prediction drift and compromised RPCs.
-- **Alternate RPC cross-check.** The dry-run that produces the predicted addresses MAY be re-run against a second,
-  independent L1 RPC. A mismatch between the two flags a compromised endpoint before any transaction is broadcast (see
-  [FM3](#failure-modes)).
+- **Pre-broadcast anchor revalidation.** The pinned anchor is re-fetched and re-checked to be canonical immediately
+  before each send, and the deployment receipt's block is checked afterwards (see [FM1](#failure-modes)).
+- **Preflight + post-deploy validation.** Predicted addresses are re-validated against a fresh fork before broadcast
+  and the real addresses verified against live L1 after, guarding against prediction drift and compromised RPCs.
+- **Frozen artifact digests.** `continue` re-verifies the artifact bundles against the digests `prepare` recorded, so
+  a swapped bundle fails before broadcast.
+- **On-chain config validation.** OPCM rejects a zero anchor root on any initial deployment, and rejects the `0xdead`
+  placeholder root or a zero prestate once a permissionless game is enabled (see
+  [OPCMv2 config validation](./contracts.md#opcmv2-config-validation)).
 
 ## Genesis block header fields
 
@@ -252,13 +329,26 @@ initial deployment, are specified in [Contracts](./contracts.md#change-specifica
 | `gasLimit` | chain config |
 | `number` | `0` (L2 genesis block number) |
 | `baseFee` | 1 gwei |
+| `withdrawalsRoot` | `L2ToL1MessagePasser` storage root, required to compute the output root |
 | other | standard genesis values per hardfork |
+
+Isthmus MUST be active at genesis. The [output root](./overview.md#output-root) reads its
+`messagePasserStorageRoot` from the header's withdrawals root, and a pre-Isthmus header has none. The pipeline fails
+rather than computing an output root from an incomplete header.
 
 ## depsets.json
 
 Generation is **unchanged from the current pipeline**: a single-chain dependency set for standalone chains, and a
-multi-chain depset for shared-dependency-set deployments. Deploying a chain directly into a shared super dispute game
-is **not** supported at this time.
+multi-chain depset for shared-dependency-set deployments.
+
+`prepare` records the dependency set in the state under `interopDepSet`.
+
+A super root deployment adds one constraint. The [super root](./overview.md#super-root) commits to a timestamp, so
+every member of the dependency set MUST share the same L2 genesis timestamp. `prepare` MUST fail when members
+disagree, which in practice means a per-chain `l1StartBlockHash` override that moves one chain's anchor.
+
+`prestate` and `continue` MUST both re-validate that the intent's chain set still matches the dependency set recorded
+by `prepare`.
 
 ## Failure modes
 
@@ -267,16 +357,20 @@ Summarized from `fma.md`. See the design doc for full mitigation and recovery de
 
 | ID | Failure | Risk | Key mitigation |
 | --- | --- | --- | --- |
-| FM1 | L1 anchor reorg after selection | Low likelihood / high impact | `BLOCKHASH` check reverts deploy, abort and restart |
-| FM2 | Predicted ≠ deployed L1 addresses | Low / high | Same `from` for dry-run and broadcast, plus preflight and post-deploy validation |
-| FM3 | Compromised L1 RPC | Low / high | Trusted or self-hosted RPC, cross-check against a second RPC, post-deploy validation |
+| FM1 | L1 anchor reorg after selection | Low likelihood / high impact | Pre-broadcast anchor revalidation aborts the send, abort and restart |
+| FM2 | Predicted ≠ deployed L1 addresses | Low / high | Same `from` and salt mixer for dry-run and broadcast, plus preflight and post-deploy validation |
+| FM3 | Compromised L1 RPC | Low / high | Trusted or self-hosted RPC, preflight re-simulation, post-deploy validation |
 | FM4 | Wrong prestate hash | Low / high | Source override from reproducible build, reproduce and verify before `continue` |
-| FM5 | Genesis timestamp overrun | Low / low | Set `X` conservatively, chain fills the gap with empty blocks |
-| FM6 | Stale prestate after re-running `prepare` | Low / high | `prepare` invalidates prestate, forcing rebuild |
-| FM7 | Wrong `startingAnchorRoot` | Low / high | Recompute output root from committed genesis before `continue`, post-deploy anchor check |
+| FM5 | Genesis timestamp overrun | Low / low | Set `X` conservatively, `prepare` refuses an elapsed window, chain fills the gap with empty blocks |
+| FM6 | Stale prestate after re-running `prepare` | Low / high | Every `prepare` run invalidates the prestate, forcing a rebuild |
+| FM7 | Wrong `startingAnchorRoot` | Low / high | Recompute the anchor from committed genesis before `continue`, post-deploy anchor check |
 
 ## Developer experience
 
-- Permissionless deployments require a prestate, built externally and committed via the `prestate` command's flag or an
-  intent override. This adds the prestate build time to the deployment.
+- Permissionless deployments require a prestate, built externally and committed through
+  `--dispute-absolute-prestate` or a `faultGameAbsolutePrestate` intent override. This adds the prestate build time to
+  the deployment.
 - Permissioned-only deployments skip the prestate requirement.
+- Re-running `prepare` discards the committed prestate even when the anchor is unchanged, so `prestate` has to be
+  re-run before `continue`.
+- `prepare` needs an already-deployed OPCM pinned in the intent. It does not bootstrap one.
