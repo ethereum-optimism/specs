@@ -34,7 +34,7 @@ executing messages.
 - The timestamp `t` of the identifier MUST be:
   - `t <= execution_timestamp`, where `execution_timestamp` is the timestamp of the block
     that includes the executing message.
-  - `t > execution_timestamp - expiry_window`, where `expiry_window` is the expiry window in seconds.
+  - `t >= execution_timestamp - expiry_window`, where `expiry_window` is the expiry window in seconds.
 
 L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
 They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
