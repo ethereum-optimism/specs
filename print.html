@@ -17001,7 +17001,8 @@ do not count as executing messages.</p>
 be less than or equal to the timestamp of the executing message as well as greater than the Lagoon activation timestamp.</li>
 <li><a href="interop/messaging.html#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
 <li><a href="interop/messaging.html#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
-message MUST be lower than the initiating message timestamp (as defined in the <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
+message MUST be lower than or equal to the initiating message timestamp
+(as defined in the <a href="interop/messaging.html#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
 <p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Lagoon activation timestamp
@@ -18994,7 +18995,7 @@ executing messages.</p>
 <ul>
 <li><code>t &lt;= execution_timestamp</code>, where <code>execution_timestamp</code> is the timestamp of the block
 that includes the executing message.</li>
-<li><code>t &gt; execution_timestamp - expiry_window</code>, where <code>expiry_window</code> is the expiry window in seconds.</li>
+<li><code>t &gt;= execution_timestamp - expiry_window</code>, where <code>expiry_window</code> is the expiry window in seconds.</li>
 </ul>
 </li>
 </ul>
