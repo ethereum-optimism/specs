@@ -125,7 +125,8 @@ do not count as executing messages.
   be less than or equal to the timestamp of the executing message as well as greater than the Lagoon activation timestamp.
 - [ChainID Invariant](#chainid-invariant): The chain id of the initiating message MUST be in the dependency set
 - [Message Expiry Invariant](#message-expiry-invariant): The timestamp at the time of inclusion of the executing
-  message MUST be lower than the initiating message timestamp (as defined in the [`Identifier`]) + `EXPIRY_TIME`.
+  message MUST be lower than or equal to the initiating message timestamp
+  (as defined in the [`Identifier`]) + `EXPIRY_TIME`.
 
 ### Timestamp Invariant
 

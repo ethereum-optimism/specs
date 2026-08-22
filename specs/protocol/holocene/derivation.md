@@ -139,8 +139,11 @@ due to the new strict batch ordering rules.
 doesn't contain any new batches (this would also happen if applying timestamp checks to each derived
 singular batch individually). See below in the [Batch Queue](#batch-queue) section about the new
 `past` validity.
-- Note that we still allow span batches to overlap with the safe chain (`span_start.timestamp <
-next_timestamp`).
+- Span batches may overlap with the safe chain (`span_start.timestamp < next_timestamp`). Every
+overlapped block must have the same L1 origin number and non-deposit transactions as the
+corresponding safe-chain block, as specified by the
+[overlapped blocks checks](../delta/span-batches.md#batch-queue).
+A failed overlap check invalidates the span batch.
 
 If any of the above checks invalidate the span batch, it is `drop`ped and the remaining channel from
 which the span batch was derived, is also immediately dropped (see also [Fast Channel
@@ -151,10 +154,10 @@ dropping the remaining channel.
 > A word regarding overlapping span batches: the existing batch queue rules already contain the rule
 > to drop batches whose L1 origin is older than that of the L2 safe head. The Delta span batch
 > checks also have an equivalent rule that applies to all singular batches past the safe head.
-> Now full span batch checks aren't done any more in Holocene, but the batch queue rules are still
-> applied to singular batches that are streamed out of span batches, so in particular this rule also
-> still applies to the first singular batch past the current safe head coming from an overlapping
-> span batch.
+> The overlap checks above are still performed on the span batch as a whole. The remaining full span
+> batch checks are not performed before streaming singular batches in Holocene. The batch queue rules
+> are still applied to singular batches streamed from span batches, so in particular the outdated L1
+> origin rule also applies to the first singular batch past the current safe head.
 >
 > It is a known footgun for implementations that the earliest point at which violations of this rule
 > are detected is when the full array of singular batches is extracted from the span batch and their
