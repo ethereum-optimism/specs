@@ -85,6 +85,7 @@
       - [Network upgrade transactions](./protocol/karst/derivation.md)
     - [Lagoon](./protocol/lagoon/overview.md)
       - [Post-Execution Transactions](./protocol/lagoon/post-exec.md)
+      - [Sequencer-Defined Fees](./protocol/sdf.md)
       - [Sequencer-Defined Metering](./protocol/lagoon/sdm.md)
       - [Interoperability](./interop/overview.md)
         - [Dependency Set](./interop/dependency-set.md)

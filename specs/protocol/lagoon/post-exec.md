@@ -43,9 +43,9 @@ The post-exec transaction type is introduced by the [Lagoon network upgrade](./o
 first payload schema. Before the Lagoon activation timestamp a block MUST NOT contain a `0x7D` transaction.
 
 The post-exec transaction is a generic envelope: it carries a versioned [post-exec payload][g-post-exec-payload]
-whose interpretation is defined by separate policy specifications. Today only one schema is defined,
-[Sequencer-Defined Metering][g-sdm] (`version = 1`), specified in [sdm.md](./sdm.md). Future policies extend
-this document by defining additional [schema versions][g-post-exec-schema-version].
+whose interpretation is defined by separate policy specifications. Today only one schema is defined. Version 1
+commits [Sequencer-Defined Fees](../sdf.md) and carries optional [Sequencer-Defined Metering][g-sdm] refunds.
+Future policies extend this document by defining additional [schema versions][g-post-exec-schema-version].
 
 This document specifies the envelope: the transaction type, the encoding, and the structural invariants that hold
 regardless of the active schema. It does **not** specify what the payload fields mean — that is the responsibility
@@ -169,11 +169,11 @@ The normative rule that `blockNumber` equals the containing block's number is st
 
 ### Defined Schema Versions
 
-| `version` | Schema                                 |
-| --------- | -------------------------------------- |
-| `1`       | [Sequencer-Defined Metering](./sdm.md) |
+| `version` | Schema                                                                                   |
+| --------- | ---------------------------------------------------------------------------------------- |
+| `1`       | [Sequencer-Defined Fees](../sdf.md) and [Sequencer-Defined Metering](./sdm.md) |
 
-No other schema versions are currently defined. SDM (`version = 1`) is introduced by the
+No other schema versions are currently defined. Version 1 is introduced by the
 [Lagoon network upgrade](./overview.md); see [Overview](#overview).
 
 ## Block-Level Structural Rules
@@ -188,6 +188,8 @@ the block.
 4. **Recognized schema.** The payload's `version` MUST be a [defined schema version](#defined-schema-versions).
 5. **Schema must be active.** When no schema version is active for the block's timestamp, the block MUST NOT
    contain a `0x7D` transaction.
+6. **Lagoon commitment.** At and after the Lagoon activation timestamp, a block MUST contain exactly one `0x7D`
+   transaction with the version-1 payload defined by [Sequencer-Defined Fees](../sdf.md#commitment-format).
 
 Schema-specific validity rules (e.g. constraints on the trailing fields) are layered on top of these envelope rules
 and are specified by each schema's document. Both layers MUST hold for the block to be valid.

@@ -44,8 +44,8 @@ Constraints:
 - `version` MUST be `1` (incremented from Holocene's `0`).
 - There MUST NOT be any data beyond these 17 bytes.
 
-The `minBaseFee` field is an absolute minimum expressed in wei. During base fee computation, if the
-computed `baseFee` is less than `minBaseFee`, it MUST be clamped to `minBaseFee`.
+The `minBaseFee` field is an absolute minimum expressed in wei. Before Lagoon, if the computed `baseFee` is less
+than `minBaseFee`, it MUST be clamped to `minBaseFee`.
 
 ```javascript
 if (baseFee < minBaseFee) {
@@ -82,10 +82,13 @@ The `minBaseFee` MUST be `null` prior to the Jovian fork, and MUST be non-`null`
 
 As with [Holocene's dynamic EIP-1559 parameters](../holocene/exec-engine.md#rationale), placing the
 minimum base fee in the block header allows us to avoid reaching into the state during block sealing.
-This retains the purity of the function that computes the next block's base fee from its parent block
-header, while still allowing them to be dynamically configured. Dynamic configuration is handled
-similarly to `gasLimit`, with the derivation pipeline providing the appropriate `SystemConfig`
-contract values to the block builder via `PayloadAttributesV3` parameters.
+Before Lagoon, this retains the purity of the function that computes the next block's base fee from its parent block
+header, while still allowing the parameters to be dynamically configured. Dynamic configuration is handled
+similarly to `gasLimit`, with the derivation pipeline providing the appropriate `SystemConfig` contract values to
+the block builder via `PayloadAttributesV3` parameters.
+
+At and after Lagoon, `minBaseFee` remains encoded and transported for compatibility but is not a consensus bound on
+the block base fee. A producer policy MAY use it as an input. See [Sequencer-Defined Fees](../sdf.md).
 
 ## DA Footprint Block Limit
 
@@ -125,9 +128,13 @@ During block building and header validation, it must be guaranteed and checked, 
 `daFootprint` stays below the `gasLimit`, just like the `gasUsed` property.
 Note that this implies that blocks may have no more than `gasLimit/daFootprintGasScalar` total estimated DA usage bytes.
 
-Furthermore, from Jovian, the base fee update calculation now uses `gasMetered := max(gasUsed, blobGasUsed)`
-in place of the `gasUsed` value used before.
-As a result, blocks with high DA usage may cause the base fee to increase in subsequent blocks.
+From Jovian until Lagoon, the base fee update calculation uses `gasMetered := max(gasUsed, blobGasUsed)` in place
+of the `gasUsed` value used before. As a result, blocks with high DA usage may cause the base fee to increase in
+subsequent blocks.
+
+At and after Lagoon, the sequencer selects the block base fee as specified by
+[Sequencer-Defined Fees](../sdf.md). The Jovian calculation MAY remain an input to the producer policy but is no
+longer a consensus rule.
 
 ### Scalar loading
 
