@@ -258,7 +258,10 @@ The `noTxPool` is optional as well, and extends the `transactions` meaning:
 
 - If `false`, the execution engine is free to pack additional transactions from external sources like the tx pool
   into the payload, after any of the `transactions`. This is the default behavior a L1 node implements.
-- If `true`, the execution engine must not change anything about the given list of `transactions`.
+- If `true`, the execution engine must not change anything about the given list of `transactions`,
+  except that deterministic Lagoon execution synthesizes the canonical trailing post-exec
+  commitment when the list does not already contain one, as specified by
+  [Sequencer-Defined Fees](sdf.md#deterministic-payload-building).
 
 If the `transactions` field is present, the engine must execute the transactions in order and return `STATUS_INVALID`
 if there is an error processing the transactions. It must return `STATUS_VALID` if all of the transactions could

@@ -32,7 +32,9 @@ block base fee. L1 data fees and operator fees are unchanged.
 ## Activation
 
 SDF activates with the [Lagoon network upgrade](./lagoon/overview.md). It uses Lagoon's per-chain
-timestamp activation and has no separate feature flag or activation time.
+timestamp activation and has no separate feature flag or activation time. A block is at or after
+Lagoon exactly when its L2 block timestamp is greater than or equal to the configured Lagoon
+timestamp.
 
 Before Lagoon, the block base fee MUST be derived from the parent according to the active EIP-1559
 rules, including the Jovian DA-footprint input and minimum-base-fee clamp. A post-exec transaction
@@ -57,8 +59,13 @@ At Lagoon, the version-1 post-exec payload is RLP-encoded as:
 | `selectedBaseFeePerGas`     | `uint64`             | Base fee selected for the containing block, in wei. |
 | `gasRefundEntries`          | `list<SDMGasEntry>`  | Possibly empty [Sequencer-Defined Metering](./lagoon/sdm.md) refund list. |
 
+The payload MUST be one canonical RLP list containing exactly these four elements. Integer fields
+MUST use canonical minimal RLP integer encodings and values outside their declared widths MUST be
+rejected.
+
 `selectedBaseFeePerGas` MAY be zero. Its value is not constrained by the parent block's base fee,
-the EIP-1559 update formula, or the configured Jovian minimum base fee.
+the EIP-1559 update formula, or the configured Jovian minimum base fee. Its maximum value is the
+`uint64` maximum implied by the commitment field type.
 
 The post-exec transaction hash commits to `selectedBaseFeePerGas` because the field is part of the
 RLP payload covered by the [transaction hash](./lagoon/post-exec.md#transaction-hash).
