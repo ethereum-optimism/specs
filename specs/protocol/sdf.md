@@ -93,7 +93,7 @@ transaction-submission RPCs.
 
 ## Block Validation
 
-For a Lagoon block, a validator MUST:
+For a non-genesis Lagoon block, a validator MUST:
 
 1. Decode and validate the trailing version-1 post-exec payload.
 2. Read `selectedBaseFeePerGas` before constructing the block's EVM environment.
@@ -102,8 +102,9 @@ For a Lagoon block, a validator MUST:
 5. Execute all transactions using `selectedBaseFeePerGas` as the EVM block base fee.
 
 The validator MUST NOT invoke the sequencer's producer policy and MUST NOT apply the parent-derived
-EIP-1559 base-fee check. A Lagoon block with a missing post-exec transaction, a missing header base
-fee, or unequal committed and header fees is invalid.
+EIP-1559 base-fee check. A non-genesis Lagoon block with a missing post-exec transaction, a missing
+header base fee, or unequal committed and header fees is invalid. A genesis block with no
+transactions remains exempt when Lagoon is active from genesis.
 
 Before Lagoon, validators continue to enforce the parent-derived EIP-1559 base-fee check and reject
 all post-exec transactions.
@@ -156,10 +157,13 @@ SDF does not add a field to `PayloadAttributesV3`, change an Engine API method v
 singular or span batch layouts. The selected fee is transported by the existing transaction list as
 the trailing post-exec transaction. Singular batches carry its complete EIP-2718 bytes.
 
-Span batches use the existing transposed transaction fields: `tx_types` contains `0x7D`, `tx_datas` contains the
-opaque RLP payload, the signature, nonce, and gas fields are zero, and the contract-creation bit represents the
-absence of a recipient. This projection is valid only at and after Lagoon and reconstructs the same canonical
-EIP-2718 bytes without adding a span-batch version or field.
+Span batches use the existing transposed transaction fields. The post-exec entry in `tx_datas` is the
+complete `0x7D || rlp_encoded_payload` encoding. Its `r`, `s`, y-parity, nonce, and gas placeholders
+are zero, and its contract-creation bit is one so no recipient is encoded. The protected bitlist has
+no entry because post-exec is not a legacy transaction. This projection is valid only at and after
+Lagoon and reconstructs the same canonical EIP-2718 bytes without adding a span-batch version or
+field. The normative span-batch encoding and type-activation rules are specified in
+[span-batches.md](./delta/span-batches.md#span-batch-format).
 
 The batcher includes the post-exec transaction in L2 batch data like any other L2 transaction.
 Derivation passes the encoded transaction through to deterministic payload attributes unchanged.
