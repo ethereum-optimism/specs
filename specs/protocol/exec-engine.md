@@ -51,6 +51,8 @@ The formula for EIP-1559 is otherwise not modified.
 Starting with Holocene, the EIP-1559 parameters become [dynamically configurable](holocene/exec-engine.md#dynamic-eip-1559-parameters).
 
 Starting with Jovian, a [configurable minimum base fee](jovian/exec-engine.md#minimum-base-fee) is introduced.
+Starting with Lagoon, [Sequencer-Defined Fees](sdf.md) replaces parent-derived EIP-1559 base-fee selection while
+retaining the legacy parameters as compatibility metadata and optional producer-policy inputs.
 
 ## Extra Data
 
@@ -114,7 +116,8 @@ The block fee-recipient (a.k.a. coinbase address) is set to the Sequencer Fee Va
 ### Base fees (Base Fee Vault)
 
 Base fees largely follow the [eip-1559] specification, with the exception that base fees are not burned,
-but add up to the Base Fee Vault ETH account balance.
+but add up to the Base Fee Vault ETH account balance. Starting with Lagoon, the block base fee is selected and
+validated according to [Sequencer-Defined Fees](sdf.md); fee charging and vault accounting are otherwise unchanged.
 
 ### L1-Cost fees (L1 Fee Vault)
 
@@ -255,7 +258,10 @@ The `noTxPool` is optional as well, and extends the `transactions` meaning:
 
 - If `false`, the execution engine is free to pack additional transactions from external sources like the tx pool
   into the payload, after any of the `transactions`. This is the default behavior a L1 node implements.
-- If `true`, the execution engine must not change anything about the given list of `transactions`.
+- If `true`, the execution engine must not change anything about the given list of `transactions`,
+  except that deterministic Lagoon execution synthesizes the canonical trailing post-exec
+  commitment when the list does not already contain one, as specified by
+  [Sequencer-Defined Fees](sdf.md#deterministic-payload-building).
 
 If the `transactions` field is present, the engine must execute the transactions in order and return `STATUS_INVALID`
 if there is an error processing the transactions. It must return `STATUS_VALID` if all of the transactions could

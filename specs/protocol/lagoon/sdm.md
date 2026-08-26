@@ -44,27 +44,27 @@ document specifies the version-1 payload and how clients apply the included refu
 
 ## Activation
 
-SDM activates with the [Lagoon network upgrade](./overview.md) and is gated by the Lagoon activation timestamp.
-When SDM is active for a block, the block MAY contain a post-exec transaction; when SDM is inactive, the block MUST
-NOT contain a post-exec transaction (see
-[post-exec.md § Block-Level Structural Rules](./post-exec.md#block-level-structural-rules)).
+SDM activates with the [Lagoon network upgrade](./overview.md), together with
+[Sequencer-Defined Fees](../sdf.md). It uses Lagoon's per-chain timestamp activation and has no separate feature
+flag or activation time.
 
-Before the Lagoon activation timestamp, every block MUST be produced and validated with SDM inactive, identically
-to a chain that has never specified SDM.
+Before Lagoon, a block MUST NOT contain a post-exec transaction. At and after Lagoon, every non-genesis block MUST
+contain the version-1 post-exec commitment required by SDF, even when the sequencer assigns no gas refunds.
 
 ## Payload Schema (Version 1)
 
 When `version = 1`, the [post-exec payload][g-post-exec-payload] is RLP-encoded as:
 
 ```text
-[version, blockNumber, gasRefundEntries]
+[version, blockNumber, selectedBaseFeePerGas, gasRefundEntries]
 ```
 
-| Field              | Type                | Description                                                                                                   |
-| ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `version`          | `uint8`             | MUST be `1`.                                                                                                  |
-| `blockNumber`      | `uint64`            | The L2 block number containing this payload (see [post-exec.md § Block Number](./post-exec.md#block-number)). |
-| `gasRefundEntries` | `list<SDMGasEntry>` | Non-zero per-transaction gas refunds.                                                                         |
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `version` | `uint8` | MUST be `1`. |
+| `blockNumber` | `uint64` | The L2 block number containing this payload (see [post-exec.md § Block Number](./post-exec.md#block-number)). |
+| `selectedBaseFeePerGas` | `uint64` | The block base fee committed by [Sequencer-Defined Fees](../sdf.md). |
+| `gasRefundEntries` | `list<SDMGasEntry>` | Possibly empty list of non-zero per-transaction gas refunds. |
 
 ### `SDMGasEntry`
 
@@ -79,14 +79,13 @@ Each entry in `gasRefundEntries` is an RLP list of two fields:
 
 A version-1 payload is invalid if any of the following hold:
 
-1. `gasRefundEntries` is empty.
-2. Any `SDMGasEntry` has `gasRefund == 0`.
-3. Entries are not ordered by strictly increasing `index`.
-4. Any entry's `index` does not refer to a standard Ethereum transaction in the block.
+1. Any `SDMGasEntry` has `gasRefund == 0`.
+2. Entries are not ordered by strictly increasing `index`.
+3. Any entry's `index` does not refer to a standard Ethereum transaction in the block.
 
-The envelope-level rules in [post-exec.md § Block-Level Structural Rules](./post-exec.md#block-level-structural-rules)
-apply in addition to the rules above. As long as SDM is the only active payload schema: if the sequencer assigns
-no gas refunds, the block has no post-exec transaction.
+An empty `gasRefundEntries` list is valid and means that no transaction receives an SDM refund. The envelope-level
+rules in [post-exec.md § Block-Level Structural Rules](./post-exec.md#block-level-structural-rules) and the SDF
+[selected-fee validation](../sdf.md#block-validation) apply in addition to the rules above.
 
 ## Transaction Classification
 
@@ -174,10 +173,12 @@ honest execution.
 
 Under SDM:
 
-- The sequencer executes the block, chooses the non-zero `gasRefundEntries`, and appends a post-exec transaction if
-  and only if the entry list is non-empty.
-- A verifier enforces the post-exec envelope rules and the SDM [validity rules](#validity-rules), then applies the
-  refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage.
+- The sequencer executes the block, chooses the non-zero `gasRefundEntries`, and appends the post-exec commitment
+  required for every non-genesis Lagoon block. If local refund production is disabled or no refunds are selected,
+  it commits an empty list.
+- A verifier enforces the post-exec envelope rules, SDF fee equality, and the SDM
+  [validity rules](#validity-rules), then applies the refunds from the payload when computing canonical gas,
+  settlement, receipts, and block gas usage.
 
 ## Receipt Extension
 
@@ -202,8 +203,8 @@ specified SDM: no post-exec transactions appear, no canonical-gas adjustment is 
 
 From the Lagoon activation timestamp, two changes become observable:
 
-- A `0x7D` transaction may appear at the end of any block produced after activation, exposed through the same
-  transaction-list interfaces used today.
+- A `0x7D` transaction appears at the end of every non-genesis block, exposed through the same transaction-list
+  interfaces used today.
 - The receipts of standard Ethereum transactions in such blocks gain the `opGasRefund` field; clients that ignore unknown
   fields are unaffected.
 

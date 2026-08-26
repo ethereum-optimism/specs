@@ -127,6 +127,10 @@ tx_sigs ++ tx_tos ++ tx_datas ++ tx_nonces ++ tx_gases ++ protected_bits`
     - `legacy`: `rlp_encode(value, gasPrice, data)`
     - `1`: ([EIP-2930]): `0x01 ++ rlp_encode(value, gasPrice, data, accessList)`
     - `2`: ([EIP-1559]): `0x02 ++ rlp_encode(value, max_priority_fee_per_gas, max_fee_per_gas, data, access_list)`
+    - `0x7D`: ([Lagoon post-exec](../lagoon/post-exec.md)), only at and after Lagoon:
+      `0x7D ++ rlp_encoded_payload`. Its `r` and `s` values, y-parity bit, `tx_nonces` value,
+      and `tx_gases` value are zero. Its `contract_creation_bits` value is one, so it has no
+      `tx_tos` entry. It has no `protected_bits` entry because it is not a legacy transaction.
   - `tx_nonces`: concatenated list of `uvarint` of `nonce` field.
   - `tx_gases`: concatenated list of `uvarint` of gas limits.
     - `legacy`: `gasLimit`
@@ -360,9 +364,10 @@ Span-batch rules, in validation order:
     that is invalid or derived by other means exclusively:
     - any transaction that is empty (zero length `tx_data`)
     - any [deposited transactions][g-deposit-tx-type] (identified by the transaction type prefix byte in `tx_data`)
-    - any transaction of a future type > 2 (note that
-      [Isthmus adds support](../isthmus/derivation.md#activation)
-      for `SetCode` transactions of type 4)
+    - any typed transaction other than:
+      - types 1 and 2;
+      - type 4 at and after [Isthmus activation](../isthmus/derivation.md#activation); or
+      - type `0x7D` at and after [Lagoon activation](../lagoon/overview.md#activation).
 - Overlapped blocks checks:
   - Note: If the span batch overlaps the current L2 safe chain, we must validate all overlapped blocks.
   - Variables:
