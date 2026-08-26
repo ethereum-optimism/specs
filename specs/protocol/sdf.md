@@ -40,9 +40,10 @@ Before Lagoon, the block base fee MUST be derived from the parent according to t
 rules, including the Jovian DA-footprint input and minimum-base-fee clamp. A post-exec transaction
 MUST NOT appear.
 
-At and after Lagoon, every block MUST contain exactly one post-exec transaction satisfying the
+At and after Lagoon, every non-genesis block MUST contain exactly one post-exec transaction satisfying the
 [block-level structural rules](./lagoon/post-exec.md#block-level-structural-rules). The post-exec transaction
-MUST be the final transaction in the block and MUST use payload schema version 1.
+MUST be the final transaction in the block and MUST use payload schema version 1. Genesis contains no transactions
+and is exempt when Lagoon is configured active from genesis.
 
 ## Version-1 Commitment
 
@@ -111,7 +112,8 @@ all post-exec transactions.
 
 When the rollup node requests deterministic execution with `noTxPool = true`, an embedded post-exec
 transaction is validator data. The execution engine MUST use its committed fee and MUST NOT invoke a
-local producer policy.
+local producer policy. This deterministic rule takes precedence over [Block Production](#block-production),
+including when a sequencer locally builds the Lagoon activation block or an invalid-message replacement block.
 
 If deterministic Lagoon payload attributes contain no post-exec transaction, the execution engine
 MUST carry forward the parent block's base fee and synthesize the canonical version-1 post-exec
@@ -151,8 +153,13 @@ Jovian result.
 ## Engine API and Derivation
 
 SDF does not add a field to `PayloadAttributesV3`, change an Engine API method version, or modify the
-singular or span batch formats. The selected fee is transported by the existing transaction list as
-the trailing post-exec transaction.
+singular or span batch layouts. The selected fee is transported by the existing transaction list as
+the trailing post-exec transaction. Singular batches carry its complete EIP-2718 bytes.
+
+Span batches use the existing transposed transaction fields: `tx_types` contains `0x7D`, `tx_datas` contains the
+opaque RLP payload, the signature, nonce, and gas fields are zero, and the contract-creation bit represents the
+absence of a recipient. This projection is valid only at and after Lagoon and reconstructs the same canonical
+EIP-2718 bytes without adding a span-batch version or field.
 
 The batcher includes the post-exec transaction in L2 batch data like any other L2 transaction.
 Derivation passes the encoded transaction through to deterministic payload attributes unchanged.

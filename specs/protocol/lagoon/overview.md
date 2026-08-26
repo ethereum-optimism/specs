@@ -18,8 +18,8 @@ This document is not finalized and should be considered experimental.
 - [Sequencer-Defined Fees](../sdf.md)
 - [Sequencer-Defined Metering](./sdm.md)
 
-Lagoon activates the version-1 post-exec schema. Every Lagoon block contains exactly one post-exec transaction as
-its final transaction, including blocks with an empty SDM refund list. The payload commits the block's
+Lagoon activates the version-1 post-exec schema. Every non-genesis Lagoon block contains exactly one post-exec
+transaction as its final transaction, including blocks with an empty SDM refund list. The payload commits the block's
 `baseFeePerGas` selected under SDF and carries any SDM refunds. Before Lagoon, post-exec transactions are invalid
 and the parent-derived EIP-1559 base-fee rules remain active.
 

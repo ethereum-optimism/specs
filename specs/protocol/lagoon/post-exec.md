@@ -188,8 +188,9 @@ the block.
 4. **Recognized schema.** The payload's `version` MUST be a [defined schema version](#defined-schema-versions).
 5. **Schema must be active.** When no schema version is active for the block's timestamp, the block MUST NOT
    contain a `0x7D` transaction.
-6. **Lagoon commitment.** At and after the Lagoon activation timestamp, a block MUST contain exactly one `0x7D`
-   transaction with the version-1 payload defined by [Sequencer-Defined Fees](../sdf.md#commitment-format).
+6. **Lagoon commitment.** At and after the Lagoon activation timestamp, every non-genesis block MUST contain
+   exactly one `0x7D` transaction with the version-1 payload defined by
+   [Sequencer-Defined Fees](../sdf.md#version-1-commitment).
 
 Schema-specific validity rules (e.g. constraints on the trailing fields) are layered on top of these envelope rules
 and are specified by each schema's document. Both layers MUST hold for the block to be valid.

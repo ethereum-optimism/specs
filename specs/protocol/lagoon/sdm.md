@@ -48,8 +48,8 @@ SDM activates with the [Lagoon network upgrade](./overview.md), together with
 [Sequencer-Defined Fees](../sdf.md). It uses Lagoon's per-chain timestamp activation and has no separate feature
 flag or activation time.
 
-Before Lagoon, a block MUST NOT contain a post-exec transaction. At and after Lagoon, every block MUST contain the
-version-1 post-exec commitment required by SDF, even when the sequencer assigns no gas refunds.
+Before Lagoon, a block MUST NOT contain a post-exec transaction. At and after Lagoon, every non-genesis block MUST
+contain the version-1 post-exec commitment required by SDF, even when the sequencer assigns no gas refunds.
 
 ## Payload Schema (Version 1)
 
@@ -174,8 +174,8 @@ honest execution.
 Under SDM:
 
 - The sequencer executes the block, chooses the non-zero `gasRefundEntries`, and appends the post-exec commitment
-  required for every Lagoon block. If local refund production is disabled or no refunds are selected, it commits an
-  empty list.
+  required for every non-genesis Lagoon block. If local refund production is disabled or no refunds are selected,
+  it commits an empty list.
 - A verifier enforces the post-exec envelope rules, SDF fee equality, and the SDM
   [validity rules](#validity-rules), then applies the refunds from the payload when computing canonical gas,
   settlement, receipts, and block gas usage.
@@ -203,8 +203,8 @@ specified SDM: no post-exec transactions appear, no canonical-gas adjustment is 
 
 From the Lagoon activation timestamp, two changes become observable:
 
-- A `0x7D` transaction appears at the end of every block, exposed through the same transaction-list interfaces used
-  today.
+- A `0x7D` transaction appears at the end of every non-genesis block, exposed through the same transaction-list
+  interfaces used today.
 - The receipts of standard Ethereum transactions in such blocks gain the `opGasRefund` field; clients that ignore unknown
   fields are unaffected.
 

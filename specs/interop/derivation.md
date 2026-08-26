@@ -38,8 +38,10 @@ executing messages.
 
 L2 blocks that produce invalid executing messages MUST not be allowed to be considered safe.
 They MAY optimistically exist as unsafe blocks for some period of time. An L2 block that is invalidated
-because it includes invalid executing messages MUST be replaced by a deposits only block at the same
-block height. This guarantees progression of the chain, ensuring that an infinite loop of processing
+because it includes invalid executing messages MUST be replaced by a deposits-only block at the same
+block height. At and after Lagoon, the execution engine appends the mandatory trailing post-exec commitment after
+those deposits as specified by [Sequencer-Defined Fees](../protocol/sdf.md#deterministic-payload-building). This
+guarantees progression of the chain, ensuring that an infinite loop of processing
 the same block in the proof system is not possible.
 
 ## Activation Block
@@ -48,15 +50,17 @@ The activation block is the first block that has a timestamp higher or equal to 
 Lagoon activation timestamp.
 The activation block timestamp may not exactly match the Lagoon activation timestamp.
 
-The genesis block is not technically considered an activation-block, as forks are already active.
-However, the genesis block does not contain transactions, and thus also meets the activation criteria.
+The genesis block is not technically considered an activation block, as forks are already active.
+The genesis block does not contain transactions and is exempt from Lagoon's post-exec commitment requirement.
 
 The activation block has several special properties and constraints:
 
-- It MUST NOT include any non-deposit-type transactions.
-  Sequencers, when building the fork activation block, MUST set `noTxPool` to `true`
-  in the execution payload attributes for this block, instructing the builder to exclude user transactions.
-- Messages MUST NOT be executed in this block. This is implemented by only processing deposit-type transactions.
+- It MUST NOT include any user transactions. Its deposit transactions MUST be followed by the mandatory trailing
+  post-exec commitment. Sequencers, when building the fork activation block, MUST set `noTxPool` to `true` in the
+  execution payload attributes for this block, instructing the builder to exclude user transactions and apply the
+  deterministic SDF fallback.
+- Messages MUST NOT be executed in this block. This is implemented by processing only deposit transactions before
+  the non-executing post-exec commitment.
 - Any contract log events MUST NOT count as valid initiating messages.
   Verifiers may use the activation block as an anchor point, without indexing the block-contents.
 - The derivation pipeline MUST enforce that the sequencer has not included any user transactions in
@@ -71,8 +75,9 @@ The activation block has several special properties and constraints:
 When the [cross chain dependency resolution](./messaging.md#resolving-cross-chain-safety) determines
 that a block contains an [invalid message](./messaging.md#invalid-messages), the block is replaced
 using [Holocene Replacement](../protocol/holocene/derivation.md#engine-queue).
-The replacement block has the same attributes, except the transaction list is trimmed
-to include only deposit transactions.
+The replacement block has the same attributes, except the supplied transaction list is trimmed to include only
+deposit transactions. At and after Lagoon, deterministic payload building appends the mandatory trailing post-exec
+commitment after the trimmed list.
 
 ## Network Upgrade Transactions
 
