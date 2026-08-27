@@ -336,8 +336,8 @@ like op-succinct, so their standard values are 0.
 See [Data Availability Provider](../glossary.md#data-availability-provider)).<br/>
 **Administrator:** [Batch submitter address](#service-roles)<br/>
 **Requirement:** Ethereum (Blobs, Calldata)<br/>
-**Notes:** Alt-DA is not yet supported for the standard configuration, but the sequencer can switch at-will between blob
-and calldata with no restriction, since both are L1 security.<br/>
+**Notes:** The sequencer can switch at-will between blob and calldata with no restriction, since both inherit L1
+security.<br/>
 
 ### Batch submission frequency
 

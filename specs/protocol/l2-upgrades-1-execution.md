@@ -133,7 +133,7 @@ that would occur in production.
 ##### Mitigations
 
 - Fork tests should use actual mainnet chain state (e.g., OP Mainnet) as a starting point
-- Testing should validate against chains with different configurations (e.g., custom gas token, alt-DA)
+- Testing should validate against chains with different configurations (e.g., custom gas token)
 - CI/CD should run fork tests to catch regressions
 - Manual testing on testnet chains before mainnet activation
 
