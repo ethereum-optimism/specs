@@ -103,7 +103,7 @@ The major/minor/patch versions should align with that of the upstream protocol t
 Users of the protocol can choose to implement custom support for the alternative `<build>`,
 but may work out of the box if the major features are consistent with that of the upstream protocol version.
 
-The 8 byte `<build>` identifier may be presented as a string for human readability if the contents are alpha-numeric,
+The 8 byte `<build>` identifier may be presented as a string for human readability if the contents are alphanumeric,
 including `-` and `.`, as outlined in the [Semver] format specs. Trailing `0` bytes can be used for padding.
 It may be presented as `0x`-prefixed hex string otherwise.
 
