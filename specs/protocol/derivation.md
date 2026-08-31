@@ -313,7 +313,7 @@ Batcher transactions are encoded as `version_byte ++ rollup_payload` (where `++`
 | -------------- | ---------------------------------------------- |
 | 0              | `frame ...` (one or more frames, concatenated) |
 
-Version 1, previously assigned to the experimental Alt-DA protocol, is retired and invalid for current clients.
+Version 1, previously assigned to the former public Alt-DA implementation, is retired and invalid for current clients.
 All other unknown versions make the batcher transaction invalid (it must be ignored by the rollup node).
 All frames in a batcher transaction must be parseable. If any one frame fails to parse, the all frames in the
 transaction are rejected.
