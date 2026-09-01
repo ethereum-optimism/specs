@@ -7,7 +7,7 @@
 - [Overview](#overview)
 - [Consumer guarantees](#consumer-guarantees)
 - [WebSocket stream](#websocket-stream)
-  - [Sequence](#sequence)
+  - [Ordering](#ordering)
   - [Payload](#payload)
   - [Zero-valued fields](#zero-valued-fields)
 - [JSON-RPC](#json-rpc)
@@ -53,15 +53,15 @@ use their standard Ethereum JSON encodings unless stated otherwise below.
 
 The JSON shape deliberately retains Flashblocks-era names and fields for wire compatibility.
 
-### Sequence
+### Ordering
 
 The first `Subblock` for an in-progress block has `index` equal to `0` and includes `base`. Each subsequent `Subblock`
 increments `index` by one and omits `base`. The `payload_id`, `base`, and `metadata.block_number` identify the
 in-progress L2 block.
 
 A consumer joining the stream after index `0` cannot reconstruct the complete in-progress block. It SHOULD ignore
-payloads until it receives the next index `0`. A consumer SHOULD also discard its current sequence if an index is
-skipped, duplicated, or paired with a different payload ID or block number.
+subblocks until it receives the next index `0`. A consumer SHOULD also discard its reconstruction of the in-progress
+block if an index is skipped, duplicated, or paired with a different payload ID or block number.
 
 ### Payload
 
@@ -118,8 +118,8 @@ any OP Stack receipt extensions active for the block.
 
 The fields have the following semantics:
 
-- `payload_id` identifies one payload build and is constant throughout the sequence.
-- `index` is a JSON number identifying the subblock's position in the sequence.
+- `payload_id` identifies one payload build and is constant for all subblocks of the in-progress block.
+- `index` is a JSON number identifying the subblock's position within the in-progress block.
 - `base` contains immutable block properties and is present only at index `0`.
 - `diff.transactions` contains only the EIP-2718 encoded transactions added by this subblock.
 - `diff.gas_used`, `diff.receipts_root`, and `diff.logs_bloom` describe the cumulative in-progress block after applying
