@@ -1,0 +1,392 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Subblocks - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/subblocks.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="subblocks"><a class="header" href="#subblocks">Subblocks</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#consumer-guarantees">Consumer guarantees</a></li>
+<li><a href="#websocket-stream">WebSocket stream</a>
+<ul>
+<li><a href="#ordering">Ordering</a></li>
+<li><a href="#payload">Payload</a></li>
+<li><a href="#zero-valued-fields">Zero-valued fields</a></li>
+</ul>
+</li>
+<li><a href="#json-rpc">JSON-RPC</a></li>
+<li><a href="#transaction-inclusion">Transaction inclusion</a></li>
+<li><a href="#backwards-compatibility">Backwards compatibility</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Subblocks are partial blocks that an OP Stack sequencer streams while it is building an L2 block. Each subblock adds
+transactions to the in-progress block, giving consumers a preconfirmation before the block is sealed and propagated
+through the normal OP Stack protocol.</p>
+<p>Subblocks do not change the validity or finality rules of the OP Stack. They only expose the sequencer's in-progress
+view sooner. A subblock therefore carries the same trust assumption as an unsafe block: its preconfirmations may be
+revoked if the sequencer abandons or reorganizes the in-progress block.</p>
+<p>The interval between subblocks is chain-configurable and is a target rather than a guarantee. It is typically much
+shorter than the L2 block time.</p>
+<h2 id="consumer-guarantees"><a class="header" href="#consumer-guarantees">Consumer guarantees</a></h2>
+<p>Within one in-progress block, subblocks are append-only:</p>
+<ul>
+<li>The first subblock has index <code>0</code>; subsequent subblocks increment the index by one.</li>
+<li>All subblocks for the in-progress block have the same <code>payload_id</code> and block number.</li>
+<li>The sequencer MUST NOT publish distinct subblocks with the same <code>payload_id</code> and <code>index</code>.</li>
+<li>Transactions from each subblock are appended in stream order. A consumer obtains the in-progress transaction list by
+concatenating each subblock's <code>diff.transactions</code>.</li>
+<li>The cumulative in-progress block after each subblock MUST satisfy all applicable OP Stack execution rules.</li>
+<li>The first subblock contains the block's <a href="../glossary.html#deposited-transaction">deposited transactions</a> and any other
+sequencer transactions that execute before mempool transactions. Later subblocks add mempool transactions.</li>
+</ul>
+<p>If the sequencer abandons the in-progress block, a new in-progress block starting at index <code>0</code> supersedes it. Consumers
+MUST NOT treat a subblock as safe or final chain data.</p>
+<h2 id="websocket-stream"><a class="header" href="#websocket-stream">WebSocket stream</a></h2>
+<p>The sequencer publishes subblocks through a WebSocket endpoint. Each WebSocket text frame contains one JSON <code>Subblock</code>
+object, as defined below. Field names use <code>snake_case</code>; byte strings, addresses, hashes, transactions, and quantities
+use their standard Ethereum JSON encodings unless stated otherwise below.</p>
+<p>The JSON shape deliberately retains Flashblocks-era names and fields for wire compatibility.</p>
+<h3 id="ordering"><a class="header" href="#ordering">Ordering</a></h3>
+<p>The first <code>Subblock</code> for an in-progress block has <code>index</code> equal to <code>0</code> and includes <code>base</code>. Each subsequent <code>Subblock</code>
+increments <code>index</code> by one and omits <code>base</code>. The <code>payload_id</code>, <code>base</code>, and <code>metadata.block_number</code> identify the
+in-progress L2 block.</p>
+<p>A consumer joining the stream after index <code>0</code> cannot reconstruct the complete in-progress block. It SHOULD ignore
+subblocks until it receives the next index <code>0</code>. A consumer SHOULD also discard its reconstruction of the in-progress
+block if an index is skipped, duplicated, or paired with a different payload ID or block number.</p>
+<h3 id="payload"><a class="header" href="#payload">Payload</a></h3>
+<p>A subblock has the following shape. Optional fields are omitted when they do not apply.</p>
+<pre><code class="language-text">Subblock {
+    payload_id: Bytes8
+    index: uint64
+    base: Optional[SubblockBase]
+    diff: SubblockDelta
+    metadata: Metadata
+}
+
+SubblockBase {
+    parent_beacon_block_root: Bytes32
+    parent_hash: Bytes32
+    fee_recipient: Bytes20
+    prev_randao: Bytes32
+    block_number: uint64
+    gas_limit: uint64
+    timestamp: uint64
+    extra_data: Bytes
+    base_fee_per_gas: uint256
+}
+
+SubblockDelta {
+    state_root: Bytes32
+    receipts_root: Bytes32
+    logs_bloom: Bytes256
+    gas_used: uint64
+    block_hash: Bytes32
+    transactions: List[Bytes]
+    withdrawals: List[WithdrawalV1]
+    withdrawals_root: Bytes32
+    blob_gas_used: Optional[uint64]
+    post_exec_tx: Optional[Bytes]
+}
+
+Metadata {
+    block_number: uint64
+    new_account_balances: Map[Bytes20, uint256]
+    receipts: Map[Bytes32, Receipt]
+}
+</code></pre>
+<p><code>WithdrawalV1</code> is the Ethereum Engine API's EIP-4895
+<a href="https://github.com/ethereum/execution-apis/blob/739f9e00806003d2204adca7595f704849b9be30/src/engine/shanghai.md#withdrawalv1"><code>WithdrawalV1</code></a>
+object. This field is retained for legacy wire compatibility and MUST be empty; it does not encode OP Stack L2-to-L1
+withdrawals.</p>
+<p><code>Receipt</code> is the standard Ethereum transaction receipt described in the <a href="../glossary.html#receipt">glossary</a>, including
+any OP Stack receipt extensions active for the block.</p>
+<p>The fields have the following semantics:</p>
+<ul>
+<li><code>payload_id</code> identifies one payload build and is constant for all subblocks of the in-progress block.</li>
+<li><code>index</code> is a JSON number identifying the subblock's position within the in-progress block.</li>
+<li><code>base</code> contains immutable block properties and is present only at index <code>0</code>.</li>
+<li><code>diff.transactions</code> contains only the EIP-2718 encoded transactions added by this subblock.</li>
+<li><code>diff.gas_used</code>, <code>diff.receipts_root</code>, and <code>diff.logs_bloom</code> describe the cumulative in-progress block after applying
+this subblock.</li>
+<li><code>diff.blob_gas_used</code>, when present, is the cumulative <a href="./jovian/exec-engine.html#da-footprint-block-limit">DA footprint</a>
+of the in-progress block, not L2 blob gas usage.</li>
+<li>From the <a href="./lagoon/overview.html">Lagoon network upgrade</a>, <code>diff.post_exec_tx</code>, when present, is the latest cumulative
+<a href="./lagoon/post-exec.html">post-execution transaction</a>. It is carried separately from <code>diff.transactions</code>.</li>
+<li><code>metadata.block_number</code> is the L2 block number encoded as a JSON number.</li>
+<li><code>metadata.new_account_balances</code> maps changed accounts to their latest balances.</li>
+<li><code>metadata.receipts</code> maps transaction hashes to the receipts for transactions added by this subblock.</li>
+</ul>
+<h3 id="zero-valued-fields"><a class="header" href="#zero-valued-fields">Zero-valued fields</a></h3>
+<p>Subblock payloads set these four <code>diff</code> fields to their zero values:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Required value</th></tr></thead><tbody>
+<tr><td><code>state_root</code></td><td><code>0x0000000000000000000000000000000000000000000000000000000000000000</code></td></tr>
+<tr><td><code>block_hash</code></td><td><code>0x0000000000000000000000000000000000000000000000000000000000000000</code></td></tr>
+<tr><td><code>withdrawals_root</code></td><td><code>0x0000000000000000000000000000000000000000000000000000000000000000</code></td></tr>
+<tr><td><code>withdrawals</code></td><td><code>[]</code></td></tr>
+</tbody></table>
+</div>
+<p>These fields remain on the wire only for backwards compatibility. Consumers MUST treat them as unavailable and MUST
+NOT use them as commitments to the in-progress block or state. In particular, a zero <code>state_root</code> or <code>block_hash</code> is
+not the value of the eventual sealed block.</p>
+<p>A consumer that needs the in-progress state may reconstruct it by executing the streamed transactions against the
+parent state. The subblock stream does not indicate whether the in-progress block was sealed or abandoned. Consumers
+obtain the sealed block's authoritative state root and block hash through normal L2 block propagation.</p>
+<h2 id="json-rpc"><a class="header" href="#json-rpc">JSON-RPC</a></h2>
+<p>Applications may consume subblocks via a subblock-aware RPC node instead of subscribing to the stream directly.
+The node executes the streamed transactions and exposes the resulting state through standard Ethereum JSON-RPC
+methods. No subblock-specific RPC method is required.</p>
+<p>The following methods use subblock state when called with the <code>pending</code> block tag:</p>
+<ul>
+<li><code>eth_call</code></li>
+<li><code>eth_estimateGas</code></li>
+<li><code>eth_getBalance</code></li>
+<li><code>eth_getBlockByNumber</code></li>
+<li><code>eth_getCode</code></li>
+<li><code>eth_getStorageAt</code></li>
+<li><code>eth_getTransactionCount</code></li>
+</ul>
+<p>Successive <code>eth_getBlockByNumber("pending", ...)</code> calls during the same L2 block may return an expanding transaction
+list as new subblocks arrive.</p>
+<p>Methods that identify a transaction directly, including <code>eth_getTransactionByHash</code> and
+<code>eth_getTransactionReceipt</code>, may also return preconfirmed subblock transactions. Their responses
+use the standard Ethereum JSON-RPC shapes, but block-derived fields are provisional until the block is sealed.</p>
+<h2 id="transaction-inclusion"><a class="header" href="#transaction-inclusion">Transaction inclusion</a></h2>
+<p>Subblocks divide a block's gas capacity across the block-building window. The amount of gas available for inclusion
+increases as the block progresses. Consequently, a large transaction may be accepted into the transaction pool but
+remain pending until a later subblock with enough remaining gas capacity. If earlier transactions consume too much of
+the block gas limit, the transaction remains pending for a later block.</p>
+<p>Applications SHOULD NOT assume that a transaction with a gas limit below the full block gas limit can be included in
+the next subblock.</p>
+<h2 id="backwards-compatibility"><a class="header" href="#backwards-compatibility">Backwards compatibility</a></h2>
+<p>Subblocks are the backwards-compatible successor to Flashblocks. The WebSocket wire format remains compatible with the
+<a href="https://github.com/flashbots/rollup-boost/blob/main/specs/flashblocks.md">legacy Flashblocks wire format</a>, and JSON-RPC
+behavior is unchanged, so existing consumers can continue to decode the stream.</p>
+<p>The compatibility exception is that subblocks always zero <code>state_root</code>, <code>block_hash</code>, <code>withdrawals_root</code>, and
+<code>withdrawals</code> as specified above. A Flashblocks consumer that treated any of those fields as authoritative MUST be
+updated before consuming subblocks. Other consumers can migrate without changing their wire decoder.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../protocol/batcher.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../fault-proof/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../protocol/batcher.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../fault-proof/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+        <script src="../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

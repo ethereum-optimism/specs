@@ -3807,1217 +3807,171 @@ while applying the encoding and compression as defined in the <a href="protocol/
 <p>The L2 view of safe/unsafe does not instantly update after data is submitted, nor when it gets confirmed on L1,
 so special care may have to be taken to not duplicate data submissions.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="flashblocks"><a class="header" href="#flashblocks">Flashblocks</a></h1>
+<h1 id="subblocks"><a class="header" href="#subblocks">Subblocks</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
 <ul>
-<li><a href="protocol/flashblocks.html#abstract">Abstract</a></li>
-<li><a href="protocol/flashblocks.html#prerequisites">Prerequisites</a></li>
-<li><a href="protocol/flashblocks.html#motivation">Motivation</a></li>
-<li><a href="protocol/flashblocks.html#specification">Specification</a>
+<li><a href="protocol/subblocks.html#overview">Overview</a></li>
+<li><a href="protocol/subblocks.html#consumer-guarantees">Consumer guarantees</a></li>
+<li><a href="protocol/subblocks.html#websocket-stream">WebSocket stream</a>
 <ul>
-<li><a href="protocol/flashblocks.html#terminology">Terminology</a></li>
-<li><a href="protocol/flashblocks.html#parameters">Parameters</a></li>
-<li><a href="protocol/flashblocks.html#data-structures">Data structures</a>
-<ul>
-<li><a href="protocol/flashblocks.html#flashblockspayloadv1"><strong><code>FlashblocksPayloadV1</code></strong></a></li>
-<li><a href="protocol/flashblocks.html#executionpayloadflashblockdeltav1"><strong><code>ExecutionPayloadFlashblockDeltaV1</code></strong></a></li>
-<li><a href="protocol/flashblocks.html#executionpayloadstaticv1"><strong><code>ExecutionPayloadStaticV1</code></strong></a></li>
-<li><a href="protocol/flashblocks.html#metadata"><strong><code>Metadata</code></strong></a></li>
-<li><a href="protocol/flashblocks.html#accountmetadata"><strong><code>AccountMetadata</code></strong></a></li>
-<li><a href="protocol/flashblocks.html#storageslot"><strong><code>StorageSlot</code></strong></a></li>
-<li><a href="protocol/flashblocks.html#transactionmetadata"><strong><code>TransactionMetadata</code></strong></a></li>
+<li><a href="protocol/subblocks.html#ordering">Ordering</a></li>
+<li><a href="protocol/subblocks.html#payload">Payload</a></li>
+<li><a href="protocol/subblocks.html#zero-valued-fields">Zero-valued fields</a></li>
 </ul>
 </li>
-<li><a href="protocol/flashblocks.html#system-architecture">System architecture</a></li>
-<li><a href="protocol/flashblocks.html#out-of-protocol-design">Out-of-Protocol Design</a>
-<ul>
-<li><a href="protocol/flashblocks.html#in-protocol-vs-out-of-protocol">In-Protocol vs. Out-of-Protocol</a></li>
-<li><a href="protocol/flashblocks.html#design-rationale-and-benefits">Design Rationale and Benefits</a></li>
-<li><a href="protocol/flashblocks.html#implications-for-this-specification">Implications for This Specification</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#assumptions-about-op-stack">Assumptions About Op Stack</a></li>
-<li><a href="protocol/flashblocks.html#flashblock-lifecycle">Flashblock Lifecycle</a></li>
-<li><a href="protocol/flashblocks.html#flashblock-construction-process">Flashblock Construction Process</a>
-<ul>
-<li><a href="protocol/flashblocks.html#handling-of-sequencer-transactions">Handling of Sequencer Transactions</a></li>
-<li><a href="protocol/flashblocks.html#transaction-inclusion-heuristics">Transaction Inclusion Heuristics</a>
-<ul>
-<li><a href="protocol/flashblocks.html#linear-gas-limit-increase-and-transaction-inclusion-guarantees">Linear Gas Limit Increase and Transaction Inclusion Guarantees</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#post-block-execution-rules">Post-block Execution Rules</a></li>
-<li><a href="protocol/flashblocks.html#construction-steps">Construction Steps</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#flashblocks-metadata">Flashblocks Metadata</a>
-<ul>
-<li><a href="protocol/flashblocks.html#alternative-design-consideration">Alternative Design Consideration</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#rationale-for-including-state-roots-in-flashblocks">Rationale for Including State Roots in Flashblocks</a>
-<ul>
-<li><a href="protocol/flashblocks.html#non-blocking-block-production">Non-Blocking Block Production</a></li>
-<li><a href="protocol/flashblocks.html#builder-availability-and-system-reliability">Builder Availability and System Reliability</a></li>
-<li><a href="protocol/flashblocks.html#future-design-considerations">Future Design Considerations</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#builder-to-rollup-boost-communication-flow">Builder-to-Rollup-boost Communication Flow</a></li>
-<li><a href="protocol/flashblocks.html#flashblock-validity-rules">Flashblock Validity Rules</a></li>
-<li><a href="protocol/flashblocks.html#flashblock-system-invariants">Flashblock System Invariants</a></li>
-<li><a href="protocol/flashblocks.html#flashblock-propagation">Flashblock Propagation</a>
-<ul>
-<li><a href="protocol/flashblocks.html#secure-propagation">Secure propagation</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#flashblock-json-rpc-apis">Flashblock JSON-RPC APIs</a>
-<ul>
-<li><a href="protocol/flashblocks.html#ethereum-json-rpc-modifications">Ethereum JSON RPC Modifications</a></li>
-<li><a href="protocol/flashblocks.html#op_supportedcapabilities">op_supportedCapabilities</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#reliability-and-operational-considerations">Reliability and Operational Considerations</a>
-<ul>
-<li><a href="protocol/flashblocks.html#transaction-propagation">Transaction Propagation</a></li>
-<li><a href="protocol/flashblocks.html#failover-scenarios">Failover scenarios</a>
-<ul>
-<li><a href="protocol/flashblocks.html#block-builder">Block Builder</a></li>
-<li><a href="protocol/flashblocks.html#the-sequencer-or-rollup-boost">The Sequencer or Rollup-boost</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#integration-with-high-availability-sequencer-setups">Integration with High Availability Sequencer Setups</a></li>
-<li><a href="protocol/flashblocks.html#faults">Faults</a>
-<ul>
-<li><a href="protocol/flashblocks.html#safety-faults"><strong>Safety Faults</strong></a></li>
-<li><a href="protocol/flashblocks.html#liveness-faults"><strong>Liveness Faults</strong></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#rationale">Rationale</a>
-<ul>
-<li><a href="protocol/flashblocks.html#why-out-of-protocol">Why out-of-protocol</a>
-<ul>
-<li><a href="protocol/flashblocks.html#why-not-shorter-block-times">Why not shorter block times</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#backwards-compatibility">Backwards Compatibility</a>
-<ul>
-<li><a href="protocol/flashblocks.html#end-users">End Users</a></li>
-<li><a href="protocol/flashblocks.html#infrastructure-operators">Infrastructure Operators</a></li>
-</ul>
-</li>
-<li><a href="protocol/flashblocks.html#implementation">Implementation</a></li>
+<li><a href="protocol/subblocks.html#json-rpc">JSON-RPC</a></li>
+<li><a href="protocol/subblocks.html#transaction-inclusion">Transaction inclusion</a></li>
+<li><a href="protocol/subblocks.html#backwards-compatibility">Backwards compatibility</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h1 id="abstract"><a class="header" href="#abstract">Abstract</a></h1>
-<p>Introduces a standard for partial blocks called “Flashblocks,” inspired but not entirely identical to <a href="https://github.com/solana-foundation/specs/blob/main/p2p/shred.md">Solana
-Shreds</a>, enabling rapid preconfirmations on Ethereum
-Layer 2 networks such as OP Stack. Flashblocks propagate transaction batches incrementally and expose their state via a
-modified Ethereum JSON-RPC interface, giving users immediate feedback equivalent to drastically reduced block times
-without modifying the underlying OP Stack protocol. Flashblocks can be combined with Trusted Execution Environment
-technology to enable quick verifiability over various networks of machines in addition to protection from equivocation.</p>
-<h1 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h1>
-<p>This document assumes knowledge of the terminology, definitions, and other material in</p>
+<h2 id="overview-12"><a class="header" href="#overview-12">Overview</a></h2>
+<p>Subblocks are partial blocks that an OP Stack sequencer streams while it is building an L2 block. Each subblock adds
+transactions to the in-progress block, giving consumers a preconfirmation before the block is sealed and propagated
+through the normal OP Stack protocol.</p>
+<p>Subblocks do not change the validity or finality rules of the OP Stack. They only expose the sequencer's in-progress
+view sooner. A subblock therefore carries the same trust assumption as an unsafe block: its preconfirmations may be
+revoked if the sequencer abandons or reorganizes the in-progress block.</p>
+<p>The interval between subblocks is chain-configurable and is a target rather than a guarantee. It is typically much
+shorter than the L2 block time.</p>
+<h2 id="consumer-guarantees"><a class="header" href="#consumer-guarantees">Consumer guarantees</a></h2>
+<p>Within one in-progress block, subblocks are append-only:</p>
 <ul>
-<li><a href="https://github.com/ethereum-optimism/">🔗 Ethereum Optimism Protocol Specs</a></li>
-<li><a href="https://specs.optimism.io/protocol/exec-engine.html#engine-api">🔗 OP Stack Engine API</a></li>
-<li><a href="https://github.com/ethereum-optimism/">🔗 External Block Production in OP Stack Design Doc</a></li>
-<li><a href="https://github.com/ethereum/execution-apis/tree/main">🔗 Ethereum Execution APIs</a></li>
-<li><a href="https://writings.flashbots.net/introducing-rollup-boost">🔗 Introducing Rollup-Boost - Launching on Unichain</a></li>
-<li><a href="https://www.notion.so/RFD-1-Rollup-boost-1996b4a0d876802f95d1c98387e38162?pvs=21">🔗 Rollup-boost design doc</a></li>
+<li>The first subblock has index <code>0</code>; subsequent subblocks increment the index by one.</li>
+<li>All subblocks for the in-progress block have the same <code>payload_id</code> and block number.</li>
+<li>The sequencer MUST NOT publish distinct subblocks with the same <code>payload_id</code> and <code>index</code>.</li>
+<li>Transactions from each subblock are appended in stream order. A consumer obtains the in-progress transaction list by
+concatenating each subblock's <code>diff.transactions</code>.</li>
+<li>The cumulative in-progress block after each subblock MUST satisfy all applicable OP Stack execution rules.</li>
+<li>The first subblock contains the block's <a href="protocol/../glossary.html#deposited-transaction">deposited transactions</a> and any other
+sequencer transactions that execute before mempool transactions. Later subblocks add mempool transactions.</li>
 </ul>
-<h1 id="motivation"><a class="header" href="#motivation">Motivation</a></h1>
-<p>As of April 2025, Layer 2 (L2) protocols built with the OP Stack have a minimum block time of one second, imposing
-significant constraints on user experience. The limitation on minimum block times is primarily historical and
-architectural, reflecting earlier assumptions of Ethereum network as well as deeply-integrated type definitions, from
-the L2 blockchain client all the way down to smart contracts on the L1, making modification a very large task.</p>
-<p>Due to similar constraints on Ethereum Layer 1, preconfirmations have gained attention as a promising method to
-decouple blockchain user experiences from rigid block-time limitations and sidestep the longstanding debate between
-block time and block size. Existing preconfirmation solutions predominantly depend on economic security in the form of
-cryptoeconomic mechanisms such as staking. As well as focus on per-transaction preconfirmations, inadvertently pushing
-protocols into the “Latency Auction” region of the <a href="https://writings.flashbots.net/introducing-rollup-boost">MEV
-Trilemma</a>. Furthermore, previous approaches have often
-introduced entirely new Ethereum JSON-RPC methods, presenting substantial integration barriers and hindering practical
-adoption.</p>
-<p>Inspired by modern blockchain networks like Solana and Celestia, Flashblocks introduce an “out-of-protocol” standard
-for incremental delivery of partial blocks containing batches of transactions. This approach significantly reduces
-perceived latency for end-users  and improves network bandwidth without modifying underlying protocol rules, offering a
-streamlined path for incremental adoption by node operators and existing infrastructure.</p>
-<h1 id="specification"><a class="header" href="#specification">Specification</a></h1>
-<h2 id="terminology"><a class="header" href="#terminology">Terminology</a></h2>
-<p>All terms, actors, and components are used in this document identically to how they are defined in the <a href="https://github.com/ethereum-optimism/">OP Stack
-protocol definition</a></p>
-<p>Additional terms introduced:</p>
-<ul>
-<li><strong>External Block Builder</strong> - External Block Builders are first introduced to the OP Stack in the <a href="https://github.com/ethereum-optimism/">External Block
-Production Design Document</a> where
-they are described as an external party that the Sequencer can request blocks from.</li>
-<li><strong>Rollup Boost</strong> - A sidecar piece of software first introduced without name in the <a href="https://github.com/ethereum-optimism/">External Block Production Design
-Document</a> with two
-roles:
-<ol>
-<li>obfuscate the presence of External Block Builder software from the <code>op-node</code> and <code>op-geth</code> software</li>
-<li>manage communication from the sequencer with External Block Builders and handle block delivery to <code>op-node</code> .</li>
-</ol>
-</li>
-<li><strong>Fallback EL</strong> - The standard Execution Layer of the Sequencer, used by Rollup Boost as a fallback mechanism when it
-cannot successfully build a block through the External Block Builder. This is an unmodified EL node that maintains the
-ability to construct valid blocks according to standard OP Stack protocol rules.</li>
-<li><strong>RPC Provider</strong> - Ethereum RPC software operator with the purpose of serving Ethereum state.</li>
-</ul>
-<h2 id="parameters"><a class="header" href="#parameters">Parameters</a></h2>
-<div class="table-wrapper"><table><thead><tr><th><strong>Constant</strong></th><th><strong>Value</strong></th><th><strong>Description</strong></th></tr></thead><tbody>
-<tr><td><code>FLASHBLOCKS_TIME</code></td><td>200ms</td><td>Default wall clock time per flashblock.</td></tr>
-<tr><td><code>FLASHBLOCKS_PER_L2_BLOCK</code></td><td><code>L2_BLOCK_TIME</code>/<code>FLASHBLOCKS_TIME</code></td><td>Supported number of flashblocks per L2 block. (Ex: 2s/200ms = 10 Flashblocks)</td></tr>
-<tr><td><code>MAX_EXTRA_DATA_BYTES</code></td><td>32</td><td>Extra data size in an Optimism block</td></tr>
-<tr><td><code>BYTES_PER_LOGS_BLOOM</code></td><td>256</td><td>Size of a logs bloom field in an Optimism block</td></tr>
-</tbody></table>
-</div>
-<h2 id="data-structures"><a class="header" href="#data-structures">Data structures</a></h2>
-<h3 id="flashblockspayloadv1"><a class="header" href="#flashblockspayloadv1"><strong><code>FlashblocksPayloadV1</code></strong></a></h3>
-<p>The core data structure sent from the Block Builder to Rollup Boost and then external parties.  A container
-representing a Flashblock payload, encapsulating block deltas, base configuration, and additional metadata.</p>
-<pre><code class="language-python">class FlashblocksPayloadV1():
-    version: Bytes4
+<p>If the sequencer abandons the in-progress block, a new in-progress block starting at index <code>0</code> supersedes it. Consumers
+MUST NOT treat a subblock as safe or final chain data.</p>
+<h2 id="websocket-stream"><a class="header" href="#websocket-stream">WebSocket stream</a></h2>
+<p>The sequencer publishes subblocks through a WebSocket endpoint. Each WebSocket text frame contains one JSON <code>Subblock</code>
+object, as defined below. Field names use <code>snake_case</code>; byte strings, addresses, hashes, transactions, and quantities
+use their standard Ethereum JSON encodings unless stated otherwise below.</p>
+<p>The JSON shape deliberately retains Flashblocks-era names and fields for wire compatibility.</p>
+<h3 id="ordering"><a class="header" href="#ordering">Ordering</a></h3>
+<p>The first <code>Subblock</code> for an in-progress block has <code>index</code> equal to <code>0</code> and includes <code>base</code>. Each subsequent <code>Subblock</code>
+increments <code>index</code> by one and omits <code>base</code>. The <code>payload_id</code>, <code>base</code>, and <code>metadata.block_number</code> identify the
+in-progress L2 block.</p>
+<p>A consumer joining the stream after index <code>0</code> cannot reconstruct the complete in-progress block. It SHOULD ignore
+subblocks until it receives the next index <code>0</code>. A consumer SHOULD also discard its reconstruction of the in-progress
+block if an index is skipped, duplicated, or paired with a different payload ID or block number.</p>
+<h3 id="payload"><a class="header" href="#payload">Payload</a></h3>
+<p>A subblock has the following shape. Optional fields are omitted when they do not apply.</p>
+<pre><code class="language-text">Subblock {
     payload_id: Bytes8
-    parent_flash_hash: Optional[Bytes32]
     index: uint64
-    static: Optional[ExecutionPayloadStaticV1]
-    diff: ExecutionPayloadFlashblockDeltaV1
-    metadata: FlashblocksMetadata
-**Field descriptions:**
+    base: Optional[SubblockBase]
+    diff: SubblockDelta
+    metadata: Metadata
+}
 
-</code></pre>
-<ul>
-<li><code>payload_id</code>: PayloadID is an identifier of the payload build process. The same for all flashblocks.</li>
-<li><code>index</code>: Index of the Flashblock within the parent block.</li>
-<li><code>parent_flash_hash</code>: SSZ hash of the parent flashblock in the sequence. For the first flashblock (index 0), the field
-is empty.</li>
-<li><code>base</code> <em>(Optional)</em>: Reference execution payload serving as the unchanging base configuration.</li>
-<li><code>diff</code>: Container with fields representing changes from the base payload.</li>
-<li><code>metadata</code>: Supplementary information about the execution of the flashblock. For example: account state changes,
-storage modifications, transaction receipts.</li>
-</ul>
-<h3 id="executionpayloadflashblockdeltav1"><a class="header" href="#executionpayloadflashblockdeltav1"><strong><code>ExecutionPayloadFlashblockDeltaV1</code></strong></a></h3>
-<p>Container encoding only the mutable portions of the execution payload updated during Flashblock construction.</p>
-<pre><code class="language-python">class ExecutionPayloadFlashblockDeltaV1():
-    state_root: Bytes32
-    receipts_root: Bytes32
-    logs_bloom: ByteVector[BYTES_PER_LOGS_BLOOM]
-    gas_used: uint64
-    block_hash: Bytes32
-    transactions: List[Transaction]
-    withdrawals: List[Withdrawal]
-    withdrawals_root: Bytes32
-</code></pre>
-<p><strong>Field descriptions:</strong></p>
-<ul>
-<li><code>state_root</code>: Root hash of the post-execution state trie.</li>
-<li><code>receipts_root</code>: Root hash of the transaction receipts trie.</li>
-<li><code>logs_bloom</code>: Bloom filter of all logs emitted by the block.</li>
-<li><code>gas_used</code>: Gas consumed by included transactions.</li>
-<li><code>block_hash</code>: Final hash of the completed execution block.</li>
-<li><code>transactions</code>: List of transactions included in the Flashblock.</li>
-<li><code>withdrawals</code>: Withdrawals included (as per Optimism specification). Must be non-nil but empty when
-<code>withdrawals_root</code> is used directly.</li>
-<li><code>withdrawals_root</code>: OP-Stack Isthmus specific field: instead of computing the root from a withdrawals list, set it
-directly. The "withdrawals" list attribute must be non-nil but empty.</li>
-</ul>
-<p><strong>Supporting Type Definitions</strong></p>
-<ul>
-<li><code>Transaction</code>: Transaction bytes as per execution payload specification.</li>
-<li><code>Withdrawal</code>: Standard Ethereum Capella withdrawal container.</li>
-</ul>
-<p>All fields in this structure represent the cumulative state of the entire block up to and including the current
-flashblock, not just the changes from this specific flashblock.</p>
-<h3 id="executionpayloadstaticv1"><a class="header" href="#executionpayloadstaticv1"><strong><code>ExecutionPayloadStaticV1</code></strong></a></h3>
-<p>Container representing immutable fundamental block properties established at initial block creation, unchanged
-throughout construction.</p>
-<pre><code class="language-python">class ExecutionPayloadStaticV1():
+SubblockBase {
     parent_beacon_block_root: Bytes32
     parent_hash: Bytes32
-    fee_recipient: ExecutionAddress
+    fee_recipient: Bytes20
     prev_randao: Bytes32
     block_number: uint64
     gas_limit: uint64
     timestamp: uint64
-    extra_data: ByteList[MAX_EXTRA_DATA_BYTES]
+    extra_data: Bytes
     base_fee_per_gas: uint256
-</code></pre>
-<p><strong>Field descriptions:</strong></p>
-<ul>
-<li><code>parent_beacon_block_root</code>: Ecotone parent beacon block root.</li>
-<li><code>parent_hash</code>: Hash of the parent execution block.</li>
-<li><code>fee_recipient</code>: Address receiving transaction fees.</li>
-<li><code>prev_randao</code>: Previous block’s RANDAO reveal for randomness.</li>
-<li><code>block_number</code>: Sequential execution block number.</li>
-<li><code>gas_limit</code>: Maximum allowable gas consumption for the block.</li>
-<li><code>timestamp</code>: Unix timestamp at block creation.</li>
-<li><code>extra_data</code>: Arbitrary extra data bytes included in the block header.</li>
-<li><code>base_fee_per_gas</code>: Base fee per gas unit at the block.</li>
-</ul>
-<h3 id="metadata"><a class="header" href="#metadata"><strong><code>Metadata</code></strong></a></h3>
-<p>Container encapsulating all metadata for a flashblock, including account state changes and transaction results.</p>
-<pre><code class="language-python">class FlashblockMetadata():
-         accounts: List[AccountMetadata]
-  transactions: List[TransactionMetadata]
-</code></pre>
-<p><strong>Field descriptions:</strong></p>
-<ul>
-<li><code>accounts</code>: List of accounts with modified state in this flashblock.</li>
-<li><code>transactions</code>: List of transaction execution results in this flashblock.</li>
-</ul>
-<h3 id="accountmetadata"><a class="header" href="#accountmetadata"><strong><code>AccountMetadata</code></strong></a></h3>
-<p>Container representing account state changes included in the Flashblock metadata. It is used by providers to fulfill
-the RPC requests.</p>
-<pre><code class="language-python">class AccountMetadata():
-    address: ExecutionAddress
-    balance: Optional[uint256]
-    nonce: uint64
-    code: Optional[Bytes]
-    storage_slots: List[StorageSlot]
-</code></pre>
-<p><strong>Field descriptions:</strong></p>
-<ul>
-<li><code>address</code>: Ethereum address of the affected account.</li>
-<li><code>balance</code>: Updated account balance after the Flashblock's execution (None if unchanged).</li>
-<li><code>nonce</code>: Updated account nonce (transaction count) after the Flashblock's execution.</li>
-<li><code>code_created</code>:  Contract bytecode if created in this Flashblock.</li>
-<li><code>storage_slots</code>: List of modified storage slots and their new values.</li>
-</ul>
-<p>Storage slot keys must be de-duplicated (only the final value for each key should be included) and sorted in ascending
-byte order for deterministic processing.</p>
-<h3 id="storageslot"><a class="header" href="#storageslot"><strong><code>StorageSlot</code></strong></a></h3>
-<p>Container representing a single modified storage slot within an account.</p>
-<pre><code class="language-python">class StorageSlot():
-    key: Bytes32
-    value: Bytes32
-</code></pre>
-<p><strong>Field descriptions:</strong></p>
-<ul>
-<li><code>key</code>: Storage slot location (32-byte key).</li>
-<li><code>value</code>: New value stored at this slot after the Flashblock's execution.</li>
-</ul>
-<h3 id="transactionmetadata"><a class="header" href="#transactionmetadata"><strong><code>TransactionMetadata</code></strong></a></h3>
-<p>Container representing succinct transaction execution results.</p>
-<pre><code class="language-python">class TransactionMetadata():
-    status: uint8
+}
+
+SubblockDelta {
+    state_root: Bytes32
+    receipts_root: Bytes32
+    logs_bloom: Bytes256
     gas_used: uint64
-    contract_address: Optional[ExecutionAddress]
-</code></pre>
-<p><strong>Field descriptions:</strong></p>
-<ul>
-<li><code>status</code>: Execution status (1 for success, 0 for failure).</li>
-<li><code>gas_used</code>: Amount of gas used by this specific transaction.</li>
-<li><code>contract_address</code>: Address of created contract (None for non-creation transactions).</li>
-</ul>
-<h2 id="system-architecture"><a class="header" href="#system-architecture">System architecture</a></h2>
-<p>The following diagram illustrates the Flashblocks system architecture, showing the relationships between key components:</p>
-<pre class="mermaid">
-flowchart LR
-    subgraph Sequencer
-        ON[OP Node]
-        RB[Rollup Boost]
-        FEL[Fallback EL]
-        BB[Block Builder]
-    end
+    block_hash: Bytes32
+    transactions: List[Bytes]
+    withdrawals: List[WithdrawalV1]
+    withdrawals_root: Bytes32
+    blob_gas_used: Optional[uint64]
+    post_exec_tx: Optional[Bytes]
+}
 
-    subgraph Network
-        WSP[WebSocket Proxy]
-    end
-
-    subgraph Clients
-        RPC[RPC Providers]
-        Users[End Users]
-    end
-
-    ON --&gt; RB
-    RB --&gt; FEL
-    RB &lt;--&gt; BB
-    RB --&gt; WSP
-    WSP --&gt; RPC
-    RPC --&gt; Users
-</pre>
-<p>This architecture shows the flow of data through the Flashblocks system:</p>
-<ol>
-<li>The <strong>OP Node</strong> initiates block production and sends requests to <strong>Rollup Boost</strong></li>
-<li><strong>Rollup Boost</strong> coordinates between multiple components:
-<ul>
-<li>It communicates with the <strong>Block Builder</strong> to create Flashblocks</li>
-<li>It maintains a connection to the <strong>Fallback EL</strong> for reliability if the Block Builder fails</li>
-<li>It propagates validated Flashblocks to the network via the <strong>WebSocket Proxy</strong></li>
-</ul>
-</li>
-<li>The <strong>WebSocket Proxy</strong> distributes Flashblocks to multiple <strong>RPC Providers</strong></li>
-<li><strong>RPC Providers</strong> serve preconfirmation data to <strong>End Users</strong></li>
-</ol>
-<p>The rest of this document provides detailed specifications for each component and their interactions, explaining the
-protocols, data structures, and operational considerations.</p>
-<h2 id="out-of-protocol-design"><a class="header" href="#out-of-protocol-design">Out-of-Protocol Design</a></h2>
-<p>The Flashblocks specification follows a deliberate "out-of-protocol" design philosophy. This section clarifies what we
-mean by this term and explains its implications for the OP Stack ecosystem.</p>
-<h3 id="in-protocol-vs-out-of-protocol"><a class="header" href="#in-protocol-vs-out-of-protocol">In-Protocol vs. Out-of-Protocol</a></h3>
-<p>In the context of OP Stack, "in-protocol" components form the core protocol itself. These components implement
-fundamental consensus rules, are required for basic rollup functionality, and need standardization across all
-participants. Modifying in-protocol components requires protocol-level changes and network-wide upgrades.</p>
-<p>By contrast, "out-of-protocol" components like Flashblocks operate as optional extensions to the core protocol. They
-can be added or removed without breaking the consensus rules of the network, though they may still impact network
-performance or operations if implemented poorly.</p>
-<p>The only in-protocol guarantee that Flashblocks must uphold is producing valid blocks at the established block time
-interval (typically 1-2 seconds in current OP Stack implementations).</p>
-<h3 id="design-rationale-and-benefits"><a class="header" href="#design-rationale-and-benefits">Design Rationale and Benefits</a></h3>
-<p>The out-of-protocol design for Flashblocks emerged from practical constraints during initial development. Without
-strong coordination with the OP Stack team at the outset, and given the complexity of the challenge, working within the
-existing protocol boundaries was the most pragmatic approach.</p>
-<p>This constraint ultimately proved beneficial, as it forced the design to be minimally invasive. Flashblocks can be
-implemented immediately on any OP Stack chain without waiting for protocol upgrades or network-wide consensus.</p>
-<p>Any issues with the Flashblocks implementation remain isolated from the core protocol, protecting overall network
-stability. In case of serious problems, Flashblocks can be disabled entirely, allowing the system to revert to normal
-operation without disrupting the underlying rollup. This clean fallback mechanism benefits from the centralized trust
-model of L2s, where the sequencer has the authority to quickly enact such operational changes without requiring
-network-wide consensus.</p>
-<p>Now that the usefulness of the system has been proven, as more collaboration venues with the OP Stack team emerge,
-integrating parts of Flashblocks directly into the protocol could provide even stronger guarantees and open the design
-space for future innovations. We are considering that approach too in the future.</p>
-<h3 id="implications-for-this-specification"><a class="header" href="#implications-for-this-specification">Implications for This Specification</a></h3>
-<p>Most elements defined in this document are out-of-protocol components that operate as extensions to the core OP Stack.
-The only hard guarantee the system must provide is that valid blocks are delivered at the expected intervals.</p>
-<p>Everything else—from how Flashblocks are constructed and propagated to how RPC providers implement preconfirmation
-caches—represents iterative improvements designed to achieve the goal of faster user feedback as efficiently and
-impactfully as possible.</p>
-<p>This means the specification describes a recommended implementation path rather than rigid protocol requirements.
-Components can evolve independently without requiring protocol-level coordination, and implementations may vary in how
-they achieve the same functional goals.</p>
-<h2 id="assumptions-about-op-stack"><a class="header" href="#assumptions-about-op-stack">Assumptions About Op Stack</a></h2>
-<p>The Flashblocks design makes several assumptions about OP Stack behavior:</p>
-<ul>
-<li><strong>Quick Response for engine_getPayload</strong>: We assume that <code>engine_getPayload</code> requests should return as quickly as
-possible for a normal and healthy chain.</li>
-<li><strong>Deterministic Payload IDs</strong>: While not specific to Flashblocks but to Rollup Boost in general, we assume that
-payload IDs from different execution layer nodes are deterministically computed for the same ForkChoiceUpdate request.
-This is not explicitly enforced in specifications, but execution layers tend to maintain this consistency as a
-practical implementation detail.</li>
-</ul>
-<h2 id="flashblock-lifecycle"><a class="header" href="#flashblock-lifecycle">Flashblock Lifecycle</a></h2>
-<p>Note that familiarity with Rollup-boost is expected throughout this entire document, as Flashblocks is designed as an
-extension built on top of the existing Rollup-boost architecture.</p>
-<p>The lifecycle of a Flashblock begins with the Sequencer initiating block creation and ends with a normal L2 block
-consisting of all delivered flashblocks propagating according to the OP Stack protocol. The process proceeds as follows:</p>
-<ol>
-<li>
-<p><strong>Fork Choice Update</strong>:</p>
-<p>The Sequencer initiates the block-building cycle by sending an <code>engine_forkchoiceUpdated</code> with attributes call to
-Rollup Boost as it normally would to its local Execution Engine.</p>
-</li>
-<li>
-<p><strong>Fork Choice Update Forwarding</strong>:</p>
-<p>Rollup Boost forwards the <code>engine_forkchoiceUpdated</code> call concurrently to:</p>
-<ul>
-<li>The Sequencer's local Execution Engine</li>
-<li>The External Block Builder</li>
-</ul>
-</li>
-<li>
-<p><strong>Flashblock Construction</strong>:</p>
-<p>Upon receiving the fork choice update, the External Block Builder constructs and continuously delivers
-<code>FlashblocksPayloadV1</code> at intervals defined by <code>FLASHBLOCKS_TIME</code> following the <strong>Flashblocks Construction Process</strong>
-defined in this document.</p>
-<p>It's important to emphasize that during this process, the External Block Builder sends only the incremental changes
-in each Flashblock, not the full block state each time. Each <code>FlashblocksPayloadV1</code> contains just the delta from the
-previous state (new transactions, updated state roots, etc.), allowing for efficient bandwidth usage and faster
-propagation.</p>
-<p>Only the first Flashblock (with <code>index</code> 0) includes the <code>static</code> field containing immutable block data, while
-subsequent Flashblocks omit this field since this information remains constant throughout the block's construction.
-Each Flashblock includes a <code>parent_flash_hash</code> that references the SSZ hash of the previous Flashblock in the sequence,
-creating a hash-linked chain within the block.</p>
-<p>The combined information received across all flashblocks is sufficient to fully reconstruct the complete block
-without any additional data.</p>
-</li>
-<li>
-<p><strong>Flashblock Validation and Propagation</strong>:</p>
-<p>For each received <code>FlashblocksPayloadV1</code>, Rollup Boost validates it against the Sequencer’s local Execution Engine
-and according to the <strong>Flashblocks Validity Rules</strong> defined in this document. Upon successful validation, Rollup Boost
-propagates the payload to all subscribed Flashblock-compatible RPC providers.</p>
-</li>
-<li>
-<p><strong>Preconfirmed State Updates</strong>:</p>
-<p>Flashblock-compatible RPC providers insert validated payloads into their local Preconfirmed State Overlay,
-providing immediate preconfirmation states to end-users via Flashblock-enhanced Ethereum JSON-RPC endpoints.</p>
-</li>
-<li>
-<p><strong>Final L2 Block Delivery</strong>:</p>
-<p>When the Sequencer calls <code>engine_getPayload</code>, Rollup Boost returns a single coherent block payload based on the
-validated Flashblocks received since the last fork choice update. Note that this does not require additional external
-requests or any last-minute processing.</p>
-</li>
-<li>
-<p><strong>Full Block Propagation</strong>:</p>
-<p>The Sequencer propagates the aggregated block following standard OP Stack protocol rules.</p>
-</li>
-</ol>
-<pre class="mermaid">sequenceDiagram
-    participant S as Sequencer Driver (op-node)
-    participant RB as Rollup Boost
-    participant EE as Sequencer Execution Engine (op-geth)
-    participant BB as External Block Builder
-    participant RPC as Flashblock RPC Providers
-    participant U as End Users
-
-    rect rgb(230,247,255)
-        Note over S: 1. **Fork Choice Update**
-        S-&gt;&gt;RB: engine_forkchoiceUpdated
-    end
-
-    rect rgb(255,242,230)
-        Note over RB: 2. **Fork Choice Update Forwarding**
-        RB-&gt;&gt;EE: engine_forkchoiceUpdated
-        RB-&gt;&gt;BB: engine_forkchoiceUpdated
-    end
-
-    rect rgb(230,255,235)
-    loop **Flashblock Construction** (every FLASHBLOCKS_TIME)
-        Note over BB: **3. Flashblock Construction**
-        BB-&gt;&gt;RB: FlashblocksPayloadV1
-
-        rect rgb(252,244,255)
-            Note over RB, EE: 4. **Flashblock Validation and Propagation**
-            RB-&gt;&gt;EE: Validate Payload
-            EE--&gt;&gt;RB: Validation Result
-
-            alt Success
-                RB-&gt;&gt;RPC: Propagate Valid Payload
-                Note over RPC: 5. **Preconfirmed State Updates**
-                RPC-&gt;&gt;RPC: Update State Overlay
-                RPC-&gt;&gt;U: Serve Preconfirmed State
-            else Failure
-                RB--&gt;&gt;RB: Discard and fallback
-            end
-        end
-    end
-    end
-
-    rect rgb(255,249,196)
-        Note over S, RB: 6. **Final L2 Block Delivery**
-        S-&gt;&gt;RB: engine_getPayload
-        RB-&gt;&gt;S: Aggregate Payload
-    end
-
-    rect rgb(240,240,240)
-        Note over S: 7. **Full Block Propagation**
-        S-&gt;&gt;S: Propagate Block (standard OP Stack)
-    end
-</pre>
-<h2 id="flashblock-construction-process"><a class="header" href="#flashblock-construction-process">Flashblock Construction Process</a></h2>
-<p>The External Block Builder initiates the construction of Flashblocks upon receiving a fork choice update
-(<code>engine_forkchoiceUpdated</code>) call forwarded by Rollup Boost. The construction of Flashblocks follows a defined sequence
-of steps repeated every <code>FLASHBLOCKS_TIME</code> interval, ensuring consistent, incremental, and ordered propagation of
-preconfirmed state to end-users. It's important to note that <code>FLASHBLOCKS_TIME</code> serves as a target interval rather than
-a strictly enforced rule in Rollup Boost.</p>
-<h3 id="handling-of-sequencer-transactions"><a class="header" href="#handling-of-sequencer-transactions">Handling of Sequencer Transactions</a></h3>
-<p>An important protocol rule that the Flashblock construction process must adhere to involves handling "system
-transactions" within the OP Stack. These include deposits and system transactions that arrive with the Fork Choice
-Update (FCU) and must always be executed as the first transactions in any valid block.</p>
-<p>From an "in-protocol" perspective, a block is not considered valid if these sequencer transactions are missing.
-Consequently, the minimum valid block that can be constructed must include the execution of these transactions.</p>
-<p>The External Block Builder follows this mandate by executing these sequencer transactions first and including them in
-the initial Flashblock (index 0). This serves as the foundation upon which all subsequent Flashblocks in the sequence
-will build.</p>
-<p>When processing these mandatory sequencer transactions, the builder does not apply the same gas allocation heuristics
-used for regular transactions in later Flashblocks. While these transactions do consume gas like any other transaction,
-they receive special handling as they must be included regardless of gas considerations to maintain protocol validity.</p>
-<h3 id="transaction-inclusion-heuristics"><a class="header" href="#transaction-inclusion-heuristics">Transaction Inclusion Heuristics</a></h3>
-<p>As part of the flashblock construction process, the External Block Builder makes sophisticated decisions about
-transaction inclusion. Unlike rigid gas limit enforcement, the decision of when to stop including transactions in a
-flashblock involves nuanced heuristics that may evolve over time.</p>
-<p>The builder must balance multiple factors when deciding which transactions to include in each flashblock:</p>
-<ul>
-<li>Optimizing for user experience by providing quick feedback</li>
-<li>Ensuring transactions with higher gas usage aren't permanently excluded</li>
-<li>Maintaining efficient gas utilization across the entire block</li>
-<li>Accounting for execution time constraints within the <code>FLASHBLOCKS_TIME</code> window</li>
-</ul>
-<p>In some cases, the builder might include a transaction that exceeds what would be a strict per-flashblock gas limit
-because executing that transaction is important for user experience or economic reasons. This flexibility is a key
-advantage of the out-of-protocol approach.</p>
-<p>While the specific heuristics for transaction allocation across flashblocks are not mandated by this specification,
-the following section examines a common approach with linear gas limit allocation and its implications for transaction
-inclusion. Builders may adopt this or alternative strategies based on their chain's transaction patterns, user
-expectations, and economic models.</p>
-<h4 id="linear-gas-limit-increase-and-transaction-inclusion-guarantees"><a class="header" href="#linear-gas-limit-increase-and-transaction-inclusion-guarantees">Linear Gas Limit Increase and Transaction Inclusion Guarantees</a></h4>
-<p>A common heuristic for gas allocation defines the gas limit for flashblock <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span> (where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6986em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mclose">]</span></span></span></span>) as:</p>
-<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">flashblock_gas_limit</span></span><span class="mopen">(</span><span class="mord mathnormal">i</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal">i</span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">block_gas_limit</span></span></span></span></span></span></p>
-<p>This linear increase means cumulative gas usage for flashblock <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span> is bounded by:</p>
-<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">cumulative_gas_limit</span></span><span class="mopen">(</span><span class="mord mathnormal">i</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0804em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3944em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">F</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.7em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">block_gas_limit</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:2.113em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">i</span><span class="mopen">(</span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">1</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
-<p>When optimally filling each flashblock's gas allocation, the block gas limit is reached at flashblock index <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8095em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>
-and incidentally the theoretical maximum transaction gas limit <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7651em;vertical-align:-0.15em;"></span><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> that can be included is:</p>
-<p><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:5.6241em;vertical-align:-2.562em;"></span><span class="mtable"><span class="col-align-r"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:3.062em;"><span style="top:-5.062em;"><span class="pstrut" style="height:3.562em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.25em;"><span class="pstrut" style="height:3.562em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.562em;"><span></span></span></span></span></span><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:3.062em;"><span style="top:-5.062em;"><span class="pstrut" style="height:3.562em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">⌈</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.562em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">−</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.885em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">8</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span></span></span><span style="top:-2.845em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702 c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14 c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54 c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10 s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429 c69,-144,104.5,-217.7,106.5,-221 l0 -0 c5.3,-9.3,12,-14,20,-14 H400000v40H845.2724 s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7 c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.155em;"><span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">⌉</span></span></span></span></span><span style="top:-2.25em;"><span class="pstrut" style="height:3.562em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">⌊</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.562em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">−</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.885em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">8</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span></span></span><span style="top:-2.845em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702 c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14 c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54 c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10 s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429 c69,-144,104.5,-217.7,106.5,-221 l0 -0 c5.3,-9.3,12,-14,20,-14 H400000v40H845.2724 s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7 c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.155em;"><span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">⌋</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord text"><span class="mord">block_gas_limit</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.562em;"><span></span></span></span></span></span></span></span><span class="tag"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:3.062em;"><span style="top:-5.062em;"><span class="pstrut" style="height:3.562em;"></span><span class="eqn-num"></span></span><span style="top:-2.25em;"><span class="pstrut" style="height:3.562em;"></span><span class="eqn-num"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.562em;"><span></span></span></span></span></span></span></span></span></p>
-<p>For example, with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">10</span></span></span></span> flashblocks we have <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8095em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span>.
-This means that if each flashblock is optimally filled, the block gas limit is reached by flashblock 4.
-The theoretical maximum transaction gas limit would be
-<span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord">‘</span><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4/10</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">block_gas_limit</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"></span><span class="mord">40%‘</span></span></span></span> of the block gas limit.</p>
-<p><strong>Large Transaction Inclusion Guarantees</strong></p>
-<p>A potential concern is the difficulty of including large transactions with gas limits greater than
-<span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">‘</span><span class="mopen">(</span><span class="mord">1/</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">block_gas_limit</span></span><span class="mord">‘</span></span></span></span> when the chain experiences heavy loads of smaller transactions.
-Due to the linear increase of gas limits across flashblocks, even transactions with higher priority
-may not fit in the earlier, smaller flashblocks.
-If subsequent flashblocks fill up with smaller transactions, large transactions may be excluded
-entirely from the block.</p>
-<p>No perfect solution exists for this issue, but certain design choices can mitigate it.
-With <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">10</span></span></span></span>, the theoretical maximum transaction gas limit is <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"></span><span class="mord">40%</span></span></span></span> of the block gas limit.
-Since this maximum only occurs under optimal filling conditions, transactions requiring up
-to <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"></span><span class="mord">50%</span></span></span></span> of the block gas limit can reasonably expect inclusion even under high load.
-This <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"></span><span class="mord">50%</span></span></span></span> threshold aligns with the transaction gas limit cap proposed in
-<a href="https://eips.ethereum.org/EIPS/eip-7825">EIP-7825</a>.</p>
-<p>A maximum of <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">6</span></span></span></span> flashblocks ensures that <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.786em;vertical-align:-0.15em;"></span><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"></span><span class="mord">50%</span></span></span></span> of the block gas limit,
-eliminating potential inclusion discrimination for transactions that comply with EIP-7825,
-at the cost of slower flashblock cadence.</p>
-<h3 id="post-block-execution-rules"><a class="header" href="#post-block-execution-rules">Post-block Execution Rules</a></h3>
-<p>In the OP Stack protocol, certain operations such as withdrawals and system requests are applied at the end of block
-execution. Since each flashblock must function as a valid standalone block for preconfirmation purposes, these
-post-block execution rules must be applied at the end of each flashblock's construction.</p>
-<p>When constructing a flashblock, the builder applies all required post-block operations after executing the selected
-transactions. These operations modify the state according to protocol rules, ensuring the flashblock represents a
-complete and valid block state.</p>
-<p>However, an important implementation detail is that these post-block changes must be reverted before beginning
-execution for the next flashblock. This reversion is necessary because the post-block operations should only be applied
-once per actual L2 block, not cumulatively for each flashblock. Failing to revert these changes would lead to their
-repeated application across multiple flashblocks, potentially creating invalid cumulative state and ultimately an
-invalid final block.</p>
-<h3 id="construction-steps"><a class="header" href="#construction-steps">Construction Steps</a></h3>
-<p>After handling the mandatory sequencer transactions in the initial Flashblock, the External Block Builder proceeds with
-constructing subsequent Flashblocks by following these steps for each interval:</p>
-<ol>
-<li>
-<p><strong>Transaction Selection</strong></p>
-<ul>
-<li>Retrieve transactions from local or external mempool:</li>
-<li>Prioritize and sort transactions based on predefined sequencing policies, such as priority ordering or by MEV paid.</li>
-</ul>
-</li>
-<li>
-<p><strong>Transaction Execution</strong></p>
-<ul>
-<li>Sequentially execute selected transactions against a state snapshot derived from the current execution payload base
-(ExecutionPayloadBaseV1) or the last validated flashblock</li>
-<li>Apply the transaction inclusion heuristics described earlier to determine when to stop including transactions</li>
-<li>After transaction execution completes, apply all post-block execution rules as described in the Post-Block Execution
-Rules section</li>
-</ul>
-</li>
-<li>
-<p><strong>Flashblock Payload Assembly</strong></p>
-<ul>
-<li>After transaction execution, compute and record the following execution state updates:</li>
-<li><code>state_root</code>: The new post-execution state root resulting from the executed transactions.</li>
-<li><code>receipts_root</code>: The receipts trie root derived from execution outcomes.</li>
-<li><code>logs_bloom</code>: Aggregated logs bloom from all emitted transaction logs within this flashblock.</li>
-<li><code>gas_used</code>: Total gas consumed by executed transactions.</li>
-<li><code>transactions</code>: Serialized transaction payloads included within the flashblock.</li>
-<li><code>withdrawals</code> (if applicable): Withdrawals executed during the current flashblock interval (as per OP Stack
-withdrawal specification).</li>
-<li><code>block_hash</code>: Computed block hash uniquely identifying this flashblock execution state.</li>
-</ul>
-<p>Note that each flashblock builds upon the state of all previous flashblocks, with these fields reflecting the
-cumulative state after applying the new transactions in this particular flashblock.</p>
-<ul>
-<li>Encapsulate these computed updates into <code>ExecutionPayloadFlashblockDeltaV1</code>.</li>
-</ul>
-</li>
-<li>
-<p><strong>Flashblock Indexing and Metadata</strong></p>
-<ul>
-<li>Assign a monotonically incremented <code>index</code> to the newly constructed Flashblock payload.</li>
-<li>Compute the SSZ hash of the previous Flashblock and assign it as the <code>parent_flash_hash</code> (for the first Flashblock
-with index 0, this field is empty)</li>
-</ul>
-</li>
-<li>
-<p><strong>Flashblock Delivery</strong></p>
-<ul>
-<li>Package the <code>index</code>, <code>payload_id</code>,  <code>ExecutionPayloadFlashblockDeltaV1</code>, and metadata into a <code>FlashblocksPayloadV1</code>
-payload.</li>
-<li>Deliver the assembled <code>FlashblocksPayloadV1</code> payload promptly to Rollup Boost via the designated Flashblocks
-submission API.</li>
-</ul>
-</li>
-<li>
-<p><strong>Subsequent Flashblock Construction</strong></p>
-<ul>
-<li>Immediately after successful delivery, increment the Flashblock <code>index</code>.</li>
-<li>Revert any post-block execution changes as described in the Post-Block Execution Rules section</li>
-<li>Reset the transaction execution context based on the newly delivered state.</li>
-<li>Begin constructing the next <code>FlashblocksPayloadV1</code> payload, repeating from step 1 until a termination condition is
-reached (e.g., end of block building period via <code>engine_getPayload</code> request).</li>
-</ul>
-</li>
-<li>
-<p><strong>Flashblock Construction Termination</strong></p>
-<ul>
-<li>Flashblock construction continues iteratively until:</li>
-<li>Rollup Boost signals final block aggregation and propagation via <code>engine_getPayload</code>.</li>
-<li>A failure or timeout condition arises requiring failover procedures, detailed separately.</li>
-</ul>
-</li>
-</ol>
-<pre class="mermaid">sequenceDiagram
-    participant BB as External Block Builder
-    participant RB as Rollup Boost
-    participant EE as Execution Engine (local)
-    participant M as Mempool
-
-    loop Every FLASHBLOCKS_TIME
-        BB-&gt;&gt;M: Retrieve and Prioritize Transactions
-        M--&gt;&gt;BB: Transactions batch
-        Note over BB: Execute transactions sequentially
-        BB-&gt;&gt;EE: Execute transactions and compute state root
-        EE--&gt;&gt;BB: Execution results (state root, receipts, gas used)
-
-        Note over BB: Construct Flashblock Delta
-        BB-&gt;&gt;BB: Assemble FlashblocksPayloadV1 (state_root, receipts_root, logs_bloom, gas_used, block_hash, txs,
-withdrawals, metadata)
-
-        BB-&gt;&gt;RB: Submit FlashblocksPayloadV1
-        RB--&gt;&gt;BB: Acknowledge reception (async)
-        Note over BB: Increment index, prepare next Flashblock
-    end
-</pre>
-<h2 id="flashblocks-metadata"><a class="header" href="#flashblocks-metadata">Flashblocks Metadata</a></h2>
-<p>The <code>FlashblocksPayloadV1</code> structure defined above contains the minimum required data for Rollup Boost to return a
-valid block. The <code>metadata</code> field provides additional information to enable preconfirmations.</p>
-<p>This metadata contains supplementary information about the execution state that is not strictly necessary for block
-construction but is valuable for RPC providers to offer comprehensive preconfirmation services. Examples of such
-metadata include:</p>
-<ul>
-<li>Account state changes (which accounts have been modified)</li>
-<li>Updated account balances</li>
-<li>Storage slot modifications</li>
-<li>Contract deployment information</li>
-<li>Detailed transaction execution results</li>
-</ul>
-<h3 id="alternative-design-consideration"><a class="header" href="#alternative-design-consideration">Alternative Design Consideration</a></h3>
-<p>While this specification includes detailed metadata in Flashblocks, a viable alternative would be for RPC providers to
-execute transactions themselves as they receive them through the stream. In this approach, providers would receive only
-transaction data, execute them in order, maintain their own state cache, and use it to fulfill RPC requests. This would
-significantly reduce bandwidth requirements by eliminating metadata transmission.</p>
-<h2 id="rationale-for-including-state-roots-in-flashblocks"><a class="header" href="#rationale-for-including-state-roots-in-flashblocks">Rationale for Including State Roots in Flashblocks</a></h2>
-<p>One of the most discussed aspects of the Flashblocks design is the decision to include state roots with every
-flashblock. This section explains the rationale behind this design choice.</p>
-<h3 id="non-blocking-block-production"><a class="header" href="#non-blocking-block-production">Non-Blocking Block Production</a></h3>
-<p>We operate under the assumption that <code>engine_getPayload</code> requests should return quickly with a valid, complete block.
-This assumption, which we believe to be correct based on our understanding of the OP Stack, guides our design decisions.</p>
-<p>Currently in OP Stack implementations, execution layer nodes compute payloads in the background and can return them
-immediately when requested via <code>engine_getPayload</code>. This allows for near-instant responses, maintaining the flow of
-block production without delays. For Flashblocks to provide similar performance, it must have all block components -
-including state roots - readily available when <code>engine_getPayload</code> is called.</p>
-<p>Without pre-computed state roots for each flashblock, Rollup Boost would face a critical decision when handling
-<code>engine_getPayload</code>:</p>
-<ol>
-<li><strong>Request the state root from the Execution Layer</strong>: This approach would be problematic because the Execution Layer
-does not maintain a "hot" state that matches the current flashblock sequence. It would need to apply all pending
-transactions and compute a new state root, which is exactly the operation we're trying to optimize with flashblocks.</li>
-<li><strong>Request the state root from the External Block Builder</strong>: This would require an additional synchronous request to
-the builder with a protocol which is not engine-specific. Not only does this introduce an extra communication hop and
-latency, but it also creates a single point of failure - if the builder is unavailable at that moment, Rollup Boost
-cannot fulfill the request and we fall into the failure path rather than the happy path.</li>
-</ol>
-<h3 id="builder-availability-and-system-reliability"><a class="header" href="#builder-availability-and-system-reliability">Builder Availability and System Reliability</a></h3>
-<p>The key advantage of including state roots with each flashblock is system reliability. By having state roots
-immediately available, Rollup Boost can respond to <code>engine_getPayload</code> requests without additional external
-dependencies at that critical moment.</p>
-<p>Without pre-included state roots, a builder failure at the moment of block production would force the system to either:</p>
-<ol>
-<li>Recompute the entire state from scratch (time-consuming and potentially disruptive)</li>
-<li>Fail to produce a block on time (violating protocol assumptions)</li>
-<li>Be unable to fulfill the preconfirmations that have already been exposed to users</li>
-</ol>
-<h3 id="future-design-considerations"><a class="header" href="#future-design-considerations">Future Design Considerations</a></h3>
-<p>This approach represents our current understanding of the optimal design given existing constraints. However, as
-mentioned in the Out-of-Protocol Design section, alternative approaches may be worth exploring as we gain production
-experience. Future iterations might consider different state root handling approaches, particularly in the context of
-high-availability sequencer setups and deeper integration with OP Stack components.</p>
-<h2 id="builder-to-rollup-boost-communication-flow"><a class="header" href="#builder-to-rollup-boost-communication-flow">Builder-to-Rollup-boost Communication Flow</a></h2>
-<p>Rollup Boost maintains an open WebSocket connection with the External Block Builder. Through this persistent
-connection, the builder pushes the <code>FlashblocksPayloadV1</code> payloads as soon as they're constructed, without waiting for
-requests from Rollup Boost.</p>
-<p>If the WebSocket connection goes down, the builder buffers (queues) the messages internally and attempts to resend them
-once the connection is restored. This buffering only applies for the current block being built; when a new block cycle
-begins, any queued messages from the previous block are discarded as they are no longer relevant to the current state.</p>
-<p><strong>SSZ Encoding for Flashblocks Messages</strong></p>
-<p>Flashblocks messages transmitted between the Block Builder and Rollup Boost use Simple Serialize (SSZ) for binary
-encoding. Unlike JSON or other self-describing formats, SSZ is schema-less and does not embed field names or type
-information in the serialized data. This makes explicit versioning necessary, especially in a streaming context where
-message types cannot be inferred from surrounding context.</p>
-<p>For the <code>FlashblocksPayloadV1</code> structure, a version field is placed as the first field in the container.</p>
-<p>This design leverages SSZ's deterministic encoding characteristics, where fixed-size fields like <code>Bytes4</code> appear at
-predictable offsets in the serialized data. When a recipient receives a serialized Flashblocks message over the
-WebSocket stream:</p>
-<ol>
-<li>It first reads the initial 4 bytes to determine the message version</li>
-<li>Based on the version identifier, it selects the appropriate container structure for deserializing the remainder of
-the data</li>
-</ol>
-<h2 id="flashblock-validity-rules"><a class="header" href="#flashblock-validity-rules">Flashblock Validity Rules</a></h2>
-<p>For a flashblock to be considered valid the following must hold:</p>
-<ul>
-<li>
-<p><strong>Monotonically Increasing Payload Index:</strong> Each successive Flashblock payload delivered within the same L2 block
-cycle must have an index exactly one greater than the previous payload. Any skipped indices or duplicated indices
-constitute a violation. When a violation occurs, Rollup Boost will ignore the invalid flashblock and maintain its
-internal state, only updating when it receives a new flashblock with the correct next index value.</p>
-</li>
-<li>
-<p><strong>Immutable Payload Base:</strong> Immutable block header fields (<code>parent_hash</code>, <code>block_number</code>, <code>prev_randao</code>, etc.) set by
-the initial <code>ExecutionPayloadBaseV1</code> cannot be altered by subsequent Flashblocks during the same L2 block period.</p>
-</li>
-<li>
-<p><strong>Execution Validity:</strong> Every Flashblock must be validated successfully against the Sequencer’s local execution
-engine state to ensure OP protocol-level correctness.</p>
-</li>
-<li>
-<p><strong>Valid Full Block:</strong> Every flashblock, when combined with prior flashblocks, should be a valid L2 Block without
-requiring Rollup Boost to perform any additional operations other than repackaging the data structure. This means that
-state roots are calculated on each Flashblock contrary to publication due to the out-of-protocol nature of the
-implementation.</p>
-<p>A flashblock is considered a valid block if:</p>
-</li>
-<li>
-<p>It includes the first flashblock (with index 0 containing the base data)</p>
-</li>
-<li>
-<p>It comprises a continuous sequence of flashblocks with incrementing indices.</p>
-</li>
-</ul>
-<h2 id="flashblock-system-invariants"><a class="header" href="#flashblock-system-invariants">Flashblock System Invariants</a></h2>
-<p>The following invariants must hold true for the Flashblocks protocol to function reliably:</p>
-<ul>
-<li><strong>No Equivocation:</strong> At no point should multiple distinct Flashblocks for the same payload index be delivered or
-propagated to RPC subscribers.</li>
-<li><strong>Preconfirmation Preservation:</strong> The system always gives strong preference to maintaining the integrity of issued
-preconfirmations. Once a transaction has been included in a flashblock and made visible to users as preconfirmed, the
-system will prioritize preserving this state over other considerations such as block value optimization or alternative
-builder selection.</li>
-</ul>
-<h2 id="flashblock-propagation"><a class="header" href="#flashblock-propagation">Flashblock Propagation</a></h2>
-<p>Once Rollup Boost has validated a flashblock, it is then propagated to the rest of the network to be included in each
-RPC Provider’s Preconfirmation state.</p>
-<pre class="mermaid">sequenceDiagram
-    participant B as Block Builder
-    participant R as Rollup-boost
-    box Node
-    participant RPC as JSON-RPC Interface
-    end
-    participant U as Users
-
-    B-&gt;&gt;R: Preconfirmation batches
-    R-&gt;&gt;R: Validate batches
-    R-&gt;&gt;RPC: Preconfirmation updates
-    U-&gt;&gt;RPC: Standard RPC queries
-    note right of U: Regular users
-</pre>
-<p>Flashblocks Compatible RPC Providers subscribe to the Flashblocks websocket stream from Rollup Boost and maintain an
-in-memory representation of the preconfirmation state. RPC providers validate that the flashblock sequence is correct
-before updating their preconfirmation state. This preconfirmation state is ephemeral, maintained only until the
-corresponding block is propagated and the information becomes available through standard chain state.</p>
-<p>Throughout the entire propagation path, flashblocks are transmitted in binary SSZ-encoded format.</p>
-<h3 id="secure-propagation"><a class="header" href="#secure-propagation">Secure propagation</a></h3>
-<p>Since the preconfirmation data originates directly from the Sequencer's Rollup Boost instance, exposing this WebSocket
-endpoint directly to external parties presents security and scalability concerns. Instead, a reverse proxy should be
-implemented between Rollup Boost and external RPC providers to relay this information securely.</p>
-<p>This mirror simply relays WebSocket data without requiring any Flashblocks-specific knowledge, acting purely as a
-transport layer that forwards WebSocket messages from Rollup Boost to subscribed RPC providers. You can find an example
-implementation in the <a href="https://github.com/base/flashblocks-websocket-proxy">flashblocks-websocket-proxy repository</a>.</p>
-<pre class="mermaid">flowchart TD
-    subgraph Sequencer
-        BB[Block Builder]
-        RB[Rollup Boost]
-        Mirror[Flashblocks Mirror]
-    end
-
-    subgraph RPC Providers
-        RPC1[RPC Provider 1]
-        RPC2[RPC Provider 2]
-        RPC3[RPC Provider 3]
-        RPCN[RPC Provider N]
-    end
-
-    BB --&gt;|Flashblocks| RB
-    RB --&gt;|Flashblocks| Mirror
-    Mirror --&gt;|Flashblocks| RPC1
-    Mirror --&gt;|Flashblocks| RPC2
-    Mirror --&gt;|Flashblocks| RPC3
-    Mirror --&gt;|Flashblocks| RPCN
-</pre>
-<h2 id="flashblock-json-rpc-apis"><a class="header" href="#flashblock-json-rpc-apis">Flashblock JSON-RPC APIs</a></h2>
-<h3 id="ethereum-json-rpc-modifications"><a class="header" href="#ethereum-json-rpc-modifications">Ethereum JSON RPC Modifications</a></h3>
-<p>All modifications done to the existing Ethereum JSON RPC methods are confined to overloading the existing <code>pending</code>
-tag except a few JSON RPC methods which become inherently aware of preconfirmation state.
-Originally, this tag was designed to return block data being processed by the node's internal miner. It's fitting
-that we now use it for a similar purpose: exposing blocks in their preconfirmation stage. When queried with the
-<code>pending</code> tag, the endpoint uses the preconfirmation state state to construct the response. The response might include
-not only transactions but also block metadata like state root and receipt root.</p>
-<p>The tag is currently in a soft-deprecated state due to inconsistent implementations across clients, particularly after
-The Merge. However, it's worth noting that it's still actively used for certain endpoints, particularly
-<code>eth_getTransactionCount</code> where it serves the important function of returning the next available nonce for an account
-(including transactions in the mempool). This presents an opportunity: the tag is well-defined enough to be supported
-by client libraries, yet loosely defined enough to allow for our preconfirmation use case. While there's a possibility
-of the tag being removed in the future (see <a href="https://github.com/ethereum/execution-apis/issues/495">EIP discussions</a>),
-the design could adapt by introducing a flashblocks-specific tag if needed.</p>
-<p>We repurpose the <code>pending</code> tag in the following RPC calls to enable consuming preconfirmed state:</p>
-<ul>
-<li>eth_call</li>
-<li>eth_estimateGas</li>
-<li>eth_getBlockByNumber</li>
-<li>eth_getBalance</li>
-<li>eth_getTransactionCount</li>
-<li>eth_getCode</li>
-<li>eth_getStorageAt</li>
-</ul>
-<p><strong>Note: not all RPC methods explicitly require a "pending" tag to tap into the Flashblocks' state's awareness</strong></p>
-<p>The following RPC methods implicitly incorporate Flashblocks awareness like that whenever possible:</p>
-<ul>
-<li>eth_getTransactionReceipt</li>
-<li>eth_getTransactionByHash</li>
-</ul>
-<h3 id="op_supportedcapabilities"><a class="header" href="#op_supportedcapabilities">op_supportedCapabilities</a></h3>
-<p>This endpoint allows clients to discover whether the RPC provider supports certain features, including Flashblocks.</p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "op_supportedCapabilities",
-  "params": [],
-  "id": 1,
-  "jsonrpc": "2.0"
+Metadata {
+    block_number: uint64
+    new_account_balances: Map[Bytes20, uint256]
+    receipts: Map[Bytes32, Receipt]
 }
 </code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">{
-  "id": 1,
-  "jsonrpc": "2.0",
-  "result": ["flashblocksv1"]
-}
-</code></pre>
-<p>When this method is called on a Flashblocks-compatible RPC provider, the response includes "flashblocksv1" in the
-returned array of supported capabilities. This allows clients to programmatically determine whether they can utilize
-Flashblocks functionality before making related requests.</p>
-<p>This endpoint follows a similar pattern to the Engine API's <code>engine_exchangeCapabilities</code> method, which allows
-consensus and execution clients to exchange information about supported features.</p>
-<p>This is the only new RPC endpoint introduced by the Flashblocks specification. We consider this addition acceptable
-because it provides necessary feature discovery while keeping the name abstract enough to accommodate future extensions
-to the protocol or for other protocols.</p>
-<p><strong><code>eth_getTransactionReceipt</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_getTransactionReceipt",
-  "params": ["0x..."],// Transaction hash
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">{
-  "transactionHash": "0x...",
-  "blockHash": "0x0",  // Empty hash as placeholder
-  "blockNumber": "0x...",       // Current pending block number
-  "transactionIndex": "0x0",
-  "from": "0x...",
-  "to": "0x...",
-  "gasUsed": "0x...",
-  "status": "0x1",
-  "cumulativeGasUsed": "0x...",
-  "effectiveGasPrice": "0x...",
-  "contractAddress": "0x...",   // For contract creations
-  "logs": [],
-  "logsBloom": "0x..."
-}
-</code></pre>
-<p>When queried, this endpoint first checks the preconfirmation state for the requested transaction hash before falling
-back to the standard chain state lookup.</p>
-<p>Some fields in the response cannot be final at the preconfirmation stage and require placeholder values:</p>
+<p><code>WithdrawalV1</code> is the Ethereum Engine API's EIP-4895
+<a href="https://github.com/ethereum/execution-apis/blob/739f9e00806003d2204adca7595f704849b9be30/src/engine/shanghai.md#withdrawalv1"><code>WithdrawalV1</code></a>
+object. This field is retained for legacy wire compatibility and MUST be empty; it does not encode OP Stack L2-to-L1
+withdrawals.</p>
+<p><code>Receipt</code> is the standard Ethereum transaction receipt described in the <a href="protocol/../glossary.html#receipt">glossary</a>, including
+any OP Stack receipt extensions active for the block.</p>
+<p>The fields have the following semantics:</p>
 <ul>
-<li><code>blockHash</code>: Uses empty hash as placeholder</li>
-<li><code>blockNumber</code>: Can be set to the current block number being processed</li>
+<li><code>payload_id</code> identifies one payload build and is constant for all subblocks of the in-progress block.</li>
+<li><code>index</code> is a JSON number identifying the subblock's position within the in-progress block.</li>
+<li><code>base</code> contains immutable block properties and is present only at index <code>0</code>.</li>
+<li><code>diff.transactions</code> contains only the EIP-2718 encoded transactions added by this subblock.</li>
+<li><code>diff.gas_used</code>, <code>diff.receipts_root</code>, and <code>diff.logs_bloom</code> describe the cumulative in-progress block after applying
+this subblock.</li>
+<li><code>diff.blob_gas_used</code>, when present, is the cumulative <a href="protocol/./jovian/exec-engine.html#da-footprint-block-limit">DA footprint</a>
+of the in-progress block, not L2 blob gas usage.</li>
+<li>From the <a href="protocol/./lagoon/overview.html">Lagoon network upgrade</a>, <code>diff.post_exec_tx</code>, when present, is the latest cumulative
+<a href="protocol/./lagoon/post-exec.html">post-execution transaction</a>. It is carried separately from <code>diff.transactions</code>.</li>
+<li><code>metadata.block_number</code> is the L2 block number encoded as a JSON number.</li>
+<li><code>metadata.new_account_balances</code> maps changed accounts to their latest balances.</li>
+<li><code>metadata.receipts</code> maps transaction hashes to the receipts for transactions added by this subblock.</li>
 </ul>
-<p><strong><code>eth_getTransactionByHash</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_getTransactionByHash",
-  "params": ["0x..."], // Transaction hash of the potentially pre-confirmed transaction
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">{
-  "id": 1,
-  "result": {
-    "blockHash": "0x...", 
-    "blockNumber": "0x...",
-    "hash": "0x...",
-    "transactionIndex": "0x0",
-    "type": "0x2",
-    "nonce": "0x...",
-    "from": "0x...",
-    "to": "0x...",
-    "gas": "0x...",
-    "value": "0x...",
-    "gasPrice": "0x...",
-    "chainId": "0x..."
-  },
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p>When queried, this endpoint first checks the preconfirmation state for the requested transaction hash before falling
-back to the standard chain state lookup.</p>
-<p>Some fields in the response cannot be final at the preconfirmation stage and require placeholder values:</p>
+<h3 id="zero-valued-fields"><a class="header" href="#zero-valued-fields">Zero-valued fields</a></h3>
+<p>Subblock payloads set these four <code>diff</code> fields to their zero values:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Required value</th></tr></thead><tbody>
+<tr><td><code>state_root</code></td><td><code>0x0000000000000000000000000000000000000000000000000000000000000000</code></td></tr>
+<tr><td><code>block_hash</code></td><td><code>0x0000000000000000000000000000000000000000000000000000000000000000</code></td></tr>
+<tr><td><code>withdrawals_root</code></td><td><code>0x0000000000000000000000000000000000000000000000000000000000000000</code></td></tr>
+<tr><td><code>withdrawals</code></td><td><code>[]</code></td></tr>
+</tbody></table>
+</div>
+<p>These fields remain on the wire only for backwards compatibility. Consumers MUST treat them as unavailable and MUST
+NOT use them as commitments to the in-progress block or state. In particular, a zero <code>state_root</code> or <code>block_hash</code> is
+not the value of the eventual sealed block.</p>
+<p>A consumer that needs the in-progress state may reconstruct it by executing the streamed transactions against the
+parent state. The subblock stream does not indicate whether the in-progress block was sealed or abandoned. Consumers
+obtain the sealed block's authoritative state root and block hash through normal L2 block propagation.</p>
+<h2 id="json-rpc"><a class="header" href="#json-rpc">JSON-RPC</a></h2>
+<p>Applications may consume subblocks via a subblock-aware RPC node instead of subscribing to the stream directly.
+The node executes the streamed transactions and exposes the resulting state through standard Ethereum JSON-RPC
+methods. No subblock-specific RPC method is required.</p>
+<p>The following methods use subblock state when called with the <code>pending</code> block tag:</p>
 <ul>
-<li><code>blockHash</code>: Uses the block hash of pending block at the time transaction was pre-confirmed.</li>
-<li><code>blockNumber</code>: Can be set to the current block number being processed</li>
+<li><code>eth_call</code></li>
+<li><code>eth_estimateGas</code></li>
+<li><code>eth_getBalance</code></li>
+<li><code>eth_getBlockByNumber</code></li>
+<li><code>eth_getCode</code></li>
+<li><code>eth_getStorageAt</code></li>
+<li><code>eth_getTransactionCount</code></li>
 </ul>
-<p><strong><code>eth_getBlockByNumber</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_getBlockByNumber",
-  "params": ["pending", false],  // Second parameter indicates full transaction objects (true) or only hashes (false)
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">{
-  "hash": "0x0",  // Empty hash as placeholder
-  "parentHash": "0x...",
-  "stateRoot": "0x...",
-  "transactionsRoot": "0x...",
-  "receiptsRoot": "0x...",
-  "number": "0x...",  // Current pending block number
-  "gasUsed": "0x...",
-  "gasLimit": "0x...",
-  "timestamp": "0x...",
-  "extraData": "0x...",
-  "mixHash": "0x...",
-  "nonce": "0x...", // // Used to signal flashblock index
-  "transactions": []  // Array of transaction hashes or full transaction objects
-}
-</code></pre>
-<p>The endpoint implements an append-only pattern - multiple queries during the same block's preconfirmation phase will
-show an expanding list of transactions as new flashblocks are processed. Each query reflects the current state of all
-preconfirmed transactions at that moment.</p>
-<pre class="mermaid">sequenceDiagram
-    participant U as User
-    participant RPC
-    participant R as Rollup-boost
-
-    Note over R: Block building starts
-    R-&gt;&gt;RPC: Batch 1 (txs: A, B)
-
-    U-&gt;&gt;RPC: Query 1
-    RPC--&gt;&gt;U: Block with txs: A, B
-
-    R-&gt;&gt;RPC: Batch 2 (txs: C, D)
-    U-&gt;&gt;RPC: Query 2
-    RPC--&gt;&gt;U: Block with txs: A, B, C, D
-
-    R-&gt;&gt;RPC: Batch 3 (txs: E)
-    U-&gt;&gt;RPC: Query 3
-    RPC--&gt;&gt;U: Block with txs: A, B, C, D, E
-
-    R-&gt;&gt;RPC: Batch 4 (txs: F, G)
-    U-&gt;&gt;RPC: Query 4
-    RPC--&gt;&gt;U: Block with txs: A, B, C, D, E, F, G
-
-    Note over R: Block sealed
-</pre>
-<p><strong><code>eth_getBalance</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_getBalance",
-  "params": ["0x...", "pending"],  // Account address and block parameter
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">"0x..." // Balance in wei
-</code></pre>
-<p>When queried with the "pending" tag, the endpoint uses the preconfirmation state state to return the account balance.
-If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock with a non-null <code>balance</code> field, the
-RPC provider can directly return this value without needing to access the full state. The response reflects all changes
-from preconfirmed transactions that affect the requested account's balance.</p>
-<p><strong><code>eth_call</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_call",
-  "params": [{"to": "0x...", "data": "0x..."}, "pending"],  // Transaction call object and block parameter
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">"0x..." // Return data from the call
-</code></pre>
-<p>When queried with the "pending" tag, the endpoint uses the preconfirmation state state to return the call result. For
-this endpoint to work, the preconfirmation stream needs to include state differences for both accounts and storage
-after each flashblock.</p>
-<p>Similar to the current override functionality in <code>eth_call</code> where EVM transitions are executed on top of modified
-state, this implementation executes the call on top of the preconfirmation state changes.</p>
-<p><strong><code>eth_estimateGas</code></strong></p>
-<p>Generates and returns an estimate of how much gas is necessary to allow the
-transaction to complete considering the latest pre-confirmed state.</p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "jsonrpc": "2.0",
-  "method": "eth_estimateGas",
-  "params": [{"from":"0x...","to":"0x...","value":"0x..."}, "pending"],
-  "id": 1
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">{
-  "jsonrpc": "2.0",
-  "id": "1",
-  "result": "0x..." // The estimated amount of gas required for the transaction, as a hexadecimal string.
-}
-</code></pre>
-<p><strong><code>eth_getCode</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_getCode",
-  "params": ["0x...", "pending"],// Contract address and block parameter
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">"0x..."// Contract bytecode
-</code></pre>
-<p>When queried with the "pending" tag, the endpoint returns the contract bytecode from the preconfirmation state state.
-If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock with a non-null <code>code</code> field, the
-RPC provider can directly return this value without accessing the full state.</p>
-<p><strong><code>eth_getTransactionCount</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_getTransactionCount",
-  "params": ["0x...", "pending"],// Account address and block parameter
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">"0x..."// Nonce value as a hex string
-</code></pre>
-<p>When queried with the "pending" tag, the endpoint returns the transaction count (nonce) of the account from the
-preconfirmation state. If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock, the RPC
-provider can directly use the <code>nonce</code> field without additional state access.</p>
-<p><strong><code>eth_getStorageAt</code></strong></p>
-<p><strong>Request</strong></p>
-<pre><code class="language-json">{
-  "method": "eth_getStorageAt",
-  "params": ["0x...", "0x...", "pending"],// Contract address, storage position, and block parameter
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-</code></pre>
-<p><strong>Response</strong></p>
-<pre><code class="language-json">"0x..." // Storage value as a hex string
-</code></pre>
-<p>When queried with the "pending" tag, the endpoint returns the value from the specified storage slot using the
-preconfirmation state state. If the requested account appears in the <code>AccountMetadata</code> of a received Flashblock, the
-RPC provider scans the <code>storage_slots</code> list for the requested key and returns the corresponding value directly.</p>
-<h1 id="reliability-and-operational-considerations"><a class="header" href="#reliability-and-operational-considerations">Reliability and Operational Considerations</a></h1>
-<h2 id="transaction-propagation"><a class="header" href="#transaction-propagation">Transaction Propagation</a></h2>
-<p>Similar to the design laid out in the <a href="https://github.com/ethereum-optimism/">External Block Production</a> design
-document, Flashblocks makes no assumptions about how transactions are delivered to the block builder. A non-exhaustive
-list of valid approaches:</p>
-<ul>
-<li>transaction forwarding via mutliplex’ing software at the Rollup Operator’s RPC</li>
-<li>Private p2p connections between Sequencer transaction ingress nodes and block building nodes</li>
-</ul>
-<h2 id="failover-scenarios"><a class="header" href="#failover-scenarios">Failover scenarios</a></h2>
-<h3 id="block-builder"><a class="header" href="#block-builder">Block Builder</a></h3>
-<p>As per the normal Rollup-boost behavior, if the builder is down, the Rollup-boost picks up the block from the fallback
-builder. However, since we are dealing with preconfirmations, we must consider the relative value of preserving
-preconfirmations versus building a potentially more valuable block.</p>
-<p>In this design document, we follow the invariant that preserving preconfirmations takes precedence. If the block
-builder goes down after the first flashblocks have been delivered, we still return those flashblocks to maintain the
-integrity of any preconfirmations already issued to users. The next block would work as expected through the normal
-fallback mechanism, as the builder is down and the fallback builder would be used.</p>
-<p>We could technically discard the partial flashblocks and use the fallback block entirely, but this would violate the
-preconfirmations commitment. Our design assumes normal execution conditions. If losing the builder mid-flashblock
-becomes a common occurrence, this would indicate fundamental architectural issues that require separate improvements
-beyond the scope of this failover mechanism.</p>
-<h3 id="the-sequencer-or-rollup-boost"><a class="header" href="#the-sequencer-or-rollup-boost">The Sequencer or Rollup-boost</a></h3>
-<p>These failure scenarios are addressed as part of the High Availability (HA) sequencer setups. The HA architecture
-ensures continuity of operations by automatically failing over to standby instances when failures occur.</p>
-<h2 id="integration-with-high-availability-sequencer-setups"><a class="header" href="#integration-with-high-availability-sequencer-setups">Integration with High Availability Sequencer Setups</a></h2>
-<p>The integration of Flashblocks with High Availability (HA) Sequencer setups is outside the scope of this initial
-specification document. For details on managing Flashblock state across multiple sequencer instances and maintaining
-preconfirmation integrity during failovers, please refer to the resources linked below.</p>
-<ul>
-<li>what do with a rotating set of sequencers like with OP conductor
-<a href="https://github.com/ethereum-optimism/optimism/tree/develop/op-conductor">op-conductor</a></li>
-<li>World HA design discussion<a href="https://github.com/flashbots/">flashbots</a></li>
-<li>Base Technical Design Document <a href="https://www.notion.so/TDD-Rollup-Boost-Integration-with-HA-Sequencer-1d0c9d820ca380348f21e44a5442feaf?pvs=21">TDD: Rollup Boost Integration with HA
-Sequencer</a></li>
-</ul>
-<h2 id="faults"><a class="header" href="#faults">Faults</a></h2>
-<h3 id="safety-faults"><a class="header" href="#safety-faults"><strong>Safety Faults</strong></a></h3>
-<p>In the rollup security vocabulary <em>safety</em> implies that “<strong>no one can create or withdraw assets they are not entitled
-to.</strong>” A <strong>safety fault</strong> therefore occurs the moment an <strong>invalid L2 state root</strong> is accepted on Ethereum <strong>and</strong> at
-least one L2→L1 action (withdrawal, message relay, etc.) that depends on that root is executed <strong>and</strong> the dispute game
-period has ended. After that point the canonical record on Ethereum says the invalid state is <em>final</em> and the rollup’s
-honesty assumption is broken.</p>
-<p>The safety of a flashblock is directly equivalent to the safety of an L2 block. Additionally, on each submission of a
-flashblock to Rollup Boost, it is simulated against the Sequencer’s local execution engine, ensuring the Block
-Builder’s view is equivalent to the Sequencer’s.</p>
-<p>The real thing we are interested in regards to safety faults for the Flashblock stream is whether they can be reorged.
-The answer to this question is that the preconfirmed state can be reorged out if the Sequencer reorgs. Given that the
-sequencer is the one validating the block builder blocks, then there is no additional risk of reorg from the
-introduction of the External Block Builder and Flashblocks stream, as in both cases, the reorg is due to Sequencer
-Operator error.</p>
-<h3 id="liveness-faults"><a class="header" href="#liveness-faults"><strong>Liveness Faults</strong></a></h3>
-<p>In the rollup vocabulary *Liveness implies that “*every honest user can (a) get a transaction included within a bounded
-time and (b) complete a withdrawal within the 7‑day challenge window.” A <strong>liveness fault</strong> is any condition that makes
-either promise untrue <em>without violating safety</em> (no invalid state is accepted).</p>
-<p>The liveness of a flashblock is therefore directly equivalent to the liveness of L2 blocks as user’s are able to force
-include via the L1 as normal.</p>
-<h1 id="rationale"><a class="header" href="#rationale">Rationale</a></h1>
-<h2 id="why-out-of-protocol"><a class="header" href="#why-out-of-protocol">Why out-of-protocol</a></h2>
-<p>The design is implemented as an out-of-protocol solution rather than a core protocol modification to allow for faster
-iteration and development. This approach respects the stability guarantees of the OP Stack while allowing participants
-to adopt the features at their own pace.</p>
-<p>We do not, however, discard the possibility of enshrining these features inside the OP Stack protocol as both teams
-become more comfortable working together and more familiar with the specification. This out-of-protocol approach serves
-as a proving ground that can inform a potential future core integration.</p>
-<h3 id="why-not-shorter-block-times"><a class="header" href="#why-not-shorter-block-times">Why not shorter block times</a></h3>
-<p>While reducing block times is a potential solution, it would require non-trivial changes to the OP Stack codebase,
-where the current minimum timestamp used is 1 second. Additionally, extremely short block times (sub-200ms) might
-introduce significant performance issues in other blockchain infrastructure like block explorers and indexers.</p>
-<p>Flashblocks provide a more balanced approach: they maintain reasonable block times for network decentralization and
-stability, while offering a fast-lane feedback mechanism for users who need immediate transaction status.</p>
-<p>This approach also opens the door to an interesting possibility: chains could potentially implement longer block times
-(tens of seconds) while still maintaining quick preconfirmations via Flashblocks. This combination might enable new and
-interesting use cases that benefit from both paradigms.</p>
-<h1 id="backwards-compatibility"><a class="header" href="#backwards-compatibility">Backwards Compatibility</a></h1>
-<h2 id="end-users"><a class="header" href="#end-users">End Users</a></h2>
-<p>At present, consuming Flashblocks data is completely opt-in through the use of the <code>pending</code> tag, therefore once turned
-on, no applications will require changes to how they consume data from their RPC. Instead an additional opt-in flow is
-enabled.</p>
-<h2 id="infrastructure-operators"><a class="header" href="#infrastructure-operators">Infrastructure Operators</a></h2>
-<p>For Sequencer Operators, Flashblocks and Rollup Boost can be enabled and disabled with no additional harm to the system.</p>
-<p>For RPC Operators, Flashblocks will require a modified RPC node that subscribes to the Flashblock stream in addition to
-maintaining a Preconfirmation state and responding with the relevant data on request with the <code>pending</code> tag.</p>
-<h1 id="implementation"><a class="header" href="#implementation">Implementation</a></h1>
-<p>A feature complete implementation of all components described in this document can be found in the
-<a href="https://github.com/flashbots/">rollup-boost</a>
-<a href="https://github.com/flashbots/">op-rbuilder</a>
-<a href="https://github.com/base/flashblocks-websocket-proxy">flashblocks-websocket-proxy</a>, and
-<a href="https://github.com/danyalprout/reth-flashblocks">reth-flashblocks</a>.</p>
+<p>Successive <code>eth_getBlockByNumber("pending", ...)</code> calls during the same L2 block may return an expanding transaction
+list as new subblocks arrive.</p>
+<p>Methods that identify a transaction directly, including <code>eth_getTransactionByHash</code> and
+<code>eth_getTransactionReceipt</code>, may also return preconfirmed subblock transactions. Their responses
+use the standard Ethereum JSON-RPC shapes, but block-derived fields are provisional until the block is sealed.</p>
+<h2 id="transaction-inclusion"><a class="header" href="#transaction-inclusion">Transaction inclusion</a></h2>
+<p>Subblocks divide a block's gas capacity across the block-building window. The amount of gas available for inclusion
+increases as the block progresses. Consequently, a large transaction may be accepted into the transaction pool but
+remain pending until a later subblock with enough remaining gas capacity. If earlier transactions consume too much of
+the block gas limit, the transaction remains pending for a later block.</p>
+<p>Applications SHOULD NOT assume that a transaction with a gas limit below the full block gas limit can be included in
+the next subblock.</p>
+<h2 id="backwards-compatibility"><a class="header" href="#backwards-compatibility">Backwards compatibility</a></h2>
+<p>Subblocks are the backwards-compatible successor to Flashblocks. The WebSocket wire format remains compatible with the
+<a href="https://github.com/flashbots/rollup-boost/blob/main/specs/flashblocks.md">legacy Flashblocks wire format</a>, and JSON-RPC
+behavior is unchanged, so existing consumers can continue to decode the stream.</p>
+<p>The compatibility exception is that subblocks always zero <code>state_root</code>, <code>block_hash</code>, <code>withdrawals_root</code>, and
+<code>withdrawals</code> as specified above. A Flashblocks consumer that treated any of those fields as authoritative MUST be
+updated before consuming subblocks. Other consumers can migrate without changing their wire decoder.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="fault-proof"><a class="header" href="#fault-proof">Fault Proof</a></h1>
 <!-- markdownlint-disable -->
@@ -5077,7 +4031,7 @@ maintaining a Preconfirmation state and responding with the relevant data on req
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- markdownlint-enable -->
-<h2 id="overview-12"><a class="header" href="#overview-12">Overview</a></h2>
+<h2 id="overview-13"><a class="header" href="#overview-13">Overview</a></h2>
 <p>A fault proof, also known as fraud proof or interactive game, consists of 3 components:</p>
 <ul>
 <li><a href="fault-proof/index.html#fault-proof-program">Program</a>: given a commitment to all rollup inputs (L1 data) and the dispute, verify the dispute statelessly.</li>
@@ -5582,7 +4536,7 @@ And <a href="fault-proof/stage-one/dispute-game-interface.html">dispute-game-int
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-13"><a class="header" href="#overview-13">Overview</a></h2>
+<h2 id="overview-14"><a class="header" href="#overview-14">Overview</a></h2>
 <p>This is a description of the second iteration of the Cannon Fault Proof Virtual Machine (FPVM).
 When necessary to distinguish this version from the initial implementation,
 it can be referred to as Multithreaded Cannon (MTCannon). Similarly,
@@ -6083,7 +5037,7 @@ can rely on specific compiler behaviors because users inherently must employ saf
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-14"><a class="header" href="#overview-14">Overview</a></h2>
+<h2 id="overview-15"><a class="header" href="#overview-15">Overview</a></h2>
 <p>The ZK Fault Proof VM is a succinct proof system that verifies a super root state
 transition across all chains in the interop set through a single cryptographic proof. It consists
 of two components:</p>
@@ -6288,7 +5242,7 @@ withdrawals on L1.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-15"><a class="header" href="#overview-15">Overview</a></h2>
+<h2 id="overview-16"><a class="header" href="#overview-16">Overview</a></h2>
 <p>The <code>AnchorStateRegistry</code> was designed as a registry where <code>DisputeGame</code> contracts could store and
 register their results so that these results could be used as the starting states for new
 <code>DisputeGame</code> instances. These starting states, called "anchor states", allow new <code>DisputeGame</code>
@@ -6674,7 +5628,7 @@ to the current anchor state's L2 block height.</li>
 <li><a href="fault-proof/stage-one/dispute-game-interface.html#disputegame-interface"><code>DisputeGame</code> Interface</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-16"><a class="header" href="#overview-16">Overview</a></h2>
+<h2 id="overview-17"><a class="header" href="#overview-17">Overview</a></h2>
 <p>A dispute game is played between multiple parties when contesting the truthiness
 of a claim. In the context of an optimistic rollup, claims are made about the
 state of the layer two network to enable withdrawals to the layer one. A proposer
@@ -7047,7 +6001,7 @@ interface IDisputeGame is IInitializable {
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- Glossary References -->
-<h2 id="overview-17"><a class="header" href="#overview-17">Overview</a></h2>
+<h2 id="overview-18"><a class="header" href="#overview-18">Overview</a></h2>
 <p>The Fault Dispute Game (FDG) is a specific type of <a href="fault-proof/stage-one/dispute-game-interface.html">dispute game</a> that verifies the
 validity of a root claim by iteratively bisecting over <a href="fault-proof/stage-one/../../glossary.html#l2-output-root">output roots</a> and execution traces of single
 block state transitions down to a single instruction step. It relies on a Virtual Machine (VM) to falsify invalid
@@ -7488,7 +6442,7 @@ Finalization</a>.</p>
 <li><a href="fault-proof/stage-one/honest-challenger-fdg.html#resolution">Resolution</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-18"><a class="header" href="#overview-18">Overview</a></h2>
+<h2 id="overview-19"><a class="header" href="#overview-19">Overview</a></h2>
 <p>The honest challenger is an agent interacting in the <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a>
 that supports honest claims and disputes false claims.
 An honest challenger strives to ensure a correct, truthful, game resolution.
@@ -7605,7 +6559,7 @@ challengers are economically incentivized to resolve the game promptly to captur
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-19"><a class="header" href="#overview-19">Overview</a></h2>
+<h2 id="overview-20"><a class="header" href="#overview-20">Overview</a></h2>
 <p>Bonds is an add-on to the core <a href="fault-proof/stage-one/fault-dispute-game.html">Fault Dispute Game</a>. The core game mechanics are
 designed to ensure honesty as the best response to winning subgames. By introducing financial incentives,
 Bonds makes it worthwhile for honest challengers to participate.
@@ -7967,7 +6921,7 @@ over multiple timezones.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-20"><a class="header" href="#overview-20">Overview</a></h2>
+<h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
 <p>The <code>ZKDisputeGame</code> is a dispute game that resolves disputes in a single round using ZK
 (zero-knowledge) proofs, registered as game type <code>ZK_GAME_TYPE</code>. It integrates into the OP
 Stack dispute infrastructure — <code>DisputeGameFactory</code>, <code>AnchorStateRegistry</code>, <code>DelayedWETH</code>, and
@@ -8622,7 +7576,7 @@ discovered post-resolution.</p>
 <li><a href="fault-proof/stage-one/zk/zk-interface.html#verifier-upgrade-path">Verifier Upgrade Path</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-21"><a class="header" href="#overview-21">Overview</a></h2>
+<h2 id="overview-22"><a class="header" href="#overview-22">Overview</a></h2>
 <p><code>IZKVerifier</code> is the on-chain interface that decouples <code>ZKDisputeGame</code> from any specific
 proving system. The game always casts the configured verifier address to <code>IZKVerifier</code> and calls
 <code>verify()</code> through the interface, rather than depending on a concrete verifier type. The verifier
@@ -8719,7 +7673,7 @@ without redeploying the <code>ZKDisputeGame</code> implementation.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-22"><a class="header" href="#overview-22">Overview</a></h2>
+<h2 id="overview-23"><a class="header" href="#overview-23">Overview</a></h2>
 <p>All migrations from an existing dispute game type to <code>ZKDisputeGame</code> are performed via
 <code>OPCMv2.upgrade()</code>. No standalone <code>migrate()</code> contract is in scope. Three migration paths are
 supported:</p>
@@ -8881,7 +7835,7 @@ step 6 in <a href="fault-proof/stage-one/zk/zk-migration.html#common-mechanics">
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- all glossary references -->
 <!-- all links -->
-<h2 id="overview-23"><a class="header" href="#overview-23">Overview</a></h2>
+<h2 id="overview-24"><a class="header" href="#overview-24">Overview</a></h2>
 <p>With fault proofs, the withdrawal path changes such that withdrawals submitted to the <code>OptimismPortal</code> are proven
 against <a href="fault-proof/stage-one/../../glossary.html#l2-output-root-proposals">output proposals</a> submitted as a <a href="fault-proof/stage-one/fault-dispute-game.html"><code>FaultDisputeGame</code></a> prior to being finalized. Output
 proposals are now finalized whenever a dispute game resolves in their favor.</p>
@@ -8919,7 +7873,7 @@ longer required.</p>
 <tr><td><code>RESPECTED_GAME_TYPE</code></td><td>The dispute game type that the portal uses for the withdrawal path.</td></tr>
 </tbody></table>
 </div>
-<h3 id="data-structures-1"><a class="header" href="#data-structures-1">Data Structures</a></h3>
+<h3 id="data-structures"><a class="header" href="#data-structures">Data Structures</a></h3>
 <p>Withdrawals are now proven against dispute games, which have immutable "root claims" representing the output root
 being proposed. The <code>ProvenWithdrawal</code> struct is now defined as:</p>
 <pre><code class="language-solidity">/// @notice Represents a proven withdrawal.
@@ -9158,7 +8112,7 @@ address public immutable CHALLENGER;
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-24"><a class="header" href="#overview-24">Overview</a></h2>
+<h2 id="overview-25"><a class="header" href="#overview-25">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is the primary interface for deposits and withdrawals between the L1
 and L2 chains within an OP Stack system. The <code>OptimismPortal</code> contract allows users to create
 "deposit transactions" on the L1 chain that are automatically executed on the L2 chain within a
@@ -9530,7 +8484,7 @@ opaque data.</li>
 <li><a href="protocol/precompiles.html#p256verify">P256VERIFY</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-25"><a class="header" href="#overview-25">Overview</a></h2>
+<h2 id="overview-26"><a class="header" href="#overview-26">Overview</a></h2>
 <p><a href="protocol/../glossary.html#precompiled-contract-precompile">Precompiled contracts</a> exist on OP-Stack chains at
 predefined addresses. They are similar to predeploys but are implemented as native code in the EVM as opposed to
 bytecode. Precompiles are used for computationally expensive operations, that would be cost prohibitive to implement
@@ -9579,7 +8533,7 @@ the OP-Stack protocol in the Fjord release. The op-geth implementation is
 <li><a href="protocol/predeploys.html#operator-fee-vault">Operator Fee Vault</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-26"><a class="header" href="#overview-26">Overview</a></h2>
+<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
 <p><a href="protocol/../glossary.html#predeployed-contract-predeploy">Predeployed smart contracts</a> exist on Optimism
 at predetermined addresses in the genesis state. They are similar to precompiles but instead run
 directly in the EVM instead of running native code outside of the EVM.</p>
@@ -9834,7 +8788,7 @@ Ecotone network upgrade and is specified in <a href="https://eips.ethereum.org/E
 <li><a href="protocol/preinstalls.html#erc-4337-v070-sendercreator">ERC-4337 v0.7.0 SenderCreator</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-27"><a class="header" href="#overview-27">Overview</a></h2>
+<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
 <p><a href="protocol/../glossary.html#preinstalled-contract-preinstall">Preinstalled smart contracts</a> exist on Optimism
 at predetermined addresses in the genesis state. They are similar to precompiles but instead run
 directly in the EVM instead of running native code outside of the EVM and are developed by third
@@ -10025,7 +8979,7 @@ which is explicitly not <code>EntryPoint</code> itself.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-28"><a class="header" href="#overview-28">Overview</a></h2>
+<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
 <p>The SuperchainConfig contract is used to manage global configuration values for multiple OP Chains
 within a single Superchain network.</p>
 <h2 id="configuration-data-structure"><a class="header" href="#configuration-data-structure">Configuration Data Structure</a></h2>
@@ -10226,7 +9180,7 @@ expiration for the specific identifier provided.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-29"><a class="header" href="#overview-29">Overview</a></h2>
+<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
 <p>Superchain upgrades, also known as forks or hardforks, implement consensus-breaking changes.</p>
 <p>A Superchain upgrade requires the node software to support up to a given Protocol Version.
 The version indicates support, the upgrade indicates the activation of new functionality.</p>
@@ -10475,7 +9429,7 @@ proposal is the canonical document for the timestamp; however, the timestamps ar
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-30"><a class="header" href="#overview-30">Overview</a></h2>
+<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
 <p>The <code>SystemConfig</code> is a contract on L1 that can emit rollup configuration changes as log events.
 The rollup <a href="protocol/derivation.html">block derivation process</a> picks up on these log events and applies the
 changes. <code>SystemConfig</code> generally acts as the source of truth for configuration values within an
@@ -11485,7 +10439,7 @@ according to the steps in the <a href="protocol/safe-extensions.html#deploying-t
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="status"><a class="header" href="#status">Status</a></h2>
 <p>Production</p>
-<h2 id="overview-31"><a class="header" href="#overview-31">Overview</a></h2>
+<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
 <p>SaferSafes is a singleton Safe extension that can be installed as both a Safe module and a Safe
 guard. It is intended to replace the original <a href="protocol/./safe-extensions.html">Safe Contract Extensions</a>
 where adopted.</p>
@@ -11758,7 +10712,7 @@ that owners expected to pass through the timelock.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-32"><a class="header" href="#overview-32">Overview</a></h2>
+<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
 <p>This document describes the requirements necessary for an OP Stack implementation to satisfy the
 Stage 1 decentralization requirements <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">as defined by L2BEAT</a>. It also defines the specific
 roles and capabilities for an OP Stack chain in the standard configuration that will satisfy these
@@ -12102,7 +11056,7 @@ renew the pause to allow the system to operate if truly necessary.</p>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="status-1"><a class="header" href="#status-1">Status</a></h2>
 <p>Proposed</p>
-<h2 id="overview-33"><a class="header" href="#overview-33">Overview</a></h2>
+<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
 <p>The <code>DeputyPauseModule</code> is a <a href="https://docs.safe.global/advanced/smart-account-modules">Safe Module</a> designed to be installed into the Security
 Council Guardian Safe that allows a dedicated Deputy address to create an ECDSA signature that
 authorizes the execution of the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a>. The
@@ -12568,7 +11522,7 @@ identifier and was produced by the private key corresponding to the Deputy addre
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-34"><a class="header" href="#overview-34">Overview</a></h2>
+<h2 id="overview-35"><a class="header" href="#overview-35">Overview</a></h2>
 <p>This specification defines the execution mechanism for L2 contract upgrades, covering the bundle format, gas
 allocation, and complete upgrade lifecycle. These components work together with the
 <a href="protocol/./l2-upgrades-2-contracts.html">L2 Upgrade Contracts</a> specification to enable deterministic, verifiable upgrades of L2
@@ -12576,7 +11530,7 @@ predeploy contracts across all OP Stack chains.</p>
 <p>The upgrade execution system ensures that upgrade transactions are properly formatted, have sufficient gas to execute,
 and follow a well-defined process from development through verification.</p>
 <h2 id="upgrade-process"><a class="header" href="#upgrade-process">Upgrade Process</a></h2>
-<h3 id="overview-35"><a class="header" href="#overview-35">Overview</a></h3>
+<h3 id="overview-36"><a class="header" href="#overview-36">Overview</a></h3>
 <p>The Upgrade Process defines the complete lifecycle of an L2 predeploy upgrade, from initial development through fork
 activation and execution. The process ensures that upgrades are developed safely, tested thoroughly, and executed
 deterministically across all OP Stack chains.</p>
@@ -12699,7 +11653,7 @@ ConditionalDeployer</li>
 </ol>
 <p>All of these transactions execute before any user-submitted transactions in the block.</p>
 <h2 id="network-upgrade-transaction-bundle"><a class="header" href="#network-upgrade-transaction-bundle">Network Upgrade Transaction Bundle</a></h2>
-<h3 id="overview-36"><a class="header" href="#overview-36">Overview</a></h3>
+<h3 id="overview-37"><a class="header" href="#overview-37">Overview</a></h3>
 <p>The Network Upgrade Transaction (NUT) Bundle is a JSON-formatted data structure containing the complete set of
 transactions that must be executed at a specific fork activation block. The bundle is generated deterministically from
 Solidity scripts, tracked in git, and executed by all L2 client implementations to upgrade predeploy contracts.</p>
@@ -12854,7 +11808,7 @@ is enforced by the execution layer rather than specified per-transaction.</p>
 <li><strong>Compare Output</strong>: Verify byte-for-byte match with committed bundle</li>
 </ol>
 <h2 id="custom-upgrade-block-gas-limit"><a class="header" href="#custom-upgrade-block-gas-limit">Custom Upgrade Block Gas Limit</a></h2>
-<h3 id="overview-37"><a class="header" href="#overview-37">Overview</a></h3>
+<h3 id="overview-38"><a class="header" href="#overview-38">Overview</a></h3>
 <p>The Custom Upgrade Block Gas Limit mechanism provides guaranteed gas availability for executing upgrade transactions at
 fork activation, independent of the regular block gas limit and system transaction gas constraints. This ensures that
 complex multi-contract upgrades can execute completely within the <a href="protocol/l2-upgrades-1-execution.html#fork-activation-block">fork activation block</a>
@@ -12996,7 +11950,7 @@ in the <a href="https://github.com/ethereum-optimism/optimism">ethereum-optimism
 <li><a href="protocol/regolith/overview.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-38"><a class="header" href="#overview-38">Overview</a></h2>
+<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
 <p>The Regolith upgrade, named after a material best described as "deposited dust on top of a layer of bedrock",
 implements minor changes to deposit processing, based on reports of the Sherlock Audit-contest and findings in
 the Bedrock Optimism Goerli testnet.</p>
@@ -13867,7 +12821,7 @@ when a user already submitted the EIP transaction before the upgrade.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-39"><a class="header" href="#overview-39">Overview</a></h2>
+<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
 <p>On the Ecotone activation block, and if Ecotone is not activated at Genesis,
 the L1 Attributes Transaction includes a call to <code>setL1BlockValues()</code>
 because the L1 Attributes transaction precedes the <a href="protocol/ecotone/derivation.html#network-upgrade-automation-transactions">Ecotone Upgrade Transactions</a>,
@@ -14124,7 +13078,7 @@ activation block. This ensures that the network upgrade transactions don't confl
 translating to a fixed maximum sequencer drift of 30 minutes.</p>
 <p>Before Fjord, this was a chain parameter that was set once at chain creation, with a default
 value of <code>600</code> seconds, i.e., 10 minutes. Most chains use this value currently.</p>
-<h3 id="rationale-1"><a class="header" href="#rationale-1">Rationale</a></h3>
+<h3 id="rationale"><a class="header" href="#rationale">Rationale</a></h3>
 <p>Discussions amongst chain operators came to the unilateral conclusion that a larger value than the
 current default would be easier to work with. If a sequencer's L1 connection breaks, this drift
 value determines how long it can still produce blocks without violating the timestamp drift
@@ -14151,7 +13105,7 @@ Fjord creates a new constant <code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> for the e
 <code>MAX_SPAN_BATCH_SIZE</code>. The size of the channel is still checked with <code>MAX_RLP_BYTES_PER_CHANNEL</code>.</p>
 <p>The new value will be used when the timestamp of the L1 origin of the derivation pipeline &gt;= the Fjord activation
 timestamp.</p>
-<h3 id="rationale-2"><a class="header" href="#rationale-2">Rationale</a></h3>
+<h3 id="rationale-1"><a class="header" href="#rationale-1">Rationale</a></h3>
 <p>A block with a gas limit of 30 Million gas has a maximum theoretical size of 7.5 Megabytes by being filled up
 with transactions have only zeroes. Currently, a byte with the value <code>0</code> consumes 4 gas.
 If the block gas limit is raised above 40 Million gas, it is possible to create a block that is large than
@@ -14662,7 +13616,7 @@ pipeline's state is mostly reset by <strong>discarding</strong></p>
 partially submitted channel that were included pre-Holocene must be sent again. This is a very
 unlikely scenario since production batchers are usually configured to submit a channel in a single
 transaction.</p>
-<h1 id="rationale-3"><a class="header" href="#rationale-3">Rationale</a></h1>
+<h1 id="rationale-2"><a class="header" href="#rationale-2">Rationale</a></h1>
 <h2 id="strict-frame-and-batch-ordering"><a class="header" href="#strict-frame-and-batch-ordering">Strict Frame and Batch Ordering</a></h2>
 <p>Strict Frame and Batch Ordering simplifies implementations of the derivation pipeline, and leads to
 better worst-case cached data usage.</p>
@@ -14799,7 +13753,7 @@ search any further back, so we go back a channel timeout before the finalized L2
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-40"><a class="header" href="#overview-40">Overview</a></h2>
+<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
 <p>The EIP-1559 parameters are encoded in the block header's <code>extraData</code> field and can be configured dynamically through
 the <code>SystemConfig</code>.</p>
 <h2 id="timestamp-activation-1"><a class="header" href="#timestamp-activation-1">Timestamp Activation</a></h2>
@@ -14868,7 +13822,7 @@ constants</a> are used. Note that <code>parent_header.extraData</code> is empty
 prior to Holocene, except possibly for the genesis block.</li>
 <li>if Holocene is active at <code>parent_header.timestamp</code>, then the parameters from <code>parent_header.extraData</code> are used.</li>
 </ul>
-<h3 id="rationale-4"><a class="header" href="#rationale-4">Rationale</a></h3>
+<h3 id="rationale-3"><a class="header" href="#rationale-3">Rationale</a></h3>
 <p>Placing the EIP-1559 parameters within the L2 block header allows us to retain the purity of the function that computes
 the next block's base fee from its parent block header, while still allowing them to be dynamically configured.  Dynamic
 configuration is handled similarly to <code>gasLimit</code>, with the derivation pipeline providing the appropriate <code>SystemConfig</code>
@@ -14899,7 +13853,7 @@ contract values to the block builder via <code>PayloadAttributesV3</code> parame
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-41"><a class="header" href="#overview-41">Overview</a></h2>
+<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
 <p>The <code>SystemConfig</code> is updated to allow for dynamic EIP-1559 parameters.</p>
 <h3 id="configupdate"><a class="header" href="#configupdate"><code>ConfigUpdate</code></a></h3>
 <p>When the configuration is updated, a <a href="protocol/holocene/../system-config.html#system-config-updates"><code>ConfigUpdate</code></a> event
@@ -15115,7 +14069,7 @@ or later before Pectra activates on L1.</p>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
-<h2 id="overview-42"><a class="header" href="#overview-42">Overview</a></h2>
+<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
 <p>The storage root of the <code>L2ToL1MessagePasser</code> is included in the block header's
 <code>withdrawalRoot</code> field.</p>
 <h2 id="timestamp-activation-2"><a class="header" href="#timestamp-activation-2">Timestamp Activation</a></h2>
@@ -15154,7 +14108,7 @@ indicating no requests in the block.</li>
 <tr><td><code>[0, 32)</code></td><td><a href="protocol/isthmus/../../protocol/predeploys.html#L2ToL1MessagePasser"><code>L2ToL1MessagePasser</code></a> account storage root</td></tr>
 </tbody></table>
 </div>
-<h4 id="rationale-5"><a class="header" href="#rationale-5">Rationale</a></h4>
+<h4 id="rationale-4"><a class="header" href="#rationale-4">Rationale</a></h4>
 <p>Currently, to generate <a href="protocol/isthmus/../../glossary.html#l2-output-root">L2 output roots</a> for historical blocks, an archival node is required. This directly
 places a burden on users of the system in a post-fault-proofs world, where:</p>
 <ol>
@@ -15622,7 +14576,7 @@ the Isthmus activation time.</p>
 <li><a href="protocol/isthmus/l1-attributes.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-43"><a class="header" href="#overview-43">Overview</a></h2>
+<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
 <p>The L1 block attributes transaction is updated to include the operator fee parameters.</p>
 <div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
 <tr><td>{0x098999be}</td><td></td><td>0-3</td><td>n/a</td></tr>
@@ -15680,7 +14634,7 @@ from the <a href="protocol/isthmus/./system-config.html"><code>SystemConfig</cod
 <li><a href="protocol/isthmus/predeploys.html#security-considerations">Security Considerations</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-44"><a class="header" href="#overview-44">Overview</a></h2>
+<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
 <h3 id="l1block-1"><a class="header" href="#l1block-1">L1Block</a></h3>
 <h4 id="interface-3"><a class="header" href="#interface-3">Interface</a></h4>
 <h5 id="setisthmus"><a class="header" href="#setisthmus"><code>setIsthmus</code></a></h5>
@@ -15872,7 +14826,7 @@ field <code>minBaseFee</code>. The existing <code>eip1559Params</code> remains 8
 }
 </code></pre>
 <p>The <code>minBaseFee</code> MUST be <code>null</code> prior to the Jovian fork, and MUST be non-<code>null</code> after the Jovian fork.</p>
-<h3 id="rationale-6"><a class="header" href="#rationale-6">Rationale</a></h3>
+<h3 id="rationale-5"><a class="header" href="#rationale-5">Rationale</a></h3>
 <p>As with <a href="protocol/jovian/../holocene/exec-engine.html#rationale">Holocene's dynamic EIP-1559 parameters</a>, placing the
 minimum base fee in the block header allows us to avoid reaching into the state during block sealing.
 This retains the purity of the function that computes the next block's base fee from its parent block
@@ -15930,7 +14884,7 @@ As a result, blocks with high DA usage may cause the base fee to increase in sub
 <p>After Jovian activation, a new field <code>daFootprintGasScalar</code> is added to transaction receipts that is populated
 with the DA footprint gas scalar of the transaction's block.
 Furthermore, the <code>blobGasUsed</code> receipt field is set to the DA footprint of the transaction.</p>
-<h3 id="rationale-7"><a class="header" href="#rationale-7">Rationale</a></h3>
+<h3 id="rationale-6"><a class="header" href="#rationale-6">Rationale</a></h3>
 <p>While the current L1 fee mechanism charges for DA usage based on an estimate of the DA footprint of a transaction, no
 protocol mechanism currently reflects the limited available <em>DA throughput on L1</em>. E.g. on Ethereum L1 with Pectra
 enabled, the available blob throughput is <code>~96 kB/s</code> (with a target of <code>~64 kB/s</code>), but the calldata floor gas price of
@@ -16166,7 +15120,7 @@ computed with the "Upgrade-deposited" type, with <code>intent = "Jovian: Gas Pri
 <li><a href="protocol/jovian/l1-attributes.html#overview">Overview</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-45"><a class="header" href="#overview-45">Overview</a></h2>
+<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
 <p>The L1 block attributes transaction is updated to include the DA footprint gas scalar.</p>
 <div class="table-wrapper"><table><thead><tr><th>Input arg</th><th>Type</th><th>Calldata bytes</th><th>Segment</th></tr></thead><tbody>
 <tr><td>{0x3db6be2b}</td><td></td><td>0-3</td><td>n/a</td></tr>
@@ -16463,7 +15417,7 @@ position of the transaction within the bundle.</p>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
-<h2 id="overview-46"><a class="header" href="#overview-46">Overview</a></h2>
+<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
 <p>Post-execution transactions are an <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> <a href="protocol/lagoon/../../glossary.html#transaction-type">transaction type</a> that lets a block carry
 sequencer-provided consensus data. Unlike user-submitted or <a href="protocol/lagoon/../../glossary.html#deposited-transaction">deposited transactions</a>, a post-exec
 transaction is created by the <a href="protocol/lagoon/../../glossary.html#sequencer">sequencer</a> and appended to the block as its final transaction. A
@@ -16615,7 +15569,7 @@ layer alongside the user transactions and any deposited transactions.</p>
 batcher transactions. The future-tx-type decoding range described in
 <a href="protocol/lagoon/../derivation.html#on-future-proof-transaction-log-derivation">derivation.md</a> governs L1 receipts only and is
 unchanged.</p>
-<h2 id="rationale-8"><a class="header" href="#rationale-8">Rationale</a></h2>
+<h2 id="rationale-7"><a class="header" href="#rationale-7">Rationale</a></h2>
 <p><strong>Why a versioned payload.</strong> A <code>version</code> byte at the head of the payload lets the schema extend or replace its
 trailing fields without re-spending an EIP-2718 type byte.</p>
 <p><strong>Why last in block.</strong> Placing the post-exec transaction at the end of the block gives it a unique, predictable
@@ -16659,7 +15613,7 @@ compressed-size calculation, and this bounded error does not materially change i
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!-- All glossary references in this file. -->
-<h2 id="overview-47"><a class="header" href="#overview-47">Overview</a></h2>
+<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
 <p>Sequencer-Defined Metering (SDM) is the version-1 <a href="protocol/lagoon/../../glossary.html#post-exec-payload-schema-version">post-exec payload schema</a>. It lets
 the sequencer attach per-transaction gas refunds to a block. Each refund lowers the gas a transaction is charged
 for and rebalances the fees it already paid.</p>
@@ -17251,7 +16205,7 @@ the verifier relies on the verification work of the nodes that it sources its di
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-48"><a class="header" href="#overview-48">Overview</a></h2>
+<h2 id="overview-49"><a class="header" href="#overview-49">Overview</a></h2>
 <p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
@@ -17587,7 +16541,7 @@ and includes a <code>remoteToken</code> variable.
 These ERC20s are called <code>OptimismSuperchainERC20</code> and can be converted back and forth with <code>OptimismMintableERC20</code> tokens.
 The goal of the <code>OptimismSuperchainERC20</code> is to extend functionalities
 of the <code>OptimismMintableERC20</code> so that they are interop compatible.</p>
-<h3 id="overview-49"><a class="header" href="#overview-49">Overview</a></h3>
+<h3 id="overview-50"><a class="header" href="#overview-50">Overview</a></h3>
 <p>Anyone can deploy <code>OptimismSuperchainERC20</code> contracts by using the <code>OptimismSuperchainERC20Factory</code>.</p>
 <h4 id="proxy"><a class="header" href="#proxy">Proxy</a></h4>
 <p>The <code>OptimismSuperchainERC20Factory</code> MUST be a proxied predeploy.
@@ -17654,7 +16608,7 @@ and <code>deployer</code> is the <code>msg.sender</code>.</p>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000027</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-50"><a class="header" href="#overview-50">Overview</a></h3>
+<h3 id="overview-51"><a class="header" href="#overview-51">Overview</a></h3>
 <p>The <code>OptimismSuperchainERC20Beacon</code> predeploy gets called by the <code>OptimismSuperchainERC20</code>
 BeaconProxies deployed by the
 <a href="interop/predeploys.html#optimismsuperchainerc20factory"><code>SuperchainERC20Factory</code></a></p>
@@ -17810,7 +16764,7 @@ sequenceDiagram
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000028</code></td></tr>
 </tbody></table>
 </div>
-<h3 id="overview-51"><a class="header" href="#overview-51">Overview</a></h3>
+<h3 id="overview-52"><a class="header" href="#overview-52">Overview</a></h3>
 <p>The <code>SuperchainTokenBridge</code> is an abstraction on top of the <code>L2toL2CrossDomainMessenger</code>
 that facilitates token bridging using interop.
 It has mint and burn rights over <code>SuperchainERC20</code> tokens
@@ -17955,7 +16909,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-52"><a class="header" href="#overview-52">Overview</a></h2>
+<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
 <p>New validity rules are added to blocks that the sequencer must follow. If the
 new rules are not followed, then the sequencer risks producing empty blocks
 and reorg'ing the chain.</p>
@@ -18173,7 +17127,7 @@ inclusion.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-53"><a class="header" href="#overview-53">Overview</a></h2>
+<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
 <p>The <a href="interop/../fault-proof/stage-one/optimism-portal.html#super-root">super root</a> is a commitment to the
 combined verified state of all chains in a <a href="interop/./dependency-set.html">dependency set</a> at a given timestamp.
 Any consensus client that verifies output roots across chains with interop needs access to the
@@ -18310,7 +17264,7 @@ do not produce errors; they result in the chain being excluded from
 <li><a href="interop/fault-proof.html#fault-proof-program-state-transition">Fault Proof Program State Transition</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-54"><a class="header" href="#overview-54">Overview</a></h2>
+<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
 <p>Interop introduces the Super Fault Dispute Game as a
 new <a href="interop/../fault-proof/stage-one/dispute-game-interface.html">dispute game</a> type. It is based on the
 pre-interop <a href="interop/../fault-proof/stage-one/fault-dispute-game.html">fault dispute game</a> with some modifications:</p>
@@ -18418,7 +17372,7 @@ program identifying the type of step to perform based on the agreed prestate.</p
 <li><a href="interop/token-bridging.html#implementation">Implementation</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-55"><a class="header" href="#overview-55">Overview</a></h2>
+<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
 <p>Without a standardized security model, bridged assets may not be fungible with each other.
 The <code>SuperchainERC20</code> standard is a set of properties and an interface allowing ERC20 to be fungible across the
 Superchain using the official <code>SuperchainTokenBridge</code>.
@@ -18520,7 +17474,7 @@ sequenceDiagram
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount, sender)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h2 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h2>
+<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
 <p>An example implementation for the <code>sendERC20</code> and <code>relayERC20</code> functions is provided.</p>
 <pre><code class="language-solidity">function sendERC20(SuperchainERC20 _token, address _to, uint256 _amount, uint256 _chainId) external returns (bytes32 msgHash_) {
   _token.crosschainBurn(msg.sender, _amount);
@@ -18600,7 +17554,7 @@ function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-56"><a class="header" href="#overview-56">Overview</a></h2>
+<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
 <p>The <code>ETHLiquidity</code> contract is a predeploy that manages native ETH liquidity for cross-chain
 transfers within the Superchain interop set. It works in conjunction with the
 <code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
@@ -18762,7 +17716,7 @@ do not break this invariant.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-57"><a class="header" href="#overview-57">Overview</a></h2>
+<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
 <p>The <code>SuperchainETHBridge</code> is a predeploy contract that facilitates cross-chain ETH bridging within
 the Superchain interop set. It serves as an abstraction layer on top of the
 <code>L2toL2CrossDomainMessenger</code> specifically designed for native ETH transfers between chains. The
@@ -18914,7 +17868,7 @@ ID.</li>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-58"><a class="header" href="#overview-58">Overview</a></h2>
+<h2 id="overview-59"><a class="header" href="#overview-59">Overview</a></h2>
 <p>ETH is bridged between chains within the Superchain interop set by using the <code>SuperchainETHBridge</code>
 predeploy for message passing and the <code>ETHLiquidity</code> contract for supplying native ETH liquidity.</p>
 <h2 id="constants-3"><a class="header" href="#constants-3">Constants</a></h2>
@@ -18985,7 +17939,7 @@ sequenceDiagram
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-59"><a class="header" href="#overview-59">Overview</a></h2>
+<h2 id="overview-60"><a class="header" href="#overview-60">Overview</a></h2>
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
@@ -19116,7 +18070,7 @@ needing to execute increasingly long chain histories.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-60"><a class="header" href="#overview-60">Overview</a></h2>
+<h2 id="overview-61"><a class="header" href="#overview-61">Overview</a></h2>
 <p>The transaction pool (also known as the mempool) is where pending user transactions accumulate
 before being included in a block. When a user submits a transaction to a node, it is validated
 and inserted into the node's transaction pool before being broadcasted via p2p network to other nodes.</p>
@@ -19188,7 +18142,7 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#invariants">Invariants</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-61"><a class="header" href="#overview-61">Overview</a></h2>
+<h2 id="overview-62"><a class="header" href="#overview-62">Overview</a></h2>
 <p>The <code>OptimismPortal</code> contract is integrated with the <code>ETHLockbox</code> for managing unified ETH liquidity.
 This liquidity consists of every ETH balance migrated from each <code>OptimismPortal</code> when joining
 the op-governed dependency set.</p>
@@ -19303,7 +18257,7 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-62"><a class="header" href="#overview-62">Overview</a></h2>
+<h2 id="overview-63"><a class="header" href="#overview-63">Overview</a></h2>
 <p>With interoperable ETH, withdrawals will fail if the referenced <code>OptimismPortal</code> lacks sufficient ETH.
 This is due to having the possibility to move ETH liquidity across the different chains and it could happen
 that a chain ends up with more liquidity than its <code>OptimismPortal</code>.
@@ -19555,7 +18509,7 @@ transferring the ETH liquidity from the both source <code>ETHLockbox</code> to t
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-63"><a class="header" href="#overview-63">Overview</a></h2>
+<h2 id="overview-64"><a class="header" href="#overview-64">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -19690,7 +18644,7 @@ address.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-64"><a class="header" href="#overview-64">Overview</a></h2>
+<h2 id="overview-65"><a class="header" href="#overview-65">Overview</a></h2>
 <p>The <code>MintManager</code> contract serves as the owner of the <a href="governance/./gov-token.html">GovernanceToken</a> and controls the token
 inflation schedule. It enforces rate-limited minting with a maximum cap per minting operation and a minimum time
 period between mints. The contract is upgradeable, allowing the owner to transfer control to a new <code>MintManager</code>
@@ -19964,7 +18918,7 @@ the token minting authority.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-65"><a class="header" href="#overview-65">Overview</a></h2>
+<h2 id="overview-66"><a class="header" href="#overview-66">Overview</a></h2>
 <p>The <code>SystemConfig</code> and <code>OptimismPortal</code> are updated with a new flow for chain
 configurability.</p>
 <h2 id="chain-constants-on-l1"><a class="header" href="#chain-constants-on-l1">Chain Constants on L1</a></h2>
@@ -20120,7 +19074,7 @@ rather than reading it from local state.</p>
 This means that it can be deterministically called by network upgrade transactions
 or by special deposit transactions emitted by the <code>OptimismPortal</code> that assume
 the identity of the <code>DEPOSITOR_ACCOUNT</code>.</p>
-<h4 id="rationale-9"><a class="header" href="#rationale-9">Rationale</a></h4>
+<h4 id="rationale-8"><a class="header" href="#rationale-8">Rationale</a></h4>
 <p>It is much easier to manage the overall roles of the full system under this model.
 The owner of the <code>ProxyAdmin</code> can upgrade any of the predeploys, meaning it can
 write storage slots that correspond to withdrawals. This ensures that only the
@@ -20238,7 +19192,7 @@ a future hardfork.</p>
 <p>Note: Alt-DA Mode is a Beta feature of the MIT licensed OP Stack.
 While it has received initial review from core contributors, it is still undergoing testing,
 and may have bugs or other issues.</p>
-<h2 id="overview-66"><a class="header" href="#overview-66">Overview</a></h2>
+<h2 id="overview-67"><a class="header" href="#overview-67">Overview</a></h2>
 <p>Using <a href="https://vitalik.eth.limo/general/2023/11/14/neoplasma.html">Alt-DA</a> mode means switching to an offchain data availability provider.
 The protocol guarantees availability with a challenge contract on L1 where users
 can challenge the availability of input data used to derive the chain.
@@ -20338,7 +19292,7 @@ Response:
 </li>
 </ul>
 <h2 id="data-availability-challenge-contract"><a class="header" href="#data-availability-challenge-contract">Data Availability Challenge Contract</a></h2>
-<h3 id="parameters-1"><a class="header" href="#parameters-1">Parameters</a></h3>
+<h3 id="parameters"><a class="header" href="#parameters">Parameters</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>fixedResolutionCost</td><td><code>uint256</code></td><td>Fixed gas cost of resolving a challenge, set to 72925</td></tr>
 <tr><td>variableResolutionCost</td><td><code>uint256</code></td><td>Upper limit gas cost per byte scaled by precision constant, set to 16640</td></tr>
@@ -20551,7 +19505,7 @@ of governance approved <a href="https://github.com/ethereum-optimism/optimism/bl
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-67"><a class="header" href="#overview-67">Overview</a></h2>
+<h2 id="overview-68"><a class="header" href="#overview-68">Overview</a></h2>
 <p>The OP Contracts Manager refers to a series of contracts, of which a new singleton is deployed
 for each new release of the OP Stack contracts.</p>
 <p>The OP Contracts Manager corresponding to each release can be used to:</p>
@@ -20652,7 +19606,7 @@ for future versions of OP Contracts Manager that handle upgrades.</li>
 <li>The input <code>l2ChainId</code> does not comply with the enforced restrictions above.</li>
 <li>The resulting configuration is not compliant with the <a href="experimental/../protocol/configurability.html">standard configuration</a>.</li>
 </ul>
-<h3 id="implementation-2"><a class="header" href="#implementation-2">Implementation</a></h3>
+<h3 id="implementation-1"><a class="header" href="#implementation-1">Implementation</a></h3>
 <h4 id="batch-inbox-address-1"><a class="header" href="#batch-inbox-address-1">Batch Inbox Address</a></h4>
 <p>The chain's <a href="experimental/../protocol/configurability.html#consensus-parameters">Batch Inbox</a> address is computed at deploy time using the recommend approach defined
 in the <a href="experimental/../protocol/configurability.html">standard configuration</a>. This improves UX by removing an input, and ensures uniqueness of
@@ -20699,7 +19653,7 @@ function upgrade(OpChainConfig[] memory _opChainConfigs) external
 <pre><code class="language-solidity">event Upgraded(uint256 indexed l2ChainId, ISystemConfig indexed systemConfig, address indexed upgrader);
 </code></pre>
 <p>This method reverts if the upgrade is not successful for any of the chains.</p>
-<h3 id="implementation-3"><a class="header" href="#implementation-3">Implementation</a></h3>
+<h3 id="implementation-2"><a class="header" href="#implementation-2">Implementation</a></h3>
 <p>The high level logic of the upgrade method is as follows:</p>
 <ol>
 <li>The Proxy Admin Owner Safe will <code>DELEGATECALL</code> to the <code>OPCM.upgrade()</code> method.</li>
@@ -20762,7 +19716,7 @@ function addGameType(AddGameInput[] memory _gameConfigs) external returns (AddGa
 <p>On success, the following event is emitted:</p>
 <pre><code class="language-solidity">event GameTypeAdded(uint256 indexed l2ChainId, uint32 indexed gameType, address indexed deployer);
 </code></pre>
-<h3 id="implementation-4"><a class="header" href="#implementation-4">Implementation</a></h3>
+<h3 id="implementation-3"><a class="header" href="#implementation-3">Implementation</a></h3>
 <p>The high level logic of the <code>addGameType</code> method is as follows (for each chain):</p>
 <ol>
 <li>Deploy and initialize new <code>DelayedWethProxy</code> for the new game type, if one hasn't already been specified.</li>
@@ -20849,7 +19803,7 @@ transaction which upgrades all <code>L1CrossDomainMessenger</code> contracts.</p
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-68"><a class="header" href="#overview-68">Overview</a></h2>
+<h2 id="overview-69"><a class="header" href="#overview-69">Overview</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constants</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000042</code></td></tr>
 <tr><td>Token name</td><td><code>Optimism</code></td></tr>
@@ -20953,7 +19907,7 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-69"><a class="header" href="#overview-69">Overview</a></h2>
+<h2 id="overview-70"><a class="header" href="#overview-70">Overview</a></h2>
 <p>The LivenessGuard tracks the liveness of Safe multisig owners by recording timestamps when owners sign transactions or
 explicitly demonstrate activity. It serves as a monitoring mechanism to identify inactive owners who may have lost
 access to their keys.</p>
