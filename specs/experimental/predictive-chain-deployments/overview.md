@@ -101,11 +101,14 @@ Every chain keeps its own registry in all three cases. In a super root deploymen
 
 ### Selected Prestate
 
-The absolute prestate of the game type a chain deploys with. It is the Cannon hash of the initial MIPS machine state,
-produced by compiling the Kona fault-proof program with the embedded chain config. The hash is deterministic for a
-given chain config.
+The absolute prestate of the game type a chain deploys as its respected game.
 
-A permissioned-only deployment carries no selected prestate.
+For a permissionless deployment the pipeline commits it: the Cannon hash of the initial MIPS machine state, produced
+by compiling the Kona fault-proof program with the embedded chain config. The hash is deterministic for a given chain
+config.
+
+A permissioned-only deployment keeps the prestate the chain configuration already supplies. That value is required to
+be non-zero in every case, including the super root permissioned game, which never reads it.
 
 ### Fallback Prestate
 

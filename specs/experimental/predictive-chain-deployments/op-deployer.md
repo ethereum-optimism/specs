@@ -27,6 +27,8 @@
     - [Impact](#impact-2)
   - [iOPD-004: A permissionless deployment requires a committed prestate](#iopd-004-a-permissionless-deployment-requires-a-committed-prestate)
     - [Impact](#impact-3)
+  - [iOPD-005: The reserved fallback prestate is never a selected prestate](#iopd-005-the-reserved-fallback-prestate-is-never-a-selected-prestate)
+    - [Impact](#impact-4)
 - [Pipeline](#pipeline)
   - [prepare](#prepare)
   - [prestate](#prestate)
@@ -115,7 +117,8 @@ The [anchor block](./overview.md#anchor-block) chosen during `prepare` stays on 
 ### aOPD-003: op-deployer state is trusted
 
 The artifacts and hashes that `prepare` and `prestate` write are not tampered with before `continue` reads them. The
-[state](#op-deployer-state) is the only channel between the off-chain computation and the eventual broadcast.
+[state](#op-deployer-state) is the only channel between the off-chain computation and the eventual broadcast. The
+artifact bundles the state references are outside this assumption.
 
 #### Mitigations
 
@@ -133,7 +136,7 @@ prestate itself.
 
 - The recipe embeds the chain config at compile time, so the hash is a pure function of the committed artifacts.
 - A reviewer rebuilds the prestate and compares the hash against the value in the state before `continue` (see
-  [FM4](#failure-modes)).
+  [FM4](#failure-modes)). This is the only check that catches a prestate that is set but incorrect.
 
 ## Invariants
 
@@ -182,24 +185,33 @@ The prestate hash written to the [state](#op-deployer-state) and carried into th
 **Severity: Critical**
 
 A mismatched prestate makes the two sides of a dispute disagree on the starting state. Fault proofs are broken from
-block 0. Recovering from this is expensive.
-
-OPCM rejects a **zero** prestate on an enabled Cannon-family game (see
-[OPCMv2 config validation](./contracts.md#opcmv2-config-validation)), so an unset prestate cannot reach L1. It cannot
-reject a wrong one, since any nonzero value passes. Reproducing the prestate before `continue` is the only thing that
-catches a prestate that is set but incorrect. See [FM4](#failure-modes) and [FM6](#failure-modes).
+block 0. Recovering from this is expensive. See [FM4](#failure-modes) and [FM6](#failure-modes).
 
 ### iOPD-004: A permissionless deployment requires a committed prestate
 
 `continue` MUST halt any attempt to make a permissionless deployment when the prestate is unset.
-A permissioned-only deployment carries no selected prestate and MUST be able to proceed without one.
+A permissioned-only deployment has no committed prestate and MUST be able to proceed without one, carrying the
+[selected prestate](./overview.md#selected-prestate) its chain configuration already supplies.
 
 #### Impact
 
 **Severity: High**
 
-If a permissionless deployment proceeded without a prestate, it would broadcast `OPCM.deploy()` with a missing
-`absolutePrestate`. This check is conditional on a permissionless game type being enabled.
+The deployment cannot succeed, since the enabled permissionless game would have no prestate to commit to. The failure
+surfaces during the deployment attempt rather than before any transaction is prepared.
+
+### iOPD-005: The reserved fallback prestate is never a selected prestate
+
+The [fallback prestate](./overview.md#fallback-prestate) value is reserved for the guardian fallback game. It MUST
+never be committed as the [selected prestate](./overview.md#selected-prestate) of a permissionless deployment.
+
+#### Impact
+
+**Severity: Critical**
+
+The respected game would be seeded with a prestate that commits to no real fault-proof program, leaving it unplayable
+from block 0. Fault proofs are broken exactly as in
+[iOPD-003](#iopd-003-absoluteprestate-matches-the-committed-chain-config).
 
 ## Pipeline
 
@@ -249,8 +261,10 @@ anything itself. It only commits the built hash into op-deployer state, which `c
   - a **per-chain intent override**, the chain's `deployOverrides.faultGameAbsolutePrestate`.
 - MUST fail when two or more sources are set and disagree.
 - MUST fail if no source is provided for a chain whose game type requires a prestate.
-- MUST reject the reserved [fallback prestate](./overview.md#fallback-prestate) value as a selected prestate.
-- A permissioned-only chain MUST be left without a selected prestate.
+- MUST reject the reserved [fallback prestate](./overview.md#fallback-prestate) value as a selected prestate (see
+  [iOPD-005](#iopd-005-the-reserved-fallback-prestate-is-never-a-selected-prestate)).
+- A permissioned-only chain MUST be left without a committed prestate. Its respected game keeps the
+  [selected prestate](./overview.md#selected-prestate) the chain configuration supplies.
 
 ### continue
 
@@ -262,13 +276,16 @@ any of them, so a configuration error stops the run before it can produce a part
 - MUST verify the current intent still agrees with the frozen snapshot, and that the dependency set still matches.
 - MUST re-download both artifact bundles by locator and verify their content digests against the frozen values.
 - MUST fail when the deployer or OPCM differs from the one recorded by `prepare`.
-- MUST halt a permissionless deployment when the prestate is unset or holds the reserved fallback value. The prestate
-  gate is conditional on a permissionless game type: a **permissioned-only** deployment carries no selected prestate
-  and proceeds without one.
+- MUST halt a permissionless deployment when the prestate is unset or holds the reserved fallback value (see
+  [iOPD-005](#iopd-005-the-reserved-fallback-prestate-is-never-a-selected-prestate)). The prestate gate is conditional
+  on a permissionless game type: a **permissioned-only** deployment has no committed prestate and proceeds
+  without one.
 - MUST halt a permissionless deployment when the starting anchor root is unset or still holds the `0xdead` placeholder.
 - MUST re-check the predicted addresses by simulating the deployment against a fresh fork of L1 (pre-broadcast
   preflight) and abort on mismatch.
 - MUST verify the simulated broadcast is exactly one call, to the pinned OPCM, from the pinned deployer.
+- SHOULD warn, without halting, when the committed genesis time has already elapsed against the L1 head. `prepare` is
+  the only hard gate on the [deployment window](#deployment-window), and it compares against the safe head.
 
 **Broadcasting:**
 
@@ -303,7 +320,7 @@ the `prepare` flow.
 The two flows MUST NOT be mixed on one working directory. `prepare` MUST refuse a state produced by `apply`, and
 `apply` MUST refuse a prepared state.
 
-A permissioned-only chain may still go through `prepare` / `prestate` / `continue`. It carries no selected prestate
+A permissioned-only chain may still go through `prepare` / `prestate` / `continue`. It has no committed prestate
 and broadcasts the same `0xdead` placeholder anchor that `apply` would. The real anchor root is substituted only for
 permissionless deployments.
 

@@ -27,7 +27,7 @@
   - [DeployOPChain script](#deployopchain-script)
     - [Address prediction](#address-prediction)
     - [Broadcasting a permissionless deployment](#broadcasting-a-permissionless-deployment)
-    - [Script input struct](#script-input-struct)
+    - [Script inputs](#script-inputs)
   - [OPCMv2 config validation](#opcmv2-config-validation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -238,12 +238,11 @@ substitutions are safe (see [aPCD-001](#apcd-001-opcm-address-determinism)).
 
 #### Broadcasting a permissionless deployment
 
-Today the script hard-codes a permissioned-only initial deployment:
+Before PCD the script hard-coded a permissioned-only initial deployment:
 
-- It `require`s the input game type to be `PERMISSIONED_CANNON`, reverting with *"only PERMISSIONED_CANNON game type
-  is supported for initial deployment"*.
-- It builds the six `disputeGameConfigs` with the permissionless types disabled.
-- It sets `startingRespectedGameType` to the permissioned type and `startingAnchorRoot` to a placeholder.
+- It rejected any input game type other than `PERMISSIONED_CANNON`.
+- It built the six `disputeGameConfigs` with the permissionless types disabled.
+- It set `startingRespectedGameType` to the permissioned type and `startingAnchorRoot` to a placeholder.
 
 In order to support permissionless deployments the script is updated to:
 
@@ -263,24 +262,17 @@ In order to support permissionless deployments the script is updated to:
   addresses match the prediction (see
   [iOPD-001](./op-deployer.md#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts)).
 
-#### Script input struct
+#### Script inputs
 
-Carrying those values into the script requires extending its Solidity input struct. `Types.DeployOPChainInput`
-(`scripts/libraries/Types.sol`) today exposes a single `disputeGameType` and `disputeAbsolutePrestate`. It gains two
-fields, and one existing field changes meaning:
+A permissionless deployment supplies three values the script did not previously take:
 
-| Field | Exists | Meaning |
-| --- | --- | --- |
-| `startingAnchorRoot` | new | The `Proposal` seeded into the `AnchorStateRegistry` |
-| `cannonAbsolutePrestate` | new | The [fallback prestate](./overview.md#fallback-prestate) for the guardian fallback game |
-| `disputeAbsolutePrestate` | repurposed | The [selected prestate](./overview.md#selected-prestate) of the respected game type |
+- the [starting anchor root](./overview.md#starting-anchor-root) seeded into the `AnchorStateRegistry`,
+- the [selected prestate](./overview.md#selected-prestate) of the respected game type, and
+- for the output root family only, the [fallback prestate](./overview.md#fallback-prestate) of the guardian fallback
+  game.
 
-`cannonAbsolutePrestate` is the **fallback**, not the permissionless prestate.
-The permissionless prestate is carried in `disputeAbsolutePrestate`, which previously carried the permissioned game's
-prestate.
-
-The script MUST reject a `CANNON_KONA` input whose two prestate values are equal. They commit to different fault-proof
-programs, **so equal values always indicate a misconfigured producer.**
+The script MUST reject an output root family input whose selected prestate equals its fallback prestate. They commit
+to different fault-proof programs, **so equal values always indicate a misconfigured producer.**
 
 ### OPCMv2 config validation
 
@@ -310,18 +302,19 @@ PCD then:
 - MUST allow the permissionless game type of the OPCM's mode to be `enabled` during an initial deployment.
 - MUST reject a game type from the other mode, and MUST keep `CANNON` and `ZK_DISPUTE_GAME` rejected at initial
   deployment (see [Supported initial game types](#supported-initial-game-types)).
-- MUST validate the values a permissionless initial deployment now carries. These checks are new, before PCD both
-  values were always placeholders:
+- MUST apply the checks PCD adds:
   - `startingAnchorRoot.root` MUST be non-zero on any initial deployment, and its `l2SequenceNumber` MUST leave room
     for a `uint64` successor.
   - The `0xdead` placeholder root MUST be rejected when an enabled config is one of `CANNON`, `CANNON_KONA` or
     `SUPER_CANNON_KONA`. Only a permissioned-only deployment may still carry the placeholder.
   - An enabled config among those same three game types MUST carry a non-zero `absolutePrestate`, decoded from its
     `gameArgs`.
-- MUST keep every other pre-existing validation intact:
+  - `SUPER_PERMISSIONED` MUST carry a zero init bond, whether or not it is enabled.
+- MUST keep every other validation OPCM already performs intact:
   - exactly six configs in the fixed game-type order,
-  - the init-bond rules, including `SUPER_PERMISSIONED` carrying a zero init bond,
-  - the `ZK_DISPUTE_GAME` dev-flag gate, and
+  - the init-bond rules for every other game type,
+  - the `ZK_DISPUTE_GAME` dev-flag gate plus its non-zero prestate requirement, both reachable only through the
+    upgrade path, and
   - `startingRespectedGameType` must correspond to an enabled config.
 
 The value checks reject an unset or placeholder input. They cannot reject a wrong one, since any non-zero prestate and
