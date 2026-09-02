@@ -107,7 +107,6 @@
   - [MintManager](./governance/mint-manager.md)
 - [Experimental]()
   - [Standard L2 Genesis](./experimental/standard-l2-genesis.md)
-  - [Alt-DA](./experimental/alt-da.md)
   - [OP Contracts Manager](./experimental/op-contracts-manager.md)
   - [Governance Token](./experimental/gov-token.md)
   - [Contract Specifications]()

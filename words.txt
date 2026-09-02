@@ -47,7 +47,6 @@ Hardfork
 Holesky
 IERC
 IETH
-IPFS
 IWANT
 Impls
 Initializable
@@ -110,7 +109,6 @@ addi
 airgap
 Airgap
 alphanets
-altda
 basefee
 Basefee
 basefeevault
@@ -131,9 +129,7 @@ Blockspace
 blocksv
 blocktime
 bridgeaddress
-bytestring
 calldatas
-celestia
 Celestia
 cellborder
 chainid
@@ -171,7 +167,6 @@ disputegamefactory
 doctoc
 EAGAIN
 ecpairing
-eigenda
 elif
 errno
 eventfd
