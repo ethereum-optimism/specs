@@ -29,6 +29,10 @@
     - [Impact](#impact-3)
   - [iOPD-005: The reserved fallback prestate is never a selected prestate](#iopd-005-the-reserved-fallback-prestate-is-never-a-selected-prestate)
     - [Impact](#impact-4)
+  - [iOPD-006: The artifact bundles never change between `prepare` and `continue`](#iopd-006-the-artifact-bundles-never-change-between-prepare-and-continue)
+    - [Impact](#impact-5)
+  - [iOPD-007: The deployment broadcast is exactly one call to the pinned OPCM](#iopd-007-the-deployment-broadcast-is-exactly-one-call-to-the-pinned-opcm)
+    - [Impact](#impact-6)
 - [Pipeline](#pipeline)
   - [prepare](#prepare)
   - [prestate](#prestate)
@@ -213,6 +217,45 @@ The respected game would be seeded with a prestate that commits to no real fault
 from block 0. Fault proofs are broken exactly as in
 [iOPD-003](#iopd-003-absoluteprestate-matches-the-committed-chain-config).
 
+### iOPD-006: The artifact bundles never change between `prepare` and `continue`
+
+The L1 and L2 artifact bundles resolved at `continue` MUST have the content digests that `prepare` recorded for the
+locators it froze. A digest covers every file path and file content in a bundle, so re-resolving the same locator to
+different contents MUST abort the run before any transaction is prepared.
+
+[aOPD-003](#aopd-003-op-deployer-state-is-trusted) covers the state file only. The bundles the state references are a
+separate trust surface, and this invariant is what covers them. Resolving a locator carries no integrity
+check of its own, so this comparison is the only thing that ties a locator to the contents it
+returns.
+
+#### Impact
+
+**Severity: Critical**
+
+The failure is different for both L1 and L2 bundles. The L1 bundle backs the forked simulation that
+enforces [iOPD-001](#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts), so a 
+substituted bundle makes the preflight compare predicted addresses against code the operator never
+predicted against, and the check passes while proving nothing. The L2 bundle is what the committed
+genesis and [starting anchor root](./overview.md#starting-anchor-root) were derived from, so a
+substituted bundle leaves a genesis that no reviewed artifact set explains. Either way the chain is
+deployed from two different versions of the artifacts, which is the condition
+[iOPD-001](#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts) exists to rule out.
+
+### iOPD-007: The deployment broadcast is exactly one call to the pinned OPCM
+
+Simulating the deployment MUST produce exactly one broadcast: a call, to the OPCM pinned by `prepare`, sent from the
+deployer pinned by `prepare`. A simulation that produces no broadcast, more than one, or one that differs in type,
+target, or sender MUST abort before anything is sent.
+
+#### Impact
+
+**Severity: Critical**
+
+Any broadcast beyond the single pinned call is a transaction the operator never reviewed, signed by the deployer key. A
+modified or compromised deploy script could deploy a contract of its own, call an address other than the pinned OPCM,
+or repeat `OPCM.deploy()`, and the deployed system would no longer be the one the frozen snapshot describes. Because
+the check runs against the simulation rather than the receipt, it aborts before the key signs anything.
+
 ## Pipeline
 
 The three commands run in order around the prestate boundary. Each command's output MUST be set before the next
@@ -274,7 +317,9 @@ any of them, so a configuration error stops the run before it can produce a part
 **Before broadcasting any transaction:**
 
 - MUST verify the current intent still agrees with the frozen snapshot, and that the dependency set still matches.
-- MUST re-download both artifact bundles by locator and verify their content digests against the frozen values.
+- MUST re-resolve both artifact locators recorded by `prepare` and verify the resolved bundles' content digests
+  against the frozen values (see
+  [iOPD-006](#iopd-006-the-artifact-bundles-never-change-between-prepare-and-continue)).
 - MUST fail when the deployer or OPCM differs from the one recorded by `prepare`.
 - MUST halt a permissionless deployment when the prestate is unset or holds the reserved fallback value (see
   [iOPD-005](#iopd-005-the-reserved-fallback-prestate-is-never-a-selected-prestate)). The prestate gate is conditional
@@ -283,7 +328,8 @@ any of them, so a configuration error stops the run before it can produce a part
 - MUST halt a permissionless deployment when the starting anchor root is unset or still holds the `0xdead` placeholder.
 - MUST re-check the predicted addresses by simulating the deployment against a fresh fork of L1 (pre-broadcast
   preflight) and abort on mismatch.
-- MUST verify the simulated broadcast is exactly one call, to the pinned OPCM, from the pinned deployer.
+- MUST verify the simulated broadcast is exactly one call, to the pinned OPCM, from the pinned deployer (see
+  [iOPD-007](#iopd-007-the-deployment-broadcast-is-exactly-one-call-to-the-pinned-opcm)).
 - SHOULD warn, without halting, when the committed genesis time has already elapsed against the L1 head. `prepare` is
   the only hard gate on the [deployment window](#deployment-window), and it compares against the safe head.
 
