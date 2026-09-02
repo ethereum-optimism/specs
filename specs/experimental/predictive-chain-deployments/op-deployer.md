@@ -233,7 +233,7 @@ returns.
 **Severity: Critical**
 
 The failure is different for both L1 and L2 bundles. The L1 bundle backs the forked simulation that
-enforces [iOPD-001](#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts), so a 
+enforces [iOPD-001](#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts), so a
 substituted bundle makes the preflight compare predicted addresses against code the operator never
 predicted against, and the check passes while proving nothing. The L2 bundle is what the committed
 genesis and [starting anchor root](./overview.md#starting-anchor-root) were derived from, so a
@@ -330,8 +330,9 @@ any of them, so a configuration error stops the run before it can produce a part
   preflight) and abort on mismatch.
 - MUST verify the simulated broadcast is exactly one call, to the pinned OPCM, from the pinned deployer (see
   [iOPD-007](#iopd-007-the-deployment-broadcast-is-exactly-one-call-to-the-pinned-opcm)).
-- SHOULD warn, without halting, when the committed genesis time has already elapsed against the L1 head. `prepare` is
-  the only hard gate on the [deployment window](#deployment-window), and it compares against the safe head.
+- SHOULD warn, without halting, when the committed genesis time has already elapsed against the L1 head. `prepare`
+  refuses an elapsed [deployment window](#deployment-window), measured against the safe head. Elapsing it later costs
+  empty blocks, not correctness (see [FM5](#failure-modes)).
 
 **Broadcasting:**
 
