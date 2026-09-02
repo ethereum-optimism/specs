@@ -93,6 +93,8 @@ Sched
 Shapella
 Singlethreaded
 Solana
+Subblock
+Subblocks
 Subgame
 Subgames
 Superchain
@@ -290,6 +292,8 @@ standardbridgeaddress
 statelessly
 struct
 structs
+subblock
+subblocks
 subgame
 subgames
 superchain
