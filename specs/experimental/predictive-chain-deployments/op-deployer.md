@@ -298,11 +298,9 @@ The prestate is built **externally** by the monorepo's `reproducible-prestate-ko
 `rollup.json`, and `depsets.json` rendered from the prepared state. The `prestate` command does not compile or hash
 anything itself. It only commits the built hash into op-deployer state, which `continue` reads.
 
-- MUST write the prestate hash to op-deployer state from any of three sources:
-  - the `--dispute-absolute-prestate` **command flag**, or the matching environment variable,
-  - a **global intent override**, `globalDeployOverrides.faultGameAbsolutePrestate`, or
-  - a **per-chain intent override**, the chain's `deployOverrides.faultGameAbsolutePrestate`.
-- MUST fail when two or more sources are set and disagree.
+- MUST write the prestate hash to op-deployer state from one of three sources: a **command-line override**, in flag or
+  environment-variable form, a **global intent override**, or a **per-chain intent override**.
+- MUST resolve those sources to an unambiguous value, so two or more sources that disagree fail.
 - MUST fail if no source is provided for a chain whose game type requires a prestate.
 - MUST reject the reserved [fallback prestate](./overview.md#fallback-prestate) value as a selected prestate (see
   [iOPD-005](#iopd-005-the-reserved-fallback-prestate-is-never-a-selected-prestate)).

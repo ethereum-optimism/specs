@@ -285,19 +285,7 @@ Before PCD, enabling any permissionless game type during an initial deployment r
 `OPContractsManagerV2_InvalidGameConfigs`, on the premise that no prestate exists yet. PCD invalidates that premise.
 A real prestate now exists at deployment time.
 
-The game-type check is replaced by one scoped to the OPCM's mode:
-
-```solidity
-// Initial deployments must select game types compatible with the active mode.
-bool validForInitialDeploy = superRootGamesMigrationEnabled
-    ? (isSuperPermissionedGame || isSuperCannonKonaGame)
-    : (isPermissionedCannonGame || isCannonKonaGame);
-if (_isInitialDeployment && _cfg.disputeGameConfigs[i].enabled && !validForInitialDeploy) {
-    revert OPContractsManagerV2_InvalidGameConfigs();
-}
-```
-
-PCD then:
+The game-type check is replaced by one scoped to the OPCM's mode. PCD then:
 
 - MUST allow the permissionless game type of the OPCM's mode to be `enabled` during an initial deployment.
 - MUST reject a game type from the other mode, and MUST keep `CANNON` and `ZK_DISPUTE_GAME` rejected at initial
