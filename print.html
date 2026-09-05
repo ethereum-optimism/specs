@@ -8038,6 +8038,7 @@ address public immutable CHALLENGER;
 <li><a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">Finalized Withdrawal</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#deleted-withdrawal-proof">Deleted Withdrawal Proof</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#valid-withdrawal">Valid Withdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#invalid-withdrawal">Invalid Withdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a></li>
@@ -8099,6 +8100,7 @@ address public immutable CHALLENGER;
 <li><a href="fault-proof/stage-one/optimism-portal.html#l2sender">l2Sender</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#provewithdrawaltransaction">proveWithdrawalTransaction</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#checkwithdrawal">checkWithdrawal</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#deleteprovenwithdrawal">deleteProvenWithdrawal</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#donateeth">donateETH</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#finalizewithdrawaltransactionexternalproof">finalizeWithdrawalTransactionExternalProof</a></li>
@@ -8140,6 +8142,9 @@ in progress (games that are not <a href="fault-proof/stage-one/./anchor-state-re
 <p>Users may re-prove a withdrawal at any time. User withdrawals are stored on a per-user basis such
 that re-proving a withdrawal cannot cause the timer for
 <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalizing a withdrawal</a> to be reset for another user.</p>
+<p>Anyone can delete the record of a withdrawal proof if the game it was proven against resolved in
+favor of the Challenger or is a <a href="fault-proof/stage-one/./anchor-state-registry.html#blacklisted-game">Blacklisted Game</a>.
+Refer to <a href="fault-proof/stage-one/optimism-portal.html#deleted-withdrawal-proof">Deleted Withdrawal Proof</a>.</p>
 <h3 id="finalized-withdrawal"><a class="header" href="#finalized-withdrawal">Finalized Withdrawal</a></h3>
 <p>A <strong>Finalized Withdrawal</strong> is a withdrawal transaction that was previously a Proven Withdrawal and
 meets a number of additional conditions that allow the withdrawal to be executed.</p>
@@ -8151,6 +8156,25 @@ meets the following conditions:</p>
 <li>Withdrawal was proven against a game with a <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a></li>
 <li>Withdrawal was not previously finalized</li>
 </ul>
+<h3 id="deleted-withdrawal-proof"><a class="header" href="#deleted-withdrawal-proof">Deleted Withdrawal Proof</a></h3>
+<p>A <strong>Deleted Withdrawal Proof</strong> is the record of a <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a> that was
+removed from the <code>OptimismPortal</code>. Anyone can delete such a record if the game that the withdrawal
+was proven against meets at least one of the following conditions:</p>
+<ul>
+<li>The game resolved in favor of the Challenger</li>
+<li>The game is a <a href="fault-proof/stage-one/./anchor-state-registry.html#blacklisted-game">Blacklisted Game</a></li>
+</ul>
+<p>Both conditions are permanent, so a game in either state can never have a
+<a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a>. Deletion is therefore permissionless. The
+caller can only remove a record that can never be used to finalize a withdrawal.</p>
+<p>Deletion applies to a single withdrawal hash and proof submitter. It does not change whether the
+withdrawal is a <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">Finalized Withdrawal</a>. A user may prove the withdrawal
+again against a different game.</p>
+<p>Deletion is limited to the conditions above. A user cannot delete a record proven against a
+<a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">Retired Game</a> or against a game that is not a
+<a href="fault-proof/stage-one/./anchor-state-registry.html#respected-game">Respected Game</a>, although these games can also never
+have a Valid Claim. The <a href="fault-proof/stage-one/../../protocol/stage-1.html#pause-mechanism">Pause Mechanism</a> does not
+prevent deletion.</p>
 <h3 id="valid-withdrawal"><a class="header" href="#valid-withdrawal">Valid Withdrawal</a></h3>
 <p>A <strong>Valid Withdrawal</strong> is a withdrawal transaction that was correctly executed on the L2 system as
 would be reported by a perfect oracle for the query.</p>
@@ -8386,6 +8410,20 @@ created.</li>
 <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> seconds ago.</li>
 <li>MUST revert if the withdrawal being finalized was proven against a game that does not have a
 <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a>.</li>
+</ul>
+<h3 id="deleteprovenwithdrawal"><a class="header" href="#deleteprovenwithdrawal">deleteProvenWithdrawal</a></h3>
+<p>Allows anyone to <a href="fault-proof/stage-one/optimism-portal.html#deleted-withdrawal-proof">delete</a> the record of a withdrawal proof.</p>
+<ul>
+<li>MUST NOT restrict the caller.</li>
+<li>MUST NOT revert if the system is paused.</li>
+<li>MUST revert if the given proof submitter has not proven the given withdrawal hash.</li>
+<li>MUST revert if the game that the withdrawal was proven against has not resolved in favor of the
+Challenger AND is not a <a href="fault-proof/stage-one/./anchor-state-registry.html#blacklisted-game">Blacklisted Game</a>.</li>
+<li>MUST otherwise delete the record of the withdrawal proof for the given withdrawal hash and proof
+submitter only.</li>
+<li>MUST NOT change the record that the withdrawal was finalized.</li>
+<li>MUST NOT remove the proof submitter from the list of proof submitters for the withdrawal hash.</li>
+<li>MUST emit a <code>WithdrawalProofDeleted</code> event with the withdrawal hash and proof submitter address.</li>
 </ul>
 <h3 id="finalizewithdrawaltransaction"><a class="header" href="#finalizewithdrawaltransaction">finalizeWithdrawalTransaction</a></h3>
 <p>Allows a user to <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalize</a> a withdrawal transaction.</p>
