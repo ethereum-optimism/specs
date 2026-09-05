@@ -9,6 +9,7 @@
   - [Proof Maturity Delay](#proof-maturity-delay)
   - [Proven Withdrawal](#proven-withdrawal)
   - [Finalized Withdrawal](#finalized-withdrawal)
+  - [Deleted Withdrawal Proof](#deleted-withdrawal-proof)
   - [Valid Withdrawal](#valid-withdrawal)
   - [Invalid Withdrawal](#invalid-withdrawal)
   - [L2 Withdrawal Sender](#l2-withdrawal-sender)
@@ -46,6 +47,7 @@
   - [l2Sender](#l2sender)
   - [proveWithdrawalTransaction](#provewithdrawaltransaction)
   - [checkWithdrawal](#checkwithdrawal)
+  - [deleteProvenWithdrawal](#deleteprovenwithdrawal)
   - [finalizeWithdrawalTransaction](#finalizewithdrawaltransaction)
   - [donateETH](#donateeth)
   - [finalizeWithdrawalTransactionExternalProof](#finalizewithdrawaltransactionexternalproof)
@@ -94,6 +96,10 @@ Users may re-prove a withdrawal at any time. User withdrawals are stored on a pe
 that re-proving a withdrawal cannot cause the timer for
 [finalizing a withdrawal](#finalized-withdrawal) to be reset for another user.
 
+Anyone can delete the record of a withdrawal proof if the game it was proven against resolved in
+favor of the Challenger or is a [Blacklisted Game](./anchor-state-registry.md#blacklisted-game).
+Refer to [Deleted Withdrawal Proof](#deleted-withdrawal-proof).
+
 ### Finalized Withdrawal
 
 A **Finalized Withdrawal** is a withdrawal transaction that was previously a Proven Withdrawal and
@@ -106,6 +112,29 @@ meets the following conditions:
 - Withdrawal was proven at least [Proof Maturity Delay](#proof-maturity-delay) seconds ago
 - Withdrawal was proven against a game with a [Valid Claim](./anchor-state-registry.md#valid-claim)
 - Withdrawal was not previously finalized
+
+### Deleted Withdrawal Proof
+
+A **Deleted Withdrawal Proof** is the record of a [Proven Withdrawal](#proven-withdrawal) that was
+removed from the `OptimismPortal`. Anyone can delete such a record if the game that the withdrawal
+was proven against meets at least one of the following conditions:
+
+- The game resolved in favor of the Challenger
+- The game is a [Blacklisted Game](./anchor-state-registry.md#blacklisted-game)
+
+Both conditions are permanent, so a game in either state can never have a
+[Valid Claim](./anchor-state-registry.md#valid-claim). Deletion is therefore permissionless. The
+caller can only remove a record that can never be used to finalize a withdrawal.
+
+Deletion applies to a single withdrawal hash and proof submitter. It does not change whether the
+withdrawal is a [Finalized Withdrawal](#finalized-withdrawal). A user may prove the withdrawal
+again against a different game.
+
+Deletion is limited to the conditions above. A user cannot delete a record proven against a
+[Retired Game](./anchor-state-registry.md#retired-game) or against a game that is not a
+[Respected Game](./anchor-state-registry.md#respected-game), although these games can also never
+have a Valid Claim. The [Pause Mechanism](../../protocol/stage-1.md#pause-mechanism) does not
+prevent deletion.
 
 ### Valid Withdrawal
 
@@ -418,6 +447,21 @@ Checks that a withdrawal transaction can be [finalized](#finalized-withdrawal).
   [Proof Maturity Delay](#proof-maturity-delay) seconds ago.
 - MUST revert if the withdrawal being finalized was proven against a game that does not have a
   [Valid Claim](./anchor-state-registry.md#valid-claim).
+
+### deleteProvenWithdrawal
+
+Allows anyone to [delete](#deleted-withdrawal-proof) the record of a withdrawal proof.
+
+- MUST NOT restrict the caller.
+- MUST NOT revert if the system is paused.
+- MUST revert if the given proof submitter has not proven the given withdrawal hash.
+- MUST revert if the game that the withdrawal was proven against has not resolved in favor of the
+  Challenger AND is not a [Blacklisted Game](./anchor-state-registry.md#blacklisted-game).
+- MUST otherwise delete the record of the withdrawal proof for the given withdrawal hash and proof
+  submitter only.
+- MUST NOT change the record that the withdrawal was finalized.
+- MUST NOT remove the proof submitter from the list of proof submitters for the withdrawal hash.
+- MUST emit a `WithdrawalProofDeleted` event with the withdrawal hash and proof submitter address.
 
 ### finalizeWithdrawalTransaction
 
