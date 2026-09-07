@@ -1134,6 +1134,8 @@ transaction's attributes, in exactly the same manner as it would be for an EIP-1
 <li>No fee fields are verified: the deposit does not have any, as it pays for gas on L1.</li>
 <li>No <code>nonce</code> field is verified: the deposit does not have any, it's uniquely identified by its <code>sourceHash</code>.</li>
 <li>No access-list is processed: the deposit has no access-list, and it is thus processed as if the access-list is empty.</li>
+<li>No contract-creation init code size check is performed. The maximum deposit transaction size is constrained by L1.
+init code size.</li>
 <li>No check if <code>from</code> is an Externally Owner Account (EOA): the deposit is ensured not to be an EOA through L1 address
 masking, this may change in future L1 contract-deployments to e.g. enable an account-abstraction like mechanism.</li>
 <li>Before the Regolith upgrade:
