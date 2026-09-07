@@ -98,9 +98,6 @@ For each step, the valid post state `TransitionState` is calculated by the algor
     the [invalid state](#invalid-state)
 - Increment `Step`
 
-A game for a single chain therefore derives a block at `Step = 0` and derives no block for the remaining 126 steps.
-Those steps only increment `Step`.
-
 Since one step is required per chain in the dependency set, the current dispute game can support a maximum of 127 chains
 in the dependency set.
 
