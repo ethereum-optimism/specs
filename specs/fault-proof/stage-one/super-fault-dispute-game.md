@@ -34,8 +34,6 @@ The Super Fault Dispute Game is a [dispute game](dispute-game-interface.md) type
 - The L2 block number preimage oracle local key now always provides the timestamp of the proposal.
 - The L2 chain ID preimage oracle local key is no longer used and is never populated by the dispute game.
 
-A super game type is the respected game type in place of an output root game type. A permissionless chain uses the
-`SUPER_CANNON_KONA` game type. A permissioned chain uses the `SUPER_PERMISSIONED` game type.
 
 The game does not require [interop](../../interop/overview.md). A chain proposes super roots whether or not interop is
 active. The [super output](optimism-portal.md#super-output) holds one output root for each chain in the
