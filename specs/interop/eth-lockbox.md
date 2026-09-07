@@ -129,7 +129,7 @@ Migrates the ETH liquidity from the current `ETHLockbox` to another `ETHLockbox`
 - Only the `ProxyAdmin` owner can call the function.
 - The `ProxyAdmin` owner of the source lockbox must be the same as the `ProxyAdmin` owner of the destination lockbox.
 - The function MUST call `receiveLiquidity` from the destination `ETHLockbox` with the entire ETH balance.
-- SHOULD be called atomically with `OptimismPortal.migrateToSuperRoots()` in the same transaction
+- SHOULD be called atomically with `OptimismPortal.migrateToSharedDisputeGame()` in the same transaction
   batch, or otherwise the `OptimismPortal` may not be able to unlock ETH from the ETHLockbox on
   finalized withdrawals.
 - The function MUST emit the `LiquidityMigrated` event with the `lockbox` that is being migrated to

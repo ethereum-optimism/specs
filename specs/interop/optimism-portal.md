@@ -10,11 +10,14 @@
   - [ETH Management](#eth-management)
     - [`migrateLiquidity`](#migrateliquidity)
     - [`proxyAdminOwner`](#proxyadminowner)
+  - [Dispute Game Management](#dispute-game-management)
+    - [`migrateToSharedDisputeGame`](#migratetoshareddisputegame)
   - [Internal ETH functionality](#internal-eth-functionality)
     - [Locking ETH](#locking-eth)
     - [Unlocking ETH](#unlocking-eth)
 - [Events](#events)
   - [`ETHMigrated`](#ethmigrated)
+  - [`PortalMigrated`](#portalmigrated)
 - [Invariants](#invariants)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -27,6 +30,11 @@ the op-governed dependency set.
 
 It is possible to upgrade to this version without being part of the op-governed dependency set. In this case,
 the corresponding chain would need to deploy and manage its own `ETHLockbox`.
+
+The `OptimismPortal` also moves onto shared dispute game contracts when a chain joins the op-governed dependency set.
+Each chain keeps its own `SystemConfig` and `OptimismPortal`. The chains in the set share one `ETHLockbox`, one
+`DisputeGameFactory` and one [`AnchorStateRegistry`](../fault-proof/stage-one/anchor-state-registry.md). A chain
+outside the op-governed dependency set keeps its own copy of each of these contracts.
 
 ### Integrating `ETHLockbox`
 
@@ -57,6 +65,35 @@ Returns the `ProxyAdmin` owner that manages the `ETHLockbox`.
 ```solidity
 function proxyAdminOwner() external view returns (address);
 ```
+
+### Dispute Game Management
+
+#### `migrateToSharedDisputeGame`
+
+Moves the `OptimismPortal` onto the shared dispute game contracts of the op-governed dependency set. It points the
+portal at the shared `ETHLockbox` and the shared
+[`AnchorStateRegistry`](../fault-proof/stage-one/anchor-state-registry.md). The shared `AnchorStateRegistry` selects
+the shared `DisputeGameFactory` that the portal respects.
+
+```solidity
+function migrateToSharedDisputeGame(
+    IETHLockbox _newLockbox,
+    IAnchorStateRegistry _newAnchorStateRegistry
+) external;
+```
+
+- MUST only be callable by the `ProxyAdmin` owner
+- MUST revert if the `SystemConfig` does not have the interop feature enabled
+- MUST revert if the system is paused
+- MUST revert if the new `AnchorStateRegistry` is the same as the current one
+- MUST revert if either address is zero
+- MUST revert if the new `ETHLockbox` has not authorized this portal
+- MUST emit a `PortalMigrated` event with the old and new `ETHLockbox` and `AnchorStateRegistry`
+- SHOULD be called atomically with [`ETHLockbox.migrateLiquidity`](./eth-lockbox.md#migrateliquidity) in the same
+  transaction, or the portal may not be able to unlock enough ETH to finalize withdrawals
+
+The migration is one way. It invalidates every withdrawal proof that is already submitted, so users MUST prove those
+withdrawals again.
 
 ### Internal ETH functionality
 
@@ -91,6 +128,19 @@ MUST be triggered when the ETH liquidity is migrated to the `ETHLockbox`.
 
 ```solidity
 event ETHMigrated(uint256 amount);
+```
+
+### `PortalMigrated`
+
+MUST be triggered when the `OptimismPortal` migrates to a new `ETHLockbox` and `AnchorStateRegistry`.
+
+```solidity
+event PortalMigrated(
+    IETHLockbox oldLockbox,
+    IETHLockbox newLockbox,
+    IAnchorStateRegistry oldAnchorStateRegistry,
+    IAnchorStateRegistry newAnchorStateRegistry
+);
 ```
 
 ## Invariants
