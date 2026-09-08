@@ -158,6 +158,8 @@ The deposit transaction is processed exactly like a type-2 (EIP-1559) transactio
 - No fee fields are verified: the deposit does not have any, as it pays for gas on L1.
 - No `nonce` field is verified: the deposit does not have any, it's uniquely identified by its `sourceHash`.
 - No access-list is processed: the deposit has no access-list, and it is thus processed as if the access-list is empty.
+- No contract-creation init code size check is performed. The maximum deposit transaction size is constrained by L1.
+  init code size.
 - No check if `from` is an Externally Owner Account (EOA): the deposit is ensured not to be an EOA through L1 address
   masking, this may change in future L1 contract-deployments to e.g. enable an account-abstraction like mechanism.
 - Before the Regolith upgrade:
