@@ -92,8 +92,10 @@ function migrateToSharedDisputeGame(
 - SHOULD be called atomically with [`ETHLockbox.migrateLiquidity`](./eth-lockbox.md#migrateliquidity) in the same
   transaction, or the portal may not be able to unlock enough ETH to finalize withdrawals
 
-The migration is one way. It invalidates every withdrawal proof that is already submitted, so users MUST prove those
-withdrawals again.
+`migrateToSharedDisputeGame` is designed for a one-time migration. Chain operators are expected to call it exactly once
+when joining the op-governed dependency set. Although the function permits repeated calls, it is not designed for repeated
+migration. Switching to the shared `DisputeGameFactory` invalidates withdrawal proofs against games from the previous
+factory, so users MUST prove those withdrawals again.
 
 ### Internal ETH functionality
 
