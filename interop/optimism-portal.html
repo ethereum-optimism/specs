@@ -187,6 +187,11 @@
 <li><a href="#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
+<li><a href="#dispute-game-management">Dispute Game Management</a>
+<ul>
+<li><a href="#migratetoshareddisputegame"><code>migrateToSharedDisputeGame</code></a></li>
+</ul>
+</li>
 <li><a href="#internal-eth-functionality">Internal ETH functionality</a>
 <ul>
 <li><a href="#locking-eth">Locking ETH</a></li>
@@ -198,6 +203,7 @@
 <li><a href="#events">Events</a>
 <ul>
 <li><a href="#ethmigrated"><code>ETHMigrated</code></a></li>
+<li><a href="#portalmigrated"><code>PortalMigrated</code></a></li>
 </ul>
 </li>
 <li><a href="#invariants">Invariants</a></li>
@@ -209,6 +215,10 @@ This liquidity consists of every ETH balance migrated from each <code>OptimismPo
 the op-governed dependency set.</p>
 <p>It is possible to upgrade to this version without being part of the op-governed dependency set. In this case,
 the corresponding chain would need to deploy and manage its own <code>ETHLockbox</code>.</p>
+<p>The <code>OptimismPortal</code> also moves onto shared dispute game contracts when a chain joins the op-governed dependency set.
+Each chain keeps its own <code>SystemConfig</code> and <code>OptimismPortal</code>. The chains in the set share one <code>ETHLockbox</code>, one
+<code>DisputeGameFactory</code> and one <a href="../fault-proof/stage-one/anchor-state-registry.html"><code>AnchorStateRegistry</code></a>. A chain
+outside the op-governed dependency set keeps its own copy of each of these contracts.</p>
 <h3 id="integrating-ethlockbox"><a class="header" href="#integrating-ethlockbox">Integrating <code>ETHLockbox</code></a></h3>
 <p>The integration with the <code>ETHLockbox</code> involves locking ETH when executing deposit transactions and unlocking ETH
 when finalizing withdrawal transactions, without altering other aspects of the current <code>OptimismPortal</code> implementation.</p>
@@ -228,6 +238,32 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">function proxyAdminOwner() external view returns (address);
 </code></pre>
+<h3 id="dispute-game-management"><a class="header" href="#dispute-game-management">Dispute Game Management</a></h3>
+<h4 id="migratetoshareddisputegame"><a class="header" href="#migratetoshareddisputegame"><code>migrateToSharedDisputeGame</code></a></h4>
+<p>Moves the <code>OptimismPortal</code> onto the shared dispute game contracts of the op-governed dependency set. It points the
+portal at the shared <code>ETHLockbox</code> and the shared
+<a href="../fault-proof/stage-one/anchor-state-registry.html"><code>AnchorStateRegistry</code></a>. The shared <code>AnchorStateRegistry</code> selects
+the shared <code>DisputeGameFactory</code> that the portal respects.</p>
+<pre><code class="language-solidity">function migrateToSharedDisputeGame(
+    IETHLockbox _newLockbox,
+    IAnchorStateRegistry _newAnchorStateRegistry
+) external;
+</code></pre>
+<ul>
+<li>MUST only be callable by the <code>ProxyAdmin</code> owner</li>
+<li>MUST revert if the <code>SystemConfig</code> does not have the interop feature enabled</li>
+<li>MUST revert if the system is paused</li>
+<li>MUST revert if the new <code>AnchorStateRegistry</code> is the same as the current one</li>
+<li>MUST revert if either address is zero</li>
+<li>MUST revert if the new <code>ETHLockbox</code> has not authorized this portal</li>
+<li>MUST emit a <code>PortalMigrated</code> event with the old and new <code>ETHLockbox</code> and <code>AnchorStateRegistry</code></li>
+<li>SHOULD be called atomically with <a href="./eth-lockbox.html#migrateliquidity"><code>ETHLockbox.migrateLiquidity</code></a> in the same
+transaction, or the portal may not be able to unlock enough ETH to finalize withdrawals</li>
+</ul>
+<p><code>migrateToSharedDisputeGame</code> is designed for a one-time migration. Chain operators are expected to call it exactly once
+when joining the op-governed dependency set. Although the function permits repeated calls, it is not designed for repeated
+migration. Switching to the shared <code>DisputeGameFactory</code> invalidates withdrawal proofs against games from the previous
+factory, so users MUST prove those withdrawals again.</p>
 <h3 id="internal-eth-functionality"><a class="header" href="#internal-eth-functionality">Internal ETH functionality</a></h3>
 <h4 id="locking-eth"><a class="header" href="#locking-eth">Locking ETH</a></h4>
 <p>Called during deposit transactions to handle ETH locking.</p>
@@ -250,6 +286,15 @@ when finalizing withdrawal transactions, without altering other aspects of the c
 <h3 id="ethmigrated"><a class="header" href="#ethmigrated"><code>ETHMigrated</code></a></h3>
 <p>MUST be triggered when the ETH liquidity is migrated to the <code>ETHLockbox</code>.</p>
 <pre><code class="language-solidity">event ETHMigrated(uint256 amount);
+</code></pre>
+<h3 id="portalmigrated"><a class="header" href="#portalmigrated"><code>PortalMigrated</code></a></h3>
+<p>MUST be triggered when the <code>OptimismPortal</code> migrates to a new <code>ETHLockbox</code> and <code>AnchorStateRegistry</code>.</p>
+<pre><code class="language-solidity">event PortalMigrated(
+    IETHLockbox oldLockbox,
+    IETHLockbox newLockbox,
+    IAnchorStateRegistry oldAnchorStateRegistry,
+    IAnchorStateRegistry newAnchorStateRegistry
+);
 </code></pre>
 <h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
 <ul>

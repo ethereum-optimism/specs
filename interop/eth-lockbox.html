@@ -292,7 +292,7 @@ withdrawal transaction.</li>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the source lockbox must be the same as the <code>ProxyAdmin</code> owner of the destination lockbox.</li>
 <li>The function MUST call <code>receiveLiquidity</code> from the destination <code>ETHLockbox</code> with the entire ETH balance.</li>
-<li>SHOULD be called atomically with <code>OptimismPortal.migrateToSuperRoots()</code> in the same transaction
+<li>SHOULD be called atomically with <code>OptimismPortal.migrateToSharedDisputeGame()</code> in the same transaction
 batch, or otherwise the <code>OptimismPortal</code> may not be able to unlock ETH from the ETHLockbox on
 finalized withdrawals.</li>
 <li>The function MUST emit the <code>LiquidityMigrated</code> event with the <code>lockbox</code> that is being migrated to

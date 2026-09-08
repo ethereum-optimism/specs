@@ -514,6 +514,10 @@ the output-root epilogue may be replaced or extended for general L2 message prov
 as well as any program testing outside of VM environment.
 This can be exposed via a CLI, or alternative inter-process API.</p>
 <p>Every instance of <code>&lt;blockhash&gt;</code> in the below routes is <code>0x</code>-prefixed, lowercase, hex-encoded.</p>
+<p>Some routes below are conditional on the type of state transition the program verifies. "Super root mode" means the
+program verifies a step of the
+<a href="stage-one/super-fault-dispute-game.html#super-root-state-transition">super root state transition</a> rather than the
+application of a single L2 block.</p>
 <h4 id="l1-block-header-blockhash"><a class="header" href="#l1-block-header-blockhash"><code>l1-block-header &lt;blockhash&gt;</code></a></h4>
 <p>Requests the host to prepare the L1 block header RLP pre-image of the block <code>&lt;blockhash&gt;</code>.</p>
 <h4 id="l1-transactions-blockhash"><a class="header" href="#l1-transactions-blockhash"><code>l1-transactions &lt;blockhash&gt;</code></a></h4>
@@ -552,12 +556,12 @@ The <code>requiredGas</code> parameter allows the preimage oracle to enforce com
 <h4 id="l2-block-header-blockhash-chainid"><a class="header" href="#l2-block-header-blockhash-chainid"><code>l2-block-header &lt;blockhash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 block header RLP pre-image of the block <code>&lt;blockhash&gt;</code>.</p>
 <p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
-chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified in super root mode.</p>
 <h4 id="l2-transactions-blockhash-chainid"><a class="header" href="#l2-transactions-blockhash-chainid"><code>l2-transactions &lt;blockhash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the list of transactions of the L2 block with <code>&lt;blockhash&gt;</code>:
 prepare the RLP pre-images of each of them, including transactions-list MPT nodes.</p>
 <p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
-chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified in super root mode.</p>
 <h4 id="l2-receipts-blockhash-chainid"><a class="header" href="#l2-receipts-blockhash-chainid"><code>l2-receipts &lt;blockhash&gt; &lt;chainID&gt;</code></a></h4>
 <p>Requests the host to prepare the list of receipts of the L2 block with <code>&lt;blockhash&gt;</code> for the specified <code>&lt;chainID&gt;</code>:
 prepare the RLP pre-images of each of them, including receipts-list MPT nodes.</p>
@@ -565,21 +569,21 @@ prepare the RLP pre-images of each of them, including receipts-list MPT nodes.</
 <h4 id="l2-code-codehash-chainid"><a class="header" href="#l2-code-codehash-chainid"><code>l2-code &lt;codehash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 smart-contract code with the given <code>&lt;codehash&gt;</code>.</p>
 <p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
-chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified in super root mode.</p>
 <h4 id="l2-state-node-nodehash-chainid"><a class="header" href="#l2-state-node-nodehash-chainid"><code>l2-state-node &lt;nodehash&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 MPT node preimage with the given <code>&lt;nodehash&gt;</code>.</p>
 <p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
-chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified in super root mode.</p>
 <h4 id="l2-output-outputroot-chainid"><a class="header" href="#l2-output-outputroot-chainid"><code>l2-output &lt;outputroot&gt; &lt;chainID&gt;?</code></a></h4>
 <p>Requests the host to prepare the L2 Output at the l2 output root <code>&lt;outputroot&gt;</code>.
 The L2 Output is the preimage of a
 <a href="../protocol/proposals.html#l2-output-commitment-construction">computed output root</a>.</p>
 <p>The <code>&lt;chainID&gt;</code> is optionally concatenated after the <code>&lt;blockHash&gt;</code> as a big endian uint64 value to specify which L2
-chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified when the interop hard fork is active.</p>
+chain to retrieve data from. <code>&lt;chainID&gt;</code> must be specified in super root mode.</p>
 <h4 id="l2-payload-witness-payload_attributes"><a class="header" href="#l2-payload-witness-payload_attributes"><code>l2-payload-witness &lt;payload_attributes&gt;</code></a></h4>
 <p>Requests the host to prepare all preimages used in the building of the payload specified by <code>&lt;payload_attributes&gt;</code>.
 <code>&lt;payload_attributes&gt;</code> is a JSON object with the fields <code>parentBlockHash</code>, <code>payloadAttributes</code> and optionally <code>chainID</code>.
-The <code>chainID</code> must be specific when the interop hard fork is active.</p>
+The <code>chainID</code> must be specified in super root mode.</p>
 <h4 id="l2-account-proof-blockhash_and_address"><a class="header" href="#l2-account-proof-blockhash_and_address"><code>l2-account-proof &lt;blockhash_and_address&gt;</code></a></h4>
 <p>Requests the host send account proof for a certain block hash and address. <code>&lt;blockhash_and_address&gt;</code> is hex
 encoded: 32-byte block hash + 20-byte address + 8 byte big endian chain ID.</p>
