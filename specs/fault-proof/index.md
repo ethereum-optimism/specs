@@ -400,6 +400,11 @@ This can be exposed via a CLI, or alternative inter-process API.
 
 Every instance of `<blockhash>` in the below routes is `0x`-prefixed, lowercase, hex-encoded.
 
+Some routes below are conditional on the type of state transition the program verifies. "Super root mode" means the
+program verifies a step of the
+[super root state transition](stage-one/super-fault-dispute-game.md#super-root-state-transition) rather than the
+application of a single L2 block.
+
 #### `l1-block-header <blockhash>`
 
 Requests the host to prepare the L1 block header RLP pre-image of the block `<blockhash>`.
@@ -453,7 +458,7 @@ This supersedes the earlier `l1-precompile <precompile ++ inputbytes>` format wh
 Requests the host to prepare the L2 block header RLP pre-image of the block `<blockhash>`.
 
 The `<chainID>` is optionally concatenated after the `<blockHash>` as a big endian uint64 value to specify which L2
-chain to retrieve data from. `<chainID>` must be specified when the interop hard fork is active.
+chain to retrieve data from. `<chainID>` must be specified in super root mode.
 
 #### `l2-transactions <blockhash> <chainID>?`
 
@@ -461,7 +466,7 @@ Requests the host to prepare the list of transactions of the L2 block with `<blo
 prepare the RLP pre-images of each of them, including transactions-list MPT nodes.
 
 The `<chainID>` is optionally concatenated after the `<blockHash>` as a big endian uint64 value to specify which L2
-chain to retrieve data from. `<chainID>` must be specified when the interop hard fork is active.
+chain to retrieve data from. `<chainID>` must be specified in super root mode.
 
 #### `l2-receipts <blockhash> <chainID>`
 
@@ -475,14 +480,14 @@ This hint is used only when the interop hard fork is active.
 Requests the host to prepare the L2 smart-contract code with the given `<codehash>`.
 
 The `<chainID>` is optionally concatenated after the `<blockHash>` as a big endian uint64 value to specify which L2
-chain to retrieve data from. `<chainID>` must be specified when the interop hard fork is active.
+chain to retrieve data from. `<chainID>` must be specified in super root mode.
 
 #### `l2-state-node <nodehash> <chainID>?`
 
 Requests the host to prepare the L2 MPT node preimage with the given `<nodehash>`.
 
 The `<chainID>` is optionally concatenated after the `<blockHash>` as a big endian uint64 value to specify which L2
-chain to retrieve data from. `<chainID>` must be specified when the interop hard fork is active.
+chain to retrieve data from. `<chainID>` must be specified in super root mode.
 
 #### `l2-output <outputroot> <chainID>?`
 
@@ -491,13 +496,13 @@ The L2 Output is the preimage of a
 [computed output root](../protocol/proposals.md#l2-output-commitment-construction).
 
 The `<chainID>` is optionally concatenated after the `<blockHash>` as a big endian uint64 value to specify which L2
-chain to retrieve data from. `<chainID>` must be specified when the interop hard fork is active.
+chain to retrieve data from. `<chainID>` must be specified in super root mode.
 
 #### `l2-payload-witness <payload_attributes>`
 
 Requests the host to prepare all preimages used in the building of the payload specified by `<payload_attributes>`.
 `<payload_attributes>` is a JSON object with the fields `parentBlockHash`, `payloadAttributes` and optionally `chainID`.
-The `chainID` must be specific when the interop hard fork is active.
+The `chainID` must be specified in super root mode.
 
 #### `l2-account-proof <blockhash_and_address>`
 

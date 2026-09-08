@@ -1,4 +1,4 @@
-# Fault Proof
+# Super Fault Dispute Game
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -16,16 +16,16 @@
 
 ## Overview
 
-Interop introduces the Super Fault Dispute Game as a
-new [dispute game](../fault-proof/stage-one/dispute-game-interface.md) type. It is based on the
-pre-interop [fault dispute game][fault-dispute-game] with some modifications:
+The Super Fault Dispute Game is a [dispute game](dispute-game-interface.md) type that resolves
+[super root](optimism-portal.md#super-root) proposals. It is based on the output root
+[fault dispute game][fault-dispute-game] with some modifications:
 
 - Claims at and above the split depth are commitments to the state within the super root state transition described
   below instead of output roots.
 - The L2 block number is replaced by the timestamp of the proposed super root.
   - The `l2BlockNumber()` method has been renamed `l2SequenceNumber()` in `IDisputeGame` interface to reflect that this
     is an arbitrary identifier within the fully ordered sequence of chain states.
-- The [L2 block number challenge](../fault-proof/stage-one/fault-dispute-game.md#l2-block-number-challenge) is removed.
+- The [L2 block number challenge](fault-dispute-game.md#l2-block-number-challenge) is removed.
   The super root state transition is now able to invalidate all proposals with an incorrect proposal timestamp as part
   of the state transition.
 - While claims in the bottom half of the game still commit to the state of the FPVM, the fault proof program being
@@ -33,6 +33,12 @@ pre-interop [fault dispute game][fault-dispute-game] with some modifications:
   disputed L2 block.
 - The L2 block number preimage oracle local key now always provides the timestamp of the proposal.
 - The L2 chain ID preimage oracle local key is no longer used and is never populated by the dispute game.
+
+The game does not require [interop](../../interop/overview.md). A chain proposes super roots whether or not interop is
+active. The [super output](optimism-portal.md#super-output) holds one output root for each chain in the
+[dependency set](../../interop/dependency-set.md), and the dependency set may contain a single chain. Interop enables
+cross chain messages and their validation. When interop is not active, a block contains no executing message, so the
+[consolidation](#consolidation) step has nothing to validate.
 
 ## Super Root State Transition
 
@@ -47,6 +53,9 @@ To reduce the amount of processing required in a single invocation of the FPVM, 
 transition from the super root at one timestamp to the super root at the next timestamp into 128 steps. The claims for
 these intermediate steps are `keccak256` hash of a [transition state](#transition-state). These 128 steps repeat to
 transition between the super root at each timestamp from the anchor state until the proposal time is reached.
+
+The number of steps does not depend on the number of chains in the dependency set. A game for a single chain performs
+the same 128 steps as a game for an interop set.
 
 ### Transition State
 
@@ -71,7 +80,7 @@ When the prestate is the invalid state, the post state is also the invalid state
 ### Local Safe Block Derivation
 
 The first 127 steps derive the next local safe block for one chain in the super root using
-the [derivation process](../protocol/derivation.md). Chains are processed in the order they appear in the super root
+the [derivation process](../../protocol/derivation.md). Chains are processed in the order they appear in the super root
 (ascending order of chain ID). The `Step` is incremented after each step.
 
 For each step, the valid post state `TransitionState` is calculated by the algorithm:
@@ -80,7 +89,8 @@ For each step, the valid post state `TransitionState` is calculated by the algor
   array.
 - If `Step` is less than the number of chains included in `SuperOutput`, derive the next local safe block for the chain
   at
-  index `Step` in the `SuperRoot` using the [derivation process](../protocol/derivation.md). Executing messages are not
+  index `Step` in the `SuperRoot` using the [derivation process](../../protocol/derivation.md). Executing messages are
+  not
   checked at this stage.
   - No block is derived if `Step` is greater than the number of chains in the super root.
   - If the derivation process is unable to derive the next L1 block because the L1 head is reached, the post state is
@@ -99,10 +109,14 @@ recursively replacing any blocks with executing messages that became invalid bec
 The post state is defined as a super output where `timestamp` is the `SuperOutput` timestamp + 1, and the output roots
 are set to the output roots of the validated blocks (including any required replacements).
 
+When interop is not active, the `CrossL2Inbox` implementation is not installed behind its predeploy proxy, so a block
+contains no [executing message](../../interop/messaging.md#executing-messages). Consolidation therefore replaces no block,
+and the post state carries the pending progress through unchanged.
+
 ## Fault Proof Program State Transition
 
-Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the pre-interop
+Below the split depth, claims correspond to execution trace commitments of the FPVM, as with the output root
 [fault dispute game][fault-dispute-game]. A single **ABSOLUTE_PRESTATE** continues to be used, with the fault proof
 program identifying the type of step to perform based on the agreed prestate.
 
-[fault-dispute-game]: ../fault-proof/stage-one/fault-dispute-game.md
+[fault-dispute-game]: fault-dispute-game.md
