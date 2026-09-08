@@ -109,9 +109,9 @@ recursively replacing any blocks with executing messages that became invalid bec
 The post state is defined as a super output where `timestamp` is the `SuperOutput` timestamp + 1, and the output roots
 are set to the output roots of the validated blocks (including any required replacements).
 
-When interop is not active, the `CrossL2Inbox` predeploy has no code, so a block contains no
-[executing message](../../interop/messaging.md#executing-messages). This step then has nothing to validate. It replaces
-no block, and the post state carries the pending progress through unchanged.
+When interop is not active, the `CrossL2Inbox` implementation is not installed behind its predeploy proxy, so a block
+contains no [executing message](../../interop/messaging.md#executing-messages). Consolidation therefore replaces no block,
+and the post state carries the pending progress through unchanged.
 
 ## Fault Proof Program State Transition
 
