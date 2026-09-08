@@ -5,6 +5,7 @@
 **Table of Contents**
 
 - [1559 Parameters](#1559-parameters)
+- [Extra Data](#extra-data)
 - [Deposited transaction processing](#deposited-transaction-processing)
   - [Deposited transaction boundaries](#deposited-transaction-boundaries)
 - [Fees](#fees)
@@ -21,9 +22,11 @@
     - [Extended PayloadAttributesV3](#extended-payloadattributesv3)
   - [`engine_newPayloadV2`](#engine_newpayloadv2)
   - [`engine_newPayloadV3`](#engine_newpayloadv3)
+  - [`engine_newPayloadV4`](#engine_newpayloadv4)
   - [`engine_getPayloadV2`](#engine_getpayloadv2)
   - [`engine_getPayloadV3`](#engine_getpayloadv3)
     - [Extended Response](#extended-response)
+  - [`engine_getPayloadV4`](#engine_getpayloadv4)
   - [`engine_signalSuperchainV1`](#engine_signalsuperchainv1)
 - [Networking](#networking)
 - [Sync](#sync)
@@ -31,6 +34,7 @@
   - [Worst-case sync](#worst-case-sync)
 - [Ecotone: disable Blob-transactions](#ecotone-disable-blob-transactions)
 - [Ecotone: Beacon Block Root](#ecotone-beacon-block-root)
+- [P2P Modifications](#p2p-modifications)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -42,7 +46,20 @@ The execution engine must be able to take a per chain configuration which specif
 and EIP-1559 elasticity. After Canyon it should also take a new value `EIP1559DenominatorCanyon` and use that as
 the denominator in the 1559 formula rather than the prior denominator.
 
-The formula for EIP-1559 is not otherwise modified.
+The formula for EIP-1559 is otherwise not modified.
+
+Starting with Holocene, the EIP-1559 parameters become [dynamically configurable](holocene/exec-engine.md#dynamic-eip-1559-parameters).
+
+Starting with Jovian, a [configurable minimum base fee](jovian/exec-engine.md#minimum-base-fee) is introduced.
+
+## Extra Data
+
+Before Holocene, the genesis block may contain an arbitrary `extraData` value whereas all normal
+blocks must have an **empty** `extraData` field.
+
+With Holocene, the `extraData` field [encodes the EIP-1559 parameters](holocene/exec-engine.md#dynamic-eip-1559-parameters).
+
+With Jovian, the `extraData` encoding is extended to [include `minBaseFee`](jovian/exec-engine.md#minimum-base-fee).
 
 ## Deposited transaction processing
 
@@ -85,9 +102,9 @@ The proxies are backed by vault contract deployments, based on `FeeVault`, to ro
 
 | Vault Name          | Predeploy                                              |
 | ------------------- | ------------------------------------------------------ |
-| Sequencer Fee Vault | [`SequencerFeeVault`](predeploys.md#SequencerFeeVault) |
-| Base Fee Vault      | [`BaseFeeVault`](predeploys.md#BaseFeeVault)           |
-| L1 Fee Vault        | [`L1FeeVault`](predeploys.md#L1FeeVault)               |
+| Sequencer Fee Vault | [`SequencerFeeVault`](predeploys.md#sequencerfeevault) |
+| Base Fee Vault      | [`BaseFeeVault`](predeploys.md#basefeevault)           |
+| L1 Fee Vault        | [`L1FeeVault`](predeploys.md#l1feevault)               |
 
 ### Priority fees (Sequencer Fee Vault)
 
@@ -210,7 +227,7 @@ to [`engine_forkchoiceUpdatedV2`][engine_forkchoiceUpdatedV2]: the extended `Pay
 ```js
 PayloadAttributesV2: {
     timestamp: QUANTITY
-    random: DATA (32 bytes)
+    prevRandao: DATA (32 bytes)
     suggestedFeeRecipient: DATA (20 bytes)
     withdrawals: array of WithdrawalV1
     transactions: array of DATA
@@ -253,7 +270,7 @@ If not specified as rollup, a `STATUS_INVALID` is returned.
 
 ### `engine_forkchoiceUpdatedV3`
 
-See [`engine_forkchoiceUpdatedV2`](#engine_forkchoiceUpdatedV2) for a description of the forkchoice updated method.
+See [`engine_forkchoiceUpdatedV2`](#engine_forkchoiceupdatedv2) for a description of the forkchoice updated method.
 `engine_forkchoiceUpdatedV3` **must only be called with Ecotone payload.**
 
 To support rollup functionality, one backwards-compatible change is introduced
@@ -266,13 +283,15 @@ to [`engine_forkchoiceUpdatedV3`][engine_forkchoiceUpdatedV3]: the extended `Pay
 ```js
 PayloadAttributesV3: {
     timestamp: QUANTITY
-    random: DATA (32 bytes)
+    prevRandao: DATA (32 bytes)
     suggestedFeeRecipient: DATA (20 bytes)
     withdrawals: array of WithdrawalV1
     parentBeaconBlockRoot: DATA (32 bytes)
     transactions: array of DATA
     noTxPool: bool
     gasLimit: QUANTITY or null
+    eip1559Params: DATA (8 bytes) or null
+    minBaseFee: QUANTITY or null
 }
 ```
 
@@ -281,6 +300,12 @@ the addition of `parentBeaconBlockRoot` which is the parent beacon block root fr
 
 Starting at Ecotone, the `parentBeaconBlockRoot` must be set to the L1 origin `parentBeaconBlockRoot`,
 or a zero `bytes32` if the Dencun functionality with `parentBeaconBlockRoot` is not active on L1.
+
+Starting with Holocene, the `eip1559Params` field must encode the EIP1559 parameters. It must be `null` before.
+See [Dynamic EIP-1559 Parameters](holocene/exec-engine.md#dynamic-eip-1559-parameters) for details.
+
+Starting with Jovian, the `minBaseFee` field is added. It must be `null` before Jovian.
+See [Jovian Minimum Base Fee](jovian/exec-engine.md#minimum-base-fee) for details.
 
 ### `engine_newPayloadV2`
 
@@ -297,6 +322,17 @@ The additional parameters should be set as follows:
 
 - `expectedBlobVersionedHashes` MUST be an empty array.
 - `parentBeaconBlockRoot` MUST be the parent beacon block root from the L1 origin block of the L2 block.
+
+### `engine_newPayloadV4`
+
+[`engine_newPayloadV4`][engine_newPayloadV4] applies an Isthmus L2 block to the engine state.
+The `ExecutionPayload` parameter will contain an extra field, `withdrawalsRoot`, after the Isthmus hardfork.
+
+`engine_newPayloadV4` **must only be called with Isthmus payload.**
+
+The additional parameters should be set as follows:
+
+- `executionRequests` MUST be an empty array.
 
 ### `engine_getPayloadV2`
 
@@ -326,6 +362,12 @@ The [response][GetPayloadV3Response] is extended to:
 [GetPayloadV3Response]: https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#response-2
 
 In Ecotone it MUST be set to the parentBeaconBlockRoot from the L1 Origin block of the L2 block.
+
+### `engine_getPayloadV4`
+
+[`engine_getPayloadV4`][engine_getPayloadV4] retrieves a payload by ID, prepared by `engine_forkchoiceUpdatedV3`
+when called with `payloadAttributes`.
+`engine_getPayloadV4` **must only be called with Isthmus payload.**
 
 ### `engine_signalSuperchainV1`
 
@@ -469,17 +511,22 @@ For the Ecotone upgrade, this entails that:
 [eip-2028]: https://eips.ethereum.org/EIPS/eip-2028
 [eip-2718]: https://eips.ethereum.org/EIPS/eip-2718
 [eip-2718-transactions]: https://eips.ethereum.org/EIPS/eip-2718#transactions
-[exec-api-data]: https://github.com/ethereum/execution-apis/blob/769c53c94c4e487337ad0edea9ee0dce49c79bfa/src/engine/specification.md#structures
-[l1-api-spec]: https://github.com/ethereum/execution-apis/blob/769c53c94c4e487337ad0edea9ee0dce49c79bfa/src/engine/specification.md
 [PayloadAttributesV3]: https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#payloadattributesv3
 [PayloadAttributesV2]: https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#PayloadAttributesV2
-[ExecutionPayloadV1]: https://github.com/ethereum/execution-apis/blob/769c53c94c4e487337ad0edea9ee0dce49c79bfa/src/engine/specification.md#ExecutionPayloadV1
 [ExecutionPayloadV2]: https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#executionpayloadv2
 [engine_forkchoiceUpdatedV3]: https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_forkchoiceupdatedv3
 [engine_forkchoiceUpdatedV2]: https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_forkchoiceupdatedv2
 [engine_newPayloadV2]: https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_newpayloadv2
 [engine_newPayloadV3]: https://github.com/ethereum/execution-apis/blob/cea7eeb642052f4c2e03449dc48296def4aafc24/src/engine/cancun.md#engine_newpayloadv3
+[engine_newPayloadV4]: https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_newpayloadv4
 [engine_getPayloadV2]: https://github.com/ethereum/execution-apis/blob/584905270d8ad665718058060267061ecfd79ca5/src/engine/shanghai.md#engine_getpayloadv2
 [engine_getPayloadV3]: https://github.com/ethereum/execution-apis/blob/a0d03086564ab1838b462befbc083f873dcf0c0f/src/engine/cancun.md#engine_getpayloadv3
-[HEX value encoding]: https://eth.wiki/json-rpc/API#hex-value-encoding
+[engine_getPayloadV4]: https://github.com/ethereum/execution-apis/blob/869b7f062830ba51a7fd8a51dfa4678c6d36b6ec/src/engine/prague.md#engine_getpayloadv4
+[HEX value encoding]: https://ethereum.org/en/developers/docs/apis/json-rpc/#hex-encoding
 [JSON-RPC-API]: https://github.com/ethereum/execution-apis
+
+## P2P Modifications
+
+The Ethereum Node Record (ENR) for an Optimism execution node must contain an `opel` key-value pair where the key is
+`opel` and the value is a [EIP-2124](https://eips.ethereum.org/EIPS/eip-2124) fork id.
+The EL uses a different key from the CL in order to stop EL and CL nodes from connecting to each other.

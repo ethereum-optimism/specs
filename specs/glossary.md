@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD053 -->
 # Glossary
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -13,6 +14,7 @@
   - [Chain Re-Organization](#chain-re-organization)
   - [Predeployed Contract ("Predeploy")](#predeployed-contract-predeploy)
   - [Preinstalled Contract ("Preinstall")](#preinstalled-contract-preinstall)
+  - [Precompiled Contract ("Precompile")](#precompiled-contract-precompile)
   - [Receipt](#receipt)
   - [Transaction Type](#transaction-type)
   - [Fork Choice Rule](#fork-choice-rule)
@@ -72,6 +74,11 @@
   - [Unsafe Sync](#unsafe-sync)
 - [Execution Engine Concepts](#execution-engine-concepts)
   - [Execution Engine](#execution-engine)
+- [Post-Execution Transaction](#post-execution-transaction)
+  - [Post-Exec Payload](#post-exec-payload)
+  - [Post-Exec Payload Schema Version](#post-exec-payload-schema-version)
+  - [Sequencer-Defined Metering](#sequencer-defined-metering)
+  - [Canonical Gas](#canonical-gas)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -148,6 +155,16 @@ security guarantees as [predeploys](#predeployed-contract-predeploy), but are ge
 available to improve the L2's UX.
 
 All preinstall contracts are specified in the [preinstalls specification](./protocol/preinstalls.md).
+
+## Precompiled Contract ("Precompile")
+
+[precompile]: glossary.md#precompiled-contract-precompile
+
+A contract implemented natively in the EVM that performs a specific operation more efficiently than a bytecode
+(e.g. Solidity) implementation. Precompiles exist at predefined addresses. They are created and modified through
+network upgrades.
+
+All precompile contracts are specified in the [precompiles specification](./protocol/precompiles.md).
 
 ## Receipt
 
@@ -477,7 +494,7 @@ then made available using [batcher transactions][batcher-transaction].
 
 A batcher transaction is a transaction submitted by a [batcher] to a data availability provider, in order to make
 channels available. These transactions carry one or more full frames, which may belong to different channels. A
-channel's frame may be split between multiple batcher transactions.
+channel's frames may be split between multiple batcher transactions.
 
 When submitted to Ethereum calldata, the batcher transaction's receiver must be the sequencer inbox address. The
 transaction must also be signed by a recognized batch submitter account. The recognized batch submitter account
@@ -705,7 +722,7 @@ derivation then acts as a sanity check and a way to detect L1 chain [re-orgs][re
 
 In validator mode, the rollup node performs derivation as indicated above, but is also able to "run ahead" of the L1
 chain by getting blocks directly from the sequencer, in which case derivation serves to validate the sequencer's
-behaviour.
+behavior.
 
 A rollup node running in validator mode is sometimes called _a replica_.
 
@@ -766,7 +783,7 @@ proof][fault-proof].
 An on-chain _interactive_ proof, performed by [validators][validator], that demonstrates that a [sequencer] provided
 erroneous [output roots][l2-output].
 
-cf. [Fault Proofs](./experimental/fault-proof/index.md)
+cf. [Fault Proofs](fault-proof/index.md)
 
 ## Time Slot
 
@@ -822,10 +839,69 @@ In these specifications, "execution engine" always refer to the L2 execution eng
 
 - cf. [Execution Engine Specification][exec-engine]
 
+---
+
+# Post-Execution Transaction
+
+[post-exec-tx]: glossary.md#post-execution-transaction
+
+The _post-execution transaction_, _post-exec transaction_, or _post-exec tx_ is the [EIP-2718] transaction with
+type byte `0x7D` that carries sequencer-provided consensus data. It is emitted by the [sequencer] and appended to a
+block after the last user transaction; at most one may appear in a block, when present it MUST be the final
+transaction in the block, and it is not propagated through the public mempool.
+
+A post-exec transaction has no signer, no nonce, no fee, and consumes no block gas; it carries a single payload
+field (a [post-exec payload](#post-exec-payload)) that clients apply as part of the block's canonical state
+transition.
+
+See the [post-exec specification][spec-post-exec].
+
+[spec-post-exec]: ./protocol/lagoon/post-exec.md
+
+## Post-Exec Payload
+
+[post-exec-payload]: glossary.md#post-exec-payload
+
+The _post-exec payload_ is the data structure carried by a [post-exec transaction](#post-execution-transaction).
+It is a versioned envelope: a `version` byte selects the payload schema, a `blockNumber` field anchors the payload
+to the containing block, and the remaining fields are defined by the active schema version.
+
+## Post-Exec Payload Schema Version
+
+[post-exec-schema-version]: glossary.md#post-exec-payload-schema-version
+
+A monotonically assigned identifier that selects the field layout of a [post-exec payload](#post-exec-payload).
+Schema versions are described in the [post-exec specification][spec-post-exec]; the version-1 schema is defined by
+the [Sequencer-Defined Metering][spec-sdm] specification.
+
+[spec-sdm]: ./protocol/lagoon/sdm.md
+
+## Sequencer-Defined Metering
+
+[sdm]: glossary.md#sequencer-defined-metering
+
+_Sequencer-Defined Metering_ (_SDM_) is the [post-exec payload schema version](#post-exec-payload-schema-version) 1
+policy. SDM lets the sequencer include per-transaction gas refunds that adjust canonical gas accounting and fee
+settlement.
+
+See the [SDM specification][spec-sdm].
+
+## Canonical Gas
+
+[canonical-gas]: glossary.md#canonical-gas
+
+Under [Sequencer-Defined Metering](#sequencer-defined-metering), the gas a transaction is accounted for after its
+gas refund is applied: `canonicalGasUsed = evmGasUsed - refund`, where `evmGasUsed` is the raw gas reported by the
+EVM. Canonical gas is the value recorded in transaction receipts and summed into the block's `cumulativeGasUsed`
+and `gasUsed`. It is distinct from the raw EVM gas, and unrelated to the "canonical chain" sense of _canonical_
+used elsewhere in this glossary.
+
+See the [SDM specification][spec-sdm].
+
 <!-- Internal Links -->
 
 [deposits-spec]: ./protocol/deposits.md
-[system-config]: ./protocol/system_config.md
+[system-config]: ./protocol/system-config.md
 [exec-engine]: ./protocol/exec-engine.md
 [derivation-spec]: ./protocol/derivation.md
 [rollup-node-spec]: ./protocol/rollup-node.md

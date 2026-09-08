@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
   - [Eager Block Derivation](#eager-block-derivation)
+  - [Protocol Parameters](#protocol-parameters)
 - [Batch Submission](#batch-submission)
   - [Sequencing & Batch Submission Overview](#sequencing--batch-submission-overview)
   - [Batch Submission Wire Format](#batch-submission-wire-format)
@@ -17,8 +18,6 @@
   - [L2 Chain Derivation Pipeline](#l2-chain-derivation-pipeline)
     - [L1 Traversal](#l1-traversal)
     - [L1 Retrieval](#l1-retrieval)
-      - [Ecotone: Blob Retrieval](#ecotone-blob-retrieval)
-        - [Blob Encoding](#blob-encoding)
     - [Frame Queue](#frame-queue)
     - [Channel Bank](#channel-bank)
       - [Pruning](#pruning)
@@ -43,43 +42,32 @@
 - [Deriving Payload Attributes](#deriving-payload-attributes)
   - [Deriving the Transaction List](#deriving-the-transaction-list)
     - [Network upgrade automation transactions](#network-upgrade-automation-transactions)
-      - [Ecotone](#ecotone)
-        - [L1Block Deployment](#l1block-deployment)
-        - [GasPriceOracle Deployment](#gaspriceoracle-deployment)
-        - [L1Block Proxy Update](#l1block-proxy-update)
-        - [GasPriceOracle Proxy Update](#gaspriceoracle-proxy-update)
-        - [GasPriceOracle Enable Ecotone](#gaspriceoracle-enable-ecotone)
-        - [Beacon block roots contract deployment (EIP-4788)](#beacon-block-roots-contract-deployment-eip-4788)
   - [Building Individual Payload Attributes](#building-individual-payload-attributes)
+  - [On Future-Proof Transaction Log Derivation](#on-future-proof-transaction-log-derivation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!-- All glossary references in this file. -->
 
-[g-derivation]: ../glossary.md#L2-chain-derivation
+[g-derivation]: ../glossary.md#l2-chain-derivation
 [g-payload-attr]: ../glossary.md#payload-attributes
 [g-block]: ../glossary.md#block
 [g-exec-engine]: ../glossary.md#execution-engine
 [g-reorg]: ../glossary.md#chain-re-organization
 [g-receipts]: ../glossary.md#receipt
-[g-inception]: ../glossary.md#L2-chain-inception
 [g-deposit-contract]: ../glossary.md#deposit-contract
 [g-deposited]: ../glossary.md#deposited-transaction
 [g-l1-attr-deposit]: ../glossary.md#l1-attributes-deposited-transaction
 [g-l1-origin]: ../glossary.md#l1-origin
 [g-user-deposited]: ../glossary.md#user-deposited-transaction
 [g-deposits]: ../glossary.md#deposits
-[g-deposit-contract]: ../glossary.md#deposit-contract
-[g-l1-attr-predeploy]: ../glossary.md#l1-attributes-predeployed-contract
-[g-depositing-call]: ../glossary.md#depositing-call
-[g-depositing-transaction]: ../glossary.md#depositing-transaction
 [g-sequencing]: ../glossary.md#sequencing
 [g-sequencer]: ../glossary.md#sequencer
 [g-sequencing-epoch]: ../glossary.md#sequencing-epoch
 [g-sequencing-window]: ../glossary.md#sequencing-window
 [g-sequencer-batch]: ../glossary.md#sequencer-batch
 [g-l2-genesis]: ../glossary.md#l2-genesis-block
-[g-l2-chain-inception]: ../glossary.md#L2-chain-inception
+[g-l2-chain-inception]: ../glossary.md#l2-chain-inception
 [g-l2-genesis-block]: ../glossary.md#l2-genesis-block
 [g-batcher-transaction]: ../glossary.md#batcher-transaction
 [g-avail-provider]: ../glossary.md#data-availability-provider
@@ -89,7 +77,6 @@
 [g-channel]: ../glossary.md#channel
 [g-channel-frame]: ../glossary.md#channel-frame
 [g-rollup-node]: ../glossary.md#rollup-node
-[g-channel-timeout]: ../glossary.md#channel-timeout
 [g-block-time]: ../glossary.md#block-time
 [g-time-slot]: ../glossary.md#time-slot
 [g-consolidation]: ../glossary.md#unsafe-block-consolidation
@@ -98,7 +85,6 @@
 [g-unsafe-l2-head]: ../glossary.md#unsafe-l2-head
 [g-unsafe-l2-block]: ../glossary.md#unsafe-l2-block
 [g-unsafe-sync]: ../glossary.md#unsafe-sync
-[g-l1-origin]: ../glossary.md#l1-origin
 [g-deposit-tx-type]: ../glossary.md#deposited-transaction-type
 [g-finalized-l2-head]: ../glossary.md#finalized-l2-head
 [g-system-config]: ../glossary.md#system-configuration
@@ -188,6 +174,18 @@ first block of the epoch appears in the very last L1 block of the window. Note t
 applies to _block_ derivation. Sequencer batches can still be derived and tentatively queued
 without deriving blocks from them.
 
+## Protocol Parameters
+
+The following table gives an overview of some protocol parameters, and how they are affected by
+protocol upgrades.
+
+| Parameter | Bedrock (default) value | Latest (default) value | Changes | Notes |
+| --------- | ----------------------- | ---------------------- | ------- | ----- |
+| `max_sequencer_drift` | 600 | 1800 | [Fjord](./fjord/derivation.md#constant-maximum-sequencer-drift) | Changed from a chain parameter to a constant with Fjord. |
+| `MAX_RLP_BYTES_PER_CHANNEL` | 10,000,000 | 100,000,000 | [Fjord](./fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size) | Constant increased with Fjord. |
+| `MAX_CHANNEL_BANK_SIZE` | 100,000,000 | 1,000,000,000 | [Fjord](./fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size) | Constant increased with Fjord. |
+| `MAX_SPAN_BATCH_ELEMENT_COUNT` | 10,000,000 | 10,000,000 | Effectively introduced in [Fjord](./fjord/derivation.md#increasing-max_rlp_bytes_per_channel-and-max_channel_bank_size)| Number of elements |
+
 ---
 
 # Batch Submission
@@ -239,16 +237,10 @@ into chunks known as [channel frames][g-channel-frame]. A single batcher transac
 (belonging to the same or to different channels).
 
 This design gives use the maximum flexibility in how we aggregate batches into channels, and split channels over batcher
-transactions. It notably allows us to maximize data utilisation in a batcher transaction: for instance it allows us to
-pack the final (small) frame of a window with large frames from the next window.
+transactions. It notably allows us to maximize data utilization in a batcher transaction: for instance it allows us to
+pack the final (small) frame of one channel with one or more frames from the next channel.
 
-In the future this channel identification feature also allows the [batcher][g-batcher] to employ multiple signers
-(private keys) to submit one or multiple channels in parallel (1).
-
-(1) This helps alleviate issues where, because of transaction nonce values affecting the L2 tx-pool and thus inclusion:
-multiple transactions made by the same signer are stuck waiting on the inclusion of a previous transaction.
-
-Also note that we use a streaming compression scheme, and we do not need to know how many blocks a channel will end up
+Also note that we use a streaming compression scheme, and we do not need to know how many batches a channel will end up
 containing when we start a channel, or even as we send the first frames in the channel.
 
 And by splitting channels across multiple data transactions, the L2 can have larger block data than the
@@ -320,7 +312,7 @@ Batcher transactions are encoded as `version_byte ++ rollup_payload` (where `++`
 | `version_byte` | `rollup_payload`                               |
 | -------------- | ---------------------------------------------- |
 | 0              | `frame ...` (one or more frames, concatenated) |
-| 1    | `plasma_commitment` (experimental, see [op-plasma](../experimental/plasma.md#input-commitment-submission) |
+| 1    | `da_commitment` (experimental, see [alt-da](../experimental/alt-da.md#input-commitment-submission)) |
 
 Unknown versions make the batcher transaction invalid (it must be ignored by the rollup node).
 All frames in a batcher transaction must be parseable. If any one frame fails to parse, the all frames in the
@@ -363,32 +355,42 @@ where:
 - `is_last` is a single byte with a value of 1 if the frame is the last in the channel, 0 if there are frames in the
   channel. Any other value makes the frame invalid (it must be ignored by the rollup node).
 
-[batcher-spec]: batching.md
-
 ### Channel Format
 
-A channel is encoded as `channel_encoding`, defined as:
+[channel-format]: #channel-format
+
+A channel is encoded by applying a streaming compression algorithm to a list of batches:
 
 ```text
-rlp_batches = []
+encoded_batches = []
 for batch in batches:
-    rlp_batches.append(batch)
-channel_encoding = compress(rlp_batches)
+    encoded_batches ++ batch.encode()
+rlp_batches = rlp_encode(encoded_batches)
 ```
 
 where:
 
-- `batches` is the input, a sequence of batches byte-encoded as per the next section ("Batch Encoding")
-- `rlp_batches` is the concatenation of the RLP-encoded batches
-- `compress` is a function performing compression, using the ZLIB algorithm (as specified in [RFC-1950][rfc1950]) with
-  no dictionary
-- `channel_encoding` is the compressed version of `rlp_batches`
+- `batches` is the input, a sequence of batches each with a byte-encoder
+function `.encode()` as per the next section ("Batch Encoding")
+- `encoded_batches` is a byte array: the concatenation of the encoded batches
+- `rlp_batches` is the rlp encoding of the concatenated encoded batches
+
+```text
+channel_encoding = zlib_compress(rlp_batches)
+```
+
+where zlib_compress is the ZLIB algorithm (as specified in [RFC-1950][rfc1950]) with no dictionary.
 
 [rfc1950]: https://www.rfc-editor.org/rfc/rfc1950.html
 
-When decompressing a channel, we limit the amount of decompressed data to `MAX_RLP_BYTES_PER_CHANNEL` (currently
-10,000,000 bytes), in order to avoid "zip-bomb" types of attack (where a small compressed input decompresses to a
-humongous amount of data). If the decompressed data exceeds the limit, things proceeds as though the channel contained
+The Fjord upgrade introduces an additional [versioned channel encoding
+format](./fjord/derivation.md#brotli-channel-compression) to support alternate compression
+algorithms.
+
+When decompressing a channel, we limit the amount of decompressed data to `MAX_RLP_BYTES_PER_CHANNEL` (defined in the
+[Protocol Parameters table](#protocol-parameters)), in order to avoid "zip-bomb" types of attack (where a small
+compressed input decompresses to a humongous amount of data).
+If the decompressed data exceeds the limit, things proceeds as though the channel contained
 only the first `MAX_RLP_BYTES_PER_CHANNEL` decompressed bytes. The limit is set on RLP decoding, so all batches that
 can be decoded in `MAX_RLP_BYTES_PER_CHANNEL` will be accepted even if the size of the channel is greater than
 `MAX_RLP_BYTES_PER_CHANNEL`. The exact requirement is that `length(input) <= MAX_RLP_BYTES_PER_CHANNEL`.
@@ -404,7 +406,8 @@ contain.
 
 Recall that a batch contains a list of transactions to be included in a specific L2 block.
 
-A batch is encoded as `batch_version ++ content`, where `content` depends on the `batch_version`:
+A batch is encoded as `batch_version ++ content`, where `content` depends on the `batch_version`.
+Prior to the Delta upgrade, batches all have batch_version 0 and are encoded as described below.
 
 | `batch_version` | `content`                                                                          |
 | --------------- | ---------------------------------------------------------------------------------- |
@@ -424,7 +427,16 @@ where:
 [RLP format]: https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
 [EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718
 
+The Delta upgrade introduced an additional batch type, [span batches][span-batches].
+
+[span-batches]: ./delta/span-batches.md
+
 Unknown versions make the batch invalid (it must be ignored by the rollup node), as do malformed contents.
+
+> **Note** if the batch version and contents can be RLP decoded correctly but extra content exists beyond the batch,
+> the additional data may be ignored during parsing. Data _between_ RLP encoded batches may not be ignored
+> (as they are seen as malformed batches), but if a batch can be fully described by the RLP decoding,
+> extra content does not invalidate the decoded batch.
 
 The `epoch_number` and the `timestamp` must also respect the constraints listed in the [Batch Queue][batch-queue]
 section, otherwise the batch is considered invalid and will be ignored.
@@ -443,8 +455,6 @@ This section describes how the L2 chain is produced from the L1 batches using a 
 A verifier may implement this differently, but must be semantically equivalent to not diverge from the L2 chain.
 
 ## L2 Chain Derivation Pipeline
-
-[pipeline]: #l2-chain-derivation-pipeline
 
 Our architecture decomposes the derivation process into a pipeline made up of the following stages:
 
@@ -491,6 +501,9 @@ transaction is one with the following properties:
 
 - The [`to`] field is equal to the configured batcher inbox address.
 
+- The transaction type is one of `0`, `1`, `2`, `3`, or `0x7e` (L2 [Deposited transaction type][g-deposit-tx-type], to
+  support force-inclusion of batcher transactions on nested OP Stack chains).
+
 - The sender, as recovered from the transaction signature (`v`, `r`, and `s`), is the batcher
   address loaded from the system config matching the L1 block of the data.
 
@@ -500,98 +513,6 @@ transaction in the block is processed in the order they appear in the block by p
 on to the next phase.
 
 [`to`]: https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/frontier/fork_types.py#L52C31-L52C31
-
-#### Ecotone: Blob Retrieval
-
-With the Ecotone upgrade the retrieval stage is extended to support an additional DA source:
-[EIP-4844] blobs. After the Ecotone upgrade we modify the iteration over batcher transactions to
-treat transactions of transaction-type == `0x03` (`BLOB_TX_TYPE`) differently. If the batcher
-transaction is a blob transaction, then its calldata MUST be ignored should it be present. Instead:
-
-- For each blob hash in `blob_versioned_hashes`, retrieve the blob that matches it. A blob may be
-  retrieved from any of a number different sources. Retrieval from a local beacon-node, through
-  the `/eth/v1/beacon/blob_sidecars/` endpoint, with `indices` filter to skip unrelated blobs, is
-  recommended. For each retrieved blob:
-  - The blob SHOULD (MUST, if the source is untrusted) be cryptographically verified against its
-    versioned hash.
-  - If the blob has a [valid encoding](#blob-encoding), decode it into its continuous byte-string
-    and pass that on to the next phase. Otherwise the blob is ignored.
-
-Note that batcher transactions of type blob must be processed in the same loop as other batcher
-transactions to preserve the invariant that batches are always processed in the order they appear
-in the block. We ignore calldata in blob transactions so that it may be used in the future for
-batch metadata or other purposes.
-
-##### Blob Encoding
-
-Each blob in a [EIP-4844] transaction really consists of `FIELD_ELEMENTS_PER_BLOB = 4096` field elements.
-
-Each field element is a number in a prime field of
-`BLS_MODULUS = 52435875175126190479447740508185965837690552500527637822603658699938581184513`.
-This number does not represent a full `uint256`: `math.log2(BLS_MODULUS) = 254.8570894...`
-
-The [L1 consensus-specs](https://github.com/ethereum/consensus-specs/blob/dev/specs/deneb/polynomial-commitments.md)
-describe the encoding of this polynomial.
-The field elements are encoded as big-endian integers (`KZG_ENDIANNESS = big`).
-
-To save computational overhead, only `254` bits per field element are used for rollup data.
-
-`127` bytes of application-layer rollup data is encoded at a time, into 4 adjacent field elements of the blob:
-
-```python
-# read(N): read the next N bytes from the application-layer rollup-data. The next read starts where the last stopped.
-# write(V): append V (one or more bytes) to the raw blob.
-bytes tailA = read(31)
-byte x = read(1)
-byte A = x & 0b0011_1111
-write(A)
-write(tailA)
-
-bytes tailB = read(31)
-byte y = read(1)
-byte B = (y & 0b0000_1111) | (x & 0b1100_0000) >> 2)
-write(B)
-write(tailB)
-
-bytes tailC = read(31)
-byte z = read(1)
-byte C = z & 0b0011_1111
-write(C)
-write(tailC)
-
-bytes tailD = read(31)
-byte D = ((z & 0b1100_0000) >> 2) | ((y & 0b1111_0000) >> 4)
-write(D)
-write(tailD)
-```
-
-Each written field element looks like this:
-
-- Starts with one of the prepared 6-bit left-padded byte values, to keep the field element within valid range.
-- Followed by 31 bytes of application-layer data, to fill the low 31 bytes of the field element.
-
-The written output should look like this:
-
-```text
-<----- element 0 -----><----- element 1 -----><----- element 2 -----><----- element 3 ----->
-| byte A |  tailA...  || byte B |  tailB...  || byte C |  tailC...  || byte D |  tailD...  |
-```
-
-The above is repeated 1024 times, to fill all `4096` elements,
-with a total of `(4 * 31 + 3) * 1024 = 130048` bytes of data.
-
-When decoding a blob, the top-most two bits of each field-element must be 0,
-to make the encoding/decoding bijective.
-
-The first byte of rollup-data (second byte in first field element) is used as a version-byte.
-
-In version `0`, the next 3 bytes of data are used to encode the length of the rollup-data, as big-endian `uint24`.
-Any trailing data, past the length delimiter, must be 0, to keep the encoding/decoding bijective.
-If the length is larger than `130048 - 4`, the blob is invalid.
-
-If any of the encoding is invalid, the blob as whole must be ignored.
-
-[EIP-4844]: https://eips.ethereum.org/EIPS/eip-4844
 
 ### Frame Queue
 
@@ -619,7 +540,7 @@ channels are dropped in FIFO order, until `total_size <= MAX_CHANNEL_BANK_SIZE`,
 
 - `total_size` is the sum of the sizes of each channel, which is the sum of all buffered frame data of the channel,
   with an additional frame-overhead of `200` bytes per frame.
-- `MAX_CHANNEL_BANK_SIZE` is a protocol constant of 100,000,000 bytes.
+- `MAX_CHANNEL_BANK_SIZE` is a protocol constant defined in the [Protocol Parameters table](#protocol-parameters).
 
 #### Timeouts
 
@@ -673,7 +594,8 @@ that batcher implementations use unique channel IDs.
 In this stage, we decompress the channel we pull from the last stage, and then parse
 [batches][g-sequencer-batch] from the decompressed byte stream.
 
-See [Batch Format][batch-format] for decompression and decoding specification.
+See [Channel Format][channel-format] and [Batch Format][batch-format] for decompression and
+decoding specification.
 
 ### Batch Queue
 
@@ -749,6 +671,9 @@ Rules, in validation order:
   that is invalid or derived by other means exclusively:
   - any transaction that is empty (zero length byte string)
   - any [deposited transactions][g-deposit-tx-type] (identified by the transaction type prefix byte)
+  - any transaction of a future type > 2 (note that
+    [Isthmus adds support](isthmus/derivation.md#activation)
+    for `SetCode` transactions of type 4)
 
 If no batch can be `accept`-ed, and the stage has completed buffering of all batches that can fully be read from the L1
 block at height `epoch.number + sequence_window_size`, and the `next_epoch` is available,
@@ -819,12 +744,14 @@ To interact with the engine, the [execution engine API][exec-engine] is used, wi
 - `engine_newPayload`
   - [`engine_newPayloadV2`] — executes a Bedrock/Canyon/Delta execution payload to create a block.
   - [`engine_newPayloadV3`] — executes an Ecotone execution payload to create a block.
+  - [`engine_newPayloadV4`] - executes an Isthmus execution payload to create a block.
 
-The current version of `op-node` uses the `v3` Engine API RPC methods as well as `engine_newPayloadV2`, due to
-`engine_newPayloadV3` only supporting Ecotone execution payloads. Both `engine_forkchoiceUpdatedV3` and
-`engine_getPayloadV3` are backwards compatible with Bedrock, Canyon & Delta payloads.
+The current version of `op-node` uses the `v4` Engine API RPC methods as well as `engine_newPayloadV3` and
+`engine_newPayloadV2`, due to `engine_newPayloadV4` only supporting Isthmus execution payloads. Both
+`engine_forkchoiceUpdatedV4` and `engine_getPayloadV4` are backwards compatible with Ecotone, Bedrock,
+Canyon & Delta payloads.
 
-Prior versions of `op-node` used `v2` and `v1` methods.
+Prior versions of `op-node` used `v3`, `v2` and `v1` methods.
 
 [`engine_forkchoiceUpdatedV2`]: exec-engine.md#engine_forkchoiceupdatedv2
 [`engine_forkchoiceUpdatedV3`]: exec-engine.md#engine_forkchoiceupdatedv3
@@ -832,6 +759,7 @@ Prior versions of `op-node` used `v2` and `v1` methods.
 [`engine_getPayloadV3`]: exec-engine.md#engine_getpayloadv3
 [`engine_newPayloadV2`]: exec-engine.md#engine_newpayloadv2
 [`engine_newPayloadV3`]: exec-engine.md#engine_newpayloadv3
+[`engine_newPayloadV4`]: exec-engine.md#engine_newpayloadv4
 
 The execution payload is an object of type [`ExecutionPayloadV3`][eth-payload].
 
@@ -958,6 +886,8 @@ The payload is then processed with a sequence of:
 - Ecotone Payloads
   - `engine_newPayloadV3`: process the payload. It does not become canonical yet.
   - `engine_forkchoiceUpdatedV3`: make the payload the canonical unsafe L2 head, and keep the safe/finalized L2 heads.
+- Isthmus Payloads
+  - `engine_newPayloadV4`: process the payload. It does not become canonical yet.
 
 Engine API Error handling:
 
@@ -1067,7 +997,6 @@ This process happens during the payloads-attributes queue ran by a verifier node
 ran by a sequencer node (the sequencer may enable the tx-pool usage if the transactions are batch-submitted).
 
 [expanded-payload]: exec-engine.md#extended-payloadattributesv1
-[eth-payload]: https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#payloadattributesv1
 
 ## Deriving the Transaction List
 
@@ -1098,6 +1027,9 @@ entries.
 
 [deposit-contract-spec]: deposits.md#deposit-contract
 
+Logs are derived from transactions following the future-proof best-effort process described in
+[On Future Proof Transaction Log Derivation](#on-future-proof-transaction-log-derivation)
+
 ### Network upgrade automation transactions
 
 [network upgrade automation transactions]: #network-upgrade-automation-transactions
@@ -1106,249 +1038,7 @@ Some network upgrades require automated contract changes or deployments at speci
 To automate these, without adding persistent changes to the execution-layer,
 special transactions may be inserted as part of the derivation process.
 
-#### Ecotone
-
-The Ecotone hardfork activation block, contains the following transactions in this order:
-
-- L1 Attributes Transaction, using the pre-Ecotone `setL1BlockValues`
-- User deposits from L1
-- Network Upgrade Transactions
-  - L1Block deployment
-  - GasPriceOracle deployment
-  - Update L1Block Proxy ERC-1967 Implementation Slot
-  - Update GasPriceOracle Proxy ERC-1967 Implementation Slot
-  - GasPriceOracle Enable Ecotone
-  - Beacon block roots contract deployment (EIP-4788)
-
-To not modify or interrupt the system behavior around gas computation, this block will not include any sequenced
-transactions by setting `noTxPool: true`.
-
-##### L1Block Deployment
-
-The `L1Block` contract is upgraded to process the new Ecotone L1-data-fee parameters and L1 blob base-fee.
-
-A deposit transaction is derived with the following attributes:
-
-- `from`: `0x4210000000000000000000000000000000000000`
-- `to`: `null`
-- `mint`: `0`
-- `value`: `0`
-- `gasLimit`: `375,000`
-- `data`: `0x60806040523480156100105...` ([full bytecode](../static/bytecode/ecotone-l1-block-deployment.txt))
-- `sourceHash`: `0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8`,
-  computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Deployment"
-
-This results in the Ecotone L1Block contract being deployed to `0x07dbe8500fc591d1852B76feE44d5a05e13097Ff`, to verify:
-
-```bash
-cast compute-address --nonce=0 0x4210000000000000000000000000000000000000
-Computed Address: 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff
-```
-
-Verify `sourceHash`:
-
-```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Deployment"))
-# 0x877a6077205782ea15a6dc8699fa5ebcec5e0f4389f09cb8eda09488231346f8
-```
-
-Verify `data`:
-
-```bash
-git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
-pnpm clean && pnpm install && pnpm build
-jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/L1Block.sol/L1Block.json
-```
-
-This transaction MUST deploy a contract with the following code hash
-`0xc88a313aa75dc4fbf0b6850d9f9ae41e04243b7008cf3eadb29256d4a71c1dfd`.
-
-##### GasPriceOracle Deployment
-
-The `GasPriceOracle` contract is upgraded to support the new Ecotone L1-data-fee parameters. Post fork this contract
-will use the blob base fee to compute the gas price for L1-data-fee transactions.
-
-A deposit transaction is derived with the following attributes:
-
-- `from`: `0x4210000000000000000000000000000000000001`
-- `to`: `null`,
-- `mint`: `0`
-- `value`: `0`
-- `gasLimit`: `1,000,000`
-- `data`: `0x60806040523480156100...` ([full bytecode](../static/bytecode/ecotone-gas-price-oracle-deployment.txt))
-- `sourceHash`: `0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42`
-  computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Deployment"
-
-This results in the Ecotone GasPriceOracle contract being deployed to `0xb528D11cC114E026F138fE568744c6D45ce6Da7A`,
-to verify:
-
-```bash
-cast compute-address --nonce=0 0x4210000000000000000000000000000000000001
-Computed Address: 0xb528D11cC114E026F138fE568744c6D45ce6Da7A
-```
-
-Verify `sourceHash`:
-
-```bash
-❯ cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Deployment"))
-# 0xa312b4510adf943510f05fcc8f15f86995a5066bd83ce11384688ae20e6ecf42
-```
-
-Verify `data`:
-
-```bash
-git checkout 5996d0bc1a4721f2169ba4366a014532f31ea932
-pnpm clean && pnpm install && pnpm build
-jq -r ".bytecode.object" packages/contracts-bedrock/forge-artifacts/GasPriceOracle.sol/GasPriceOracle.json
-```
-
-This transaction MUST deploy a contract with the following code hash
-`0x8b71360ea773b4cfaf1ae6d2bd15464a4e1e2e360f786e475f63aeaed8da0ae5`.
-
-##### L1Block Proxy Update
-
-This transaction updates the L1Block Proxy ERC-1967 implementation slot to point to the new L1Block deployment.
-
-A deposit transaction is derived with the following attributes:
-
-- `from`: `0x0000000000000000000000000000000000000000`
-- `to`: `0x4200000000000000000000000000000000000015` (L1Block Proxy)
-- `mint`: `0`
-- `value`: `0`
-- `gasLimit`: `50,000`
-- `data`: `0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff`
-- `sourceHash`: `0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc`
-  computed with the "Upgrade-deposited" type, with `intent = "Ecotone: L1 Block Proxy Update"
-
-Verify data:
-
-```bash
-cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0x07dbe8500fc591d1852B76feE44d5a05e13097Ff)
-0x3659cfe600000000000000000000000007dbe8500fc591d1852b76fee44d5a05e13097ff
-```
-
-Verify `sourceHash`:
-
-```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: L1 Block Proxy Update"))
-# 0x18acb38c5ff1c238a7460ebc1b421fa49ec4874bdf1e0a530d234104e5e67dbc
-```
-
-##### GasPriceOracle Proxy Update
-
-This transaction updates the GasPriceOracle Proxy ERC-1967 implementation slot to point to the new GasPriceOracle
-deployment.
-
-A deposit transaction is derived with the following attributes:
-
-- `from`: `0x0000000000000000000000000000000000000000`
-- `to`: `0x420000000000000000000000000000000000000F` (Gas Price Oracle Proxy)
-- `mint`: `0`
-- `value`: `0`
-- `gasLimit`: `50,000`
-- `data`: `0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a`
-- `sourceHash`: `0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a`
-  computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Proxy Update"`
-
-Verify data:
-
-```bash
-cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(address)" 0xb528D11cC114E026F138fE568744c6D45ce6Da7A)
-0x3659cfe6000000000000000000000000b528d11cc114e026f138fe568744c6d45ce6da7a
-```
-
-Verify `sourceHash`:
-
-```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Proxy Update"))
-# 0xee4f9385eceef498af0be7ec5862229f426dec41c8d42397c7257a5117d9230a
-```
-
-##### GasPriceOracle Enable Ecotone
-
-This transaction informs the GasPriceOracle to start using the Ecotone gas calculation formula.
-
-A deposit transaction is derived with the following attributes:
-
-- `from`: `0xDeaDDEaDDeAdDeAdDEAdDEaddeAddEAdDEAd0001` (Depositer Account)
-- `to`: `0x420000000000000000000000000000000000000F` (Gas Price Oracle Proxy)
-- `mint`: `0`
-- `value`: `0`
-- `gasLimit`: `80,000`
-- `data`: `0x22b90ab3`
-- `sourceHash`: `0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93`,
-  computed with the "Upgrade-deposited" type, with `intent = "Ecotone: Gas Price Oracle Set Ecotone"
-
-Verify data:
-
-```bash
-cast sig "setEcotone()"
-0x22b90ab3
-```
-
-Verify `sourceHash`:
-
-```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: Gas Price Oracle Set Ecotone"))
-# 0x0c1cb38e99dbc9cbfab3bb80863380b0905290b37eb3d6ab18dc01c1f3e75f93
-```
-
-##### Beacon block roots contract deployment (EIP-4788)
-
-[EIP-4788] introduces a "Beacon block roots" contract, that processes and exposes the beacon-block-root values.
-at address `BEACON_ROOTS_ADDRESS = 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02`.
-
-For deployment, [EIP-4788] defines a pre-[EIP-155] legacy transaction, sent from a key that is derived such that the
-transaction signature validity is bound to message-hash, which is bound to the input-data, containing the init-code.
-
-However, this type of transaction requires manual deployment and gas-payments.
-And since the processing is an integral part of the chain processing, and has to be repeated for every OP-Stack chain,
-the deployment is approached differently here.
-
-Some chains may already have a user-submitted instance of the [EIP-4788] transaction.
-This is cryptographically guaranteed to be correct, but may result in the upgrade transaction
-deploying a second contract, with the next nonce. The result of this deployment can be ignored.
-
-A Deposit transaction is derived with the following attributes:
-
-- `from`: `0x0B799C86a49DEeb90402691F1041aa3AF2d3C875`, as specified in the EIP.
-- `to`: null
-- `mint`: `0`
-- `value`: `0`
-- `gasLimit`: `0x3d090`, as specified in the EIP.
-- `isCreation`: `true`
-- `data`:
-  `0x60618060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500`
-- `isSystemTx`: `false`, as per the Regolith upgrade, even the system-generated transactions spend gas.
-- `sourceHash`: `0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c`,
-  computed with the "Upgrade-deposited" type, with `intent = "Ecotone: beacon block roots contract deployment"`
-
-The contract address upon deployment is computed as `rlp([sender, nonce])`, which will equal:
-
-- `BEACON_ROOTS_ADDRESS` if deployed
-- a different address (`0xE3aE1Ae551eeEda337c0BfF6C4c7cbA98dce353B`) if `nonce = 1`:
-  when a user already submitted the EIP transaction before the upgrade.
-
-Verify `BEACON_ROOTS_ADDRESS`:
-
-```bash
-cast compute-address --nonce=0 0x0B799C86a49DEeb90402691F1041aa3AF2d3C875
-# Computed Address: 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02
-```
-
-Verify `sourceHash`:
-
-```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Ecotone: beacon block roots contract deployment"))
-# 0x69b763c48478b9dc2f65ada09b3d92133ec592ea715ec65ad6e7f3dc519dc00c
-```
-
-[EIP-4788]: https://eips.ethereum.org/EIPS/eip-4788
-[EIP-155]: https://eips.ethereum.org/EIPS/eip-155
-
 ## Building Individual Payload Attributes
-
-[payload attributes]: #building-individual-payload-attributes
 
 After deriving the transactions list, the rollup node constructs a [`PayloadAttributesV2`][extended-attributes] as
 follows:
@@ -1364,3 +1054,28 @@ follows:
 
 [extended-attributes]: exec-engine.md#extended-payloadattributesv1
 [Fee Vaults]: exec-engine.md#fee-vaults
+
+## On Future-Proof Transaction Log Derivation
+
+As described in [L1 Retrieval](#l1-retrieval), batcher transactions' types are required to be from a fixed allow-list.
+
+However, we want to allow deposit transactions and `SystemConfig` update events to get derived even from receipts of
+future transaction types, as long as the receipts can be decoded following a best-effort process:
+
+As long as a future transaction type follows the [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) specification, the
+type can be decoded from the first byte of the transaction's (or its receipt's) binary encoding. We can then proceed as
+follows to get the logs of such a future transaction, or discard the transaction's receipt as invalid.
+
+- If it's a known transaction type, that is, legacy (first byte of the encoding is in the range `[0xc0, 0xfe]`) or its
+first byte is in the range `[0, 4]` or `0x7e` (_deposited_), then it's not a _future transaction_ and we know how to
+decode the receipt and this process is irrelevant.
+- If a transaction's first byte is in the range `[0x05, 0x7d]`, it is expected to be a _future_ EIP-2718 transaction, so
+we can proceed to the receipt. Note that we excluded `0x7e` because that's the deposit transaction type, which is known.
+- The _future_ receipt encoding's first byte must be the same byte as the transaction encoding's first byte, or it is
+discarded as invalid, because we require it to be an EIP-2718-encoded receipt to continue.
+- The receipt payload is decoded as if it is encoded as `rlp([status, cumulative_transaction_gas_used, logs_bloom,
+logs])`, which is the encoding of the known non-legacy transaction types.
+  - If this decoding fails, the transaction's receipt is discarded as invalid.
+  - If this decoding succeeds, the `logs` have been obtained and can be processed as those of known transaction types.
+
+The intention of this best-effort decoding process is to future-proof the protocol for new L1 transaction types.
