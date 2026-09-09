@@ -125,19 +125,22 @@ removes a chain from a set.
 
 The contracts an [Interop Set](#interop-set) holds in common: its `ETHLockbox`, its
 `DisputeGameFactory`, its `AnchorStateRegistry` and its `DelayedWETH`. Migration deploys the first
-three and adopts one member's existing `DelayedWETH` as the set's, so that each member's
-`SystemConfig` and the set's dispute games agree on which `DelayedWETH` holds bonds.
+three and adopts the fourth one. The migration input is the list of `SystemConfig`s that defines the
+set, and the set takes the existing `DelayedWETH` of the member at index 0, then points every
+member's `SystemConfig` at it. Members are supplied in ascending chain ID order, so index 0 is
+always the lowest-chain-ID member.
 
 ### Retired Contracts
 
 The per-chain `DisputeGameFactory`, `ETHLockbox`, `AnchorStateRegistry` and `DelayedWETH` that a
-[Member Chain](#member-chain) used before migration. They remain deployed and reachable, because
-dispute games created before migration continue to resolve against them and their bonds must remain
-claimable.
+[Member Chain](#member-chain) used before migration. The index-0 member's `DelayedWETH` is the one
+exception: the set adopts it rather than retiring it. Retired Contracts remain deployed and
+reachable, because dispute games created before migration continue to resolve against them and
+their bonds must remain claimable.
 
-The following diagram shows a two-chain set after migration. Note that the Retired Contracts
-resolve pause through the set's shared `ETHLockbox` rather than through their own, which is what
-keeps a game created before the migration subject to the same pause as the rest of the set:
+The following diagram shows a two-chain set after migration, with Chain A at index 0. The shared
+`DelayedWETH` is Chain A's existing contract rather than a new deployment. The Retired Contracts
+resolve pause through the set's shared `ETHLockbox` rather than through their own, which keeps a game created before the migration subject to the same pause as the rest of the set:
 
 ```mermaid
 flowchart LR
@@ -151,11 +154,11 @@ flowchart LR
     LB[ETHLockbox]
     ASR[AnchorStateRegistry]
     DGF[DisputeGameFactory]
-    WETH[DelayedWETH]
+    WETH["DelayedWETH<br/>(Chain A's, index 0)"]
   end
   subgraph RT["Retired Contracts"]
     RA["A: old DGF / ASR / ETHLockbox"]
-    RB["B: old DGF / ASR / ETHLockbox"]
+    RB["B: old DGF / ASR / ETHLockbox / DelayedWETH"]
   end
   PA --> LB
   PA --> ASR
@@ -164,6 +167,8 @@ flowchart LR
   ASR --> DGF
   ASR --> LB
   WETH --> LB
+  SCA --> WETH
+  SCB --> WETH
   RA -. pause .-> LB
   RB -. pause .-> LB
 ```
