@@ -12,7 +12,7 @@
   - [Member Chain](#member-chain)
   - [Shared Contracts](#shared-contracts)
   - [Retired Contracts](#retired-contracts)
-  - [Pause Identity](#pause-identity)
+  - [Pause Identifier](#pause-identifier)
   - [Starting Anchor State](#starting-anchor-state)
   - [Cleared Game Types](#cleared-game-types)
   - [Migration Validation](#migration-validation)
@@ -38,7 +38,7 @@
     - [Impact](#impact-2)
   - [iMIG-004: Migration is atomic and complete](#imig-004-migration-is-atomic-and-complete)
     - [Impact](#impact-3)
-  - [iMIG-005: A single Pause Identity governs the set](#imig-005-a-single-pause-identity-governs-the-set)
+  - [iMIG-005: A single Pause Identifier governs the set](#imig-005-a-single-pause-identifier-governs-the-set)
     - [Impact](#impact-4)
   - [iMIG-006: Retired contracts remain coherent with the set](#imig-006-retired-contracts-remain-coherent-with-the-set)
     - [Impact](#impact-5)
@@ -87,8 +87,8 @@ three deliberate exceptions. Each is a considered trade, not an oversight:
 
 - **It must not be available while a Member Chain is paused**, in contrast to
   [i01-011](./opcm.md#i01-011-upgrade-availability-while-paused). Migration changes each member's
-  [Pause Identity](#pause-identity), so running it under an active pause would silently discard
-  that pause. See [iMIG-005](#imig-005-a-single-pause-identity-governs-the-set).
+  [Pause Identifier](#pause-identifier), so running it under an active pause would silently discard
+  that pause. See [iMIG-005](#imig-005-a-single-pause-identifier-governs-the-set).
 - **Its Shared Contract addresses are not deterministic**, in contrast to
   [i01-009](./opcm.md#i01-009-time-independence). An Interop Set has no chain ID of its own, and the
   chain ID only ever serves as a salt input, so migration substitutes a value derived from the block
@@ -168,7 +168,7 @@ flowchart LR
   RB -. pause .-> LB
 ```
 
-### Pause Identity
+### Pause Identifier
 
 The address that a chain's pause state is keyed against in `SuperchainConfig`. Before joining an
 [Interop Set](#interop-set) a chain is identified by its own `ETHLockbox`. Afterwards every member
@@ -341,20 +341,20 @@ contracts while the rest still pointed at their own. Liquidity would sit partly 
 `ETHLockbox` and partly in the retired ones. No single proof would cover every member. A withdrawal
 could then be blocked or paid twice, depending on which side of the split it was proven against.
 
-### iMIG-005: A single Pause Identity governs the set
+### iMIG-005: A single Pause Identifier governs the set
 
 After migration, every [Member Chain](#member-chain) must resolve its pause state and its guardian
 through the set's shared `ETHLockbox`, so that one scoped pause covers the whole set.
 
 To reach that state safely, migration must refuse to run while any member is paused under its
-existing [Pause Identity](#pause-identity), and must leave no pause active against any retired
+existing [Pause Identifier](#pause-identifier), and must leave no pause active against any retired
 identity.
 
 #### Impact
 
 **Severity: Critical**
 
-Changing a chain's Pause Identity while a pause is active drops that pause: the guardian's
+Changing a chain's Pause Identifier while a pause is active drops that pause: the guardian's
 intervention silently stops applying, and withdrawals resume in the middle of the incident that
 prompted it. In the other direction, a pause left active against a retired identity is a pause
 nobody can see and nobody can lift through the set's controls.
