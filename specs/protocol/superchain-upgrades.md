@@ -262,6 +262,11 @@ Note that this constraint governs OP-Stack network upgrades only.
 It does not constrain an OP-Stack upgrade timestamp against an L1 fork timestamp
 configured on the same chain, which may coincide.
 
+The constraint is not retroactive: a small number of chains activated two upgrades
+in the same block before this rule was written down, and their activation history cannot be
+changed. Implementations must keep syncing those chains, so the rule is enforced on newly
+scheduled activations rather than on all historical configurations.
+
 ## OP-Stack Protocol versions
 
 - `v1.0.0`: 2021 Jan 16th - Mainnet Soft Launch, based on OVM.
