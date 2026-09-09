@@ -199,7 +199,7 @@ Transfers the entire ETH balance from the current lockbox to another [Authorized
 - MUST capture the current ETH balance before transfer
 - MUST call `receiveLiquidity()` on `_lockbox` with the entire ETH balance
 - MUST emit `LiquidityMigrated` event with the destination lockbox address and transferred amount
-- SHOULD be executed atomically with `OptimismPortal.migrateToSuperRoots()` in the same
+- SHOULD be executed atomically with `OptimismPortal.migrateToSharedDisputeGame()` in the same
   transaction batch
 
 ### receiveLiquidity
