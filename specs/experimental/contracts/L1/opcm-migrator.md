@@ -485,13 +485,15 @@ rejection.
 
 ### iMIG-013: Custom gas token chains are not migrated
 
-A chain using a custom gas token must not join an [Interop Set](#interop-set), and must not have its
-portal-held balance migrated into any shared `ETHLockbox`.
+A [Member Chain](#member-chain) must not use a custom gas token. Migration must reject a chain whose
+`SystemConfig` has the custom gas token feature enabled before any state is mutated.
 
 #### Impact
 
 **Severity: Critical**
 
-A custom gas token chain's portal holds that token, not ETH. Pooling it into an `ETHLockbox` mixes
-an unrelated asset into the set's ETH liquidity, where it backs withdrawals it does not correspond
-to and cannot be recovered.
+A custom gas token chain's native asset is not ETH. Joining a set enables the interop feature on the
+member, which activates the [interop ETH predeploys](../../../interop/eth-bridging.md) on its L2. A
+cross-chain ETH transfer burns the sending chain's native asset and mints ETH on the receiving
+chain. That ETH is withdrawable from the set's single shared `ETHLockbox`, so every unit such a
+member sends draws on ETH it never deposited.
