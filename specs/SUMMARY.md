@@ -110,6 +110,7 @@
   - [Alt-DA](./experimental/alt-da.md)
   - [OP Contracts Manager](./experimental/op-contracts-manager.md)
   - [Governance Token](./experimental/gov-token.md)
+  - [EIP-8130 Account Abstraction Transactions](./experimental/eip-8130.md)
   - [Contract Specifications]()
     - [Safe]()
       - [LivenessGuard](./experimental/contracts/safe/liveness-guard.md)
