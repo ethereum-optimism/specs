@@ -140,15 +140,16 @@ their bonds must remain claimable.
 
 The following diagram shows a two-chain set after migration, with Chain A at index 0. The shared
 `DelayedWETH` is Chain A's existing contract rather than a new deployment. The Retired Contracts
-resolve pause through the set's shared `ETHLockbox` rather than through their own, which keeps a game created before the migration subject to the same pause as the rest of the set:
+resolve pause through the set's shared `ETHLockbox` rather than through their own, which keeps a
+game created before the migration subject to the same pause as the rest of the set:
 
 ```mermaid
 flowchart LR
   subgraph CA["Member Chain A"]
-    SCA[SystemConfig] --> PA[OptimismPortal]
+    SCA[SystemConfig] -- holds address --> PA[OptimismPortal]
   end
   subgraph CB["Member Chain B"]
-    SCB[SystemConfig] --> PB[OptimismPortal]
+    SCB[SystemConfig] -- holds address --> PB[OptimismPortal]
   end
   subgraph SH["Shared Contracts"]
     LB[ETHLockbox]
@@ -160,17 +161,17 @@ flowchart LR
     RA["A: old DGF / ASR / ETHLockbox"]
     RB["B: old DGF / ASR / ETHLockbox / DelayedWETH"]
   end
-  PA --> LB
-  PA --> ASR
-  PB --> LB
-  PB --> ASR
-  ASR --> DGF
-  ASR --> LB
-  WETH --> LB
-  SCA --> WETH
-  SCB --> WETH
-  RA -. pause .-> LB
-  RB -. pause .-> LB
+  PA -- ETH custody --> LB
+  PA -- game validity --> ASR
+  PB -- ETH custody --> LB
+  PB -- game validity --> ASR
+  ASR -- game registration --> DGF
+  ASR -- pause, guardian --> LB
+  WETH -- pause --> LB
+  SCA -- holds address --> WETH
+  SCB -- holds address --> WETH
+  RA -. pause, guardian .-> LB
+  RB -. pause, guardian .-> LB
 ```
 
 ### Pause Identifier
