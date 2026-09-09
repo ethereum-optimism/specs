@@ -246,8 +246,9 @@ owner rather than the contract that migration and every subsequent upgrade acts 
 The [Starting Anchor State](#starting-anchor-state) supplied to migration is a truthful Super Root
 of every [Member Chain](#member-chain) at the stated sequence number.
 
-Migration cannot check a Super Root against L2 state on-chain. It rejects only zero values that are,
-so a wrong but plausible anchor is installed exactly as supplied.
+Migration cannot check a Super Root against L2 state on-chain. It rejects only roots which carry a
+zero anchor hash or sequence numbers that leave no room for a new one, so a wrong but plausible
+anchor is installed exactly as supplied.
 
 #### Mitigations
 
