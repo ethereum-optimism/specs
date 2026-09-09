@@ -91,8 +91,7 @@ PermissionedDisputeGameV2, SuperPermissionedDisputeGame) that restrict participa
 ## Contract Variants
 
 The FaultDisputeGame specification covers six contract variants that share the core bisection-based dispute resolution
-mechanism but differ in access control, architectural implementation, and support for interop [Super
-Root](#super-root)s.
+mechanism but differ in access control, architectural implementation, and support for [Super Root](#super-root)s.
 
 **FaultDisputeGame**: The base permissionless implementation where any address can participate in dispute games by
 making moves and executing steps. Uses constructor parameters for immutable configuration values.
@@ -102,10 +101,9 @@ authorized proposer and [Challenger Role](#challenger-role)s. Only the proposer 
 parameters for
 immutable configuration values.
 
-**SuperFaultDisputeGame**: A permissionless variant designed for interop that validates [Super Root](#super-root) claims
-using L2
+**SuperFaultDisputeGame**: A permissionless variant that validates [Super Root](#super-root) claims using L2
 sequence numbers (timestamps) instead of L2 block numbers. Uses the [Immutable Args Pattern] and requires the L2 chain
-ID to be zero. [Super Root](#super-root)s represent cross-chain state commitments for interoperability.
+ID to be zero. [Super Root](#super-root)s optionally support cross-chain state commitments for interoperability.
 
 **SuperPermissionedDisputeGame**: Similar to PermissionedDisputeGame but extends SuperFaultDisputeGame to support super
 root claims with access control. Uses the [Immutable Args Pattern] to store proposer and challenger addresses.
@@ -170,15 +168,14 @@ values.
 
 ### Super Root
 
-A cross-chain state commitment used in interoperability scenarios that represents the aggregated state across multiple
-L2 chains. Super roots are identified by L2 sequence numbers (timestamps) rather than block numbers, enabling
-coordination of state across chains with different block production rates.
+A state commitment that represents the aggregated state of the L2 chains in the dependency set. The dependency set may
+contain a single chain. Super roots are identified by L2 sequence numbers (timestamps) rather than block numbers,
+enabling coordination of state across chains with different block production rates.
 
 ### L2 Sequence Number
 
 A timestamp-based identifier used in SuperFaultDisputeGame variants instead of L2 block numbers. Sequence numbers
-provide a chain-agnostic way to order and reference state commitments in interop contexts where multiple chains need to
-coordinate.
+provide a chain-agnostic way to order and reference state commitments where multiple chains need to coordinate.
 
 ## Assumptions
 
