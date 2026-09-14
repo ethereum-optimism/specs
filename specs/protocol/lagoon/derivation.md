@@ -87,9 +87,8 @@ post-exec transaction is the first type for which they differ. The operative rea
 whenever the transaction has no recipient, so that `tx_tos` stays exactly as long as the number of transactions
 that have one.
 
-A decoder MUST NOT reject a batch whose bit is `0` for a post-exec transaction. It consumes the next `tx_tos` entry
-as it would for any `0` bit, and discards it: a post-exec transaction has no recipient field for the address to
-occupy. As with the slots below, the bit cannot change the transaction the decoder reconstructs.
+A decoder MUST reject a batch in which the bit is `0` for a post-exec transaction. Such a batch is invalid and is
+dropped, exactly as one whose `tx_datas` element carries an unusable transaction type is.
 
 ### Unused signature and gas accounting slots
 
@@ -97,17 +96,19 @@ occupy. As with the slots below, the bit cannot change the transaction the decod
 slot in each, whether or not the corresponding field exists. A post-exec transaction has no signature, nonce or gas
 limit, so:
 
-- A batcher MUST write zero into each of these slots for a post-exec transaction, as given in the table above. This
-  makes the span batch encoding of a given sequence of L2 blocks unique.
-- A decoder MUST ignore the values in these slots for a post-exec transaction, and MUST NOT reject a batch because
-  of the values they carry. Reconstruction discards them (see below), so a batch carrying non-zero values in them
-  derives exactly the same L2 blocks as one carrying zeros. This constrains the values only: a slot that cannot be
-  decoded at all — a `uvarint` too large to represent, say — still invalidates the batch, as it does for every
-  other transaction type.
+- A batcher MUST write zero into each of these slots for a post-exec transaction, as given in the table above.
+- A decoder MUST verify that each of them is zero, and MUST reject a batch in which any of them is not. Such a
+  batch is invalid and is dropped.
 
-The asymmetry is deliberate. Requiring the encoder to zero these slots keeps the encoding canonical; requiring the
-decoder to tolerate anything keeps the drop decision independent of fields that provably cannot affect the derived
-blocks.
+Decoding is deliberately no more permissive than encoding. The values in these slots cannot reach the reconstructed
+transaction, so tolerating them would cost nothing in the short term — but it would make a span batch's encoding
+malleable: the same sequence of L2 blocks would have unboundedly many valid encodings, differing in bytes that a
+batcher chooses freely. `tx_sigs` alone reserves 64 bytes per transaction that no post-exec transaction uses. A
+strict decoder keeps the encoding canonical, denies a batcher that space as a channel for arbitrary data, and
+leaves nothing that a later upgrade would have to tighten retroactively.
+
+This strictness is available precisely because `0x7D` is new. A post-exec transaction cannot legally appear in a
+batch before Lagoon, so no rule stated here reinterprets any batch that has already been posted.
 
 ## Reconstruction
 
@@ -122,10 +123,10 @@ A decoder MUST NOT fold `tx_nonces`, `tx_gases`, `tx_tos` or `tx_sigs` into the 
 are no fields for them to occupy. The `tx_tos` cursor is not advanced, because the transaction's
 `contract_creation_bits` bit is `1`.
 
-The reconstructed bytes are therefore identical to the transaction's encoding in the block body. This is
-what makes the overlap check between a batch and an already-safe block — comparing the batch's reconstructed
-transactions against the safe block's transactions — deterministic for blocks containing a post-exec transaction,
-regardless of what a batcher wrote into the unused slots.
+The reconstructed bytes are therefore identical to the transaction's encoding in the block body. This is what makes
+the overlap check between a batch and an already-safe block — comparing the batch's reconstructed transactions
+against the safe block's transactions — well defined for blocks containing a post-exec transaction: the comparison
+turns on the `tx_datas` element alone, and every other slot is both fixed by the rules above and discarded here.
 
 ## Batch Acceptance
 
