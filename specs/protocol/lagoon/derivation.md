@@ -56,9 +56,9 @@ element, the bytes following the type byte MUST be a single RLP list.
 For every other transaction type the `tx_datas` element is a *reduced* encoding: fields the span batch format
 stores in dedicated slots (`nonce`, `gasLimit`, `to`, and the signature), along with the chain ID, which is
 recovered from the rollup config rather than stored at all, are omitted from the element, and the remaining fields
-are re-encoded as a shorter RLP list. A post-exec transaction has none of those fields, so nothing
-is omitted and nothing is re-encoded: its `tx_datas` element is byte for byte the transaction's canonical EIP-2718
-encoding as it appears in the block body.
+are re-encoded as a shorter RLP list. A post-exec transaction has none of those fields, so nothing is omitted and
+nothing is re-encoded: its `tx_datas` element is byte for byte the transaction's EIP-2718 encoding as it appears in
+the block body.
 
 ## Transposed Envelope Fields
 
