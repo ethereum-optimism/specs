@@ -422,7 +422,10 @@ where:
 - `epoch_number` and `epoch_hash` are the number and hash of the L1 block corresponding to the [sequencing
   epoch][g-sequencing-epoch] of the L2 block
 - `timestamp` is the timestamp of the L2 block
-- `transaction_list` is an RLP-encoded list of [EIP-2718] encoded transactions.
+- `transaction_list` is an RLP-encoded list of [EIP-2718] encoded transactions. Each element is one transaction's
+  EIP-2718 encoding verbatim, type byte included; this format does not interpret it. A new transaction type
+  therefore needs no change here. Whether a batch may carry one is a separate question, governed by the
+  `batch.transactions` rules in [Batch Queue](#batch-queue).
 
 [RLP format]: https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
 [EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718

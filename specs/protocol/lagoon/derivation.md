@@ -130,9 +130,15 @@ turns on the `tx_datas` element alone, and every other slot is both fixed by the
 
 ## Batch Acceptance
 
-This section specifies only how a post-exec transaction is *encoded* within a span batch. Whether a batch is
-permitted to contain one at all is a separate, batch-level question — it applies equally to singular batches, where
-no transposition takes place — and is governed by the `batch.transactions` drop rules in
+This document specifies only how a post-exec transaction is *encoded* within a span batch, because that is the only
+batch format for which the question arises. A [singular batch](../derivation.md#batch-format) needs no Lagoon
+amendment: its `transaction_list` holds each transaction's EIP-2718 encoding verbatim, so a post-exec transaction
+appears there as `0x7D ++ rlp_encoded_payload` like any other typed transaction, with nothing transposed and no
+slots to fill. Only the span batch format, which splits each transaction across per-field slots, needed the rules
+above.
+
+Whether a batch is permitted to contain a post-exec transaction at all is a separate, batch-level question, and one
+that applies to both batch formats. It is governed by the `batch.transactions` drop rules in
 [Batch Queue](../derivation.md#batch-queue). Those rules drop any transaction of a future type greater than `2`,
 with the type `4` exception added by [Isthmus](../isthmus/derivation.md#activation); they require a corresponding
 Lagoon amendment for `0x7D`.
