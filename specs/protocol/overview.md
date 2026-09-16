@@ -11,6 +11,7 @@
   - [Core L2 Smart Contracts](#core-l2-smart-contracts)
     - [Notes for Core L2 Smart Contracts](#notes-for-core-l2-smart-contracts)
   - [Smart Contract Proxies](#smart-contract-proxies)
+    - [L2 contract upgrades](#l2-contract-upgrades)
   - [L2 Node Components](#l2-node-components)
   - [Transaction/Block Propagation](#transactionblock-propagation)
 - [Key Interactions In Depth](#key-interactions-in-depth)
@@ -48,106 +49,77 @@ This document assumes you've read the [background](../background.md).
 
 ## Architecture Overview
 
+Blue nodes are upgradeable contracts, green nodes have fixed implementations, and orange nodes are actors or protocol
+transactions. Grey nodes show other contracts, addresses, or configuration. Dotted arrows indicate reads.
+
 ### Core L1 Smart Contracts
 
-Below you'll find an architecture diagram describing the core L1 smart contracts for the OP Stack.
-Smart contracts that are considered "peripheral" and not core to the operation of the OP Stack system are described separately.
+The diagrams below show the core contracts for a single ETH-gas chain with `ETHLockbox` enabled.
+Peripheral contracts are described separately.
 
 ```mermaid
-graph LR
-    subgraph "External Contracts"
-        ExternalERC20(External ERC20 Contracts)
-        ExternalERC721(External ERC721 Contracts)
+%%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
+graph TB
+    ExternalERC20(ERC20 Tokens)
+    ExternalERC721(ERC721 Tokens)
+    L1StandardBridge(<a href="./bridges.html">L1StandardBridge</a>)
+    L1ERC721Bridge(<a href="./bridges.html">L1ERC721Bridge</a>)
+    L1CrossDomainMessenger(<a href="./messengers.html">L1CrossDomainMessenger</a>)
+    OptimismPortal(<a href="./withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
+    ETHLockbox(<a href="../interop/eth-lockbox.html">ETHLockbox</a>)
+
+    ExternalERC20 <-->|mint/burn/transfer| L1StandardBridge
+    ExternalERC721 <-->|lock/unlock| L1ERC721Bridge
+    L1StandardBridge <-->|messages| L1CrossDomainMessenger
+    L1ERC721Bridge <-->|messages| L1CrossDomainMessenger
+    L1CrossDomainMessenger <-->|messages| OptimismPortal
+    OptimismPortal <-->|lock/unlock ETH| ETHLockbox
+
+    classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
+    classDef other fill:#f1f3f5,stroke:#98a2b3,color:#344054,stroke-width:1.5px;
+    class L1StandardBridge,L1ERC721Bridge,L1CrossDomainMessenger,OptimismPortal,ETHLockbox proxy;
+    class ExternalERC20,ExternalERC721 other;
+```
+
+The portal uses dispute games to verify withdrawals. Permissionless games dispute super roots at L2 timestamps;
+the portal reads the output root for its chain from the selected game.
+
+<!-- cspell:ignore preimageoracle -->
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
+graph TB
+    OptimismPortal(<a href="../fault-proof/stage-one/optimism-portal.html">OptimismPortal</a>)
+    DisputeGameFactory(<a href="../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface">DisputeGameFactory</a>)
+    subgraph Games[Dispute games]
+        SuperFaultDisputeGame(<a href="../fault-proof/stage-one/super-fault-dispute-game.html">SuperFault<br/>DisputeGame</a>)
+        SuperPermissionedDisputeGame(<a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/dispute/SuperPermissionedDisputeGame.sol">SuperPermissioned<br/>DisputeGame</a>)
     end
+    AnchorStateRegistry(<a href="../fault-proof/stage-one/anchor-state-registry.html">AnchorStateRegistry</a>)
+    DelayedWETH(<a href="../fault-proof/stage-one/bond-incentives.html#delayedweth">DelayedWETH</a>)
+    MIPS64(<a href="../fault-proof/cannon-fault-proof-vm.html">MIPS64</a>)
+    PreimageOracle(<a href="../fault-proof/stage-one/fault-dispute-game.html#preimageoracle">PreimageOracle</a>)
 
-    subgraph "L1 Smart Contracts"
-        BatchDataEOA(<a href="../glossary.html#batcher-transaction">Batch Inbox Address</a>)
-        L1StandardBridge(<a href="./bridges.html">L1StandardBridge</a>)
-        L1ERC721Bridge(<a href="./bridges.html">L1ERC721Bridge</a>)
-        L1CrossDomainMessenger(<a href="./messengers.html">L1CrossDomainMessenger</a>)
-        OptimismPortal(<a href="./withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
-        SuperchainConfig(<a href="./superchain-config.html">SuperchainConfig</a>)
-        SystemConfig(<a href="./system-config.html">SystemConfig</a>)
-        DisputeGameFactory(<a href="../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface">DisputeGameFactory</a>)
-        FaultDisputeGame(<a href="../fault-proof/stage-one/fault-dispute-game.html">FaultDisputeGame</a>)
-        AnchorStateRegistry(<a href="../fault-proof/stage-one/fault-dispute-game.html#anchor-state-registry">AnchorStateRegistry</a>)
-        DelayedWETH(<a href="../fault-proof/stage-one/bond-incentives.html#delayedweth#de">DelayedWETH</a>)
-    end
+    OptimismPortal -.->|look up games| DisputeGameFactory
+    OptimismPortal -.->|validity/finality| AnchorStateRegistry
+    OptimismPortal -.->|chain output root| Games
+    DisputeGameFactory -->|clone| Games
+    SuperFaultDisputeGame -->|bonds| DelayedWETH
+    SuperFaultDisputeGame -->|read/update anchor| AnchorStateRegistry
+    SuperPermissionedDisputeGame -.->|anchor/game type| AnchorStateRegistry
+    SuperFaultDisputeGame -->|verify step| MIPS64
+    SuperFaultDisputeGame -->|local data| PreimageOracle
+    MIPS64 -.->|preimages| PreimageOracle
 
-    subgraph "User Interactions (Permissionless)"
-        Users(Users)
-        Challengers(Challengers)
-    end
-
-    subgraph "System Interactions"
-        Guardian(Guardian)
-        Batcher(<a href="./batcher.html">Batcher</a>)
-    end
-
-    subgraph "Layer 2 Interactions"
-        L2Nodes(Layer 2 Nodes)
-    end
-
-    L2Nodes -.->|fetch transaction batches| BatchDataEOA
-    L2Nodes -.->|fetch deposit events| OptimismPortal
-
-    Batcher -->|publish transaction batches| BatchDataEOA
-
-    ExternalERC20 <-->|mint/burn/transfer tokens| L1StandardBridge
-    ExternalERC721 <-->|mint/burn/transfer tokens| L1ERC721Bridge
-
-    L1StandardBridge <-->|send/receive messages| L1CrossDomainMessenger
-    L1StandardBridge -.->|query pause state| SuperchainConfig
-
-    L1ERC721Bridge <-->|send/receive messages| L1CrossDomainMessenger
-    L1ERC721Bridge -.->|query pause state| SuperchainConfig
-
-    L1CrossDomainMessenger <-->|send/receive messages| OptimismPortal
-    L1CrossDomainMessenger -.->|query pause state| SuperchainConfig
-
-    OptimismPortal -.->|query pause state| SuperchainConfig
-    OptimismPortal -.->|query config| SystemConfig
-    OptimismPortal -.->|query state proposals| DisputeGameFactory
-
-    DisputeGameFactory -->|generate instances| FaultDisputeGame
-
-    FaultDisputeGame -->|store bonds| DelayedWETH
-    FaultDisputeGame -->|query/update anchor states| AnchorStateRegistry
-
-    Users <-->|deposit/withdraw ETH/ERC20s| L1StandardBridge
-    Users <-->|deposit/withdraw ERC721s| L1ERC721Bridge
-    Users -->|prove/execute withdrawals| OptimismPortal
-
-    Challengers -->|propose output roots| DisputeGameFactory
-    Challengers -->|verify/challenge/defend proposals| FaultDisputeGame
-
-    Guardian -->|pause/unpause| SuperchainConfig
-    Guardian -->|safety net actions| OptimismPortal
-    Guardian -->|safety net actions| DisputeGameFactory
-    Guardian -->|safety net actions| DelayedWETH
-
-    classDef extContracts stroke:#ff9,stroke-width:2px;
-    classDef l1Contracts stroke:#bbf,stroke-width:2px;
-    classDef l1EOA stroke:#bbb,stroke-width:2px;
-    classDef userInt stroke:#f9a,stroke-width:2px;
-    classDef systemUser stroke:#f9a,stroke-width:2px;
-    classDef l2Nodes stroke:#333,stroke-width:2px
-    class ExternalERC20,ExternalERC721 extContracts;
-    class L1StandardBridge,L1ERC721Bridge,L1CrossDomainMessenger,OptimismPortal,SuperchainConfig,SystemConfig,DisputeGameFactory,FaultDisputeGame,DelayedWETH,AnchorStateRegistry l1Contracts;
-    class BatchDataEOA l1EOA;
-    class Users,Challengers userInt;
-    class Batcher,Guardian systemUser;
-    class L2Nodes l2Nodes;
+    classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
+    classDef fixed fill:#e5f3ec,stroke:#3b8363,color:#173f2e,stroke-width:1.5px;
+    class OptimismPortal,DisputeGameFactory,AnchorStateRegistry,DelayedWETH proxy;
+    class SuperFaultDisputeGame,SuperPermissionedDisputeGame,MIPS64,PreimageOracle fixed;
+    style Games fill:#f8fafc,stroke:#cbd5e1,color:#334155;
 ```
 
 #### Notes for Core L1 Smart Contracts
 
-- The `Batch Inbox Address` described above (**highlighted in GREY**) is _not_ a smart contract and is instead an arbitrarily
-  selected account that is assumed to have no known private key. The convention for deriving this account's address is
-  provided on the [Configurability](./configurability.md#consensus-parameters) page.
-  - Historically, it was often derived as
-    `0xFF0000....<L2 chain ID>` where `<L2 chain ID>` is chain ID of the Layer 2 network for which the data is being posted.
-    This is why many chains, such as OP Mainnet, have a batch inbox address of this form.
 - Smart contracts that sit behind `Proxy` contracts are **highlighted in BLUE**. Refer to the
   [Smart Contract Proxies](#smart-contract-proxies) section below to understand how these proxies are designed.
   - The `L1CrossDomainMessenger` contract sits behind the [`ResolvedDelegateProxy`](https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/legacy/ResolvedDelegateProxy.sol)
@@ -156,105 +128,102 @@ graph LR
   - The `L1StandardBridge` contract sits behind the [`L1ChugSplashProxy`](https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/legacy/L1ChugSplashProxy.sol)
     contract, a legacy proxy contract type used within older versions of the OP Stack. This proxy type is used exclusively
     for the `L1StandardBridge` contract to maintain backwards compatibility.
+- Green contracts have fixed implementations. The factory creates dispute games as clones with immutable arguments;
+  `MIPS64` and `PreimageOracle` are deployed directly.
+- `SuperFaultDisputeGame` uses game type `SUPER_CANNON_KONA` (`9`). `SuperPermissionedDisputeGame` uses
+  `SUPER_PERMISSIONED` (`5`) and accepts proposals only from its configured proposer. It resolves immediately in favor of
+  the proposal, without challenges or bonds. Withdrawal finality and Guardian checks still apply.
+- Users deposit or withdraw ETH and tokens through the bridges. They can also deposit directly through `OptimismPortal`,
+  where they prove and execute withdrawals.
+- The bridges, messenger, portal, `ETHLockbox`, `AnchorStateRegistry`, and `DelayedWETH` read pause state through
+  [SystemConfig](./system-config.md). It combines the global pause state from [SuperchainConfig](./superchain-config.md)
+  with the chain-specific pause state, identified by `ETHLockbox`. The portal also reads its configuration from `SystemConfig`.
+- The Guardian pauses or unpauses `SuperchainConfig`. It can blacklist or retire games and set the respected game type
+  in `AnchorStateRegistry`. The factory owner configures game types and bonds; the `ProxyAdmin` owner can hold or recover
+  bonds in `DelayedWETH`.
+- Proposers create games through `DisputeGameFactory`; `AnchorStateRegistry` checks game registration with the factory.
+  Participants challenge or defend permissionless games and supply preimages to `PreimageOracle`.
 
 ### Core L2 Smart Contracts
 
-Here you'll find an architecture diagram describing the core OP Stack smart contracts that exist natively on the L2 chain
-itself.
+The L2 node updates L1 attributes and credits transaction fees to the fee vaults.
 
 ```mermaid
-graph LR
-    subgraph "Layer 1 (Ethereum)"
-        L1SmartContracts(L1 Smart Contracts)
-    end
-
-    subgraph "L2 Client"
-        L2Node(L2 Node)
-    end
-
-    subgraph "L2 System Contracts"
-        L1Block(<a href="./predeploys.html#l1block">L1Block</a>)
-        GasPriceOracle(<a href="./predeploys.html#gaspriceoracle">GasPriceOracle</a>)
+%%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
+graph TB
+    L2Node(L2 Node)
+    L1Block(<a href="./predeploys.html#l1block">L1Block</a>)
+    GasPriceOracle(<a href="./predeploys.html#gaspriceoracle">GasPriceOracle</a>)
+    subgraph FeeVaults[Fee vaults]
+        direction TB
         L1FeeVault(<a href="./predeploys.html#l1feevault">L1FeeVault</a>)
         BaseFeeVault(<a href="./predeploys.html#basefeevault">BaseFeeVault</a>)
         SequencerFeeVault(<a href="./predeploys.html#sequencerfeevault">SequencerFeeVault</a>)
+        OperatorFeeVault(<a href="./predeploys.html#operator-fee-vault">OperatorFeeVault</a>)
     end
 
-    subgraph "L2 Bridge Contracts"
-        L2CrossDomainMessenger(<a href="./predeploys.html#l2crossdomainmessenger">L2CrossDomainMessenger</a>)
-        L2ToL1MessagePasser(<a href="./predeploys.html#l2tol1messagepasser">L2ToL1MessagePasser</a>)
-        L2StandardBridge(<a href="./predeploys.html#l2standardbridge">L2StandardBridge</a>)
-        L2ERC721Bridge(<a href="./predeploys.html">L2ERC721Bridge</a>)
-    end
+    L2Node -->|L1 attributes| L1Block
+    L2Node -->|credit fees| FeeVaults
+    GasPriceOracle -.->|fee parameters| L1Block
 
-    subgraph "Transactions"
-        DepositTransaction(Deposit Transaction)
-        UserTransaction(User Transaction)
-    end
+    classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
+    classDef actor fill:#fff1df,stroke:#bf7b2a,color:#664515,stroke-width:1.5px;
+    class L1Block,GasPriceOracle,L1FeeVault,BaseFeeVault,SequencerFeeVault,OperatorFeeVault proxy;
+    class L2Node actor;
+    style FeeVaults fill:#f8fafc,stroke:#cbd5e1,color:#334155;
+```
 
-    subgraph "External Contracts"
-        ExternalERC20(External ERC20 Contracts)
-        ExternalERC721(External ERC721 Contracts)
-    end
+The L2 bridges mint, burn, or transfer tokens and send withdrawal messages through `L2ToL1MessagePasser`.
+Deposits can call `L2CrossDomainMessenger` to relay messages from L1. Both deposits and user transactions can also
+target other L2 contracts or addresses.
 
-    subgraph "Remaining L2 Universe"
-        OtherContracts(Any Contracts and Addresses)
-    end
-
-    L2Node -.->|derives chain from| L1SmartContracts
-    L2Node -->|updates| L1Block
-    L2Node -->|distributes fees to| L1FeeVault
-    L2Node -->|distributes fees to| BaseFeeVault
-    L2Node -->|distributes fees to| SequencerFeeVault
-    L2Node -->|derives from deposits| DepositTransaction
-    L2Node -->|derives from chain data| UserTransaction
-
-    UserTransaction -->|can trigger| OtherContracts
-    DepositTransaction -->|maybe triggers| L2CrossDomainMessenger
-    DepositTransaction -->|can trigger| OtherContracts
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
+graph TB
+    ExternalERC20(ERC20 Tokens)
+    ExternalERC721(ERC721 Tokens)
+    L2StandardBridge(<a href="./predeploys.html#l2standardbridge">L2StandardBridge</a>)
+    L2ERC721Bridge(<a href="./predeploys.html">L2ERC721Bridge</a>)
+    L2CrossDomainMessenger(<a href="./predeploys.html#l2crossdomainmessenger">L2CrossDomainMessenger</a>)
+    L2ToL1MessagePasser(<a href="./predeploys.html#l2tol1messagepasser">L2ToL1MessagePasser</a>)
 
     ExternalERC20 <-->|mint/burn/transfer| L2StandardBridge
-    ExternalERC721 <-->|mint/burn/transfer| L2ERC721Bridge
+    ExternalERC721 <-->|mint/burn| L2ERC721Bridge
+    L2StandardBridge <-->|messages| L2CrossDomainMessenger
+    L2ERC721Bridge <-->|messages| L2CrossDomainMessenger
+    L2CrossDomainMessenger -->|withdrawal messages| L2ToL1MessagePasser
 
-    L2StandardBridge <-->|sends/receives messages| L2CrossDomainMessenger
-    L2ERC721Bridge <-->|sends/receives messages| L2CrossDomainMessenger
-    GasPriceOracle -.->|queries| L1Block
-    L2CrossDomainMessenger -->|sends messages| L2ToL1MessagePasser
-
-    classDef extContracts stroke:#ff9,stroke-width:2px;
-    classDef l2Contracts stroke:#bbf,stroke-width:2px;
-    classDef transactions stroke:#fba,stroke-width:2px;
-    classDef l2Node stroke:#f9a,stroke-width:2px;
-
-    class ExternalERC20,ExternalERC721 extContracts;
-    class L2CrossDomainMessenger,L2ToL1MessagePasser,L2StandardBridge,L2ERC721Bridge l2Contracts;
-    class L1Block,L1FeeVault,BaseFeeVault,SequencerFeeVault,GasPriceOracle l2Contracts;
-    class UserTransaction,DepositTransaction transactions;
-    class L2Node l2Node;
+    classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
+    classDef other fill:#f1f3f5,stroke:#98a2b3,color:#344054,stroke-width:1.5px;
+    class L2StandardBridge,L2ERC721Bridge,L2CrossDomainMessenger,L2ToL1MessagePasser proxy;
+    class ExternalERC20,ExternalERC721 other;
 ```
 
 #### Notes for Core L2 Smart Contracts
 
-- Contracts highlighted as "L2 System Contracts" are updated or mutated automatically as part of the chain derivation
-  process. Users typically do not mutate these contracts directly, except in the case of the `FeeVault` contracts where
-  any user may trigger a withdrawal of collected fees to the pre-determined withdrawal address.
+- L1 attributes transactions update `L1Block`, and the execution engine credits transaction fees to the fee vaults.
+  `GasPriceOracle` reads fee parameters from `L1Block`.
+- Anyone can trigger a fee vault withdrawal to its configured recipient on L1 through `L2ToL1MessagePasser`, or directly
+  on L2, depending on the vault's configuration.
+- The execution engine also updates the [beacon roots contract](./exec-engine.md#ecotone-beacon-block-root) with the
+  L1 origin's parent beacon block root and the
+  [history storage contract](./isthmus/derivation.md#eip-2935-contract-deployment) with L2 block hashes.
 - Smart contracts that sit behind `Proxy` contracts are **highlighted in BLUE**. Refer to the
   [Smart Contract Proxies](#smart-contract-proxies) section below to understand how these proxies are designed.
-- User interactions for the "L2 Bridge Contracts" have been omitted from this diagram but largely follow the same user
-  interactions described in the architecture diagram for the [Core L1 Smart Contracts](#core-l1-smart-contracts).
 
 ### Smart Contract Proxies
 
 Most OP Stack smart contracts sit behind `Proxy` contracts that are managed by a `ProxyAdmin` contract.
 The `ProxyAdmin` contract is controlled by some `owner` address that can be any EOA or smart contract.
-Below you'll find a diagram that explains the behavior of the typical proxy contract.
+Calls to a proxy delegate to its current implementation. The admin can change that implementation.
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
 graph LR
     ProxyAdminOwner(Proxy Admin Owner)
     ProxyAdmin(<a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/ProxyAdmin.sol">ProxyAdmin</a>)
 
-    subgraph "Logical Smart Contract"
+    subgraph LogicalContract[Logical Smart Contract]
         Proxy(<a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/universal/Proxy.sol">Proxy</a>)
         Implementation(Implementation)
     end
@@ -263,59 +232,134 @@ graph LR
     ProxyAdmin -->|upgrades| Proxy
     Proxy -->|delegatecall| Implementation
 
-    classDef l1Contracts stroke:#bbf,stroke-width:2px;
-    classDef systemUser stroke:#f9a,stroke-width:2px;
-    class Proxy l1Contracts;
-    class ProxyAdminOwner systemUser;
+    classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
+    classDef fixed fill:#e5f3ec,stroke:#3b8363,color:#173f2e,stroke-width:1.5px;
+    classDef actor fill:#fff1df,stroke:#bf7b2a,color:#664515,stroke-width:1.5px;
+    class Proxy proxy;
+    class ProxyAdmin,Implementation fixed;
+    style LogicalContract fill:#f8fafc,stroke:#cbd5e1,color:#334155;
+    class ProxyAdminOwner actor;
 ```
+
+On L1, the `ProxyAdmin` owner uses [OP Contracts Manager](../experimental/op-contracts-manager.md) to coordinate upgrades.
+The owner's Safe delegatecalls the manager, so its calls to `ProxyAdmin` execute with the owner's authority.
+
+#### L2 contract upgrades
+
+[Network upgrade transactions](./l2-upgrades-1-execution.md#bundle-format) run at fork activation. They deploy the new
+implementations and a version of `L2ContractsManager`, then call `L2ProxyAdmin.upgradePredeploys` from `DEPOSITOR_ACCOUNT`.
+`L2ProxyAdmin` delegatecalls the manager, which upgrades the predeploy proxies atomically and preserves their existing
+chain configuration. Only `DEPOSITOR_ACCOUNT` can call `upgradePredeploys`; the `L2ProxyAdmin` owner can still use its
+ordinary administrative upgrade methods.
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
+graph TB
+    NetworkUpgrade(Network Upgrade<br/>Transactions)
+    ConditionalDeployer(<a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/ConditionalDeployer.sol">ConditionalDeployer</a>)
+    DeterministicDeploymentProxy(Deterministic<br/>DeploymentProxy)
+    Implementations(Predeploy Implementations)
+    L2ContractsManager(<a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L2ContractsManager.sol">L2ContractsManager</a>)
+    L2ProxyAdmin(<a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L2ProxyAdmin.sol">L2ProxyAdmin</a>)
+    ProxyAdminOwner(ProxyAdmin Owner)
+    PredeployProxies(Predeploy Proxies)
+    Configuration(Existing Predeploy<br/>Configuration)
+    L1Block(L1Block)
+    L2DevFeatureFlags(<a href="https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/L2/L2DevFeatureFlags.sol">L2DevFeatureFlags</a>)
+
+    NetworkUpgrade -->|request deployments| ConditionalDeployer
+    ConditionalDeployer -->|call if target absent| DeterministicDeploymentProxy
+    DeterministicDeploymentProxy -->|CREATE2| Implementations
+    DeterministicDeploymentProxy -->|CREATE2| L2ContractsManager
+    NetworkUpgrade -->|upgradePredeploys| L2ProxyAdmin
+    ProxyAdminOwner -->|ordinary admin methods| L2ProxyAdmin
+    L2ProxyAdmin -->|delegatecall upgrade| L2ContractsManager
+    L2ProxyAdmin -->|upgrade and initialize| PredeployProxies
+    PredeployProxies -->|delegatecall| Implementations
+    L2ContractsManager -.->|read config| Configuration
+    L2ContractsManager -.->|read feature flags| L1Block
+    L2ContractsManager -.->|read development flags| L2DevFeatureFlags
+
+    classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
+    classDef fixed fill:#e5f3ec,stroke:#3b8363,color:#173f2e,stroke-width:1.5px;
+    classDef actor fill:#fff1df,stroke:#bf7b2a,color:#664515,stroke-width:1.5px;
+    classDef other fill:#f1f3f5,stroke:#98a2b3,color:#344054,stroke-width:1.5px;
+    class ConditionalDeployer,L2ProxyAdmin,PredeployProxies,L1Block,L2DevFeatureFlags proxy;
+    class DeterministicDeploymentProxy,Implementations,L2ContractsManager fixed;
+    class NetworkUpgrade,ProxyAdminOwner actor;
+    class Configuration other;
+```
+
+`ConditionalDeployer`, `L2ProxyAdmin`, and `L2DevFeatureFlags` are proxied predeploys. Green contracts have fixed
+implementations; `L2ContractsManager` is deployed separately for each upgrade. Its upgrade calls execute in
+`L2ProxyAdmin`'s context. See the
+[L2 upgrade contracts specification](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/specs/l2-upgrades-2-contracts.md)
+for the deployment and configuration rules.
 
 ### L2 Node Components
 
-Below you'll find a diagram illustrating the basic interactions between the components that make up an L2 node as well
-as demonstrations of how different actors use these components to fulfill their roles.
+The rollup node derives blocks from L1 data and drives the execution engine. The batcher, proposer, and challenger
+use these clients to interact with the L1 contracts.
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
 graph LR
-    subgraph "L2 Node"
+    subgraph NodeComponents[L2 Node]
         RollupNode(<a href="./rollup-node.html">Rollup Node</a>)
         ExecutionEngine(<a href="./exec-engine.html">Execution Engine</a>)
     end
 
-    subgraph "System Interactions"
+    subgraph SystemActors[System actors]
         BatchSubmitter(<a href="./batcher.html">Batch Submitter</a>)
-        OutputSubmitter(Output Submitter)
+        OutputSubmitter(Proposer)
         Challenger(Challenger)
     end
 
-    subgraph "L1 Smart Contracts"
-        BatchDataEOA(<a href="../glossary.html#batcher-transaction">Batch Inbox Address</a>)
+    BatchDataEOA(<a href="../glossary.html#batcher-transaction">Batch Inbox Address</a>)
+
+    subgraph L1Contracts[L1 contracts]
         OptimismPortal(<a href="./withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
         DisputeGameFactory(<a href="../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface">DisputeGameFactory</a>)
-        FaultDisputeGame(<a href="../fault-proof/stage-one/fault-dispute-game.html">FaultDisputeGame</a>)
+        SuperFaultDisputeGame(<a href="../fault-proof/stage-one/super-fault-dispute-game.html">SuperFaultDisputeGame</a>)
     end
 
-    BatchSubmitter -.->|fetch transaction batch info| RollupNode
-    BatchSubmitter -.->|fetch transaction batch info| ExecutionEngine
-    BatchSubmitter -->|send transaction batches| BatchDataEOA
+    BatchSubmitter -.->|batch data| RollupNode
+    BatchSubmitter -.->|batch data| ExecutionEngine
+    BatchSubmitter -->|publish batches| BatchDataEOA
 
-    RollupNode -.->|fetch transaction batches| BatchDataEOA
-    RollupNode -.->|fetch deposit transactions| OptimismPortal
+    RollupNode -.->|batches| BatchDataEOA
+    RollupNode -.->|deposits| OptimismPortal
     RollupNode -->|drives| ExecutionEngine
 
-    OutputSubmitter -.->|fetch outputs| RollupNode
-    OutputSubmitter -->|send output proposals| DisputeGameFactory
+    OutputSubmitter -.->|fetch super roots| RollupNode
+    OutputSubmitter -->|propose super roots| DisputeGameFactory
 
     Challenger -.->|fetch dispute games| DisputeGameFactory
-    Challenger -->|verify/challenge/defend games| FaultDisputeGame
+    Challenger -.->|fetch super roots| RollupNode
+    Challenger -->|challenge/defend| SuperFaultDisputeGame
 
-    classDef l2Components stroke:#333,stroke-width:2px;
-    classDef systemUser stroke:#f9a,stroke-width:2px;
-    classDef l1Contracts stroke:#bbf,stroke-width:2px;
-
-    class RollupNode,ExecutionEngine l2Components;
-    class BatchSubmitter,OutputSubmitter,Challenger systemUser;
-    class BatchDataEOA,OptimismPortal,DisputeGameFactory,FaultDisputeGame l1Contracts;
+    classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
+    classDef fixed fill:#e5f3ec,stroke:#3b8363,color:#173f2e,stroke-width:1.5px;
+    classDef actor fill:#fff1df,stroke:#bf7b2a,color:#664515,stroke-width:1.5px;
+    classDef other fill:#f1f3f5,stroke:#98a2b3,color:#344054,stroke-width:1.5px;
+    class RollupNode,ExecutionEngine actor;
+    class BatchSubmitter,OutputSubmitter,Challenger actor;
+    class OptimismPortal,DisputeGameFactory proxy;
+    class BatchDataEOA other;
+    class SuperFaultDisputeGame fixed;
+    style NodeComponents fill:#f8fafc,stroke:#cbd5e1,color:#334155;
+    style SystemActors fill:#f8fafc,stroke:#cbd5e1,color:#334155;
+    style L1Contracts fill:#f8fafc,stroke:#cbd5e1,color:#334155;
 ```
+
+- The `Batch Inbox Address` shown above is _not_ a smart contract and is instead an arbitrarily
+  selected account that is assumed to have no known private key. The convention for deriving this account's address is
+  provided on the [Configurability](./configurability.md#consensus-parameters) page.
+  - Historically, it was often derived as
+    `0xFF0000....<L2 chain ID>` where `<L2 chain ID>` is chain ID of the Layer 2 network for which the data is being posted.
+    This is why many chains, such as OP Mainnet, have a batch inbox address of this form.
+
+The rollup node also reads configuration updates from `SystemConfig` on L1.
 
 ### Transaction/Block Propagation
 
@@ -341,7 +385,7 @@ The below diagram illustrates how the sequencer and verifiers fit together:
 
 - [Deposits](deposits.md)
 
-Optimism supports two types of deposits: user deposits, and L1 attributes deposits. To perform a user deposit, users
+Routine deposits include user deposits and L1 attributes deposits. To perform a user deposit, users
 call the `depositTransaction` method on the `OptimismPortal` contract. This in turn emits `TransactionDeposited` events,
 which the rollup node reads during block derivation.
 
@@ -349,7 +393,9 @@ L1 attributes deposits are used to register L1 block attributes (number, timesta
 Attributes Predeploy. They cannot be initiated by users, and are instead added to L2 blocks automatically by the rollup
 node.
 
-Both deposit types are represented by a single custom EIP-2718 transaction type on L2.
+These deposits use a custom EIP-2718 transaction type on L2.
+[Network upgrade transactions](./l2-upgrades-1-execution.md#network-upgrade-transaction-nut) also use this type at fork
+activation to deploy and upgrade L2 contracts.
 
 ### Block Derivation
 
