@@ -170,4 +170,9 @@ Whether a batch is permitted to contain a post-exec transaction at all is a sepa
 that applies to both batch formats. It is governed by the `batch.transactions` drop rules in
 [Batch Queue](../derivation.md#batch-queue).
 
-Singular batches with transactions of type `0x7D` must only be accepted if Lagoon is active at the timestamp of the batch. If a singular batch contains a transaction of type 4 before Isthmus is active, this batch must be dropped. This check must happen at the level of individual batches that are derived from span batches, not to span batches as a whole. In particular, it is allowed for a span batch to span the Lagoon activation timestamp and contain an `0x7D` transaction in singular batches that have a timestamp at or after the Lagoon activation time, even if the timestamp of the span batch itself is before the Lagoon activation time.
+Singular batches with transactions of type `0x7D` must only be accepted if Lagoon is active at the timestamp of the
+batch. If a singular batch contains a transaction of type 4 before Isthmus is active, this batch must be dropped. This
+check must happen at the level of individual batches that are derived from span batches, not to span batches as a
+whole. In particular, it is allowed for a span batch to span the Lagoon activation timestamp and contain an `0x7D`
+transaction in singular batches that have a timestamp at or after the Lagoon activation time, even if the timestamp of
+the span batch itself is before the Lagoon activation time.
