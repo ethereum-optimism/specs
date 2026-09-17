@@ -51,6 +51,16 @@ violation is caught where the rules are stated, when the derived block is valida
 deposit-only one and the remaining span batch and its channel are dropped. Encoders are likewise not required to
 check these rules: a batcher only encodes blocks that have already been accepted.
 
+A decoder MUST NOT reject a span batch on account of these rules, and that prohibition carries as much weight as
+the rules themselves. The two paths do not converge. A block-validity failure produces a deposit-only block at that
+height and then discards the rest of the span batch and its channel; a decode-time rejection produces no block at
+that height at all, leaving it to be filled by a later batch. From the same L1 data they derive different chains,
+so a decoder that checked these rules early would diverge from one that left them alone.
+
+This is the line the [slot rules below](#unused-signature-and-gas-accounting-slots) sit on the other side of. A
+value that cannot reach the derived block is checked by nothing downstream, so the decoder MUST check it; a
+property of the block itself is already checked downstream, so the decoder MUST NOT.
+
 ## Transaction Data
 
 This corresponds with a new encoding of the `tx_datas` list as specified in
