@@ -42,6 +42,15 @@ block's transaction list, so it is counted in that block's `block_tx_counts` ent
 [the final transaction of its block](./post-exec.md#block-level-structural-rules), it occupies the last index of
 that block's slice of the span.
 
+That position is an assumption this encoding inherits, not one it enforces. The span batch format transposes and
+reconstructs a transaction list and has no notion of block validity, so it can faithfully encode a block that
+violates the [block-level structural rules](./post-exec.md#block-level-structural-rules) — one carrying two `0x7D`
+transactions, say, or one where the `0x7D` transaction is not last. Such a batch is well formed *as a batch*; the
+violation is caught where the rules are stated, when the derived block is validated, and under
+[Steady Block Derivation](../holocene/derivation.md#engine-queue) the invalid payload is then replaced by a
+deposit-only one and the remaining span batch and its channel are dropped. Encoders are likewise not required to
+check these rules: a batcher only encodes blocks that have already been accepted.
+
 ## Transaction Data
 
 This corresponds with a new encoding of the `tx_datas` list as specified in
