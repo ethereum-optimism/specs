@@ -1,0 +1,371 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Derivation - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/lagoon/derivation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="lagoon-l2-chain-derivation-changes"><a class="header" href="#lagoon-l2-chain-derivation-changes">Lagoon L2 Chain Derivation Changes</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#span-batch-updates">Span Batch Updates</a>
+<ul>
+<li><a href="#transaction-data">Transaction Data</a></li>
+<li><a href="#transposed-envelope-fields">Transposed Envelope Fields</a>
+<ul>
+<li><a href="#contract_creation_bits"><code>contract_creation_bits</code></a></li>
+<li><a href="#unused-signature-and-gas-accounting-slots">Unused signature and gas accounting slots</a></li>
+</ul>
+</li>
+<li><a href="#reconstruction">Reconstruction</a></li>
+<li><a href="#batch-acceptance">Batch Acceptance</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- All glossary references in this file. -->
+<h1 id="span-batch-updates"><a class="header" href="#span-batch-updates">Span Batch Updates</a></h1>
+<p><a href="../delta/span-batches.html">Span batches</a> encode a span of consecutive L2 blocks for submission to the data
+availability layer.</p>
+<p>The <a href="./overview.html">Lagoon network upgrade</a> introduces the <a href="./post-exec.html">post-execution transaction</a>, an
+[EIP-2718] typed transaction with type byte <code>0x7D</code>. Unlike a <a href="../../glossary.html#deposited-transaction">deposited transaction</a>, which is
+derived from L1 and is never present in batch data, a post-exec transaction is produced by the
+<a href="../../glossary.html#sequencer">sequencer</a> and travels to verifiers inside the L2 block body — through the L1 batch as well as the
+unsafe p2p payload. A span batch covering a block that contains a post-exec transaction therefore has to transpose
+that transaction into the span batch <code>txs</code> structure like any other.</p>
+<p>A post-exec transaction is unlike every previously batched type: it carries only an opaque
+<a href="../../glossary.html#post-exec-payload">post-exec payload</a>, with no nonce, gas limit, recipient or signature. Most of the slots the
+span batch format reserves per transaction have no natural value for it. This section specifies all of them.</p>
+<p>Nothing outside the <code>txs</code> structure changes. In particular, a post-exec transaction is an ordinary member of its
+block's transaction list, so it is counted in that block's <code>block_tx_counts</code> entry and in the
+<code>MAX_SPAN_BATCH_ELEMENT_COUNT</code> total, exactly like a user transaction. Because a post-exec transaction is
+<a href="./post-exec.html#block-level-structural-rules">the final transaction of its block</a>, it occupies the last index of
+that block's slice of the span.</p>
+<p>The span batch format transposes and reconstructs a transaction list and has no notion of block validity,
+so it can faithfully encode a block that
+violates the <a href="./post-exec.html#block-level-structural-rules">block-level structural rules</a> — one carrying two <code>0x7D</code>
+transactions, say, or one where the <code>0x7D</code> transaction is not last. Such a batch is well formed <em>as a batch</em>; the
+violation is caught where the rules are stated, when the derived block is validated, and under
+<a href="../holocene/derivation.html#engine-queue">Steady Block Derivation</a> the invalid payload is then replaced by a
+deposit-only one and the remaining span batch and its channel are dropped.</p>
+<p>A decoder MUST NOT reject a span batch on account of these rules, and that prohibition carries as much weight as
+the rules themselves. The two paths do not converge. A block-validity failure produces a deposit-only block at that
+height and then discards the rest of the span batch and its channel; a decode-time rejection produces no block at
+that height at all, leaving it to be filled by a later batch. From the same L1 data they derive different chains,
+so a decoder that checked these rules early would diverge from one that left them alone.</p>
+<p>This is the line the <a href="#unused-signature-and-gas-accounting-slots">slot rules below</a> sit on the other side of. A
+value that cannot reach the derived block is checked by nothing downstream, so the decoder MUST check it; a
+property of the block itself is already checked downstream, so the decoder MUST NOT.</p>
+<h2 id="transaction-data"><a class="header" href="#transaction-data">Transaction Data</a></h2>
+<p>This corresponds with a new encoding of the <code>tx_datas</code> list as specified in
+<a href="../delta/span-batches.html#span-batch-format">the Delta span batch spec</a>, adding a new transaction type:</p>
+<p>Transaction type <code>0x7D</code> (<a href="./post-exec.html">post-exec</a>): <code>0x7D ++ rlp_encoded_payload</code></p>
+<p>where <code>rlp_encoded_payload</code> is the RLP encoding of the <a href="../../glossary.html#post-exec-payload">post-exec payload</a> as a list, exactly
+as defined by the transaction's <a href="./post-exec.html#encoding">EIP-2718 encoding</a>. As for every other <code>tx_datas</code>
+element, the bytes following the type byte MUST be a single RLP list.</p>
+<p>A decoder MUST NOT inspect the payload's
+<code>version</code> byte or validate it against a <a href="./post-exec.html#defined-schema-versions">schema</a> while decoding a batch:
+below the outer RLP list the element is opaque bytes, reproduced verbatim into the reconstructed transaction.
+Payload validity is a <a href="./post-exec.html#block-level-structural-rules">block-level</a> concern and is settled when the
+derived block is validated.</p>
+<p>For every other transaction type the <code>tx_datas</code> element is a <em>reduced</em> encoding: fields the span batch format
+stores in dedicated slots (<code>nonce</code>, <code>gasLimit</code>, <code>to</code>, and the signature), along with the chain ID, which is
+recovered from the rollup config rather than stored at all, are omitted from the element, and the remaining fields
+are re-encoded as a shorter RLP list. A post-exec transaction has none of those fields, so nothing is omitted and
+nothing is re-encoded: its <code>tx_datas</code> element is byte for byte the transaction's EIP-2718 encoding as it appears in
+the block body.</p>
+<h2 id="transposed-envelope-fields"><a class="header" href="#transposed-envelope-fields">Transposed Envelope Fields</a></h2>
+<p>A post-exec transaction has no envelope fields to transpose. Its slots in the span batch <code>txs</code> structure take the
+following values:</p>
+<div class="table-wrapper"><table><thead><tr><th>Slot</th><th>Value for a <code>0x7D</code> transaction</th></tr></thead><tbody>
+<tr><td><code>contract_creation_bits</code></td><td><code>1</code></td></tr>
+<tr><td><code>tx_tos</code></td><td>no entry — the transaction consumes none</td></tr>
+<tr><td><code>y_parity_bits</code></td><td><code>0</code></td></tr>
+<tr><td><code>tx_sigs</code></td><td><code>r = 0</code>, <code>s = 0</code></td></tr>
+<tr><td><code>tx_nonces</code></td><td><code>0</code></td></tr>
+<tr><td><code>tx_gases</code></td><td><code>0</code></td></tr>
+<tr><td><code>protected_bits</code></td><td>no entry — the bitlist covers legacy transactions only</td></tr>
+</tbody></table>
+</div>
+<h3 id="contract_creation_bits"><a class="header" href="#contract_creation_bits"><code>contract_creation_bits</code></a></h3>
+<p>The bit for a post-exec transaction MUST be <code>1</code>.</p>
+<p>A post-exec transaction is not a contract creation, so this deserves a word. What the bit governs is whether the
+transaction consumes an entry from <code>tx_tos</code>: a <code>0</code> bit consumes the next address, a <code>1</code> bit consumes none. For
+every transaction type defined before Lagoon, "is a contract creation" and "has no <code>to</code> field" are the same
+condition, which is why the <a href="../delta/span-batches.html#span-batch-format">Delta definition</a> states the former. A
+post-exec transaction is the first type for which they differ. The operative reading is the latter: the bit is <code>1</code>
+whenever the transaction has no recipient, so that <code>tx_tos</code> stays exactly as long as the number of transactions
+that have one.</p>
+<p>A decoder MUST reject a batch in which the bit is <code>0</code> for a post-exec transaction. Such a batch is invalid and is
+dropped, exactly as one whose <code>tx_datas</code> element carries an unusable transaction type is.</p>
+<h3 id="unused-signature-and-gas-accounting-slots"><a class="header" href="#unused-signature-and-gas-accounting-slots">Unused signature and gas accounting slots</a></h3>
+<p><code>y_parity_bits</code>, <code>tx_sigs</code>, <code>tx_nonces</code> and <code>tx_gases</code> are positional: every transaction in the span occupies one
+slot in each, whether or not the corresponding field exists. A post-exec transaction has no signature, nonce or gas
+limit, so:</p>
+<ul>
+<li>A batcher MUST write zero into each of these slots for a post-exec transaction, as given in the table above.</li>
+<li>A decoder MUST verify that each of them is zero, and MUST reject the span batch if any of them is not.</li>
+</ul>
+<p>The rejection is at span batch granularity: these slots are positional across the whole span, so a violation
+invalidates the span batch rather than the single block whose transaction carries it. How far that invalidity
+then propagates — whether the remaining channel is discarded with it — is a property of malformed span batches in
+general, not something particular to post-exec transactions, and is not settled here.</p>
+<p>Decoding is deliberately no more permissive than encoding. The values in these slots cannot reach the reconstructed
+transaction, so tolerating them would cost nothing in the short term — but it would make a span batch's encoding
+malleable: the same sequence of L2 blocks would have unboundedly many valid encodings, differing in bytes that a
+batcher chooses freely. <code>tx_sigs</code> alone reserves 64 bytes per transaction that no post-exec transaction uses. A
+strict decoder keeps the encoding canonical, denies a batcher that space as a channel for arbitrary data, and
+leaves nothing that a later upgrade would have to tighten retroactively.</p>
+<p>This strictness is available precisely because <code>0x7D</code> is new. A block before the Lagoon activation timestamp
+<a href="./post-exec.html#overview">MUST NOT contain a <code>0x7D</code> transaction</a>, so no batch already posted carries one, and no
+rule stated here reinterprets any of them.</p>
+<h2 id="reconstruction"><a class="header" href="#reconstruction">Reconstruction</a></h2>
+<p>When a span batch is decoded, the full transaction reconstructed for a post-exec element is its <code>tx_datas</code> element
+verbatim:</p>
+<pre><code class="language-text">0x7D ++ rlp_encoded_payload
+</code></pre>
+<p>A decoder MUST NOT fold <code>tx_nonces</code>, <code>tx_gases</code>, <code>tx_tos</code> or <code>tx_sigs</code> into the reconstructed transaction; there
+are no fields for them to occupy. The <code>tx_tos</code> cursor is not advanced, because the transaction's
+<code>contract_creation_bits</code> bit is <code>1</code>.</p>
+<p>The reconstructed bytes are therefore identical to the transaction's encoding in the block body. This is what makes
+the overlap check between a batch and an already-safe block — comparing the batch's reconstructed transactions
+against the safe block's transactions — well defined for blocks containing a post-exec transaction: the comparison
+turns on the <code>tx_datas</code> element alone, and every other slot is both fixed by the rules above and discarded here.</p>
+<h2 id="batch-acceptance"><a class="header" href="#batch-acceptance">Batch Acceptance</a></h2>
+<p>This document specifies only how a post-exec transaction is <em>encoded</em> within a span batch, because that is the only
+batch format for which the question arises. A <a href="../derivation.html#batch-format">singular batch</a> needs no Lagoon
+amendment: its <code>transaction_list</code> holds each transaction's EIP-2718 encoding verbatim, so a post-exec transaction
+appears there as <code>0x7D ++ rlp_encoded_payload</code> like any other typed transaction, with nothing transposed and no
+slots to fill. Only the span batch format, which splits each transaction across per-field slots, needed the rules
+above.</p>
+<p>Whether a batch is permitted to contain a post-exec transaction at all is a separate, batch-level question, and one
+that applies to both batch formats. It is governed by the <code>batch.transactions</code> drop rules in
+<a href="../derivation.html#batch-queue">Batch Queue</a>.</p>
+<p>Singular batches with transactions of type <code>0x7D</code> must only be accepted if Lagoon is active at the timestamp of the
+batch. If a singular batch contains a transaction of type 4 before Isthmus is active, this batch must be dropped. This
+check must happen at the level of individual batches that are derived from span batches, not to span batches as a
+whole. In particular, it is allowed for a span batch to span the Lagoon activation timestamp and contain an <code>0x7D</code>
+transaction in singular batches that have a timestamp at or after the Lagoon activation time, even if the timestamp of
+the span batch itself is before the Lagoon activation time.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/lagoon/sdm.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../interop/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/lagoon/sdm.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../interop/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

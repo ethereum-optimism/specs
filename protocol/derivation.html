@@ -523,7 +523,10 @@ containing items <code>x</code>, <code>y</code> and <code>z</code></li>
 <li><code>epoch_number</code> and <code>epoch_hash</code> are the number and hash of the L1 block corresponding to the <a href="../glossary.html#sequencing-epoch">sequencing
 epoch</a> of the L2 block</li>
 <li><code>timestamp</code> is the timestamp of the L2 block</li>
-<li><code>transaction_list</code> is an RLP-encoded list of <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> encoded transactions.</li>
+<li><code>transaction_list</code> is an RLP-encoded list of <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> encoded transactions. Each element is one transaction's
+EIP-2718 encoding verbatim, type byte included; this format does not interpret it. A new transaction type
+therefore needs no change here. Whether a batch may carry one is a separate question, governed by the
+<code>batch.transactions</code> rules in <a href="#batch-queue">Batch Queue</a>.</li>
 </ul>
 <p>The Delta upgrade introduced an additional batch type, <a href="./delta/span-batches.html">span batches</a>.</p>
 <p>Unknown versions make the batch invalid (it must be ignored by the rollup node), as do malformed contents.</p>
@@ -732,7 +735,8 @@ that is invalid or derived by other means exclusively:
 <li>any <a href="../glossary.html#deposited-transaction-type">deposited transactions</a> (identified by the transaction type prefix byte)</li>
 <li>any transaction of a future type &gt; 2 (note that
 <a href="isthmus/derivation.html#activation">Isthmus adds support</a>
-for <code>SetCode</code> transactions of type 4)</li>
+for <code>SetCode</code> transactions of type 4
+and <a href="./lagoon/overview.html">Lagoon</a> adds <a href="./lagoon/post-exec.html"><code>PostExec</code></a> transactions of type <code>0x7d</code>)</li>
 </ul>
 </li>
 </ul>

@@ -351,6 +351,11 @@ layer alongside the user transactions and any deposited transactions.</p>
 batcher transactions. The future-tx-type decoding range described in
 <a href="../derivation.html#on-future-proof-transaction-log-derivation">derivation.md</a> governs L1 receipts only and is
 unchanged.</p>
+<p>Because a post-exec transaction is carried in the L2 block body, a <a href="../delta/span-batches.html">span batch</a> covering
+that block must transpose it into the span batch <code>txs</code> structure. A post-exec transaction has no nonce, gas limit,
+recipient or signature, so most of the per-transaction slots that structure reserves have no natural value for it.
+The values they take, and the reconstruction rules that follow, are specified in
+<a href="./derivation.html#span-batch-updates">Span Batch Updates</a>.</p>
 <h2 id="rationale"><a class="header" href="#rationale">Rationale</a></h2>
 <p><strong>Why a versioned payload.</strong> A <code>version</code> byte at the head of the payload lets the schema extend or replace its
 trailing fields without re-spending an EIP-2718 type byte.</p>
