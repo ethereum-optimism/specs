@@ -62,6 +62,12 @@ where `rlp_encoded_payload` is the RLP encoding of the [post-exec payload][g-pos
 as defined by the transaction's [EIP-2718 encoding](./post-exec.md#encoding). As for every other `tx_datas`
 element, the bytes following the type byte MUST be a single RLP list.
 
+That framing check is where batch decoding's interest in the payload ends. A decoder MUST NOT inspect the payload's
+`version` byte or validate it against a [schema](./post-exec.md#defined-schema-versions) while decoding a batch:
+below the outer RLP list the element is opaque bytes, reproduced verbatim into the reconstructed transaction.
+Payload validity is a [block-level](./post-exec.md#block-level-structural-rules) concern and is settled when the
+derived block is validated.
+
 For every other transaction type the `tx_datas` element is a *reduced* encoding: fields the span batch format
 stores in dedicated slots (`nonce`, `gasLimit`, `to`, and the signature), along with the chain ID, which is
 recovered from the rollup config rather than stored at all, are omitted from the element, and the remaining fields
@@ -106,8 +112,12 @@ slot in each, whether or not the corresponding field exists. A post-exec transac
 limit, so:
 
 - A batcher MUST write zero into each of these slots for a post-exec transaction, as given in the table above.
-- A decoder MUST verify that each of them is zero, and MUST reject a batch in which any of them is not. Such a
-  batch is invalid and is dropped.
+- A decoder MUST verify that each of them is zero, and MUST reject the span batch if any of them is not.
+
+The rejection is at span batch granularity: these slots are positional across the whole span, so a violation
+invalidates the span batch rather than the single block whose transaction carries it. How far that invalidity
+then propagates — whether the remaining channel is discarded with it — is a property of malformed span batches in
+general, not something particular to post-exec transactions, and is not settled here.
 
 Decoding is deliberately no more permissive than encoding. The values in these slots cannot reach the reconstructed
 transaction, so tolerating them would cost nothing in the short term — but it would make a span batch's encoding
@@ -150,6 +160,13 @@ Whether a batch is permitted to contain a post-exec transaction at all is a sepa
 that applies to both batch formats. It is governed by the `batch.transactions` drop rules in
 [Batch Queue](../derivation.md#batch-queue). Those rules drop any transaction of a future type greater than `2`,
 with the type `4` exception added by [Isthmus](../isthmus/derivation.md#activation); they require a corresponding
-Lagoon amendment for `0x7D`.
+Lagoon amendment for `0x7D`. Until that amendment lands, the Batch Queue rules and this document disagree: the
+former forbids the transaction this one gives an encoding for.
+
+That amendment also owes an activation granularity, as [Isthmus](../isthmus/derivation.md#activation) states for
+type `4`. Both implementations already check Lagoon activation against the timestamp of each individual block
+derived from the span, not against the span batch as a whole, so a span batch may legally straddle the Lagoon
+activation and carry post-exec transactions only in the blocks at or after it. That rule qualifies the acceptance
+rule and belongs with it rather than here.
 
 [EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718
