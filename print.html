@@ -12592,7 +12592,8 @@ that is invalid or derived by other means exclusively:
 <li>any <a href="protocol/delta/../../glossary.html#deposited-transaction-type">deposited transactions</a> (identified by the transaction type prefix byte in <code>tx_data</code>)</li>
 <li>any transaction of a future type &gt; 2 (note that
 <a href="protocol/delta/../isthmus/derivation.html#activation">Isthmus adds support</a>
-for <code>SetCode</code> transactions of type 4)</li>
+for <code>SetCode</code> transactions of type 4
+and <a href="protocol/delta/../lagoon/overview.html">Lagoon</a> adds <a href="protocol/delta/../lagoon/post-exec.html"><code>PostExec</code></a> transactions of type <code>0x7d</code>)</li>
 </ul>
 </li>
 </ul>
@@ -16067,8 +16068,8 @@ above.</p>
 that applies to both batch formats. It is governed by the <code>batch.transactions</code> drop rules in
 <a href="protocol/lagoon/../derivation.html#batch-queue">Batch Queue</a>.</p>
 <p>Singular batches with transactions of type <code>0x7D</code> must only be accepted if Lagoon is active at the timestamp of the
-batch. If a singular batch contains a transaction of type 4 before Isthmus is active, this batch must be dropped. This
-check must happen at the level of individual batches that are derived from span batches, not to span batches as a
+batch. If a singular batch contains a transaction of type <code>0x7D</code> before Lagoon is active, this batch must be dropped.
+This check must happen at the level of individual batches that are derived from span batches, not to span batches as a
 whole. In particular, it is allowed for a span batch to span the Lagoon activation timestamp and contain an <code>0x7D</code>
 transaction in singular batches that have a timestamp at or after the Lagoon activation time, even if the timestamp of
 the span batch itself is before the Lagoon activation time.</p>
