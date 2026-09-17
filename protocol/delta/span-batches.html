@@ -285,10 +285,14 @@ The hash is truncated to 20 bytes for efficiency, i.e. <code>span_end.l1_origin.
 <li><code>txs</code>: L2 transactions which is reorganized and encoded as below.</li>
 </ul>
 </li>
-<li><code>txs = contract_creation_bits ++ y_parity_bits ++ tx_sigs ++ tx_tos ++ tx_datas ++ tx_nonces ++ tx_gases ++ protected_bits</code>
+<li><code>txs = zero_to_bits ++ y_parity_bits ++ tx_sigs ++ tx_tos ++ tx_datas ++ tx_nonces ++ tx_gases ++ protected_bits</code>
 <ul>
-<li><code>contract_creation_bits</code>: standard bitlist of <code>sum(block_tx_counts)</code> bits:
-1 bit per L2 transactions, indicating if transaction is a contract creation transaction.</li>
+<li><code>zero_to_bits</code>: standard bitlist of <code>sum(block_tx_counts)</code> bits:
+1 bit per L2 transactions, indicating that the transaction has no <code>to</code> field and therefore
+consumes no entry from <code>tx_tos</code>. For transaction types that have a <code>to</code> field, a set bit is
+exactly the contract creation case.
+This field was previously named <code>contract_creation_bits</code>. Only the name changed; the encoding
+and its meaning are unchanged.</li>
 <li><code>y_parity_bits</code>: standard bitlist of <code>sum(block_tx_counts)</code> bits:
 1 bit per L2 transactions, indicating the y parity value when recovering transaction sender address.</li>
 <li><code>tx_sigs</code>: concatenated list of transaction signatures
@@ -395,7 +399,7 @@ excluding deposit tx is higher.
 Deposit transactions are excluded in batches and are never written at L1 so excluded while analyzing.</p>
 <h3 id="adjust-txs-data-layout-for-better-compression"><a class="header" href="#adjust-txs-data-layout-for-better-compression">Adjust <code>txs</code> Data Layout for Better Compression</a></h3>
 <p>There are (8 choose 2) * 6! = 20160 permutations of ordering fields of <code>txs</code>.  It is not 8!
-because <code>contract_creation_bits</code> must be first decoded in order to decode <code>tx_tos</code>.  We
+because <code>zero_to_bits</code> must be first decoded in order to decode <code>tx_tos</code>.  We
 experimented with different data layouts and found that segregating random data (<code>tx_sigs</code>,
 <code>tx_tos</code>, <code>tx_datas</code>) from the rest most improved the zlib compression ratio.</p>
 <h3 id="fee_recipients-encoding-scheme"><a class="header" href="#fee_recipients-encoding-scheme"><code>fee_recipients</code> Encoding Scheme</a></h3>
@@ -444,7 +448,7 @@ we do not need to validate all blocks' parent hash except the first block.</li>
 <li>User transactions can be derived by following way:
 <ul>
 <li>Recover <code>V</code> value of TX signature from <code>y_parity_bits</code> and L2 chain id, as described in optimization strategies.</li>
-<li>When parsing <code>tx_tos</code>, <code>contract_creation_bits</code> is used to determine if the TX has <code>to</code> value or not.</li>
+<li>When parsing <code>tx_tos</code>, <code>zero_to_bits</code> is used to determine if the TX has <code>to</code> value or not.</li>
 </ul>
 </li>
 </ul>

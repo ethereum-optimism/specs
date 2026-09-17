@@ -179,7 +179,7 @@
 <li><a href="#transaction-data">Transaction Data</a></li>
 <li><a href="#transposed-envelope-fields">Transposed Envelope Fields</a>
 <ul>
-<li><a href="#contract_creation_bits"><code>contract_creation_bits</code></a></li>
+<li><a href="#zero_to_bits"><code>zero_to_bits</code></a></li>
 <li><a href="#unused-signature-and-gas-accounting-slots">Unused signature and gas accounting slots</a></li>
 </ul>
 </li>
@@ -244,7 +244,7 @@ the block body.</p>
 <p>A post-exec transaction has no envelope fields to transpose. Its slots in the span batch <code>txs</code> structure take the
 following values:</p>
 <div class="table-wrapper"><table><thead><tr><th>Slot</th><th>Value for a <code>0x7D</code> transaction</th></tr></thead><tbody>
-<tr><td><code>contract_creation_bits</code></td><td><code>1</code></td></tr>
+<tr><td><code>zero_to_bits</code></td><td><code>1</code></td></tr>
 <tr><td><code>tx_tos</code></td><td>no entry — the transaction consumes none</td></tr>
 <tr><td><code>y_parity_bits</code></td><td><code>0</code></td></tr>
 <tr><td><code>tx_sigs</code></td><td><code>r = 0</code>, <code>s = 0</code></td></tr>
@@ -253,17 +253,11 @@ following values:</p>
 <tr><td><code>protected_bits</code></td><td>no entry — the bitlist covers legacy transactions only</td></tr>
 </tbody></table>
 </div>
-<h3 id="contract_creation_bits"><a class="header" href="#contract_creation_bits"><code>contract_creation_bits</code></a></h3>
-<p>The bit for a post-exec transaction MUST be <code>1</code>.</p>
-<p>A post-exec transaction is not a contract creation, so this deserves a word. What the bit governs is whether the
-transaction consumes an entry from <code>tx_tos</code>: a <code>0</code> bit consumes the next address, a <code>1</code> bit consumes none. For
-every transaction type defined before Lagoon, "is a contract creation" and "has no <code>to</code> field" are the same
-condition, which is why the <a href="../delta/span-batches.html#span-batch-format">Delta definition</a> states the former. A
-post-exec transaction is the first type for which they differ. The operative reading is the latter: the bit is <code>1</code>
-whenever the transaction has no recipient, so that <code>tx_tos</code> stays exactly as long as the number of transactions
-that have one.</p>
-<p>A decoder MUST reject a batch in which the bit is <code>0</code> for a post-exec transaction. Such a batch is invalid and is
-dropped, exactly as one whose <code>tx_datas</code> element carries an unusable transaction type is.</p>
+<h3 id="zero_to_bits"><a class="header" href="#zero_to_bits"><code>zero_to_bits</code></a></h3>
+<p>The bit for a post-exec transaction MUST be <code>1</code>: the transaction has no <code>to</code> field, so it consumes no entry from
+<code>tx_tos</code>.</p>
+<p>A decoder MUST reject the span batch if the bit is <code>0</code> for a post-exec transaction, exactly as it rejects one whose
+<code>tx_datas</code> element carries an unusable transaction type.</p>
 <h3 id="unused-signature-and-gas-accounting-slots"><a class="header" href="#unused-signature-and-gas-accounting-slots">Unused signature and gas accounting slots</a></h3>
 <p><code>y_parity_bits</code>, <code>tx_sigs</code>, <code>tx_nonces</code> and <code>tx_gases</code> are positional: every transaction in the span occupies one
 slot in each, whether or not the corresponding field exists. A post-exec transaction has no signature, nonce or gas
@@ -291,8 +285,8 @@ verbatim:</p>
 <pre><code class="language-text">0x7D ++ rlp_encoded_payload
 </code></pre>
 <p>A decoder MUST NOT fold <code>tx_nonces</code>, <code>tx_gases</code>, <code>tx_tos</code> or <code>tx_sigs</code> into the reconstructed transaction; there
-are no fields for them to occupy. The <code>tx_tos</code> cursor is not advanced, because the transaction's
-<code>contract_creation_bits</code> bit is <code>1</code>.</p>
+are no fields for them to occupy. The <code>tx_tos</code> cursor is not advanced, because the transaction's <code>zero_to_bits</code>
+bit is <code>1</code>.</p>
 <p>The reconstructed bytes are therefore identical to the transaction's encoding in the block body. This is what makes
 the overlap check between a batch and an already-safe block — comparing the batch's reconstructed transactions
 against the safe block's transactions — well defined for blocks containing a post-exec transaction: the comparison
