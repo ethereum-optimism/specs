@@ -7,7 +7,7 @@
 - [Span Batch Updates](#span-batch-updates)
   - [Transaction Data](#transaction-data)
   - [Transposed Envelope Fields](#transposed-envelope-fields)
-    - [`contract_creation_bits`](#contract_creation_bits)
+    - [`zero_to_bits`](#zero_to_bits)
     - [Unused signature and gas accounting slots](#unused-signature-and-gas-accounting-slots)
   - [Reconstruction](#reconstruction)
   - [Batch Acceptance](#batch-acceptance)
@@ -91,7 +91,7 @@ following values:
 
 | Slot                     | Value for a `0x7D` transaction                       |
 | ------------------------ | ---------------------------------------------------- |
-| `contract_creation_bits` | `1`                                                  |
+| `zero_to_bits`           | `1`                                                  |
 | `tx_tos`                 | no entry — the transaction consumes none             |
 | `y_parity_bits`          | `0`                                                  |
 | `tx_sigs`                | `r = 0`, `s = 0`                                     |
@@ -99,20 +99,13 @@ following values:
 | `tx_gases`               | `0`                                                  |
 | `protected_bits`         | no entry — the bitlist covers legacy transactions only |
 
-### `contract_creation_bits`
+### `zero_to_bits`
 
-The bit for a post-exec transaction MUST be `1`.
+The bit for a post-exec transaction MUST be `1`: the transaction has no `to` field, so it consumes no entry from
+`tx_tos`.
 
-A post-exec transaction is not a contract creation, so this deserves a word. What the bit governs is whether the
-transaction consumes an entry from `tx_tos`: a `0` bit consumes the next address, a `1` bit consumes none. For
-every transaction type defined before Lagoon, "is a contract creation" and "has no `to` field" are the same
-condition, which is why the [Delta definition](../delta/span-batches.md#span-batch-format) states the former. A
-post-exec transaction is the first type for which they differ. The operative reading is the latter: the bit is `1`
-whenever the transaction has no recipient, so that `tx_tos` stays exactly as long as the number of transactions
-that have one.
-
-A decoder MUST reject a batch in which the bit is `0` for a post-exec transaction. Such a batch is invalid and is
-dropped, exactly as one whose `tx_datas` element carries an unusable transaction type is.
+A decoder MUST reject the span batch if the bit is `0` for a post-exec transaction, exactly as it rejects one whose
+`tx_datas` element carries an unusable transaction type.
 
 ### Unused signature and gas accounting slots
 
@@ -149,8 +142,8 @@ verbatim:
 ```
 
 A decoder MUST NOT fold `tx_nonces`, `tx_gases`, `tx_tos` or `tx_sigs` into the reconstructed transaction; there
-are no fields for them to occupy. The `tx_tos` cursor is not advanced, because the transaction's
-`contract_creation_bits` bit is `1`.
+are no fields for them to occupy. The `tx_tos` cursor is not advanced, because the transaction's `zero_to_bits`
+bit is `1`.
 
 The reconstructed bytes are therefore identical to the transaction's encoding in the block body. This is what makes
 the overlap check between a batch and an already-safe block — comparing the batch's reconstructed transactions

@@ -112,10 +112,14 @@ Where:
     1 bit per L2 block, indicating if the L1 origin changed this L2 block.
   - `block_tx_counts`: for each block, a `uvarint` of `len(block.transactions)`.
   - `txs`: L2 transactions which is reorganized and encoded as below.
-- `txs = contract_creation_bits ++ y_parity_bits ++
+- `txs = zero_to_bits ++ y_parity_bits ++
 tx_sigs ++ tx_tos ++ tx_datas ++ tx_nonces ++ tx_gases ++ protected_bits`
-  - `contract_creation_bits`: standard bitlist of `sum(block_tx_counts)` bits:
-    1 bit per L2 transactions, indicating if transaction is a contract creation transaction.
+  - `zero_to_bits`: standard bitlist of `sum(block_tx_counts)` bits:
+    1 bit per L2 transactions, indicating that the transaction has no `to` field and therefore
+    consumes no entry from `tx_tos`. For transaction types that have a `to` field, a set bit is
+    exactly the contract creation case.
+    This field was previously named `contract_creation_bits`. Only the name changed; the encoding
+    and its meaning are unchanged.
   - `y_parity_bits`: standard bitlist of `sum(block_tx_counts)` bits:
     1 bit per L2 transactions, indicating the y parity value when recovering transaction sender address.
   - `tx_sigs`: concatenated list of transaction signatures
@@ -232,7 +236,7 @@ Deposit transactions are excluded in batches and are never written at L1 so excl
 ### Adjust `txs` Data Layout for Better Compression
 
 There are (8 choose 2) \* 6! = 20160 permutations of ordering fields of `txs`.  It is not 8!
-because `contract_creation_bits` must be first decoded in order to decode `tx_tos`.  We
+because `zero_to_bits` must be first decoded in order to decode `tx_tos`.  We
 experimented with different data layouts and found that segregating random data (`tx_sigs`,
 `tx_tos`, `tx_datas`) from the rest most improved the zlib compression ratio.
 
@@ -268,7 +272,7 @@ The assumption makes upper inequality to hold. Therefore, we decided to manage `
   - Deposit transactions can be derived from its L1 origin, identical with V0 batch.
   - User transactions can be derived by following way:
     - Recover `V` value of TX signature from `y_parity_bits` and L2 chain id, as described in optimization strategies.
-    - When parsing `tx_tos`, `contract_creation_bits` is used to determine if the TX has `to` value or not.
+    - When parsing `tx_tos`, `zero_to_bits` is used to determine if the TX has `to` value or not.
 
 ## Integration
 
