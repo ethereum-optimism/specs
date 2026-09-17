@@ -42,14 +42,13 @@ block's transaction list, so it is counted in that block's `block_tx_counts` ent
 [the final transaction of its block](./post-exec.md#block-level-structural-rules), it occupies the last index of
 that block's slice of the span.
 
-That position is an assumption this encoding inherits, not one it enforces. The span batch format transposes and
-reconstructs a transaction list and has no notion of block validity, so it can faithfully encode a block that
+The span batch format transposes and reconstructs a transaction list and has no notion of block validity,
+so it can faithfully encode a block that
 violates the [block-level structural rules](./post-exec.md#block-level-structural-rules) — one carrying two `0x7D`
 transactions, say, or one where the `0x7D` transaction is not last. Such a batch is well formed *as a batch*; the
 violation is caught where the rules are stated, when the derived block is validated, and under
 [Steady Block Derivation](../holocene/derivation.md#engine-queue) the invalid payload is then replaced by a
-deposit-only one and the remaining span batch and its channel are dropped. Encoders are likewise not required to
-check these rules: a batcher only encodes blocks that have already been accepted.
+deposit-only one and the remaining span batch and its channel are dropped.
 
 A decoder MUST NOT reject a span batch on account of these rules, and that prohibition carries as much weight as
 the rules themselves. The two paths do not converge. A block-validity failure produces a deposit-only block at that
@@ -72,7 +71,7 @@ where `rlp_encoded_payload` is the RLP encoding of the [post-exec payload][g-pos
 as defined by the transaction's [EIP-2718 encoding](./post-exec.md#encoding). As for every other `tx_datas`
 element, the bytes following the type byte MUST be a single RLP list.
 
-That framing check is where batch decoding's interest in the payload ends. A decoder MUST NOT inspect the payload's
+A decoder MUST NOT inspect the payload's
 `version` byte or validate it against a [schema](./post-exec.md#defined-schema-versions) while decoding a batch:
 below the outer RLP list the element is opaque bytes, reproduced verbatim into the reconstructed transaction.
 Payload validity is a [block-level](./post-exec.md#block-level-structural-rules) concern and is settled when the
@@ -169,15 +168,6 @@ above.
 
 Whether a batch is permitted to contain a post-exec transaction at all is a separate, batch-level question, and one
 that applies to both batch formats. It is governed by the `batch.transactions` drop rules in
-[Batch Queue](../derivation.md#batch-queue). Those rules drop any transaction of a future type greater than `2`,
-with the type `4` exception added by [Isthmus](../isthmus/derivation.md#activation); they require a corresponding
-Lagoon amendment for `0x7D`. Until that amendment lands, the Batch Queue rules and this document disagree: the
-former forbids the transaction this one gives an encoding for.
+[Batch Queue](../derivation.md#batch-queue).
 
-That amendment also owes an activation granularity, as [Isthmus](../isthmus/derivation.md#activation) states for
-type `4`. Both implementations already check Lagoon activation against the timestamp of each individual block
-derived from the span, not against the span batch as a whole, so a span batch may legally straddle the Lagoon
-activation and carry post-exec transactions only in the blocks at or after it. That rule qualifies the acceptance
-rule and belongs with it rather than here.
-
-[EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718
+Singular batches with transactions of type `0x7D` must only be accepted if Lagoon is active at the timestamp of the batch. If a singular batch contains a transaction of type 4 before Isthmus is active, this batch must be dropped. This check must happen at the level of individual batches that are derived from span batches, not to span batches as a whole. In particular, it is allowed for a span batch to span the Lagoon activation timestamp and contain an `0x7D` transaction in singular batches that have a timestamp at or after the Lagoon activation time, even if the timestamp of the span batch itself is before the Lagoon activation time.
