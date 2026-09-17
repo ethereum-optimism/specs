@@ -126,8 +126,9 @@ batcher chooses freely. `tx_sigs` alone reserves 64 bytes per transaction that n
 strict decoder keeps the encoding canonical, denies a batcher that space as a channel for arbitrary data, and
 leaves nothing that a later upgrade would have to tighten retroactively.
 
-This strictness is available precisely because `0x7D` is new. A post-exec transaction cannot legally appear in a
-batch before Lagoon, so no rule stated here reinterprets any batch that has already been posted.
+This strictness is available precisely because `0x7D` is new. A block before the Lagoon activation timestamp
+[MUST NOT contain a `0x7D` transaction](./post-exec.md#overview), so no batch already posted carries one, and no
+rule stated here reinterprets any of them.
 
 ## Reconstruction
 
