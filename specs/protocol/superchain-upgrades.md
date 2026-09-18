@@ -239,33 +239,23 @@ but the matching L1-origin information may not be present at the time of activat
 
 ### At most one network upgrade per activation timestamp
 
-Two network upgrades MUST NOT be configured to activate at the same L2 block timestamp,
-unless that timestamp is at or before the L2 genesis block timestamp.
-Equivalently: the activation timestamps of all network upgrades that activate after genesis
-MUST be strictly increasing in upgrade order.
+Starting with the Jovian upgrade, two network upgrades MUST NOT be configured to activate at the
+same L2 block timestamp, unless that timestamp is at or before the L2 genesis block timestamp.
+Equivalently: the activation timestamp of Jovian, and of every upgrade after it, MUST be strictly
+greater than that of the preceding upgrade, unless both activate at or before genesis.
+
+The rule is not applied retroactively to the upgrades before Jovian: a small number of chains
+activated two of those in the same block before the rule was written down, and their activation
+history cannot be changed.
 
 Chains whose genesis is created after one or more upgrades have already been defined
 activate those upgrades in the genesis block itself, conventionally by setting their
 activation timestamps to `0`. No activation block processing happens for those upgrades,
 so they may — and usually do — share an activation timestamp.
 
-The restriction applies to the activation block of a post-genesis upgrade.
-Each upgrade defines its activation-block behavior — the upgrade transactions it deposits,
-the state changes it makes, and the way it derives that block's attributes —
-against a chain on which every preceding upgrade is already active and every succeeding
-upgrade is not. Two upgrades sharing an activation block break that assumption:
-their activation-block changes are applied together, and their interaction is not defined
-by either upgrade's specification. Supporting it would require specifying and testing every
-combination of upgrades that could activate together, so it is disallowed instead.
-
 Note that this constraint governs OP-Stack network upgrades only.
 It does not constrain an OP-Stack upgrade timestamp against an L1 fork timestamp
 configured on the same chain, which may coincide.
-
-The constraint is not retroactive: a small number of chains activated two upgrades
-in the same block before this rule was written down, and their activation history cannot be
-changed. Implementations must keep syncing those chains, so the rule is enforced on newly
-scheduled activations rather than on all historical configurations.
 
 ## OP-Stack Protocol versions
 
