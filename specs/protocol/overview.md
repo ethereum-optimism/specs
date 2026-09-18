@@ -54,25 +54,27 @@ transactions. Grey nodes show other contracts, addresses, or configuration. Dott
 
 ### Core L1 Smart Contracts
 
-The diagrams below show the core contracts for a single ETH-gas chain with `ETHLockbox` enabled.
-Peripheral contracts are described separately.
+Below you'll find architecture diagrams describing the core L1 smart contracts for the OP Stack.
+Smart contracts that are considered "peripheral" and not core to the operation of the OP Stack system are described separately.
+
+These diagrams assume a single ETH-gas chain with `ETHLockbox` enabled.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
 graph TB
-    ExternalERC20(ERC20 Tokens)
-    ExternalERC721(ERC721 Tokens)
+    ExternalERC20(External ERC20 Contracts)
+    ExternalERC721(External ERC721 Contracts)
     L1StandardBridge(<a href="./bridges.html">L1StandardBridge</a>)
     L1ERC721Bridge(<a href="./bridges.html">L1ERC721Bridge</a>)
     L1CrossDomainMessenger(<a href="./messengers.html">L1CrossDomainMessenger</a>)
     OptimismPortal(<a href="./withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
     ETHLockbox(<a href="../interop/eth-lockbox.html">ETHLockbox</a>)
 
-    ExternalERC20 <-->|mint/burn/transfer| L1StandardBridge
+    ExternalERC20 <-->|mint/burn/transfer tokens| L1StandardBridge
     ExternalERC721 <-->|lock/unlock| L1ERC721Bridge
-    L1StandardBridge <-->|messages| L1CrossDomainMessenger
-    L1ERC721Bridge <-->|messages| L1CrossDomainMessenger
-    L1CrossDomainMessenger <-->|messages| OptimismPortal
+    L1StandardBridge <-->|send/receive messages| L1CrossDomainMessenger
+    L1ERC721Bridge <-->|send/receive messages| L1CrossDomainMessenger
+    L1CrossDomainMessenger <-->|send/receive messages| OptimismPortal
     OptimismPortal <-->|lock/unlock ETH| ETHLockbox
 
     classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
@@ -104,8 +106,8 @@ graph TB
     OptimismPortal -.->|validity/finality| AnchorStateRegistry
     OptimismPortal -.->|chain output root| Games
     DisputeGameFactory -->|clone| Games
-    SuperFaultDisputeGame -->|bonds| DelayedWETH
-    SuperFaultDisputeGame -->|read/update anchor| AnchorStateRegistry
+    SuperFaultDisputeGame -->|store bonds| DelayedWETH
+    SuperFaultDisputeGame -->|query/update<br/>anchor states| AnchorStateRegistry
     SuperPermissionedDisputeGame -.->|anchor/game type| AnchorStateRegistry
     SuperFaultDisputeGame -->|verify step| MIPS64
     SuperFaultDisputeGame -->|local data| PreimageOracle
@@ -120,6 +122,12 @@ graph TB
 
 #### Notes for Core L1 Smart Contracts
 
+- The `Batch Inbox Address` shown below (**highlighted in GREY**) is _not_ a smart contract and is instead an arbitrarily
+  selected account that is assumed to have no known private key. The convention for deriving this account's address is
+  provided on the [Configurability](./configurability.md#consensus-parameters) page.
+  - Historically, it was often derived as
+    `0xFF0000....<L2 chain ID>` where `<L2 chain ID>` is chain ID of the Layer 2 network for which the data is being posted.
+    This is why many chains, such as OP Mainnet, have a batch inbox address of this form.
 - Smart contracts that sit behind `Proxy` contracts are **highlighted in BLUE**. Refer to the
   [Smart Contract Proxies](#smart-contract-proxies) section below to understand how these proxies are designed.
   - The `L1CrossDomainMessenger` contract sits behind the [`ResolvedDelegateProxy`](https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/legacy/ResolvedDelegateProxy.sol)
@@ -146,7 +154,8 @@ graph TB
 
 ### Core L2 Smart Contracts
 
-The L2 node updates L1 attributes and credits transaction fees to the fee vaults.
+Here you'll find architecture diagrams describing the core OP Stack smart contracts that exist natively on the L2 chain
+itself.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
@@ -162,9 +171,9 @@ graph TB
         OperatorFeeVault(<a href="./predeploys.html#operator-fee-vault">OperatorFeeVault</a>)
     end
 
-    L2Node -->|L1 attributes| L1Block
+    L2Node -->|updates| L1Block
     L2Node -->|credit fees| FeeVaults
-    GasPriceOracle -.->|fee parameters| L1Block
+    GasPriceOracle -.->|queries| L1Block
 
     classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
     classDef actor fill:#fff1df,stroke:#bf7b2a,color:#664515,stroke-width:1.5px;
@@ -180,8 +189,8 @@ target other L2 contracts or addresses.
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
 graph TB
-    ExternalERC20(ERC20 Tokens)
-    ExternalERC721(ERC721 Tokens)
+    ExternalERC20(External ERC20 Contracts)
+    ExternalERC721(External ERC721 Contracts)
     L2StandardBridge(<a href="./predeploys.html#l2standardbridge">L2StandardBridge</a>)
     L2ERC721Bridge(<a href="./predeploys.html">L2ERC721Bridge</a>)
     L2CrossDomainMessenger(<a href="./predeploys.html#l2crossdomainmessenger">L2CrossDomainMessenger</a>)
@@ -189,9 +198,9 @@ graph TB
 
     ExternalERC20 <-->|mint/burn/transfer| L2StandardBridge
     ExternalERC721 <-->|mint/burn| L2ERC721Bridge
-    L2StandardBridge <-->|messages| L2CrossDomainMessenger
-    L2ERC721Bridge <-->|messages| L2CrossDomainMessenger
-    L2CrossDomainMessenger -->|withdrawal messages| L2ToL1MessagePasser
+    L2StandardBridge <-->|sends/receives messages| L2CrossDomainMessenger
+    L2ERC721Bridge <-->|sends/receives messages| L2CrossDomainMessenger
+    L2CrossDomainMessenger -->|sends messages| L2ToL1MessagePasser
 
     classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
     classDef other fill:#f1f3f5,stroke:#98a2b3,color:#344054,stroke-width:1.5px;
@@ -203,19 +212,22 @@ graph TB
 
 - L1 attributes transactions update `L1Block`, and the execution engine credits transaction fees to the fee vaults.
   `GasPriceOracle` reads fee parameters from `L1Block`.
-- Anyone can trigger a fee vault withdrawal to its configured recipient on L1 through `L2ToL1MessagePasser`, or directly
-  on L2, depending on the vault's configuration.
+  Users typically do not mutate these contracts directly, except in the case of the `FeeVault` contracts where
+  any user may trigger a withdrawal of collected fees to the pre-determined withdrawal address.
+- Fee vault withdrawals can target L1 through `L2ToL1MessagePasser`, or L2 directly, depending on the vault's configuration.
 - The execution engine also updates the [beacon roots contract](./exec-engine.md#ecotone-beacon-block-root) with the
   L1 origin's parent beacon block root and the
   [history storage contract](./isthmus/derivation.md#eip-2935-contract-deployment) with L2 block hashes.
 - Smart contracts that sit behind `Proxy` contracts are **highlighted in BLUE**. Refer to the
   [Smart Contract Proxies](#smart-contract-proxies) section below to understand how these proxies are designed.
+- User interactions for the "L2 Bridge Contracts" have been omitted from these diagrams but largely follow the same user
+  interactions described in the notes for the [Core L1 Smart Contracts](#core-l1-smart-contracts).
 
 ### Smart Contract Proxies
 
 Most OP Stack smart contracts sit behind `Proxy` contracts that are managed by a `ProxyAdmin` contract.
 The `ProxyAdmin` contract is controlled by some `owner` address that can be any EOA or smart contract.
-Calls to a proxy delegate to its current implementation. The admin can change that implementation.
+Below you'll find a diagram that explains the behavior of the typical proxy contract.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
@@ -298,8 +310,8 @@ for the deployment and configuration rules.
 
 ### L2 Node Components
 
-The rollup node derives blocks from L1 data and drives the execution engine. The batcher, proposer, and challenger
-use these clients to interact with the L1 contracts.
+Below you'll find a diagram illustrating the basic interactions between the components that make up an L2 node as well
+as demonstrations of how different actors use these components to fulfill their roles.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"lineColor": "#64748b", "edgeLabelBackground": "#f1f5f9"}, "themeCSS": ".nodeLabel a { color: inherit !important; }"}}%%
@@ -309,7 +321,7 @@ graph LR
         ExecutionEngine(<a href="./exec-engine.html">Execution Engine</a>)
     end
 
-    subgraph SystemActors[System actors]
+    subgraph SystemActors[System Interactions]
         BatchSubmitter(<a href="./batcher.html">Batch Submitter</a>)
         OutputSubmitter(Proposer)
         Challenger(Challenger)
@@ -317,18 +329,18 @@ graph LR
 
     BatchDataEOA(<a href="../glossary.html#batcher-transaction">Batch Inbox Address</a>)
 
-    subgraph L1Contracts[L1 contracts]
+    subgraph L1Contracts[L1 Smart Contracts]
         OptimismPortal(<a href="./withdrawals.html#the-optimism-portal-contract">OptimismPortal</a>)
         DisputeGameFactory(<a href="../fault-proof/stage-one/dispute-game-interface.html#disputegamefactory-interface">DisputeGameFactory</a>)
         SuperFaultDisputeGame(<a href="../fault-proof/stage-one/super-fault-dispute-game.html">SuperFaultDisputeGame</a>)
     end
 
-    BatchSubmitter -.->|batch data| RollupNode
-    BatchSubmitter -.->|batch data| ExecutionEngine
-    BatchSubmitter -->|publish batches| BatchDataEOA
+    BatchSubmitter -.->|fetch transaction<br/>batch info| RollupNode
+    BatchSubmitter -.->|fetch transaction<br/>batch info| ExecutionEngine
+    BatchSubmitter -->|send transaction<br/>batches| BatchDataEOA
 
-    RollupNode -.->|batches| BatchDataEOA
-    RollupNode -.->|deposits| OptimismPortal
+    RollupNode -.->|fetch transaction<br/>batches| BatchDataEOA
+    RollupNode -.->|fetch deposit<br/>transactions| OptimismPortal
     RollupNode -->|drives| ExecutionEngine
 
     OutputSubmitter -.->|fetch super roots| RollupNode
@@ -336,7 +348,7 @@ graph LR
 
     Challenger -.->|fetch dispute games| DisputeGameFactory
     Challenger -.->|fetch super roots| RollupNode
-    Challenger -->|challenge/defend| SuperFaultDisputeGame
+    Challenger -->|verify/challenge/<br/>defend games| SuperFaultDisputeGame
 
     classDef proxy fill:#e8f1ff,stroke:#3971b8,color:#17375e,stroke-width:1.5px;
     classDef fixed fill:#e5f3ec,stroke:#3b8363,color:#173f2e,stroke-width:1.5px;
@@ -351,13 +363,6 @@ graph LR
     style SystemActors fill:#f8fafc,stroke:#cbd5e1,color:#334155;
     style L1Contracts fill:#f8fafc,stroke:#cbd5e1,color:#334155;
 ```
-
-- The `Batch Inbox Address` shown above is _not_ a smart contract and is instead an arbitrarily
-  selected account that is assumed to have no known private key. The convention for deriving this account's address is
-  provided on the [Configurability](./configurability.md#consensus-parameters) page.
-  - Historically, it was often derived as
-    `0xFF0000....<L2 chain ID>` where `<L2 chain ID>` is chain ID of the Layer 2 network for which the data is being posted.
-    This is why many chains, such as OP Mainnet, have a batch inbox address of this form.
 
 The rollup node also reads configuration updates from `SystemConfig` on L1.
 
@@ -385,7 +390,7 @@ The below diagram illustrates how the sequencer and verifiers fit together:
 
 - [Deposits](deposits.md)
 
-Routine deposits include user deposits and L1 attributes deposits. To perform a user deposit, users
+Optimism supports user deposits and L1 attributes deposits. To perform a user deposit, users
 call the `depositTransaction` method on the `OptimismPortal` contract. This in turn emits `TransactionDeposited` events,
 which the rollup node reads during block derivation.
 
@@ -393,7 +398,7 @@ L1 attributes deposits are used to register L1 block attributes (number, timesta
 Attributes Predeploy. They cannot be initiated by users, and are instead added to L2 blocks automatically by the rollup
 node.
 
-These deposits use a custom EIP-2718 transaction type on L2.
+Both deposit types are represented by a single custom EIP-2718 transaction type on L2.
 [Network upgrade transactions](./l2-upgrades-1-execution.md#network-upgrade-transaction-nut) also use this type at fork
 activation to deploy and upgrade L2 contracts.
 
