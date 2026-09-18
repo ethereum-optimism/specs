@@ -199,6 +199,7 @@
 <ul>
 <li><a href="#l2-block-number-based-activation-deprecated">L2 Block-number based activation (deprecated)</a></li>
 <li><a href="#l2-block-timestamp-based-activation">L2 Block-timestamp based activation</a></li>
+<li><a href="#at-most-one-network-upgrade-per-activation-timestamp">At most one network upgrade per activation timestamp</a></li>
 </ul>
 </li>
 <li><a href="#op-stack-protocol-versions">OP-Stack Protocol versions</a></li>
@@ -358,6 +359,21 @@ because it can be planned in accordance with beacon-chain epochs and slots.</p>
 <p>Note that the L2 version is not limited to timestamps that match L1 beacon-chain slots or epochs.
 A timestamp may be chosen to be synchronous with a specific slot or epoch on L1,
 but the matching L1-origin information may not be present at the time of activation on L2.</p>
+<h3 id="at-most-one-network-upgrade-per-activation-timestamp"><a class="header" href="#at-most-one-network-upgrade-per-activation-timestamp">At most one network upgrade per activation timestamp</a></h3>
+<p>Starting with the Jovian upgrade, two network upgrades MUST NOT be configured to activate at the
+same L2 block timestamp, unless that timestamp is at or before the L2 genesis block timestamp.
+Equivalently: the activation timestamp of Jovian, and of every upgrade after it, MUST be strictly
+greater than that of the preceding upgrade, unless both activate at or before genesis.</p>
+<p>The rule is not applied retroactively to the upgrades before Jovian: a small number of chains
+activated two of those in the same block before the rule was written down, and their activation
+history cannot be changed.</p>
+<p>Chains whose genesis is created after one or more upgrades have already been defined
+activate those upgrades in the genesis block itself, conventionally by setting their
+activation timestamps to <code>0</code>. No activation block processing happens for those upgrades,
+so they may — and usually do — share an activation timestamp.</p>
+<p>Note that this constraint governs OP-Stack network upgrades only.
+It does not constrain an OP-Stack upgrade timestamp against an L1 fork timestamp
+configured on the same chain, which may coincide.</p>
 <h2 id="op-stack-protocol-versions"><a class="header" href="#op-stack-protocol-versions">OP-Stack Protocol versions</a></h2>
 <ul>
 <li><code>v1.0.0</code>: 2021 Jan 16th - Mainnet Soft Launch, based on OVM.
