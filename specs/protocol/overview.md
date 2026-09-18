@@ -37,15 +37,15 @@ This document assumes you've read the [background](../background.md).
   - No unexpected gas costs.
   - Transaction traces work out-of-the-box.
   - All existing Ethereum tooling works - all you have to do is change the chain ID.
-- **Maximal compatibility with ETH1 nodes:** The implementation should minimize any differences with a vanilla Geth
-  node, and leverage as many existing L1 standards as possible.
+- **Maximal compatibility with ETH1 nodes:** The implementation should minimize any differences with a vanilla
+  execution-layer node, and leverage as many existing L1 standards as possible.
   - The execution engine/rollup node uses the ETH2 Engine API to build the canonical L2 chain.
-  - The execution engine leverages Geth's existing mempool and sync implementations, including snap sync.
+  - The execution engine leverages the execution layer's existing mempool and sync implementations, including snap sync.
 - **Minimize state and complexity:**
   - Whenever possible, services contributing to the rollup infrastructure are stateless.
   - Stateful services can recover to full operation from a fresh DB using the peer-to-peer network and on-chain sync
     mechanisms.
-  - Running a replica is as simple as running a Geth node.
+  - Running a replica is as simple as running an execution-layer node.
 
 ## Architecture Overview
 
@@ -122,12 +122,6 @@ graph TB
 
 #### Notes for Core L1 Smart Contracts
 
-- The `Batch Inbox Address` shown below (**highlighted in GREY**) is _not_ a smart contract and is instead an arbitrarily
-  selected account that is assumed to have no known private key. The convention for deriving this account's address is
-  provided on the [Configurability](./configurability.md#consensus-parameters) page.
-  - Historically, it was often derived as
-    `0xFF0000....<L2 chain ID>` where `<L2 chain ID>` is chain ID of the Layer 2 network for which the data is being posted.
-    This is why many chains, such as OP Mainnet, have a batch inbox address of this form.
 - Smart contracts that sit behind `Proxy` contracts are **highlighted in BLUE**. Refer to the
   [Smart Contract Proxies](#smart-contract-proxies) section below to understand how these proxies are designed.
   - The `L1CrossDomainMessenger` contract sits behind the [`ResolvedDelegateProxy`](https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/legacy/ResolvedDelegateProxy.sol)
@@ -136,19 +130,21 @@ graph TB
   - The `L1StandardBridge` contract sits behind the [`L1ChugSplashProxy`](https://github.com/ethereum-optimism/optimism/tree/develop/packages/contracts-bedrock/src/legacy/L1ChugSplashProxy.sol)
     contract, a legacy proxy contract type used within older versions of the OP Stack. This proxy type is used exclusively
     for the `L1StandardBridge` contract to maintain backwards compatibility.
-- Green contracts have fixed implementations. The factory creates dispute games as clones with immutable arguments;
-  `MIPS64` and `PreimageOracle` are deployed directly.
+- The factory creates dispute games as clones with immutable arguments; `MIPS64` and `PreimageOracle` are deployed
+  directly.
 - `SuperFaultDisputeGame` uses game type `SUPER_CANNON_KONA` (`9`). `SuperPermissionedDisputeGame` uses
   `SUPER_PERMISSIONED` (`5`) and accepts proposals only from its configured proposer. It resolves immediately in favor of
   the proposal, without challenges or bonds. Withdrawal finality and Guardian checks still apply.
 - Users deposit or withdraw ETH and tokens through the bridges. They can also deposit directly through `OptimismPortal`,
-  where they prove and execute withdrawals.
+  where they prove and finalize withdrawals.
 - The bridges, messenger, portal, `ETHLockbox`, `AnchorStateRegistry`, and `DelayedWETH` read pause state through
   [SystemConfig](./system-config.md). It combines the global pause state from [SuperchainConfig](./superchain-config.md)
   with the chain-specific pause state, identified by `ETHLockbox`. The portal also reads its configuration from `SystemConfig`.
-- The Guardian pauses or unpauses `SuperchainConfig`. It can blacklist or retire games and set the respected game type
-  in `AnchorStateRegistry`. The factory owner configures game types and bonds; the `ProxyAdmin` owner can hold or recover
-  bonds in `DelayedWETH`.
+- The Guardian pauses or unpauses `SuperchainConfig`; a [Pause Deputy](./stage-1.md#pause-deputy) installed through the
+  [DeputyPauseModule](./deputy-pause-module.md) can trigger, but not lift, the pause. The Guardian can also blacklist or
+  retire games and set the respected game type in `AnchorStateRegistry`. The `ProxyAdmin` owner also owns
+  `DisputeGameFactory` in the standard configuration: it registers game-type implementations and init bonds, and can
+  hold or recover bonds in `DelayedWETH`.
 - Proposers create games through `DisputeGameFactory`; `AnchorStateRegistry` checks game registration with the factory.
   Participants challenge or defend permissionless games and supply preimages to `PreimageOracle`.
 
@@ -218,15 +214,13 @@ graph TB
 - The execution engine also updates the [beacon roots contract](./exec-engine.md#ecotone-beacon-block-root) with the
   L1 origin's parent beacon block root and the
   [history storage contract](./isthmus/derivation.md#eip-2935-contract-deployment) with L2 block hashes.
-- Smart contracts that sit behind `Proxy` contracts are **highlighted in BLUE**. Refer to the
-  [Smart Contract Proxies](#smart-contract-proxies) section below to understand how these proxies are designed.
 - User interactions for the "L2 Bridge Contracts" have been omitted from these diagrams but largely follow the same user
   interactions described in the notes for the [Core L1 Smart Contracts](#core-l1-smart-contracts).
 
 ### Smart Contract Proxies
 
 Most OP Stack smart contracts sit behind `Proxy` contracts that are managed by a `ProxyAdmin` contract.
-The `ProxyAdmin` contract is controlled by some `owner` address that can be any EOA or smart contract.
+The `ProxyAdmin` contract is controlled by some `owner` address that is a Safe multisig in the standard configuration.
 Below you'll find a diagram that explains the behavior of the typical proxy contract.
 
 ```mermaid
@@ -302,9 +296,8 @@ graph TB
     class Configuration other;
 ```
 
-`ConditionalDeployer`, `L2ProxyAdmin`, and `L2DevFeatureFlags` are proxied predeploys. Green contracts have fixed
-implementations; `L2ContractsManager` is deployed separately for each upgrade. Its upgrade calls execute in
-`L2ProxyAdmin`'s context. See the
+`ConditionalDeployer`, `L2ProxyAdmin`, and `L2DevFeatureFlags` are proxied predeploys. `L2ContractsManager` is deployed
+separately for each upgrade. Its upgrade calls execute in `L2ProxyAdmin`'s context. See the
 [L2 upgrade contracts specification](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/specs/l2-upgrades-2-contracts.md)
 for the deployment and configuration rules.
 
@@ -364,7 +357,13 @@ graph LR
     style L1Contracts fill:#f8fafc,stroke:#cbd5e1,color:#334155;
 ```
 
-The rollup node also reads configuration updates from `SystemConfig` on L1.
+- The rollup node also reads configuration updates from `SystemConfig` on L1.
+- The `Batch Inbox Address` shown above (**highlighted in GREY**) is _not_ a smart contract and is instead an arbitrarily
+  selected account that is assumed to have no known private key. The convention for deriving this account's address is
+  provided on the [Configurability](./configurability.md#consensus-parameters) page.
+  - Historically, it was often derived as
+    `0xFF0000....<L2 chain ID>` where `<L2 chain ID>` is chain ID of the Layer 2 network for which the data is being posted.
+    This is why many chains, such as OP Mainnet, have a batch inbox address of this form.
 
 ### Transaction/Block Propagation
 
@@ -372,8 +371,9 @@ The rollup node also reads configuration updates from `SystemConfig` on L1.
 
 - [Execution Engine](exec-engine.md)
 
-Since the EE uses Geth under the hood, Optimism uses Geth's built-in peer-to-peer network and transaction pool to
-propagate transactions. The same network can also be used to propagate submitted blocks and support snap-sync.
+Since the execution engine implements the standard Ethereum execution-layer protocol, the OP Stack reuses the existing
+peer-to-peer network and transaction pool to propagate transactions. Execution clients interoperate on this network.
+The same network can also be used to propagate submitted blocks and support snap-sync.
 
 Unsubmitted blocks, however, are propagated using a separate peer-to-peer network of Rollup Nodes. This is optional,
 however, and is provided as a convenience to lower latency for verifiers and their JSON-RPC clients.
