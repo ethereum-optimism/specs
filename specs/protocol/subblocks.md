@@ -10,6 +10,7 @@
   - [Ordering](#ordering)
   - [Payload](#payload)
   - [Zero-valued fields](#zero-valued-fields)
+- [Post-execution transactions](#post-execution-transactions)
 - [JSON-RPC](#json-rpc)
 - [Transaction inclusion](#transaction-inclusion)
 - [Backwards compatibility](#backwards-compatibility)
@@ -37,7 +38,8 @@ Within one in-progress block, subblocks are append-only:
 - All subblocks for the in-progress block have the same `payload_id` and block number.
 - The sequencer MUST NOT publish distinct subblocks with the same `payload_id` and `index`.
 - Transactions from each subblock are appended in stream order. A consumer obtains the in-progress transaction list by
-  concatenating each subblock's `diff.transactions`.
+  concatenating each subblock's `diff.transactions`. That list excludes the block's
+  [post-execution transaction](#post-execution-transactions), which is streamed separately and is not append-only.
 - The cumulative in-progress block after each subblock MUST satisfy all applicable OP Stack execution rules.
 - The first subblock contains the block's [deposited transactions](../glossary.md#deposited-transaction) and any other
   sequencer transactions that execute before mempool transactions. Later subblocks add mempool transactions.
@@ -121,16 +123,19 @@ The fields have the following semantics:
 - `payload_id` identifies one payload build and is constant for all subblocks of the in-progress block.
 - `index` is a JSON number identifying the subblock's position within the in-progress block.
 - `base` contains immutable block properties and is present only at index `0`.
-- `diff.transactions` contains only the EIP-2718 encoded transactions added by this subblock.
+- `diff.transactions` contains only the EIP-2718 encoded transactions added by this subblock. It never contains a
+  post-execution (`0x7D`) transaction; see [Post-execution transactions](#post-execution-transactions) below.
 - `diff.gas_used`, `diff.receipts_root`, and `diff.logs_bloom` describe the cumulative in-progress block after applying
   this subblock.
 - `diff.blob_gas_used`, when present, is the cumulative [DA footprint](./jovian/exec-engine.md#da-footprint-block-limit)
   of the in-progress block, not L2 blob gas usage.
-- From the [Lagoon network upgrade](./lagoon/overview.md), `diff.post_exec_tx`, when present, is the latest cumulative
-  [post-execution transaction](./lagoon/post-exec.md). It is carried separately from `diff.transactions`.
+- From the [Lagoon network upgrade](./lagoon/overview.md), `diff.post_exec_tx`, when present, is the latest
+  [post-execution transaction](./lagoon/post-exec.md) of the in-progress block. It is carried separately from
+  `diff.transactions`; see [Post-execution transactions](#post-execution-transactions) below.
 - `metadata.block_number` is the L2 block number encoded as a JSON number.
 - `metadata.new_account_balances` maps changed accounts to their latest balances.
-- `metadata.receipts` maps transaction hashes to the receipts for transactions added by this subblock.
+- `metadata.receipts` maps transaction hashes to the receipts for transactions added by this subblock. Because a
+  post-execution transaction is never one of them, it never has a receipt here.
 
 ### Zero-valued fields
 
@@ -150,6 +155,28 @@ not the value of the eventual sealed block.
 A consumer that needs the in-progress state may reconstruct it by executing the streamed transactions against the
 parent state. The subblock stream does not indicate whether the in-progress block was sealed or abandoned. Consumers
 obtain the sealed block's authoritative state root and block hash through normal L2 block propagation.
+
+## Post-execution transactions
+
+From the [Lagoon network upgrade](./lagoon/overview.md), a block may end with a
+[post-execution transaction](./lagoon/post-exec.md) of type `0x7D`. A subblock exposes it as `diff.post_exec_tx`,
+holding its EIP-2718 encoding, and never as a member of `diff.transactions`.
+
+A post-execution transaction is derived from the contents of the block, so the sequencer recomputes it as it extends
+the in-progress block. Consequently:
+
+- `diff.post_exec_tx` is mutable across the subblocks of one `payload_id`, unlike `diff.transactions`, which is
+  append-only. It is absent while the in-progress block has no post-execution transaction, and a later subblock may
+  introduce it.
+- Only the last subblock's value is the one that lands in the sealed block. The stream marks no subblock as the last,
+  so a consumer MUST NOT treat any value as final until it establishes by other means that the block was sealed.
+- `metadata.receipts` carries no receipt for it. The canonical receipt comes from the sealed block.
+
+Because the post-execution transaction is withheld, the concatenation of `diff.transactions` over a payload's
+subblocks is the sealed block's transaction list minus its final `0x7D` transaction.
+
+[Lagoon post-exec.md § Subblocks](./lagoon/post-exec.md#subblocks) states these rules normatively, together with the
+rationale for each and what a consumer may assume.
 
 ## JSON-RPC
 
