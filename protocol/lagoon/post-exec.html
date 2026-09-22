@@ -193,7 +193,17 @@
 </li>
 <li><a href="#block-level-structural-rules">Block-Level Structural Rules</a></li>
 <li><a href="#da-footprint">DA Footprint</a></li>
-<li><a href="#receipt">Receipt</a></li>
+<li><a href="#receipt">Receipt</a>
+<ul>
+<li><a href="#consensus-fields">Consensus Fields</a></li>
+<li><a href="#json-rpc-fields">JSON-RPC Fields</a>
+<ul>
+<li><a href="#transaction-scoped-fields">Transaction-Scoped Fields</a></li>
+<li><a href="#block-scoped-fields">Block-Scoped Fields</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#derivation">Derivation</a></li>
 <li><a href="#rationale">Rationale</a></li>
 </ul>
@@ -319,8 +329,9 @@ post-exec transactions. When computing a block's <code>daFootprint</code>, clien
 having a DA footprint of zero. Clients MUST therefore skip transactions of type <code>0x7D</code> when accumulating the
 block's <code>daFootprint</code>, and a post-exec transaction's receipt MUST report <code>blobGasUsed</code> as zero.</p>
 <h2 id="receipt"><a class="header" href="#receipt">Receipt</a></h2>
-<p>A post-exec transaction emits a receipt with type byte <code>0x7D</code>. The RLP-encoded consensus fields of the receipt are
-identical to those of an EIP-1559 receipt:</p>
+<p>A post-exec transaction emits a receipt with type byte <code>0x7D</code>.</p>
+<h3 id="consensus-fields"><a class="header" href="#consensus-fields">Consensus Fields</a></h3>
+<p>The RLP-encoded consensus fields of the receipt are identical to those of an EIP-1559 receipt:</p>
 <ul>
 <li><code>postStateOrStatus</code> (<a href="https://eips.ethereum.org/EIPS/eip-658">EIP-658</a>)</li>
 <li><code>cumulativeGasUsed</code></li>
@@ -342,6 +353,45 @@ however, is consensus-critical and drives state changes under the active schema 
 <a href="./sdm.html#settlement">settlement</a>. Those changes are applied atomically with the transactions they refund, so they
 belong to those transactions' state deltas, not to a separate post-exec state transition. Schema-specific data is
 likewise surfaced on those transactions' receipts, not on the post-exec receipt.</p>
+<h3 id="json-rpc-fields"><a class="header" href="#json-rpc-fields">JSON-RPC Fields</a></h3>
+<p>The receipt that <code>eth_getTransactionReceipt</code> and <code>eth_getBlockReceipts</code> return carries fee fields beyond the
+consensus fields above. They fall into two groups, and a post-exec receipt reports the two groups differently: a
+post-exec transaction pays no fees and is charged no gas and no DA footprint, but it sits in a block whose L1 fee
+parameters are the same for every transaction in it.</p>
+<h4 id="transaction-scoped-fields"><a class="header" href="#transaction-scoped-fields">Transaction-Scoped Fields</a></h4>
+<p>These describe what this transaction was charged. A post-exec transaction is charged nothing, so each of them MUST
+be present and zero:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>
+<tr><td><code>gasUsed</code></td><td><code>0</code></td></tr>
+<tr><td><code>effectiveGasPrice</code></td><td><code>0</code></td></tr>
+<tr><td><code>l1Fee</code></td><td><code>0</code></td></tr>
+<tr><td><code>l1GasUsed</code></td><td><code>0</code></td></tr>
+<tr><td><code>blobGasUsed</code></td><td><code>0</code>, per <a href="#da-footprint">§ DA Footprint</a></td></tr>
+</tbody></table>
+</div>
+<p>Clients MUST NOT omit <code>l1Fee</code> or <code>l1GasUsed</code> instead of reporting them as zero. Keeping them present and zero makes
+a post-exec receipt the same shape as a regular transaction's receipt and matches <code>gasUsed</code> and <code>effectiveGasPrice</code>,
+which are reported as zero rather than omitted. A consumer that sums <code>l1Fee</code> over a block's receipts then reaches
+the same total whether or not it special-cases the post-exec receipt.</p>
+<p><code>cumulativeGasUsed</code> is also transaction-scoped, but it is block-cumulative rather than per-transaction: it inherits
+the preceding receipt's value as specified in <a href="#consensus-fields">§ Consensus Fields</a>, and is therefore not zero.</p>
+<p><code>opGasRefund</code> is surfaced only on the receipts of the transactions that a refund applies to, so a post-exec receipt
+MUST omit it or report it as <code>null</code> (see <a href="./sdm.html#receipt-extension">sdm.md § Receipt Extension</a>).</p>
+<h4 id="block-scoped-fields"><a class="header" href="#block-scoped-fields">Block-Scoped Fields</a></h4>
+<p>These describe the block's L1 fee parameters, read from the L1 attributes deposit. They are identical for every
+transaction in the block, so a post-exec receipt MUST report each of them with the same value — and the same
+presence or absence — as every other receipt in the same block:</p>
+<ul>
+<li><code>l1GasPrice</code></li>
+<li><code>l1BaseFeeScalar</code></li>
+<li><code>l1BlobBaseFee</code></li>
+<li><code>l1BlobBaseFeeScalar</code></li>
+<li><code>operatorFeeScalar</code></li>
+<li><code>operatorFeeConstant</code></li>
+<li><code>daFootprintGasScalar</code></li>
+</ul>
+<p><code>l1FeeScalar</code> is reported only before <a href="../ecotone/overview.html">Ecotone</a>. Post-exec transactions require Lagoon,
+which activates after Ecotone, so a post-exec receipt never reports it.</p>
 <h2 id="derivation"><a class="header" href="#derivation">Derivation</a></h2>
 <p>Post-exec transactions are constructed by the sequencer during block production and travel inside the L2 block
 body — through both the unsafe p2p payload and the L1 batch — rather than being synthesized from L1 events the way
