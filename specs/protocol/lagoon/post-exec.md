@@ -317,11 +317,13 @@ abandoned rather than sealed, in which case no value from it was ever canonical.
 
 ### A subblock's `transactions` may be empty
 
-A subblock MAY have `transactions: []`.
+A subblock MAY have `transactions: []`. This applies to subblocks after index `0`; the first subblock always
+carries at least the block's [deposited transactions](../subblocks.md#consumer-guarantees).
 
 _Rationale (non-normative, subject to change)._ A subblock carries a state diff and the current `post_exec_tx`
-whether or not it added transactions. Suppressing subblocks with no new transactions would withhold the updated
-diff, and requiring one would make the stream's cadence depend on transaction arrival.
+whether or not it added transactions. A producer emits one per round regardless, so that the stream's cadence
+does not depend on transaction arrival and consumers get a heartbeat during quiet rounds. Suppressing those
+rounds would also withhold the updated diff.
 
 _Consumer implication._ Handle an empty `transactions` list as ordinary: it is neither an error nor a signal that
 nothing changed. Such a subblock still restates `diff`, including the current `post_exec_tx`, and still advances
