@@ -39,7 +39,7 @@ Within one in-progress block, subblocks are append-only:
 - The sequencer MUST NOT publish distinct subblocks with the same `payload_id` and `index`.
 - Transactions from each subblock are appended in stream order. A consumer obtains the in-progress transaction list by
   concatenating each subblock's `diff.transactions`. That list excludes the block's
-  [post-execution transaction](#post-execution-transactions), which is streamed separately and is not append-only.
+  [post-execution transaction](#post-execution-transactions).
 - The cumulative in-progress block after each subblock MUST satisfy all applicable OP Stack execution rules.
 - The first subblock contains the block's [deposited transactions](../glossary.md#deposited-transaction) and any other
   sequencer transactions that execute before mempool transactions. Later subblocks add mempool transactions.
@@ -159,24 +159,13 @@ obtain the sealed block's authoritative state root and block hash through normal
 ## Post-execution transactions
 
 From the [Lagoon network upgrade](./lagoon/overview.md), a block may end with a
-[post-execution transaction](./lagoon/post-exec.md) of type `0x7D`. A subblock exposes it as `diff.post_exec_tx`,
-holding its EIP-2718 encoding, and never as a member of `diff.transactions`.
+[post-execution transaction](./lagoon/post-exec.md) of type `0x7D`. A subblock carries it as `diff.post_exec_tx`,
+holding its EIP-2718 encoding, and never as a member of `diff.transactions`. Unlike `diff.transactions`, the field is
+mutable: the sequencer recomputes it as it extends the in-progress block.
 
-A post-execution transaction is derived from the contents of the block, so the sequencer recomputes it as it extends
-the in-progress block. Consequently:
-
-- `diff.post_exec_tx` is mutable across the subblocks of one `payload_id`, unlike `diff.transactions`, which is
-  append-only. It is absent while the in-progress block has no post-execution transaction, and a later subblock may
-  introduce it.
-- Only the last subblock's value is the one that lands in the sealed block. The stream marks no subblock as the last,
-  so a consumer MUST NOT treat any value as final until it establishes by other means that the block was sealed.
-- `metadata.receipts` carries no receipt for it. The canonical receipt comes from the sealed block.
-
-Because the post-execution transaction is withheld, the concatenation of `diff.transactions` over a payload's
-subblocks is the sealed block's transaction list minus its final `0x7D` transaction.
-
-[Lagoon post-exec.md § Subblocks](./lagoon/post-exec.md#subblocks) states these rules normatively, together with the
-rationale for each and what a consumer may assume.
+[Lagoon post-exec.md § Subblocks](./lagoon/post-exec.md#subblocks) specifies the behavior normatively — why the
+field lives in `diff`, when it is absent, which subblock's value is canonical, that `transactions` may be empty, and
+why no receipt is streamed for it — each with its rationale and what a consumer may assume.
 
 ## JSON-RPC
 
