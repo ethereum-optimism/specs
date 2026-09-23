@@ -23,6 +23,12 @@
     - [Transaction-Scoped Fields](#transaction-scoped-fields)
     - [Block-Scoped Fields](#block-scoped-fields)
 - [Derivation](#derivation)
+- [Subblocks](#subblocks)
+  - [The post-exec transaction is carried in `diff`](#the-post-exec-transaction-is-carried-in-diff)
+  - [The post-exec transaction never appears in `transactions`](#the-post-exec-transaction-never-appears-in-transactions)
+  - [Only the last subblock's post-exec transaction is canonical](#only-the-last-subblocks-post-exec-transaction-is-canonical)
+  - [A subblock's `transactions` may be empty](#a-subblocks-transactions-may-be-empty)
+  - [No receipt is streamed for the post-exec transaction](#no-receipt-is-streamed-for-the-post-exec-transaction)
 - [Rationale](#rationale)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -299,6 +305,97 @@ that block must transpose it into the span batch `txs` structure. A post-exec tr
 recipient or signature, so most of the per-transaction slots that structure reserves have no natural value for it.
 The values they take, and the reconstruction rules that follow, are specified in
 [Span Batch Updates](./derivation.md#span-batch-updates).
+
+## Subblocks
+
+[Subblocks](../subblocks.md) stream an L2 block while the sequencer is still building it. A post-exec transaction
+is a function of the block's contents, so the sequencer recomputes it every time it extends the in-progress block.
+This section specifies how it is exposed on that stream. It constrains the subblock wire format only; it does not
+change any rule about the sealed block.
+
+The decisions below are normative. Each is followed by a rationale and a consumer implication. **The rationales are
+non-normative and subject to change**; they are recorded so a consumer can tell why the field sits where it does
+without having to ask.
+
+### The post-exec transaction is carried in `diff`
+
+A subblock exposes the in-progress block's post-exec transaction as `diff.post_exec_tx`, holding its
+[EIP-2718 encoding](#encoding) — the `0x7D` type byte followed by the RLP-encoded payload. It is a field of
+`SubblockDelta`, not a member of `diff.transactions`.
+
+`diff.post_exec_tx` is absent when the in-progress block carries no post-exec transaction. Under SDM this is the
+case whenever the sequencer has assigned no gas refunds, since a version-1 payload with an empty
+`gasRefundEntries` list is [invalid](./sdm.md#validity-rules) and no post-exec transaction is appended at all.
+
+_Rationale (non-normative, subject to change)._ A subblock is not a block. Its `transactions` are append-only and
+immutable once streamed, whereas its `diff` describes the cumulative in-progress block and is restated by every
+subblock. A post-exec transaction is derived from the state after everything executed so far, so its value is
+recomputed as subblocks are added. That makes it mutable data, which is what `diff` is for.
+
+_Consumer implication._ Read the post-exec transaction from `diff`, and expect its value to change from subblock to
+subblock within one `payload_id`. Treat an absent `post_exec_tx` as "this block has no post-exec transaction so
+far", not as an error and not as "not yet computed". Absence is not sticky either: a later subblock of the same
+`payload_id` may introduce the field once a refund becomes due.
+
+### The post-exec transaction never appears in `transactions`
+
+`diff.transactions` MUST NOT contain a `0x7D` transaction, in any subblock, at any index.
+
+_Rationale (non-normative, subject to change)._ Placing it in `transactions` would require the sequencer to know
+which subblock is the last one for the block, which it does not know while building. Appending it to an
+append-only list in a subblock that turns out not to be last would publish a transaction that a later subblock
+supersedes, and a consumer concatenating `transactions` across subblocks would reconstruct a transaction list
+containing several `0x7D` transactions in non-final positions — a list that violates the
+[block-level structural rules](#block-level-structural-rules) the sealed block satisfies.
+
+_Consumer implication._ Do not look for the post-exec transaction in `transactions`, and do not expect the
+concatenation of `diff.transactions` across a payload's subblocks to equal the sealed block's transaction list:
+it is that list minus its post-exec transaction. `transactions` continues to carry every other transaction of the
+block, including the [deposited transactions](../../glossary.md#deposited-transaction) in the first subblock.
+
+### Only the last subblock's post-exec transaction is canonical
+
+The `diff.post_exec_tx` of the last subblock of a payload is the post-exec transaction of the sealed block. The
+value carried by any earlier subblock is provisional.
+
+_Rationale (non-normative, subject to change)._ Each subblock's value reflects the block contents at that point in
+the build. Only the final contents determine the transaction that is actually included, and the payload is
+[anchored to the block number](#block-number) rather than to any subblock, so intermediate values are not
+independently meaningful.
+
+_Consumer implication._ The stream carries no marker identifying the last subblock of a payload, and the number of
+subblocks per block is [a target rather than a guarantee](../subblocks.md#overview) — a block may carry one fewer
+or one more than usual. A consumer therefore MUST NOT treat any subblock's `post_exec_tx` as final while the block
+is still being built. Determine that the block was sealed by other means, such as observing the next `payload_id`
+or the canonical block arriving through normal L2 block propagation, and note that the in-progress block may be
+abandoned rather than sealed, in which case no value from it was ever canonical.
+
+### A subblock's `transactions` may be empty
+
+A subblock MAY have `transactions: []`. This applies to subblocks after index `0`; the first subblock always
+carries at least the block's [deposited transactions](../subblocks.md#consumer-guarantees).
+
+_Rationale (non-normative, subject to change)._ A subblock carries a state diff and the current `post_exec_tx`
+whether or not it added transactions. A producer emits one per round regardless, so that the stream's cadence
+does not depend on transaction arrival and consumers get a heartbeat during quiet rounds. Suppressing those
+rounds would also withhold the updated diff.
+
+_Consumer implication._ Handle an empty `transactions` list as ordinary: it is neither an error nor a signal that
+nothing changed. Such a subblock still restates `diff`, including the current `post_exec_tx`, and still advances
+`index`.
+
+### No receipt is streamed for the post-exec transaction
+
+`metadata.receipts` MUST NOT contain an entry for a post-exec transaction. It covers the transactions in
+`diff.transactions` only.
+
+_Rationale (non-normative, subject to change)._ Same as the reason it is absent from `transactions`: a receipt for
+a provisional post-exec transaction would be superseded, and its
+[`cumulativeGasUsed`](#receipt) is inherited from the preceding transaction's receipt, so the value would shift as
+later subblocks add transactions. Consumers can obtain the canonical receipt from the sealed block.
+
+_Consumer implication._ Fetch the post-exec transaction's receipt from the sealed block rather than from the
+subblock stream. Do not infer from the missing receipt that the transaction failed or was dropped.
 
 ## Rationale
 
