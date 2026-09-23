@@ -3867,6 +3867,7 @@ so special care may have to be taken to not duplicate data submissions.</p>
 <li><a href="protocol/subblocks.html#zero-valued-fields">Zero-valued fields</a></li>
 </ul>
 </li>
+<li><a href="protocol/subblocks.html#post-execution-transactions">Post-execution transactions</a></li>
 <li><a href="protocol/subblocks.html#json-rpc">JSON-RPC</a></li>
 <li><a href="protocol/subblocks.html#transaction-inclusion">Transaction inclusion</a></li>
 <li><a href="protocol/subblocks.html#backwards-compatibility">Backwards compatibility</a></li>
@@ -3888,7 +3889,8 @@ shorter than the L2 block time.</p>
 <li>All subblocks for the in-progress block have the same <code>payload_id</code> and block number.</li>
 <li>The sequencer MUST NOT publish distinct subblocks with the same <code>payload_id</code> and <code>index</code>.</li>
 <li>Transactions from each subblock are appended in stream order. A consumer obtains the in-progress transaction list by
-concatenating each subblock's <code>diff.transactions</code>.</li>
+concatenating each subblock's <code>diff.transactions</code>. That list excludes the block's
+<a href="protocol/subblocks.html#post-execution-transactions">post-execution transaction</a>.</li>
 <li>The cumulative in-progress block after each subblock MUST satisfy all applicable OP Stack execution rules.</li>
 <li>The first subblock contains the block's <a href="protocol/../glossary.html#deposited-transaction">deposited transactions</a> and any other
 sequencer transactions that execute before mempool transactions. Later subblocks add mempool transactions.</li>
@@ -3959,16 +3961,19 @@ any OP Stack receipt extensions active for the block.</p>
 <li><code>payload_id</code> identifies one payload build and is constant for all subblocks of the in-progress block.</li>
 <li><code>index</code> is a JSON number identifying the subblock's position within the in-progress block.</li>
 <li><code>base</code> contains immutable block properties and is present only at index <code>0</code>.</li>
-<li><code>diff.transactions</code> contains only the EIP-2718 encoded transactions added by this subblock.</li>
+<li><code>diff.transactions</code> contains only the EIP-2718 encoded transactions added by this subblock. It never contains a
+post-execution (<code>0x7D</code>) transaction; see <a href="protocol/subblocks.html#post-execution-transactions">Post-execution transactions</a> below.</li>
 <li><code>diff.gas_used</code>, <code>diff.receipts_root</code>, and <code>diff.logs_bloom</code> describe the cumulative in-progress block after applying
 this subblock.</li>
 <li><code>diff.blob_gas_used</code>, when present, is the cumulative <a href="protocol/./jovian/exec-engine.html#da-footprint-block-limit">DA footprint</a>
 of the in-progress block, not L2 blob gas usage.</li>
-<li>From the <a href="protocol/./lagoon/overview.html">Lagoon network upgrade</a>, <code>diff.post_exec_tx</code>, when present, is the latest cumulative
-<a href="protocol/./lagoon/post-exec.html">post-execution transaction</a>. It is carried separately from <code>diff.transactions</code>.</li>
+<li>From the <a href="protocol/./lagoon/overview.html">Lagoon network upgrade</a>, <code>diff.post_exec_tx</code>, when present, is the latest
+<a href="protocol/./lagoon/post-exec.html">post-execution transaction</a> of the in-progress block. It is carried separately from
+<code>diff.transactions</code>; see <a href="protocol/subblocks.html#post-execution-transactions">Post-execution transactions</a> below.</li>
 <li><code>metadata.block_number</code> is the L2 block number encoded as a JSON number.</li>
 <li><code>metadata.new_account_balances</code> maps changed accounts to their latest balances.</li>
-<li><code>metadata.receipts</code> maps transaction hashes to the receipts for transactions added by this subblock.</li>
+<li><code>metadata.receipts</code> maps transaction hashes to the receipts for transactions added by this subblock. Because a
+post-execution transaction is never one of them, it never has a receipt here.</li>
 </ul>
 <h3 id="zero-valued-fields"><a class="header" href="#zero-valued-fields">Zero-valued fields</a></h3>
 <p>Subblock payloads set these four <code>diff</code> fields to their zero values:</p>
@@ -3985,6 +3990,14 @@ not the value of the eventual sealed block.</p>
 <p>A consumer that needs the in-progress state may reconstruct it by executing the streamed transactions against the
 parent state. The subblock stream does not indicate whether the in-progress block was sealed or abandoned. Consumers
 obtain the sealed block's authoritative state root and block hash through normal L2 block propagation.</p>
+<h2 id="post-execution-transactions"><a class="header" href="#post-execution-transactions">Post-execution transactions</a></h2>
+<p>From the <a href="protocol/./lagoon/overview.html">Lagoon network upgrade</a>, a block may end with a
+<a href="protocol/./lagoon/post-exec.html">post-execution transaction</a> of type <code>0x7D</code>. A subblock carries it as <code>diff.post_exec_tx</code>,
+holding its EIP-2718 encoding, and never as a member of <code>diff.transactions</code>. Unlike <code>diff.transactions</code>, the field is
+mutable: the sequencer recomputes it as it extends the in-progress block.</p>
+<p><a href="protocol/./lagoon/post-exec.html#subblocks">Lagoon post-exec.md § Subblocks</a> specifies the behavior normatively — why the
+field lives in <code>diff</code>, when it is absent, which subblock's value is canonical, that <code>transactions</code> may be empty, and
+why no receipt is streamed for it — each with its rationale and what a consumer may assume.</p>
 <h2 id="json-rpc"><a class="header" href="#json-rpc">JSON-RPC</a></h2>
 <p>Applications may consume subblocks via a subblock-aware RPC node instead of subscribing to the stream directly.
 The node executes the streamed transactions and exposes the resulting state through standard Ethereum JSON-RPC
@@ -15610,7 +15623,7 @@ Lagoon gives its consolidation step executing messages to validate.</p>
 </li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-<h1 id="post-execution-transactions"><a class="header" href="#post-execution-transactions">Post-Execution Transactions</a></h1>
+<h1 id="post-execution-transactions-1"><a class="header" href="#post-execution-transactions-1">Post-Execution Transactions</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 <p><strong>Table of Contents</strong></p>
@@ -15646,6 +15659,15 @@ Lagoon gives its consolidation step executing messages to validate.</p>
 </ul>
 </li>
 <li><a href="protocol/lagoon/post-exec.html#derivation">Derivation</a></li>
+<li><a href="protocol/lagoon/post-exec.html#subblocks">Subblocks</a>
+<ul>
+<li><a href="protocol/lagoon/post-exec.html#the-post-exec-transaction-is-carried-in-diff">The post-exec transaction is carried in <code>diff</code></a></li>
+<li><a href="protocol/lagoon/post-exec.html#the-post-exec-transaction-never-appears-in-transactions">The post-exec transaction never appears in <code>transactions</code></a></li>
+<li><a href="protocol/lagoon/post-exec.html#only-the-last-subblocks-post-exec-transaction-is-canonical">Only the last subblock's post-exec transaction is canonical</a></li>
+<li><a href="protocol/lagoon/post-exec.html#a-subblocks-transactions-may-be-empty">A subblock's <code>transactions</code> may be empty</a></li>
+<li><a href="protocol/lagoon/post-exec.html#no-receipt-is-streamed-for-the-post-exec-transaction">No receipt is streamed for the post-exec transaction</a></li>
+</ul>
+</li>
 <li><a href="protocol/lagoon/post-exec.html#rationale">Rationale</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -15847,6 +15869,73 @@ that block must transpose it into the span batch <code>txs</code> structure. A p
 recipient or signature, so most of the per-transaction slots that structure reserves have no natural value for it.
 The values they take, and the reconstruction rules that follow, are specified in
 <a href="protocol/lagoon/./derivation.html#span-batch-updates">Span Batch Updates</a>.</p>
+<h2 id="subblocks-1"><a class="header" href="#subblocks-1">Subblocks</a></h2>
+<p><a href="protocol/lagoon/../subblocks.html">Subblocks</a> stream an L2 block while the sequencer is still building it. A post-exec transaction
+is a function of the block's contents, so the sequencer recomputes it every time it extends the in-progress block.
+This section specifies how it is exposed on that stream. It constrains the subblock wire format only; it does not
+change any rule about the sealed block.</p>
+<p>The decisions below are normative. Each is followed by a rationale and a consumer implication. <strong>The rationales are
+non-normative and subject to change</strong>; they are recorded so a consumer can tell why the field sits where it does
+without having to ask.</p>
+<h3 id="the-post-exec-transaction-is-carried-in-diff"><a class="header" href="#the-post-exec-transaction-is-carried-in-diff">The post-exec transaction is carried in <code>diff</code></a></h3>
+<p>A subblock exposes the in-progress block's post-exec transaction as <code>diff.post_exec_tx</code>, holding its
+<a href="protocol/lagoon/post-exec.html#encoding">EIP-2718 encoding</a> — the <code>0x7D</code> type byte followed by the RLP-encoded payload. It is a field of
+<code>SubblockDelta</code>, not a member of <code>diff.transactions</code>.</p>
+<p><code>diff.post_exec_tx</code> is absent when the in-progress block carries no post-exec transaction. Under SDM this is the
+case whenever the sequencer has assigned no gas refunds, since a version-1 payload with an empty
+<code>gasRefundEntries</code> list is <a href="protocol/lagoon/./sdm.html#validity-rules">invalid</a> and no post-exec transaction is appended at all.</p>
+<p><em>Rationale (non-normative, subject to change).</em> A subblock is not a block. Its <code>transactions</code> are append-only and
+immutable once streamed, whereas its <code>diff</code> describes the cumulative in-progress block and is restated by every
+subblock. A post-exec transaction is derived from the state after everything executed so far, so its value is
+recomputed as subblocks are added. That makes it mutable data, which is what <code>diff</code> is for.</p>
+<p><em>Consumer implication.</em> Read the post-exec transaction from <code>diff</code>, and expect its value to change from subblock to
+subblock within one <code>payload_id</code>. Treat an absent <code>post_exec_tx</code> as "this block has no post-exec transaction so
+far", not as an error and not as "not yet computed". Absence is not sticky either: a later subblock of the same
+<code>payload_id</code> may introduce the field once a refund becomes due.</p>
+<h3 id="the-post-exec-transaction-never-appears-in-transactions"><a class="header" href="#the-post-exec-transaction-never-appears-in-transactions">The post-exec transaction never appears in <code>transactions</code></a></h3>
+<p><code>diff.transactions</code> MUST NOT contain a <code>0x7D</code> transaction, in any subblock, at any index.</p>
+<p><em>Rationale (non-normative, subject to change).</em> Placing it in <code>transactions</code> would require the sequencer to know
+which subblock is the last one for the block, which it does not know while building. Appending it to an
+append-only list in a subblock that turns out not to be last would publish a transaction that a later subblock
+supersedes, and a consumer concatenating <code>transactions</code> across subblocks would reconstruct a transaction list
+containing several <code>0x7D</code> transactions in non-final positions — a list that violates the
+<a href="protocol/lagoon/post-exec.html#block-level-structural-rules">block-level structural rules</a> the sealed block satisfies.</p>
+<p><em>Consumer implication.</em> Do not look for the post-exec transaction in <code>transactions</code>, and do not expect the
+concatenation of <code>diff.transactions</code> across a payload's subblocks to equal the sealed block's transaction list:
+it is that list minus its post-exec transaction. <code>transactions</code> continues to carry every other transaction of the
+block, including the <a href="protocol/lagoon/../../glossary.html#deposited-transaction">deposited transactions</a> in the first subblock.</p>
+<h3 id="only-the-last-subblocks-post-exec-transaction-is-canonical"><a class="header" href="#only-the-last-subblocks-post-exec-transaction-is-canonical">Only the last subblock's post-exec transaction is canonical</a></h3>
+<p>The <code>diff.post_exec_tx</code> of the last subblock of a payload is the post-exec transaction of the sealed block. The
+value carried by any earlier subblock is provisional.</p>
+<p><em>Rationale (non-normative, subject to change).</em> Each subblock's value reflects the block contents at that point in
+the build. Only the final contents determine the transaction that is actually included, and the payload is
+<a href="protocol/lagoon/post-exec.html#block-number">anchored to the block number</a> rather than to any subblock, so intermediate values are not
+independently meaningful.</p>
+<p><em>Consumer implication.</em> The stream carries no marker identifying the last subblock of a payload, and the number of
+subblocks per block is <a href="protocol/lagoon/../subblocks.html#overview">a target rather than a guarantee</a> — a block may carry one fewer
+or one more than usual. A consumer therefore MUST NOT treat any subblock's <code>post_exec_tx</code> as final while the block
+is still being built. Determine that the block was sealed by other means, such as observing the next <code>payload_id</code>
+or the canonical block arriving through normal L2 block propagation, and note that the in-progress block may be
+abandoned rather than sealed, in which case no value from it was ever canonical.</p>
+<h3 id="a-subblocks-transactions-may-be-empty"><a class="header" href="#a-subblocks-transactions-may-be-empty">A subblock's <code>transactions</code> may be empty</a></h3>
+<p>A subblock MAY have <code>transactions: []</code>. This applies to subblocks after index <code>0</code>; the first subblock always
+carries at least the block's <a href="protocol/lagoon/../subblocks.html#consumer-guarantees">deposited transactions</a>.</p>
+<p><em>Rationale (non-normative, subject to change).</em> A subblock carries a state diff and the current <code>post_exec_tx</code>
+whether or not it added transactions. A producer emits one per round regardless, so that the stream's cadence
+does not depend on transaction arrival and consumers get a heartbeat during quiet rounds. Suppressing those
+rounds would also withhold the updated diff.</p>
+<p><em>Consumer implication.</em> Handle an empty <code>transactions</code> list as ordinary: it is neither an error nor a signal that
+nothing changed. Such a subblock still restates <code>diff</code>, including the current <code>post_exec_tx</code>, and still advances
+<code>index</code>.</p>
+<h3 id="no-receipt-is-streamed-for-the-post-exec-transaction"><a class="header" href="#no-receipt-is-streamed-for-the-post-exec-transaction">No receipt is streamed for the post-exec transaction</a></h3>
+<p><code>metadata.receipts</code> MUST NOT contain an entry for a post-exec transaction. It covers the transactions in
+<code>diff.transactions</code> only.</p>
+<p><em>Rationale (non-normative, subject to change).</em> Same as the reason it is absent from <code>transactions</code>: a receipt for
+a provisional post-exec transaction would be superseded, and its
+<a href="protocol/lagoon/post-exec.html#receipt"><code>cumulativeGasUsed</code></a> is inherited from the preceding transaction's receipt, so the value would shift as
+later subblocks add transactions. Consumers can obtain the canonical receipt from the sealed block.</p>
+<p><em>Consumer implication.</em> Fetch the post-exec transaction's receipt from the sealed block rather than from the
+subblock stream. Do not infer from the missing receipt that the transaction failed or was dropped.</p>
 <h2 id="rationale-7"><a class="header" href="#rationale-7">Rationale</a></h2>
 <p><strong>Why a versioned payload.</strong> A <code>version</code> byte at the head of the payload lets the schema extend or replace its
 trailing fields without re-spending an EIP-2718 type byte.</p>
