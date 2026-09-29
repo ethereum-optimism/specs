@@ -303,9 +303,9 @@ Every [Member Chain](#member-chain) already runs permissionless dispute games, s
 Migration does not check this. It registers whatever list of super-root game configurations it is
 given as its input, including a list holding the permissioned game type only. Validation checks one
 fixed shape instead: the set's shared `DisputeGameFactory` must have both the permissioned and the
-permissionless super-root game type of this release registered. The permissione game type is the
-set's fallback, as it is for a single chain. A set that comes out of migration with permissioned games
-only is therefore a downgrade.
+permissionless super-root game type of this release registered. The permissioned game type is the
+set's fallback, as it is for a single chain. A set that comes out of migration with permissioned
+games only is a downgrade.
 
 #### Mitigations
 
