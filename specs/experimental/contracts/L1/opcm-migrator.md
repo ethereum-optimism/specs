@@ -490,8 +490,7 @@ configuration value must survive migration unchanged.
 **Severity: Critical**
 
 Migration touches every member's most privileged contracts. Silently changing an owner would
-transfer control of the chain. Silently changing a batcher hash or a gas limit would break it. In
-either case the damage looks like the migration working as intended rather than like a bug.
+transfer control of the chain. Silently changing a batcher hash or a gas limit would break it.
 
 ### iMIG-011: The Starting Anchor State is well formed
 
