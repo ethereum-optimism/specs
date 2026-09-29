@@ -393,12 +393,11 @@ holds the same `SuperchainConfig` and so reports the same guardian. The guardian
 
 ### iMIG-007: No legacy dispute game configuration survives
 
-No game type may be left with an implementation, or with any configuration of its own such as an
-initialization bond, on any [Retired Contracts](#retired-contracts) `DisputeGameFactory`. The
-[Cleared Game Types](#cleared-game-types) must therefore cover every game type a chain on this
-release could have registered, including those the release has since withdrawn from service. The
-set's shared `DisputeGameFactory` must carry only the super-root game types that migration was
-asked to register.
+No game type may be left with an implementation on any [Retired Contracts](#retired-contracts)
+`DisputeGameFactory`. The [Cleared Game Types](#cleared-game-types) must therefore cover every game
+type a chain on this release could have registered, including those the release has since withdrawn
+from service. The set's shared `DisputeGameFactory` must carry only the super-root game types that
+migration was asked to register.
 
 Migration and validation must agree on which game types those are. Neither may work from its own
 list.
@@ -408,8 +407,9 @@ list.
 **Severity: High**
 
 A game type left registered on a retired factory lets anyone create a new game there, against a
-registry the portal no longer respects. Bonds staked on such a game are staked on a game that can
-never settle a withdrawal, and a stale initialization bond prices it wrong. If the two sides
+registry the portal no longer respects. Bonds staked there back a game that can never settle a
+withdrawal. A stale initialization bond is harmless once the implementation is cleared, because
+creation reverts on the missing implementation before the factory reads the bond. If the two sides
 disagree about the list, validation passes while a game type is still live, which is precisely the
 failure this invariant exists to catch.
 
