@@ -439,9 +439,19 @@ failure this invariant exists to catch.
 
 ### iMIG-008: Shared Contracts depend only on set-scoped contracts
 
-No [Shared Contract](#shared-contracts) may hold a reference to a contract belonging to a single
-[Member Chain](#member-chain). Every dependency of a Shared Contract must itself be scoped to the
-whole set.
+No [Shared Contract](#shared-contracts) may resolve its pause state, its guardian or its
+`SuperchainConfig` through a contract belonging to a single [Member Chain](#member-chain). Every
+dependency that governs the set must itself be scoped to the whole set.
+
+Two references to per-chain contracts survive migration by design and neither invalidates this invariant:
+
+- The index-0 member's `ProxyAdmin` administers the three proxies migration deploys, and remains the
+  admin of the `DelayedWETH` the set adopts.
+  [aMIG-003](#amig-003-a-single-trusted-proxyadmin-owner-governs-the-whole-set) makes this safe.
+  Every member's `ProxyAdmin` is controlled by the same owner.
+- The set's shared `ETHLockbox` records every member's `OptimismPortal` as an authorized portal, and
+  every retired `ETHLockbox` as an authorized lockbox. Each portal needs its entry to draw on the
+  shared pool, and each retired lockbox needs its entry to hand its balance over.
 
 #### Impact
 
