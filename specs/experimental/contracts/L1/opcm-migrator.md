@@ -58,6 +58,8 @@
     - [Impact](#impact-11)
   - [iMIG-013: Custom gas token chains are not migrated](#imig-013-custom-gas-token-chains-are-not-migrated)
     - [Impact](#impact-12)
+  - [iMIG-014: Withdrawal proofs do not survive migration](#imig-014-withdrawal-proofs-do-not-survive-migration)
+    - [Impact](#impact-13)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -537,3 +539,31 @@ member, which activates the [interop ETH predeploys](../../../interop/eth-bridgi
 cross-chain ETH transfer burns the sending chain's native asset and mints ETH on the receiving
 chain. That ETH is withdrawable from the set's single shared `ETHLockbox`, so every unit such a
 member sends draws on ETH it never deposited.
+
+### iMIG-014: Withdrawal proofs do not survive migration
+
+No withdrawal proven before migration may be finalized afterwards.
+
+The set's shared `AnchorStateRegistry` is initialized during migration, so its
+[Retirement Timestamp](../../../fault-proof/stage-one/anchor-state-registry.md#retirement-timestamp)
+is the migration block. Every game created before that block is a
+[Retired Game](../../../fault-proof/stage-one/anchor-state-registry.md#retired-game) to the set, and
+a proof against a Retired Game can never be finalized. Those games are not registered with the set's
+shared `DisputeGameFactory` either, which rejects them on that path as well. The withdrawal must be
+proven again, against a game the shared factory created, and then wait a fresh proof maturity delay.
+
+This does not contradict [aMIG-006](#amig-006-retired-dispute-games-resolve). **Games in progress
+still resolve and still pay their bonds.** A game keeps the registry it was created with, and
+that registry keeps its own retirement timestamp, so the game is not retired there. Only the
+portal moved.
+
+#### Impact
+
+**Severity: Critical**
+
+A pre-migration game proves one chain's output root. A proof that stayed valid against such a game
+would pay out of the set's pooled `ETHLockbox`, on the strength of a game nobody is defending,
+drawing on ETH the other members deposited.
+
+The user sees nothing at migration time. Their proof reverts only when they try to finalize it, so
+the operator has to tell them to prove again.
