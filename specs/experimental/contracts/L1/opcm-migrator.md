@@ -29,6 +29,8 @@
     - [Mitigations](#mitigations-4)
   - [aMIG-006: Retired dispute games resolve](#amig-006-retired-dispute-games-resolve)
     - [Mitigations](#mitigations-5)
+  - [aMIG-007: Member Chains already run permissionless dispute games](#amig-007-member-chains-already-run-permissionless-dispute-games)
+    - [Mitigations](#mitigations-6)
 - [Invariants](#invariants)
   - [iMIG-001: Migration happens at most once per chain](#imig-001-migration-happens-at-most-once-per-chain)
     - [Impact](#impact)
@@ -97,6 +99,9 @@ three deliberate exceptions. Each is a considered trade, not an oversight:
 - **It accepts a variable-length list of super-root dispute game configurations**, rather than one
   configuration per valid game type in a fixed order as system deployment and system upgrade
   require. An Interop Set is defended by super-root games only, so the fixed shape does not apply.
+  Validation still expects both super-root game types, because a set must keep defending its members
+  with the permissionless games they already run. See
+  [aMIG-007](#amig-007-member-chains-already-run-permissionless-dispute-games).
 
 ## Definitions
 
@@ -290,6 +295,24 @@ Migration does not resolve, cancel or settle games that are in progress.
   set's shared `ETHLockbox`, so a retired game is neither stranded nor exempt from a pause
 - Bond withdrawals already pending in a retired `DelayedWETH` survive migration
 
+### aMIG-007: Member Chains already run permissionless dispute games
+
+Every [Member Chain](#member-chain) already runs permissionless dispute games, so the
+[Interop Set](#interop-set) it joins must go on defending it with permissionless super-root games.
+
+Migration does not check this. It registers whatever list of super-root game configurations it is
+given as its input, including a list holding the permissioned game type only. Validation checks one
+fixed shape instead: the set's shared `DisputeGameFactory` must have both the permissioned and the
+permissionless super-root game type of this release registered. The permissione game type is the
+set's fallback, as it is for a single chain. A set that comes out of migration with permissioned games
+only is therefore a downgrade.
+
+#### Mitigations
+
+- Validation fails on a shared `DisputeGameFactory` that has no permissionless super-root game type,
+  so the downgrade is not silently accepted
+- Migration is a privileged one-off, so the operator is responsible for supplying a valid configuration.
+
 ## Invariants
 
 ### iMIG-001: Migration happens at most once per chain
@@ -396,11 +419,12 @@ holds the same `SuperchainConfig` and so reports the same guardian. The guardian
 No game type may be left with an implementation on any [Retired Contracts](#retired-contracts)
 `DisputeGameFactory`. The [Cleared Game Types](#cleared-game-types) must therefore cover every game
 type a chain on this release could have registered, including those the release has since withdrawn
-from service. The set's shared `DisputeGameFactory` must carry only the super-root game types that
-migration was asked to register.
+from service. The set's shared `DisputeGameFactory` must carry only super-root game types, and must
+include both the permissioned and the permissionless super-root game type of this release. See
+[aMIG-007](#amig-007-member-chains-already-run-permissionless-dispute-games).
 
-Migration and validation must agree on which game types those are. Neither may work from its own
-list.
+Migration and validation must agree on which game types a retired factory has to be cleared of.
+Neither may work from its own list.
 
 #### Impact
 
