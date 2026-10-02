@@ -64,8 +64,8 @@ Initializes the ETHLockbox contract.
 - MUST only be callable by the ProxyAdmin or its owner.
 - MUST set the `SuperchainConfig` contract.
 - MUST authorize all portals provided in the initialization array.
-- MUST check that all portals have the same `SuperchainConfig` as the `ETHLockbox`. The `SuperchainConfig` is read through
-  each portal's `SystemConfig`.
+- MUST check that all portals have the same `SuperchainConfig` as the `ETHLockbox`. The `SuperchainConfig` is read
+  through each portal's `SystemConfig`.
 
 ```solidity
 function initialize(ISuperchainConfig _superchainConfig, IOptimismPortal[] calldata _portals) external;
