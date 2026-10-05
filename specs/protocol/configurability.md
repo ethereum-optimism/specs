@@ -113,7 +113,7 @@ place.<br/>
 
 **Description:** The length of time that must pass between proving and finalizing a withdrawal.<br/>
 **Administrator:** [L1 Proxy Admin Owner](#admin-roles)<br/>
-**Requirement:** Between 1 day and 7 days, inclusive.<br/>
+**Requirement:** 1 day to 7 days<br/>
 **Notes:** High security. Configured per chain within bounds fixed by the implementation. The upper bound leaves
 enough time to consider social layer solutions to a hack if necessary. The lower bound is the floor on withdrawal
 time regardless of game type. Portals sharing an `ETHLockbox` must use the same value.<br/>
@@ -124,7 +124,7 @@ time regardless of game type. Portals sharing an `ETHLockbox` must use the same 
 to [blacklist a resolved dispute game](../fault-proof/stage-one/bridge-integration.md#blacklisting-disputegames) before
 any withdrawals proven against it can be finalized, in the case of a system failure.<br/>
 **Administrator:** [L1 Proxy Admin Owner](#admin-roles)<br/>
-**Requirement:** Between 12 hours and 3.5 days, inclusive.<br/>
+**Requirement:** 12 hours to 3.5 days<br/>
 **Notes:** High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
 `Guardian` to blacklist games. Chains using the `FaultDisputeGame` are expected to keep 3.5 days so that the game
 clock and the finality delay still total 7 days. Shared by all chains using the same `AnchorStateRegistry`.<br/>
@@ -177,7 +177,7 @@ CLOCK_EXTENSION seconds remaining.<br/>
 
 **Description:** The length of time that must pass before dispute game bonds can be withdrawn.<br/>
 **Administrator:** [L1 Proxy Admin Owner](#admin-roles)<br/>
-**Requirement:** Between 12 hours and 7 days, inclusive.<br/>
+**Requirement:** 12 hours to 7 days<br/>
 **Notes:** High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
 `Guardian` to recover funds from `DelayedWETH` if bonds were allocated incorrectly. Shared by every game type on the
 chain and by all chains using the same `DelayedWETH`.<br/>
