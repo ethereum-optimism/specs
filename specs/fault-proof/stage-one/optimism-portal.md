@@ -357,11 +357,16 @@ see this as a critical system risk.
 
 ### paused
 
-Returns the current state of the `SystemConfig.paused()` function.
+(-op-contracts/v9.0.0) Returns the current state of the `SystemConfig.paused()` function.
+
+(+op-contracts/v9.0.0) Returns the current state of the `ETHLockbox.paused()` function, for the
+`ETHLockbox` configured for this `OptimismPortal`.
 
 ### guardian
 
-Returns the address of the Guardian as per `SystemConfig.guardian()`.
+(-op-contracts/v9.0.0) Returns the address of the Guardian as per `SystemConfig.guardian()`.
+
+(+op-contracts/v9.0.0) Returns the address of the Guardian as per `ETHLockbox.guardian()`.
 
 ### ethLockbox
 
@@ -531,8 +536,10 @@ Computes the minimum gas limit for a deposit transaction based on calldata size.
 
 Returns the `SuperchainConfig` contract address.
 
-- MUST return the address of the `SuperchainConfig` contract stored in the `SystemConfig` contract
-  that was set during initialization.
+- (-op-contracts/v9.0.0) MUST return the address of the `SuperchainConfig` contract stored in the
+  `SystemConfig` contract that was set during initialization.
+- (+op-contracts/v9.0.0) MUST return the address of the `SuperchainConfig` contract stored in the
+  `ETHLockbox` contract configured for this `OptimismPortal`.
 
 ### disputeGameBlacklist
 
