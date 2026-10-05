@@ -119,21 +119,16 @@ Users can finalize a withdrawal if they have previously proven the withdrawal an
 meets the following conditions:
 
 - Withdrawal is a [Proven Withdrawal](#proven-withdrawal)
-- Withdrawal was proven at least [Proof Maturity Delay](#proof-maturity-delay) seconds ago, as
-  currently configured
+- Withdrawal was proven at least [Proof Maturity Delay](#proof-maturity-delay) seconds ago
 - Withdrawal was proven against a game with a [Valid Claim](./anchor-state-registry.md#valid-claim)
 - Withdrawal was not previously finalized
 
-The Proof Maturity Delay and the
-[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) run
-concurrently. Given a withdrawal proven at `provenAt` against a game that resolved at
-`resolvedAt`, the earliest time at which the withdrawal can be finalized is:
+A withdrawal proven at `provenAt` against a game that resolved at `resolvedAt` can be finalized
+no earlier than:
 
 ```text
 max(provenAt + proofMaturityDelaySeconds, resolvedAt + disputeGameFinalityDelaySeconds)
 ```
-
-where both delays are the values configured at the time of the finalization attempt.
 
 ### Deleted Withdrawal Proof
 
@@ -324,9 +319,6 @@ parties responsible for game invalidation have exactly the Dispute Game Finality
 invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
 incorrectly resolving games must be invalidated before the pause is deactivated.
 
-The Dispute Game Finality Delay is configured per chain, so the time available to invalidate a
-game differs between chains.
-
 #### Mitigations
 
 - Stakeholder incentives / processes
@@ -431,7 +423,6 @@ Permits the ProxyAdmin owner to set the [Proof Maturity Delay](#proof-maturity-d
 - MUST revert if the new value is outside of the bounds set in the constructor.
 - MUST update the Proof Maturity Delay with the provided value.
 - MUST emit an event showing that the Proof Maturity Delay was updated.
-- MUST NOT be blocked by the Pause Mechanism.
 
 ### disputeGameFactory
 

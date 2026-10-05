@@ -205,7 +205,6 @@ Allows the L1 ProxyAdmin owner to change the [Withdrawal Delay](#withdrawal-dela
 - MUST revert if `_delay` is less than `MIN_DELAY_SECONDS` or greater than `MAX_DELAY_SECONDS`
 - MUST set the Withdrawal Delay to `_delay`
 - MUST emit an event showing that the Withdrawal Delay was updated
-- MUST NOT be blocked by the pause state
 
 ### config
 
