@@ -109,23 +109,25 @@ concatenation, `versionByte` is `0x00`, and `chainId` is a `uint256`.<br/>
 **Notes:** Foundation will ensure chains are responsible with their chain IDs until there's a governance process in
 place.<br/>
 
-### [Proof Maturity Delay](../fault-proof/stage-one/bridge-integration.md#fpac-optimismportal-mods-specification)
+### [Proof Maturity Delay](../fault-proof/stage-one/optimism-portal.md#proof-maturity-delay)
 
 **Description:** The length of time that must pass between proving and finalizing a withdrawal.<br/>
-**Administrator:** [L1 Proxy Admin](#admin-roles)<br/>
-**Requirement:** 7 days<br/>
-**Notes:** High security. Excessively safe upper bound that leaves enough time to consider social layer solutions to a
-hack if necessary. Allows enough time for other network participants to challenge the integrity of the corresponding
-output root.<br/>
+**Administrator:** [L1 Proxy Admin Owner](#admin-roles)<br/>
+**Requirement:** Between 1 day and 7 days, inclusive.<br/>
+**Notes:** High security. Configured per chain within bounds fixed by the implementation. The upper bound leaves
+enough time to consider social layer solutions to a hack if necessary. The lower bound is the floor on withdrawal
+time regardless of game type. Portals sharing an `ETHLockbox` must use the same value.<br/>
 
-### [Dispute Game Finality](../fault-proof/stage-one/bridge-integration.md#fpac-optimismportal-mods-specification)
+### [Dispute Game Finality](../fault-proof/stage-one/anchor-state-registry.md#dispute-game-finality-delay-airgap)
 
 **Description:** The amount of time given to the `Guardian` role
 to [blacklist a resolved dispute game](../fault-proof/stage-one/bridge-integration.md#blacklisting-disputegames) before
 any withdrawals proven against it can be finalized, in the case of a system failure.<br/>
-**Administrator:** [L1 Proxy Admin](#admin-roles)<br/>
-**Requirement:** 3.5 days<br/>
-**Notes:** High security. Allows enough time for the `Guardian` to blacklist games.<br/>
+**Administrator:** [L1 Proxy Admin Owner](#admin-roles)<br/>
+**Requirement:** Between 12 hours and 3.5 days, inclusive.<br/>
+**Notes:** High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
+`Guardian` to blacklist games. Chains using the `FaultDisputeGame` are expected to keep 3.5 days so that the game
+clock and the finality delay still total 7 days. Shared by all chains using the same `AnchorStateRegistry`.<br/>
 
 ### [Respected Game Type](../fault-proof/stage-one/bridge-integration.md#new-state-variables)
 
@@ -171,13 +173,14 @@ CLOCK_EXTENSION seconds remaining.<br/>
 **Requirement:** 3 hours<br/>
 **Notes:** Allows enough time for honest actors to counter freeloader claims.<br/>
 
-### [Bond Withdrawal Delay](https://specs.optimism.io/fault-proof/stage-one/bond-incentives.html#delay-period)
+### [Bond Withdrawal Delay](../fault-proof/stage-one/bond-incentives.md#delayedweth)
 
 **Description:** The length of time that must pass before dispute game bonds can be withdrawn.<br/>
-**Administrator:** Static<br/>
-**Requirement:** 7 days<br/>
-**Notes:** High security. Allows enough time for the `Guardian` to recover funds from `DelayedWETH` if bonds were
-allocated incorrectly.<br/>
+**Administrator:** [L1 Proxy Admin Owner](#admin-roles)<br/>
+**Requirement:** Between 12 hours and 7 days, inclusive.<br/>
+**Notes:** High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
+`Guardian` to recover funds from `DelayedWETH` if bonds were allocated incorrectly. Shared by every game type on the
+chain and by all chains using the same `DelayedWETH`.<br/>
 
 ### [Minimum Large Preimage Proposal Size](https://specs.optimism.io/fault-proof/stage-one/fault-dispute-game.html#preimageoracle-interaction)
 

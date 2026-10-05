@@ -51,6 +51,9 @@
   - [respectedGameType](#respectedgametype)
   - [retirementTimestamp](#retirementtimestamp)
   - [disputeGameFinalityDelaySeconds](#disputegamefinalitydelayseconds)
+  - [minDisputeGameFinalityDelaySeconds](#mindisputegamefinalitydelayseconds)
+  - [maxDisputeGameFinalityDelaySeconds](#maxdisputegamefinalitydelayseconds)
+  - [setDisputeGameFinalityDelaySeconds](#setdisputegamefinalitydelayseconds)
   - [setRespectedGameType](#setrespectedgametype)
   - [updateRetirementTimestamp](#updateretirementtimestamp)
   - [blacklistDisputeGame](#blacklistdisputegame)
@@ -103,7 +106,19 @@ now, the `AnchorStateRegistry` only allows a single Respected Game Type.
 ### Dispute Game Finality Delay (Airgap)
 
 The **Dispute Game Finality Delay** or **Airgap** is the amount of time that must elapse after a
-game resolves before the game's result is considered "final".
+game resolves before the game's result is considered "final". It is the window during which the
+Guardian can [blacklist](#blacklisted-game) or [retire](#retired-game) a game that resolved
+incorrectly before any consumer of the `AnchorStateRegistry` acts on the result.
+
+The Dispute Game Finality Delay is configured per chain. It may be changed by the L1 ProxyAdmin
+owner, but only within a lower and upper bound that cannot be changed without an upgrade. The
+value in effect is the one configured at the time a game is checked for finality, so a change
+applies to games that have already resolved, in either direction. A game that is already the
+[Anchor Game](#anchor-game) remains the Anchor Game regardless of such a change.
+
+All chains that share an `AnchorStateRegistry`, such as the members of an interop set, share a
+single Dispute Game Finality Delay. The same value applies to every game type that uses the
+registry.
 
 ### Registered Game
 
@@ -269,6 +284,10 @@ for game invalidation have exactly the Dispute Game Finality Delay to invalidate
 it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
 must be invalidated before the pause is deactivated.
 
+The Dispute Game Finality Delay is configured per chain and is independent of the
+[Respected Game Type](#respected-game-type). A chain that lowered its delay for a quickly
+resolving game type keeps that delay if it later changes the Respected Game Type.
+
 #### Mitigations
 
 - Stakeholder incentives / processes
@@ -395,16 +414,24 @@ allotted response time, and resolution would require intervention from the Proxy
 
 ### constructor
 
-- MUST set the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+<!-- TODO(1DW): function and event names are provisional until the implementation PR for
+ethereum-optimism/optimism-private#686 lands. -->
+
+- MUST set the lower and upper bounds of the
+  [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
 
 ### initialize
 
 - MUST only be callable by the ProxyAdmin or its owner.
-- MUST only be triggerable once.
-- MUST set the value of the `SystemConfig` contract that stores the address of the Guardian.
+- MUST only be triggerable once per initialization version.
+- MUST set the value of the `ETHLockbox` contract through which the Guardian and pause state are
+  resolved.
 - MUST set the value of the `DisputeGameFactory` contract that creates Dispute Game instances.
 - MUST set the value of the [Starting Anchor State](#starting-anchor-state).
 - MUST set the value of the initial [Respected Game Type](#respected-game-type).
+- MUST set the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+- MUST revert if the provided Dispute Game Finality Delay is outside of the bounds set in the
+  constructor.
 - MUST set the value of the [Retirement Timestamp](#retirement-timestamp) to the current block
   timestamp. NOTE that this is a safety mechanism that invalidates all existing Dispute Game
   contracts to support the safe transition away from the `OptimismPortal` as the source of truth
@@ -426,7 +453,26 @@ Returns the value of the current [Retirement Timestamp](#retirement-timestamp).
 
 ### disputeGameFinalityDelaySeconds
 
-Returns the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+Returns the current value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+
+### minDisputeGameFinalityDelaySeconds
+
+Returns the lower bound of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+
+### maxDisputeGameFinalityDelaySeconds
+
+Returns the upper bound of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+
+### setDisputeGameFinalityDelaySeconds
+
+Permits the ProxyAdmin owner to set the
+[Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+
+- MUST revert if called by any address other than the ProxyAdmin owner.
+- MUST revert if the new value is outside of the bounds set in the constructor.
+- MUST update the Dispute Game Finality Delay with the provided value.
+- MUST emit an event showing that the Dispute Game Finality Delay was updated.
+- MUST NOT be blocked by the Pause Mechanism.
 
 ### setRespectedGameType
 
@@ -507,6 +553,7 @@ Determines if a game is a Finalized Game.
 - MUST return `true` if and only if `isGameResolved(game)` and the game has resolved a result more
   than the airgap delay seconds ago as defined by the `disputeGameFinalityDelaySeconds` variable in
   the `AnchorStateRegistry` contract.
+- MUST return `false` if the Dispute Game Finality Delay is zero.
 
 ### isGameClaimValid
 

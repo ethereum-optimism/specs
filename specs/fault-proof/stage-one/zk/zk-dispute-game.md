@@ -415,16 +415,18 @@ types before fraudulent games achieve Valid Claims.
 
 #### Mitigations
 
-- The `DISPUTE_GAME_FINALITY_DELAY_SECONDS` airgap between resolution and `closeGame` provides
-  the Guardian a window to act.
+- The [Dispute Game Finality Delay](../anchor-state-registry.md#dispute-game-finality-delay-airgap)
+  airgap between resolution and `closeGame` provides the Guardian a window to act. This value is
+  configurable per chain, so the window may be as short as the configured lower bound.
 - `DelayedWETH` provides an additional window after `closeGame` to freeze funds.
 
 ### aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency
 
 There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
 game that passes the finality delay can call `closeGame()` and advance it. However, the minimum
-time for a game to advance the anchor state is `maxChallengeDuration + DISPUTE_GAME_FINALITY_DELAY_SECONDS`
-(12+ hours in practice), and under normal operation this is expected to be much larger than
+time for a game to advance the anchor state is `maxChallengeDuration + disputeGameFinalityDelaySeconds`
+(12+ hours in practice, with the finality delay configured per chain), and under normal operation this
+is expected to be much larger than
 typical proposal frequency. Orphan risk from parent validation is therefore negligible.
 
 #### Mitigations

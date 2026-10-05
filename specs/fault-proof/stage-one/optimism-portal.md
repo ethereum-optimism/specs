@@ -27,6 +27,8 @@
     - [Mitigations](#mitigations-1)
   - [aOP-003: Incorrectly resolving games will be invalidated before they have Valid Claims](#aop-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
     - [Mitigations](#mitigations-2)
+  - [aOP-004: Portals sharing an ETHLockbox use the same Proof Maturity Delay](#aop-004-portals-sharing-an-ethlockbox-use-the-same-proof-maturity-delay)
+    - [Mitigations](#mitigations-3)
 - [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [iOP-001: Invalid Withdrawals can never be finalized](#iop-001-invalid-withdrawals-can-never-be-finalized)
@@ -40,6 +42,9 @@
   - [guardian](#guardian)
   - [ethLockbox](#ethlockbox)
   - [proofMaturityDelaySeconds](#proofmaturitydelayseconds)
+  - [minProofMaturityDelaySeconds](#minproofmaturitydelayseconds)
+  - [maxProofMaturityDelaySeconds](#maxproofmaturitydelayseconds)
+  - [setProofMaturityDelaySeconds](#setproofmaturitydelayseconds)
   - [disputeGameFactory](#disputegamefactory)
   - [disputeGameFinalityDelaySeconds](#disputegamefinalitydelayseconds)
   - [respectedGameType](#respectedgametype)
@@ -77,6 +82,11 @@ that have been declared valid by the L1 Fault Proof system.
 The **Proof Maturity Delay** is the minimum amount of time that a withdrawal must be a
 [Proven Withdrawal](#proven-withdrawal) before it can be finalized.
 
+The Proof Maturity Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner,
+but only within a lower and upper bound that cannot be changed without an upgrade. The value in
+effect is the one configured at the time a withdrawal is checked for finalization, so a change
+applies to withdrawals that were already proven, in either direction.
+
 ### Proven Withdrawal
 
 A **Proven Withdrawal** is a withdrawal transaction that has been proven against some Output Root
@@ -109,9 +119,21 @@ Users can finalize a withdrawal if they have previously proven the withdrawal an
 meets the following conditions:
 
 - Withdrawal is a [Proven Withdrawal](#proven-withdrawal)
-- Withdrawal was proven at least [Proof Maturity Delay](#proof-maturity-delay) seconds ago
+- Withdrawal was proven at least [Proof Maturity Delay](#proof-maturity-delay) seconds ago, as
+  currently configured
 - Withdrawal was proven against a game with a [Valid Claim](./anchor-state-registry.md#valid-claim)
 - Withdrawal was not previously finalized
+
+The Proof Maturity Delay and the
+[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) run
+concurrently. Given a withdrawal proven at `provenAt` against a game that resolved at
+`resolvedAt`, the earliest time at which the withdrawal can be finalized is:
+
+```text
+max(provenAt + proofMaturityDelaySeconds, resolvedAt + disputeGameFinalityDelaySeconds)
+```
+
+where both delays are the values configured at the time of the finalization attempt.
 
 ### Deleted Withdrawal Proof
 
@@ -302,11 +324,27 @@ parties responsible for game invalidation have exactly the Dispute Game Finality
 invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
 incorrectly resolving games must be invalidated before the pause is deactivated.
 
+The Dispute Game Finality Delay is configured per chain, so the time available to invalidate a
+game differs between chains.
+
 #### Mitigations
 
 - Stakeholder incentives / processes
 - Incident response plan
 - Monitoring
+
+### aOP-004: Portals sharing an ETHLockbox use the same Proof Maturity Delay
+
+We assume that all `OptimismPortal` contracts that share an `ETHLockbox` are configured with the
+same [Proof Maturity Delay](#proof-maturity-delay). Because liquidity is pooled in the
+`ETHLockbox`, the shortest Proof Maturity Delay among those portals is the effective exit time for
+every chain's funds. The contracts do not enforce this property.
+
+#### Mitigations
+
+- Portals sharing an `ETHLockbox` share a single L1 ProxyAdmin owner
+- Configuration changes are simulated and validated across all portals in the set before execution
+- Standard configuration validation checks the property
 
 ## Dependencies
 
@@ -343,7 +381,10 @@ see this as a critical system risk.
 
 ### constructor
 
-- MUST set the value of the [Proof Maturity Delay](#proof-maturity-delay).
+<!-- TODO(1DW): function and event names are provisional until the implementation PR for
+ethereum-optimism/optimism-private#686 lands. -->
+
+- MUST set the lower and upper bounds of the [Proof Maturity Delay](#proof-maturity-delay).
 
 ### initialize
 
@@ -351,6 +392,8 @@ see this as a critical system risk.
 - MUST set the value of the `SystemConfig` contract.
 - MUST set the value of the `AnchorStateRegistry` contract.
 - MUST assert that the ETHLockbox state is valid based on the feature flag.
+- MUST set the value of the [Proof Maturity Delay](#proof-maturity-delay).
+- MUST revert if the provided Proof Maturity Delay is outside of the bounds set in the constructor.
 - MUST set the value of the [L2 Withdrawal Sender](#l2-withdrawal-sender) variable to the default
   value if the value is not set already.
 - MUST initialize the resource metering configuration.
@@ -370,7 +413,25 @@ configured for this OptimismPortal, this function will return `address(0)`.
 
 ### proofMaturityDelaySeconds
 
-Returns the value of the [Proof Maturity Delay](#proof-maturity-delay).
+Returns the current value of the [Proof Maturity Delay](#proof-maturity-delay).
+
+### minProofMaturityDelaySeconds
+
+Returns the lower bound of the [Proof Maturity Delay](#proof-maturity-delay).
+
+### maxProofMaturityDelaySeconds
+
+Returns the upper bound of the [Proof Maturity Delay](#proof-maturity-delay).
+
+### setProofMaturityDelaySeconds
+
+Permits the ProxyAdmin owner to set the [Proof Maturity Delay](#proof-maturity-delay).
+
+- MUST revert if called by any address other than the ProxyAdmin owner.
+- MUST revert if the new value is outside of the bounds set in the constructor.
+- MUST update the Proof Maturity Delay with the provided value.
+- MUST emit an event showing that the Proof Maturity Delay was updated.
+- MUST NOT be blocked by the Pause Mechanism.
 
 ### disputeGameFactory
 
@@ -445,6 +506,7 @@ Checks that a withdrawal transaction can be [finalized](#finalized-withdrawal).
   created.
 - MUST revert if the withdrawal being finalized has been proven less than
   [Proof Maturity Delay](#proof-maturity-delay) seconds ago.
+- MUST revert if the Proof Maturity Delay is zero.
 - MUST revert if the withdrawal being finalized was proven against a game that does not have a
   [Valid Claim](./anchor-state-registry.md#valid-claim).
 
