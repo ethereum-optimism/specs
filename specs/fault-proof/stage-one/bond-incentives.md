@@ -222,12 +222,14 @@ correct address into `withdraw`.
 
 #### Delay Period
 
-The delay period is configured per chain within bounds fixed by the implementation; see
-[Bond Withdrawal Delay](../../protocol/configurability.md#bond-withdrawal-delay). We propose a delay period of 7 days
-for most OP Stack chains. 7 days provides sufficient time for the `owner()` of the `DelayedWETH` contract to act even
-if that owner is a large multisig that requires action from many different members over multiple timezones. Chains
-with a shorter [Dispute Game Finality Delay](anchor-state-registry.md#dispute-game-finality-delay-airgap) may use a
-shorter delay period, since bonds cannot unlock before the game is finalized.
+We propose a delay period of 7 days for most OP Stack chains. 7 days provides sufficient time for the `owner()` of the
+`DelayedWETH` contract to act even if that owner is a large multisig that requires action from many different members
+over multiple timezones.
+
+The delay period is configured per chain and may be lowered to a minimum of 12 hours; see
+[Bond Withdrawal Delay](../../protocol/configurability.md#bond-withdrawal-delay). Chains with a shorter
+[Dispute Game Finality Delay](anchor-state-registry.md#dispute-game-finality-delay-airgap), such as ZK chains, may use
+a shorter delay period, since bonds cannot unlock before the game is finalized.
 
 #### Integration
 
