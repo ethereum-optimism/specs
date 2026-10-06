@@ -402,7 +402,7 @@ allotted response time, and resolution would require intervention from the Proxy
 - MUST only be callable by the ProxyAdmin or its owner.
 - MUST only be triggerable once.
 - MUST set the value of the `ETHLockbox` contract that provides the pause state, the `SuperchainConfig`
-and the address of the Guardian.
+  and the address of the Guardian.
 - MUST set the value of the `DisputeGameFactory` contract that creates Dispute Game instances.
 - MUST set the value of the [Starting Anchor State](#starting-anchor-state).
 - MUST set the value of the initial [Respected Game Type](#respected-game-type).

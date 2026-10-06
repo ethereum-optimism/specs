@@ -110,7 +110,8 @@ Authorizes an `OptimismPortal` to interact with the `ETHLockbox`.
 - The `ProxyAdmin` owner of the `OptimismPortal` must be the same as the `ProxyAdmin` owner of the `ETHLockbox`.
 - The `OptimismPortal` and `ETHLockbox` MUST share the same `SuperchainConfig` address.
 - The portal's `SuperchainConfig` MUST be read from its `SystemConfig`, not from the portal itself. This
-  `ETHLockbox` already serves `superchainConfig()` for any portal that points to it. Therefore,reading it from the portal would compare the lockbox's stored value against itself.
+  `ETHLockbox` already serves `superchainConfig()` for any portal that points to it. Therefore, reading it from
+  the portal would compare the lockbox's stored value against itself.
 - The function MUST emit the `PortalAuthorized` event with the `portal`.
 
 ```solidity

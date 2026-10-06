@@ -208,9 +208,9 @@ identifier is independent of the pausable status of the global pause (zero addre
 
 ### paused
 
-Allows any user to check if the system is currently paused for a specific [Pause Identifier](./stage-1.md#pause-identifier).
-The check covers only that identifier. An active global pause does not make it return true unless a
-zero identifier is used.
+Allows any user to check if the system is currently paused for a specific
+[Pause Identifier](./stage-1.md#pause-identifier). The check covers only that identifier. An active
+global pause does not make it return true unless a zero identifier is used.
 
 - MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
   (current time < pause timestamp + expiry duration).
