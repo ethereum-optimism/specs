@@ -467,7 +467,6 @@ Permits the ProxyAdmin owner to set the
 - MUST revert if the new value is outside of the bounds set in the constructor.
 - MUST update the Dispute Game Finality Delay with the provided value.
 - MUST emit a `DisputeGameFinalityDelaySecondsSet` event with the new value.
-- MUST NOT be blocked by the Pause Mechanism.
 
 ### setRespectedGameType
 

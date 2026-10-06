@@ -410,7 +410,6 @@ Permits the ProxyAdmin owner to set the [Proof Maturity Delay](#proof-maturity-d
 - MUST revert if the new value is outside of the bounds set in the constructor.
 - MUST update the Proof Maturity Delay with the provided value.
 - MUST emit a `ProofMaturityDelaySecondsSet` event with the new value.
-- MUST NOT be blocked by the Pause Mechanism.
 
 ### disputeGameFactory
 
