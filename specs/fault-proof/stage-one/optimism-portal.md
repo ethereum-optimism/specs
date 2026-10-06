@@ -373,10 +373,8 @@ see this as a critical system risk.
 
 ### constructor
 
-<!-- TODO(1DW): function and event names are provisional until the implementation PR for
-ethereum-optimism/optimism-private#686 lands. -->
-
-- MUST set the lower and upper bounds of the [Proof Maturity Delay](#proof-maturity-delay).
+- MUST set the lower and upper bounds of the [Proof Maturity Delay](#proof-maturity-delay) and
+  disable initializers for the implementation contract.
 
 ### initialize
 
@@ -422,7 +420,7 @@ Permits the ProxyAdmin owner to set the [Proof Maturity Delay](#proof-maturity-d
 - MUST revert if called by any address other than the ProxyAdmin owner.
 - MUST revert if the new value is outside of the bounds set in the constructor.
 - MUST update the Proof Maturity Delay with the provided value.
-- MUST emit an event showing that the Proof Maturity Delay was updated.
+- MUST emit a `ProofMaturityDelaySecondsSet` event with the new value.
 
 ### disputeGameFactory
 

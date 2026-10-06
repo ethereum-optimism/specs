@@ -408,11 +408,9 @@ allotted response time, and resolution would require intervention from the Proxy
 
 ### constructor
 
-<!-- TODO(1DW): function and event names are provisional until the implementation PR for
-ethereum-optimism/optimism-private#686 lands. -->
-
 - MUST set the lower and upper bounds of the
-  [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
+  [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period) and disable
+  initializers for the implementation contract.
 
 ### initialize
 
@@ -465,7 +463,7 @@ Permits the ProxyAdmin owner to set the
 - MUST revert if called by any address other than the ProxyAdmin owner.
 - MUST revert if the new value is outside of the bounds set in the constructor.
 - MUST update the Dispute Game Finality Delay with the provided value.
-- MUST emit an event showing that the Dispute Game Finality Delay was updated.
+- MUST emit a `DisputeGameFinalityDelaySecondsSet` event with the new value.
 
 ### setRespectedGameType
 

@@ -132,9 +132,6 @@ for its intended purpose.
 
 ### constructor
 
-<!-- TODO(1DW): function and event names are provisional until the implementation PR for
-ethereum-optimism/optimism-private#692 lands. -->
-
 Sets the immutable bounds of the [Withdrawal Delay](#withdrawal-delay) and disables initializers for
 the implementation contract.
 
@@ -202,7 +199,7 @@ Allows the L1 ProxyAdmin owner to change the [Withdrawal Delay](#withdrawal-dela
 - MUST revert if `msg.sender` is not the ProxyAdmin owner
 - MUST revert if `_delay` is less than `MIN_DELAY_SECONDS` or greater than `MAX_DELAY_SECONDS`
 - MUST set the Withdrawal Delay to `_delay`
-- MUST emit an event showing that the Withdrawal Delay was updated
+- MUST emit a `DelaySet` event with the new value
 
 ### config
 
