@@ -142,6 +142,7 @@ the implementation contract.
 
 **Behavior:**
 
+- MUST revert if `_minDelay` is zero or greater than `_maxDelay`
 - MUST set the immutable `MIN_DELAY_SECONDS` to `_minDelay` and `MAX_DELAY_SECONDS` to `_maxDelay`
 - MUST call `_disableInitializers()` to prevent initialization of the implementation contract
 
@@ -157,9 +158,9 @@ Initializes the proxy contract with the ETHLockbox address and the [Withdrawal D
 **Behavior:**
 
 - MUST revert if caller is not the ProxyAdmin or ProxyAdmin owner
-- MUST set `ethLockbox` to `_ethLockbox`
 - MUST revert if `_delay` is less than `MIN_DELAY_SECONDS` or greater than `MAX_DELAY_SECONDS`
-- MUST set the Withdrawal Delay to `_delay`
+- MUST set `ethLockbox` to `_ethLockbox`
+- MUST set the Withdrawal Delay to `_delay` and emit a `DelaySet` event with the new value
 - MUST only be callable once per initialization version via the `reinitializer` modifier
 
 ### delay
@@ -200,6 +201,7 @@ Allows the L1 ProxyAdmin owner to change the [Withdrawal Delay](#withdrawal-dela
 - MUST revert if `_delay` is less than `MIN_DELAY_SECONDS` or greater than `MAX_DELAY_SECONDS`
 - MUST set the Withdrawal Delay to `_delay`
 - MUST emit a `DelaySet` event with the new value
+- MUST NOT be blocked by the pause state
 
 ### config
 
@@ -239,7 +241,6 @@ Withdraws ETH to `msg.sender` after the [Withdrawal Delay](#withdrawal-delay) ha
 - MUST revert if `ethLockbox.paused()` returns true
 - MUST revert if `withdrawals[msg.sender][_guy].amount` is less than `_wad`
 - MUST revert if `withdrawals[msg.sender][_guy].timestamp` is 0
-- MUST revert if the [Withdrawal Delay](#withdrawal-delay) is zero
 - MUST revert if `withdrawals[msg.sender][_guy].timestamp + delay()` is greater than `block.timestamp`
 - MUST decrease `withdrawals[msg.sender][_guy].amount` by `_wad`
 - MUST call the parent `WETH98.withdraw(_wad)` function to transfer ETH to `msg.sender`

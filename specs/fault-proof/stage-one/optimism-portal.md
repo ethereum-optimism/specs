@@ -373,17 +373,19 @@ see this as a critical system risk.
 
 ### constructor
 
+- MUST revert if the lower bound is zero or greater than the upper bound.
 - MUST set the lower and upper bounds of the [Proof Maturity Delay](#proof-maturity-delay) and
   disable initializers for the implementation contract.
 
 ### initialize
 
 - MUST only be callable by the ProxyAdmin or its owner.
+- MUST revert if the provided Proof Maturity Delay is outside of the bounds set in the constructor.
 - MUST set the value of the `SystemConfig` contract.
 - MUST set the value of the `AnchorStateRegistry` contract.
 - MUST assert that the ETHLockbox state is valid based on the feature flag.
-- MUST set the value of the [Proof Maturity Delay](#proof-maturity-delay).
-- MUST revert if the provided Proof Maturity Delay is outside of the bounds set in the constructor.
+- MUST set the value of the [Proof Maturity Delay](#proof-maturity-delay) and emit a
+  `ProofMaturityDelaySecondsSet` event with the new value.
 - MUST set the value of the [L2 Withdrawal Sender](#l2-withdrawal-sender) variable to the default
   value if the value is not set already.
 - MUST initialize the resource metering configuration.
@@ -421,6 +423,7 @@ Permits the ProxyAdmin owner to set the [Proof Maturity Delay](#proof-maturity-d
 - MUST revert if the new value is outside of the bounds set in the constructor.
 - MUST update the Proof Maturity Delay with the provided value.
 - MUST emit a `ProofMaturityDelaySecondsSet` event with the new value.
+- MUST NOT be blocked by the Pause Mechanism.
 
 ### disputeGameFactory
 
@@ -495,7 +498,6 @@ Checks that a withdrawal transaction can be [finalized](#finalized-withdrawal).
   created.
 - MUST revert if the withdrawal being finalized has been proven less than
   [Proof Maturity Delay](#proof-maturity-delay) seconds ago.
-- MUST revert if the Proof Maturity Delay is zero.
 - MUST revert if the withdrawal being finalized was proven against a game that does not have a
   [Valid Claim](./anchor-state-registry.md#valid-claim).
 

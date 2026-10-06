@@ -408,6 +408,7 @@ allotted response time, and resolution would require intervention from the Proxy
 
 ### constructor
 
+- MUST revert if the lower bound is zero or greater than the upper bound.
 - MUST set the lower and upper bounds of the
   [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period) and disable
   initializers for the implementation contract.
@@ -416,14 +417,15 @@ allotted response time, and resolution would require intervention from the Proxy
 
 - MUST only be callable by the ProxyAdmin or its owner.
 - MUST only be triggerable once per initialization version.
+- MUST revert if the provided Dispute Game Finality Delay is outside of the bounds set in the
+  constructor.
 - MUST set the value of the `ETHLockbox` contract through which the Guardian and pause state are
   resolved.
 - MUST set the value of the `DisputeGameFactory` contract that creates Dispute Game instances.
 - MUST set the value of the [Starting Anchor State](#starting-anchor-state).
 - MUST set the value of the initial [Respected Game Type](#respected-game-type).
-- MUST set the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
-- MUST revert if the provided Dispute Game Finality Delay is outside of the bounds set in the
-  constructor.
+- MUST set the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period)
+  and emit a `DisputeGameFinalityDelaySecondsSet` event with the new value.
 - MUST set the value of the [Retirement Timestamp](#retirement-timestamp) to the current block
   timestamp. NOTE that this is a safety mechanism that invalidates all existing Dispute Game
   contracts to support the safe transition away from the `OptimismPortal` as the source of truth
@@ -464,6 +466,7 @@ Permits the ProxyAdmin owner to set the
 - MUST revert if the new value is outside of the bounds set in the constructor.
 - MUST update the Dispute Game Finality Delay with the provided value.
 - MUST emit a `DisputeGameFinalityDelaySecondsSet` event with the new value.
+- MUST NOT be blocked by the Pause Mechanism.
 
 ### setRespectedGameType
 
@@ -544,7 +547,6 @@ Determines if a game is a Finalized Game.
 - MUST return `true` if and only if `isGameResolved(game)` and the game has resolved a result more
   than the review period seconds ago as defined by the `disputeGameFinalityDelaySeconds` variable in
   the `AnchorStateRegistry` contract.
-- MUST return `false` if the Dispute Game Finality Delay is zero.
 
 ### isGameClaimValid
 
