@@ -7624,13 +7624,16 @@ any of the following checks fail:</p>
 <li>Parent MUST NOT be retired (i.e., <code>createdAt &gt; retirementTimestamp</code>).</li>
 <li>Parent MUST be the same game type (<code>ZK_GAME_TYPE</code>).</li>
 <li>Parent MUST NOT have resolved as <code>CHALLENGER_WINS</code>.</li>
+<li>If the child's <code>wasRespectedGameTypeWhenCreated</code> is <code>true</code>, the parent's
+<code>wasRespectedGameTypeWhenCreated</code> MUST also be <code>true</code>.</li>
 <li>Parent's <code>l2SequenceNumber</code> (timestamp) MUST be strictly above the anchor state's
 <code>l2SequenceNumber</code>.</li>
 <li>The game's <code>l2SequenceNumber</code> MUST be strictly greater than the parent's <code>l2SequenceNumber</code>.</li>
 </ul>
-<p>The <code>isGameRespected</code> check on the parent is intentionally omitted. The respected game type gates
-which games can finalize withdrawals (via <code>isGameClaimValid</code>), but MUST NOT prevent in-progress
-proposal chains from being completed after a game type transition.</p>
+<p>Children created while their game type is not respected MAY reference any parent that passes
+the other validation checks. This allows in-progress proposal chains to continue after a
+switch away from the ZK game type while preventing respected games from building on claims
+created when that game type was not respected.</p>
 <h2 id="challenge"><a class="header" href="#challenge">Challenge</a></h2>
 <p>Challenging is fully permissionless. Anyone may call <code>challenge()</code> before the challenge deadline.
 The call MUST include <code>challengerBond</code> ETH, which <code>challenge()</code> deposits into <code>DelayedWETH</code> on
@@ -20322,6 +20325,810 @@ which implements the required logic.</p>
 vote weight consistency, and managing checkpoints. It is incorporated as a predeploy of the OP stack to avoid manual deployments
 across the Superchain.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="opcontractsmanager"><a class="header" href="#opcontractsmanager">OPContractsManager</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#overview">Overview</a></li>
+<li><a href="experimental/contracts/L1/opcm.html#definitions">Definitions</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#system">System</a></li>
+<li><a href="experimental/contracts/L1/opcm.html#contract-release">Contract Release</a></li>
+<li><a href="experimental/contracts/L1/opcm.html#opcm-version">OPCM Version</a></li>
+<li><a href="experimental/contracts/L1/opcm.html#extra-instructions">Extra Instructions</a></li>
+<li><a href="experimental/contracts/L1/opcm.html#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#a01-001-ethereum-environment">a01-001: Ethereum Environment</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#a01-002-implementation-contracts-trusted">a01-002: Implementation Contracts Trusted</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#a01-003-code-at-release-commit-is-safe">a01-003: Code at Release Commit is Safe</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#a01-004-proxyadmin-owner-trusted-for-upgrades">a01-004: ProxyAdmin Owner Trusted for Upgrades</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#a01-005-superchain-proxyadmin-owner-trusted">a01-005: Superchain ProxyAdmin Owner Trusted</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#mitigations-4">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#invariants">Invariants</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#i01-001-code-integrity">i01-001: Code Integrity</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-002-atomicity">i01-002: Atomicity</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-003-no-unexpected-mutations">i01-003: No Unexpected Mutations</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-004-upgrade-ordering">i01-004: Upgrade Ordering</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-005-initialization-safety">i01-005: Initialization Safety</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-4">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-006-superchainconfig-backwards-compatibility">i01-006: SuperchainConfig Backwards Compatibility</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-5">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-007-single-operation-gas-feasibility">i01-007: Single Operation Gas Feasibility</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-6">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-008-batch-operation-gas-efficiency">i01-008: Batch Operation Gas Efficiency</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-7">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-009-time-independence">i01-009: Time Independence</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-8">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-010-permissioneddisputegame-fallback-preservation">i01-010: PermissionedDisputeGame Fallback Preservation</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-9">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm.html#i01-011-upgrade-availability-while-paused">i01-011: Upgrade Availability While Paused</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm.html#impact-10">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-70"><a class="header" href="#overview-70">Overview</a></h2>
+<p>OPContractsManager (OPCM) is the contract that defines network upgrades for OP Stack smart contracts.
+Each OPCM instance represents a specific <a href="experimental/contracts/L1/opcm.html#contract-release">Contract Release</a> and holds immutable
+references to the implementation contracts for that release.</p>
+<p>OPCM provides three core capabilities:</p>
+<ul>
+<li><strong>System Deployment</strong>: Deploying all L1 contracts for a new OP Stack <a href="experimental/contracts/L1/opcm.html#system">System</a> at the
+version the OPCM represents. This capability is permissionless.</li>
+<li><strong>System Upgrade</strong>: Upgrading the L1 contracts of an existing <a href="experimental/contracts/L1/opcm.html#system">System</a> to the version
+the OPCM represents. This capability is designed to be invoked via delegatecall by the ProxyAdmin
+owner, as OPCM itself holds no special authority.</li>
+<li><strong>SuperchainConfig Upgrade</strong>: Upgrading the SuperchainConfig contract. This capability is
+designed to be invoked via delegatecall by the
+<a href="experimental/contracts/L1/opcm.html#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a>.</li>
+</ul>
+<p>OPCM is fully immutable with no mutable state. Implementation addresses are set at deployment time
+and cannot be changed.</p>
+<h2 id="definitions-14"><a class="header" href="#definitions-14">Definitions</a></h2>
+<h3 id="system"><a class="header" href="#system">System</a></h3>
+<p>All of the smart contracts that comprise a single OP Stack chain, including but not limited to
+SystemConfig, OptimismPortal, L1CrossDomainMessenger, L1StandardBridge, DisputeGameFactory, and
+associated proxy contracts.</p>
+<h3 id="contract-release"><a class="header" href="#contract-release">Contract Release</a></h3>
+<p>The version identifier for an OP Stack smart contracts release, following the format
+<code>op-contracts/vX.Y.Z</code>. Each Contract Release uses a specific <a href="experimental/contracts/L1/opcm.html#opcm-version">OPCM Version</a>.</p>
+<h3 id="opcm-version"><a class="header" href="#opcm-version">OPCM Version</a></h3>
+<p>The version of the OPContractsManager contract itself, which may differ from the
+<a href="experimental/contracts/L1/opcm.html#contract-release">Contract Release</a> version. The OPCM Version reflects the capabilities and
+interface of the upgrader rather than the contracts it deploys.</p>
+<h3 id="extra-instructions"><a class="header" href="#extra-instructions">Extra Instructions</a></h3>
+<p>A migration mechanism used during upgrades to set state values. Extra Instructions can be used to
+bootstrap new state that has no predecessor value (e.g., when an upgrade introduces a new variable)
+or to change state that already has a predecessor value. Each OPCM must specify which Extra
+Instructions are permitted, and those Extra Instructions must not be permitted in OPCMs of higher
+major versions. Permanent inputs should be added to the interface rather than implemented via Extra
+Instructions.</p>
+<h3 id="superchain-proxyadmin-owner"><a class="header" href="#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a></h3>
+<p>The ProxyAdmin owner for the SuperchainConfig contract. Since SuperchainConfig is shared across
+multiple chains on a network (many-to-one relationship), it has its own governance-controlled
+ProxyAdmin owner separate from individual chain ProxyAdmin owners.</p>
+<h2 id="assumptions-12"><a class="header" href="#assumptions-12">Assumptions</a></h2>
+<h3 id="a01-001-ethereum-environment"><a class="header" href="#a01-001-ethereum-environment">a01-001: Ethereum Environment</a></h3>
+<p>OPCM is designed to run on Ethereum L1 mainnet and Sepolia. Behavior on other networks is not
+guaranteed.</p>
+<h4 id="mitigations-51"><a class="header" href="#mitigations-51">Mitigations</a></h4>
+<ul>
+<li>Documentation clearly states Ethereum L1 mainnet and Sepolia as the target environments</li>
+<li>Testing is performed against Ethereum L1 mainnet and Sepolia</li>
+</ul>
+<h3 id="a01-002-implementation-contracts-trusted"><a class="header" href="#a01-002-implementation-contracts-trusted">a01-002: Implementation Contracts Trusted</a></h3>
+<p>The implementation contracts referenced by OPCM are trusted and correct for the release they
+represent.</p>
+<h4 id="mitigations-52"><a class="header" href="#mitigations-52">Mitigations</a></h4>
+<ul>
+<li>Audited verification scripts confirm deployed bytecode matches the release commit. Verification
+scripts must be re-audited when changed.</li>
+<li>Implementation addresses are immutable once OPCM is deployed</li>
+</ul>
+<h3 id="a01-003-code-at-release-commit-is-safe"><a class="header" href="#a01-003-code-at-release-commit-is-safe">a01-003: Code at Release Commit is Safe</a></h3>
+<p>The code at the GitHub commit that the <a href="experimental/contracts/L1/opcm.html#contract-release">Contract Release</a> represents is safe
+and has not been tampered with.</p>
+<h4 id="mitigations-53"><a class="header" href="#mitigations-53">Mitigations</a></h4>
+<ul>
+<li>Release commits undergo security audits</li>
+<li>Multiple reviewers approve release commits</li>
+<li>Cryptographic signatures verify commit integrity</li>
+</ul>
+<h3 id="a01-004-proxyadmin-owner-trusted-for-upgrades"><a class="header" href="#a01-004-proxyadmin-owner-trusted-for-upgrades">a01-004: ProxyAdmin Owner Trusted for Upgrades</a></h3>
+<p>The ProxyAdmin owner invoking system upgrades is trusted and operating within governance
+constraints.</p>
+<h4 id="mitigations-54"><a class="header" href="#mitigations-54">Mitigations</a></h4>
+<ul>
+<li>System upgrade capability only functions when delegatecalled, as OPCM holds no authority itself</li>
+<li>ProxyAdmin ownership is typically controlled by governance multisigs</li>
+</ul>
+<h3 id="a01-005-superchain-proxyadmin-owner-trusted"><a class="header" href="#a01-005-superchain-proxyadmin-owner-trusted">a01-005: Superchain ProxyAdmin Owner Trusted</a></h3>
+<p>The <a href="experimental/contracts/L1/opcm.html#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a> is trusted and operating within
+governance constraints when upgrading SuperchainConfig.</p>
+<h4 id="mitigations-55"><a class="header" href="#mitigations-55">Mitigations</a></h4>
+<ul>
+<li>SuperchainConfig upgrade capability only functions when delegatecalled</li>
+<li>Superchain governance controls the Superchain ProxyAdmin Owner</li>
+<li>SuperchainConfig changes affect multiple chains, requiring heightened governance scrutiny</li>
+</ul>
+<h2 id="invariants-19"><a class="header" href="#invariants-19">Invariants</a></h2>
+<h3 id="i01-001-code-integrity"><a class="header" href="#i01-001-code-integrity">i01-001: Code Integrity</a></h3>
+<p>OPCM must faithfully deploy or upgrade to the code at the GitHub commit that the
+<a href="experimental/contracts/L1/opcm.html#contract-release">Contract Release</a> was created at. OPCM must not deploy code that is not
+present in that commit.</p>
+<h4 id="impact-72"><a class="header" href="#impact-72">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, malicious or incorrect code could be deployed to production systems, potentially
+resulting in loss of funds, unauthorized access, or system compromise across all affected chains.</p>
+<h3 id="i01-002-atomicity"><a class="header" href="#i01-002-atomicity">i01-002: Atomicity</a></h3>
+<p>System deployment and upgrade operations must be atomic. They either fully succeed or fully
+revert with no partial state changes.</p>
+<h4 id="impact-73"><a class="header" href="#impact-73">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a <a href="experimental/contracts/L1/opcm.html#system">System</a> could be left in an inconsistent state where some contracts are
+upgraded and others are not, potentially breaking cross-contract invariants and rendering the
+system unusable or insecure.</p>
+<h3 id="i01-003-no-unexpected-mutations"><a class="header" href="#i01-003-no-unexpected-mutations">i01-003: No Unexpected Mutations</a></h3>
+<p>During system deployment or upgrade, system variables must never be mutated unless one of the
+following conditions is met:</p>
+<ol>
+<li>The user explicitly supplies an input requesting that change</li>
+<li>OPCM deliberately mutates the value with clear documentation explaining why the mutation is
+necessary, and the change is safe to make</li>
+</ol>
+<p>Properties such as ProxyAdmin ownership must be fetched from the existing system during upgrades
+and preserved without modification.</p>
+<h4 id="impact-74"><a class="header" href="#impact-74">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If violated, upgrades could silently change critical system properties like ownership, potentially
+transferring control to unauthorized parties or breaking the security model of the system.</p>
+<h3 id="i01-004-upgrade-ordering"><a class="header" href="#i01-004-upgrade-ordering">i01-004: Upgrade Ordering</a></h3>
+<p>Chains must follow the correct upgrade flow. Valid upgrade paths are:</p>
+<ul>
+<li>Same major version to a higher minor version (e.g., v1.2.0 to v1.3.0). Skipping minor versions is
+permitted, as a new increased minor version represents a replacement of the previous minor
+version.</li>
+<li>Current major version to the next major version (e.g., v1.x.y to v2.0.0)</li>
+</ul>
+<p>Downgrades and skipping major versions are not permitted.</p>
+<h4 id="impact-75"><a class="header" href="#impact-75">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If violated, chains could skip critical migration steps or security patches, potentially leaving
+them in an unsupported or vulnerable state that diverges from the expected upgrade path.</p>
+<h3 id="i01-005-initialization-safety"><a class="header" href="#i01-005-initialization-safety">i01-005: Initialization Safety</a></h3>
+<p>Contracts deployed or upgraded by OPCM must never be left uninitialized or open to
+re-initialization.</p>
+<h4 id="impact-76"><a class="header" href="#impact-76">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If violated, attackers could initialize contracts with malicious parameters, potentially taking
+ownership of critical system components or corrupting system state.</p>
+<h3 id="i01-006-superchainconfig-backwards-compatibility"><a class="header" href="#i01-006-superchainconfig-backwards-compatibility">i01-006: SuperchainConfig Backwards Compatibility</a></h3>
+<p>SuperchainConfig must maintain backwards compatibility with all OP Stack versions starting from
+<code>op-contracts/v1.3.0</code> (MCP L1).</p>
+<h4 id="impact-77"><a class="header" href="#impact-77">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, chains running older OP Stack versions that depend on SuperchainConfig could break,
+potentially halting operations for multiple chains simultaneously.</p>
+<h3 id="i01-007-single-operation-gas-feasibility"><a class="header" href="#i01-007-single-operation-gas-feasibility">i01-007: Single Operation Gas Feasibility</a></h3>
+<p>Given valid parameters, a single system deployment or upgrade operation must always be executable
+within the gas limits of an Ethereum block.</p>
+<h4 id="impact-78"><a class="header" href="#impact-78">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, it would be impossible to deploy new chains or upgrade existing chains, effectively
+breaking the core functionality of OPCM and blocking all future upgrades.</p>
+<h3 id="i01-008-batch-operation-gas-efficiency"><a class="header" href="#i01-008-batch-operation-gas-efficiency">i01-008: Batch Operation Gas Efficiency</a></h3>
+<p>Multiple upgrade operations (approximately 5) should be executable within a single transaction.</p>
+<h4 id="impact-79"><a class="header" href="#impact-79">Impact</a></h4>
+<p><strong>Severity: Low</strong></p>
+<p>If violated, upgrading multiple chains would require separate transactions, increasing operational
+complexity and cost but not blocking functionality.</p>
+<h3 id="i01-009-time-independence"><a class="header" href="#i01-009-time-independence">i01-009: Time Independence</a></h3>
+<p>OPCM behavior must not depend on time. Given the same inputs and environment state, OPCM must
+produce the same results regardless of when it is called. OPCM itself must not be the source of
+any time-dependent behavior.</p>
+<p>Individual contracts deployed or upgraded by OPCM may have time-dependent initialization behavior
+(e.g., storing a timestamp on first initialization). Such behavior must be carefully considered
+and clearly documented in those specific contracts. However, this time-dependence must originate
+from the contract's own logic, not from OPCM.</p>
+<h4 id="impact-80"><a class="header" href="#impact-80">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, OPCM behavior would become unpredictable and potentially exploitable. Time-dependent
+logic could cause operations to fail unexpectedly, create windows of vulnerability, or allow
+manipulation based on timing.</p>
+<h3 id="i01-010-permissioneddisputegame-fallback-preservation"><a class="header" href="#i01-010-permissioneddisputegame-fallback-preservation">i01-010: PermissionedDisputeGame Fallback Preservation</a></h3>
+<p>Systems that use the FaultDisputeGame must also have a PermissionedDisputeGame. OPCM must not
+disable or remove the PermissionedDisputeGame from such systems.</p>
+<h4 id="impact-81"><a class="header" href="#impact-81">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, the system would lose its safe fallback mechanism. The PermissionedDisputeGame
+provides a trusted dispute resolution path that can be used if issues are discovered with the
+permissionless FaultDisputeGame, ensuring the system can continue operating safely.</p>
+<h3 id="i01-011-upgrade-availability-while-paused"><a class="header" href="#i01-011-upgrade-availability-while-paused">i01-011: Upgrade Availability While Paused</a></h3>
+<p>The standard upgrade path via the <code>upgrade()</code> method must always succeed regardless of whether
+the system is paused. The ability to upgrade contracts must not be blocked by the pause state.</p>
+<h4 id="impact-82"><a class="header" href="#impact-82">Impact</a></h4>
+<p><strong>Severity: Low</strong></p>
+<p>If violated, upgrading via OPCM would not be possible while paused. Manual upgrades can typically
+still be executed as a workaround, but this adds operational complexity during incident response.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="opcontractsmanagermigrator"><a class="header" href="#opcontractsmanagermigrator">OPContractsManagerMigrator</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#overview">Overview</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#relationship-to-the-opcontractsmanager-specification">Relationship to the OPContractsManager specification</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#definitions">Definitions</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#migration">Migration</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#shared-contracts">Shared Contracts</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#retired-contracts">Retired Contracts</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#pause-identifier">Pause Identifier</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#starting-anchor-state">Starting Anchor State</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#cleared-game-types">Cleared Game Types</a></li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#migration-validation">Migration Validation</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#assumptions">Assumptions</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#amig-001-member-chains-already-run-this-release">aMIG-001: Member Chains already run this release</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#amig-002-every-member-chain-already-has-an-ethlockbox">aMIG-002: Every Member Chain already has an ETHLockbox</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#amig-003-a-single-trusted-proxyadmin-owner-governs-the-whole-set">aMIG-003: A single trusted ProxyAdmin owner governs the whole set</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#amig-004-the-starting-anchor-state-is-correct">aMIG-004: The Starting Anchor State is correct</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#amig-005-the-input-describes-the-complete-set">aMIG-005: The input describes the complete set</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#mitigations-4">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#amig-006-retired-dispute-games-resolve">aMIG-006: Retired dispute games resolve</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#mitigations-5">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#amig-007-member-chains-already-run-permissionless-dispute-games">aMIG-007: Member Chains already run permissionless dispute games</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#mitigations-6">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#invariants">Invariants</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-001-migration-happens-at-most-once-per-chain">iMIG-001: Migration happens at most once per chain</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-002-eth-is-conserved-across-migration">iMIG-002: ETH is conserved across migration</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-003-member-chains-have-distinct-non-zero-chain-ids">iMIG-003: Member Chains have distinct, non-zero chain IDs</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-004-migration-is-atomic-and-complete">iMIG-004: Migration is atomic and complete</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-005-a-single-pause-identifier-governs-the-set">iMIG-005: A single Pause Identifier governs the set</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-4">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-006-retired-contracts-remain-coherent-with-the-set">iMIG-006: Retired contracts remain coherent with the set</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-5">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-007-no-legacy-dispute-game-configuration-survives">iMIG-007: No legacy dispute game configuration survives</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-6">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-008-shared-contracts-depend-only-on-set-scoped-contracts">iMIG-008: Shared Contracts depend only on set-scoped contracts</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-7">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-009-the-set-has-one-governance-scope">iMIG-009: The set has one governance scope</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-8">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-010-per-chain-configuration-is-otherwise-preserved">iMIG-010: Per-chain configuration is otherwise preserved</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-9">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-011-the-starting-anchor-state-is-well-formed">iMIG-011: The Starting Anchor State is well formed</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-10">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-012-registered-dispute-games-are-playable">iMIG-012: Registered dispute games are playable</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-11">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-013-custom-gas-token-chains-are-not-migrated">iMIG-013: Custom gas token chains are not migrated</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-12">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-014-withdrawal-proofs-do-not-survive-migration">iMIG-014: Withdrawal proofs do not survive migration</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-13">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview-71"><a class="header" href="#overview-71">Overview</a></h2>
+<p>OPContractsManagerMigrator is the OPCM component that merges a group of independent OP Stack chains
+into a single <a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a>. <a href="experimental/contracts/L1/opcm-migrator.html#migration">Migration</a> happens once per chain and cannot
+be reversed.</p>
+<p>It provides two capabilities:</p>
+<ul>
+<li><strong>Interop Set Migration</strong>: deploying the <a href="experimental/contracts/L1/opcm-migrator.html#shared-contracts">Shared Contracts</a> for a new Interop
+Set, moving every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> onto them, pooling every member's ETH into the
+set's single <code>ETHLockbox</code>, and registering the super-root dispute games that will defend the set.
+Like the system upgrade capability, it is designed to be invoked by delegatecall from the
+ProxyAdmin owner, as it holds no authority itself.</li>
+<li><strong>Migration Validation</strong>: proving, after the fact, that the resulting configuration is the one
+that was intended. This capability is provided by OPContractsManagerMigrationValidator and is
+specified alongside migration here, because it exists only to check migration's output and shares
+every definition with it.</li>
+</ul>
+<p>Both components are stateless and neither is versioned independently of OPCM. They act entirely
+with the authority of the caller.</p>
+<h3 id="relationship-to-the-opcontractsmanager-specification"><a class="header" href="#relationship-to-the-opcontractsmanager-specification">Relationship to the OPContractsManager specification</a></h3>
+<p>Interop Set Migration is subject to the invariants of the <a href="experimental/contracts/L1/./opcm.html">OPCM specification</a>, with
+three deliberate exceptions. Each is a considered trade, not an oversight:</p>
+<ul>
+<li><strong>It must not be available while a Member Chain is paused</strong>, in contrast to
+<a href="experimental/contracts/L1/./opcm.html#i01-011-upgrade-availability-while-paused">i01-011</a>. Migration changes each member's
+<a href="experimental/contracts/L1/opcm-migrator.html#pause-identifier">Pause Identifier</a>, so running it under an active pause would silently discard
+that pause. See <a href="experimental/contracts/L1/opcm-migrator.html#imig-005-a-single-pause-identifier-governs-the-set">iMIG-005</a>.</li>
+<li><strong>Its Shared Contract addresses are not deterministic</strong>, in contrast to
+<a href="experimental/contracts/L1/./opcm.html#i01-009-time-independence">i01-009</a>. An Interop Set has no chain ID of its own, and the
+chain ID only ever serves as a salt input, so migration substitutes a value derived from the block
+it executes in. Two attempts at the same migration therefore produce different addresses, and
+operators cannot predict them.</li>
+<li><strong>It accepts a variable-length list of super-root dispute game configurations</strong>, rather than one
+configuration per valid game type in a fixed order as system deployment and system upgrade
+require. An Interop Set is defended by super-root games only, so the fixed shape does not apply.
+Validation still expects both super-root game types, because a set must keep defending its members
+with the permissionless games they already run. See
+<a href="experimental/contracts/L1/opcm-migrator.html#amig-007-member-chains-already-run-permissionless-dispute-games">aMIG-007</a>.</li>
+</ul>
+<h2 id="definitions-15"><a class="header" href="#definitions-15">Definitions</a></h2>
+<h3 id="migration"><a class="header" href="#migration">Migration</a></h3>
+<p>The one-time operation that turns a group of independent chains into an <a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a>.
+It is one-way. Nothing in these contracts returns a member to standalone operation, so undoing a
+migration would require a contract upgrade.</p>
+<h3 id="interop-set"><a class="header" href="#interop-set">Interop Set</a></h3>
+<p>The group of OP Stack chains that share one <code>ETHLockbox</code>, one <code>DisputeGameFactory</code> and one
+<code>AnchorStateRegistry</code>, and whose state is proven together as a single
+<a href="experimental/contracts/L1/../../../interop/superroot.html">Super Root</a>. Every member keeps its own <code>SystemConfig</code> and
+<code>OptimismPortal</code>. The <a href="experimental/contracts/L1/../../../interop/optimism-portal.html">OptimismPortal Interop specification</a>
+calls this the op-governed dependency set. It is the L1 contract counterpart of the
+<a href="experimental/contracts/L1/../../../interop/dependency-set.html">dependency set</a>, which is a consensus-layer concept. The two
+are expected to describe the same group of chains. Nothing in these contracts enforces that.</p>
+<h3 id="member-chain"><a class="header" href="#member-chain">Member Chain</a></h3>
+<p>A chain in an <a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a>. Membership is permanent: nothing in these contracts
+removes a chain from a set.</p>
+<h3 id="shared-contracts"><a class="header" href="#shared-contracts">Shared Contracts</a></h3>
+<p>The contracts an <a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a> holds in common: its <code>ETHLockbox</code>, its
+<code>DisputeGameFactory</code>, its <code>AnchorStateRegistry</code> and its <code>DelayedWETH</code>. Migration deploys the first
+three and adopts the fourth one. The migration input is the list of <code>SystemConfig</code>s that defines the
+set, and the set takes the existing <code>DelayedWETH</code> of the member at index 0, then points every
+member's <code>SystemConfig</code> at it. Members are supplied in ascending chain ID order, so index 0 is
+always the lowest-chain-ID member.</p>
+<h3 id="retired-contracts"><a class="header" href="#retired-contracts">Retired Contracts</a></h3>
+<p>The per-chain <code>DisputeGameFactory</code>, <code>ETHLockbox</code>, <code>AnchorStateRegistry</code> and <code>DelayedWETH</code> that a
+<a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> used before migration. The index-0 member's <code>DelayedWETH</code> is the one
+exception: the set adopts it rather than retiring it. Retired Contracts remain deployed and
+reachable, because dispute games created before migration continue to resolve against them and
+their bonds must remain claimable.</p>
+<p>The following diagram shows a two-chain set after migration, with Chain A at index 0. The shared
+<code>DelayedWETH</code> is Chain A's existing contract rather than a new deployment. The Retired Contracts
+resolve pause through the set's shared <code>ETHLockbox</code> rather than through their own, which keeps a
+game created before the migration subject to the same pause as the rest of the set:</p>
+<pre class="mermaid">flowchart LR
+  subgraph CA[&quot;Member Chain A&quot;]
+    SCA[SystemConfig] -- holds address --&gt; PA[OptimismPortal]
+  end
+  subgraph CB[&quot;Member Chain B&quot;]
+    SCB[SystemConfig] -- holds address --&gt; PB[OptimismPortal]
+  end
+  subgraph SH[&quot;Shared Contracts&quot;]
+    LB[ETHLockbox]
+    ASR[AnchorStateRegistry]
+    DGF[DisputeGameFactory]
+    WETH[&quot;DelayedWETH&lt;br/&gt;(Chain A's, index 0)&quot;]
+  end
+  subgraph RT[&quot;Retired Contracts&quot;]
+    RA[&quot;A: old DGF / ASR / ETHLockbox&quot;]
+    RB[&quot;B: old DGF / ASR / ETHLockbox / DelayedWETH&quot;]
+  end
+  PA -- ETH custody --&gt; LB
+  PA -- game validity --&gt; ASR
+  PB -- ETH custody --&gt; LB
+  PB -- game validity --&gt; ASR
+  ASR -- game registration --&gt; DGF
+  ASR -- pause, guardian --&gt; LB
+  WETH -- pause --&gt; LB
+  SCA -- holds address --&gt; WETH
+  SCB -- holds address --&gt; WETH
+  RA -. pause, guardian .-&gt; LB
+  RB -. pause, guardian .-&gt; LB
+</pre>
+<h3 id="pause-identifier-1"><a class="header" href="#pause-identifier-1">Pause Identifier</a></h3>
+<p>The address that a chain's pause state is keyed against in <code>SuperchainConfig</code>. Before joining an
+<a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a> a chain is identified by its own <code>ETHLockbox</code>. Afterwards every member
+is identified by the set's shared <code>ETHLockbox</code>, so one scoped pause covers the whole set. See the
+<a href="experimental/contracts/L1/../../../protocol/stage-1.html#pause-identifier">Pause Identifier rules</a> for the permitted values.</p>
+<h3 id="starting-anchor-state-1"><a class="header" href="#starting-anchor-state-1">Starting Anchor State</a></h3>
+<p>The <a href="experimental/contracts/L1/../../../interop/superroot.html">Super Root</a> and sequence number that the set's shared
+<code>AnchorStateRegistry</code> is initialized with, serving the same role as the
+<a href="experimental/contracts/L1/../../../fault-proof/stage-one/anchor-state-registry.html#starting-anchor-state">Starting Anchor State</a>
+of a single-chain registry. It is computed off-chain from the state of every Member Chain.</p>
+<h3 id="cleared-game-types"><a class="header" href="#cleared-game-types">Cleared Game Types</a></h3>
+<p>The set of dispute game types that migration removes from the <code>DisputeGameFactory</code> of every
+<a href="experimental/contracts/L1/opcm-migrator.html#retired-contracts">Retired Contracts</a> entry. It is deliberately broader than the game types
+an OPCM release considers valid, because a retired factory may still hold a game type that has
+since been withdrawn from service.</p>
+<h3 id="migration-validation"><a class="header" href="#migration-validation">Migration Validation</a></h3>
+<p>The set of checks performed after migration, comparing the on-chain result against the operator's stated
+migration intent. Validation reports every discrepancy or anomaly it finds rather than reverting
+at the first, so that a single dry run surfaces the complete list of problems.</p>
+<h2 id="assumptions-13"><a class="header" href="#assumptions-13">Assumptions</a></h2>
+<h3 id="amig-001-member-chains-already-run-this-release"><a class="header" href="#amig-001-member-chains-already-run-this-release">aMIG-001: Member Chains already run this release</a></h3>
+<p>Every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> already runs the <a href="experimental/contracts/L1/./opcm.html#contract-release">Contract
+Release</a> that the migrating OPCM represents.</p>
+<p>System upgrades accept a chain one major version behind. Migration accepts only a chain already on
+this release, whether through this OPCM or through a replacement OPCM for the same release.</p>
+<h4 id="mitigations-56"><a class="header" href="#mitigations-56">Mitigations</a></h4>
+<ul>
+<li>The permitted-sequence check is applied to every chain in the input before any state is mutated</li>
+<li>Refusing the next-major case makes it not possible to reach a new release through the migration
+OPCM path</li>
+<li>Migration preserves each member's record of its last-used OPCM instead of marking the migration
+as an upgrade, so the chain's upgrade history stays accurate</li>
+</ul>
+<h3 id="amig-002-every-member-chain-already-has-an-ethlockbox"><a class="header" href="#amig-002-every-member-chain-already-has-an-ethlockbox">aMIG-002: Every Member Chain already has an ETHLockbox</a></h3>
+<p>Every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> has an <code>ETHLockbox</code> installed and its lockbox feature enabled
+before migration begins.</p>
+<p>This is a precondition of the release rather than something migration establishes. Migration reads
+each member's pause state, which is resolved through that member's lockbox, so a member without one
+cannot be read at all.</p>
+<h4 id="mitigations-57"><a class="header" href="#mitigations-57">Mitigations</a></h4>
+<ul>
+<li>The system upgrade capability installs and enables an <code>ETHLockbox</code> for every chain on this
+release, so any chain eligible under <a href="experimental/contracts/L1/opcm-migrator.html#amig-001-member-chains-already-run-this-release">aMIG-001</a> satisfies this</li>
+<li>A member without a lockbox causes migration to revert</li>
+</ul>
+<h3 id="amig-003-a-single-trusted-proxyadmin-owner-governs-the-whole-set"><a class="header" href="#amig-003-a-single-trusted-proxyadmin-owner-governs-the-whole-set">aMIG-003: A single trusted ProxyAdmin owner governs the whole set</a></h3>
+<p>All <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chains</a> are administered by the same ProxyAdmin owner, which is trusted
+and operating within governance constraints, and migration executes with that owner's authority.</p>
+<p>Members may have distinct <code>ProxyAdmin</code> contracts. Only the owner must be common, because it is the
+owner rather than the contract that migration and every subsequent upgrade acts as.</p>
+<h4 id="mitigations-58"><a class="header" href="#mitigations-58">Mitigations</a></h4>
+<ul>
+<li>Migration only succeeds when <code>delegatecall</code>ed</li>
+<li>The common owner is checked across every chain in the input before any state is mutated</li>
+</ul>
+<h3 id="amig-004-the-starting-anchor-state-is-correct"><a class="header" href="#amig-004-the-starting-anchor-state-is-correct">aMIG-004: The Starting Anchor State is correct</a></h3>
+<p>The <a href="experimental/contracts/L1/opcm-migrator.html#starting-anchor-state">Starting Anchor State</a> supplied to migration is a truthful Super Root
+of every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> at the stated sequence number.</p>
+<p>Migration cannot check a Super Root against L2 state on-chain. It rejects only roots which carry a
+zero anchor hash or sequence numbers that leave no room for a new one, so a wrong but plausible
+anchor is installed exactly as supplied.</p>
+<h4 id="mitigations-59"><a class="header" href="#mitigations-59">Mitigations</a></h4>
+<ul>
+<li>Migration rejects an empty anchor and one that leaves no room for a successor proposal, so the
+obvious placeholder values cannot be installed by accident</li>
+<li>Validation compares the installed anchor against the operator's stated intent</li>
+</ul>
+<h3 id="amig-005-the-input-describes-the-complete-set"><a class="header" href="#amig-005-the-input-describes-the-complete-set">aMIG-005: The input describes the complete set</a></h3>
+<p>The chains supplied to migration are exactly the chains joining the set. All of them are joining,
+and none is already in a set.</p>
+<p>Migration supports only the case of independent chains merging into one new set. Adding a chain to
+an existing set, splitting a set, or migrating part of a set is not supported.</p>
+<h4 id="mitigations-60"><a class="header" href="#mitigations-60">Mitigations</a></h4>
+<ul>
+<li>Any chain already in a set is refused, so an existing set cannot be migrated again or extended</li>
+<li>A mixed input containing one or more already-migrated chains is rejected</li>
+</ul>
+<h3 id="amig-006-retired-dispute-games-resolve"><a class="header" href="#amig-006-retired-dispute-games-resolve">aMIG-006: Retired dispute games resolve</a></h3>
+<p>Dispute games created before migration resolve on their own against their
+<a href="experimental/contracts/L1/opcm-migrator.html#retired-contracts">Retired Contracts</a>, and their bonds are reclaimed afterwards.</p>
+<p>Migration does not resolve, cancel or settle games that are in progress.</p>
+<h4 id="mitigations-61"><a class="header" href="#mitigations-61">Mitigations</a></h4>
+<ul>
+<li>Retired factories keep the games they created, and migration removes only the ability to create
+new ones</li>
+<li>Retired registries and <code>DelayedWETH</code> contracts keep resolving pause and guardian through the
+set's shared <code>ETHLockbox</code>, so a retired game is neither stranded nor exempt from a pause</li>
+<li>Bond withdrawals already pending in a retired <code>DelayedWETH</code> survive migration</li>
+</ul>
+<h3 id="amig-007-member-chains-already-run-permissionless-dispute-games"><a class="header" href="#amig-007-member-chains-already-run-permissionless-dispute-games">aMIG-007: Member Chains already run permissionless dispute games</a></h3>
+<p>Every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> already runs permissionless dispute games, so the
+<a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a> it joins must go on defending it with permissionless super-root games.</p>
+<p>Migration does not check this. It registers whatever list of super-root game configurations it is
+given as its input, including a list holding the permissioned game type only. Validation checks one
+fixed shape instead: the set's shared <code>DisputeGameFactory</code> must have both the permissioned and the
+permissionless super-root game type of this release registered. The permissioned game type is the
+set's fallback, as it is for a single chain. A set that comes out of migration with permissioned
+games only is a downgrade.</p>
+<h4 id="mitigations-62"><a class="header" href="#mitigations-62">Mitigations</a></h4>
+<ul>
+<li>Validation fails on a shared <code>DisputeGameFactory</code> that has no permissionless super-root game type,
+so the downgrade is not silently accepted</li>
+<li>Migration is a privileged one-off, so the operator is responsible for supplying a valid configuration.</li>
+</ul>
+<h2 id="invariants-20"><a class="header" href="#invariants-20">Invariants</a></h2>
+<h3 id="imig-001-migration-happens-at-most-once-per-chain"><a class="header" href="#imig-001-migration-happens-at-most-once-per-chain">iMIG-001: Migration happens at most once per chain</a></h3>
+<p>A chain that is already a <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> of an <a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a> must never
+be migrated again, and an attempt that includes even one such chain must fail in its entirety.</p>
+<h4 id="impact-83"><a class="header" href="#impact-83">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>Re-migrating a set is destructive to every chain in it. A second migration deploys a fresh
+<code>ETHLockbox</code> and drains the set's existing one into it. It also clears the game implementations from
+the set's shared <code>DisputeGameFactory</code>. The result is a set with no playable dispute games and no
+withdrawable ETH, for every member at once.</p>
+<h3 id="imig-002-eth-is-conserved-across-migration"><a class="header" href="#imig-002-eth-is-conserved-across-migration">iMIG-002: ETH is conserved across migration</a></h3>
+<p>Every ETH balance held by a <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a>'s <code>OptimismPortal</code> or by its retired
+<code>ETHLockbox</code> must end up in the set's shared <code>ETHLockbox</code>. Afterwards each member's <code>OptimismPortal</code>
+and each retired <code>ETHLockbox</code> must hold no ETH, and the shared <code>ETHLockbox</code> must hold the sum of
+what they held before.</p>
+<h4 id="impact-84"><a class="header" href="#impact-84">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>The portal no longer draws on a retired contract, so it no longer backs anything, and withdrawals
+against it can never be paid. ETH counted twice would let more be withdrawn from the set than was ever deposited into it.</p>
+<h3 id="imig-003-member-chains-have-distinct-non-zero-chain-ids"><a class="header" href="#imig-003-member-chains-have-distinct-non-zero-chain-ids">iMIG-003: Member Chains have distinct, non-zero chain IDs</a></h3>
+<p>No two <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chains</a> may report the same L2 chain ID, and no member may report a
+chain ID of zero.</p>
+<h4 id="impact-85"><a class="header" href="#impact-85">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>An Interop Set's proofs key each member's output root by its chain ID. Two members sharing an ID
+would let a single withdrawal be finalized through both members' portals, paying it twice out of the
+shared liquidity pool.</p>
+<h3 id="imig-004-migration-is-atomic-and-complete"><a class="header" href="#imig-004-migration-is-atomic-and-complete">iMIG-004: Migration is atomic and complete</a></h3>
+<p>Migration either fully succeeds for every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> or fully reverts with no
+state changes, within a single transaction that fits in an Ethereum block.</p>
+<h4 id="impact-86"><a class="header" href="#impact-86">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, the set could be left partially migrated. Some portals would point at the shared
+contracts while the rest still pointed at their own. Liquidity would sit partly in the shared
+<code>ETHLockbox</code> and partly in the retired ones. No single proof would cover every member. A withdrawal
+could then be blocked or paid twice, depending on which side of the split it was proven against.</p>
+<h3 id="imig-005-a-single-pause-identifier-governs-the-set"><a class="header" href="#imig-005-a-single-pause-identifier-governs-the-set">iMIG-005: A single Pause Identifier governs the set</a></h3>
+<p>After migration, every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> must resolve its pause state and its guardian
+through the set's shared <code>ETHLockbox</code>, so that one scoped pause covers the whole set.</p>
+<p>To reach that state safely, migration must refuse to run while any member is paused under its
+existing <a href="experimental/contracts/L1/opcm-migrator.html#pause-identifier">Pause Identifier</a>, and must leave no pause active against any retired
+identity.</p>
+<h4 id="impact-87"><a class="header" href="#impact-87">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>Changing a chain's Pause Identifier while a pause is active drops that pause: the guardian's
+intervention silently stops applying, and withdrawals resume in the middle of the incident that
+prompted it. In the other direction, a pause left active against a retired identity is a pause
+nobody can see and nobody can lift through the set's controls.</p>
+<h3 id="imig-006-retired-contracts-remain-coherent-with-the-set"><a class="header" href="#imig-006-retired-contracts-remain-coherent-with-the-set">iMIG-006: Retired contracts remain coherent with the set</a></h3>
+<p>Each <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a>'s retired <code>AnchorStateRegistry</code> and retired <code>DelayedWETH</code> must
+resolve pause, guardian and <code>SuperchainConfig</code> through the set's shared <code>ETHLockbox</code>, while keeping
+their own anchor state and respected game type unchanged.</p>
+<h4 id="impact-88"><a class="header" href="#impact-88">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, a member's retired <code>AnchorStateRegistry</code> and <code>DelayedWETH</code> would keep asking their old
+lockbox whether the set is paused. Only the shared <code>ETHLockbox</code> answers that question for the set,
+because a lockbox reports the pause keyed to its own address. The guardian could halt the set and
+these two contracts would still read "not paused".</p>
+<p>The games that read them were created before migration, and have no other route to the set's pause
+state. A game caught resolving incorrectly could not be stopped, and its bonds would be paid out of
+a set the guardian had already halted. A pause keyed to the retired lockbox would do the reverse,
+freezing those games while the rest of the set carried on.</p>
+<p>Reinitializing their anchor state rather than preserving it would invalidate the same games.</p>
+<p>Pause is the only one of the three references that can diverge today, because every lockbox in a set
+holds the same <code>SuperchainConfig</code> and so reports the same guardian. The guardian and
+<code>SuperchainConfig</code> clauses keep the invariant sound if that ever stops being true.</p>
+<h3 id="imig-007-no-legacy-dispute-game-configuration-survives"><a class="header" href="#imig-007-no-legacy-dispute-game-configuration-survives">iMIG-007: No legacy dispute game configuration survives</a></h3>
+<p>No game type may be left with an implementation on any <a href="experimental/contracts/L1/opcm-migrator.html#retired-contracts">Retired Contracts</a>
+<code>DisputeGameFactory</code>. The <a href="experimental/contracts/L1/opcm-migrator.html#cleared-game-types">Cleared Game Types</a> must therefore cover every game
+type a chain on this release could have registered, including those the release has since withdrawn
+from service. The set's shared <code>DisputeGameFactory</code> must carry only super-root game types, and must
+include both the permissioned and the permissionless super-root game type of this release. See
+<a href="experimental/contracts/L1/opcm-migrator.html#amig-007-member-chains-already-run-permissionless-dispute-games">aMIG-007</a>.</p>
+<p>Migration and validation must agree on which game types a retired factory has to be cleared of.
+Neither may work from its own list.</p>
+<h4 id="impact-89"><a class="header" href="#impact-89">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>A game type left registered on a retired factory lets anyone create a new game there, against a
+registry the portal no longer respects. Bonds staked there back a game that can never settle a
+withdrawal. A stale initialization bond is harmless once the implementation is cleared, because
+creation reverts on the missing implementation before the factory reads the bond. If the two sides
+disagree about the list, validation passes while a game type is still live, which is precisely the
+failure this invariant exists to catch.</p>
+<h3 id="imig-008-shared-contracts-depend-only-on-set-scoped-contracts"><a class="header" href="#imig-008-shared-contracts-depend-only-on-set-scoped-contracts">iMIG-008: Shared Contracts depend only on set-scoped contracts</a></h3>
+<p>No <a href="experimental/contracts/L1/opcm-migrator.html#shared-contracts">Shared Contract</a> may resolve its pause state, its guardian or its
+<code>SuperchainConfig</code> through a contract belonging to a single <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a>. Every
+dependency that governs the set must itself be scoped to the whole set.</p>
+<p>Two references to per-chain contracts survive migration by design and neither invalidates this invariant:</p>
+<ul>
+<li>The index-0 member's <code>ProxyAdmin</code> administers the three proxies migration deploys, and remains the
+admin of the <code>DelayedWETH</code> the set adopts.
+<a href="experimental/contracts/L1/opcm-migrator.html#amig-003-a-single-trusted-proxyadmin-owner-governs-the-whole-set">aMIG-003</a> makes this safe.
+Every member's <code>ProxyAdmin</code> is controlled by the same owner.</li>
+<li>The set's shared <code>ETHLockbox</code> records every member's <code>OptimismPortal</code> as an authorized portal, and
+every retired <code>ETHLockbox</code> as an authorized lockbox. Each portal needs its entry to draw on the
+shared pool, and each retired lockbox needs its entry to hand its balance over.</li>
+</ul>
+<h4 id="impact-90"><a class="header" href="#impact-90">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>A Shared Contract pointing at one member's per-chain contract makes that member the governance root
+of the set: the whole set's pause state and guardian resolve through one member's configuration,
+with nothing keeping that member aligned afterwards. It also breaks upgrade idempotency, because
+upgrading any other member would aim the set's governance reference at itself instead, and makes it
+impossible to state a validation predicate that holds for more than one member at a time.</p>
+<h3 id="imig-009-the-set-has-one-governance-scope"><a class="header" href="#imig-009-the-set-has-one-governance-scope">iMIG-009: The set has one governance scope</a></h3>
+<p>All <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chains</a> must share one ProxyAdmin owner and one <code>SuperchainConfig</code>, and
+the set's shared <code>DisputeGameFactory</code> must be owned by that ProxyAdmin owner.</p>
+<h4 id="impact-91"><a class="header" href="#impact-91">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Members under different owners or different <code>SuperchainConfig</code> contracts cannot be paused, upgraded
+or guarded as a unit, which is the premise the shared contracts are built on. A shared factory owned
+by anyone else would let that party set the dispute game implementations for every member.</p>
+<h3 id="imig-010-per-chain-configuration-is-otherwise-preserved"><a class="header" href="#imig-010-per-chain-configuration-is-otherwise-preserved">iMIG-010: Per-chain configuration is otherwise preserved</a></h3>
+<p>Migration must not change any <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> configuration beyond what joining the
+set requires: adopting the set's <a href="experimental/contracts/L1/opcm-migrator.html#shared-contracts">Shared Contracts</a>, enabling the features the
+set depends on, and moving the portal onto the shared <code>ETHLockbox</code> and registry. Every other
+configuration value must survive migration unchanged.</p>
+<h4 id="impact-92"><a class="header" href="#impact-92">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>Migration touches every member's most privileged contracts. Silently changing an owner would
+transfer control of the chain. Silently changing a batcher hash or a gas limit would break it.</p>
+<h3 id="imig-011-the-starting-anchor-state-is-well-formed"><a class="header" href="#imig-011-the-starting-anchor-state-is-well-formed">iMIG-011: The Starting Anchor State is well formed</a></h3>
+<p>The <a href="experimental/contracts/L1/opcm-migrator.html#starting-anchor-state">Starting Anchor State</a> must not be empty and must leave room for a
+successor proposal. The set's starting respected game type must be a super-root game type, and must
+be one of the game types migration registers on the shared factory.</p>
+<h4 id="impact-93"><a class="header" href="#impact-93">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>An empty or out-of-range anchor leaves the shared registry in a state no game can build on, halting
+proposals for every member. A respected game type with no implementation registered is unplayable,
+so no proposal can be made or defended and withdrawals stop for the whole set.</p>
+<h3 id="imig-012-registered-dispute-games-are-playable"><a class="header" href="#imig-012-registered-dispute-games-are-playable">iMIG-012: Registered dispute games are playable</a></h3>
+<p>Every dispute game configuration migration installs must be one it can actually install and one that
+can be played: a super-root game type with a registered implementation, enabled, with an
+initialization bond consistent with whether that game type charges bonds, and with a non-zero
+absolute prestate where the game type requires one.</p>
+<p>A configuration that passes validation must not then fail installation.</p>
+<h4 id="impact-94"><a class="header" href="#impact-94">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>An unplayable game blocks proposals, and therefore withdrawals, for every member of the set. A
+game type that passes the configuration checks and then fails installation turns a caller mistake
+into a failure halfway through the operation, which is a far worse diagnostic than an upfront
+rejection.</p>
+<h3 id="imig-013-custom-gas-token-chains-are-not-migrated"><a class="header" href="#imig-013-custom-gas-token-chains-are-not-migrated">iMIG-013: Custom gas token chains are not migrated</a></h3>
+<p>A <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> must not use a custom gas token. Migration must reject a chain whose
+<code>SystemConfig</code> has the custom gas token feature enabled before any state is mutated.</p>
+<h4 id="impact-95"><a class="header" href="#impact-95">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>A custom gas token chain's native asset is not ETH. Joining a set enables the interop feature on the
+member, which activates the <a href="experimental/contracts/L1/../../../interop/eth-bridging.html">interop ETH predeploys</a> on its L2. A
+cross-chain ETH transfer burns the sending chain's native asset and mints ETH on the receiving
+chain. That ETH is withdrawable from the set's single shared <code>ETHLockbox</code>, so every unit such a
+member sends draws on ETH it never deposited.</p>
+<h3 id="imig-014-withdrawal-proofs-do-not-survive-migration"><a class="header" href="#imig-014-withdrawal-proofs-do-not-survive-migration">iMIG-014: Withdrawal proofs do not survive migration</a></h3>
+<p>No withdrawal proven before migration may be finalized afterwards.</p>
+<p>The set's shared <code>AnchorStateRegistry</code> is initialized during migration, so its
+<a href="experimental/contracts/L1/../../../fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a>
+is the migration block. Every game created before that block is a
+<a href="experimental/contracts/L1/../../../fault-proof/stage-one/anchor-state-registry.html#retired-game">Retired Game</a> to the set, and
+a proof against a Retired Game can never be finalized. Those games are not registered with the set's
+shared <code>DisputeGameFactory</code> either, which rejects them on that path as well. The withdrawal must be
+proven again, against a game the shared factory created, and then wait a fresh proof maturity delay.</p>
+<p>This does not contradict <a href="experimental/contracts/L1/opcm-migrator.html#amig-006-retired-dispute-games-resolve">aMIG-006</a>. <strong>Games in progress
+still resolve and still pay their bonds.</strong> A game keeps the registry it was created with, and
+that registry keeps its own retirement timestamp, so the game is not retired there. Only the
+portal moved.</p>
+<h4 id="impact-96"><a class="header" href="#impact-96">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>A pre-migration game proves one chain's output root. A proof that stayed valid against such a game
+would pay out of the set's pooled <code>ETHLockbox</code>, on the strength of a game nobody is defending,
+drawing on ETH the other members deposited.</p>
+<p>The user sees nothing at migration time. Their proof reverts only when they try to finalize it, so
+the operator has to tell them to prove again.</p>
+<div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="livenessguard"><a class="header" href="#livenessguard">LivenessGuard</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -20359,20 +21166,20 @@ across the Superchain.</p>
 </li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<h2 id="overview-70"><a class="header" href="#overview-70">Overview</a></h2>
+<h2 id="overview-72"><a class="header" href="#overview-72">Overview</a></h2>
 <p>The LivenessGuard tracks the liveness of Safe multisig owners by recording timestamps when owners sign transactions or
 explicitly demonstrate activity. It serves as a monitoring mechanism to identify inactive owners who may have lost
 access to their keys.</p>
-<h2 id="definitions-14"><a class="header" href="#definitions-14">Definitions</a></h2>
+<h2 id="definitions-16"><a class="header" href="#definitions-16">Definitions</a></h2>
 <h3 id="liveness-timestamp"><a class="header" href="#liveness-timestamp">Liveness Timestamp</a></h3>
 <p>The most recent block timestamp at which an owner either signed a Safe transaction or called the <code>showLiveness</code>
 function. This timestamp is publicly queryable via the <code>lastLive</code> mapping.</p>
-<h2 id="assumptions-12"><a class="header" href="#assumptions-12">Assumptions</a></h2>
+<h2 id="assumptions-14"><a class="header" href="#assumptions-14">Assumptions</a></h2>
 <p>N/A</p>
-<h2 id="invariants-19"><a class="header" href="#invariants-19">Invariants</a></h2>
+<h2 id="invariants-21"><a class="header" href="#invariants-21">Invariants</a></h2>
 <h3 id="i01-001-liveness-tracking-accuracy"><a class="header" href="#i01-001-liveness-tracking-accuracy">i01-001: Liveness tracking accuracy</a></h3>
 <p>Owner activity is accurately tracked and properly synchronized with the Safe's owner set.</p>
-<h4 id="impact-72"><a class="header" href="#impact-72">Impact</a></h4>
+<h4 id="impact-97"><a class="header" href="#impact-97">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If liveness tracking is inaccurate, inactive owners could appear active (preventing their removal) or active owners
 could appear inactive (enabling improper removal). This undermines the entire liveness monitoring mechanism and could
@@ -20380,7 +21187,7 @@ lead to unauthorized changes to the Safe's owner set.</p>
 <h3 id="i02-002-liveness-demonstration-capability"><a class="header" href="#i02-002-liveness-demonstration-capability">i02-002: Liveness demonstration capability</a></h3>
 <p>Owners are always capable of showing liveness if the owner is actually live. The guard never prevents legitimate owners
 from demonstrating their liveness through either transaction signatures or direct <code>showLiveness</code> calls.</p>
-<h4 id="impact-73"><a class="header" href="#impact-73">Impact</a></h4>
+<h4 id="impact-98"><a class="header" href="#impact-98">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If legitimate owners cannot demonstrate liveness, they could be incorrectly identified as inactive and removed from the
 Safe. This could lead to loss of access to the Safe's assets and functionality, potentially causing permanent fund

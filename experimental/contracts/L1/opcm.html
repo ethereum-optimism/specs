@@ -1,0 +1,515 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>OPContractsManager - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L1/opcm.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="opcontractsmanager"><a class="header" href="#opcontractsmanager">OPContractsManager</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#system">System</a></li>
+<li><a href="#contract-release">Contract Release</a></li>
+<li><a href="#opcm-version">OPCM Version</a></li>
+<li><a href="#extra-instructions">Extra Instructions</a></li>
+<li><a href="#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-ethereum-environment">a01-001: Ethereum Environment</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-002-implementation-contracts-trusted">a01-002: Implementation Contracts Trusted</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-003-code-at-release-commit-is-safe">a01-003: Code at Release Commit is Safe</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-004-proxyadmin-owner-trusted-for-upgrades">a01-004: ProxyAdmin Owner Trusted for Upgrades</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-005-superchain-proxyadmin-owner-trusted">a01-005: Superchain ProxyAdmin Owner Trusted</a>
+<ul>
+<li><a href="#mitigations-4">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-code-integrity">i01-001: Code Integrity</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-atomicity">i01-002: Atomicity</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-003-no-unexpected-mutations">i01-003: No Unexpected Mutations</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-004-upgrade-ordering">i01-004: Upgrade Ordering</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-005-initialization-safety">i01-005: Initialization Safety</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-006-superchainconfig-backwards-compatibility">i01-006: SuperchainConfig Backwards Compatibility</a>
+<ul>
+<li><a href="#impact-5">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-007-single-operation-gas-feasibility">i01-007: Single Operation Gas Feasibility</a>
+<ul>
+<li><a href="#impact-6">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-008-batch-operation-gas-efficiency">i01-008: Batch Operation Gas Efficiency</a>
+<ul>
+<li><a href="#impact-7">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-009-time-independence">i01-009: Time Independence</a>
+<ul>
+<li><a href="#impact-8">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-010-permissioneddisputegame-fallback-preservation">i01-010: PermissionedDisputeGame Fallback Preservation</a>
+<ul>
+<li><a href="#impact-9">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-011-upgrade-availability-while-paused">i01-011: Upgrade Availability While Paused</a>
+<ul>
+<li><a href="#impact-10">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>OPContractsManager (OPCM) is the contract that defines network upgrades for OP Stack smart contracts.
+Each OPCM instance represents a specific <a href="#contract-release">Contract Release</a> and holds immutable
+references to the implementation contracts for that release.</p>
+<p>OPCM provides three core capabilities:</p>
+<ul>
+<li><strong>System Deployment</strong>: Deploying all L1 contracts for a new OP Stack <a href="#system">System</a> at the
+version the OPCM represents. This capability is permissionless.</li>
+<li><strong>System Upgrade</strong>: Upgrading the L1 contracts of an existing <a href="#system">System</a> to the version
+the OPCM represents. This capability is designed to be invoked via delegatecall by the ProxyAdmin
+owner, as OPCM itself holds no special authority.</li>
+<li><strong>SuperchainConfig Upgrade</strong>: Upgrading the SuperchainConfig contract. This capability is
+designed to be invoked via delegatecall by the
+<a href="#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a>.</li>
+</ul>
+<p>OPCM is fully immutable with no mutable state. Implementation addresses are set at deployment time
+and cannot be changed.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="system"><a class="header" href="#system">System</a></h3>
+<p>All of the smart contracts that comprise a single OP Stack chain, including but not limited to
+SystemConfig, OptimismPortal, L1CrossDomainMessenger, L1StandardBridge, DisputeGameFactory, and
+associated proxy contracts.</p>
+<h3 id="contract-release"><a class="header" href="#contract-release">Contract Release</a></h3>
+<p>The version identifier for an OP Stack smart contracts release, following the format
+<code>op-contracts/vX.Y.Z</code>. Each Contract Release uses a specific <a href="#opcm-version">OPCM Version</a>.</p>
+<h3 id="opcm-version"><a class="header" href="#opcm-version">OPCM Version</a></h3>
+<p>The version of the OPContractsManager contract itself, which may differ from the
+<a href="#contract-release">Contract Release</a> version. The OPCM Version reflects the capabilities and
+interface of the upgrader rather than the contracts it deploys.</p>
+<h3 id="extra-instructions"><a class="header" href="#extra-instructions">Extra Instructions</a></h3>
+<p>A migration mechanism used during upgrades to set state values. Extra Instructions can be used to
+bootstrap new state that has no predecessor value (e.g., when an upgrade introduces a new variable)
+or to change state that already has a predecessor value. Each OPCM must specify which Extra
+Instructions are permitted, and those Extra Instructions must not be permitted in OPCMs of higher
+major versions. Permanent inputs should be added to the interface rather than implemented via Extra
+Instructions.</p>
+<h3 id="superchain-proxyadmin-owner"><a class="header" href="#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a></h3>
+<p>The ProxyAdmin owner for the SuperchainConfig contract. Since SuperchainConfig is shared across
+multiple chains on a network (many-to-one relationship), it has its own governance-controlled
+ProxyAdmin owner separate from individual chain ProxyAdmin owners.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-ethereum-environment"><a class="header" href="#a01-001-ethereum-environment">a01-001: Ethereum Environment</a></h3>
+<p>OPCM is designed to run on Ethereum L1 mainnet and Sepolia. Behavior on other networks is not
+guaranteed.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Documentation clearly states Ethereum L1 mainnet and Sepolia as the target environments</li>
+<li>Testing is performed against Ethereum L1 mainnet and Sepolia</li>
+</ul>
+<h3 id="a01-002-implementation-contracts-trusted"><a class="header" href="#a01-002-implementation-contracts-trusted">a01-002: Implementation Contracts Trusted</a></h3>
+<p>The implementation contracts referenced by OPCM are trusted and correct for the release they
+represent.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Audited verification scripts confirm deployed bytecode matches the release commit. Verification
+scripts must be re-audited when changed.</li>
+<li>Implementation addresses are immutable once OPCM is deployed</li>
+</ul>
+<h3 id="a01-003-code-at-release-commit-is-safe"><a class="header" href="#a01-003-code-at-release-commit-is-safe">a01-003: Code at Release Commit is Safe</a></h3>
+<p>The code at the GitHub commit that the <a href="#contract-release">Contract Release</a> represents is safe
+and has not been tampered with.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>Release commits undergo security audits</li>
+<li>Multiple reviewers approve release commits</li>
+<li>Cryptographic signatures verify commit integrity</li>
+</ul>
+<h3 id="a01-004-proxyadmin-owner-trusted-for-upgrades"><a class="header" href="#a01-004-proxyadmin-owner-trusted-for-upgrades">a01-004: ProxyAdmin Owner Trusted for Upgrades</a></h3>
+<p>The ProxyAdmin owner invoking system upgrades is trusted and operating within governance
+constraints.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>System upgrade capability only functions when delegatecalled, as OPCM holds no authority itself</li>
+<li>ProxyAdmin ownership is typically controlled by governance multisigs</li>
+</ul>
+<h3 id="a01-005-superchain-proxyadmin-owner-trusted"><a class="header" href="#a01-005-superchain-proxyadmin-owner-trusted">a01-005: Superchain ProxyAdmin Owner Trusted</a></h3>
+<p>The <a href="#superchain-proxyadmin-owner">Superchain ProxyAdmin Owner</a> is trusted and operating within
+governance constraints when upgrading SuperchainConfig.</p>
+<h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
+<ul>
+<li>SuperchainConfig upgrade capability only functions when delegatecalled</li>
+<li>Superchain governance controls the Superchain ProxyAdmin Owner</li>
+<li>SuperchainConfig changes affect multiple chains, requiring heightened governance scrutiny</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-code-integrity"><a class="header" href="#i01-001-code-integrity">i01-001: Code Integrity</a></h3>
+<p>OPCM must faithfully deploy or upgrade to the code at the GitHub commit that the
+<a href="#contract-release">Contract Release</a> was created at. OPCM must not deploy code that is not
+present in that commit.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, malicious or incorrect code could be deployed to production systems, potentially
+resulting in loss of funds, unauthorized access, or system compromise across all affected chains.</p>
+<h3 id="i01-002-atomicity"><a class="header" href="#i01-002-atomicity">i01-002: Atomicity</a></h3>
+<p>System deployment and upgrade operations must be atomic. They either fully succeed or fully
+revert with no partial state changes.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a <a href="#system">System</a> could be left in an inconsistent state where some contracts are
+upgraded and others are not, potentially breaking cross-contract invariants and rendering the
+system unusable or insecure.</p>
+<h3 id="i01-003-no-unexpected-mutations"><a class="header" href="#i01-003-no-unexpected-mutations">i01-003: No Unexpected Mutations</a></h3>
+<p>During system deployment or upgrade, system variables must never be mutated unless one of the
+following conditions is met:</p>
+<ol>
+<li>The user explicitly supplies an input requesting that change</li>
+<li>OPCM deliberately mutates the value with clear documentation explaining why the mutation is
+necessary, and the change is safe to make</li>
+</ol>
+<p>Properties such as ProxyAdmin ownership must be fetched from the existing system during upgrades
+and preserved without modification.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If violated, upgrades could silently change critical system properties like ownership, potentially
+transferring control to unauthorized parties or breaking the security model of the system.</p>
+<h3 id="i01-004-upgrade-ordering"><a class="header" href="#i01-004-upgrade-ordering">i01-004: Upgrade Ordering</a></h3>
+<p>Chains must follow the correct upgrade flow. Valid upgrade paths are:</p>
+<ul>
+<li>Same major version to a higher minor version (e.g., v1.2.0 to v1.3.0). Skipping minor versions is
+permitted, as a new increased minor version represents a replacement of the previous minor
+version.</li>
+<li>Current major version to the next major version (e.g., v1.x.y to v2.0.0)</li>
+</ul>
+<p>Downgrades and skipping major versions are not permitted.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If violated, chains could skip critical migration steps or security patches, potentially leaving
+them in an unsupported or vulnerable state that diverges from the expected upgrade path.</p>
+<h3 id="i01-005-initialization-safety"><a class="header" href="#i01-005-initialization-safety">i01-005: Initialization Safety</a></h3>
+<p>Contracts deployed or upgraded by OPCM must never be left uninitialized or open to
+re-initialization.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High/Critical</strong></p>
+<p>If violated, attackers could initialize contracts with malicious parameters, potentially taking
+ownership of critical system components or corrupting system state.</p>
+<h3 id="i01-006-superchainconfig-backwards-compatibility"><a class="header" href="#i01-006-superchainconfig-backwards-compatibility">i01-006: SuperchainConfig Backwards Compatibility</a></h3>
+<p>SuperchainConfig must maintain backwards compatibility with all OP Stack versions starting from
+<code>op-contracts/v1.3.0</code> (MCP L1).</p>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, chains running older OP Stack versions that depend on SuperchainConfig could break,
+potentially halting operations for multiple chains simultaneously.</p>
+<h3 id="i01-007-single-operation-gas-feasibility"><a class="header" href="#i01-007-single-operation-gas-feasibility">i01-007: Single Operation Gas Feasibility</a></h3>
+<p>Given valid parameters, a single system deployment or upgrade operation must always be executable
+within the gas limits of an Ethereum block.</p>
+<h4 id="impact-6"><a class="header" href="#impact-6">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, it would be impossible to deploy new chains or upgrade existing chains, effectively
+breaking the core functionality of OPCM and blocking all future upgrades.</p>
+<h3 id="i01-008-batch-operation-gas-efficiency"><a class="header" href="#i01-008-batch-operation-gas-efficiency">i01-008: Batch Operation Gas Efficiency</a></h3>
+<p>Multiple upgrade operations (approximately 5) should be executable within a single transaction.</p>
+<h4 id="impact-7"><a class="header" href="#impact-7">Impact</a></h4>
+<p><strong>Severity: Low</strong></p>
+<p>If violated, upgrading multiple chains would require separate transactions, increasing operational
+complexity and cost but not blocking functionality.</p>
+<h3 id="i01-009-time-independence"><a class="header" href="#i01-009-time-independence">i01-009: Time Independence</a></h3>
+<p>OPCM behavior must not depend on time. Given the same inputs and environment state, OPCM must
+produce the same results regardless of when it is called. OPCM itself must not be the source of
+any time-dependent behavior.</p>
+<p>Individual contracts deployed or upgraded by OPCM may have time-dependent initialization behavior
+(e.g., storing a timestamp on first initialization). Such behavior must be carefully considered
+and clearly documented in those specific contracts. However, this time-dependence must originate
+from the contract's own logic, not from OPCM.</p>
+<h4 id="impact-8"><a class="header" href="#impact-8">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, OPCM behavior would become unpredictable and potentially exploitable. Time-dependent
+logic could cause operations to fail unexpectedly, create windows of vulnerability, or allow
+manipulation based on timing.</p>
+<h3 id="i01-010-permissioneddisputegame-fallback-preservation"><a class="header" href="#i01-010-permissioneddisputegame-fallback-preservation">i01-010: PermissionedDisputeGame Fallback Preservation</a></h3>
+<p>Systems that use the FaultDisputeGame must also have a PermissionedDisputeGame. OPCM must not
+disable or remove the PermissionedDisputeGame from such systems.</p>
+<h4 id="impact-9"><a class="header" href="#impact-9">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, the system would lose its safe fallback mechanism. The PermissionedDisputeGame
+provides a trusted dispute resolution path that can be used if issues are discovered with the
+permissionless FaultDisputeGame, ensuring the system can continue operating safely.</p>
+<h3 id="i01-011-upgrade-availability-while-paused"><a class="header" href="#i01-011-upgrade-availability-while-paused">i01-011: Upgrade Availability While Paused</a></h3>
+<p>The standard upgrade path via the <code>upgrade()</code> method must always succeed regardless of whether
+the system is paused. The ability to upgrade contracts must not be blocked by the pause state.</p>
+<h4 id="impact-10"><a class="header" href="#impact-10">Impact</a></h4>
+<p><strong>Severity: Low</strong></p>
+<p>If violated, upgrading via OPCM would not be possible while paused. Manual upgrades can typically
+still be executed as a workaround, but this adds operational complexity during incident response.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/gov-token.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L1/opcm-migrator.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/gov-token.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L1/opcm-migrator.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

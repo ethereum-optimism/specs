@@ -274,13 +274,16 @@ any of the following checks fail:</p>
 <li>Parent MUST NOT be retired (i.e., <code>createdAt &gt; retirementTimestamp</code>).</li>
 <li>Parent MUST be the same game type (<code>ZK_GAME_TYPE</code>).</li>
 <li>Parent MUST NOT have resolved as <code>CHALLENGER_WINS</code>.</li>
+<li>If the child's <code>wasRespectedGameTypeWhenCreated</code> is <code>true</code>, the parent's
+<code>wasRespectedGameTypeWhenCreated</code> MUST also be <code>true</code>.</li>
 <li>Parent's <code>l2SequenceNumber</code> (timestamp) MUST be strictly above the anchor state's
 <code>l2SequenceNumber</code>.</li>
 <li>The game's <code>l2SequenceNumber</code> MUST be strictly greater than the parent's <code>l2SequenceNumber</code>.</li>
 </ul>
-<p>The <code>isGameRespected</code> check on the parent is intentionally omitted. The respected game type gates
-which games can finalize withdrawals (via <code>isGameClaimValid</code>), but MUST NOT prevent in-progress
-proposal chains from being completed after a game type transition.</p>
+<p>Children created while their game type is not respected MAY reference any parent that passes
+the other validation checks. This allows in-progress proposal chains to continue after a
+switch away from the ZK game type while preventing respected games from building on claims
+created when that game type was not respected.</p>
 <h2 id="challenge"><a class="header" href="#challenge">Challenge</a></h2>
 <p>Challenging is fully permissionless. Anyone may call <code>challenge()</code> before the challenge deadline.
 The call MUST include <code>challengerBond</code> ETH, which <code>challenge()</code> deposits into <code>DelayedWETH</code> on
