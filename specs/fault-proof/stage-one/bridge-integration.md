@@ -78,11 +78,11 @@ longer required.
 
 ### New `DeployConfig` Variables
 
-| Name                                  | Description                                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DISPUTE_GAME_FINALITY_DELAY_SECONDS` | The amount of time given to the `Guardian` role to blacklist a resolved dispute game before any withdrawals proven against it can be finalized, in case of system failure. Now a per-chain value on the `AnchorStateRegistry`; see [Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap). |
-| `PROOF_MATURITY_DELAY_SECONDS`        | Formerly `FINALIZATION_PERIOD_SECONDS` in the `L2OutputOracle`, defines the duration that must pass between proving and finalizing a withdrawal. Now a per-chain value on the `OptimismPortal`; see [Proof Maturity Delay](./optimism-portal.md#proof-maturity-delay).                                                           |
-| `RESPECTED_GAME_TYPE`                 | The dispute game type that the portal uses for the withdrawal path.                                                                                                                                                                                                                                                              |
+| Name                                  | Description                                                                                                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DISPUTE_GAME_FINALITY_DELAY_SECONDS` | The amount of time given to the `Guardian` role to blacklist a resolved dispute game before any withdrawals proven against it can be finalized, in case of system failure. |
+| `PROOF_MATURITY_DELAY_SECONDS`        | Formerly `FINALIZATION_PERIOD_SECONDS` in the `L2OutputOracle`, defines the duration that must pass between proving and finalizing a withdrawal.                           |
+| `RESPECTED_GAME_TYPE`                 | The dispute game type that the portal uses for the withdrawal path.                                                                                                        |
 
 ### Data Structures
 
@@ -227,15 +227,10 @@ have resolved in the `rootClaim`'s favor unless its `status()` is equal to `DEFE
 
 Given it's own section due to it's importance, the air gap is an enforced period of time between a dispute game's
 resolution and users being able to finalize withdrawals that were proven against its root claim. When the `DisputeGame`
-resolves globally, it stores the timestamp. The portal's `finalizeWithdrawalTransaction` function asserts that the
-[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) has passed since the
-resolution timestamp before allowing any withdrawals proven against the dispute game to be finalized. Because the
-`FaultDisputeGame` is a trusted implementation set by the owner of the `DisputeGameFactory`, it is safe to trust that
-this value is honestly set.
-
-The delay is configured per chain. The overall finalization condition, combining this delay with the portal's
-[Proof Maturity Delay](./optimism-portal.md#proof-maturity-delay), is given in
-[Finalized Withdrawal](./optimism-portal.md#finalized-withdrawal).
+resolves globally, it stores the timestamp. The portal's `finalizeWithdrawalTransaction` function asserts that
+`DISPUTE_GAME_FINALITY_DELAY_SECONDS` have passed since the resolution timestamp before allowing any withdrawals proven
+against the dispute game to be finalized. Because the `FaultDisputeGame` is a trusted implementation set by the owner
+of the `DisputeGameFactory`, it is safe to trust that this value is honestly set.
 
 #### Blacklisting `DisputeGame`s
 
