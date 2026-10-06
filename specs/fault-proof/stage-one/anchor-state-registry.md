@@ -106,19 +106,13 @@ now, the `AnchorStateRegistry` only allows a single Respected Game Type.
 ### Dispute Game Finality Delay (Airgap)
 
 The **Dispute Game Finality Delay** or **Airgap** is the amount of time that must elapse after a
-game resolves before the game's result is considered "final". It is the window during which the
-Guardian can [blacklist](#blacklisted-game) or [retire](#retired-game) a game that resolved
-incorrectly before any consumer of the `AnchorStateRegistry` acts on the result.
+game resolves before the game's result is considered "final".
 
 The Dispute Game Finality Delay is configured per chain. It may be changed by the L1 ProxyAdmin
 owner, but only within a lower and upper bound that cannot be changed without an upgrade. The
 value in effect is the one configured at the time a game is checked for finality, so a change
-applies to games that have already resolved, in either direction. A game that is already the
-[Anchor Game](#anchor-game) remains the Anchor Game regardless of such a change.
-
-All chains that share an `AnchorStateRegistry`, such as the members of an interop set, share a
-single Dispute Game Finality Delay. The same value applies to every game type that uses the
-registry.
+applies to games that have already resolved, in either direction. All chains and game types that
+share an `AnchorStateRegistry` share the same delay.
 
 ### Registered Game
 
@@ -423,9 +417,8 @@ ethereum-optimism/optimism-private#686 lands. -->
 ### initialize
 
 - MUST only be callable by the ProxyAdmin or its owner.
-- MUST only be triggerable once per initialization version.
-- MUST set the value of the `ETHLockbox` contract through which the Guardian and pause state are
-  resolved.
+- MUST only be triggerable once.
+- MUST set the value of the `SystemConfig` contract that stores the address of the Guardian.
 - MUST set the value of the `DisputeGameFactory` contract that creates Dispute Game instances.
 - MUST set the value of the [Starting Anchor State](#starting-anchor-state).
 - MUST set the value of the initial [Respected Game Type](#respected-game-type).
