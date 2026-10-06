@@ -417,8 +417,9 @@ ethereum-optimism/optimism-private#686 lands. -->
 ### initialize
 
 - MUST only be callable by the ProxyAdmin or its owner.
-- MUST only be triggerable once.
-- MUST set the value of the `SystemConfig` contract that stores the address of the Guardian.
+- MUST only be triggerable once per initialization version.
+- MUST set the value of the `ETHLockbox` contract through which the Guardian and pause state are
+  resolved.
 - MUST set the value of the `DisputeGameFactory` contract that creates Dispute Game instances.
 - MUST set the value of the [Starting Anchor State](#starting-anchor-state).
 - MUST set the value of the initial [Respected Game Type](#respected-game-type).
