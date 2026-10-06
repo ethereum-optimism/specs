@@ -118,7 +118,7 @@ place.<br/>
 enough time to consider social layer solutions to a hack if necessary. The lower bound is the floor on withdrawal
 time regardless of game type. Portals sharing an `ETHLockbox` must use the same value.<br/>
 
-### [Dispute Game Finality](../fault-proof/stage-one/anchor-state-registry.md#dispute-game-finality-delay-airgap)
+### [Dispute Game Finality](../fault-proof/stage-one/anchor-state-registry.md#dispute-game-finality-delay-review-period)
 
 **Description:** The amount of time given to the `Guardian` role
 to [blacklist a resolved dispute game](../fault-proof/stage-one/bridge-integration.md#blacklisting-disputegames) before

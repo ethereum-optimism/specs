@@ -415,7 +415,7 @@ types before fraudulent games achieve Valid Claims.
 
 #### Mitigations
 
-- The `disputeGameFinalityDelaySeconds` airgap between resolution and `closeGame` provides
+- The `disputeGameFinalityDelaySeconds` review period between resolution and `closeGame` provides
   the Guardian a window to act.
 - `DelayedWETH` provides an additional window after `closeGame` to freeze funds.
 

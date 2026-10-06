@@ -313,7 +313,7 @@ We assume that any games that are resolved incorrectly will be invalidated eithe
 [Valid Claims](./anchor-state-registry.md#valid-claim).
 
 Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
-[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) has
+[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-review-period) has
 elapsed UNLESS the Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism,
 parties responsible for game invalidation have exactly the Dispute Game Finality Delay to
 invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
@@ -433,7 +433,7 @@ Returns the DisputeGameFactory contract from the AnchorStateRegistry contract.
 **Legacy Function**
 
 Returns the value of the
-[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) as per
+[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-review-period) as per
 a call to `AnchorStateRegistry.disputeGameFinalityDelaySeconds()`.
 
 ### respectedGameType

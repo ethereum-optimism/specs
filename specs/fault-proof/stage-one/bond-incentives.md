@@ -136,7 +136,7 @@ all other costs of participation.
 After the game is resolved, claimants must wait for the [AnchorStateRegistry's
 `isGameFinalized()`](anchor-state-registry.md#isgamefinalized) to return `true` before they can claim their bonds. This
 implies a wait period of at least the
-[Dispute Game Finality Delay](anchor-state-registry.md#dispute-game-finality-delay-airgap) configured on the
+[Dispute Game Finality Delay](anchor-state-registry.md#dispute-game-finality-delay-review-period) configured on the
 `AnchorStateRegistry` contract. After the game is finalized, bonds can be distributed.
 
 ### Bond Distribution Mode
@@ -228,8 +228,8 @@ over multiple timezones.
 
 The delay period is configured per chain and may be lowered to a minimum of 12 hours; see
 [Bond Withdrawal Delay](../../protocol/configurability.md#bond-withdrawal-delay). Chains with a shorter
-[Dispute Game Finality Delay](anchor-state-registry.md#dispute-game-finality-delay-airgap), such as ZK chains, may use
-a shorter delay period, since bonds cannot unlock before the game is finalized.
+[Dispute Game Finality Delay](anchor-state-registry.md#dispute-game-finality-delay-review-period), such as ZK chains,
+may use a shorter delay period, since bonds cannot unlock before the game is finalized.
 
 #### Integration
 

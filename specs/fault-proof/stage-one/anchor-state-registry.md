@@ -8,7 +8,7 @@
 - [Definitions](#definitions)
   - [Dispute Game](#dispute-game)
   - [Respected Game Type](#respected-game-type)
-  - [Dispute Game Finality Delay (Airgap)](#dispute-game-finality-delay-airgap)
+  - [Dispute Game Finality Delay (Review Period)](#dispute-game-finality-delay-review-period)
   - [Registered Game](#registered-game)
   - [Respected Game](#respected-game)
   - [Blacklisted Game](#blacklisted-game)
@@ -103,9 +103,9 @@ contracts that may rely on the assertions made within the `AnchorStateRegistry`.
 Type is, in a more general sense, a game type that the system believes will resolve correctly. For
 now, the `AnchorStateRegistry` only allows a single Respected Game Type.
 
-### Dispute Game Finality Delay (Airgap)
+### Dispute Game Finality Delay (Review Period)
 
-The **Dispute Game Finality Delay** or **Airgap** is the amount of time that must elapse after a
+The **Dispute Game Finality Delay** or **Review Period** is the amount of time that must elapse after a
 game resolves before the game's result is considered "final".
 
 The Dispute Game Finality Delay is configured per chain. It may be changed by the L1 ProxyAdmin
@@ -186,7 +186,7 @@ A Dispute Game is considered to be a **Finalized Game** if all of the following 
 
 - The game is a [Resolved Game](#resolved-game)
 - The game resolved a result more than
-  [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap) seconds ago as defined by the
+  [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period) seconds ago as defined by the
   `disputeGameFinalityDelaySeconds` variable in the `AnchorStateRegistry` contract.
 
 ### Valid Claim
@@ -272,7 +272,7 @@ We assume that any games that are resolved incorrectly will be invalidated eithe
 have [Valid Claims](#valid-claim).
 
 Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
-[Dispute Game Finality Delay](#dispute-game-finality-delay-airgap) has elapsed UNLESS the
+[Dispute Game Finality Delay](#dispute-game-finality-delay-review-period) has elapsed UNLESS the
 Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism, parties responsible
 for game invalidation have exactly the Dispute Game Finality Delay to invalidate a withdrawal after
 it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
@@ -412,7 +412,7 @@ allotted response time, and resolution would require intervention from the Proxy
 ethereum-optimism/optimism-private#686 lands. -->
 
 - MUST set the lower and upper bounds of the
-  [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+  [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
 
 ### initialize
 
@@ -423,7 +423,7 @@ ethereum-optimism/optimism-private#686 lands. -->
 - MUST set the value of the `DisputeGameFactory` contract that creates Dispute Game instances.
 - MUST set the value of the [Starting Anchor State](#starting-anchor-state).
 - MUST set the value of the initial [Respected Game Type](#respected-game-type).
-- MUST set the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+- MUST set the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
 - MUST revert if the provided Dispute Game Finality Delay is outside of the bounds set in the
   constructor.
 - MUST set the value of the [Retirement Timestamp](#retirement-timestamp) to the current block
@@ -447,20 +447,20 @@ Returns the value of the current [Retirement Timestamp](#retirement-timestamp).
 
 ### disputeGameFinalityDelaySeconds
 
-Returns the current value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+Returns the current value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
 
 ### minDisputeGameFinalityDelaySeconds
 
-Returns the lower bound of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+Returns the lower bound of the [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
 
 ### maxDisputeGameFinalityDelaySeconds
 
-Returns the upper bound of the [Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+Returns the upper bound of the [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
 
 ### setDisputeGameFinalityDelaySeconds
 
 Permits the ProxyAdmin owner to set the
-[Dispute Game Finality Delay](#dispute-game-finality-delay-airgap).
+[Dispute Game Finality Delay](#dispute-game-finality-delay-review-period).
 
 - MUST revert if called by any address other than the ProxyAdmin owner.
 - MUST revert if the new value is outside of the bounds set in the constructor.
@@ -544,7 +544,7 @@ Determines if a game is a Resolved Game.
 Determines if a game is a Finalized Game.
 
 - MUST return `true` if and only if `isGameResolved(game)` and the game has resolved a result more
-  than the airgap delay seconds ago as defined by the `disputeGameFinalityDelaySeconds` variable in
+  than the review period seconds ago as defined by the `disputeGameFinalityDelaySeconds` variable in
   the `AnchorStateRegistry` contract.
 - MUST return `false` if the Dispute Game Finality Delay is zero.
 
