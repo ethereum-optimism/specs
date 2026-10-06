@@ -278,9 +278,10 @@ for game invalidation have exactly the Dispute Game Finality Delay to invalidate
 it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
 must be invalidated before the pause is deactivated.
 
-The Dispute Game Finality Delay is configured per chain and is independent of the
-[Respected Game Type](#respected-game-type). A chain that lowered its delay for a quickly
-resolving game type keeps that delay if it later changes the Respected Game Type.
+The Dispute Game Finality Delay is configured per `AnchorStateRegistry` and is independent of
+the [Respected Game Type](#respected-game-type). A registry that lowered its delay for a quickly
+resolving game type keeps that delay if the Respected Game Type later changes. When several
+chains share a registry, the delay and any change to it apply to all of them.
 
 #### Mitigations
 
