@@ -27,8 +27,6 @@
     - [Mitigations](#mitigations-1)
   - [aOP-003: Incorrectly resolving games will be invalidated before they have Valid Claims](#aop-003-incorrectly-resolving-games-will-be-invalidated-before-they-have-valid-claims)
     - [Mitigations](#mitigations-2)
-  - [aOP-004: Portals sharing an ETHLockbox use the same Proof Maturity Delay](#aop-004-portals-sharing-an-ethlockbox-use-the-same-proof-maturity-delay)
-    - [Mitigations](#mitigations-3)
 - [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [iOP-001: Invalid Withdrawals can never be finalized](#iop-001-invalid-withdrawals-can-never-be-finalized)
@@ -85,7 +83,9 @@ The **Proof Maturity Delay** is the minimum amount of time that a withdrawal mus
 The Proof Maturity Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner,
 but only within a lower and upper bound that cannot be changed without an upgrade. The value in
 effect is the one configured at the time a withdrawal is checked for finalization, so a change
-applies to withdrawals that were already proven, in either direction.
+applies to withdrawals that were already proven, in either direction. When several
+`OptimismPortal` contracts share an `ETHLockbox`, the effective exit time for the pooled funds is
+the shortest Proof Maturity Delay among them.
 
 ### Proven Withdrawal
 
@@ -324,19 +324,6 @@ incorrectly resolving games must be invalidated before the pause is deactivated.
 - Stakeholder incentives / processes
 - Incident response plan
 - Monitoring
-
-### aOP-004: Portals sharing an ETHLockbox use the same Proof Maturity Delay
-
-We assume that all `OptimismPortal` contracts that share an `ETHLockbox` are configured with the
-same [Proof Maturity Delay](#proof-maturity-delay). Because liquidity is pooled in the
-`ETHLockbox`, the shortest Proof Maturity Delay among those portals is the effective exit time for
-every chain's funds. The contracts do not enforce this property.
-
-#### Mitigations
-
-- Portals sharing an `ETHLockbox` share a single L1 ProxyAdmin owner
-- Configuration changes are simulated and validated across all portals in the set before execution
-- Standard configuration validation checks the property
 
 ## Dependencies
 

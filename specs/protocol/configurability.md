@@ -116,7 +116,7 @@ place.<br/>
 **Requirement:** 1 day to 7 days<br/>
 **Notes:** High security. Configured per chain within bounds fixed by the implementation. The upper bound leaves
 enough time to consider social layer solutions to a hack if necessary. The lower bound is the floor on withdrawal
-time regardless of game type. Portals sharing an `ETHLockbox` must use the same value.<br/>
+time regardless of game type.<br/>
 
 ### [Dispute Game Finality](../fault-proof/stage-one/anchor-state-registry.md#dispute-game-finality-delay-review-period)
 
