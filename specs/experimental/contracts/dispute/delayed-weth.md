@@ -54,10 +54,8 @@ distributes bonds.
 The Withdrawal Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner, but only
 within a lower and upper bound that cannot be changed without an upgrade. The value in effect is the
 one configured at the time a withdrawal is executed, so a change applies to
-[Withdrawal Requests](#withdrawal-request) that were already unlocked, in either direction.
-
-A single `DelayedWETH` contract is shared by every game type on a chain, and by every chain that
-shares it, such as the members of an interop set. All of them share a single Withdrawal Delay.
+[Withdrawal Requests](#withdrawal-request) that were already unlocked, in either direction. All chains
+and game types that share a `DelayedWETH` share the same delay.
 
 ### Sub-Account
 
