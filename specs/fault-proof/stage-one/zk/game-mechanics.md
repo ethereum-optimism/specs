@@ -117,13 +117,16 @@ any of the following checks fail:
 - Parent MUST NOT be retired (i.e., `createdAt > retirementTimestamp`).
 - Parent MUST be the same game type (`ZK_GAME_TYPE`).
 - Parent MUST NOT have resolved as `CHALLENGER_WINS`.
+- If the child's `wasRespectedGameTypeWhenCreated` is `true`, the parent's
+  `wasRespectedGameTypeWhenCreated` MUST also be `true`.
 - Parent's `l2SequenceNumber` (timestamp) MUST be strictly above the anchor state's
   `l2SequenceNumber`.
 - The game's `l2SequenceNumber` MUST be strictly greater than the parent's `l2SequenceNumber`.
 
-The `isGameRespected` check on the parent is intentionally omitted. The respected game type gates
-which games can finalize withdrawals (via `isGameClaimValid`), but MUST NOT prevent in-progress
-proposal chains from being completed after a game type transition.
+Children created while their game type is not respected MAY reference any parent that passes
+the other validation checks. This allows in-progress proposal chains to continue after a
+switch away from the ZK game type while preventing respected games from building on claims
+created when that game type was not respected.
 
 ## Challenge
 
