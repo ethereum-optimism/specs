@@ -428,11 +428,11 @@ allotted response time, and resolution would require intervention from the Proxy
 - MUST set the value of the [Dispute Game Finality Delay](#dispute-game-finality-delay-review-period)
   and emit a `DisputeGameFinalityDelaySecondsSet` event with the new value.
 - MUST set the value of the [Retirement Timestamp](#retirement-timestamp) to the current block
-  timestamp. NOTE that this is a safety mechanism that invalidates all existing Dispute Game
-  contracts to support the safe transition away from the `OptimismPortal` as the source of truth
-  for game validity. In this way, the `AnchorStateRegistry` does not need to consider the state of
-  the legacy blacklisting/retirement mechanisms within the `OptimismPortal` and starts from a clean
-  slate.
+  timestamp if it is not already set, and MUST otherwise preserve it. NOTE that setting it on
+  first initialization retires all Dispute Game contracts created before the
+  `AnchorStateRegistry` became the source of truth for game validity, while preserving it on
+  later initializations avoids retiring existing games and invalidating their withdrawal proofs
+  when the contract is re-initialized during an upgrade.
 
 ### paused
 
