@@ -436,7 +436,7 @@ allotted response time, and resolution would require intervention from the Proxy
 
 ### paused
 
-Returns the value of `paused()` from the `SystemConfig` contract.
+Returns the value of `paused()` from the `ETHLockbox` contract.
 
 ### respectedGameType
 
