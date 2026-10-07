@@ -84,8 +84,9 @@ The Proof Maturity Delay is configured per chain. It may be changed by the L1 Pr
 but only within a lower and upper bound that cannot be changed without an upgrade. The value in
 effect is the one configured at the time a withdrawal is checked for finalization, so a change
 applies to withdrawals that were already proven, in either direction. When several
-`OptimismPortal` contracts share an `ETHLockbox`, the effective exit time for the pooled funds is
-the shortest Proof Maturity Delay among them.
+`OptimismPortal` contracts share an `ETHLockbox`, the pooled funds are exposed through the earliest
+[Finalized Withdrawal](#finalized-withdrawal) on any of those portals, which depends on both that
+portal's Proof Maturity Delay and the finality of the game it was proven against.
 
 ### Proven Withdrawal
 
