@@ -83,7 +83,9 @@ The **Proof Maturity Delay** is the minimum amount of time that a withdrawal mus
 The Proof Maturity Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner,
 but only within a lower and upper bound that cannot be changed without an upgrade. The value in
 effect is the one configured at the time a withdrawal is checked for finalization, so a change
-applies to withdrawals that were already proven, in either direction. When several
+applies to withdrawals that were already proven, in either direction. Upgrades carry the
+configured value forward; see
+[i01-003](../../experimental/contracts/L1/opcm.md#i01-003-no-unexpected-mutations). When several
 `OptimismPortal` contracts share an `ETHLockbox`, the pooled funds are exposed through the earliest
 [Finalized Withdrawal](#finalized-withdrawal) on any of those portals, which depends on both that
 portal's Proof Maturity Delay and the finality of the game it was proven against.
