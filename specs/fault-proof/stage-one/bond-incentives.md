@@ -202,7 +202,9 @@ incorrectly distribute bonds.
   seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
   request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
   `withdraw(wad)` function becomes an alias for `withdraw(msg.sender, wad)`.
-  `withdraw(guy,wad)` will not be callable when `SuperchainConfig.paused()` is `true`.
+  `withdraw(guy,wad)` will not be callable when `ETHLockbox.paused()` is `true` for the `ETHLockbox` configured for
+  this `DelayedWETH`. That covers both the global pause and a pause scoped to that `ETHLockbox` address, so pausing
+  a shared `ETHLockbox` blocks withdrawals for every chain that uses it.
 - `DelayedWETH` has a `hold(guy,wad)` function that allows the `owner()` address to, for any holder, give itself an
   allowance and immediately `transferFrom` that allowance amount to itself.
 - `DelayedWETH` has a `hold(guy)` function that allows the `owner()` address to, for any holder, give itself a full

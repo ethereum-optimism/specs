@@ -24,6 +24,7 @@
   - [extend](#extend)
   - [pausable](#pausable)
   - [paused](#paused)
+  - [isLocalOrGlobalPaused](#islocalorglobalpaused)
   - [expiration](#expiration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -208,12 +209,30 @@ identifier is independent of the pausable status of the global pause (zero addre
 ### paused
 
 Allows any user to check if the system is currently paused for a specific
-[Pause Identifier](./stage-1.md#pause-identifier).
+[Pause Identifier](./stage-1.md#pause-identifier). The check covers only that identifier. An active
+global pause does not make it return true unless a zero identifier is used.
 
 - MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
   (current time < pause timestamp + expiry duration).
 - MUST return false otherwise.
-- When called without parameters, MUST check the pause status for the global identifier (address(0)).
+
+A `paused()` overload taking no parameters also exists. It calls `paused(address(0))`, so it reports
+the global pause only. It is retained for integrations written against the interface that predates
+identifier-scoped pausing. Use [isLocalOrGlobalPaused](#islocalorglobalpaused) to cover both scopes
+in one call.
+
+### isLocalOrGlobalPaused
+
+Allows any user to check whether the global pause or the pause scoped to a specific
+[Pause Identifier](./stage-1.md#pause-identifier) is active.
+
+An `ETHLockbox` calls this function with its own address. That makes the lockbox the Pause
+Identifier for its chain, or for the interop set that shares it. Every contract that resolves pause
+through a lockbox therefore gets the same answer.
+
+- MUST return true if [paused](#paused) returns true for the global identifier (address(0)).
+- MUST return true if [paused](#paused) returns true for the given identifier.
+- MUST return false otherwise.
 
 ### expiration
 

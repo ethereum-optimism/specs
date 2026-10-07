@@ -125,13 +125,23 @@ chains that share the same `SuperchainConfig` when `address(0)` is used as the i
 contract, which will check for the status of the pause by passing along the address of the
 `ETHLockbox` being used within that system as the Pause Identifier.
 
-(+op-contracts/v4.1.0) The identifier must be an `ETHLockbox` address, an `OptimismPortal` address, or
-`address(0)`. This allows for targeted pausing of specific chains, the interop set (which shares an
-`ETHLockbox` contract), or all chains that share the same `SuperchainConfig` when `address(0)` is
-used as the identifier. When the `ETHLockbox`
+(-op-contracts/v9.0.0) The identifier must be an `ETHLockbox` address, an
+`OptimismPortal` address, or `address(0)`. This allows for targeted pausing of specific chains, the
+interop set (which shares an `ETHLockbox` contract), or all chains that share the same
+`SuperchainConfig` when `address(0)` is used as the identifier. When the `ETHLockbox`
 [Customizable Feature](./system-config.md#customizable-feature) is enabled, the `ETHLockbox`
 address is to be used as the pause identifier. When the `ETHLockbox` feature is disabled or the
 `ETHLockbox` address has not yet been configured, the `OptimismPortal` address is to be used.
+
+(+op-contracts/v9.0.0) The identifier must be an `ETHLockbox` address or `address(0)`. This allows
+for targeted pausing of specific chains, the interop set (which shares an `ETHLockbox` contract), or
+all chains that share the same `SuperchainConfig` when `address(0)` is used as the identifier.
+
+Every contract that exposes a pause state resolves it through the `ETHLockbox`
+used by its chain. The `ETHLockbox` passes its own address to
+[`isLocalOrGlobalPaused`](./superchain-config.md#islocalorglobalpaused), so a pause scoped to that
+address and the global pause both take effect. An `OptimismPortal` address **is no longer a Pause
+Identifier**.
 
 ### Stage 1 Rollup
 
