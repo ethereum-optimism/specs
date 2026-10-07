@@ -115,7 +115,8 @@ validating the block.
 > it (beyond the [validity rules](#validity-rules) and `refund(i) <= evmGasUsed(i)`). The version-1 policy is
 > **block-level warming**: it rebates the EIP-2929 cold→warm surcharge a transaction pays for re-touching state an
 > earlier transaction in the block warmed. To be correct it must rebate **only** accesses actually charged the cold
-> price — never a transaction's own intrinsically-warm `tx.sender`, `tx.to` (or created-contract address),
+> price — never a transaction's own intrinsically-warm `tx.sender`, `tx.to` (or created-contract address), the
+> EIP-7702 delegation target of `tx.to` (resolved warm and free of charge while EIP-2780 is inactive),
 > precompiles, coinbase, access-list entries, or EIP-7702 authorities, nor protocol fee-vault settlement writes.
 
 ## Canonical Gas
