@@ -303,6 +303,11 @@
 <li><a href="#impact-13">Impact</a></li>
 </ul>
 </li>
+<li><a href="#imig-015-member-chains-agree-on-the-shared-delays">iMIG-015: Member Chains agree on the shared delays</a>
+<ul>
+<li><a href="#impact-14">Impact</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -683,6 +688,16 @@ would pay out of the set's pooled <code>ETHLockbox</code>, on the strength of a 
 drawing on ETH the other members deposited.</p>
 <p>The user sees nothing at migration time. Their proof reverts only when they try to finalize it, so
 the operator has to tell them to prove again.</p>
+<h3 id="imig-015-member-chains-agree-on-the-shared-delays"><a class="header" href="#imig-015-member-chains-agree-on-the-shared-delays">iMIG-015: Member Chains agree on the shared delays</a></h3>
+<p>The shared <code>AnchorStateRegistry</code> must be initialized with the Dispute Game Finality Delay that
+every <a href="#member-chain">Member Chain</a>'s retired registry reports, and the shared <code>DelayedWETH</code> must
+keep the Withdrawal Delay that every member's retired <code>DelayedWETH</code> reports. Migration must revert
+if any two members differ on either value. Each portal keeps its own Proof Maturity Delay.</p>
+<h4 id="impact-14"><a class="header" href="#impact-14">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, a member's games and bonds would be subject to a review period or lockup it did not
+configure, lengthening or shortening the Guardian's window without the governance step that a
+setter call requires.</p>
 
                     </main>
 

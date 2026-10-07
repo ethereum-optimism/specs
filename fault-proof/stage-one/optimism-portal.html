@@ -235,6 +235,9 @@
 <li><a href="#guardian">guardian</a></li>
 <li><a href="#ethlockbox">ethLockbox</a></li>
 <li><a href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></li>
+<li><a href="#minproofmaturitydelayseconds">minProofMaturityDelaySeconds</a></li>
+<li><a href="#maxproofmaturitydelayseconds">maxProofMaturityDelaySeconds</a></li>
+<li><a href="#setproofmaturitydelayseconds">setProofMaturityDelaySeconds</a></li>
 <li><a href="#disputegamefactory">disputeGameFactory</a></li>
 <li><a href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
 <li><a href="#respectedgametype">respectedGameType</a></li>
@@ -268,6 +271,15 @@ that have been declared valid by the L1 Fault Proof system.</p>
 <h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay">Proof Maturity Delay</a></h3>
 <p>The <strong>Proof Maturity Delay</strong> is the minimum amount of time that a withdrawal must be a
 <a href="#proven-withdrawal">Proven Withdrawal</a> before it can be finalized.</p>
+<p>The Proof Maturity Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner,
+but only within a lower and upper bound that cannot be changed without an upgrade. The value in
+effect is the one configured at the time a withdrawal is checked for finalization, so a change
+applies to withdrawals that were already proven, in either direction. Upgrades carry the
+configured value forward; see
+<a href="../../experimental/contracts/L1/opcm.html#i01-003-no-unexpected-mutations">i01-003</a>. When several
+<code>OptimismPortal</code> contracts share an <code>ETHLockbox</code>, the pooled funds are exposed through the earliest
+<a href="#finalized-withdrawal">Finalized Withdrawal</a> on any of those portals, which depends on both that
+portal's Proof Maturity Delay and the finality of the game it was proven against.</p>
 <h3 id="proven-withdrawal"><a class="header" href="#proven-withdrawal">Proven Withdrawal</a></h3>
 <p>A <strong>Proven Withdrawal</strong> is a withdrawal transaction that has been proven against some Output Root
 by a user. Users can prove withdrawals against any Dispute Game contract that meets the following
@@ -298,6 +310,10 @@ meets the following conditions:</p>
 <li>Withdrawal was proven against a game with a <a href="./anchor-state-registry.html#valid-claim">Valid Claim</a></li>
 <li>Withdrawal was not previously finalized</li>
 </ul>
+<p>A withdrawal proven at <code>provenAt</code> against a game that resolved at <code>resolvedAt</code> can be finalized
+no earlier than:</p>
+<pre><code class="language-text">max(provenAt + proofMaturityDelaySeconds, resolvedAt + disputeGameFinalityDelaySeconds)
+</code></pre>
 <h3 id="deleted-withdrawal-proof"><a class="header" href="#deleted-withdrawal-proof">Deleted Withdrawal Proof</a></h3>
 <p>A <strong>Deleted Withdrawal Proof</strong> is the record of a <a href="#proven-withdrawal">Proven Withdrawal</a> that was
 removed from the <code>OptimismPortal</code>. Anyone can delete such a record if the game that the withdrawal
@@ -437,7 +453,7 @@ created.</p>
 <a href="./anchor-state-registry.html#retired-game">retirement</a> BEFORE they are considered to have
 <a href="./anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
-<a href="./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has
+<a href="./anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> has
 elapsed UNLESS the Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism,
 parties responsible for game invalidation have exactly the Dispute Game Finality Delay to
 invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
@@ -471,33 +487,50 @@ see this as a critical system risk.</p>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
 <ul>
-<li>MUST set the value of the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</li>
+<li>MUST revert if the lower bound is zero or greater than the upper bound.</li>
+<li>MUST set the lower and upper bounds of the <a href="#proof-maturity-delay">Proof Maturity Delay</a> and
+disable initializers for the implementation contract.</li>
 </ul>
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
+<li>MUST revert if the provided Proof Maturity Delay is outside of the bounds set in the constructor.</li>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
 <li>MUST assert that the ETHLockbox state is valid based on the feature flag.</li>
+<li>MUST set the value of the <a href="#proof-maturity-delay">Proof Maturity Delay</a> and emit a
+<code>ProofMaturityDelaySecondsSet</code> event with the new value.</li>
 <li>MUST set the value of the <a href="#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
 value if the value is not set already.</li>
 <li>MUST initialize the resource metering configuration.</li>
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
-<p>Returns the current state of the <code>SystemConfig.paused()</code> function.</p>
+<p>Returns the current state of the <code>ETHLockbox.paused()</code> function.</p>
 <h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
-<p>Returns the address of the Guardian as per <code>SystemConfig.guardian()</code>.</p>
+<p>Returns the address of the Guardian as per <code>ETHLockbox.guardian()</code>.</p>
 <h3 id="ethlockbox"><a class="header" href="#ethlockbox">ethLockbox</a></h3>
 <p>Returns the address of the ETHLockbox configured for this contract. If the contract has not been
 configured for this OptimismPortal, this function will return <code>address(0)</code>.</p>
 <h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
-<p>Returns the value of the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<p>Returns the current value of the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="minproofmaturitydelayseconds"><a class="header" href="#minproofmaturitydelayseconds">minProofMaturityDelaySeconds</a></h3>
+<p>Returns the lower bound of the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="maxproofmaturitydelayseconds"><a class="header" href="#maxproofmaturitydelayseconds">maxProofMaturityDelaySeconds</a></h3>
+<p>Returns the upper bound of the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="setproofmaturitydelayseconds"><a class="header" href="#setproofmaturitydelayseconds">setProofMaturityDelaySeconds</a></h3>
+<p>Permits the ProxyAdmin owner to set the <a href="#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<ul>
+<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
+<li>MUST revert if the new value is outside of the bounds set in the constructor.</li>
+<li>MUST update the Proof Maturity Delay with the provided value.</li>
+<li>MUST emit a <code>ProofMaturityDelaySecondsSet</code> event with the new value.</li>
+</ul>
 <h3 id="disputegamefactory"><a class="header" href="#disputegamefactory">disputeGameFactory</a></h3>
 <p>Returns the DisputeGameFactory contract from the AnchorStateRegistry contract.</p>
 <h3 id="disputegamefinalitydelayseconds"><a class="header" href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></h3>
 <p><strong>Legacy Function</strong></p>
 <p>Returns the value of the
-<a href="./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> as per
+<a href="./anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> as per
 a call to <code>AnchorStateRegistry.disputeGameFinalityDelaySeconds()</code>.</p>
 <h3 id="respectedgametype"><a class="header" href="#respectedgametype">respectedGameType</a></h3>
 <p><strong>Legacy Function</strong></p>
@@ -628,8 +661,7 @@ help determine exact gas costs.</li>
 <h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
 <p>Returns the <code>SuperchainConfig</code> contract address.</p>
 <ul>
-<li>MUST return the address of the <code>SuperchainConfig</code> contract stored in the <code>SystemConfig</code> contract
-that was set during initialization.</li>
+<li>MUST return the address of the <code>SuperchainConfig</code> contract as per <code>ETHLockbox.superchainConfig()</code>.</li>
 </ul>
 <h3 id="disputegameblacklist"><a class="header" href="#disputegameblacklist">disputeGameBlacklist</a></h3>
 <p><strong>Legacy Function</strong></p>

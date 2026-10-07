@@ -280,20 +280,22 @@ concatenation, <code>versionByte</code> is <code>0x00</code>, and <code>chainId<
 <strong>Requirement:</strong> Foundation-approved, globally unique value <sup class="footnote-reference"><a href="#chain-id-uniqueness">1</a></sup>.<br/>
 <strong>Notes:</strong> Foundation will ensure chains are responsible with their chain IDs until there's a governance process in
 place.<br/></p>
-<h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay"><a href="../fault-proof/stage-one/bridge-integration.html#fpac-optimismportal-mods-specification">Proof Maturity Delay</a></a></h3>
+<h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay"><a href="../fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a></a></h3>
 <p><strong>Description:</strong> The length of time that must pass between proving and finalizing a withdrawal.<br/>
-<strong>Administrator:</strong> <a href="#admin-roles">L1 Proxy Admin</a><br/>
-<strong>Requirement:</strong> 7 days<br/>
-<strong>Notes:</strong> High security. Excessively safe upper bound that leaves enough time to consider social layer solutions to a
-hack if necessary. Allows enough time for other network participants to challenge the integrity of the corresponding
-output root.<br/></p>
-<h3 id="dispute-game-finality"><a class="header" href="#dispute-game-finality"><a href="../fault-proof/stage-one/bridge-integration.html#fpac-optimismportal-mods-specification">Dispute Game Finality</a></a></h3>
+<strong>Administrator:</strong> <a href="#admin-roles">L1 Proxy Admin Owner</a><br/>
+<strong>Requirement:</strong> 1 day to 7 days<br/>
+<strong>Notes:</strong> High security. Configured per chain within bounds fixed by the implementation. The upper bound leaves
+enough time to consider social layer solutions to a hack if necessary. The lower bound is the floor on withdrawal
+time regardless of game type.<br/></p>
+<h3 id="dispute-game-finality"><a class="header" href="#dispute-game-finality"><a href="../fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality</a></a></h3>
 <p><strong>Description:</strong> The amount of time given to the <code>Guardian</code> role
 to <a href="../fault-proof/stage-one/bridge-integration.html#blacklisting-disputegames">blacklist a resolved dispute game</a> before
 any withdrawals proven against it can be finalized, in the case of a system failure.<br/>
-<strong>Administrator:</strong> <a href="#admin-roles">L1 Proxy Admin</a><br/>
-<strong>Requirement:</strong> 3.5 days<br/>
-<strong>Notes:</strong> High security. Allows enough time for the <code>Guardian</code> to blacklist games.<br/></p>
+<strong>Administrator:</strong> <a href="#admin-roles">L1 Proxy Admin Owner</a><br/>
+<strong>Requirement:</strong> 12 hours to 3.5 days<br/>
+<strong>Notes:</strong> High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
+<code>Guardian</code> to blacklist games. Chains using the <code>FaultDisputeGame</code> are expected to keep 3.5 days so that the game
+clock and the finality delay still total 7 days. Shared by all chains using the same <code>AnchorStateRegistry</code>.<br/></p>
 <h3 id="respected-game-type"><a class="header" href="#respected-game-type"><a href="../fault-proof/stage-one/bridge-integration.html#new-state-variables">Respected Game Type</a></a></h3>
 <p><strong>Description:</strong> The respected game type of the <code>OptimismPortal</code>. Determines the type of dispute games that can be used
 to finalize withdrawals.<br/>
@@ -328,12 +330,13 @@ CLOCK_EXTENSION seconds remaining.<br/>
 <strong>Administrator:</strong> Static<br/>
 <strong>Requirement:</strong> 3 hours<br/>
 <strong>Notes:</strong> Allows enough time for honest actors to counter freeloader claims.<br/></p>
-<h3 id="bond-withdrawal-delay"><a class="header" href="#bond-withdrawal-delay"><a href="https://specs.optimism.io/fault-proof/stage-one/bond-incentives.html#delay-period">Bond Withdrawal Delay</a></a></h3>
+<h3 id="bond-withdrawal-delay"><a class="header" href="#bond-withdrawal-delay"><a href="../fault-proof/stage-one/bond-incentives.html#delayedweth">Bond Withdrawal Delay</a></a></h3>
 <p><strong>Description:</strong> The length of time that must pass before dispute game bonds can be withdrawn.<br/>
-<strong>Administrator:</strong> Static<br/>
-<strong>Requirement:</strong> 7 days<br/>
-<strong>Notes:</strong> High security. Allows enough time for the <code>Guardian</code> to recover funds from <code>DelayedWETH</code> if bonds were
-allocated incorrectly.<br/></p>
+<strong>Administrator:</strong> <a href="#admin-roles">L1 Proxy Admin Owner</a><br/>
+<strong>Requirement:</strong> 12 hours to 7 days<br/>
+<strong>Notes:</strong> High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
+<code>Guardian</code> to recover funds from <code>DelayedWETH</code> if bonds were allocated incorrectly. Shared by every game type on the
+chain and by all chains using the same <code>DelayedWETH</code>.<br/></p>
 <h3 id="minimum-large-preimage-proposal-size"><a class="header" href="#minimum-large-preimage-proposal-size"><a href="https://specs.optimism.io/fault-proof/stage-one/fault-dispute-game.html#preimageoracle-interaction">Minimum Large Preimage Proposal Size</a></a></h3>
 <p><strong>Description:</strong> The minimum size of preimage allowed to be submitted via the PreimageOracle large preimage proposal
 process.<br/>

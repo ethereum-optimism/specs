@@ -179,7 +179,7 @@
 <ul>
 <li><a href="#dispute-game">Dispute Game</a></li>
 <li><a href="#respected-game-type">Respected Game Type</a></li>
-<li><a href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay (Airgap)</a></li>
+<li><a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay (Review Period)</a></li>
 <li><a href="#registered-game">Registered Game</a></li>
 <li><a href="#respected-game">Respected Game</a></li>
 <li><a href="#blacklisted-game">Blacklisted Game</a></li>
@@ -255,6 +255,9 @@
 <li><a href="#respectedgametype">respectedGameType</a></li>
 <li><a href="#retirementtimestamp">retirementTimestamp</a></li>
 <li><a href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
+<li><a href="#mindisputegamefinalitydelayseconds">minDisputeGameFinalityDelaySeconds</a></li>
+<li><a href="#maxdisputegamefinalitydelayseconds">maxDisputeGameFinalityDelaySeconds</a></li>
+<li><a href="#setdisputegamefinalitydelayseconds">setDisputeGameFinalityDelaySeconds</a></li>
 <li><a href="#setrespectedgametype">setRespectedGameType</a></li>
 <li><a href="#updateretirementtimestamp">updateRetirementTimestamp</a></li>
 <li><a href="#blacklistdisputegame">blacklistDisputeGame</a></li>
@@ -298,9 +301,16 @@ that is considered to be the correct by the <code>AnchorStateRegistry</code> and
 contracts that may rely on the assertions made within the <code>AnchorStateRegistry</code>. The Respected Game
 Type is, in a more general sense, a game type that the system believes will resolve correctly. For
 now, the <code>AnchorStateRegistry</code> only allows a single Respected Game Type.</p>
-<h3 id="dispute-game-finality-delay-airgap"><a class="header" href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay (Airgap)</a></h3>
-<p>The <strong>Dispute Game Finality Delay</strong> or <strong>Airgap</strong> is the amount of time that must elapse after a
+<h3 id="dispute-game-finality-delay-review-period"><a class="header" href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay (Review Period)</a></h3>
+<p>The <strong>Dispute Game Finality Delay</strong> or <strong>Review Period</strong> is the amount of time that must elapse after a
 game resolves before the game's result is considered "final".</p>
+<p>The Dispute Game Finality Delay is configured per chain. It may be changed by the L1 ProxyAdmin
+owner, but only within a lower and upper bound that cannot be changed without an upgrade. The
+value in effect is the one configured at the time a game is checked for finality, so a change
+applies to games that have already resolved, in either direction. Upgrades carry the configured
+value forward; see
+<a href="../../experimental/contracts/L1/opcm.html#i01-003-no-unexpected-mutations">i01-003</a>. All chains and
+game types that share an <code>AnchorStateRegistry</code> share the same delay.</p>
 <h3 id="registered-game"><a class="header" href="#registered-game">Registered Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Registered Game</strong> if the game contract was created by the
 system's <code>DisputeGameFactory</code> contract.</p>
@@ -355,7 +365,7 @@ of either the Challenger or the Defender.</p>
 <ul>
 <li>The game is a <a href="#resolved-game">Resolved Game</a></li>
 <li>The game resolved a result more than
-<a href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> seconds ago as defined by the
+<a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> seconds ago as defined by the
 <code>disputeGameFinalityDelaySeconds</code> variable in the <code>AnchorStateRegistry</code> contract.</li>
 </ul>
 <h3 id="valid-claim"><a class="header" href="#valid-claim">Valid Claim</a></h3>
@@ -425,11 +435,15 @@ created.</p>
 <a href="#blacklisted-game">blacklisting</a> or by <a href="#retired-game">retirement</a> BEFORE they are considered to
 have <a href="#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
-<a href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has elapsed UNLESS the
+<a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> has elapsed UNLESS the
 Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism, parties responsible
 for game invalidation have exactly the Dispute Game Finality Delay to invalidate a withdrawal after
 it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
 must be invalidated before the pause is deactivated.</p>
+<p>The Dispute Game Finality Delay is configured per <code>AnchorStateRegistry</code> and is independent of
+the <a href="#respected-game-type">Respected Game Type</a>. A registry that lowered its delay for a quickly
+resolving game type keeps that delay if the Respected Game Type later changes. When several
+chains share a registry, the delay and any change to it apply to all of them.</p>
 <h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
@@ -527,31 +541,52 @@ allotted response time, and resolution would require intervention from the Proxy
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
 <ul>
-<li>MUST set the value of the <a href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a>.</li>
+<li>MUST revert if the lower bound is zero or greater than the upper bound.</li>
+<li>MUST set the lower and upper bounds of the
+<a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> and disable
+initializers for the implementation contract.</li>
 </ul>
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
-<li>MUST only be triggerable once.</li>
-<li>MUST set the value of the <code>SystemConfig</code> contract that stores the address of the Guardian.</li>
+<li>MUST only be triggerable once per initialization version.</li>
+<li>MUST revert if the provided Dispute Game Finality Delay is outside of the bounds set in the
+constructor.</li>
+<li>MUST set the value of the <code>ETHLockbox</code> contract through which the Guardian and pause state are
+resolved.</li>
 <li>MUST set the value of the <code>DisputeGameFactory</code> contract that creates Dispute Game instances.</li>
 <li>MUST set the value of the <a href="#starting-anchor-state">Starting Anchor State</a>.</li>
 <li>MUST set the value of the initial <a href="#respected-game-type">Respected Game Type</a>.</li>
+<li>MUST set the value of the <a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>
+and emit a <code>DisputeGameFinalityDelaySecondsSet</code> event with the new value.</li>
 <li>MUST set the value of the <a href="#retirement-timestamp">Retirement Timestamp</a> to the current block
-timestamp. NOTE that this is a safety mechanism that invalidates all existing Dispute Game
-contracts to support the safe transition away from the <code>OptimismPortal</code> as the source of truth
-for game validity. In this way, the <code>AnchorStateRegistry</code> does not need to consider the state of
-the legacy blacklisting/retirement mechanisms within the <code>OptimismPortal</code> and starts from a clean
-slate.</li>
+timestamp if it is not already set, and MUST otherwise preserve it. NOTE that setting it on
+first initialization retires all Dispute Game contracts created before the
+<code>AnchorStateRegistry</code> became the source of truth for game validity, while preserving it on
+later initializations avoids retiring existing games and invalidating their withdrawal proofs
+when the contract is re-initialized during an upgrade.</li>
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
-<p>Returns the value of <code>paused()</code> from the <code>SystemConfig</code> contract.</p>
+<p>Returns the value of <code>paused()</code> from the <code>ETHLockbox</code> contract.</p>
 <h3 id="respectedgametype"><a class="header" href="#respectedgametype">respectedGameType</a></h3>
 <p>Returns the value of the currently <a href="#respected-game-type">Respected Game Type</a>.</p>
 <h3 id="retirementtimestamp"><a class="header" href="#retirementtimestamp">retirementTimestamp</a></h3>
 <p>Returns the value of the current <a href="#retirement-timestamp">Retirement Timestamp</a>.</p>
 <h3 id="disputegamefinalitydelayseconds"><a class="header" href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></h3>
-<p>Returns the value of the <a href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a>.</p>
+<p>Returns the current value of the <a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<h3 id="mindisputegamefinalitydelayseconds"><a class="header" href="#mindisputegamefinalitydelayseconds">minDisputeGameFinalityDelaySeconds</a></h3>
+<p>Returns the lower bound of the <a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<h3 id="maxdisputegamefinalitydelayseconds"><a class="header" href="#maxdisputegamefinalitydelayseconds">maxDisputeGameFinalityDelaySeconds</a></h3>
+<p>Returns the upper bound of the <a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<h3 id="setdisputegamefinalitydelayseconds"><a class="header" href="#setdisputegamefinalitydelayseconds">setDisputeGameFinalityDelaySeconds</a></h3>
+<p>Permits the ProxyAdmin owner to set the
+<a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<ul>
+<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
+<li>MUST revert if the new value is outside of the bounds set in the constructor.</li>
+<li>MUST update the Dispute Game Finality Delay with the provided value.</li>
+<li>MUST emit a <code>DisputeGameFinalityDelaySecondsSet</code> event with the new value.</li>
+</ul>
 <h3 id="setrespectedgametype"><a class="header" href="#setrespectedgametype">setRespectedGameType</a></h3>
 <p>Permits the Guardian role to set the <a href="#respected-game-type">Respected Game Type</a>.</p>
 <ul>
@@ -619,7 +654,7 @@ Challenger or the Defender as determined by the <code>FaultDisputeGame.status()<
 <p>Determines if a game is a Finalized Game.</p>
 <ul>
 <li>MUST return <code>true</code> if and only if <code>isGameResolved(game)</code> and the game has resolved a result more
-than the airgap delay seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
+than the review period seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
 the <code>AnchorStateRegistry</code> contract.</li>
 </ul>
 <h3 id="isgameclaimvalid"><a class="header" href="#isgameclaimvalid">isGameClaimValid</a></h3>

@@ -599,14 +599,14 @@ benefits.</li>
 types before fraudulent games achieve Valid Claims.</p>
 <h4 id="mitigations-4"><a class="header" href="#mitigations-4">Mitigations</a></h4>
 <ul>
-<li>The <code>DISPUTE_GAME_FINALITY_DELAY_SECONDS</code> airgap between resolution and <code>closeGame</code> provides
+<li>The <code>disputeGameFinalityDelaySeconds</code> review period between resolution and <code>closeGame</code> provides
 the Guardian a window to act.</li>
 <li><code>DelayedWETH</code> provides an additional window after <code>closeGame</code> to freeze funds.</li>
 </ul>
 <h3 id="azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency"><a class="header" href="#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency">aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency</a></h3>
 <p>There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
 game that passes the finality delay can call <code>closeGame()</code> and advance it. However, the minimum
-time for a game to advance the anchor state is <code>maxChallengeDuration + DISPUTE_GAME_FINALITY_DELAY_SECONDS</code>
+time for a game to advance the anchor state is <code>maxChallengeDuration + disputeGameFinalityDelaySeconds</code>
 (12+ hours in practice), and under normal operation this is expected to be much larger than
 typical proposal frequency. Orphan risk from parent validation is therefore negligible.</p>
 <h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>

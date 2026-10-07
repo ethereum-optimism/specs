@@ -5211,7 +5211,7 @@ withdrawals on L1.</p>
 <ul>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game">Dispute Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a></li>
-<li><a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay (Airgap)</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay (Review Period)</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#registered-game">Registered Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#respected-game">Respected Game</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">Blacklisted Game</a></li>
@@ -5287,6 +5287,9 @@ withdrawals on L1.</p>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#respectedgametype">respectedGameType</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#retirementtimestamp">retirementTimestamp</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#mindisputegamefinalitydelayseconds">minDisputeGameFinalityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#maxdisputegamefinalitydelayseconds">maxDisputeGameFinalityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/anchor-state-registry.html#setdisputegamefinalitydelayseconds">setDisputeGameFinalityDelaySeconds</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#setrespectedgametype">setRespectedGameType</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#updateretirementtimestamp">updateRetirementTimestamp</a></li>
 <li><a href="fault-proof/stage-one/anchor-state-registry.html#blacklistdisputegame">blacklistDisputeGame</a></li>
@@ -5330,9 +5333,16 @@ that is considered to be the correct by the <code>AnchorStateRegistry</code> and
 contracts that may rely on the assertions made within the <code>AnchorStateRegistry</code>. The Respected Game
 Type is, in a more general sense, a game type that the system believes will resolve correctly. For
 now, the <code>AnchorStateRegistry</code> only allows a single Respected Game Type.</p>
-<h3 id="dispute-game-finality-delay-airgap"><a class="header" href="#dispute-game-finality-delay-airgap">Dispute Game Finality Delay (Airgap)</a></h3>
-<p>The <strong>Dispute Game Finality Delay</strong> or <strong>Airgap</strong> is the amount of time that must elapse after a
+<h3 id="dispute-game-finality-delay-review-period"><a class="header" href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay (Review Period)</a></h3>
+<p>The <strong>Dispute Game Finality Delay</strong> or <strong>Review Period</strong> is the amount of time that must elapse after a
 game resolves before the game's result is considered "final".</p>
+<p>The Dispute Game Finality Delay is configured per chain. It may be changed by the L1 ProxyAdmin
+owner, but only within a lower and upper bound that cannot be changed without an upgrade. The
+value in effect is the one configured at the time a game is checked for finality, so a change
+applies to games that have already resolved, in either direction. Upgrades carry the configured
+value forward; see
+<a href="fault-proof/stage-one/../../experimental/contracts/L1/opcm.html#i01-003-no-unexpected-mutations">i01-003</a>. All chains and
+game types that share an <code>AnchorStateRegistry</code> share the same delay.</p>
 <h3 id="registered-game"><a class="header" href="#registered-game">Registered Game</a></h3>
 <p>A Dispute Game is considered to be a <strong>Registered Game</strong> if the game contract was created by the
 system's <code>DisputeGameFactory</code> contract.</p>
@@ -5387,7 +5397,7 @@ of either the Challenger or the Defender.</p>
 <ul>
 <li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#resolved-game">Resolved Game</a></li>
 <li>The game resolved a result more than
-<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> seconds ago as defined by the
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> seconds ago as defined by the
 <code>disputeGameFinalityDelaySeconds</code> variable in the <code>AnchorStateRegistry</code> contract.</li>
 </ul>
 <h3 id="valid-claim"><a class="header" href="#valid-claim">Valid Claim</a></h3>
@@ -5457,11 +5467,15 @@ created.</p>
 <a href="fault-proof/stage-one/anchor-state-registry.html#blacklisted-game">blacklisting</a> or by <a href="fault-proof/stage-one/anchor-state-registry.html#retired-game">retirement</a> BEFORE they are considered to
 have <a href="fault-proof/stage-one/anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
-<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has elapsed UNLESS the
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> has elapsed UNLESS the
 Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism, parties responsible
 for game invalidation have exactly the Dispute Game Finality Delay to invalidate a withdrawal after
 it resolves incorrectly. If the Pause Mechanism is active, then any incorrectly resolving games
 must be invalidated before the pause is deactivated.</p>
+<p>The Dispute Game Finality Delay is configured per <code>AnchorStateRegistry</code> and is independent of
+the <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>. A registry that lowered its delay for a quickly
+resolving game type keeps that delay if the Respected Game Type later changes. When several
+chains share a registry, the delay and any change to it apply to all of them.</p>
 <h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
 <ul>
 <li>Stakeholder incentives / processes</li>
@@ -5559,31 +5573,52 @@ allotted response time, and resolution would require intervention from the Proxy
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
 <ul>
-<li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a>.</li>
+<li>MUST revert if the lower bound is zero or greater than the upper bound.</li>
+<li>MUST set the lower and upper bounds of the
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> and disable
+initializers for the implementation contract.</li>
 </ul>
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
-<li>MUST only be triggerable once.</li>
-<li>MUST set the value of the <code>SystemConfig</code> contract that stores the address of the Guardian.</li>
+<li>MUST only be triggerable once per initialization version.</li>
+<li>MUST revert if the provided Dispute Game Finality Delay is outside of the bounds set in the
+constructor.</li>
+<li>MUST set the value of the <code>ETHLockbox</code> contract through which the Guardian and pause state are
+resolved.</li>
 <li>MUST set the value of the <code>DisputeGameFactory</code> contract that creates Dispute Game instances.</li>
 <li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#starting-anchor-state">Starting Anchor State</a>.</li>
 <li>MUST set the value of the initial <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</li>
+<li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>
+and emit a <code>DisputeGameFinalityDelaySecondsSet</code> event with the new value.</li>
 <li>MUST set the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a> to the current block
-timestamp. NOTE that this is a safety mechanism that invalidates all existing Dispute Game
-contracts to support the safe transition away from the <code>OptimismPortal</code> as the source of truth
-for game validity. In this way, the <code>AnchorStateRegistry</code> does not need to consider the state of
-the legacy blacklisting/retirement mechanisms within the <code>OptimismPortal</code> and starts from a clean
-slate.</li>
+timestamp if it is not already set, and MUST otherwise preserve it. NOTE that setting it on
+first initialization retires all Dispute Game contracts created before the
+<code>AnchorStateRegistry</code> became the source of truth for game validity, while preserving it on
+later initializations avoids retiring existing games and invalidating their withdrawal proofs
+when the contract is re-initialized during an upgrade.</li>
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
-<p>Returns the value of <code>paused()</code> from the <code>SystemConfig</code> contract.</p>
+<p>Returns the value of <code>paused()</code> from the <code>ETHLockbox</code> contract.</p>
 <h3 id="respectedgametype"><a class="header" href="#respectedgametype">respectedGameType</a></h3>
 <p>Returns the value of the currently <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</p>
 <h3 id="retirementtimestamp"><a class="header" href="#retirementtimestamp">retirementTimestamp</a></h3>
 <p>Returns the value of the current <a href="fault-proof/stage-one/anchor-state-registry.html#retirement-timestamp">Retirement Timestamp</a>.</p>
 <h3 id="disputegamefinalitydelayseconds"><a class="header" href="#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></h3>
-<p>Returns the value of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a>.</p>
+<p>Returns the current value of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<h3 id="mindisputegamefinalitydelayseconds"><a class="header" href="#mindisputegamefinalitydelayseconds">minDisputeGameFinalityDelaySeconds</a></h3>
+<p>Returns the lower bound of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<h3 id="maxdisputegamefinalitydelayseconds"><a class="header" href="#maxdisputegamefinalitydelayseconds">maxDisputeGameFinalityDelaySeconds</a></h3>
+<p>Returns the upper bound of the <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<h3 id="setdisputegamefinalitydelayseconds"><a class="header" href="#setdisputegamefinalitydelayseconds">setDisputeGameFinalityDelaySeconds</a></h3>
+<p>Permits the ProxyAdmin owner to set the
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>.</p>
+<ul>
+<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
+<li>MUST revert if the new value is outside of the bounds set in the constructor.</li>
+<li>MUST update the Dispute Game Finality Delay with the provided value.</li>
+<li>MUST emit a <code>DisputeGameFinalityDelaySecondsSet</code> event with the new value.</li>
+</ul>
 <h3 id="setrespectedgametype"><a class="header" href="#setrespectedgametype">setRespectedGameType</a></h3>
 <p>Permits the Guardian role to set the <a href="fault-proof/stage-one/anchor-state-registry.html#respected-game-type">Respected Game Type</a>.</p>
 <ul>
@@ -5651,7 +5686,7 @@ Challenger or the Defender as determined by the <code>FaultDisputeGame.status()<
 <p>Determines if a game is a Finalized Game.</p>
 <ul>
 <li>MUST return <code>true</code> if and only if <code>isGameResolved(game)</code> and the game has resolved a result more
-than the airgap delay seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
+than the review period seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
 the <code>AnchorStateRegistry</code> contract.</li>
 </ul>
 <h3 id="isgameclaimvalid"><a class="header" href="#isgameclaimvalid">isGameClaimValid</a></h3>
@@ -6484,7 +6519,7 @@ claims to be bonded, while rewarding game winners using the bonds of dishonest c
 the L2 block number challenger, if it exist, must be the winner of a root subgame.
 Thus, no moves against the root, including uncontested ones, can win a root subgame that has an L2 block number challenge.</p>
 <h3 id="finalization"><a class="header" href="#finalization">Finalization</a></h3>
-<p>Once the game is resolved, it must wait for the <code>disputeGameFinalityDelaySeconds</code> on the <code>OptimismPortal</code> to pass before
+<p>Once the game is resolved, it must wait for the <code>disputeGameFinalityDelaySeconds</code> on the <code>AnchorStateRegistry</code> to pass before
 it can be finalized, after which bonds can be distributed via the process outlined in <a href="fault-proof/stage-one/bond-incentives.html#game-finalization">Bond Incentives: Game
 Finalization</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
@@ -6811,8 +6846,9 @@ all other costs of participation.</p>
 <h2 id="game-finalization"><a class="header" href="#game-finalization">Game Finalization</a></h2>
 <p>After the game is resolved, claimants must wait for the <a href="fault-proof/stage-one/anchor-state-registry.html#isgamefinalized">AnchorStateRegistry's
 <code>isGameFinalized()</code></a> to return <code>true</code> before they can claim their bonds. This
-implies a wait period of at least the <code>disputeGameFinalityDelaySeconds</code> variable from the <code>OptimismPortal</code> contract.
-After the game is finalized, bonds can be distributed.</p>
+implies a wait period of at least the
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> configured on the
+<code>AnchorStateRegistry</code> contract. After the game is finalized, bonds can be distributed.</p>
 <h3 id="bond-distribution-mode"><a class="header" href="#bond-distribution-mode">Bond Distribution Mode</a></h3>
 <p>The FDG will in most cases distribute bonds to the winners of the game after it is resolved and finalized, but in
 special cases will refund the bonds to the original depositor.</p>
@@ -6890,6 +6926,10 @@ correct address into <code>withdraw</code>.</p>
 <p>We propose a delay period of 7 days for most OP Stack chains. 7 days provides sufficient time for the <code>owner()</code> of the
 <code>DelayedWETH</code> contract to act even if that owner is a large multisig that requires action from many different members
 over multiple timezones.</p>
+<p>The delay period is configured per chain and may be lowered to a minimum of 12 hours; see
+<a href="fault-proof/stage-one/../../protocol/configurability.html#bond-withdrawal-delay">Bond Withdrawal Delay</a>. Chains with a shorter
+<a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>, such as ZK chains,
+may use a shorter delay period, since bonds cannot unlock before the game is finalized.</p>
 <h4 id="integration"><a class="header" href="#integration">Integration</a></h4>
 <p><code>DelayedWETH</code> is expected to be integrated into the Fault Dispute Game as follows:</p>
 <ul>
@@ -7362,14 +7402,14 @@ benefits.</li>
 types before fraudulent games achieve Valid Claims.</p>
 <h4 id="mitigations-7"><a class="header" href="#mitigations-7">Mitigations</a></h4>
 <ul>
-<li>The <code>DISPUTE_GAME_FINALITY_DELAY_SECONDS</code> airgap between resolution and <code>closeGame</code> provides
+<li>The <code>disputeGameFinalityDelaySeconds</code> review period between resolution and <code>closeGame</code> provides
 the Guardian a window to act.</li>
 <li><code>DelayedWETH</code> provides an additional window after <code>closeGame</code> to freeze funds.</li>
 </ul>
 <h3 id="azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency"><a class="header" href="#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency">aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency</a></h3>
 <p>There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
 game that passes the finality delay can call <code>closeGame()</code> and advance it. However, the minimum
-time for a game to advance the anchor state is <code>maxChallengeDuration + DISPUTE_GAME_FINALITY_DELAY_SECONDS</code>
+time for a game to advance the anchor state is <code>maxChallengeDuration + disputeGameFinalityDelaySeconds</code>
 (12+ hours in practice), and under normal operation this is expected to be much larger than
 typical proposal frequency. Orphan risk from parent validation is therefore negligible.</p>
 <h4 id="mitigations-8"><a class="header" href="#mitigations-8">Mitigations</a></h4>
@@ -8271,6 +8311,9 @@ address public immutable CHALLENGER;
 <li><a href="fault-proof/stage-one/optimism-portal.html#guardian">guardian</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#ethlockbox">ethLockbox</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#minproofmaturitydelayseconds">minProofMaturityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#maxproofmaturitydelayseconds">maxProofMaturityDelaySeconds</a></li>
+<li><a href="fault-proof/stage-one/optimism-portal.html#setproofmaturitydelayseconds">setProofMaturityDelaySeconds</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#disputegamefactory">disputeGameFactory</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#disputegamefinalitydelayseconds">disputeGameFinalityDelaySeconds</a></li>
 <li><a href="fault-proof/stage-one/optimism-portal.html#respectedgametype">respectedGameType</a></li>
@@ -8304,6 +8347,15 @@ that have been declared valid by the L1 Fault Proof system.</p>
 <h3 id="proof-maturity-delay"><a class="header" href="#proof-maturity-delay">Proof Maturity Delay</a></h3>
 <p>The <strong>Proof Maturity Delay</strong> is the minimum amount of time that a withdrawal must be a
 <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a> before it can be finalized.</p>
+<p>The Proof Maturity Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner,
+but only within a lower and upper bound that cannot be changed without an upgrade. The value in
+effect is the one configured at the time a withdrawal is checked for finalization, so a change
+applies to withdrawals that were already proven, in either direction. Upgrades carry the
+configured value forward; see
+<a href="fault-proof/stage-one/../../experimental/contracts/L1/opcm.html#i01-003-no-unexpected-mutations">i01-003</a>. When several
+<code>OptimismPortal</code> contracts share an <code>ETHLockbox</code>, the pooled funds are exposed through the earliest
+<a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">Finalized Withdrawal</a> on any of those portals, which depends on both that
+portal's Proof Maturity Delay and the finality of the game it was proven against.</p>
 <h3 id="proven-withdrawal"><a class="header" href="#proven-withdrawal">Proven Withdrawal</a></h3>
 <p>A <strong>Proven Withdrawal</strong> is a withdrawal transaction that has been proven against some Output Root
 by a user. Users can prove withdrawals against any Dispute Game contract that meets the following
@@ -8334,6 +8386,10 @@ meets the following conditions:</p>
 <li>Withdrawal was proven against a game with a <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a></li>
 <li>Withdrawal was not previously finalized</li>
 </ul>
+<p>A withdrawal proven at <code>provenAt</code> against a game that resolved at <code>resolvedAt</code> can be finalized
+no earlier than:</p>
+<pre><code class="language-text">max(provenAt + proofMaturityDelaySeconds, resolvedAt + disputeGameFinalityDelaySeconds)
+</code></pre>
 <h3 id="deleted-withdrawal-proof"><a class="header" href="#deleted-withdrawal-proof">Deleted Withdrawal Proof</a></h3>
 <p>A <strong>Deleted Withdrawal Proof</strong> is the record of a <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a> that was
 removed from the <code>OptimismPortal</code>. Anyone can delete such a record if the game that the withdrawal
@@ -8473,7 +8529,7 @@ created.</p>
 <a href="fault-proof/stage-one/./anchor-state-registry.html#retired-game">retirement</a> BEFORE they are considered to have
 <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claims</a>.</p>
 <p>Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
-<a href="fault-proof/stage-one/./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> has
+<a href="fault-proof/stage-one/./anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> has
 elapsed UNLESS the Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism,
 parties responsible for game invalidation have exactly the Dispute Game Finality Delay to
 invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
@@ -8507,33 +8563,50 @@ see this as a critical system risk.</p>
 <h2 id="function-specification-1"><a class="header" href="#function-specification-1">Function Specification</a></h2>
 <h3 id="constructor-1"><a class="header" href="#constructor-1">constructor</a></h3>
 <ul>
-<li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</li>
+<li>MUST revert if the lower bound is zero or greater than the upper bound.</li>
+<li>MUST set the lower and upper bounds of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> and
+disable initializers for the implementation contract.</li>
 </ul>
 <h3 id="initialize-1"><a class="header" href="#initialize-1">initialize</a></h3>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
+<li>MUST revert if the provided Proof Maturity Delay is outside of the bounds set in the constructor.</li>
 <li>MUST set the value of the <code>SystemConfig</code> contract.</li>
 <li>MUST set the value of the <code>AnchorStateRegistry</code> contract.</li>
 <li>MUST assert that the ETHLockbox state is valid based on the feature flag.</li>
+<li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> and emit a
+<code>ProofMaturityDelaySecondsSet</code> event with the new value.</li>
 <li>MUST set the value of the <a href="fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a> variable to the default
 value if the value is not set already.</li>
 <li>MUST initialize the resource metering configuration.</li>
 </ul>
 <h3 id="paused-1"><a class="header" href="#paused-1">paused</a></h3>
-<p>Returns the current state of the <code>SystemConfig.paused()</code> function.</p>
+<p>Returns the current state of the <code>ETHLockbox.paused()</code> function.</p>
 <h3 id="guardian"><a class="header" href="#guardian">guardian</a></h3>
-<p>Returns the address of the Guardian as per <code>SystemConfig.guardian()</code>.</p>
+<p>Returns the address of the Guardian as per <code>ETHLockbox.guardian()</code>.</p>
 <h3 id="ethlockbox"><a class="header" href="#ethlockbox">ethLockbox</a></h3>
 <p>Returns the address of the ETHLockbox configured for this contract. If the contract has not been
 configured for this OptimismPortal, this function will return <code>address(0)</code>.</p>
 <h3 id="proofmaturitydelayseconds"><a class="header" href="#proofmaturitydelayseconds">proofMaturityDelaySeconds</a></h3>
-<p>Returns the value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<p>Returns the current value of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="minproofmaturitydelayseconds"><a class="header" href="#minproofmaturitydelayseconds">minProofMaturityDelaySeconds</a></h3>
+<p>Returns the lower bound of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="maxproofmaturitydelayseconds"><a class="header" href="#maxproofmaturitydelayseconds">maxProofMaturityDelaySeconds</a></h3>
+<p>Returns the upper bound of the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<h3 id="setproofmaturitydelayseconds"><a class="header" href="#setproofmaturitydelayseconds">setProofMaturityDelaySeconds</a></h3>
+<p>Permits the ProxyAdmin owner to set the <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a>.</p>
+<ul>
+<li>MUST revert if called by any address other than the ProxyAdmin owner.</li>
+<li>MUST revert if the new value is outside of the bounds set in the constructor.</li>
+<li>MUST update the Proof Maturity Delay with the provided value.</li>
+<li>MUST emit a <code>ProofMaturityDelaySecondsSet</code> event with the new value.</li>
+</ul>
 <h3 id="disputegamefactory"><a class="header" href="#disputegamefactory">disputeGameFactory</a></h3>
 <p>Returns the DisputeGameFactory contract from the AnchorStateRegistry contract.</p>
 <h3 id="disputegamefinalitydelayseconds-1"><a class="header" href="#disputegamefinalitydelayseconds-1">disputeGameFinalityDelaySeconds</a></h3>
 <p><strong>Legacy Function</strong></p>
 <p>Returns the value of the
-<a href="fault-proof/stage-one/./anchor-state-registry.html#dispute-game-finality-delay-airgap">Dispute Game Finality Delay</a> as per
+<a href="fault-proof/stage-one/./anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> as per
 a call to <code>AnchorStateRegistry.disputeGameFinalityDelaySeconds()</code>.</p>
 <h3 id="respectedgametype-1"><a class="header" href="#respectedgametype-1">respectedGameType</a></h3>
 <p><strong>Legacy Function</strong></p>
@@ -8664,8 +8737,7 @@ help determine exact gas costs.</li>
 <h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
 <p>Returns the <code>SuperchainConfig</code> contract address.</p>
 <ul>
-<li>MUST return the address of the <code>SuperchainConfig</code> contract stored in the <code>SystemConfig</code> contract
-that was set during initialization.</li>
+<li>MUST return the address of the <code>SuperchainConfig</code> contract as per <code>ETHLockbox.superchainConfig()</code>.</li>
 </ul>
 <h3 id="disputegameblacklist"><a class="header" href="#disputegameblacklist">disputeGameBlacklist</a></h3>
 <p><strong>Legacy Function</strong></p>
@@ -10071,20 +10143,22 @@ concatenation, <code>versionByte</code> is <code>0x00</code>, and <code>chainId<
 <strong>Requirement:</strong> Foundation-approved, globally unique value <sup class="footnote-reference"><a href="#chain-id-uniqueness">1</a></sup>.<br/>
 <strong>Notes:</strong> Foundation will ensure chains are responsible with their chain IDs until there's a governance process in
 place.<br/></p>
-<h3 id="proof-maturity-delay-1"><a class="header" href="#proof-maturity-delay-1"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#fpac-optimismportal-mods-specification">Proof Maturity Delay</a></a></h3>
+<h3 id="proof-maturity-delay-1"><a class="header" href="#proof-maturity-delay-1"><a href="protocol/../fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a></a></h3>
 <p><strong>Description:</strong> The length of time that must pass between proving and finalizing a withdrawal.<br/>
-<strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin</a><br/>
-<strong>Requirement:</strong> 7 days<br/>
-<strong>Notes:</strong> High security. Excessively safe upper bound that leaves enough time to consider social layer solutions to a
-hack if necessary. Allows enough time for other network participants to challenge the integrity of the corresponding
-output root.<br/></p>
-<h3 id="dispute-game-finality"><a class="header" href="#dispute-game-finality"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#fpac-optimismportal-mods-specification">Dispute Game Finality</a></a></h3>
+<strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin Owner</a><br/>
+<strong>Requirement:</strong> 1 day to 7 days<br/>
+<strong>Notes:</strong> High security. Configured per chain within bounds fixed by the implementation. The upper bound leaves
+enough time to consider social layer solutions to a hack if necessary. The lower bound is the floor on withdrawal
+time regardless of game type.<br/></p>
+<h3 id="dispute-game-finality"><a class="header" href="#dispute-game-finality"><a href="protocol/../fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality</a></a></h3>
 <p><strong>Description:</strong> The amount of time given to the <code>Guardian</code> role
 to <a href="protocol/../fault-proof/stage-one/bridge-integration.html#blacklisting-disputegames">blacklist a resolved dispute game</a> before
 any withdrawals proven against it can be finalized, in the case of a system failure.<br/>
-<strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin</a><br/>
-<strong>Requirement:</strong> 3.5 days<br/>
-<strong>Notes:</strong> High security. Allows enough time for the <code>Guardian</code> to blacklist games.<br/></p>
+<strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin Owner</a><br/>
+<strong>Requirement:</strong> 12 hours to 3.5 days<br/>
+<strong>Notes:</strong> High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
+<code>Guardian</code> to blacklist games. Chains using the <code>FaultDisputeGame</code> are expected to keep 3.5 days so that the game
+clock and the finality delay still total 7 days. Shared by all chains using the same <code>AnchorStateRegistry</code>.<br/></p>
 <h3 id="respected-game-type-2"><a class="header" href="#respected-game-type-2"><a href="protocol/../fault-proof/stage-one/bridge-integration.html#new-state-variables">Respected Game Type</a></a></h3>
 <p><strong>Description:</strong> The respected game type of the <code>OptimismPortal</code>. Determines the type of dispute games that can be used
 to finalize withdrawals.<br/>
@@ -10119,12 +10193,13 @@ CLOCK_EXTENSION seconds remaining.<br/>
 <strong>Administrator:</strong> Static<br/>
 <strong>Requirement:</strong> 3 hours<br/>
 <strong>Notes:</strong> Allows enough time for honest actors to counter freeloader claims.<br/></p>
-<h3 id="bond-withdrawal-delay"><a class="header" href="#bond-withdrawal-delay"><a href="https://specs.optimism.io/fault-proof/stage-one/bond-incentives.html#delay-period">Bond Withdrawal Delay</a></a></h3>
+<h3 id="bond-withdrawal-delay"><a class="header" href="#bond-withdrawal-delay"><a href="protocol/../fault-proof/stage-one/bond-incentives.html#delayedweth">Bond Withdrawal Delay</a></a></h3>
 <p><strong>Description:</strong> The length of time that must pass before dispute game bonds can be withdrawn.<br/>
-<strong>Administrator:</strong> Static<br/>
-<strong>Requirement:</strong> 7 days<br/>
-<strong>Notes:</strong> High security. Allows enough time for the <code>Guardian</code> to recover funds from <code>DelayedWETH</code> if bonds were
-allocated incorrectly.<br/></p>
+<strong>Administrator:</strong> <a href="protocol/configurability.html#admin-roles">L1 Proxy Admin Owner</a><br/>
+<strong>Requirement:</strong> 12 hours to 7 days<br/>
+<strong>Notes:</strong> High security. Configured per chain within bounds fixed by the implementation. Allows enough time for the
+<code>Guardian</code> to recover funds from <code>DelayedWETH</code> if bonds were allocated incorrectly. Shared by every game type on the
+chain and by all chains using the same <code>DelayedWETH</code>.<br/></p>
 <h3 id="minimum-large-preimage-proposal-size"><a class="header" href="#minimum-large-preimage-proposal-size"><a href="https://specs.optimism.io/fault-proof/stage-one/fault-dispute-game.html#preimageoracle-interaction">Minimum Large Preimage Proposal Size</a></a></h3>
 <p><strong>Description:</strong> The minimum size of preimage allowed to be submitted via the PreimageOracle large preimage proposal
 process.<br/>
@@ -20540,8 +20615,9 @@ following conditions is met:</p>
 <li>OPCM deliberately mutates the value with clear documentation explaining why the mutation is
 necessary, and the change is safe to make</li>
 </ol>
-<p>Properties such as ProxyAdmin ownership must be fetched from the existing system during upgrades
-and preserved without modification.</p>
+<p>Properties such as ProxyAdmin ownership, and per-chain configuration such as the Proof Maturity
+Delay, the Dispute Game Finality Delay and the <code>DelayedWETH</code> Withdrawal Delay, must be fetched from
+the existing system during upgrades and preserved without modification.</p>
 <h4 id="impact-74"><a class="header" href="#impact-74">Impact</a></h4>
 <p><strong>Severity: High/Critical</strong></p>
 <p>If violated, upgrades could silently change critical system properties like ownership, potentially
@@ -20747,6 +20823,11 @@ still be executed as a workaround, but this adds operational complexity during i
 <li><a href="experimental/contracts/L1/opcm-migrator.html#imig-014-withdrawal-proofs-do-not-survive-migration">iMIG-014: Withdrawal proofs do not survive migration</a>
 <ul>
 <li><a href="experimental/contracts/L1/opcm-migrator.html#impact-13">Impact</a></li>
+</ul>
+</li>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#imig-015-member-chains-agree-on-the-shared-delays">iMIG-015: Member Chains agree on the shared delays</a>
+<ul>
+<li><a href="experimental/contracts/L1/opcm-migrator.html#impact-14">Impact</a></li>
 </ul>
 </li>
 </ul>
@@ -21129,6 +21210,16 @@ would pay out of the set's pooled <code>ETHLockbox</code>, on the strength of a 
 drawing on ETH the other members deposited.</p>
 <p>The user sees nothing at migration time. Their proof reverts only when they try to finalize it, so
 the operator has to tell them to prove again.</p>
+<h3 id="imig-015-member-chains-agree-on-the-shared-delays"><a class="header" href="#imig-015-member-chains-agree-on-the-shared-delays">iMIG-015: Member Chains agree on the shared delays</a></h3>
+<p>The shared <code>AnchorStateRegistry</code> must be initialized with the Dispute Game Finality Delay that
+every <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a>'s retired registry reports, and the shared <code>DelayedWETH</code> must
+keep the Withdrawal Delay that every member's retired <code>DelayedWETH</code> reports. Migration must revert
+if any two members differ on either value. Each portal keeps its own Proof Maturity Delay.</p>
+<h4 id="impact-97"><a class="header" href="#impact-97">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, a member's games and bonds would be subject to a review period or lockup it did not
+configure, lengthening or shortening the Guardian's window without the governance step that a
+setter call requires.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="livenessguard"><a class="header" href="#livenessguard">LivenessGuard</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -21180,7 +21271,7 @@ function. This timestamp is publicly queryable via the <code>lastLive</code> map
 <h2 id="invariants-21"><a class="header" href="#invariants-21">Invariants</a></h2>
 <h3 id="i01-001-liveness-tracking-accuracy"><a class="header" href="#i01-001-liveness-tracking-accuracy">i01-001: Liveness tracking accuracy</a></h3>
 <p>Owner activity is accurately tracked and properly synchronized with the Safe's owner set.</p>
-<h4 id="impact-97"><a class="header" href="#impact-97">Impact</a></h4>
+<h4 id="impact-98"><a class="header" href="#impact-98">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If liveness tracking is inaccurate, inactive owners could appear active (preventing their removal) or active owners
 could appear inactive (enabling improper removal). This undermines the entire liveness monitoring mechanism and could
@@ -21188,7 +21279,7 @@ lead to unauthorized changes to the Safe's owner set.</p>
 <h3 id="i02-002-liveness-demonstration-capability"><a class="header" href="#i02-002-liveness-demonstration-capability">i02-002: Liveness demonstration capability</a></h3>
 <p>Owners are always capable of showing liveness if the owner is actually live. The guard never prevents legitimate owners
 from demonstrating their liveness through either transaction signatures or direct <code>showLiveness</code> calls.</p>
-<h4 id="impact-98"><a class="header" href="#impact-98">Impact</a></h4>
+<h4 id="impact-99"><a class="header" href="#impact-99">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If legitimate owners cannot demonstrate liveness, they could be incorrectly identified as inactive and removed from the
 Safe. This could lead to loss of access to the Safe's assets and functionality, potentially causing permanent fund

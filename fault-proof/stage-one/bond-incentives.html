@@ -288,8 +288,9 @@ all other costs of participation.</p>
 <h2 id="game-finalization"><a class="header" href="#game-finalization">Game Finalization</a></h2>
 <p>After the game is resolved, claimants must wait for the <a href="anchor-state-registry.html#isgamefinalized">AnchorStateRegistry's
 <code>isGameFinalized()</code></a> to return <code>true</code> before they can claim their bonds. This
-implies a wait period of at least the <code>disputeGameFinalityDelaySeconds</code> variable from the <code>OptimismPortal</code> contract.
-After the game is finalized, bonds can be distributed.</p>
+implies a wait period of at least the
+<a href="anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> configured on the
+<code>AnchorStateRegistry</code> contract. After the game is finalized, bonds can be distributed.</p>
 <h3 id="bond-distribution-mode"><a class="header" href="#bond-distribution-mode">Bond Distribution Mode</a></h3>
 <p>The FDG will in most cases distribute bonds to the winners of the game after it is resolved and finalized, but in
 special cases will refund the bonds to the original depositor.</p>
@@ -367,6 +368,10 @@ correct address into <code>withdraw</code>.</p>
 <p>We propose a delay period of 7 days for most OP Stack chains. 7 days provides sufficient time for the <code>owner()</code> of the
 <code>DelayedWETH</code> contract to act even if that owner is a large multisig that requires action from many different members
 over multiple timezones.</p>
+<p>The delay period is configured per chain and may be lowered to a minimum of 12 hours; see
+<a href="../../protocol/configurability.html#bond-withdrawal-delay">Bond Withdrawal Delay</a>. Chains with a shorter
+<a href="anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a>, such as ZK chains,
+may use a shorter delay period, since bonds cannot unlock before the game is finalized.</p>
 <h4 id="integration"><a class="header" href="#integration">Integration</a></h4>
 <p><code>DelayedWETH</code> is expected to be integrated into the Fault Dispute Game as follows:</p>
 <ul>
