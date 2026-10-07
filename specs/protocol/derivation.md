@@ -422,7 +422,10 @@ where:
 - `epoch_number` and `epoch_hash` are the number and hash of the L1 block corresponding to the [sequencing
   epoch][g-sequencing-epoch] of the L2 block
 - `timestamp` is the timestamp of the L2 block
-- `transaction_list` is an RLP-encoded list of [EIP-2718] encoded transactions.
+- `transaction_list` is an RLP-encoded list of [EIP-2718] encoded transactions. Each element is one transaction's
+  EIP-2718 encoding verbatim, type byte included; this format does not interpret it. A new transaction type
+  therefore needs no change here. Whether a batch may carry one is a separate question, governed by the
+  `batch.transactions` rules in [Batch Queue](#batch-queue).
 
 [RLP format]: https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
 [EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718
@@ -673,7 +676,8 @@ Rules, in validation order:
   - any [deposited transactions][g-deposit-tx-type] (identified by the transaction type prefix byte)
   - any transaction of a future type > 2 (note that
     [Isthmus adds support](isthmus/derivation.md#activation)
-    for `SetCode` transactions of type 4)
+    for `SetCode` transactions of type 4
+    and [Lagoon](./lagoon/overview.md) adds [`PostExec`](./lagoon/post-exec.md) transactions of type `0x7d`)
 
 If no batch can be `accept`-ed, and the stage has completed buffering of all batches that can fully be read from the L1
 block at height `epoch.number + sequence_window_size`, and the `next_epoch` is available,

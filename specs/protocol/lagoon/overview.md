@@ -21,13 +21,16 @@ This document is not finalized and should be considered experimental.
 
 ## Consensus Layer
 
+- [Derivation](./derivation.md)
 - Interop:
   - [Dependency Set](../../interop/dependency-set.md)
   - [Derivation](../../interop/derivation.md)
   - [Sequencer](../../interop/sequencer.md)
   - [Verifier](../../interop/verifier.md)
   - [Super Root](../../interop/superroot.md)
-  - [Fault Proof](../../interop/fault-proof.md)
+
+The [Super Fault Dispute Game](../../fault-proof/stage-one/super-fault-dispute-game.md) is not part of this upgrade.
+Lagoon gives its consolidation step executing messages to validate.
 
 ## Smart Contracts
 

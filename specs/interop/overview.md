@@ -42,7 +42,9 @@ The proof system is able to check the validity of all executing messages.
 - [Sequencer](./sequencer.md): Sequencer Policy and block-building information.
 - [Verifier](./verifier.md): Verification of cross-L2 messaging.
 - [Super Root](./superroot.md): the global state commitment across the dependency set and its API.
-- [Fault Proof](./fault-proof.md): modifications to prove interop functionality in the fault-proof.
+- [Super Fault Dispute Game](../fault-proof/stage-one/super-fault-dispute-game.md): the dispute game that resolves
+  super root proposals. It is not interop specific. Interop gives its consolidation step executing messages to
+  validate.
 - [Token Bridging](./token-bridging.md): sending ERC20 tokens between chains
 - [ETH Liquidity](./eth-liquidity.md): ETH liquidity management.
 - [Superchain ETH Bridge](./superchain-eth-bridge.md): sending ETH between chains.

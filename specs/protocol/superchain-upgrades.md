@@ -19,6 +19,7 @@
 - [Activation rules](#activation-rules)
   - [L2 Block-number based activation (deprecated)](#l2-block-number-based-activation-deprecated)
   - [L2 Block-timestamp based activation](#l2-block-timestamp-based-activation)
+  - [At most one network upgrade per activation timestamp](#at-most-one-network-upgrade-per-activation-timestamp)
 - [OP-Stack Protocol versions](#op-stack-protocol-versions)
 - [Post-Bedrock Network upgrades](#post-bedrock-network-upgrades)
   - [Activation Timestamps](#activation-timestamps)
@@ -235,6 +236,26 @@ because it can be planned in accordance with beacon-chain epochs and slots.
 Note that the L2 version is not limited to timestamps that match L1 beacon-chain slots or epochs.
 A timestamp may be chosen to be synchronous with a specific slot or epoch on L1,
 but the matching L1-origin information may not be present at the time of activation on L2.
+
+### At most one network upgrade per activation timestamp
+
+Starting with the Jovian upgrade, two network upgrades MUST NOT be configured to activate at the
+same L2 block timestamp, unless that timestamp is at or before the L2 genesis block timestamp.
+Equivalently: the activation timestamp of Jovian, and of every upgrade after it, MUST be strictly
+greater than that of the preceding upgrade, unless both activate at or before genesis.
+
+The rule is not applied retroactively to the upgrades before Jovian: a small number of chains
+activated two of those in the same block before the rule was written down, and their activation
+history cannot be changed.
+
+Chains whose genesis is created after one or more upgrades have already been defined
+activate those upgrades in the genesis block itself, conventionally by setting their
+activation timestamps to `0`. No activation block processing happens for those upgrades,
+so they may — and usually do — share an activation timestamp.
+
+Note that this constraint governs OP-Stack network upgrades only.
+It does not constrain an OP-Stack upgrade timestamp against an L1 fork timestamp
+configured on the same chain, which may coincide.
 
 ## OP-Stack Protocol versions
 

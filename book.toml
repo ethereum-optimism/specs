@@ -32,5 +32,6 @@ additional-js = ["specs/static/solidity.min.js", "specs/static/mermaid.min.js", 
 "/fjord/derivation.html" = "/protocol/fjord/derivation.html"
 "/fjord/exec-engine.html" = "/protocol/fjord/exec-engine.html"
 "/fjord/predeploys.html" = "/protocol/fjord/predeploys.html"
+"/interop/fault-proof.html" = "/fault-proof/stage-one/super-fault-dispute-game.html"
 
 [output.linkcheck]
