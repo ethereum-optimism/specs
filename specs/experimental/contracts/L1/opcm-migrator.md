@@ -60,6 +60,8 @@
     - [Impact](#impact-12)
   - [iMIG-014: Withdrawal proofs do not survive migration](#imig-014-withdrawal-proofs-do-not-survive-migration)
     - [Impact](#impact-13)
+  - [iMIG-015: Member Chains agree on the shared delays](#imig-015-member-chains-agree-on-the-shared-delays)
+    - [Impact](#impact-14)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -566,3 +568,18 @@ drawing on ETH the other members deposited.
 
 The user sees nothing at migration time. Their proof reverts only when they try to finalize it, so
 the operator has to tell them to prove again.
+
+### iMIG-015: Member Chains agree on the shared delays
+
+The shared `AnchorStateRegistry` must be initialized with the Dispute Game Finality Delay that
+every [Member Chain](#member-chain)'s retired registry reports, and the shared `DelayedWETH` must
+keep the Withdrawal Delay that every member's retired `DelayedWETH` reports. Migration must revert
+if any two members differ on either value. Each portal keeps its own Proof Maturity Delay.
+
+#### Impact
+
+**Severity: High**
+
+If violated, a member's games and bonds would be subject to a review period or lockup it did not
+configure, lengthening or shortening the Guardian's window without the governance step that a
+setter call requires.
