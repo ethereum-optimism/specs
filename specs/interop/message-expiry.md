@@ -94,7 +94,11 @@ message MUST set `successfulMessages`. An upgrade that breaks either rule breaks
 ## Activation
 
 - Every node and the proof program MUST enforce an [expiry window](./derivation.md#expiry-window) of at most
-  `EXPIRY_PERIOD` before expiry is relied on.
+  `EXPIRY_WINDOW` (7 days) before expiry is relied on. `EXPIRY_PERIOD` exceeds it by a day of margin.
+- The network upgrade that activates interop MUST install an `L2ToL2CrossDomainMessenger` with expiry and the
+  `UndeliveredMessageExporter`. A frozen upgrade bundle for that fork that was snapshotted before these contracts
+  existed MUST be snapshotted again first, so that no `L2ToL2CrossDomainMessenger` without expiry, which could
+  resend a message after it expired, is ever live on a chain with expiry.
 - Every chain in a cluster's dependency set MUST be authorized by the cluster's `ETHLockbox` and run the
   `UndeliveredMessageExporter`. Otherwise messages sent to it cannot expire.
 - Messages sent before the upgrade have no send timestamp and can never expire.
