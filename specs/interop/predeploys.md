@@ -427,6 +427,7 @@ Messages cannot be re-emitted. Instead, the source chain can learn that a messag
 [Message Expiry](./message-expiry.md), and applications can undo the send.
 
 `EXPIRY_PERIOD` is set when the implementation is deployed, as a constructor argument, and cannot be zero.
+It is read through `expiryPeriod()`.
 On production networks it MUST be `691200 secs` (8 days): the [expiry window](./derivation.md#expiry-window)
 plus one day of margin. The network upgrade transactions and the genesis tooling deploy the implementation with
 that value. Test networks with a shorter expiry window MAY deploy it with a shorter period.
