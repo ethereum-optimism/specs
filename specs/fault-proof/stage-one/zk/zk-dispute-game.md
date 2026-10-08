@@ -415,7 +415,7 @@ types before fraudulent games achieve Valid Claims.
 
 #### Mitigations
 
-- The `DISPUTE_GAME_FINALITY_DELAY_SECONDS` airgap between resolution and `closeGame` provides
+- The `disputeGameFinalityDelaySeconds` review period between resolution and `closeGame` provides
   the Guardian a window to act.
 - `DelayedWETH` provides an additional window after `closeGame` to freeze funds.
 
@@ -423,7 +423,7 @@ types before fraudulent games achieve Valid Claims.
 
 There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
 game that passes the finality delay can call `closeGame()` and advance it. However, the minimum
-time for a game to advance the anchor state is `maxChallengeDuration + DISPUTE_GAME_FINALITY_DELAY_SECONDS`
+time for a game to advance the anchor state is `maxChallengeDuration + disputeGameFinalityDelaySeconds`
 (12+ hours in practice), and under normal operation this is expected to be much larger than
 typical proposal frequency. Orphan risk from parent validation is therefore negligible.
 
