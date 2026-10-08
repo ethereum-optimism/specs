@@ -94,7 +94,8 @@ message MUST set `successfulMessages`. An upgrade that breaks either rule breaks
 ## Activation
 
 - Every node and the proof program MUST enforce an [expiry window](./derivation.md#expiry-window) of at most
-  `EXPIRY_WINDOW` (7 days) before expiry is relied on. `EXPIRY_PERIOD` exceeds it by a day of margin.
+  `EXPIRY_WINDOW` (7 days) before expiry is relied on. On production networks `EXPIRY_PERIOD` is 8 days, the
+  window plus a day of margin; on any network it MUST exceed the network's expiry window.
 - The network upgrade that activates interop MUST install an `L2ToL2CrossDomainMessenger` with expiry and the
   `UndeliveredMessageExporter`. A frozen upgrade bundle for that fork that was snapshotted before these contracts
   existed MUST be snapshotted again first, so that no `L2ToL2CrossDomainMessenger` without expiry, which could
