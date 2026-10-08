@@ -139,6 +139,10 @@ The expiry window is the time period after which an initiating message is no lon
 | --------------- | ---------------------- |
 | `EXPIRY_WINDOW` | `604800 secs` (7 days) |
 
+A dependency set MAY configure a shorter expiry window. It MUST NOT configure one longer than `EXPIRY_WINDOW`:
+[message expiry](./message-expiry.md) relies on no message being relayed more than `EXPIRY_WINDOW` after it was
+sent. Nodes and the proof program MUST reject a dependency set whose expiry window exceeds `EXPIRY_WINDOW`.
+
 ## Security Considerations
 
 ### Depositing an Executing Message
@@ -152,8 +156,9 @@ instability, therefore deposits are prevented from triggering executing messages
 
 The expiry window ensures that the proof can execute in a reasonable amount of time. [`EIP-2935`][eip-2935] introduced
 the capability to traverse history with sub-linear complexity, however deep lookups remain expensive. App developers and
-users, in the event that they encounter a message that has expired but has yet to be relayed, can
-[resend the message][resend-msg] in order to complete the process.
+users, in the event that they encounter a message that has expired but has yet to be relayed, can use
+[message expiry](./message-expiry.md) to learn on the source chain that it can never be delivered, and undo the
+send.
 
 ### Reliance on History
 
@@ -163,4 +168,3 @@ needing to execute increasingly long chain histories.
 
 [eip-2935]: https://eips.ethereum.org/EIPS/eip-2935
 [eip-4444]: https://eips.ethereum.org/EIPS/eip-4444
-[resend-msg]: https://github.com/ethereum-optimism/design-docs/blob/25ef5537e39b63cddf1c83479cee9f0e02431dce/protocol/resend-messages.md#L4
