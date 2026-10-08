@@ -19,6 +19,8 @@
     - [Mitigations](#mitigations-1)
   - [aSEB-003: `SafeSend` correctly transfers ETH to recipients](#aseb-003-safesend-correctly-transfers-eth-to-recipients)
     - [Mitigations](#mitigations-2)
+  - [aSEB-004: `expiredMessages` only marks messages that can never be relayed](#aseb-004-expiredmessages-only-marks-messages-that-can-never-be-relayed)
+    - [Mitigations](#mitigations-3)
 - [Invariants](#invariants)
   - [iSEB-001: ETH sent equals ETH received](#iseb-001-eth-sent-equals-eth-received)
     - [Impact](#impact)
@@ -29,12 +31,17 @@
   - [iSEB-003: ETH cannot be sent to the zero address](#iseb-003-eth-cannot-be-sent-to-the-zero-address)
     - [Impact](#impact-2)
     - [Dependencies](#dependencies-2)
+  - [iSEB-004: ETH is refunded only for expired sends, at most once](#iseb-004-eth-is-refunded-only-for-expired-sends-at-most-once)
+    - [Impact](#impact-3)
+    - [Dependencies](#dependencies-3)
 - [Function Specification](#function-specification)
   - [sendETH](#sendeth)
   - [relayETH](#relayeth)
+  - [refundETH](#refundeth)
 - [Events](#events)
   - [SendETH](#sendeth)
   - [RelayETH](#relayeth)
+  - [RefundETH](#refundeth)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -119,6 +126,19 @@ for valid addresses.
 - Extensive testing of the `SafeSend` mechanism
 - Audits of the ETH transfer logic
 
+### aSEB-004: `expiredMessages` only marks messages that can never be relayed
+
+We assume that `L2ToL2CrossDomainMessenger.expiredMessages(messageHash)` is `true` only for a message sent from
+this chain that its destination chain has not relayed and can never relay, as specified in
+[Message Expiry](./message-expiry.md).
+
+#### Mitigations
+
+- The expiry check compares the destination's timestamp with the send timestamp plus `EXPIRY_PERIOD`, which is at
+  least the protocol's [expiry window](./derivation.md#expiry-window)
+- Only the chain's own `L1CrossDomainMessenger` can deliver an expiry, and only on behalf of the destination chain's
+  `UndeliveredMessageExporter`
+
 ## Invariants
 
 ### iSEB-001: ETH sent equals ETH received
@@ -169,6 +189,23 @@ the possibility of recovery.
 
 None
 
+### iSEB-004: ETH is refunded only for expired sends, at most once
+
+`refundETH` must pay out only for a send whose message is marked expired, at most once per message, and only the
+amount and recipient that the send's message committed to.
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is broken, ETH could be both delivered on the destination chain and refunded on the source chain,
+leading to inflation.
+
+#### Dependencies
+
+- [aSEB-002](#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity)
+- [aSEB-004](#aseb-004-expiredmessages-only-marks-messages-that-can-never-be-relayed)
+
 ## Function Specification
 
 ### sendETH
@@ -210,6 +247,27 @@ chain.
 - MUST emit a `RelayETH` event with the `_from` address, `_to` address, `_amount`, and source chain
 ID.
 
+### refundETH
+
+Returns the ETH of a send whose message expired: its destination chain never relayed it, and never can.
+
+```solidity
+function refundETH(uint256 _destination, uint256 _nonce, address _from, address _to, uint256 _amount) external;
+```
+
+- MUST compute the message hash of the send from its arguments, with this chain as the source and the
+  `SuperchainETHBridge` as both sender and target of a `relayETH(_from, _to, _amount)` call.
+- MUST revert if `L2ToL2CrossDomainMessenger.expiredMessages(messageHash)` is `false`.
+- MUST revert if the send was already refunded.
+- MUST record the refund before transferring ETH.
+- MUST withdraw `_amount` of ETH from the `ETHLiquidity` contract by calling `ETHLiquidity.mint(_amount)`.
+- MUST transfer the `_amount` of ETH to the `_from` address using `new SafeSend{value: _amount}(_from)`.
+- MUST be callable by anyone.
+- MUST emit a `RefundETH` event with the `_from` address, `_amount`, and the message hash.
+
+The refund always goes to `_from`, the `msg.sender` of `sendETH`. A contract that called `sendETH` on behalf of
+someone else needs its own way to pass a refund on.
+
 ## Events
 
 ### SendETH
@@ -226,4 +284,12 @@ MUST be triggered when `relayETH` is called.
 
 ```solidity
 event RelayETH(address indexed from, address indexed to, uint256 amount, uint256 source);
+```
+
+### RefundETH
+
+MUST be triggered when `refundETH` is called.
+
+```solidity
+event RefundETH(address indexed from, uint256 amount, bytes32 indexed messageHash);
 ```
