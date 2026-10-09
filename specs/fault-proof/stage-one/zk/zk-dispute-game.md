@@ -538,14 +538,20 @@ invalid state. Funds that do not exist on L2 could be withdrawn.
 
 ### iZKG-006: closeGame Reverts When Paused
 
-`closeGame()` MUST revert if `AnchorStateRegistry` reports the system as paused.
+`closeGame()` MUST revert if `AnchorStateRegistry` reports the system as paused while
+`bondDistributionMode` is `UNDECIDED`.
+
+Once the mode is set, `closeGame()` returns early without checking the pause. This is intentional,
+and matches `FaultDisputeGame` and `SuperFaultDisputeGame`: `claimCredit()` can still unlock credit
+for a closed game during a pause, but `DelayedWETH.withdraw` reverts until the system is unpaused.
 
 #### Impact
 
 **Severity: High**
 
-Allowing bond distribution while paused would bypass the Guardian's ability to freeze funds
-during an active security incident.
+Closing an undecided game while paused would put it into REFUND mode, because
+`AnchorStateRegistry` treats every game as improper while paused. A valid game would refund bonds
+instead of paying the winners.
 
 ### iZKG-007: Only Finalized Games Can Close
 
