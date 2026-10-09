@@ -61,6 +61,7 @@ function relayUndeliveredMessage(bytes32 _messageHash, uint256 _undeliveredAt) e
 ```
 
 - It MUST revert unless this chain's `SystemConfig` has the `INTEROP` feature enabled.
+- It MUST revert while this chain is paused, as `relayMessage` does.
 - It MUST revert unless the caller is a real `L1CrossDomainMessenger`: the `SystemConfig` of the caller's portal
   MUST name the caller as its `l1CrossDomainMessenger`.
 - It MUST revert unless the caller's portal is authorized by this chain's `ETHLockbox`.
@@ -70,8 +71,8 @@ function relayUndeliveredMessage(bytes32 _messageHash, uint256 _undeliveredAt) e
   deposit, as itself, with a fixed minimum gas limit.
 
 The `L1CrossDomainMessenger` refuses to relay messages that target itself, so `relayUndeliveredMessage` is the only
-way it can be the sender of a message on L2. If the call runs out of gas, it is recorded in the calling
-messenger's failed messages and can be replayed.
+way it can be the sender of a message on L2. If the call reverts, such as while this chain is paused or when it runs
+out of gas, it is recorded in the calling messenger's failed messages and can be replayed.
 
 ## Safety
 
