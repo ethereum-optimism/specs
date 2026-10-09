@@ -39,6 +39,7 @@ The proof system is able to check the validity of all executing messages.
 - [Dependency Set](./dependency-set.md): definition of chains and chain-dependencies in the Superchain.
 - [Messaging](./messaging.md): messaging functionality, core of protocol-level interoperability.
 - [Predeploys](./predeploys.md): system contracts to interface with other chains.
+- [Message Expiry](./message-expiry.md): learning on the source chain that a message can never be delivered.
 - [Sequencer](./sequencer.md): Sequencer Policy and block-building information.
 - [Verifier](./verifier.md): Verification of cross-L2 messaging.
 - [Super Root](./superroot.md): the global state commitment across the dependency set and its API.
