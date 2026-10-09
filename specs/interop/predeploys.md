@@ -358,10 +358,13 @@ as well as domain binding, i.e. the executing transaction can only be valid on a
 
 - It MUST only accept calls from the `L2CrossDomainMessenger` relaying a message whose L1 sender is the
   `L2CrossDomainMessenger`'s `otherMessenger`, i.e. this chain's `L1CrossDomainMessenger`
-- It MUST revert if the message was not sent from this chain (`sentMessageTimestamps[messageHash] == 0`)
-- It MUST revert unless `undeliveredAt > sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`
-- It MUST set `expiredMessages[messageHash]` to `true`
-- It MUST emit the `MessageExpired` event
+- If the message has already expired (`expiredMessages[messageHash]` is `true`), it MUST return without
+  reverting, changing state or emitting an event
+- Otherwise:
+  - It MUST revert if the message was not sent from this chain (`sentMessageTimestamps[messageHash] == 0`)
+  - It MUST revert unless `undeliveredAt > sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`
+  - It MUST set `expiredMessages[messageHash]` to `true`
+  - It MUST emit the `MessageExpired` event
 
 ### Unsafe Targets
 
@@ -426,7 +429,9 @@ A message that is not relayed within the [expiry window](./derivation.md#expiry-
 Messages cannot be re-emitted. Instead, the source chain can learn that a message expired, through the flow in
 [Message Expiry](./message-expiry.md), and applications can undo the send.
 
-`EXPIRY_PERIOD` is set when the implementation is deployed, as a constructor argument, and cannot be zero.
+`EXPIRY_PERIOD` is set when the implementation is deployed, as a constructor argument. The constructor MUST revert
+unless `0 < EXPIRY_PERIOD <= 31536000` (365 days), which keeps `sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`
+far from overflow.
 It is read through `expiryPeriod()`.
 On production networks it MUST be `691200 secs` (8 days): the [expiry window](./derivation.md#expiry-window)
 plus one day of margin. The network upgrade transactions and the genesis tooling deploy the implementation with
