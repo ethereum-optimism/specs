@@ -7490,11 +7490,16 @@ model.</p>
 <p>Failure to propagate would allow a chain of games to finalize a super root that descends from an
 invalid state. Funds that do not exist on L2 could be withdrawn.</p>
 <h3 id="izkg-006-closegame-reverts-when-paused"><a class="header" href="#izkg-006-closegame-reverts-when-paused">iZKG-006: closeGame Reverts When Paused</a></h3>
-<p><code>closeGame()</code> MUST revert if <code>AnchorStateRegistry</code> reports the system as paused.</p>
+<p><code>closeGame()</code> MUST revert if <code>AnchorStateRegistry</code> reports the system as paused while
+<code>bondDistributionMode</code> is <code>UNDECIDED</code>.</p>
+<p>Once the mode is set, <code>closeGame()</code> returns early without checking the pause. This is intentional,
+and matches <code>FaultDisputeGame</code> and <code>SuperFaultDisputeGame</code>: <code>claimCredit()</code> can still unlock credit
+for a closed game during a pause, but <code>DelayedWETH.withdraw</code> reverts until the system is unpaused.</p>
 <h4 id="impact-12"><a class="header" href="#impact-12">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
-<p>Allowing bond distribution while paused would bypass the Guardian's ability to freeze funds
-during an active security incident.</p>
+<p>Closing an undecided game while paused would put it into REFUND mode, because
+<code>AnchorStateRegistry</code> treats every game as improper while paused. A valid game would refund bonds
+instead of paying the winners.</p>
 <h3 id="izkg-007-only-finalized-games-can-close"><a class="header" href="#izkg-007-only-finalized-games-can-close">iZKG-007: Only Finalized Games Can Close</a></h3>
 <p><code>closeGame()</code> MUST revert unless <code>AnchorStateRegistry.isGameFinalized(this)</code> returns <code>true</code>.</p>
 <h4 id="impact-13"><a class="header" href="#impact-13">Impact</a></h4>
