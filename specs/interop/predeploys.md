@@ -429,13 +429,14 @@ A message that is not relayed within the [expiry window](./derivation.md#expiry-
 Messages cannot be re-emitted. Instead, the source chain can learn that a message expired, through the flow in
 [Message Expiry](./message-expiry.md), and applications can undo the send.
 
-`EXPIRY_PERIOD` is set when the implementation is deployed, as a constructor argument. The constructor MUST revert
-unless `0 < EXPIRY_PERIOD <= 31536000` (365 days), which keeps `sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`
-far from overflow.
+`EXPIRY_PERIOD` is set when the messenger is initialized, and kept by upgrades. `initialize` MUST revert unless
+`0 < EXPIRY_PERIOD <= 31536000` (365 days), which keeps `sentMessageTimestamps[messageHash] + EXPIRY_PERIOD` far
+from overflow.
 It is read through `expiryPeriod()`.
 On production networks it MUST be `691200 secs` (8 days): the [expiry window](./derivation.md#expiry-window)
-plus one day of margin. The network upgrade transactions and the genesis tooling deploy the implementation with
-that value. Test networks with a shorter expiry window MAY deploy it with a shorter period.
+plus one day of margin. The genesis tooling initializes the messenger with that value, and the network upgrade
+initializes it with that value when it has none. Test networks with a shorter expiry window MAY initialize it with
+a shorter period.
 
 On every network, `EXPIRY_PERIOD` MUST be greater than the network's expiry window, so that a message is only
 marked expired once no relay of it can be valid.
