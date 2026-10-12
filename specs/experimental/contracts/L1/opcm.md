@@ -194,8 +194,9 @@ following conditions is met:
 2. OPCM deliberately mutates the value with clear documentation explaining why the mutation is
    necessary, and the change is safe to make
 
-Properties such as ProxyAdmin ownership must be fetched from the existing system during upgrades
-and preserved without modification.
+Properties such as ProxyAdmin ownership, and per-chain configuration such as the Proof Maturity
+Delay, the Dispute Game Finality Delay and the `DelayedWETH` Withdrawal Delay, must be fetched from
+the existing system during upgrades and preserved without modification.
 
 #### Impact
 
