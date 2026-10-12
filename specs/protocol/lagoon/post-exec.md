@@ -385,14 +385,22 @@ contains it, and its refunds change the receipts and balances derived from that 
 would be a different block from the one the sequencer is building and will seal.
 
 _Consumer implication._ A consumer that executes the in-progress block, for example to serve pending-state queries
-or preconfirmed receipts, MUST execute the latest subblock's post-exec transaction last and apply its refunds as a
-[verifier](./sdm.md#producer-and-verifier) does. Executing `diff.transactions` alone yields pre-refund gas used, no
-`opGasRefund`, and sender balances short of the [settlement](./sdm.md#per-recipient-deltas) credit. Because the
-payload is provisional and the refund policy is sequencer-defined, the entries for transactions streamed in earlier
-subblocks may change from one subblock to the next. A consumer that reuses execution from an earlier subblock MUST
-apply refunds from the current `post_exec_tx` rather than carry earlier ones forward. A consumer comparing the
-in-progress block's transaction list with a sealed block's, for example to detect a reorg, includes the post-exec
-transaction in that list.
+or preconfirmed receipts, MUST execute it as a [verifier](./sdm.md#producer-and-verifier) does, using the
+`gasRefundEntries` of the latest subblock's `post_exec_tx`. Each entry's `index` is a position in the transaction list
+defined above, and the settlement for transaction `i` is [applied atomically with it](./sdm.md#application-rules), so
+later transactions observe the settled balances. Executing `diff.transactions` without these entries yields
+pre-refund gas used, no `opGasRefund`, and balances that omit the [settlement](./sdm.md#per-recipient-deltas).
+
+Because the payload is provisional and the refund policy is sequencer-defined, the entries for transactions streamed
+in earlier subblocks may change from one subblock to the next, and an absent `post_exec_tx` means every refund is
+zero. A consumer MAY reuse its execution of a prefix of the transaction list from an earlier subblock only if the
+latest entries for every index in that prefix equal the entries it executed that prefix with, treating a missing entry
+as a zero refund; otherwise it MUST re-execute from the first index whose entry differs. Under the version-1 policy a
+refund depends only on earlier transactions, so entries for already-streamed transactions are not expected to change
+(non-normative).
+
+A consumer comparing the in-progress block's transaction list with a sealed block's, for example to detect a reorg,
+includes the post-exec transaction in that list.
 
 ### A subblock's `transactions` may be empty
 
