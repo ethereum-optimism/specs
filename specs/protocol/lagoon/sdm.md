@@ -130,6 +130,11 @@ For each standard Ethereum transaction at index `i`:
 - `refund(i)` MUST be less than or equal to `evmGasUsed(i)`.
 - `canonicalGasUsed(i) = evmGasUsed(i) - refund(i)`.
 
+If `refund(i) > evmGasUsed(i)` for any transaction, the entire block is invalid. A verifier MUST NOT clamp the
+refund, skip the offending entry, or otherwise apply the rest of the payload. Unlike the
+[validity rules](#validity-rules), this bound cannot be checked by decoding the payload alone: `evmGasUsed(i)` is
+known only once transaction `i` has executed, so the check is made then, before its [settlement](#settlement).
+
 The receipt of transaction `i` reports `canonicalGasUsed(i)` as its gas-used field. The block's `cumulativeGasUsed`
 and `gasUsed` are computed using `canonicalGasUsed` for standard Ethereum transactions and `evmGasUsed` for `Deposit`
 transactions. The post-exec transaction contributes zero gas (see [post-exec.md § Receipt](./post-exec.md#receipt)).
@@ -169,6 +174,11 @@ this cannot occur, because each recipient was just paid the corresponding amount
 transaction; an underflow therefore indicates a malformed or adversarial payload rather than a reachable state of
 honest execution.
 
+The converse does not hold: the underflow check is no substitute for the `refund(i) <= evmGasUsed(i)` bound. The
+debited balances include fees accumulated over earlier transactions and blocks, so a refund that exceeds the bound
+would typically settle with no underflow, transferring those accumulated fees to the sender. The bound is
+enforced separately, as specified in [Canonical Gas](#canonical-gas).
+
 ## Producer and Verifier
 
 Under SDM:
@@ -176,7 +186,13 @@ Under SDM:
 - The sequencer executes the block, chooses the non-zero `gasRefundEntries`, and appends a post-exec transaction if
   and only if the entry list is non-empty.
 - A verifier enforces the post-exec envelope rules and the SDM [validity rules](#validity-rules), then applies the
-  refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage.
+  refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage. As it executes
+  each standard Ethereum transaction, it also enforces `refund(i) <= evmGasUsed(i)`; a violation invalidates the
+  block (see [Canonical Gas](#canonical-gas)).
+
+A sequencer MAY guard against a refund policy that produces a refund above `evmGasUsed(i)`, for example by
+dropping that refund before building the payload. Such a safeguard is producer behavior, not a consensus rule:
+verifiers judge only the payload the sequencer actually includes.
 
 ## Receipt Extension
 
@@ -218,5 +234,8 @@ allocate refunds according to arbitrary policy.
 
 **Cross-block replay.** The post-exec transaction's `blockNumber` field anchors each payload to its containing
 block. A payload from one block re-injected into another fails the envelope `blockNumber` check.
+
+**Excessive refunds.** A refund above `evmGasUsed(i)` invalidates the block. This bound, not the settlement underflow
+check, is what stops a payload from paying senders out of fees accumulated in the fee vaults.
 
 **Settlement underflow.** Any settlement debit underflow invalidates the block.
