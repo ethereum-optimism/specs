@@ -16141,6 +16141,10 @@ adjustment). It is unrelated to the "canonical chain" sense of <em>canonical</em
 <li><code>refund(i)</code> MUST be less than or equal to <code>evmGasUsed(i)</code>.</li>
 <li><code>canonicalGasUsed(i) = evmGasUsed(i) - refund(i)</code>.</li>
 </ul>
+<p>If <code>refund(i) &gt; evmGasUsed(i)</code> for any transaction, the entire block is invalid. A verifier MUST NOT clamp the
+refund, skip the offending entry, or otherwise apply the rest of the payload. Unlike the
+<a href="protocol/lagoon/sdm.html#validity-rules">validity rules</a>, this bound cannot be checked by decoding the payload alone: <code>evmGasUsed(i)</code> is
+known only once transaction <code>i</code> has executed, so the check is made then, before its <a href="protocol/lagoon/sdm.html#settlement">settlement</a>.</p>
 <p>The receipt of transaction <code>i</code> reports <code>canonicalGasUsed(i)</code> as its gas-used field. The block's <code>cumulativeGasUsed</code>
 and <code>gasUsed</code> are computed using <code>canonicalGasUsed</code> for standard Ethereum transactions and <code>evmGasUsed</code> for <code>Deposit</code>
 transactions. The post-exec transaction contributes zero gas (see <a href="protocol/lagoon/./post-exec.html#receipt">post-exec.md § Receipt</a>).</p>
@@ -16171,14 +16175,23 @@ committed. It is atomic with the transaction and does not produce a separate rec
 this cannot occur, because each recipient was just paid the corresponding amount by the EVM in the same
 transaction; an underflow therefore indicates a malformed or adversarial payload rather than a reachable state of
 honest execution.</p>
+<p>The converse does not hold: the underflow check is no substitute for the <code>refund(i) &lt;= evmGasUsed(i)</code> bound. The
+debited balances include fees accumulated over earlier transactions and blocks, so a refund that exceeds the bound
+would typically settle with no underflow, transferring those accumulated fees to the sender. The bound is
+enforced separately, as specified in <a href="protocol/lagoon/sdm.html#canonical-gas">Canonical Gas</a>.</p>
 <h2 id="producer-and-verifier"><a class="header" href="#producer-and-verifier">Producer and Verifier</a></h2>
 <p>Under SDM:</p>
 <ul>
 <li>The sequencer executes the block, chooses the non-zero <code>gasRefundEntries</code>, and appends a post-exec transaction if
 and only if the entry list is non-empty.</li>
 <li>A verifier enforces the post-exec envelope rules and the SDM <a href="protocol/lagoon/sdm.html#validity-rules">validity rules</a>, then applies the
-refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage.</li>
+refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage. As it executes
+each standard Ethereum transaction, it also enforces <code>refund(i) &lt;= evmGasUsed(i)</code>; a violation invalidates the
+block (see <a href="protocol/lagoon/sdm.html#canonical-gas">Canonical Gas</a>).</li>
 </ul>
+<p>A sequencer MAY guard against a refund policy that produces a refund above <code>evmGasUsed(i)</code>, for example by
+dropping that refund before building the payload. Such a safeguard is producer behavior, not a consensus rule:
+verifiers judge only the payload the sequencer actually includes.</p>
 <h2 id="receipt-extension"><a class="header" href="#receipt-extension">Receipt Extension</a></h2>
 <p>The post-exec transaction's own receipt carries no SDM-specific fields (see
 <a href="protocol/lagoon/./post-exec.html#receipt">post-exec.md § Receipt</a>).</p>
@@ -16210,6 +16223,8 @@ constraints are on their encoding, their target transaction (standard Ethereum t
 allocate refunds according to arbitrary policy.</p>
 <p><strong>Cross-block replay.</strong> The post-exec transaction's <code>blockNumber</code> field anchors each payload to its containing
 block. A payload from one block re-injected into another fails the envelope <code>blockNumber</code> check.</p>
+<p><strong>Excessive refunds.</strong> A refund above <code>evmGasUsed(i)</code> invalidates the block. This bound, not the settlement underflow
+check, is what stops a payload from paying senders out of fees accumulated in the fee vaults.</p>
 <p><strong>Settlement underflow.</strong> Any settlement debit underflow invalidates the block.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="lagoon-l2-chain-derivation-changes"><a class="header" href="#lagoon-l2-chain-derivation-changes">Lagoon L2 Chain Derivation Changes</a></h1>
