@@ -111,13 +111,9 @@ For each standard Ethereum transaction at index `i`, define `refund(i)` as:
 The refund value is sequencer-defined block data. Clients use the included value directly when executing and
 validating the block.
 
-> **Refund policy.** Consensus applies `refund(i)` directly and does not define or re-derive the policy that produced
-> it (beyond the [validity rules](#validity-rules) and `refund(i) <= evmGasUsed(i)`). The version-1 policy is
-> **block-level warming**: it rebates the EIP-2929 cold→warm surcharge a transaction pays for re-touching state an
-> earlier transaction in the block warmed. To be correct it must rebate **only** accesses actually charged the cold
-> price — never a transaction's own intrinsically-warm `tx.sender`, `tx.to` (or created-contract address), the
-> EIP-7702 delegation target of `tx.to` (resolved warm and free of charge while EIP-2780 is inactive),
-> precompiles, coinbase, access-list entries, or EIP-7702 authorities, nor protocol fee-vault settlement writes.
+> **Refund policy.** The sequencer chooses refunds with a refund policy. A refund policy is not a consensus rule:
+> consensus constrains `refund(i)` only through the [validity rules](#validity-rules) and `refund(i) <= evmGasUsed(i)`.
+> Verifiers do not run the policy, and a block whose refunds differ from it is still valid.
 
 ## Canonical Gas
 
@@ -128,7 +124,9 @@ adjustment). It is unrelated to the "canonical chain" sense of _canonical_ used 
 
 For each standard Ethereum transaction at index `i`:
 
-- `evmGasUsed(i)` is the gas used reported by the EVM after execution, before any SDM adjustment.
+- `evmGasUsed(i)` is the gas used reported by the EVM, before any SDM adjustment: gas spent minus the
+  [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529)-capped refund, but at least the
+  [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) floor.
 - `refund(i)` MUST be less than or equal to `evmGasUsed(i)`.
 - `canonicalGasUsed(i) = evmGasUsed(i) - refund(i)`.
 
