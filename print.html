@@ -16124,13 +16124,9 @@ it charges no fees, consumes no gas and is not executed as code.</p>
 <p>The refund value is sequencer-defined block data. Clients use the included value directly when executing and
 validating the block.</p>
 <blockquote>
-<p><strong>Refund policy.</strong> Consensus applies <code>refund(i)</code> directly and does not define or re-derive the policy that produced
-it (beyond the <a href="protocol/lagoon/sdm.html#validity-rules">validity rules</a> and <code>refund(i) &lt;= evmGasUsed(i)</code>). The version-1 policy is
-<strong>block-level warming</strong>: it rebates the EIP-2929 cold→warm surcharge a transaction pays for re-touching state an
-earlier transaction in the block warmed. To be correct it must rebate <strong>only</strong> accesses actually charged the cold
-price — never a transaction's own intrinsically-warm <code>tx.sender</code>, <code>tx.to</code> (or created-contract address), the
-EIP-7702 delegation target of <code>tx.to</code> (resolved warm and free of charge while EIP-2780 is inactive),
-precompiles, coinbase, access-list entries, or EIP-7702 authorities, nor protocol fee-vault settlement writes.</p>
+<p><strong>Refund policy.</strong> The sequencer chooses refunds with a refund policy. A refund policy is not a consensus rule:
+consensus constrains <code>refund(i)</code> only through the <a href="protocol/lagoon/sdm.html#validity-rules">validity rules</a> and <code>refund(i) &lt;= evmGasUsed(i)</code>.
+Verifiers do not run the policy, and a block whose refunds differ from it is still valid.</p>
 </blockquote>
 <h2 id="canonical-gas"><a class="header" href="#canonical-gas">Canonical Gas</a></h2>
 <p><a href="protocol/lagoon/../../glossary.html#canonical-gas">Canonical gas</a> is the gas a standard Ethereum transaction is accounted for under SDM: the gas the EVM
@@ -16139,7 +16135,9 @@ reports minus the SDM refund applied to it. It is the value written to receipts 
 adjustment). It is unrelated to the "canonical chain" sense of <em>canonical</em> used elsewhere in these specs.</p>
 <p>For each standard Ethereum transaction at index <code>i</code>:</p>
 <ul>
-<li><code>evmGasUsed(i)</code> is the gas used reported by the EVM after execution, before any SDM adjustment.</li>
+<li><code>evmGasUsed(i)</code> is the gas used reported by the EVM, before any SDM adjustment: gas spent minus the
+<a href="https://eips.ethereum.org/EIPS/eip-3529">EIP-3529</a>-capped refund, but at least the
+<a href="https://eips.ethereum.org/EIPS/eip-7623">EIP-7623</a> floor.</li>
 <li><code>refund(i)</code> MUST be less than or equal to <code>evmGasUsed(i)</code>.</li>
 <li><code>canonicalGasUsed(i) = evmGasUsed(i) - refund(i)</code>.</li>
 </ul>
