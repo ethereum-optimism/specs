@@ -11,12 +11,6 @@
   - [Validity Rules](#validity-rules)
 - [Transaction Classification](#transaction-classification)
 - [Gas Refund Semantics](#gas-refund-semantics)
-  - [Refund Policy](#refund-policy)
-  - [Block-Level Warming Policy](#block-level-warming-policy)
-    - [Warmth States](#warmth-states)
-    - [Surcharges](#surcharges)
-    - [Refund Amount](#refund-amount)
-    - [Known Limitations](#known-limitations)
 - [Canonical Gas](#canonical-gas)
 - [Settlement](#settlement)
   - [Per-Recipient Deltas](#per-recipient-deltas)
@@ -114,84 +108,12 @@ For each standard Ethereum transaction at index `i`, define `refund(i)` as:
 - the `gasRefund` value in the payload entry whose `index == i`, if one exists; otherwise
 - `0`.
 
-Clients apply `refund(i)` as given. Consensus constrains it only through the [validity rules](#validity-rules) and
-`refund(i) <= evmGasUsed(i)` (see [Canonical Gas](#canonical-gas)).
+The refund value is sequencer-defined block data. Clients use the included value directly when executing and
+validating the block.
 
-### Refund Policy
-
-The sequencer chooses refunds with a refund policy. **A refund policy is not a consensus rule:** verifiers do not run
-it, and a block whose refunds differ from it is still valid. The rest of this section specifies the version-1 policy,
-which applies to block producers only.
-
-### Block-Level Warming Policy
-
-[EIP-2929] charges the cold price for the first access to an account or storage slot in each transaction, even if an
-earlier transaction in the block already accessed it. The version-1 policy, block-level warming, refunds that extra
-charge.
-
-[EIP-2929]: https://eips.ethereum.org/EIPS/eip-2929
-[EIP-3529]: https://eips.ethereum.org/EIPS/eip-3529
-[EIP-7623]: https://eips.ethereum.org/EIPS/eip-7623
-[EIP-7702]: https://eips.ethereum.org/EIPS/eip-7702
-
-#### Warmth States
-
-For transaction `i`, each account or storage slot is in one of three states:
-
-| State              | Meaning                                                              | EIP-2929 price |
-| ------------------ | -------------------------------------------------------------------- | -------------- |
-| `cold`             | Not yet accessed in the block.                                       | cold           |
-| `block-warm`       | Accessed by an earlier transaction in the block, but not yet by `i`. | cold           |
-| `transaction-warm` | Already accessed by `i`, or warm from the start of `i`.              | warm           |
-
-Warm from the start of `i` are its sender, its `to` address (and that address's [EIP-7702] delegate, if it has one),
-the address it creates, the precompiles, the coinbase, its access-list entries and its EIP-7702 authorities. These are
-transaction-warm even if an earlier transaction accessed them.
-
-Accesses by every transaction count toward block warmth, including deposits and fee payments to the fee vaults, but
-only standard Ethereum transactions are refunded.
-
-#### Surcharges
-
-| Access        | Operations                                                                                                                                                       | Surcharge |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| Account       | `BALANCE`, `EXTCODESIZE`, `EXTCODECOPY`, `EXTCODEHASH`, the `SELFDESTRUCT` beneficiary, and the code address of `CALL`, `CALLCODE`, `DELEGATECALL` and `STATICCALL` | `2500`    |
-| Storage read  | `SLOAD`                                                                                                                                                          | `2000`    |
-| Storage write | `SSTORE`                                                                                                                                                         | `2100`    |
-
-Each surcharge is the EIP-2929 cold price minus the warm price. The one exception is the `SELFDESTRUCT` beneficiary:
-EIP-2929 charges 2600 extra when it is cold, and the policy refunds 2500. Each account and slot counts at most once per
-transaction, and a storage access does not also count as an access to its account.
-
-A `CREATE` or `CREATE2` makes the address it creates transaction-warm, with no surcharge. It makes the address
-block-warm for later transactions only if it passes its depth, balance and nonce checks.
-
-`S(i)` is the sum of the surcharges of the block-warm accesses made by transaction `i`.
-
-#### Refund Amount
-
-The [EIP-3529] refund cap and the [EIP-7623] floor both depend on gas spent, so removing `S(i)` from gas spent does
-not always lower gas used by `S(i)`. The policy refunds the actual saving:
-
-```text
-warmGasUsed(i) = max(spent(i) - S(i) - min(rawRefund(i), (spent(i) - S(i)) / 5), floor(i))
-refund(i)      = evmGasUsed(i) - warmGasUsed(i)
-```
-
-Here `spent(i)` is the gas spent before any refund, `rawRefund(i)` is the refund counter before the EIP-3529 cap,
-`floor(i)` is the EIP-7623 floor, and `/` is integer division.
-
-The transaction is therefore charged `warmGasUsed(i)`: what it would have used had its block-warm accesses been
-transaction-warm. The refund is `S(i)` when neither the cap nor the floor binds, about `4 * S(i) / 5` when the cap
-binds with and without the surcharges, and `0` when the floor binds `evmGasUsed(i)`. An entry is included only if
-`refund(i) > 0`.
-
-#### Known Limitations
-
-- `warmGasUsed(i)` assumes the transaction takes the same execution path without the surcharges. Code that depends on
-  remaining gas (for example `GAS`, or the 63/64 rule for calls) may behave differently.
-- An implementation may treat an access in a frame that later reverts as made for the rest of the transaction. This
-  can only lower the refund.
+> **Refund policy.** The sequencer chooses refunds with a refund policy. A refund policy is not a consensus rule:
+> consensus constrains `refund(i)` only through the [validity rules](#validity-rules) and `refund(i) <= evmGasUsed(i)`.
+> Verifiers do not run the policy, and a block whose refunds differ from it is still valid.
 
 ## Canonical Gas
 
@@ -203,7 +125,8 @@ adjustment). It is unrelated to the "canonical chain" sense of _canonical_ used 
 For each standard Ethereum transaction at index `i`:
 
 - `evmGasUsed(i)` is the gas used reported by the EVM, before any SDM adjustment: gas spent minus the
-  [EIP-3529]-capped refund, but at least the [EIP-7623] floor.
+  [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529)-capped refund, but at least the
+  [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) floor.
 - `refund(i)` MUST be less than or equal to `evmGasUsed(i)`.
 - `canonicalGasUsed(i) = evmGasUsed(i) - refund(i)`.
 
@@ -250,8 +173,8 @@ honest execution.
 
 Under SDM:
 
-- The sequencer executes the block, chooses the non-zero `gasRefundEntries` using its [refund policy](#refund-policy),
-  and appends a post-exec transaction if and only if the entry list is non-empty.
+- The sequencer executes the block, chooses the non-zero `gasRefundEntries`, and appends a post-exec transaction if
+  and only if the entry list is non-empty.
 - A verifier enforces the post-exec envelope rules and the SDM [validity rules](#validity-rules), then applies the
   refunds from the payload when computing canonical gas, settlement, receipts, and block gas usage.
 
