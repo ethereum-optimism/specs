@@ -367,6 +367,7 @@ def main():
     parser.add_argument("--optimism-repo-path", type=str, required=True, help="Path to the Optimism repository directory.")
     parser.add_argument("--fork-name", type=str, required=True, help="Name of the fork (e.g., Isthmus)")
     parser.add_argument("--contract-name", type=str, required=True, help="Name of the contract (e.g., CrossL2Inbox)")
+    parser.add_argument("--intent-name", type=str, default="", help="Name used in the upgrade-deposit intent string. The intent fixes the source hash. Some contracts use a spaced name, for example 'Gas Price Oracle'. Defaults to --contract-name.")
     parser.add_argument("--from-address", type=str, required=True, help="Address deploying the contract")
     parser.add_argument("--from-address-nonce", type=int, required=True, help="Nonce of the deploying address")
     parser.add_argument("--git-commit-hash", type=str, required=True, help="Git commit hash to build contracts from.")
@@ -395,7 +396,8 @@ def main():
         sys.exit(1)
 
     try:
-        intent = f"{args.fork_name}: {args.contract_name} Deployment"
+        intent_name = args.intent_name or args.contract_name
+        intent = f"{args.fork_name}: {intent_name} Deployment"
         info(f"Deriving parameters for {intent}...")
         deployed_address = compute_deployed_address(args.from_address, args.from_address_nonce)
         info(f"Computing source hash...")
@@ -446,7 +448,7 @@ def main():
             "forge_artifact_path_data": forge_artifact_path_val,
         }
         if args.proxy_address:
-            proxy_intent = f"{args.fork_name}: {args.contract_name} Proxy Update"
+            proxy_intent = f"{args.fork_name}: {intent_name} Proxy Update"
             proxy_data = compute_proxy_update_data(deployed_address)
             proxy_source_hash = compute_keccak(compute_concat_hex(SOURCE_HASH_PREFIX, compute_keccak(proxy_intent)))
             template_data["proxy_address"] = args.proxy_address
