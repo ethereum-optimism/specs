@@ -6907,7 +6907,9 @@ checks that the current <code>block.timestamp</code> is greater than the timesta
 seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
 request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
 <code>withdraw(wad)</code> function becomes an alias for <code>withdraw(msg.sender, wad)</code>.
-<code>withdraw(guy,wad)</code> will not be callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
+<code>withdraw(guy,wad)</code> will not be callable when <code>ETHLockbox.paused()</code> is <code>true</code> for the <code>ETHLockbox</code> configured for
+this <code>DelayedWETH</code>. That covers both the global pause and a pause scoped to that <code>ETHLockbox</code> address, so pausing
+a shared <code>ETHLockbox</code> blocks withdrawals for every chain that uses it.</li>
 <li><code>DelayedWETH</code> has a <code>hold(guy,wad)</code> function that allows the <code>owner()</code> address to, for any holder, give itself an
 allowance and immediately <code>transferFrom</code> that allowance amount to itself.</li>
 <li><code>DelayedWETH</code> has a <code>hold(guy)</code> function that allows the <code>owner()</code> address to, for any holder, give itself a full
@@ -9267,6 +9269,7 @@ which is explicitly not <code>EntryPoint</code> itself.</p>
 <li><a href="protocol/superchain-config.html#extend">extend</a></li>
 <li><a href="protocol/superchain-config.html#pausable">pausable</a></li>
 <li><a href="protocol/superchain-config.html#paused">paused</a></li>
+<li><a href="protocol/superchain-config.html#islocalorglobalpaused">isLocalOrGlobalPaused</a></li>
 <li><a href="protocol/superchain-config.html#expiration">expiration</a></li>
 </ul>
 </li>
@@ -9416,12 +9419,27 @@ identifier is independent of the pausable status of the global pause (zero addre
 </ul>
 <h3 id="paused-2"><a class="header" href="#paused-2">paused</a></h3>
 <p>Allows any user to check if the system is currently paused for a specific
-<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>. The check covers only that identifier. An active
+global pause does not make it return true unless a zero identifier is used.</p>
 <ul>
 <li>MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
 (current time &lt; pause timestamp + expiry duration).</li>
 <li>MUST return false otherwise.</li>
-<li>When called without parameters, MUST check the pause status for the global identifier (address(0)).</li>
+</ul>
+<p>A <code>paused()</code> overload taking no parameters also exists. It calls <code>paused(address(0))</code>, so it reports
+the global pause only. It is retained for integrations written against the interface that predates
+identifier-scoped pausing. Use <a href="protocol/superchain-config.html#islocalorglobalpaused">isLocalOrGlobalPaused</a> to cover both scopes
+in one call.</p>
+<h3 id="islocalorglobalpaused"><a class="header" href="#islocalorglobalpaused">isLocalOrGlobalPaused</a></h3>
+<p>Allows any user to check whether the global pause or the pause scoped to a specific
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a> is active.</p>
+<p>An <code>ETHLockbox</code> calls this function with its own address. That makes the lockbox the Pause
+Identifier for its chain, or for the interop set that shares it. Every contract that resolves pause
+through a lockbox therefore gets the same answer.</p>
+<ul>
+<li>MUST return true if <a href="protocol/superchain-config.html#paused">paused</a> returns true for the global identifier (address(0)).</li>
+<li>MUST return true if <a href="protocol/superchain-config.html#paused">paused</a> returns true for the given identifier.</li>
+<li>MUST return false otherwise.</li>
 </ul>
 <h3 id="expiration"><a class="header" href="#expiration">expiration</a></h3>
 <p>Returns the timestamp at which the pause for a given
@@ -9894,6 +9912,18 @@ drift from it.</li>
 <li>Takes a bytes32 feature string and a boolean as an input.</li>
 <li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST toggle the feature flag on or off, based on the value of the boolean.</li>
+<li>(+op-contracts/v8.0.0) MUST revert when disabling the <code>ETHLockbox</code> feature while the chain's
+<code>OptimismPortal</code> still has an <code>ETHLockbox</code> configured. The system would otherwise start keeping
+ETH in the <code>OptimismPortal</code>.</li>
+<li>(+op-contracts/v8.0.0) MUST revert when enabling or disabling the <code>ETHLockbox</code> feature while
+<a href="protocol/system-config.html#paused">paused</a> returns true. The change moves the
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>, which could unpause the system unexpectedly.</li>
+<li>(+op-contracts/v9.0.0) MUST revert when disabling the <code>ETHLockbox</code> feature. Once enabled, it
+cannot be disabled.</li>
+<li>(+op-contracts/v9.0.0) MUST revert when enabling the <code>ETHLockbox</code> feature while
+<code>SuperchainConfig.paused(optimismPortal())</code> returns true. Enabling it moves the
+<a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a> from the <code>OptimismPortal</code> address to the
+<code>ETHLockbox</code> address, which could unpause the system unexpectedly.</li>
 </ul>
 <h3 id="isfeatureenabled"><a class="header" href="#isfeatureenabled">isFeatureEnabled</a></h3>
 <p>(+op-contracts/v4.1.0)</p>
@@ -9933,17 +9963,24 @@ what the OP Stack reads.</p>
 using the chain's <code>ETHLockbox</code> address as the <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>.
 Returns the current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for
 this chain's <code>ETHLockbox</code>.</p>
-<p>(+op-contracts/v4.1.0) This function integrates with the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> by
+<p>(-op-contracts/v9.0.0) This function integrates with the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a> by
 using either the chain's <code>ETHLockbox</code> address or the chain's <code>OptimismPortal</code> address as the
 <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
+<p>(+op-contracts/v9.0.0) This function integrates with the <a href="protocol/./stage-1.html#pause-mechanism">Pause Mechanism</a>
+by using the chain's <code>ETHLockbox</code> address as the <a href="protocol/./stage-1.html#pause-identifier">Pause Identifier</a>.
+The <code>ETHLockbox</code> resolves the pause state, so the chain is paused whenever the global pause or a
+pause scoped to that <code>ETHLockbox</code> is active.</p>
 <ul>
 <li>(-op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
 true OR if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
-<li>(+op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
+<li>(-op-contracts/v9.0.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
 true AND the system is configured to use the <code>ETHLockbox</code> contract.</li>
-<li>(+op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal())</code> returns true AND the
+<li>(-op-contracts/v9.0.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal())</code> returns true AND the
 system is NOT configured to use the <code>ETHLockbox</code> contract.</li>
-<li>(+op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(-op-contracts/v9.0.0) MUST return true if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(+op-contracts/v9.0.0) MUST return <code>optimismPortal().ethLockbox().paused()</code>, which is true if
+<code>SuperchainConfig.paused(address(0))</code> returns true OR if
+<code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns true.</li>
 <li>MUST return false otherwise.</li>
 </ul>
 <h3 id="superchainconfig-1"><a class="header" href="#superchainconfig-1">superchainConfig</a></h3>
@@ -11095,13 +11132,21 @@ chains that share the same <code>SuperchainConfig</code> when <code>address(0)</
 <p>(-op-contracts/v4.1.0) OP Chains are expected to integrate with the <code>SuperchainConfig</code> via their <code>SystemConfig</code>
 contract, which will check for the status of the pause by passing along the address of the
 <code>ETHLockbox</code> being used within that system as the Pause Identifier.</p>
-<p>(+op-contracts/v4.1.0) The identifier must be an <code>ETHLockbox</code> address, an <code>OptimismPortal</code> address, or
-<code>address(0)</code>. This allows for targeted pausing of specific chains, the interop set (which shares an
-<code>ETHLockbox</code> contract), or all chains that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is
-used as the identifier. When the <code>ETHLockbox</code>
+<p>(-op-contracts/v9.0.0) The identifier must be an <code>ETHLockbox</code> address, an
+<code>OptimismPortal</code> address, or <code>address(0)</code>. This allows for targeted pausing of specific chains, the
+interop set (which shares an <code>ETHLockbox</code> contract), or all chains that share the same
+<code>SuperchainConfig</code> when <code>address(0)</code> is used as the identifier. When the <code>ETHLockbox</code>
 <a href="protocol/./system-config.html#customizable-feature">Customizable Feature</a> is enabled, the <code>ETHLockbox</code>
 address is to be used as the pause identifier. When the <code>ETHLockbox</code> feature is disabled or the
 <code>ETHLockbox</code> address has not yet been configured, the <code>OptimismPortal</code> address is to be used.</p>
+<p>(+op-contracts/v9.0.0) The identifier must be an <code>ETHLockbox</code> address or <code>address(0)</code>. This allows
+for targeted pausing of specific chains, the interop set (which shares an <code>ETHLockbox</code> contract), or
+all chains that share the same <code>SuperchainConfig</code> when <code>address(0)</code> is used as the identifier.</p>
+<p>Every contract that exposes a pause state resolves it through the <code>ETHLockbox</code>
+used by its chain. The <code>ETHLockbox</code> passes its own address to
+<a href="protocol/./superchain-config.html#islocalorglobalpaused"><code>isLocalOrGlobalPaused</code></a>, so a pause scoped to that
+address and the global pause both take effect. An <code>OptimismPortal</code> address <strong>is no longer a Pause
+Identifier</strong>.</p>
 <h3 id="stage-1-rollup"><a class="header" href="#stage-1-rollup">Stage 1 Rollup</a></h3>
 <p>L2BEAT defines that a system can be considered a "Stage 1 Rollup" system if it has the following
 property:</p>
@@ -18635,6 +18680,13 @@ when building the block, although consistency is not guaranteed.</p>
 <li><a href="interop/optimism-portal.html#migratetoshareddisputegame"><code>migrateToSharedDisputeGame</code></a></li>
 </ul>
 </li>
+<li><a href="interop/optimism-portal.html#pause-and-guardian">Pause and guardian</a>
+<ul>
+<li><a href="interop/optimism-portal.html#paused"><code>paused</code></a></li>
+<li><a href="interop/optimism-portal.html#superchainconfig"><code>superchainConfig</code></a></li>
+<li><a href="interop/optimism-portal.html#guardian"><code>guardian</code></a></li>
+</ul>
+</li>
 <li><a href="interop/optimism-portal.html#internal-eth-functionality">Internal ETH functionality</a>
 <ul>
 <li><a href="interop/optimism-portal.html#locking-eth">Locking ETH</a></li>
@@ -18660,8 +18712,9 @@ the op-governed dependency set.</p>
 the corresponding chain would need to deploy and manage its own <code>ETHLockbox</code>.</p>
 <p>The <code>OptimismPortal</code> also moves onto shared dispute game contracts when a chain joins the op-governed dependency set.
 Each chain keeps its own <code>SystemConfig</code> and <code>OptimismPortal</code>. The chains in the set share one <code>ETHLockbox</code>, one
-<code>DisputeGameFactory</code> and one <a href="interop/../fault-proof/stage-one/anchor-state-registry.html"><code>AnchorStateRegistry</code></a>. A chain
-outside the op-governed dependency set keeps its own copy of each of these contracts.</p>
+<code>DisputeGameFactory</code>, one <a href="interop/../fault-proof/stage-one/anchor-state-registry.html"><code>AnchorStateRegistry</code></a> and one
+<code>DelayedWETH</code>. The set adopts the existing <code>DelayedWETH</code> of its first member chain rather than deploying a new one.
+A chain outside the op-governed dependency set keeps its own copy of each of these contracts.</p>
 <h3 id="integrating-ethlockbox"><a class="header" href="#integrating-ethlockbox">Integrating <code>ETHLockbox</code></a></h3>
 <p>The integration with the <code>ETHLockbox</code> involves locking ETH when executing deposit transactions and unlocking ETH
 when finalizing withdrawal transactions, without altering other aspects of the current <code>OptimismPortal</code> implementation.</p>
@@ -18707,6 +18760,26 @@ transaction, or the portal may not be able to unlock enough ETH to finalize with
 when joining the op-governed dependency set. Although the function permits repeated calls, it is not designed for repeated
 migration. Switching to the shared <code>DisputeGameFactory</code> invalidates withdrawal proofs against games from the previous
 factory, so users MUST prove those withdrawals again.</p>
+<h3 id="pause-and-guardian"><a class="header" href="#pause-and-guardian">Pause and guardian</a></h3>
+<p>The <code>OptimismPortal</code> holds no <code>SuperchainConfig</code> of its own. Its <a href="interop/./eth-lockbox.html"><code>ETHLockbox</code></a> serves all three
+values below.</p>
+<p>The shared <code>ETHLockbox</code> address is the interop set's only <a href="interop/../protocol/stage-1.html#pause-identifier">Pause Identifier</a>,
+so one scoped pause covers every chain in the set.</p>
+<h4 id="paused-4"><a class="header" href="#paused-4"><code>paused</code></a></h4>
+<p>Returns whether the portal is paused.</p>
+<ul>
+<li>MUST return <a href="interop/./eth-lockbox.html#paused"><code>ETHLockbox.paused()</code></a>.</li>
+</ul>
+<h4 id="superchainconfig-3"><a class="header" href="#superchainconfig-3"><code>superchainConfig</code></a></h4>
+<p>Returns the <code>SuperchainConfig</code> contract.</p>
+<ul>
+<li>MUST return <a href="interop/./eth-lockbox.html#superchainconfig"><code>ETHLockbox.superchainConfig()</code></a>.</li>
+</ul>
+<h4 id="guardian-5"><a class="header" href="#guardian-5"><code>guardian</code></a></h4>
+<p>Returns the <a href="interop/../protocol/stage-1.html#guardian">Guardian</a>.</p>
+<ul>
+<li>MUST return <a href="interop/./eth-lockbox.html#guardian"><code>ETHLockbox.guardian()</code></a>.</li>
+</ul>
 <h3 id="internal-eth-functionality"><a class="header" href="#internal-eth-functionality">Internal ETH functionality</a></h3>
 <h4 id="locking-eth"><a class="header" href="#locking-eth">Locking ETH</a></h4>
 <p>Called during deposit transactions to handle ETH locking.</p>
@@ -18777,6 +18850,7 @@ factory, so users MUST prove those withdrawals again.</p>
 <li><a href="interop/eth-lockbox.html#receiveliquidity"><code>receiveLiquidity</code></a></li>
 <li><a href="interop/eth-lockbox.html#paused"><code>paused</code></a></li>
 <li><a href="interop/eth-lockbox.html#superchainconfig"><code>superchainConfig</code></a></li>
+<li><a href="interop/eth-lockbox.html#guardian"><code>guardian</code></a></li>
 <li><a href="interop/eth-lockbox.html#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
@@ -18826,10 +18900,13 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <p>Initializes the ETHLockbox contract.</p>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
-<li>MUST set the SystemConfig contract.</li>
+<li>MUST set the <code>SuperchainConfig</code> contract.</li>
 <li>MUST authorize all portals provided in the initialization array.</li>
-<li>MUST check that all portals have the same SuperchainConfig as the ETHLockbox.</li>
+<li>MUST check that all portals have the same <code>SuperchainConfig</code> as the <code>ETHLockbox</code>. The <code>SuperchainConfig</code> is read
+through each portal's <code>SystemConfig</code>.</li>
 </ul>
+<pre><code class="language-solidity">function initialize(ISuperchainConfig _superchainConfig, IOptimismPortal[] calldata _portals) external;
+</code></pre>
 <h4 id="locketh"><a class="header" href="#locketh"><code>lockETH</code></a></h4>
 <p>Deposits and locks ETH into the lockbox's liquidity pool.</p>
 <ul>
@@ -18860,7 +18937,10 @@ withdrawal transaction.</li>
 <ul>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the <code>OptimismPortal</code> must be the same as the <code>ProxyAdmin</code> owner of the <code>ETHLockbox</code>.</li>
-<li>The <code>OptimismPortal</code> and <code>ETHLockbox</code> MUST share the same <code>SuperchainConfig</code> address</li>
+<li>The <code>OptimismPortal</code> and <code>ETHLockbox</code> MUST share the same <code>SuperchainConfig</code> address.</li>
+<li>The portal's <code>SuperchainConfig</code> MUST be read from its <code>SystemConfig</code>, not from the portal itself. This
+<code>ETHLockbox</code> already serves <code>superchainConfig()</code> for any portal that points to it. Therefore, reading it from
+the portal would compare the lockbox's stored value against itself.</li>
 <li>The function MUST emit the <code>PortalAuthorized</code> event with the <code>portal</code>.</li>
 </ul>
 <pre><code class="language-solidity">function authorizePortal(address _portal) external;
@@ -18898,10 +18978,22 @@ from and the amount of ETH received.</li>
 </ul>
 <pre><code class="language-solidity">function receiveLiquidity() external payable;
 </code></pre>
-<h4 id="paused-4"><a class="header" href="#paused-4"><code>paused</code></a></h4>
-<p>Returns whether the contract is paused, delegating to the SystemConfig.</p>
-<h4 id="superchainconfig-3"><a class="header" href="#superchainconfig-3"><code>superchainConfig</code></a></h4>
-<p>Returns the SuperchainConfig contract from the SystemConfig.</p>
+<h4 id="paused-5"><a class="header" href="#paused-5"><code>paused</code></a></h4>
+<p>Returns whether the contract is paused.</p>
+<ul>
+<li>MUST return <code>superchainConfig.isLocalOrGlobalPaused(address(this))</code>.</li>
+</ul>
+<p>The lockbox passes its own address, which makes the lockbox the
+<a href="interop/../protocol/stage-1.html#pause-identifier">Pause Identifier</a> for its chain, or for the interop set
+that shares it. Both the global pause and a pause scoped to that address therefore pause the
+lockbox.</p>
+<h4 id="superchainconfig-4"><a class="header" href="#superchainconfig-4"><code>superchainConfig</code></a></h4>
+<p>Returns the <code>SuperchainConfig</code> contract stored when the lockbox was initialized.</p>
+<h4 id="guardian-6"><a class="header" href="#guardian-6"><code>guardian</code></a></h4>
+<p>Returns the <a href="interop/../protocol/stage-1.html#guardian">Guardian</a> of the <code>SuperchainConfig</code>.</p>
+<ul>
+<li>MUST return <code>superchainConfig.guardian()</code>.</li>
+</ul>
 <h4 id="proxyadminowner-1"><a class="header" href="#proxyadminowner-1"><code>proxyAdminOwner</code></a></h4>
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
 <h3 id="events-6"><a class="header" href="#events-6">Events</a></h3>
@@ -18955,7 +19047,8 @@ by the <code>ETHLockbox</code> of the cluster</p>
 <p>It MUST allow only authorized portals to unlock ETH</p>
 </li>
 <li>
-<p>It MUST be in paused state if the <code>SuperchainConfig</code> is paused</p>
+<p>It MUST be in paused state if the global pause is active, or if a pause is active for its own
+address as the <a href="interop/../protocol/stage-1.html#pause-identifier">Pause Identifier</a></p>
 </li>
 <li>
 <p>No Ether MUST flow out of the contract when in a paused state</p>
@@ -19563,7 +19656,7 @@ in the <a href="experimental/standard-l2-genesis.html#superchainconfig"><code>Su
 <li><code>opaqueData</code> is the tightly packed transaction data where <code>mint</code> is <code>0</code>, <code>value</code> is <code>0</code>, the <code>gasLimit</code>
 is <code>200_000</code>, <code>isCreation</code> is <code>false</code> and the <code>data</code> is the data passed into <code>upgrade</code>.</li>
 </ul>
-<h2 id="superchainconfig-4"><a class="header" href="#superchainconfig-4">SuperchainConfig</a></h2>
+<h2 id="superchainconfig-5"><a class="header" href="#superchainconfig-5">SuperchainConfig</a></h2>
 <p>The <code>SuperchainConfig</code> contract is updated with a new role that has the ability
 to issue deposit transactions from the identity of the <code>DEPOSITOR_ACCOUNT</code>
 that call the L2 <code>ProxyAdmin</code>.</p>

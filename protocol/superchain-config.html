@@ -207,6 +207,7 @@
 <li><a href="#extend">extend</a></li>
 <li><a href="#pausable">pausable</a></li>
 <li><a href="#paused">paused</a></li>
+<li><a href="#islocalorglobalpaused">isLocalOrGlobalPaused</a></li>
 <li><a href="#expiration">expiration</a></li>
 </ul>
 </li>
@@ -356,12 +357,27 @@ identifier is independent of the pausable status of the global pause (zero addre
 </ul>
 <h3 id="paused"><a class="header" href="#paused">paused</a></h3>
 <p>Allows any user to check if the system is currently paused for a specific
-<a href="./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a>. The check covers only that identifier. An active
+global pause does not make it return true unless a zero identifier is used.</p>
 <ul>
 <li>MUST return true if the pause timestamp for the given identifier is non-zero AND not expired
 (current time &lt; pause timestamp + expiry duration).</li>
 <li>MUST return false otherwise.</li>
-<li>When called without parameters, MUST check the pause status for the global identifier (address(0)).</li>
+</ul>
+<p>A <code>paused()</code> overload taking no parameters also exists. It calls <code>paused(address(0))</code>, so it reports
+the global pause only. It is retained for integrations written against the interface that predates
+identifier-scoped pausing. Use <a href="#islocalorglobalpaused">isLocalOrGlobalPaused</a> to cover both scopes
+in one call.</p>
+<h3 id="islocalorglobalpaused"><a class="header" href="#islocalorglobalpaused">isLocalOrGlobalPaused</a></h3>
+<p>Allows any user to check whether the global pause or the pause scoped to a specific
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a> is active.</p>
+<p>An <code>ETHLockbox</code> calls this function with its own address. That makes the lockbox the Pause
+Identifier for its chain, or for the interop set that shares it. Every contract that resolves pause
+through a lockbox therefore gets the same answer.</p>
+<ul>
+<li>MUST return true if <a href="#paused">paused</a> returns true for the global identifier (address(0)).</li>
+<li>MUST return true if <a href="#paused">paused</a> returns true for the given identifier.</li>
+<li>MUST return false otherwise.</li>
 </ul>
 <h3 id="expiration"><a class="header" href="#expiration">expiration</a></h3>
 <p>Returns the timestamp at which the pause for a given

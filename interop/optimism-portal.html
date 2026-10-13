@@ -192,6 +192,13 @@
 <li><a href="#migratetoshareddisputegame"><code>migrateToSharedDisputeGame</code></a></li>
 </ul>
 </li>
+<li><a href="#pause-and-guardian">Pause and guardian</a>
+<ul>
+<li><a href="#paused"><code>paused</code></a></li>
+<li><a href="#superchainconfig"><code>superchainConfig</code></a></li>
+<li><a href="#guardian"><code>guardian</code></a></li>
+</ul>
+</li>
 <li><a href="#internal-eth-functionality">Internal ETH functionality</a>
 <ul>
 <li><a href="#locking-eth">Locking ETH</a></li>
@@ -217,8 +224,9 @@ the op-governed dependency set.</p>
 the corresponding chain would need to deploy and manage its own <code>ETHLockbox</code>.</p>
 <p>The <code>OptimismPortal</code> also moves onto shared dispute game contracts when a chain joins the op-governed dependency set.
 Each chain keeps its own <code>SystemConfig</code> and <code>OptimismPortal</code>. The chains in the set share one <code>ETHLockbox</code>, one
-<code>DisputeGameFactory</code> and one <a href="../fault-proof/stage-one/anchor-state-registry.html"><code>AnchorStateRegistry</code></a>. A chain
-outside the op-governed dependency set keeps its own copy of each of these contracts.</p>
+<code>DisputeGameFactory</code>, one <a href="../fault-proof/stage-one/anchor-state-registry.html"><code>AnchorStateRegistry</code></a> and one
+<code>DelayedWETH</code>. The set adopts the existing <code>DelayedWETH</code> of its first member chain rather than deploying a new one.
+A chain outside the op-governed dependency set keeps its own copy of each of these contracts.</p>
 <h3 id="integrating-ethlockbox"><a class="header" href="#integrating-ethlockbox">Integrating <code>ETHLockbox</code></a></h3>
 <p>The integration with the <code>ETHLockbox</code> involves locking ETH when executing deposit transactions and unlocking ETH
 when finalizing withdrawal transactions, without altering other aspects of the current <code>OptimismPortal</code> implementation.</p>
@@ -264,6 +272,26 @@ transaction, or the portal may not be able to unlock enough ETH to finalize with
 when joining the op-governed dependency set. Although the function permits repeated calls, it is not designed for repeated
 migration. Switching to the shared <code>DisputeGameFactory</code> invalidates withdrawal proofs against games from the previous
 factory, so users MUST prove those withdrawals again.</p>
+<h3 id="pause-and-guardian"><a class="header" href="#pause-and-guardian">Pause and guardian</a></h3>
+<p>The <code>OptimismPortal</code> holds no <code>SuperchainConfig</code> of its own. Its <a href="./eth-lockbox.html"><code>ETHLockbox</code></a> serves all three
+values below.</p>
+<p>The shared <code>ETHLockbox</code> address is the interop set's only <a href="../protocol/stage-1.html#pause-identifier">Pause Identifier</a>,
+so one scoped pause covers every chain in the set.</p>
+<h4 id="paused"><a class="header" href="#paused"><code>paused</code></a></h4>
+<p>Returns whether the portal is paused.</p>
+<ul>
+<li>MUST return <a href="./eth-lockbox.html#paused"><code>ETHLockbox.paused()</code></a>.</li>
+</ul>
+<h4 id="superchainconfig"><a class="header" href="#superchainconfig"><code>superchainConfig</code></a></h4>
+<p>Returns the <code>SuperchainConfig</code> contract.</p>
+<ul>
+<li>MUST return <a href="./eth-lockbox.html#superchainconfig"><code>ETHLockbox.superchainConfig()</code></a>.</li>
+</ul>
+<h4 id="guardian"><a class="header" href="#guardian"><code>guardian</code></a></h4>
+<p>Returns the <a href="../protocol/stage-1.html#guardian">Guardian</a>.</p>
+<ul>
+<li>MUST return <a href="./eth-lockbox.html#guardian"><code>ETHLockbox.guardian()</code></a>.</li>
+</ul>
 <h3 id="internal-eth-functionality"><a class="header" href="#internal-eth-functionality">Internal ETH functionality</a></h3>
 <h4 id="locking-eth"><a class="header" href="#locking-eth">Locking ETH</a></h4>
 <p>Called during deposit transactions to handle ETH locking.</p>

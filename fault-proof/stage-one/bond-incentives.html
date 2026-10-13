@@ -349,7 +349,9 @@ checks that the current <code>block.timestamp</code> is greater than the timesta
 seconds and reverts if not. It also confirms that the amount being withdrawn is less than the amount in the withdrawal
 request. Before completing the withdrawal, it reduces the amount contained within the withdrawal request. The original
 <code>withdraw(wad)</code> function becomes an alias for <code>withdraw(msg.sender, wad)</code>.
-<code>withdraw(guy,wad)</code> will not be callable when <code>SuperchainConfig.paused()</code> is <code>true</code>.</li>
+<code>withdraw(guy,wad)</code> will not be callable when <code>ETHLockbox.paused()</code> is <code>true</code> for the <code>ETHLockbox</code> configured for
+this <code>DelayedWETH</code>. That covers both the global pause and a pause scoped to that <code>ETHLockbox</code> address, so pausing
+a shared <code>ETHLockbox</code> blocks withdrawals for every chain that uses it.</li>
 <li><code>DelayedWETH</code> has a <code>hold(guy,wad)</code> function that allows the <code>owner()</code> address to, for any holder, give itself an
 allowance and immediately <code>transferFrom</code> that allowance amount to itself.</li>
 <li><code>DelayedWETH</code> has a <code>hold(guy)</code> function that allows the <code>owner()</code> address to, for any holder, give itself a full

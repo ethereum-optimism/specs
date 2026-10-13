@@ -387,6 +387,18 @@ drift from it.</li>
 <li>Takes a bytes32 feature string and a boolean as an input.</li>
 <li>MUST only be triggerable by the ProxyAdmin or its owner.</li>
 <li>MUST toggle the feature flag on or off, based on the value of the boolean.</li>
+<li>(+op-contracts/v8.0.0) MUST revert when disabling the <code>ETHLockbox</code> feature while the chain's
+<code>OptimismPortal</code> still has an <code>ETHLockbox</code> configured. The system would otherwise start keeping
+ETH in the <code>OptimismPortal</code>.</li>
+<li>(+op-contracts/v8.0.0) MUST revert when enabling or disabling the <code>ETHLockbox</code> feature while
+<a href="#paused">paused</a> returns true. The change moves the
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a>, which could unpause the system unexpectedly.</li>
+<li>(+op-contracts/v9.0.0) MUST revert when disabling the <code>ETHLockbox</code> feature. Once enabled, it
+cannot be disabled.</li>
+<li>(+op-contracts/v9.0.0) MUST revert when enabling the <code>ETHLockbox</code> feature while
+<code>SuperchainConfig.paused(optimismPortal())</code> returns true. Enabling it moves the
+<a href="./stage-1.html#pause-identifier">Pause Identifier</a> from the <code>OptimismPortal</code> address to the
+<code>ETHLockbox</code> address, which could unpause the system unexpectedly.</li>
 </ul>
 <h3 id="isfeatureenabled"><a class="header" href="#isfeatureenabled">isFeatureEnabled</a></h3>
 <p>(+op-contracts/v4.1.0)</p>
@@ -426,17 +438,24 @@ what the OP Stack reads.</p>
 using the chain's <code>ETHLockbox</code> address as the <a href="./stage-1.html#pause-identifier">Pause Identifier</a>.
 Returns the current pause state of the system by checking if the <code>SuperchainConfig</code> is paused for
 this chain's <code>ETHLockbox</code>.</p>
-<p>(+op-contracts/v4.1.0) This function integrates with the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> by
+<p>(-op-contracts/v9.0.0) This function integrates with the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a> by
 using either the chain's <code>ETHLockbox</code> address or the chain's <code>OptimismPortal</code> address as the
 <a href="./stage-1.html#pause-identifier">Pause Identifier</a>.</p>
+<p>(+op-contracts/v9.0.0) This function integrates with the <a href="./stage-1.html#pause-mechanism">Pause Mechanism</a>
+by using the chain's <code>ETHLockbox</code> address as the <a href="./stage-1.html#pause-identifier">Pause Identifier</a>.
+The <code>ETHLockbox</code> resolves the pause state, so the chain is paused whenever the global pause or a
+pause scoped to that <code>ETHLockbox</code> is active.</p>
 <ul>
 <li>(-op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
 true OR if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
-<li>(+op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
+<li>(-op-contracts/v9.0.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns
 true AND the system is configured to use the <code>ETHLockbox</code> contract.</li>
-<li>(+op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal())</code> returns true AND the
+<li>(-op-contracts/v9.0.0) MUST return true if <code>SuperchainConfig.paused(optimismPortal())</code> returns true AND the
 system is NOT configured to use the <code>ETHLockbox</code> contract.</li>
-<li>(+op-contracts/v4.1.0) MUST return true if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(-op-contracts/v9.0.0) MUST return true if <code>SuperchainConfig.paused(address(0))</code> returns true.</li>
+<li>(+op-contracts/v9.0.0) MUST return <code>optimismPortal().ethLockbox().paused()</code>, which is true if
+<code>SuperchainConfig.paused(address(0))</code> returns true OR if
+<code>SuperchainConfig.paused(optimismPortal().ethLockbox())</code> returns true.</li>
 <li>MUST return false otherwise.</li>
 </ul>
 <h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>

@@ -188,6 +188,7 @@
 <li><a href="#receiveliquidity"><code>receiveLiquidity</code></a></li>
 <li><a href="#paused"><code>paused</code></a></li>
 <li><a href="#superchainconfig"><code>superchainConfig</code></a></li>
+<li><a href="#guardian"><code>guardian</code></a></li>
 <li><a href="#proxyadminowner"><code>proxyAdminOwner</code></a></li>
 </ul>
 </li>
@@ -237,10 +238,13 @@ The <code>ETHLockbox</code> contract is proxied and managed by the L1 <code>Prox
 <p>Initializes the ETHLockbox contract.</p>
 <ul>
 <li>MUST only be callable by the ProxyAdmin or its owner.</li>
-<li>MUST set the SystemConfig contract.</li>
+<li>MUST set the <code>SuperchainConfig</code> contract.</li>
 <li>MUST authorize all portals provided in the initialization array.</li>
-<li>MUST check that all portals have the same SuperchainConfig as the ETHLockbox.</li>
+<li>MUST check that all portals have the same <code>SuperchainConfig</code> as the <code>ETHLockbox</code>. The <code>SuperchainConfig</code> is read
+through each portal's <code>SystemConfig</code>.</li>
 </ul>
+<pre><code class="language-solidity">function initialize(ISuperchainConfig _superchainConfig, IOptimismPortal[] calldata _portals) external;
+</code></pre>
 <h4 id="locketh"><a class="header" href="#locketh"><code>lockETH</code></a></h4>
 <p>Deposits and locks ETH into the lockbox's liquidity pool.</p>
 <ul>
@@ -271,7 +275,10 @@ withdrawal transaction.</li>
 <ul>
 <li>Only the <code>ProxyAdmin</code> owner can call the function.</li>
 <li>The <code>ProxyAdmin</code> owner of the <code>OptimismPortal</code> must be the same as the <code>ProxyAdmin</code> owner of the <code>ETHLockbox</code>.</li>
-<li>The <code>OptimismPortal</code> and <code>ETHLockbox</code> MUST share the same <code>SuperchainConfig</code> address</li>
+<li>The <code>OptimismPortal</code> and <code>ETHLockbox</code> MUST share the same <code>SuperchainConfig</code> address.</li>
+<li>The portal's <code>SuperchainConfig</code> MUST be read from its <code>SystemConfig</code>, not from the portal itself. This
+<code>ETHLockbox</code> already serves <code>superchainConfig()</code> for any portal that points to it. Therefore, reading it from
+the portal would compare the lockbox's stored value against itself.</li>
 <li>The function MUST emit the <code>PortalAuthorized</code> event with the <code>portal</code>.</li>
 </ul>
 <pre><code class="language-solidity">function authorizePortal(address _portal) external;
@@ -310,9 +317,21 @@ from and the amount of ETH received.</li>
 <pre><code class="language-solidity">function receiveLiquidity() external payable;
 </code></pre>
 <h4 id="paused"><a class="header" href="#paused"><code>paused</code></a></h4>
-<p>Returns whether the contract is paused, delegating to the SystemConfig.</p>
+<p>Returns whether the contract is paused.</p>
+<ul>
+<li>MUST return <code>superchainConfig.isLocalOrGlobalPaused(address(this))</code>.</li>
+</ul>
+<p>The lockbox passes its own address, which makes the lockbox the
+<a href="../protocol/stage-1.html#pause-identifier">Pause Identifier</a> for its chain, or for the interop set
+that shares it. Both the global pause and a pause scoped to that address therefore pause the
+lockbox.</p>
 <h4 id="superchainconfig"><a class="header" href="#superchainconfig"><code>superchainConfig</code></a></h4>
-<p>Returns the SuperchainConfig contract from the SystemConfig.</p>
+<p>Returns the <code>SuperchainConfig</code> contract stored when the lockbox was initialized.</p>
+<h4 id="guardian"><a class="header" href="#guardian"><code>guardian</code></a></h4>
+<p>Returns the <a href="../protocol/stage-1.html#guardian">Guardian</a> of the <code>SuperchainConfig</code>.</p>
+<ul>
+<li>MUST return <code>superchainConfig.guardian()</code>.</li>
+</ul>
 <h4 id="proxyadminowner"><a class="header" href="#proxyadminowner"><code>proxyAdminOwner</code></a></h4>
 <p>Returns the <code>ProxyAdmin</code> owner that manages the <code>ETHLockbox</code>.</p>
 <h3 id="events"><a class="header" href="#events">Events</a></h3>
@@ -366,7 +385,8 @@ by the <code>ETHLockbox</code> of the cluster</p>
 <p>It MUST allow only authorized portals to unlock ETH</p>
 </li>
 <li>
-<p>It MUST be in paused state if the <code>SuperchainConfig</code> is paused</p>
+<p>It MUST be in paused state if the global pause is active, or if a pause is active for its own
+address as the <a href="../protocol/stage-1.html#pause-identifier">Pause Identifier</a></p>
 </li>
 <li>
 <p>No Ether MUST flow out of the contract when in a paused state</p>
