@@ -143,6 +143,10 @@ A dependency set MAY configure a shorter expiry window. It MUST NOT configure on
 [message expiry](./message-expiry.md) relies on no message being relayed more than `EXPIRY_WINDOW` after it was
 sent. Nodes and the proof program MUST reject a dependency set whose expiry window exceeds `EXPIRY_WINDOW`.
 
+A production network MUST NOT change its dependency set's expiry window, except in a coordinated upgrade that also
+sets every chain's messenger [`EXPIRY_PERIOD`](./predeploys.md#expiring-messages), which MUST stay greater than the
+window.
+
 ## Security Considerations
 
 ### Depositing an Executing Message
