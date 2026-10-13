@@ -367,6 +367,7 @@ def main():
     parser.add_argument("--optimism-repo-path", type=str, required=True, help="Path to the Optimism repository directory.")
     parser.add_argument("--fork-name", type=str, required=True, help="Name of the fork (e.g., Isthmus)")
     parser.add_argument("--contract-name", type=str, required=True, help="Name of the contract (e.g., CrossL2Inbox)")
+    parser.add_argument("--intent-name", type=str, default="", help="Name used in the upgrade-deposit intent string. The intent fixes the source hash. Some contracts use a spaced name, for example 'Gas Price Oracle'. Defaults to --contract-name.")
     parser.add_argument("--from-address", type=str, required=True, help="Address deploying the contract")
     parser.add_argument("--from-address-nonce", type=int, required=True, help="Nonce of the deploying address")
     parser.add_argument("--git-commit-hash", type=str, required=True, help="Git commit hash to build contracts from.")
@@ -395,7 +396,8 @@ def main():
         sys.exit(1)
 
     try:
-        intent = f"{args.fork_name}: {args.contract_name} Deployment"
+        intent_name = args.intent_name or args.contract_name
+        intent = f"{args.fork_name}: {intent_name} Deployment"
         info(f"Deriving parameters for {intent}...")
         deployed_address = compute_deployed_address(args.from_address, args.from_address_nonce)
         info(f"Computing source hash...")
@@ -407,7 +409,7 @@ def main():
         contract_code_hash = derive_contract_code_hash(args.git_commit_hash, forge_artifact_path_val, args.optimism_repo_path)
         jq_creation_cmd = f"jq -r '.bytecode.object' {forge_artifact_path_val}"
         creation_code = extract_bytecode(jq_creation_cmd, args.optimism_repo_path)
-        info(f"Contract Bytecode: 0x{creation_code[:32]}...")
+        info(f"Contract Bytecode: {creation_code[:32]}...")
 
         constructor_signature = extract_constructor_signature(args.contract_name, cwd=args.optimism_repo_path + "/packages/contracts-bedrock")
         estimated_gas = estimate_gas(args.eth_rpc_url, creation_code, constructor_signature, args.constructor_args)
@@ -436,7 +438,7 @@ def main():
             "from_address": args.from_address,
             "from_address_nonce": args.from_address_nonce,
             "gas_limit": estimated_gas,
-            "data_bytecode_head": "0x" + creation_code[:32] + "...",
+            "data_bytecode_head": creation_code[:32] + "...",
             "data_path": data_path_result,
             "git_commit_hash": args.git_commit_hash,
             "contract_code_hash": contract_code_hash,
@@ -446,7 +448,7 @@ def main():
             "forge_artifact_path_data": forge_artifact_path_val,
         }
         if args.proxy_address:
-            proxy_intent = f"{args.fork_name}: {args.contract_name} Proxy Update"
+            proxy_intent = f"{args.fork_name}: {intent_name} Proxy Update"
             proxy_data = compute_proxy_update_data(deployed_address)
             proxy_source_hash = compute_keccak(compute_concat_hex(SOURCE_HASH_PREFIX, compute_keccak(proxy_intent)))
             template_data["proxy_address"] = args.proxy_address
