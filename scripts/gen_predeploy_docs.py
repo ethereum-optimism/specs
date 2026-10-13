@@ -409,7 +409,7 @@ def main():
         contract_code_hash = derive_contract_code_hash(args.git_commit_hash, forge_artifact_path_val, args.optimism_repo_path)
         jq_creation_cmd = f"jq -r '.bytecode.object' {forge_artifact_path_val}"
         creation_code = extract_bytecode(jq_creation_cmd, args.optimism_repo_path)
-        info(f"Contract Bytecode: 0x{creation_code[:32]}...")
+        info(f"Contract Bytecode: {creation_code[:32]}...")
 
         constructor_signature = extract_constructor_signature(args.contract_name, cwd=args.optimism_repo_path + "/packages/contracts-bedrock")
         estimated_gas = estimate_gas(args.eth_rpc_url, creation_code, constructor_signature, args.constructor_args)
@@ -438,7 +438,7 @@ def main():
             "from_address": args.from_address,
             "from_address_nonce": args.from_address_nonce,
             "gas_limit": estimated_gas,
-            "data_bytecode_head": "0x" + creation_code[:32] + "...",
+            "data_bytecode_head": creation_code[:32] + "...",
             "data_path": data_path_result,
             "git_commit_hash": args.git_commit_hash,
             "contract_code_hash": contract_code_hash,

@@ -64,7 +64,7 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `nonce`: `0`
 - `gasLimit`: `447315`
-- `data`: `0x0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-l1-block-deployment.txt))
+- `data`: `0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-l1-block-deployment.txt))
 - `sourceHash`: `0xbb1a656f65401240fac3db12e7a79ebb954b11e62f7626eb11691539b798d3bf`,
   computed with the "Upgrade-deposited" type, with `intent = "Jovian: L1 Block Deployment"`
 
@@ -153,7 +153,7 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `nonce`: `0`
 - `gasLimit`: `1750714`
-- `data`: `0x0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-gas-price-oracle-deployment.txt))
+- `data`: `0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-gas-price-oracle-deployment.txt))
 - `sourceHash`: `0x239b7021a6c2cf3a918481242bbb5a9499057f24501539467536c691bb133962`,
   computed with the "Upgrade-deposited" type, with `intent = "Jovian: Gas Price Oracle Deployment"`
 
