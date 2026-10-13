@@ -191,8 +191,9 @@ None
 
 ### iSEB-004: ETH is refunded only for expired sends, at most once
 
-`refundETH` must pay out only for a send whose message is marked expired, at most once per message, and only the
-amount and recipient that the send's message committed to.
+`refundETH` must pay out only for a send whose message is marked expired, at most once per message, only the
+amount that the send's message committed to, and only to the address that called `sendETH`, when that address
+calls `refundETH`.
 
 #### Impact
 
@@ -220,6 +221,9 @@ function sendETH(address _to, uint256 _chainId) external payable returns (bytes3
 
 - MUST accept ETH via `msg.value`.
 - MUST revert if the `_to` address is the zero address.
+- MUST revert with `SuperchainETHBridge_SenderIsMessenger` if `msg.sender` is the `L2ToL2CrossDomainMessenger`.
+  A relayed message that called `sendETH` would make the messenger the sender, and it could never claim a refund.
+  The `L2CrossDomainMessenger` stays allowed: a message from L1 that reverted here would keep its ETH there.
 - MUST transfer `msg.value` of ETH from the `msg.sender` to the `ETHLiquidity` contract by calling
 `ETHLiquidity.burn{value: msg.value}()`.
 - MUST create a cross-chain message to the `SuperchainETHBridge` contract on the destination chain
@@ -252,21 +256,21 @@ ID.
 Returns the ETH of a send whose message expired: its destination chain never relayed it, and never can.
 
 ```solidity
-function refundETH(uint256 _destination, uint256 _nonce, address _from, address _to, uint256 _amount) external;
+function refundETH(uint256 _destination, uint256 _nonce, address _to, uint256 _amount) external;
 ```
 
 - MUST compute the message hash of the send from its arguments, with this chain as the source and the
-  `SuperchainETHBridge` as both sender and target of a `relayETH(_from, _to, _amount)` call.
-- MUST revert if `L2ToL2CrossDomainMessenger.expiredMessages(messageHash)` is `false`.
-- MUST revert if the send was already refunded.
+  `SuperchainETHBridge` as both sender and target of a `relayETH(msg.sender, _to, _amount)` call.
+- MUST revert with `SuperchainETHBridge_MessageNotExpired` if
+  `L2ToL2CrossDomainMessenger.expiredMessages(messageHash)` is `false`. This covers a caller that did not send it.
+- MUST revert with `SuperchainETHBridge_AlreadyRefunded` if the send was already refunded.
 - MUST record the refund before transferring ETH.
 - MUST withdraw `_amount` of ETH from the `ETHLiquidity` contract by calling `ETHLiquidity.mint(_amount)`.
-- MUST transfer the `_amount` of ETH to the `_from` address using `new SafeSend{value: _amount}(_from)`.
-- MUST be callable by anyone.
-- MUST emit a `RefundETH` event with the `_from` address, `_amount`, and the message hash.
+- MUST transfer the `_amount` of ETH to `msg.sender` using `new SafeSend{value: _amount}(msg.sender)`.
+- MUST emit a `RefundETH` event with `msg.sender`, `_amount`, and the message hash.
 
-The refund always goes to `_from`, the `msg.sender` of `sendETH`. A contract that called `sendETH` on behalf of
-someone else needs its own way to pass a refund on.
+Only the `msg.sender` of `sendETH` can claim its refund, and the ETH goes back to it. A contract that called
+`sendETH` on behalf of someone else calls `refundETH` itself and passes the ETH on.
 
 ## Events
 
