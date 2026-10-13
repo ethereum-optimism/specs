@@ -434,8 +434,9 @@ Messages cannot be re-emitted. Instead, the source chain can learn that a messag
 from overflow.
 It is read through `expiryPeriod()`.
 On production networks it MUST be `691200 secs` (8 days): the [expiry window](./derivation.md#expiry-window)
-plus one day of margin. Network upgrades always initialize the messenger with that value, and so does the genesis
-tooling by default. Test networks with a shorter expiry window MAY set a shorter period at genesis.
+plus one day of margin. The genesis tooling uses that value by default, and the first upgrade that installs this
+messenger initializes it with that value. Later network upgrades MUST keep the configured period. Test networks with
+a shorter expiry window MAY set a shorter period at genesis.
 
 On every network, `EXPIRY_PERIOD` MUST be greater than the network's expiry window, so that a message is only
 marked expired once no relay of it can be valid.
