@@ -5,7 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Design constraints](#design-constraints)
+- [Invariants](#invariants)
 - [The Deposited Transaction Type](#the-deposited-transaction-type)
   - [Source hash computation](#source-hash-computation)
   - [Kinds of Deposited Transactions](#kinds-of-deposited-transactions)
@@ -48,9 +48,9 @@ with the authorization and validation conditions on L2.
 **Vocabulary note**: _deposited transaction_ refers specifically to an L2 transaction, while
 _deposit_ can refer to the transaction at various stages (for instance when it is deposited on L1).
 
-## Design constraints
+## Invariants
 
-The deposit rules follow these design constraints:
+The deposit rules follow these invariants:
 
 1. A deposit transaction must always be valid to include in a block.
 2. Deposits buy their gas on L1.
