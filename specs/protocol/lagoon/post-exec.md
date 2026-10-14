@@ -398,8 +398,6 @@ as a zero refund; otherwise it MUST re-execute from the first index whose entry 
 refund depends only on earlier transactions, so entries for already-streamed transactions are not expected to change
 (non-normative).
 
-A consumer comparing the in-progress block's transaction list with a sealed block's, for example to detect a reorg,
-includes the post-exec transaction in that list.
 
 ### A subblock's `transactions` may be empty
 
