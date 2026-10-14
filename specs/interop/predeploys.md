@@ -362,6 +362,8 @@ as well as domain binding, i.e. the executing transaction can only be valid on a
   reverting, changing state or emitting an event
 - Otherwise:
   - It MUST revert if the message was not sent from this chain (`sentMessageTimestamps[messageHash] == 0`)
+  - It MUST revert if `EXPIRY_PERIOD` is unset (`0`), as on an implementation installed without
+    `initialize`, so that it fails closed instead of expiring a message that can still be relayed
   - It MUST revert unless `undeliveredAt > sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`
   - It MUST set `expiredMessages[messageHash]` to `true`
   - It MUST emit the `MessageExpired` event
