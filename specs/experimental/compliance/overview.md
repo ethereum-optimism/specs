@@ -269,9 +269,9 @@ For a [Token Bridge Message](#token-bridge-message), the Portal hands the bridge
 escrow. The bridge decodes that inner call itself, runs its own checks, and records the balance change in its own
 accounting. It records nothing about the hold:
 
-- **Hold.** The Portal calls the bridge with the message it is holding. The bridge decodes the inner
-  `finalizeBridgeERC20` call with its own selectors, runs its own checks, debits its escrow, and sends the tokens to
-  the hook.
+- **Hold.** The Portal calls the bridge with the inner `finalizeBridgeERC20` message it is holding. The bridge checks
+  the selector, reads the tokens and the amount from it, and debits its escrow for that token pair, which reverts if
+  the escrow is short. It then sends the tokens to the hook.
 - **Completion.** The hook approves the bridge for the item's amount and calls the Portal, which asks the bridge to
   take the tokens back and credit its escrow. The normal path then runs, so a deposit is emitted to L2 and a withdrawal
   is relayed.
