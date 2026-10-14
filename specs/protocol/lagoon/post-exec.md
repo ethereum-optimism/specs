@@ -374,7 +374,7 @@ abandoned rather than sealed, in which case no value from it was ever canonical.
 ### The in-progress block includes the latest post-exec transaction
 
 The in-progress block a subblock describes has as its transaction list the concatenation of `diff.transactions`
-across the payload's subblocks up to and including that subblock, followed by that subblock's `diff.post_exec_tx`
+across the payload's subblocks up to and including that subblock, followed by that subblock's `diff.post_exec_tx` (if it exists). 
 when present. Its canonical gas, settlement and receipts follow from that list exactly as for a sealed block: see
 [Canonical Gas](./sdm.md#canonical-gas), [Settlement](./sdm.md#settlement) and
 [Receipt Extension](./sdm.md#receipt-extension).
