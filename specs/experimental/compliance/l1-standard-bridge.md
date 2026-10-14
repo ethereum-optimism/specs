@@ -49,6 +49,11 @@ The bridge only receives the inner `finalizeBridgeERC20` encoded call carried in
 bridges, which it decodes on its own: it checks the selector, then reads the token pair and the amount from the
 call's arguments.
 
+The order of the token pair inside the message depends on the item's direction. A standard bridge encodes its message
+for the chain that will execute it, so the token local to the destination comes first. In a deposit's message the L1
+token is therefore the second token argument, and in a withdrawal's message it is the first. The bridge is told the
+direction because it cannot tell the two apart from the message alone.
+
 Whether the item is a [Token Bridge Message](./overview.md#token-bridge-message) at all is the Portal's judgement, not
 the bridge's. The bridge trusts the Portal on the message envelope: who sent the message, through which messenger,
 and to which bridge. See [Routing and Recognition](./optimism-portal.md#routing-and-recognition).
@@ -87,38 +92,42 @@ Moves the escrow of a held token transfer out of the bridge and to the hook.
 
 **Parameters:**
 
+- `_direction`: whether the held item is a deposit or a withdrawal.
 - `_message`: the inner `finalizeBridgeERC20` call the Portal is holding.
 
 **Behavior:**
 
 - MUST revert if the caller is not the `OptimismPortal`.
 - MUST revert if the selector of `_message` is not `finalizeBridgeERC20`.
-- MUST read the local token, the remote token and the amount from `_message`.
-- MUST transfer that amount of the local token to the bridge hook, if the local token is a
+- MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
+  arguments is the L1 token.
+- MUST transfer that amount of the L1 token to the bridge hook, if the L1 token is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
-- MUST decrease the `deposits` mapping for that token pair by that amount, if the local token is a
+- MUST decrease the `deposits` mapping for that token pair by that amount, if the L1 token is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
 - MUST revert if the `deposits` balance for that token pair is below the amount.
-- MUST NOT move any tokens if the local token is an `OptimismMintableERC20`.
+- MUST NOT move any tokens if the L1 token is an `OptimismMintableERC20`.
 
 ### restoreERC20
 
-Takes the escrow of a held token transfer back into the bridge, so the normal path be executed.
+Takes the escrow of a held token transfer back into the bridge, so the normal path can run.
 
 **Parameters:**
 
+- `_direction`: the same direction that was passed to [holdERC20](#holderc20).
 - `_message`: the same inner `finalizeBridgeERC20` call that was passed to [holdERC20](#holderc20).
 
 **Behavior:**
 
 - MUST revert if the caller is not the `OptimismPortal`.
 - MUST revert if the selector of `_message` is not `finalizeBridgeERC20`.
-- MUST read the local token, the remote token and the amount from `_message`.
-- MUST pull that amount of the local token from the bridge hook, using the allowance the hook granted, if the local
-  token is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
-- MUST increase the `deposits` mapping for that token pair by that amount, if the local token is a
+- MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
+  arguments is the L1 token.
+- MUST pull that amount of the L1 token from the bridge hook, using the allowance the hook granted, if the L1 token
+  is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
+- MUST increase the `deposits` mapping for that token pair by that amount, if the L1 token is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
-- MUST NOT move any tokens if the local token is an `OptimismMintableERC20`.
+- MUST NOT move any tokens if the L1 token is an `OptimismMintableERC20`.
 - MUST NOT pay the recipient. The normal path runs after the escrow is back, so a deposit is emitted to L2 and a
   withdrawal is relayed, and it is the relay that pays the recipient from escrow.
 
