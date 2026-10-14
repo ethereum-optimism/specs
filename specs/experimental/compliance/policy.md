@@ -116,7 +116,7 @@ they live in the hook rather than in the policy.
 
 ## Non-goals
 
-- What a policy decides. The rules and thresholds belong to the chain operator.
+- What a policy decides. The rules and thresholds belong to the chain.
 - The [Screening Service](#screening-service) behind the policy, and how verdicts reach it.
 
 ## Assumptions
