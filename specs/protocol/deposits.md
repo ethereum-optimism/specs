@@ -74,7 +74,7 @@ A deposit has the following fields
 - `uint256 value`: The ETH value to send to the recipient account.
 - `uint64 gas`: The gas limit for the L2 transaction.
 - `bool isSystemTx`: If true, the transaction does not interact with the L2 block gas pool.
-  - Note: boolean is disabled (enforced to be `false`) starting from the Regolith upgrade.
+  - Note: boolean is disabled (enforced to be `false`) since Regolith.
 - `bytes data`: The calldata.
 
 In contrast to [EIP-155] transactions, this transaction type:
@@ -82,7 +82,7 @@ In contrast to [EIP-155] transactions, this transaction type:
 - Does not include a `nonce`, since it is identified by the `sourceHash`.
   API responses still include a `nonce` attribute:
   - Before Regolith: the `nonce` is always `0`
-  - With Regolith: the `nonce` is set to the `depositNonce` attribute of the corresponding transaction receipt.
+  - Since Regolith: the `nonce` is set to the `depositNonce` attribute of the corresponding transaction receipt.
 - Does not include signature information, and makes the `from` address explicit.
   API responses contain zeroed signature `v`, `r`, `s` values for backwards compatibility.
 - Includes new `sourceHash`, `from`, `mint`, and `isSystemTx` attributes.
@@ -159,7 +159,7 @@ The deposit transaction is processed exactly like a type-2 (EIP-1559) transactio
   init code size.
 - No check if `from` is an Externally Owner Account (EOA): the deposit is ensured not to be an EOA through L1 address
   masking, this may change in future L1 contract-deployments to e.g. enable an account-abstraction like mechanism.
-- Before the Regolith upgrade:
+- Before Regolith:
   - The execution output states a non-standard gas usage:
     - If `isSystemTx` is false: execution output states it uses `gasLimit` gas.
     - If `isSystemTx` is true: execution output states it uses `0` gas.
@@ -186,11 +186,11 @@ Any non-EVM state-transition error emitted by the EVM execution is processed in 
 
 Finally, after the above processing, the execution post-processing runs the same:
 i.e. the gas pool and receipt are processed identical to a regular transaction.
-Starting with the Regolith upgrade however, the receipt of deposit transactions is extended with an additional
+Since Regolith, the receipt of deposit transactions is extended with an additional
 `depositNonce` value, storing the `nonce` value of the `from` sender as registered _before_ the EVM processing.
 
 Note that the gas used as stated by the execution output is subtracted from the gas pool,
-but this execution output value has special edge cases before the Regolith upgrade.
+but this execution output value has special edge cases before Regolith.
 
 Note for application developers: because `CALLER` and `ORIGIN` are set to `from`, the
 semantics of using the `tx.origin == msg.sender` check will not work to determine whether
@@ -220,15 +220,15 @@ The RLP-encoded consensus-enforced fields are:
 - `postStateOrStatus` (standard): this contains the transaction status, see [EIP-658].
 - `cumulativeGasUsed` (standard): gas used in the block thus far, including this transaction.
   - The actual gas used is derived from the difference in `CumulativeGasUsed` with the previous transaction.
-  - Starting with Regolith, this accounts for the actual gas usage by the deposit, like regular transactions.
+  - Since Regolith, this accounts for the actual gas usage by the deposit, like regular transactions.
 - `bloom` (standard): bloom filter of the transaction logs.
 - `logs` (standard): log events emitted by the EVM processing.
 - `depositNonce` (unique extension): Optional field. The deposit transaction persists the nonce used during execution.
 - `depositNonceVersion` (unique extension): Optional field. The value must be 1 if the field is present
   - Before Canyon, these `depositNonce` & `depositNonceVersion` fields must always be omitted.
-  - With Canyon, these `depositNonce` & `depositNonceVersion` fields must always be included.
+  - Since Canyon, these `depositNonce` & `depositNonceVersion` fields must always be included.
 
-Starting with Regolith, the receipt API responses utilize the receipt changes for more accurate response data:
+Since Regolith, the receipt API responses utilize the receipt changes for more accurate response data:
 
 - The `depositNonce` is included in the receipt JSON data in API responses
 - For contract-deployments (when `to == null`), the `depositNonce` helps derive the correct `contractAddress` meta-data,
@@ -252,8 +252,8 @@ This transaction MUST have the following values:
    contract][predeploy]).
 3. `mint` is `0`
 4. `value` is `0`
-5. `gasLimit` is set to 150,000,000 prior to the Regolith upgrade, and 1,000,000 after.
-6. `isSystemTx` is set to `true` prior to the Regolith upgrade, and `false` after.
+5. `gasLimit` is set to 150,000,000 before Regolith, and 1,000,000 since Regolith.
+6. `isSystemTx` is set to `true` before Regolith, and `false` since Regolith.
 7. `data` is an encoded call to the [L1 attributes predeployed contract][predeploy] that
    depends on the upgrades that are active (see below).
 
