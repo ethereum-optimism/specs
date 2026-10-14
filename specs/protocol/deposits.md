@@ -163,9 +163,11 @@ The deposit transaction is processed exactly like a type-2 (EIP-1559) transactio
   - The execution output states a non-standard gas usage:
     - If `isSystemTx` is false: execution output states it uses `gasLimit` gas.
     - If `isSystemTx` is true: execution output states it uses `0` gas.
-- No gas is refunded as ETH. (either by not refunding or utilizing the fact the gas-price of the deposit is `0`)
+- No gas is refunded as ETH, so the sender's balance is unchanged by gas refunds. (either by not refunding or
+  utilizing the fact the gas-price of the deposit is `0`)
 - No transaction priority fee is charged. No payment is made to the block fee-recipient.
-- No L1-cost fee is charged, as deposits are derived from L1 and do not have to be submitted as data back to it.
+- No L1-cost fee is charged, so the sender's balance is unchanged by L1-cost fees. (deposits are derived from L1
+  and do not have to be submitted as data back to it)
 - No base fee is charged. The total base fee accounting does not change.
 
 Note that this includes contract-deployment behavior like with regular transactions, and gas
