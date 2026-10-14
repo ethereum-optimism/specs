@@ -181,14 +181,15 @@ The deposit transaction is processed exactly like a type-2 (EIP-1559) transactio
   init code size.
 - No check if `from` is an Externally Owner Account (EOA): the deposit is ensured not to be an EOA through L1 address
   masking, this may change in future L1 contract-deployments to e.g. enable an account-abstraction like mechanism.
-- Before the Regolith upgrade:
-  - The execution output states a non-standard gas usage:
-    - If `isSystemTx` is false: execution output states it uses `gasLimit` gas.
-    - If `isSystemTx` is true: execution output states it uses `0` gas.
 - No gas is refunded as ETH. (either by not refunding or utilizing the fact the gas-price of the deposit is `0`)
 - No transaction priority fee is charged. No payment is made to the block fee-recipient.
 - No L1-cost fee is charged, as deposits are derived from L1 and do not have to be submitted as data back to it.
 - No base fee is charged. The total base fee accounting does not change.
+
+Before the Regolith upgrade, the execution output states a non-standard gas usage:
+
+- If `isSystemTx` is false: execution output states it uses `gasLimit` gas.
+- If `isSystemTx` is true: execution output states it uses `0` gas.
 
 Note that this includes contract-deployment behavior like with regular transactions, and gas
 metering is the same (with the exception of fee related changes above), including metering of
