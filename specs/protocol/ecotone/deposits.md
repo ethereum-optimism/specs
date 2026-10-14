@@ -16,7 +16,7 @@
 ## Overview
 
 The Ecotone upgrade changes the L1 attributes deposit calldata. This page lists the changes to the
-[deposit specification][deposits]. The deposit specification describes the Bedrock behaviour.
+[deposit specification][deposits]. The deposit specification describes the Bedrock behavior.
 
 ## Changes
 
