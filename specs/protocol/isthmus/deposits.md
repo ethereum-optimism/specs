@@ -19,7 +19,7 @@
 ## Overview
 
 The Isthmus upgrade changes deposit processing. This page lists the changes to the
-[deposit specification][deposits]. The deposit specification describes the Bedrock behaviour.
+[deposit specification][deposits]. The deposit specification describes the Bedrock behavior.
 
 ## Changes
 
