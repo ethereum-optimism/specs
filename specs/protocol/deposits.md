@@ -5,6 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Design constraints](#design-constraints)
 - [The Deposited Transaction Type](#the-deposited-transaction-type)
   - [Source hash computation](#source-hash-computation)
   - [Kinds of Deposited Transactions](#kinds-of-deposited-transactions)
@@ -46,6 +47,17 @@ with the authorization and validation conditions on L2.
 
 **Vocabulary note**: _deposited transaction_ refers specifically to an L2 transaction, while
 _deposit_ can refer to the transaction at various stages (for instance when it is deposited on L1).
+
+## Design constraints
+
+The deposit rules follow these design constraints:
+
+1. A deposit transaction must always be valid to include in a block.
+2. Deposits buy their gas on L1.
+3. A deposit always mints on L2 exactly the amount of ETH deposited on L1.
+4. The `sourceHash` of a deposit must be unique, so it must include all identifying components of the deposit.
+
+The gas a deposit consumes is accounted for identically across the execution output and the block gas pool.
 
 ## The Deposited Transaction Type
 
