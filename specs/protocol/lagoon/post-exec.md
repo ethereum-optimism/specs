@@ -381,7 +381,7 @@ when present. Its canonical gas, settlement and receipts follow from that list e
 
 _Rationale (non-normative, subject to change)._ The stream keeps the post-exec transaction out of `transactions` only
 so that the append-only list never carries a value a later subblock supersedes. The block being described still
-contains it, and its refunds change the receipts and balances derived from that block. A description without it
+contains it when it exists, and its refunds change the receipts and balances derived from that block. A description without it
 would be a different block from the one the sequencer is building and will seal.
 
 _Consumer implication._ A consumer that executes the in-progress block, for example to serve pending-state queries
