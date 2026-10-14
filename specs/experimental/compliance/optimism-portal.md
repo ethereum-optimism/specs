@@ -17,7 +17,6 @@
   - [bridgeHook](#bridgehook)
   - [setBridgeHook](#setbridgehook)
   - [depositTransaction](#deposittransaction)
-  - [receive](#receive)
   - [finalizeWithdrawalTransactionExternalProof](#finalizewithdrawaltransactionexternalproof)
   - [completeDepositTransaction](#completedeposittransaction)
   - [completeWithdrawalTransaction](#completewithdrawaltransaction)
@@ -31,11 +30,11 @@
     - [Impact](#impact-2)
   - [iCM-004: A chain with no hook configured is unaffected](#icm-004-a-chain-with-no-hook-configured-is-unaffected)
     - [Impact](#impact-3)
+  - [iCM-005: A held withdrawal keeps its minimum gas guarantee](#icm-005-a-held-withdrawal-keeps-its-minimum-gas-guarantee)
+    - [Impact](#impact-4)
 - [Security Considerations](#security-considerations)
-  - [Predictable Minimum Gas Limit](#predictable-minimum-gas-limit)
   - [Gas Headroom on the Withdrawal Path](#gas-headroom-on-the-withdrawal-path)
   - [Cost When No Hook Is Set](#cost-when-no-hook-is-set)
-  - [Contract Size](#contract-size)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -61,8 +60,8 @@ an ERC-20 deposit or withdrawal is held.
 ### Deposit Counter
 
 The **Deposit Counter** is a counter the Portal assigns to a deposit when it screens it. A withdrawal carries its own
-withdrawal hash, so it is already unique, but a deposit has no unique field of its own: two identical deposits in the
-same block are otherwise indistinguishable. The counter is what makes a deposit's [Identifier](./overview.md#identifier)
+nonce, unique on L2, so it is already unique, but a deposit has no unique field of its own: two identical deposits in
+the same block are otherwise indistinguishable. The counter is what makes a deposit's [Identifier](./overview.md#identifier)
 name exactly one deposit, and the identifier exists only from the moment the counter is assigned.
 
 ## IBridgeHook
@@ -131,10 +130,13 @@ The Portal recognizes one shape: a message between the two canonical bridges.
 - For a withdrawal, the proven sender is the L2 messenger and the inner sender is the `L2StandardBridge`.
 - In both, the inner call is `finalizeBridgeERC20`.
 
-Nobody can choose these fields, so a message that matches came from the bridge. The Portal fills the item's token
-fields from the inner call and moves escrow only for such messages.
+Nobody can choose these fields, so a message that matches came from the bridge. The Portal marks such an item as a
+token transfer, and moves escrow only for it.
 
-The bridge acts on that recognition, so the recognition has to be correct. It gives the Portal no new authority: the
+The bridge trusts the Portal on the envelope: who sent the message, through which messenger, to which bridge. It never
+sees the envelope itself, only the inner `finalizeBridgeERC20` call, which it decodes on its own.
+
+The recognition still has to be correct, because the bridge acts on it. It gives the Portal no new authority: the
 messenger already accepts relays only from the Portal, with a sender the Portal supplies, so a faulty Portal can
 already reach the bridge's escrow.
 
@@ -192,43 +194,38 @@ Sets the [Bridge Hook Address](#bridge-hook-address).
 
 - MUST revert if the caller is not the ProxyAdmin or its owner.
 - MUST set the `bridgeHook` state variable to `_hook`.
-- MUST NOT release, complete or otherwise alter any item already held.
+- Items already held MUST remain held, with their commitments in `heldDeposits` and `heldWithdrawals` unchanged.
+- Items already held MUST still require a clearance and the policy's approval before they can complete.
 
 ### depositTransaction
 
-Accepts deposits of ETH and data. Unchanged while `bridgeHook` is `address(0)`.
+Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHook` is `address(0)`.
 
-**Behavior, in addition to the behavior on a default OP Stack chain:**
+**Behavior, when `bridgeHook` is not `address(0)`:**
 
 - MUST perform every check it performs on a default OP Stack chain before consulting the hook.
-- MUST build the item and call `bridgeHook.screenDeposit` when `bridgeHook` is not `address(0)`.
-- MUST take the normal path, unchanged, when `screenDeposit` returns `true`.
-- MUST revert, consuming nothing, when `screenDeposit` reverts.
+- MUST build the item and call `bridgeHook.screenDeposit`.
+- MUST take today's normal path, unchanged, when `screenDeposit` returns `true`.
+- MUST revert when `screenDeposit` reverts.
 - When `screenDeposit` returns `false`, it MUST hold the deposit:
   - MUST assign the [Deposit Counter](#deposit-counter) and derive the item's identifier from it.
   - MUST set `heldDeposits[identifier]` to `true`.
   - MUST NOT emit a `TransactionDeposited` event.
-  - MUST move the deposit's ETH to the hook by calling `holdDeposit` with that value.
-  - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
-    [Token Bridge Message](./overview.md#token-bridge-message).
-
-### receive
-
-Accepts ETH and creates a deposit to the sender's address on L2.
-
-- MUST follow [depositTransaction](#deposittransaction), so a plain ETH transfer to the Portal is screened like any
-  other deposit and can be held.
+  - MUST move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
+  - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is identified as a
+    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
 
 ### finalizeWithdrawalTransactionExternalProof
 
-Finalizes a withdrawal using a proof submitted by another address. Unchanged while `bridgeHook` is `address(0)`.
+Finalizes a withdrawal using a proof submitted by another address. Behavior MUST remain unchanged while `bridgeHook`
+is `address(0)`.
 
-**Behavior, in addition to the behavior on a default OP Stack chain:**
+**Behavior, when `bridgeHook` is not `address(0)`:**
 
 - MUST perform every check it performs on a default OP Stack chain, including `checkWithdrawal`, before consulting the
   hook.
 - MUST call `bridgeHook.screenWithdrawal` with the item and the withdrawal's
-  [Finalizable Time](./overview.md#finalizable-time), before forwarding the withdrawal call.
+  [Finalizable Time](./overview.md#finalizable-time), before forwarding the withdrawal call to the appropriate target.
 - MUST take the normal path, unchanged, when `screenWithdrawal` returns `true`.
 - MUST revert, consuming nothing and leaving the withdrawal finalizable, when `screenWithdrawal` reverts.
 - When `screenWithdrawal` returns `false`, it MUST hold the withdrawal:
@@ -237,11 +234,12 @@ Finalizes a withdrawal using a proof submitted by another address. Unchanged whi
   - MUST NOT forward the withdrawal call to its target.
   - MUST move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
-    [Token Bridge Message](./overview.md#token-bridge-message).
+    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
 
 ### completeDepositTransaction
 
-Runs a held deposit on the terms the Portal committed to.
+Executes a held deposit on the terms the Portal committed to. The [Bridge Hook Address](#bridge-hook-address) calls
+this function when it is ready to release the deposit.
 
 **Parameters:**
 
@@ -254,13 +252,14 @@ Runs a held deposit on the terms the Portal committed to.
 - MUST revert if the ETH sent with the call does not match the item's committed value.
 - MUST delete `heldDeposits[identifier]` before moving any value.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
-  [Token Bridge Message](./overview.md#token-bridge-message).
+  [Token Bridge Message](./overview.md#token-bridge-message) by calling `restoreERC20` on the `L1StandardBridge`.
 - MUST then run the normal deposit path, emitting a `TransactionDeposited` event with the committed terms.
 - MUST NOT revert if the system is paused, matching `depositTransaction` on a default OP Stack chain.
 
 ### completeWithdrawalTransaction
 
-Runs a held withdrawal on the terms the Portal committed to.
+Runs a held withdrawal on the terms the Portal committed to. The [Bridge Hook Address](#bridge-hook-address) calls
+this function when it is ready to release the withdrawal.
 
 **Parameters:**
 
@@ -274,7 +273,7 @@ Runs a held withdrawal on the terms the Portal committed to.
 - MUST revert if the ETH sent with the call does not match the item's committed value.
 - MUST delete `heldWithdrawals[withdrawalHash]` before moving any value.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
-  [Token Bridge Message](./overview.md#token-bridge-message).
+  [Token Bridge Message](./overview.md#token-bridge-message)  by calling `restoreERC20` on the `L1StandardBridge`.
 - MUST forward the call to the target with `SafeCall.callWithMinGas` and the item's committed `gasLimit`.
 - MUST revert if the forwarded call fails.
 
@@ -292,7 +291,8 @@ its block's limit without being charged again.
 ### iCM-001: A held item executes only on its committed terms
 
 A protocol contract only ever executes terms it committed to. The Portal rebuilds the commitment key from the preimage
-it is handed at completion and requires the matching bit, so an item that does not match a commitment cannot run.
+it is handed at completion and requires the matching bit, so an item that does not match a commitment cannot be
+executed.
 
 #### Impact
 
@@ -303,7 +303,7 @@ redirecting value or changing what the item does on L2.
 
 ### iCM-002: A held item completes at most once
 
-The Portal deletes the commitment before any value moves.
+The Portal deletes the commitment registered in either `heldDeposits` or `heldWithdrawals` before any value moves.
 
 #### Impact
 
@@ -320,8 +320,8 @@ goes or what the item does.
 
 **Severity: Critical**
 
-If violated, the contract at the hook address could redirect user value, which is a larger authority than the chain's
-upgrade authority is meant to gain by setting a hook.
+If violated, the contract at the hook address could redirect user value or decide arbitrary execution on both L1 and
+L2. That is far more authority than setting a hook is meant to grant to whoever can upgrade it.
 
 ### iCM-004: A chain with no hook configured is unaffected
 
@@ -333,22 +333,26 @@ While `bridgeHook` is `address(0)`, every entry point behaves exactly as on a de
 
 If violated, chains that never opted in would change behavior on upgrade, which the feature exists to avoid.
 
+### iCM-005: A held withdrawal keeps its minimum gas guarantee
+
+A withdrawal carries a gas limit for the call it will make on L1. Holding splits that call into two transactions: the
+finalization that defers it, and the completion that executes it. The gas limit has to survive this deferring.
+
+A held withdrawal is recorded as finalized and its call does not execute. The commitment is what carries the guarantee
+across. [`completeWithdrawalTransaction`](#completewithdrawaltransaction) forwards the call with
+`SafeCall.callWithMinGas` and the committed `gasLimit`, and reverts if that call fails. The target receives the gas
+limit the withdrawal carries, whether the withdrawal was held or not.
+
+Without this, the withdrawal is consumed at finalization, and the gas limit set on L2 would apply to nothing.
+
+#### Impact
+
+**Severity: Critical**
+
+If violated, a held withdrawal completes with less gas than its sender asked for. The target call might fail.
+The commitment is already deleted and cannot be retried, leaving whichever value it carries stranded.
+
 ## Security Considerations
-
-### Predictable Minimum Gas Limit
-
-Holding adds a third outcome to the Portal's predictable minimum gas limit invariant. When finalizing a valid
-withdrawal, `finalizeWithdrawalTransaction` MUST either:
-
-1. Revert, OR
-2. Forward the call so that at least the `tx.gasLimit` amount is available in the execution context of the target
-   contract AND record the withdrawal as finalized, OR
-3. When the hook holds it, record the withdrawal as finalized AND commit its terms, so that a later
-   `completeWithdrawalTransaction` either reverts or forwards the call with at least the `tx.gasLimit` amount
-   available to the target contract.
-
-The third outcome holds because the completion forwards the call with `callWithMinGas` and the same `tx.gasLimit`, and
-reverts if the call fails.
 
 ### Gas Headroom on the Withdrawal Path
 
