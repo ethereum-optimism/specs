@@ -207,7 +207,7 @@ hook once the item has been cleared. A held item cannot be partially completed, 
 ### Policy
 
 A **Policy** is a contract **the chain operator owns** that decides the [Screening Outcome](#screening-outcome) for
-an item. The hook asks it when an item is screened and again when value moves, and takes verdicts only from it.
+an item. The hook asks it when an item is screened and when value moves, and takes verdicts only from it.
 
 ### Parties
 
