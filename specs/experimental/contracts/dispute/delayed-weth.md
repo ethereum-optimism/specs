@@ -23,6 +23,9 @@
   - [constructor](#constructor)
   - [initialize](#initialize)
   - [delay](#delay)
+  - [minDelay](#mindelay)
+  - [maxDelay](#maxdelay)
+  - [setDelay](#setdelay)
   - [config](#config)
   - [unlock](#unlock)
   - [withdraw](#withdraw)
@@ -48,6 +51,14 @@ The minimum time period (in seconds) that must elapse between unlocking a withdr
 This delay provides a window for the contract owner to intervene if the Fault Dispute Game incorrectly
 distributes bonds.
 
+The Withdrawal Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner, but only
+within a lower and upper bound that cannot be changed without an upgrade. The value in effect is the
+one configured at the time a withdrawal is executed, so a change applies to
+[Withdrawal Requests](#withdrawal-request) that were already unlocked, in either direction. Upgrades
+carry the configured value forward; see
+[i01-003](../L1/opcm.md#i01-003-no-unexpected-mutations). All chains and game types that share a
+`DelayedWETH` share the same delay.
+
 ### Sub-Account
 
 An address parameter used to segregate withdrawal requests within a single caller's account. This allows
@@ -71,13 +82,13 @@ funds.
 #### Mitigations
 
 - Owner is expected to be a multisig with multiple signers across different timezones
-- [Withdrawal Delay](#withdrawal-delay) of 7 days provides time for community oversight before withdrawals
-complete
+- [Withdrawal Delay](#withdrawal-delay) of at least 12 hours and up to 7 days provides time for community
+oversight before withdrawals complete
 - Owner actions are transparent on-chain and subject to community monitoring
 
 ### a01-002: SuperchainConfig provides accurate pause state
 
-The SystemConfig contract correctly references a SuperchainConfig contract that accurately reflects the
+The ETHLockbox contract correctly references a SuperchainConfig contract that accurately reflects the
 intended pause state of the system.
 
 #### Mitigations
@@ -123,30 +134,35 @@ for its intended purpose.
 
 ### constructor
 
-Initializes the immutable [Withdrawal Delay](#withdrawal-delay) and disables initializers for the
-implementation contract.
+Sets the immutable bounds of the [Withdrawal Delay](#withdrawal-delay) and disables initializers for
+the implementation contract.
 
 **Parameters:**
 
-- `_delay`: The [Withdrawal Delay](#withdrawal-delay) in seconds
+- `_minDelay`: The lower bound of the [Withdrawal Delay](#withdrawal-delay) in seconds
+- `_maxDelay`: The upper bound of the [Withdrawal Delay](#withdrawal-delay) in seconds
 
 **Behavior:**
 
-- MUST set the immutable `DELAY_SECONDS` to `_delay`
+- MUST revert if `_minDelay` is zero or greater than `_maxDelay`
+- MUST set the immutable `MIN_DELAY_SECONDS` to `_minDelay` and `MAX_DELAY_SECONDS` to `_maxDelay`
 - MUST call `_disableInitializers()` to prevent initialization of the implementation contract
 
 ### initialize
 
-Initializes the proxy contract with the SystemConfig address.
+Initializes the proxy contract with the ETHLockbox address and the [Withdrawal Delay](#withdrawal-delay).
 
 **Parameters:**
 
-- `_systemConfig`: Address of the SystemConfig contract
+- `_ethLockbox`: Address of the ETHLockbox contract
+- `_delay`: The [Withdrawal Delay](#withdrawal-delay) in seconds
 
 **Behavior:**
 
 - MUST revert if caller is not the ProxyAdmin or ProxyAdmin owner
-- MUST set `systemConfig` to `_systemConfig`
+- MUST revert if `_delay` is less than `MIN_DELAY_SECONDS` or greater than `MAX_DELAY_SECONDS`
+- MUST set `ethLockbox` to `_ethLockbox`
+- MUST set the Withdrawal Delay to `_delay` and emit a `DelaySet` event with the new value
 - MUST only be callable once per initialization version via the `reinitializer` modifier
 
 ### delay
@@ -155,7 +171,38 @@ Returns the [Withdrawal Delay](#withdrawal-delay) in seconds.
 
 **Behavior:**
 
-- MUST return the value of `DELAY_SECONDS`
+- MUST return the current value of the Withdrawal Delay
+
+### minDelay
+
+Returns the lower bound of the [Withdrawal Delay](#withdrawal-delay) in seconds.
+
+**Behavior:**
+
+- MUST return the value of `MIN_DELAY_SECONDS`
+
+### maxDelay
+
+Returns the upper bound of the [Withdrawal Delay](#withdrawal-delay) in seconds.
+
+**Behavior:**
+
+- MUST return the value of `MAX_DELAY_SECONDS`
+
+### setDelay
+
+Allows the L1 ProxyAdmin owner to change the [Withdrawal Delay](#withdrawal-delay).
+
+**Parameters:**
+
+- `_delay`: The new [Withdrawal Delay](#withdrawal-delay) in seconds
+
+**Behavior:**
+
+- MUST revert if `msg.sender` is not the ProxyAdmin owner
+- MUST revert if `_delay` is less than `MIN_DELAY_SECONDS` or greater than `MAX_DELAY_SECONDS`
+- MUST set the Withdrawal Delay to `_delay`
+- MUST emit a `DelaySet` event with the new value
 
 ### config
 
@@ -163,7 +210,7 @@ Returns the SuperchainConfig contract address.
 
 **Behavior:**
 
-- MUST return the result of calling `systemConfig.superchainConfig()`
+- MUST return the result of calling `ethLockbox.superchainConfig()`
 
 ### unlock
 
@@ -192,10 +239,10 @@ Withdraws ETH to `msg.sender` after the [Withdrawal Delay](#withdrawal-delay) ha
 
 **Behavior:**
 
-- MUST revert if `systemConfig.paused()` returns true
+- MUST revert if `ethLockbox.paused()` returns true
 - MUST revert if `withdrawals[msg.sender][_guy].amount` is less than `_wad`
 - MUST revert if `withdrawals[msg.sender][_guy].timestamp` is 0
-- MUST revert if `withdrawals[msg.sender][_guy].timestamp + DELAY_SECONDS` is greater than `block.timestamp`
+- MUST revert if `withdrawals[msg.sender][_guy].timestamp + delay()` is greater than `block.timestamp`
 - MUST decrease `withdrawals[msg.sender][_guy].amount` by `_wad`
 - MUST call the parent `WETH98.withdraw(_wad)` function to transfer ETH to `msg.sender`
 

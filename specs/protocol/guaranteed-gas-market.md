@@ -113,7 +113,7 @@ elif prev_num != now_num:
         now_base_fee_wide = now_base_fee * pow(1-(1/BASE_FEE_MAX_CHANGE_DENOMINATOR), n)
         now_base_fee = clamp(now_base_fee_wide, min=MINIMUM_BASE_FEE, max=type(uint128).max)
 
-require(now_bought_gas < MAX_RESOURCE_LIMIT)
+require(now_bought_gas <= MAX_RESOURCE_LIMIT)
 
 store_values(now_base_fee, now_bought_gas, now_num)
 ```
