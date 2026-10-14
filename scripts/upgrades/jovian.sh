@@ -7,7 +7,15 @@ FROM_ADDRESS_NONCE=0
 FROM_ADDRESS=0x4210000000000000000000000000000000000006
 FORK_NAME=Jovian
 
-# Array of contract names and their corresponding proxy addresses
+# Array of contract names and their corresponding proxy addresses.
+# Each entry is "ContractName:proxyAddress" with an optional third field,
+# "ContractName:proxyAddress:Intent Name".
+#
+# The third field sets the name in the upgrade-deposit intent string. That
+# string fixes the source hash. Some contracts use a spaced name in the intent,
+# for example "Gas Price Oracle". Omit the field when the intent uses the
+# contract name unchanged.
+#
 # Uncomment the contracts you want to deploy
 declare -a contracts=(
     # "CrossL2Inbox:0x4200000000000000000000000000000000000022"
@@ -20,8 +28,8 @@ declare -a contracts=(
     # "SequencerFeeVault:0x4200000000000000000000000000000000000011"
     # "OptimismMintableERC20Factory:0x4200000000000000000000000000000000000012"
     # "L1BlockNumber:0x4200000000000000000000000000000000000013"
-    "L1Block:0x4200000000000000000000000000000000000015"
-    "GasPriceOracle:0x420000000000000000000000000000000000000F"
+    "L1Block:0x4200000000000000000000000000000000000015:L1 Block"
+    "GasPriceOracle:0x420000000000000000000000000000000000000F:Gas Price Oracle"
     # "GovernanceToken:0x4200000000000000000000000000000000000042"
     # "LegacyMessagePasser:0x4200000000000000000000000000000000000000"
     # "L2ERC721Bridge:0x4200000000000000000000000000000000000014"
