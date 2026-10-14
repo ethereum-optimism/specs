@@ -52,11 +52,12 @@ inc_hex() {
 
 # shellcheck disable=SC2154
 for contract_pair in "${contracts[@]}"; do
-    IFS=':' read -r contract_name proxy_address <<< "$contract_pair"
+    IFS=':' read -r contract_name proxy_address intent_name <<< "$contract_pair"
     ./run_gen_predeploy_docs.sh \
         --optimism-repo-path ../../optimism \
         --fork-name $FORK_NAME \
         --contract-name "$contract_name" \
+        --intent-name "${intent_name:-$contract_name}" \
         --from-address $FROM_ADDRESS \
         --from-address-nonce $FROM_ADDRESS_NONCE \
         --git-commit-hash $GIT_COMMIT_HASH \
