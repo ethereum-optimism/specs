@@ -386,8 +386,7 @@ would be a different block from the one the sequencer is building and will seal.
 
 _Consumer implication._ A consumer that executes the in-progress block, for example to serve pending-state queries
 or preconfirmed receipts, MUST execute it as a [verifier](./sdm.md#producer-and-verifier) does, using the
-`gasRefundEntries` of the latest subblock's `post_exec_tx`. Each entry's `index` is a position in the transaction list
-defined above, and the settlement for transaction `i` is [applied atomically with it](./sdm.md#application-rules), so
+`gasRefundEntries` of the latest subblock's `post_exec_tx`. Each entry's `index` is a position in the subblock's transaction list, and the settlement for transaction `i` is [applied atomically with it](./sdm.md#application-rules), so
 later transactions observe the settled balances. Executing `diff.transactions` without these entries yields
 pre-refund gas used, no `opGasRefund`, and balances that omit the [settlement](./sdm.md#per-recipient-deltas).
 
