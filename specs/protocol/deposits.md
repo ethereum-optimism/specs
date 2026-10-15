@@ -55,19 +55,17 @@ introduced the change. Read the linked fork page for the full rule.
 
 | Rule | Fork |
 | --- | --- |
-| `isSystemTx` disabled | [Regolith](./regolith/overview.md) |
-| Actual gas usage recorded in the receipt | [Regolith](./regolith/overview.md) |
-| `depositNonce` added to the receipt | [Regolith](./regolith/overview.md) |
-| `depositNonce` and `depositNonceVersion` always present | [Canyon](./canyon/overview.md) |
-| L1 attributes calldata format | [Ecotone](./ecotone/overview.md) |
-| Upgrade deposits | [Isthmus](./isthmus/overview.md) |
-| Operator fee exemption | [Isthmus](./isthmus/overview.md) |
-| EIP-6110 request exclusion | [Isthmus](./isthmus/overview.md) |
-| Upgrade deposits | [Jovian](./jovian/overview.md) |
-| DA footprint gas | [Jovian](./jovian/overview.md) |
-| EIP-7825 gas-cap exemption | [Karst](./karst/overview.md) |
-| Post-exec transactions | [Lagoon](./lagoon/overview.md) |
-| SDM refund eligibility | [Lagoon](./lagoon/overview.md) |
+| `isSystemTx` disabled | [Regolith](./regolith/deposits.md#issystemtx-disabled) |
+| Actual gas usage recorded in the receipt | [Regolith](./regolith/deposits.md#actual-gas-usage-recorded) |
+| `depositNonce` added to the receipt | [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt) |
+| L1 attributes deposit | [Regolith](./regolith/deposits.md#l1-attributes-deposit) |
+| `depositNonce` and `depositNonceVersion` always present | [Canyon](./canyon/deposits.md#depositnonce-and-depositnonceversion-always-present) |
+| L1 attributes calldata format | [Ecotone](./ecotone/deposits.md#l1-attributes-calldata) |
+| Upgrade deposits | [Isthmus](./isthmus/deposits.md#network-upgrade-transactions) |
+| Operator fee exemption | [Isthmus](./isthmus/deposits.md#operator-fee-exemption) |
+| Upgrade deposits | [Jovian](./jovian/deposits.md#network-upgrade-transactions) |
+| Upgrade deposits | [Karst](./karst/deposits.md#network-upgrade-transactions) |
+| EIP-7825 gas-cap exemption | [Karst](./karst/deposits.md#eip-7825-gas-cap-exemption) |
 
 ## The Deposited Transaction Type
 
@@ -95,16 +93,13 @@ A deposit has the following fields
 - `uint256 mint`: The ETH value to mint on L2.
 - `uint256 value`: The ETH value to send to the recipient account.
 - `uint64 gas`: The gas limit for the L2 transaction.
-- `bool isSystemTx`: If true, the transaction does not interact with the L2 block gas pool.
-  - Note: boolean is disabled (enforced to be `false`) starting from the Regolith upgrade.
+- `bool isSystemTx`: If true, the transaction does not interact with the L2 block gas pool. (Changed by [Regolith](./regolith/deposits.md#issystemtx-disabled))
 - `bytes data`: The calldata.
 
 In contrast to [EIP-155] transactions, this transaction type:
 
 - Does not include a `nonce`, since it is identified by the `sourceHash`.
-  API responses still include a `nonce` attribute:
-  - Before Regolith: the `nonce` is always `0`
-  - With Regolith: the `nonce` is set to the `depositNonce` attribute of the corresponding transaction receipt.
+  API responses still include a `nonce` attribute, which is always `0`. (Changed by [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt))
 - Does not include signature information, and makes the `from` address explicit.
   API responses contain zeroed signature `v`, `r`, `s` values for backwards compatibility.
 - Includes new `sourceHash`, `from`, `mint`, and `isSystemTx` attributes.
@@ -181,10 +176,9 @@ The deposit transaction is processed exactly like a type-2 (EIP-1559) transactio
   init code size.
 - No check if `from` is an Externally Owner Account (EOA): the deposit is ensured not to be an EOA through L1 address
   masking, this may change in future L1 contract-deployments to e.g. enable an account-abstraction like mechanism.
-- Before the Regolith upgrade:
-  - The execution output states a non-standard gas usage:
-    - If `isSystemTx` is false: execution output states it uses `gasLimit` gas.
-    - If `isSystemTx` is true: execution output states it uses `0` gas.
+- The execution output states a non-standard gas usage (Changed by [Regolith](./regolith/deposits.md#actual-gas-usage-recorded)):
+  - If `isSystemTx` is false: execution output states it uses `gasLimit` gas.
+  - If `isSystemTx` is true: execution output states it uses `0` gas.
 - No gas is refunded as ETH. (either by not refunding or utilizing the fact the gas-price of the deposit is `0`)
 - No transaction priority fee is charged. No payment is made to the block fee-recipient.
 - No L1-cost fee is charged, as deposits are derived from L1 and do not have to be submitted as data back to it.
@@ -206,11 +200,9 @@ Any non-EVM state-transition error emitted by the EVM execution is processed in 
 
 Finally, after the above processing, the execution post-processing runs the same:
 i.e. the gas pool and receipt are processed identical to a regular transaction.
-Starting with the Regolith upgrade however, the receipt of deposit transactions is extended with an additional
-`depositNonce` value, storing the `nonce` value of the `from` sender as registered _before_ the EVM processing.
 
 Note that the gas used as stated by the execution output is subtracted from the gas pool,
-but this execution output value has special edge cases before the Regolith upgrade.
+but this execution output value has special edge cases, as described above.
 
 Note for application developers: because `CALLER` and `ORIGIN` are set to `from`, the
 semantics of using the `tx.origin == msg.sender` check will not work to determine whether
@@ -232,28 +224,17 @@ tooling (such as wallets and block explorers).
 ## Deposit Receipt
 
 Transaction receipts use standard typing as per [EIP-2718].
-The Deposit transaction receipt type is equal to a regular receipt,
-but extended with an optional `depositNonce` field.
+The Deposit transaction receipt type is equal to a regular receipt.
 
 The RLP-encoded consensus-enforced fields are:
 
 - `postStateOrStatus` (standard): this contains the transaction status, see [EIP-658].
 - `cumulativeGasUsed` (standard): gas used in the block thus far, including this transaction.
   - The actual gas used is derived from the difference in `CumulativeGasUsed` with the previous transaction.
-  - Starting with Regolith, this accounts for the actual gas usage by the deposit, like regular transactions.
 - `bloom` (standard): bloom filter of the transaction logs.
 - `logs` (standard): log events emitted by the EVM processing.
-- `depositNonce` (unique extension): Optional field. The deposit transaction persists the nonce used during execution.
-- `depositNonceVersion` (unique extension): Optional field. The value must be 1 if the field is present
-  - Before Canyon, these `depositNonce` & `depositNonceVersion` fields must always be omitted.
-  - With Canyon, these `depositNonce` & `depositNonceVersion` fields must always be included.
 
-Starting with Regolith, the receipt API responses utilize the receipt changes for more accurate response data:
-
-- The `depositNonce` is included in the receipt JSON data in API responses
-- For contract-deployments (when `to == null`), the `depositNonce` helps derive the correct `contractAddress` meta-data,
-  instead of assuming the nonce was zero.
-- The `cumulativeGasUsed` accounts for the actual gas usage, as metered in the EVM processing.
+(Changed by [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt) and [Canyon](./canyon/deposits.md#depositnonce-and-depositnonceversion-always-present))
 
 [EIP-658]: https://eips.ethereum.org/EIPS/eip-658
 
@@ -272,8 +253,10 @@ This transaction MUST have the following values:
    contract][predeploy]).
 3. `mint` is `0`
 4. `value` is `0`
-5. `gasLimit` is set to 150,000,000 prior to the Regolith upgrade, and 1,000,000 after.
-6. `isSystemTx` is set to `true` prior to the Regolith upgrade, and `false` after.
+5. `gasLimit` is set to 150,000,000.
+6. `isSystemTx` is set to `true`.
+
+(Changed by [Regolith](./regolith/deposits.md#l1-attributes-deposit))
 7. `data` is an encoded call to the [L1 attributes predeployed contract][predeploy] that
    depends on the upgrades that are active (see below).
 
@@ -287,6 +270,8 @@ This system-initiated transaction for L1 attributes is not charged any ETH for i
 The `data` field of the L1 attributes deposited transaction is an [ABI][ABI] encoded call to the
 `setL1BlockValues()` function with correct values associated with the corresponding L1 block
 (cf. [reference implementation][l1-attr-ref-implem]).
+
+(Changed by [Ecotone](./ecotone/deposits.md#l1-attributes-calldata))
 
 ## Special Accounts on L2
 
