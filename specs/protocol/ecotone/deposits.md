@@ -5,26 +5,72 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Changes](#changes)
-  - [L1 attributes calldata](#l1-attributes-calldata)
+- [L1 attributes calldata](#l1-attributes-calldata)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 [deposits]: ../deposits.md
-[l1-attributes]: ./l1-attributes.md
 
 ## Overview
 
 The Ecotone upgrade changes the L1 attributes deposit calldata. This page lists the changes to the
 [deposit specification][deposits].
 
-## Changes
+## L1 attributes calldata
 
-### L1 attributes calldata
+On the Ecotone activation block, and if Ecotone is not activated at Genesis,
+the L1 Attributes Transaction includes a call to `setL1BlockValues()`
+because the L1 Attributes transaction precedes the [Ecotone Upgrade Transactions][ecotone-upgrade-txs],
+meaning that `setL1BlockValuesEcotone` is not guaranteed to exist yet.
 
-After the Ecotone activation block, the L1 attributes deposit calls `setL1BlockValuesEcotone` instead of
-`setL1BlockValues`. The calldata is no longer ABI-encoded; the arguments are packed into 5 32-byte aligned
-segments, and the total calldata length is exactly 164 bytes.
+Every subsequent L1 Attributes transaction should include a call to the `setL1BlockValuesEcotone()` function.
+The input args are no longer ABI encoded function parameters,
+but are instead packed into 5 32-byte aligned segments (starting after the function selector).
+Each unsigned integer argument is encoded as big-endian using a number of bytes corresponding to the underlying type.
+The overall calldata layout is as follows:
 
-The full calldata layout and the migration of the pre-Ecotone values are described in
-[Ecotone L1 Attributes][l1-attributes].
+[ecotone-upgrade-txs]: derivation.md#network-upgrade-automation-transactions
+
+| Input arg         | Type    | Calldata bytes | Segment |
+| ----------------- | ------- | -------------- | ------- |
+| {0x440a5e20}      |         | 0-3            | n/a     |
+| baseFeeScalar     | uint32  | 4-7            | 1       |
+| blobBaseFeeScalar | uint32  | 8-11           |         |
+| sequenceNumber    | uint64  | 12-19          |         |
+| l1BlockTimestamp  | uint64  | 20-27          |         |
+| l1BlockNumber     | uint64  | 28-35          |         |
+| basefee           | uint256 | 36-67          | 2       |
+| blobBaseFee       | uint256 | 68-99          | 3       |
+| l1BlockHash       | bytes32 | 100-131        | 4       |
+| batcherHash       | bytes32 | 132-163        | 5       |
+
+Total calldata length MUST be exactly 164 bytes, implying the sixth and final segment is only
+partially filled. This helps to slow database growth as every L2 block includes a L1 Attributes
+deposit transaction.
+
+In the first L2 block after the Ecotone activation block, the Ecotone L1 attributes are first used.
+
+The pre-Ecotone values are migrated over 1:1.
+Blocks after the Ecotone activation block contain all pre-Ecotone values 1:1,
+and also set the following new attributes:
+
+- The `baseFeeScalar` is set to the pre-Ecotone `scalar` value.
+- The `blobBaseFeeScalar` is set to `0`.
+- The pre-Ecotone `overhead` attribute is dropped.
+- The `blobBaseFee` is set to the L1 blob base fee of the L1 origin block.
+  Or `1` if the L1 block does not support blobs.
+  The `1` value is derived from the EIP-4844 `MIN_BLOB_GASPRICE`.
+
+Note that the L1 blob bas fee is _not_ exposed as a part of the L1 origin block.
+It must be computed using an parameterized off-chain formula which takes the
+excess blob gas field from the header of the L1 origin block as described in
+[EIP-4844](https://eips.ethereum.org/EIPS/eip-4844#base-fee-per-blob-gas-update-rule).
+The `BLOB_BASE_FEE_UPDATE_FRACTION` parameter in the formula varies
+according to which L1 fork is active
+at the origin block (see e.g. [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691)). It is therefore
+necessary for L2 consensus layer clients to know the blob parameters and activation
+time for each L1 fork to compute the `blobBaseFee` correctly. Blob Parameter Only
+(BPO) forks, introduced in [EIP-7892](https://eips.ethereum.org/EIPS/eip-7892)
+can mean that `BLOB_BASE_FEE_UPDATE_FRACTION` is updated frequently:
+that clients and fault proof programs therefore need to stay up to date with
+such forks.

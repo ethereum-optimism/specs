@@ -15,7 +15,6 @@
   - [GasPriceOracle Enable Isthmus](#gaspriceoracle-enable-isthmus)
   - [EIP-2935 Contract Deployment](#eip-2935-contract-deployment)
 - [Operator fee exemption](#operator-fee-exemption)
-- [EIP-6110 request exclusion](#eip-6110-request-exclusion)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -355,14 +354,3 @@ This transaction MUST deploy a contract with the following code hash
 Deposit transactions do not get charged operator fees. For all deposit transactions, regardless of the operator fee
 parameter configuration, the operator fee should be **zero**. Deposit transactions also do not receive operator fee gas
 refunds, since they never buy the operator fee gas to begin with.
-
-## EIP-6110 request exclusion
-
-[EIP-6110] shifts deposit to the execution layer, introducing a new [EIP-7685] deposit request of type
-`DEPOSIT_REQUEST_TYPE`. Deposit requests then appear in the [EIP-7685] requests list. The OP Stack needs to ignore these
-requests. Requests generation must be modified to exclude [EIP-6110] deposit requests. Note that since the [EIP-6110]
-request type did _not_ exist prior to Pectra on L1 and the Isthmus hardfork on L2, no activation time is needed since these
-deposit type requests may always be excluded.
-
-[EIP-6110]: https://eips.ethereum.org/EIPS/eip-6110
-[EIP-7685]: https://eips.ethereum.org/EIPS/eip-7685

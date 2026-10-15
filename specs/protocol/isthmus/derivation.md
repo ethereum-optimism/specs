@@ -4,10 +4,13 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
+- [Network upgrade automation transactions](#network-upgrade-automation-transactions)
 - [Span Batch Updates](#span-batch-updates)
   - [Activation](#activation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Network upgrade automation transactions
 
 The network upgrade transactions are described in [Deposits](./deposits.md).
 

@@ -5,31 +5,39 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Changes](#changes)
-  - [Upgrade deposits](#upgrade-deposits)
-  - [EIP-7825 gas-cap exemption](#eip-7825-gas-cap-exemption)
+- [Network upgrade transactions](#network-upgrade-transactions)
+- [EIP-7825 gas-cap exemption](#eip-7825-gas-cap-exemption)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 [deposits]: ../deposits.md
-[derivation]: ./derivation.md
 
 ## Overview
 
 The Karst upgrade changes deposit processing. This page lists the changes to the
 [deposit specification][deposits].
 
-## Changes
+## Network upgrade transactions
 
-### Upgrade deposits
+The contents of the transaction are defined by the file
+[`karst_nut_bundle.json`](https://github.com/ethereum-optimism/optimism/blob/develop/op-core/nuts/bundles/karst_nut_bundle.json)
+in the monorepo, which contains 31 transactions. In addition to the contents of the files, the consensus layer
+node MUST prefix each intent string with `Karst <index>:` followed by a space, where `<index>` is the zero-based
+position of the transaction within the bundle.
 
-On the Karst activation block, the derivation pipeline generates a set of deposit transaction-based upgrade
-transactions. The transactions are defined by the `karst_nut_bundle.json` file in the monorepo, which contains
-31 transactions. The consensus layer node prefixes each intent string with `Karst <index>:`.
+These transactions can be classified into the following groups:
 
-The full transaction list and the upgrade path are described in [Derivation][derivation].
+1. **ConditionalDeployer Deployment**: One transaction to deploy the ConditionalDeployer contract
+2. **ConditionalDeployer Upgrade** One transaction to upgrade a new predeploy to the ConditionalDeployer implementation
+3. **Implementation Deployments**: One transaction for _each_ predeploy being upgraded, to deploy its implementation  
+  (26 total)
+4. **ProxyAdmin Upgrade** One transactions to upgrade the L2ProxyAdmin implementation
+5. **L2ContractsManager Deployment**: One transaction to deploy the L2ContractsManager for this upgrade
+6. **Upgrade Execution**: One transactions to call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)`
 
-### EIP-7825 gas-cap exemption
+More information regarding the upgrade path implemented by the bundle transactions can be found in [L2 Upgrade Execution](../l2-upgrades-1-execution.md).
+
+## EIP-7825 gas-cap exemption
 
 Deposits are exempt from the EIP-7825 transaction gas cap. Deposits are already subject to a 20M gas limit,
 enforced by the L1 contracts.
