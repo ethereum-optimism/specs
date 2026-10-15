@@ -32,11 +32,6 @@ gas accounting rules as regular deposits.
 The actual deposit gas-usage is recorded in the receipt, and subtracted from the L2 block gas-pool.
 Unused gas of deposits is not refunded with ETH, as it is burned on L1.
 
-Before Regolith, the execution output states a non-standard gas usage:
-
-- If `isSystemTx` is false: the execution output states it uses `gasLimit` gas.
-- If `isSystemTx` is true: the execution output states it uses `0` gas.
-
 ### `depositNonce` in the receipt
 
 The `nonce` value of the deposit sender account, before the transaction state-transition, is recorded
