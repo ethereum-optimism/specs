@@ -292,6 +292,9 @@ The `data` field of the L1 attributes deposited transaction is an [ABI][ABI] enc
 `setL1BlockValues()` function with correct values associated with the corresponding L1 block
 (cf. [reference implementation][l1-attr-ref-implem]).
 
+Changed by [Ecotone](./ecotone/deposits.md#l1-attributes-calldata): the calldata is packed into 5 32-byte aligned
+segments, and the function is `setL1BlockValuesEcotone`.
+
 ## Special Accounts on L2
 
 The L1 attributes deposit transaction involves two special purpose accounts:
