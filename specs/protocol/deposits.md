@@ -69,19 +69,17 @@ introduced the change. Read the linked fork page for the full rule.
 
 | Rule | Fork |
 | --- | --- |
-| `isSystemTx` disabled | [Regolith](./regolith/overview.md) |
-| Actual gas usage recorded in the receipt | [Regolith](./regolith/overview.md) |
-| `depositNonce` added to the receipt | [Regolith](./regolith/overview.md) |
-| `depositNonce` and `depositNonceVersion` always present | [Canyon](./canyon/overview.md) |
-| L1 attributes calldata format | [Ecotone](./ecotone/overview.md) |
-| Upgrade deposits | [Isthmus](./isthmus/overview.md) |
-| Operator fee exemption | [Isthmus](./isthmus/overview.md) |
-| EIP-6110 request exclusion | [Isthmus](./isthmus/overview.md) |
-| Upgrade deposits | [Jovian](./jovian/overview.md) |
-| DA footprint gas | [Jovian](./jovian/overview.md) |
-| EIP-7825 gas-cap exemption | [Karst](./karst/overview.md) |
-| Post-exec transactions | [Lagoon](./lagoon/overview.md) |
-| SDM refund eligibility | [Lagoon](./lagoon/overview.md) |
+| `isSystemTx` disabled | [Regolith](./regolith/deposits.md#issystemtx-disabled) |
+| Actual gas usage recorded in the receipt | [Regolith](./regolith/deposits.md#actual-gas-usage-recorded) |
+| `depositNonce` added to the receipt | [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt) |
+| L1 attributes deposit | [Regolith](./regolith/deposits.md#l1-attributes-deposit) |
+| `depositNonce` and `depositNonceVersion` always present | [Canyon](./canyon/deposits.md#depositnonce-and-depositnonceversion-always-present) |
+| L1 attributes calldata format | [Ecotone](./ecotone/deposits.md#l1-attributes-calldata) |
+| Upgrade deposits | [Isthmus](./isthmus/deposits.md#network-upgrade-transactions) |
+| Operator fee exemption | [Isthmus](./isthmus/deposits.md#operator-fee-exemption) |
+| Upgrade deposits | [Jovian](./jovian/deposits.md#network-upgrade-transactions) |
+| Upgrade deposits | [Karst](./karst/deposits.md#network-upgrade-transactions) |
+| EIP-7825 gas-cap exemption | [Karst](./karst/deposits.md#eip-7825-gas-cap-exemption) |
 
 ## The Deposited Transaction Type
 
