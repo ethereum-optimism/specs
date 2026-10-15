@@ -296,7 +296,7 @@ any new item.
 
 **A failing policy can halt bridging.** The `ComplianceModule`'s
 [disable switch](../contracts/L1/compliance-module.md#disable) exists so that a problem in the policy, or a long
-outage of the screening service, cannot block bridging indefinitely. It is not a release. While it is on, every
+outage of the Verdict Writer, cannot block bridging indefinitely. It is not a release. While it is on, every
 deposit proceeds without the policy being asked, and so does every withdrawal initiated after the cutoff. Items
 already held, and withdrawals initiated before the cutoff, are still screened. A problem in the hook itself is fixed
 by upgrading it.
