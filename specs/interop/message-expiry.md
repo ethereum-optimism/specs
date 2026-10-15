@@ -105,4 +105,3 @@ message MUST set `successfulMessages`. An upgrade that breaks either rule breaks
   resend a message after it expired, is ever live on a chain with expiry.
 - Every chain in a cluster's dependency set MUST be authorized by the cluster's `ETHLockbox` and run the
   `UndeliveredMessageExporter`. Otherwise messages sent to it cannot expire.
-- Messages sent before the upgrade have no send timestamp and can never expire.
