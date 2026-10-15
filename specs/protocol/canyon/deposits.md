@@ -15,7 +15,7 @@
 ## Overview
 
 The Canyon upgrade changes the deposit receipt. This page lists the changes to the
-[deposit specification][deposits]. The deposit specification describes the Bedrock behavior.
+[deposit specification][deposits].
 
 ## Changes
 
