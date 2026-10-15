@@ -18,7 +18,7 @@
 ## Overview
 
 The Lagoon upgrade changes deposit processing. This page lists the changes to the
-[deposit specification][deposits]. The deposit specification describes the Bedrock behavior.
+[deposit specification][deposits].
 
 ## Changes
 
