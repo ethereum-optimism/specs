@@ -31,4 +31,5 @@ The full transaction list and the upgrade path are described in [Derivation][der
 
 ### EIP-7825 gas-cap exemption
 
-Deposits are exempt from the EIP-7825 transaction gas cap. Deposits are already subject to a 20M gas limit.
+Deposits are exempt from the EIP-7825 transaction gas cap. Deposits are already subject to a 20M gas limit,
+enforced by the L1 contracts.
