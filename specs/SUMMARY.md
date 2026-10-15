@@ -94,7 +94,6 @@
       - [Post-Execution Transactions](./protocol/lagoon/post-exec.md)
       - [Sequencer-Defined Metering](./protocol/lagoon/sdm.md)
       - [Derivation](./protocol/lagoon/derivation.md)
-      - [Deposits](./protocol/lagoon/deposits.md)
       - [Interoperability](./interop/overview.md)
         - [Dependency Set](./interop/dependency-set.md)
         - [Messaging](./interop/messaging.md)
