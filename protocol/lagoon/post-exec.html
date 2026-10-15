@@ -210,6 +210,7 @@
 <li><a href="#the-post-exec-transaction-is-carried-in-diff">The post-exec transaction is carried in <code>diff</code></a></li>
 <li><a href="#the-post-exec-transaction-never-appears-in-transactions">The post-exec transaction never appears in <code>transactions</code></a></li>
 <li><a href="#only-the-last-subblocks-post-exec-transaction-is-canonical">Only the last subblock's post-exec transaction is canonical</a></li>
+<li><a href="#the-in-progress-block-includes-the-latest-post-exec-transaction">The in-progress block includes the latest post-exec transaction</a></li>
 <li><a href="#a-subblocks-transactions-may-be-empty">A subblock's <code>transactions</code> may be empty</a></li>
 <li><a href="#no-receipt-is-streamed-for-the-post-exec-transaction">No receipt is streamed for the post-exec transaction</a></li>
 </ul>
@@ -463,6 +464,29 @@ or one more than usual. A consumer therefore MUST NOT treat any subblock's <code
 is still being built. Determine that the block was sealed by other means, such as observing the next <code>payload_id</code>
 or the canonical block arriving through normal L2 block propagation, and note that the in-progress block may be
 abandoned rather than sealed, in which case no value from it was ever canonical.</p>
+<h3 id="the-in-progress-block-includes-the-latest-post-exec-transaction"><a class="header" href="#the-in-progress-block-includes-the-latest-post-exec-transaction">The in-progress block includes the latest post-exec transaction</a></h3>
+<p>The in-progress block a subblock describes has as its transaction list the concatenation of <code>diff.transactions</code>
+across the payload's subblocks up to and including that subblock, followed by that subblock's <code>diff.post_exec_tx</code>
+when present. Its canonical gas, settlement and receipts follow from that list exactly as for a sealed block: see
+<a href="./sdm.html#canonical-gas">Canonical Gas</a>, <a href="./sdm.html#settlement">Settlement</a> and
+<a href="./sdm.html#receipt-extension">Receipt Extension</a>.</p>
+<p><em>Rationale (non-normative, subject to change).</em> The stream keeps the post-exec transaction out of <code>transactions</code> only
+so that the append-only list never carries a value a later subblock supersedes. The block being described still
+contains it when it exists, and its refunds change the receipts and balances derived from that block. A description
+without it would be a different block from the one the sequencer is building and will seal.</p>
+<p><em>Consumer implication.</em> A consumer that executes the in-progress block, for example to serve pending-state queries
+or preconfirmed receipts, MUST execute it as a <a href="./sdm.html#producer-and-verifier">verifier</a> does, using the
+<code>gasRefundEntries</code> of the latest subblock's <code>post_exec_tx</code>. Each entry's <code>index</code> is a position in the subblock's
+transaction list, and the settlement for transaction <code>i</code> is <a href="./sdm.html#application-rules">applied atomically with it</a>,
+so later transactions observe the settled balances. Executing <code>diff.transactions</code> without these entries yields
+pre-refund gas used, no <code>opGasRefund</code>, and balances that omit the <a href="./sdm.html#per-recipient-deltas">settlement</a>.</p>
+<p>Because the payload is provisional and the refund policy is sequencer-defined, the entries for transactions streamed
+in earlier subblocks may change from one subblock to the next, and an absent <code>post_exec_tx</code> means every refund is
+zero. A consumer MAY reuse its execution of a prefix of the transaction list from an earlier subblock only if the
+latest entries for every index in that prefix equal the entries it executed that prefix with, treating a missing entry
+as a zero refund; otherwise it MUST re-execute from the first index whose entry differs. Under the version-1 policy a
+refund depends only on earlier transactions, so entries for already-streamed transactions are not expected to change
+(non-normative).</p>
 <h3 id="a-subblocks-transactions-may-be-empty"><a class="header" href="#a-subblocks-transactions-may-be-empty">A subblock's <code>transactions</code> may be empty</a></h3>
 <p>A subblock MAY have <code>transactions: []</code>. This applies to subblocks after index <code>0</code>; the first subblock always
 carries at least the block's <a href="../subblocks.html#consumer-guarantees">deposited transactions</a>.</p>
