@@ -84,7 +84,7 @@ protocol knowledge in one place.
 
 ### Disable
 
-**Disable** is the module's emergency switch, intended for a failing policy or a long outage of the screening service.
+**Disable** is the module's emergency switch, intended for a failing policy or a long outage of the Verdict Writer.
 
 While it is set, every deposit proceeds without the policy being asked, and so does every withdrawal initiated at or
 after the cutoff. Withdrawals initiated before the cutoff are still screened. Items already held stay held, and still

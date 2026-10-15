@@ -6,7 +6,7 @@
 
 - [Overview](#overview)
 - [Definitions](#definitions)
-  - [Screening Service](#screening-service)
+  - [Verdict Writer](#verdict-writer)
   - [Hold Delay](#hold-delay)
 - [IPolicy](#ipolicy)
 - [What Every Policy May Assume](#what-every-policy-may-assume)
@@ -37,9 +37,9 @@ what it requires of the answer. It does not specify what a policy decides. See
 
 ## Definitions
 
-### Screening Service
+### Verdict Writer
 
-A **Screening Service** is the offchain service that checks an item's [Parties](./overview.md#parties) and records
+A **Verdict Writer** is the offchain service that checks an item's [Parties](./overview.md#parties) and records
 verdicts through the policy. It belongs to the chain and is outside this specification.
 
 ### Hold Delay
@@ -117,7 +117,7 @@ they live in the hook rather than in the policy.
 ## Non-goals
 
 - What a policy decides. The rules and thresholds belong to the chain.
-- The [Screening Service](#screening-service) behind the policy, and how verdicts reach it.
+- The [Verdict Writer](#verdict-writer) behind the policy, and how verdicts reach it.
 
 ## Assumptions
 
