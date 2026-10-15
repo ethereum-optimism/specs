@@ -36,7 +36,7 @@ Unused gas of deposits is not refunded with ETH, as it is burned on L1.
 
 The `nonce` value of the deposit sender account, before the transaction state-transition, is recorded
 in a new optional field (`depositNonce`), extending the transaction receipt. The field is not present
-in pre-Regolith receipts.
+in pre-Regolith receipts. (Changed by [Canyon](../canyon/deposits.md#depositnonce-and-depositnonceversion-always-present))
 
 The recorded `nonce` is used to correct the transaction and receipt metadata in RPC responses,
 including the `contractAddress` field of deposits that deploy contracts.
