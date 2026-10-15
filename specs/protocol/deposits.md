@@ -56,8 +56,7 @@ The deposit rules follow these invariants:
 2. Deposits buy their gas on L1.
 3. A deposit always mints on L2 exactly the amount of ETH deposited on L1.
 4. The `sourceHash` of a deposit must be unique, so it must include all identifying components of the deposit.
-
-The gas a deposit consumes is accounted for identically across the execution output and the block gas pool.
+5. The gas a deposit consumes is subtracted from the block gas pool exactly as the execution output reports it.
 
 ## The Deposited Transaction Type
 
