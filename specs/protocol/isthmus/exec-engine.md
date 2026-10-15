@@ -17,7 +17,6 @@
     - [Forwards Compatibility Considerations](#forwards-compatibility-considerations)
     - [Client Implementation Considerations](#client-implementation-considerations)
       - [Transaction Simulation](#transaction-simulation)
-- [Deposit Requests](#deposit-requests)
 - [Block Body Withdrawals List](#block-body-withdrawals-list)
 - [EVM Changes](#evm-changes)
   - [BLS Precompiles](#bls-precompiles)
@@ -28,7 +27,6 @@
 - [Fees](#fees)
   - [Operator Fee](#operator-fee)
     - [Fee Formula](#fee-formula)
-    - [Deposit Operator Fees](#deposit-operator-fees)
     - [EVM Fee Semantics](#evm-fee-semantics)
     - [Transaction Pool Changes](#transaction-pool-changes)
     - [Configuring Operator Fee Parameters](#configuring-operator-fee-parameters)
@@ -147,16 +145,7 @@ In response to RPC methods like `eth_simulateV1` that allow simulation of arbitr
 an empty withdrawals root should be included in the header of a block that consists of such simulated transactions. The same
 is applicable for scenarios where the actual withdrawals root value is not readily available.
 
-## Deposit Requests
-
-[EIP-6110] shifts deposit to the execution layer, introducing a new [EIP-7685] deposit request of type
-`DEPOSIT_REQUEST_TYPE`. Deposit requests then appear in the [EIP-7685] requests list. The OP Stack needs to ignore these
-requests. Requests generation must be modified to exclude [EIP-6110] deposit requests. Note that since the [EIP-6110]
-request type did _not_ exist prior to Pectra on L1 and the Isthmus hardfork on L2, no activation time is needed since these
-deposit type requests may always be excluded.
-
-[EIP-6110]: https://eips.ethereum.org/EIPS/eip-6110
-[EIP-7685]: https://eips.ethereum.org/EIPS/eip-7685
+Deposit requests are described in [Deposits](./deposits.md).
 
 ## Block Body Withdrawals List
 
@@ -240,11 +229,7 @@ $$
 
 So implementations don't need to check for overflows if they perform the calculations with `uint256` types.
 
-#### Deposit Operator Fees
-
-Deposit transactions do not get charged operator fees. For all deposit transactions, regardless of the operator fee
-parameter configuration, the operator fee should be **zero**. Deposit transactions also do not receive operator fee gas
-refunds, since they never buy the operator fee gas to begin with.
+Deposit operator fees are described in [Deposits](./deposits.md).
 
 #### EVM Fee Semantics
 
