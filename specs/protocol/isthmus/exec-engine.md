@@ -28,6 +28,7 @@
 - [Fees](#fees)
   - [Operator Fee](#operator-fee)
     - [Fee Formula](#fee-formula)
+    - [Deposit Operator Fees](#deposit-operator-fees)
     - [EVM Fee Semantics](#evm-fee-semantics)
     - [Transaction Pool Changes](#transaction-pool-changes)
     - [Configuring Operator Fee Parameters](#configuring-operator-fee-parameters)
@@ -239,7 +240,9 @@ $$
 
 So implementations don't need to check for overflows if they perform the calculations with `uint256` types.
 
-Deposit operator fees are described in [Deposits](./deposits.md).
+#### Deposit Operator Fees
+
+Deposit transactions do not get charged operator fees. See [Deposits](./deposits.md) for details.
 
 #### EVM Fee Semantics
 
