@@ -92,6 +92,7 @@
         - [Dependency Set](./interop/dependency-set.md)
         - [Messaging](./interop/messaging.md)
         - [Predeploys](./interop/predeploys.md)
+        - [Message Expiry](./interop/message-expiry.md)
         - [Sequencer](./interop/sequencer.md)
         - [Verifier](./interop/verifier.md)
         - [Super Root](./interop/superroot.md)
