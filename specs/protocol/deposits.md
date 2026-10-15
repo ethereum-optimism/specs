@@ -107,15 +107,13 @@ A deposit has the following fields
 - `uint256 mint`: The ETH value to mint on L2.
 - `uint256 value`: The ETH value to send to the recipient account.
 - `uint64 gas`: The gas limit for the L2 transaction.
-- `bool isSystemTx`: If true, the transaction does not interact with the L2 block gas pool.
-  - Changed by [Regolith](./regolith/deposits.md#issystemtx-disabled).
+- `bool isSystemTx`: If true, the transaction does not interact with the L2 block gas pool. (Changed by [Regolith](./regolith/deposits.md#issystemtx-disabled))
 - `bytes data`: The calldata.
 
 In contrast to [EIP-155] transactions, this transaction type:
 
 - Does not include a `nonce`, since it is identified by the `sourceHash`.
-  API responses still include a `nonce` attribute, which is always `0`.
-  - Changed by [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt).
+  API responses still include a `nonce` attribute, which is always `0`. (Changed by [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt))
 - Does not include signature information, and makes the `from` address explicit.
   API responses contain zeroed signature `v`, `r`, `s` values for backwards compatibility.
 - Includes new `sourceHash`, `from`, `mint`, and `isSystemTx` attributes.
@@ -192,10 +190,9 @@ The deposit transaction is processed exactly like a type-2 (EIP-1559) transactio
   init code size.
 - No check if `from` is an Externally Owner Account (EOA): the deposit is ensured not to be an EOA through L1 address
   masking, this may change in future L1 contract-deployments to e.g. enable an account-abstraction like mechanism.
-- The execution output states a non-standard gas usage:
+- The execution output states a non-standard gas usage (Changed by [Regolith](./regolith/deposits.md#actual-gas-usage-recorded)):
   - If `isSystemTx` is false: execution output states it uses `gasLimit` gas.
   - If `isSystemTx` is true: execution output states it uses `0` gas.
-  - Changed by [Regolith](./regolith/deposits.md#actual-gas-usage-recorded).
 - No gas is refunded as ETH. (either by not refunding or utilizing the fact the gas-price of the deposit is `0`)
 - No transaction priority fee is charged. No payment is made to the block fee-recipient.
 - No L1-cost fee is charged, as deposits are derived from L1 and do not have to be submitted as data back to it.
@@ -251,10 +248,7 @@ The RLP-encoded consensus-enforced fields are:
 - `bloom` (standard): bloom filter of the transaction logs.
 - `logs` (standard): log events emitted by the EVM processing.
 
-Changed by [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt): the receipt is extended with an optional
-`depositNonce` field, and the `cumulativeGasUsed` accounts for the actual gas usage. Changed by
-[Canyon](./canyon/deposits.md#depositnonce-and-depositnonceversion-always-present): the `depositNonce` and
-`depositNonceVersion` fields are always present.
+(Changed by [Regolith](./regolith/deposits.md#depositnonce-in-the-receipt) and [Canyon](./canyon/deposits.md#depositnonce-and-depositnonceversion-always-present))
 
 [EIP-658]: https://eips.ethereum.org/EIPS/eip-658
 
@@ -276,8 +270,7 @@ This transaction MUST have the following values:
 5. `gasLimit` is set to 150,000,000.
 6. `isSystemTx` is set to `true`.
 
-Changed by [Regolith](./regolith/deposits.md#l1-attributes-deposit): `gasLimit` is `1,000,000` and `isSystemTx` is
-`false`.
+(Changed by [Regolith](./regolith/deposits.md#l1-attributes-deposit))
 7. `data` is an encoded call to the [L1 attributes predeployed contract][predeploy] that
    depends on the upgrades that are active (see below).
 
@@ -292,8 +285,7 @@ The `data` field of the L1 attributes deposited transaction is an [ABI][ABI] enc
 `setL1BlockValues()` function with correct values associated with the corresponding L1 block
 (cf. [reference implementation][l1-attr-ref-implem]).
 
-Changed by [Ecotone](./ecotone/deposits.md#l1-attributes-calldata): the calldata is packed into 5 32-byte aligned
-segments, and the function is `setL1BlockValuesEcotone`.
+(Changed by [Ecotone](./ecotone/deposits.md#l1-attributes-calldata))
 
 ## Special Accounts on L2
 
