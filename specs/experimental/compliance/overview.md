@@ -94,6 +94,12 @@ deferred with.
 
 ## Architecture
 
+The `OptimismPortal` is the screening boundary. It is the only contract that asks the hook, and it asks once per
+item. A deposit is screened when it is submitted while a withdrawal is screened when it is finalized.
+
+A deposit that already emitted `TransactionDeposited` is on its way to L2. A withdrawal whose call the Portal forwarded has
+already run. Neither can be recalled.
+
 ```mermaid
 graph LR
     U[User]
@@ -128,9 +134,8 @@ graph LR
   value.**
 - The **policy** decides what items go through based on its own set of rules.
 
-The portal gains the
-ability to defer an item and resume it later, which a rate limiter, a per-token pause or a circuit breaker would use
-the same way.
+The Portal gains the ability to defer an item and resume it later, which a rate limiter, a per-token pause or a
+circuit breaker would use the same way.
 
 Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge keeps none. The Portal
 recognizes the messenger envelope and hands the bridge the message inside it. The bridge decodes that inner call
@@ -139,10 +144,10 @@ itself, moves the escrow it names, and updates its own accounting.
 The Portal builds every item and records its terms, and the hook only picks which item moves. No policy, however it is
 written, can redirect value or change what an item does. It can delay an item or refuse it, and nothing else.
 
-The Portal is the only place the hook is asked. Letting the `L1StandardBridge` screen its own token transfers looks
-simpler, because the parties arrive there as typed arguments. It does not work for withdrawals. A token withdrawal
-reaches the bridge inside the messenger's relay, after the Portal has already consumed the withdrawal. A revert there
-becomes a failed message rather than a rejection, so the bridge could hold an item but never refuse one.
+Letting the `L1StandardBridge` screen its own token transfers looks simpler, because the parties arrive there as
+typed arguments. It does not work for withdrawals. A token withdrawal reaches the bridge inside the messenger's
+relay, after the Portal has already consumed the withdrawal. A revert there becomes a failed message rather than a
+rejection, so the bridge could hold an item but never refuse one.
 
 ## Definitions
 
