@@ -60,6 +60,8 @@ The **Bridge Hook Address** is network-specific state on the Portal, set by the 
 The `L1StandardBridge` does not hold the hook address. The Portal is the contract that moves the bridge's escrow when
 an ERC-20 deposit or withdrawal is held.
 
+Setting the address back to `address(0)` stops screening for new items and strands every item already held.
+
 ### Unsafe Target
 
 An Unsafe Target is an address a withdrawal may not call. The default set is the `OptimismPortal` itself and the
