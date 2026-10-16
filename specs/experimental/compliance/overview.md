@@ -90,7 +90,7 @@ deferred with.
 
 - Support for the `L1ERC721Bridge` or third-party bridge contracts.
 - Transactions users submit to the sequencer.
-- What a policy decides, the lists it reads, and the offchain service behind it.
+- The type of policy applied by the chain governor, and the offchain service behind it.
 
 ## Architecture
 
