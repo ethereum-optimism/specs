@@ -294,12 +294,16 @@ this function when it is ready to release the withdrawal.
 
 - MUST revert if the caller is not the [Bridge Hook Address](#bridge-hook-address).
 - MUST revert if the system is paused.
+- MUST revert if the [L2 Withdrawal Sender](../../fault-proof/stage-one/optimism-portal.md#l2-withdrawal-sender) is
+  not `DEFAULT_L2_SENDER`, so a completion cannot run inside another withdrawal's execution.
 - MUST revert if `heldWithdrawals[withdrawalHash]` is not `true`.
 - MUST revert if the ETH sent with the call does not match the item's committed value.
 - MUST delete `heldWithdrawals[withdrawalHash]` before moving any value.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
   [Token Bridge Message](./overview.md#token-bridge-message)  by calling `restoreERC20` on the `L1StandardBridge`.
+- MUST set the L2 Withdrawal Sender to the item's committed sender before forwarding the call.
 - MUST forward the call to the target with `SafeCall.callWithMinGas` and the item's committed `gasLimit`.
+- MUST unset the L2 Withdrawal Sender after the call returns.
 - MUST revert if the forwarded call fails.
 
 ## Resource Metering
