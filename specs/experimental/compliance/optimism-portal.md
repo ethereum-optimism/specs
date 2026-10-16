@@ -7,6 +7,7 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Bridge Hook Address](#bridge-hook-address)
+  - [Unsafe Target](#unsafe-target)
   - [Deposit Counter](#deposit-counter)
 - [IBridgeHook](#ibridgehook)
 - [Item Construction](#item-construction)
@@ -17,6 +18,7 @@
   - [bridgeHook](#bridgehook)
   - [setBridgeHook](#setbridgehook)
   - [depositTransaction](#deposittransaction)
+  - [proveWithdrawalTransaction](#provewithdrawaltransaction)
   - [finalizeWithdrawalTransactionExternalProof](#finalizewithdrawaltransactionexternalproof)
   - [completeDepositTransaction](#completedeposittransaction)
   - [completeWithdrawalTransaction](#completewithdrawaltransaction)
@@ -33,6 +35,7 @@
   - [iCM-005: A held withdrawal keeps its minimum gas guarantee](#icm-005-a-held-withdrawal-keeps-its-minimum-gas-guarantee)
     - [Impact](#impact-4)
 - [Security Considerations](#security-considerations)
+  - [Why the Bridge and the Hook Are Unsafe Targets](#why-the-bridge-and-the-hook-are-unsafe-targets)
   - [Gas Headroom on the Withdrawal Path](#gas-headroom-on-the-withdrawal-path)
   - [Cost When No Hook Is Set](#cost-when-no-hook-is-set)
 
@@ -56,6 +59,13 @@ The **Bridge Hook Address** is network-specific state on the Portal, set by the 
 
 The `L1StandardBridge` does not hold the hook address. The Portal is the contract that moves the bridge's escrow when
 an ERC-20 deposit or withdrawal is held.
+
+### Unsafe Target
+
+An Unsafe Target is an address a withdrawal may not call. The default set is the `OptimismPortal` itself and the
+`ETHLockbox`. This page adds the `L1StandardBridge` on every chain, and the
+[Bridge Hook Address](#bridge-hook-address) on a chain that has set one. See
+[Why the Bridge and the Hook Are Unsafe Targets](#why-the-bridge-and-the-hook-are-unsafe-targets).
 
 ### Deposit Counter
 
@@ -215,10 +225,24 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is identified as a
     [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
 
+### proveWithdrawalTransaction
+
+Proves a withdrawal transaction.
+
+**Behavior:**
+
+- MUST revert if the withdrawal target is an [Unsafe Target](#unsafe-target).
+- MUST NOT consult the hook since a withdrawal is screened when it is finalized, not when it is proven.
+- MUST otherwise behave as on a default OP Stack chain while `bridgeHook` is `address(0)`.
+
 ### finalizeWithdrawalTransactionExternalProof
 
-Finalizes a withdrawal using a proof submitted by another address. Behavior MUST remain unchanged while `bridgeHook`
-is `address(0)`.
+Finalizes a withdrawal using a proof submitted by another address.
+
+**Behavior:**
+
+- MUST revert if the withdrawal target is an [Unsafe Target](#unsafe-target).
+- MUST otherwise behave as on a default OP Stack chain while `bridgeHook` is `address(0)`.
 
 **Behavior, when `bridgeHook` is not `address(0)`:**
 
@@ -353,6 +377,20 @@ If violated, a held withdrawal completes with less gas than its sender asked for
 The commitment is already deleted and cannot be retried, leaving whichever value it carries stranded.
 
 ## Security Considerations
+
+### Why the Bridge and the Hook Are Unsafe Targets
+
+The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, which is the only
+check those entry points make. A withdrawal targeting the `L1StandardBridge` with a `restoreERC20` call credits
+escrow the Portal never committed to, and one targeting the hook with a `holdDeposit` call writes a record for an
+item the Portal never held.
+
+The bridge is unsafe whether or not the chain sets a hook. Gating it on the hook would mean a withdrawal proven
+while `bridgeHook` is `address(0)` stops being finalizable once a hook is set. Nothing legitimate targets the
+bridge directly, because a token withdrawal reaches it through the `L1CrossDomainMessenger`.
+
+The address can also change between proving and finalizing, so the two checks can disagree. The one at finalization
+is the binding one.
 
 ### Gas Headroom on the Withdrawal Path
 
