@@ -214,12 +214,13 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
 **Behavior, when `bridgeHook` is not `address(0)`:**
 
 - MUST perform every check it performs on a default OP Stack chain before consulting the hook.
-- MUST build the item and call `bridgeHook.screenDeposit`.
+- MUST assign the [Deposit Counter](#deposit-counter) and build the item from it before calling the hook, so the
+  identifier the hook screens is the identifier the Portal commits to if it holds.
+- MUST call `bridgeHook.screenDeposit` with that item.
 - MUST take today's normal path, unchanged, when `screenDeposit` returns `true`.
 - MUST revert when `screenDeposit` reverts.
 - When `screenDeposit` returns `false`, it MUST hold the deposit:
-  - MUST assign the [Deposit Counter](#deposit-counter) and derive the item's identifier from it.
-  - MUST set `heldDeposits[identifier]` to `true`.
+  - MUST set `heldDeposits[identifier]` to `true` before moving any value.
   - MUST NOT emit a `TransactionDeposited` event.
   - MUST move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is identified as a
@@ -248,13 +249,13 @@ Finalizes a withdrawal using a proof submitted by another address.
 
 - MUST perform every check it performs on a default OP Stack chain, including `checkWithdrawal`, before consulting the
   hook.
+- MUST mark the withdrawal as finalized before calling the hook.
 - MUST call `bridgeHook.screenWithdrawal` with the item and the withdrawal's
   [Finalizable Time](./overview.md#finalizable-time), before forwarding the withdrawal call to the appropriate target.
 - MUST take the normal path, unchanged, when `screenWithdrawal` returns `true`.
 - MUST revert, consuming nothing and leaving the withdrawal finalizable, when `screenWithdrawal` reverts.
 - When `screenWithdrawal` returns `false`, it MUST hold the withdrawal:
-  - MUST mark the withdrawal as finalized.
-  - MUST set `heldWithdrawals[withdrawalHash]` to `true`.
+  - MUST set `heldWithdrawals[withdrawalHash]` to `true` before moving any value.
   - MUST NOT forward the withdrawal call to its target.
   - MUST move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
