@@ -78,6 +78,8 @@ canonical bridges, and only for an item whose terms it has committed to.
 
 - Both new entry points are restricted to the `OptimismPortal`. The bridge stores no Portal address today, so how it
   resolves one is an open point. See [Resolving the Portal](#resolving-the-portal).
+- Both new entry points read the Portal's `bridgeHook()` and revert while it is `address(0)`, so a Portal on a chain
+  that has configured no hook cannot move escrow at all.
 - The bridge decodes the inner call itself rather than trusting the Portal's reading of the token pair and amount.
 - The bridge's own escrow checks still apply, so a move that would overdraw the escrow reverts.
 - A faulty Portal can already drain the escrow through the `L1CrossDomainMessenger`, so these entry points add no
@@ -98,6 +100,7 @@ Moves the escrow of a held token transfer out of the bridge and to the hook.
 **Behavior:**
 
 - MUST revert if the caller is not the `OptimismPortal`.
+- MUST revert if the Portal's `bridgeHook()` is `address(0)`.
 - MUST revert if the selector of `_message` is not `finalizeBridgeERC20`.
 - MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
   arguments is the L1 token.
@@ -120,6 +123,7 @@ Takes the escrow of a held token transfer back into the bridge, so the normal pa
 **Behavior:**
 
 - MUST revert if the caller is not the `OptimismPortal`.
+- MUST revert if the Portal's `bridgeHook()` is `address(0)`.
 - MUST revert if the selector of `_message` is not `finalizeBridgeERC20`.
 - MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
   arguments is the L1 token.
