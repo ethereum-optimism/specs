@@ -76,11 +76,12 @@ deferred with.
 
 ## Goals
 
-- Every ETH and ERC-20 deposit and withdrawal is screened through the hook before any value reaches its recipient.
-- Items that carry no value are offered too. A zero-value deposit still executes an arbitrary L2 call chosen by an L1
-  sender, such as a transfer between L2 accounts.
+- Every deposit and withdrawal that crosses the canonical bridge is screened through the hook, whatever it carries. A
+  zero-value deposit still executes an arbitrary L2 call chosen by an L1 sender, such as a transfer between L2
+  accounts.
+- An item the hook defers has its value taken into the hook's custody, out of the protocol contracts, before any of it
+  reaches the recipient.
 - An item can be deferred and resumed later on **identical terms**, with no user action in between.
-- Deferred value leaves the protocol contracts.
 - An item is identified unambiguously.
 - The condition can be switched off for new items without releasing items already held.
 - No policy may redirect value or alter an item's terms.
