@@ -39,12 +39,13 @@ An OP Stack chain must be able to condition every deposit and withdrawal that cr
 as any default OP Stack chain. When it is set, the Portal offers every item (see [Item](#item)) to the hook before any
 value reaches its recipient.
 
-For each of the items the hook can answer in one of three ways:
+For each item, the hook can answer in one of three ways:
 
-- **Proceed.** The item takes today's normal path, nothing changes.
-- **Hold.** The Portal commits the item's terms and its value moves to the hook. The item executes later, on exactly those
-  terms once the item has been cleared (see [Verdict](#verdict)).
-- **Reject.** The call reverts and nothing is consumed. A deposit never happens, and a withdrawal stays finalizable.
+- **Proceed.** The item executes as it would on any default OP Stack chain.
+- **Hold.** The item is deferred. The protocol takes custody of its value and commits to running it later, unchanged.
+- **Reject.** The call reverts and the item is refused while nothing is consumed.
+
+See [Screening Outcome](#screening-outcome) for the mechanics of each answer.
 
 The hook is an interface, so any contract can implement it. These pages specify the interface, one reference
 implementation called the `ComplianceModule`, and the interface between that module and the policy owned by the chain, which
@@ -178,7 +179,7 @@ A **Screening Outcome** is the hook's answer for one item. There are three possi
   remains finalizable and can be attempted again.
 
 A hook need not use all three. An asynchronous policy proceeds or holds and never rejects. A synchronous policy
-proceeds or rejects and never holds.
+proceeds or rejects and never holds. See [Item Lifecycle](#item-lifecycle) for how an item moves between them.
 
 ### Hook
 
