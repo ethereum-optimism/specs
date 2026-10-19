@@ -354,3 +354,64 @@ interface IDisputeGame is IInitializable {
     function wasRespectedGameTypeWhenCreated() external view returns (bool wasRespected_);
 }
 ```
+
+## `DisputeGameCreator` Interface
+
+The dispute game creator interface is responsible for creating and managing dispute games of a specific type. Each creator contract is responsible for managing the parameters to supply for the creation of each dispute game. Each `DisputeGameCreator` is deployed behind a proxy, so that the `GameConfig` can be updated for upgrades without needing to redeploy.
+
+```solidity
+/// @title IDisputeGameCreator
+/// @notice Interface for creating and managing dispute games of a specific type
+interface IDisputeGameCreator {
+    /// @notice Configuration parameters for a dispute game
+    struct GameConfig {
+        /// @notice Chain ID of the L2 network
+        uint256 l2ChainId;
+        /// @notice The absolute prestate of the VM
+        bytes32 absolutePrestate;
+        /// @notice Address of the VM implementation
+        address vm;
+        /// @notice Address of the WETH contract
+        address weth;
+        /// @notice Address of the anchor state registry
+        address anchorStateRegistry;
+        /// @notice Maximum game depth
+        uint256 maxGameDepth;
+        /// @notice Split depth for bisection
+        uint256 splitDepth;
+    }
+
+    /// @notice Emitted when the implementation is updated
+    event ImplementationSet(address indexed oldImpl, address indexed newImpl);
+    
+    /// @notice Emitted when the configuration is updated
+    event ConfigurationUpdated(GameConfig config);
+
+    /// @notice Creates a new dispute game instance
+    /// @param _gameType Type of the dispute game
+    /// @param _rootClaim Proposed output root being disputed
+    /// @param _l2BlockNumber The L2 block number being disputed
+    /// @param _l1Head The L1 block hash at the time of creation
+    /// @return addr Address of the newly created game
+    function create(
+        GameType _gameType,
+        Claim _rootClaim,
+        uint256 _l2BlockNumber,
+        bytes32 _l1Head
+    ) external payable returns (address addr);
+
+    /// @notice Returns current implementation address
+    function implementation() external view returns (address);
+
+    /// @notice Updates the implementation contract
+    /// @param _newImpl New implementation address
+    function setImplementation(address _newImpl) external;
+
+    /// @notice Returns current game configuration
+    function getGameConfig() external view returns (GameConfig memory);
+
+    /// @notice Updates game configuration
+    /// @param _config New configuration parameters
+    function setGameConfig(GameConfig calldata _config) external;
+}
+```
