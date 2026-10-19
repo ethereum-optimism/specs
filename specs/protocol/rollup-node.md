@@ -13,6 +13,7 @@
     - [L1BlockRef](#l1blockref)
     - [L2BlockRef](#l2blockref)
     - [SyncStatus](#syncstatus)
+      - [`current_l1` guarantees](#current_l1-guarantees)
   - [Output Method API](#output-method-api)
 - [Protocol Version tracking](#protocol-version-tracking)
 
@@ -98,7 +99,8 @@ The types defined here are extended from the [engine API specs][engine-structure
 
 Represents a snapshot of the rollup driver.
 
-- `current_l1`: `Object` - instance of [`L1BlockRef`](#l1blockref).
+- `current_l1`: `Object` - instance of [`L1BlockRef`](#l1blockref). The L1 block that the derivation
+  pipeline currently processes. See [`current_l1` guarantees](#current_l1-guarantees).
 - `current_l1_finalized`: `Object` - instance of [`L1BlockRef`](#l1blockref).
 - `head_l1`: `Object` - instance of [`L1BlockRef`](#l1blockref).
 - `safe_l1`: `Object` - instance of [`L1BlockRef`](#l1blockref).
@@ -108,6 +110,18 @@ Represents a snapshot of the rollup driver.
 - `finalized_l2`: `Object` - instance of [`L2BlockRef`](#l2blockref).
 - `pending_safe_l2`: `Object` - instance of [`L2BlockRef`](#l2blockref).
 - `queued_unsafe_l2`: `Object` - instance of [`L2BlockRef`](#l2blockref).
+
+##### `current_l1` guarantees
+
+Consumers such as the batcher, proposer and challenger use `current_l1` to find how far derivation has read L1.
+The rollup node MUST keep the invariants below for each `current_l1` value it reports:
+
+- The node has fully processed all L1 blocks up to and including the parent of `current_l1`.
+  The node includes the effects of these blocks in all data it returns.
+- The node MAY include only part of the effects of the `current_l1` block itself.
+- The node MAY report a value that is lower than the block it processes.
+  The reported value MUST advance within a reasonable time.
+- The node MUST NOT report a value that is higher than the block it processes.
 
 ### Output Method API
 
