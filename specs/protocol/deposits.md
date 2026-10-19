@@ -50,13 +50,16 @@ _deposit_ can refer to the transaction at various stages (for instance when it i
 
 ## Invariants
 
-The deposit rules follow these invariants:
+The deposit rules must maintain the invariants below:
 
-1. A deposit transaction must always be valid to include in a block.
-2. Deposits buy their gas on L1.
-3. A deposit always mints on L2 exactly the amount of ETH deposited on L1.
-4. The `sourceHash` of a deposit must be unique, so it must include all identifying components of the deposit.
-5. The gas a deposit consumes is subtracted from the block gas pool exactly as the execution output reports it.
+1. Any L2 block that contains only the deposited transactions required by the derivation rules must be a valid block.
+2. Deposited transactions do not pay for gas on L2.
+3. A deposited transaction mints on L2 exactly the ETH value sent to the deposit contract on L1.
+   The mint persists even if execution fails.
+4. Each deposited transaction must have a unique `sourceHash`.
+   The `sourceHash` must commit to every component that identifies the deposit.
+5. The block gas pool is reduced by exactly the gas used that the execution output states for each deposited
+   transaction.
 
 ## The Deposited Transaction Type
 
