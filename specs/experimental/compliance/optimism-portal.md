@@ -7,6 +7,7 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Bridge Hook Address](#bridge-hook-address)
+  - [Bridge Hook Feature](#bridge-hook-feature)
   - [Unsafe Target](#unsafe-target)
   - [Deposit Counter](#deposit-counter)
 - [IBridgeHook](#ibridgehook)
@@ -15,8 +16,9 @@
 - [Terms Commitment](#terms-commitment)
 - [Withdrawals and When They Are Held](#withdrawals-and-when-they-are-held)
 - [Function Specification](#function-specification)
+  - [initialize](#initialize)
   - [bridgeHook](#bridgehook)
-  - [setBridgeHook](#setbridgehook)
+  - [removeHook](#removehook)
   - [depositTransaction](#deposittransaction)
   - [proveWithdrawalTransaction](#provewithdrawaltransaction)
   - [finalizeWithdrawalTransactionExternalProof](#finalizewithdrawaltransactionexternalproof)
@@ -36,6 +38,7 @@
     - [Impact](#impact-4)
 - [Security Considerations](#security-considerations)
   - [Why the Bridge and the Hook Are Unsafe Targets](#why-the-bridge-and-the-hook-are-unsafe-targets)
+  - [Changing the Hook](#changing-the-hook)
   - [Gas Headroom on the Withdrawal Path](#gas-headroom-on-the-withdrawal-path)
   - [Cost When No Hook Is Set](#cost-when-no-hook-is-set)
 
@@ -54,19 +57,21 @@ hook can do, it does through the four functions in [`IBridgeHook`](#ibridgehook)
 
 ### Bridge Hook Address
 
-The **Bridge Hook Address** is network-specific state on the Portal, set by the chain's upgrade authority. While it is
-`address(0)`, the Portal behaves as on a default OP Stack chain.
+The **Bridge Hook Address** is network-specific state on the Portal. It is set only through
+[`initialize`](#initialize), by the ProxyAdmin or its owner, and cleared only by [`removeHook`](#removehook). While it
+is `address(0)`, the Portal behaves as on a default OP Stack chain.
 
 The `L1StandardBridge` does not hold the hook address. The Portal is the contract that moves the bridge's escrow when
 an ERC-20 deposit or withdrawal is held.
 
-Setting the address back to `address(0)` stops screening for new items and strands every item already held.
+Removing the hook stops screening for new items and strands every item already held. Its commitment stays in the
+Portal, and its value stays with the removed hook.
 
 ### Unsafe Target
 
 An Unsafe Target is an address a withdrawal may not call. The default set is the `OptimismPortal` itself and the
 `ETHLockbox`. This page adds the `L1StandardBridge` on every chain, and the
-[Bridge Hook Address](#bridge-hook-address) on a chain that has set one. See
+[Bridge Hook Address](#bridge-hook-address) while it is set. See
 [Why the Bridge and the Hook Are Unsafe Targets](#why-the-bridge-and-the-hook-are-unsafe-targets).
 
 ### Deposit Counter
@@ -187,27 +192,39 @@ permissionless entry points.
 
 ## Function Specification
 
+### initialize
+
+Initializes the Portal. It is the only way to set the [Bridge Hook Address](#bridge-hook-address). Only the
+`_bridgeHook` parameter is new, and the rest of the behavior is unchanged.
+
+**Parameters:**
+
+- `_bridgeHook`: the contract implementing [`IBridgeHook`](#ibridgehook), or `address(0)` to keep the current hook.
+
+**Behavior:**
+
+- MUST revert if the caller is not the ProxyAdmin or its owner.
+- MUST leave `bridgeHook` unchanged if `_bridgeHook` is `address(0)`.
+- MUST otherwise set `bridgeHook` to `_bridgeHook`, replacing any hook already set, and emit `BridgeHookSet`.
+- MUST revert with `OptimismPortal_InvalidBridgeHookState` if, after this step, `bridgeHook` is not `address(0)` and
+  the [Bridge Hook Feature](#bridge-hook-feature) is disabled.
+- MUST leave `heldDeposits` and `heldWithdrawals` unchanged.
+
 ### bridgeHook
 
 Returns the [Bridge Hook Address](#bridge-hook-address).
 
 - MUST return `address(0)` if the chain has not configured a hook.
 
-### setBridgeHook
+### removeHook
 
-Sets the [Bridge Hook Address](#bridge-hook-address).
-
-**Parameters:**
-
-- `_hook`: the address of the contract implementing [`IBridgeHook`](#ibridgehook), or `address(0)` to disable
-  screening for new items.
+Removes the [Bridge Hook Address](#bridge-hook-address).
 
 **Behavior:**
 
-- MUST revert if the caller is not the ProxyAdmin or its owner.
-- MUST set the `bridgeHook` state variable to `_hook`.
-- Items already held MUST remain held, with their commitments in `heldDeposits` and `heldWithdrawals` unchanged.
-- Items already held MUST still require a clearance and the policy's approval before they can complete.
+- MUST revert if the caller is not the ProxyAdmin owner.
+- MUST revert with `OptimismPortal_InvalidBridgeHookState` if `bridgeHook` is `address(0)`.
+- MUST set `bridgeHook` to `address(0)` and emit `BridgeHookRemoved` with the removed hook.
 
 ### depositTransaction
 
@@ -356,7 +373,8 @@ L2. That is far more authority than setting a hook is meant to grant to whoever 
 
 ### iCM-004: A chain with no hook configured is unaffected
 
-While `bridgeHook` is `address(0)`, every entry point behaves exactly as on a default OP Stack chain.
+While `bridgeHook` is `address(0)`, every entry point behaves exactly as on a default OP Stack chain, except that the
+`L1StandardBridge` is an [Unsafe Target](#unsafe-target).
 
 #### Impact
 
@@ -396,8 +414,22 @@ The bridge is unsafe whether or not the chain sets a hook. Gating it on the hook
 while `bridgeHook` is `address(0)` stops being finalizable once a hook is set. Nothing legitimate targets the
 bridge directly, because a token withdrawal reaches it through the `L1CrossDomainMessenger`.
 
+The hook is an Unsafe Target only while it is set. After [`removeHook`](#removehook) or a replacement through
+[`initialize`](#initialize), the former hook is an ordinary target, and a withdrawal can call it with the Portal as its
+caller. A hook MUST therefore check that it is still the Portal's hook, with `bridgeHook() == address(this)`, and not
+only that its caller is the Portal.
+
 The address can also change between proving and finalizing, so the two checks can disagree. The one at finalization
 is the binding one.
+
+### Changing the Hook
+
+Replacing or removing a hook while items are held does not move their value, which stays with the former hook.
+
+`initialize` is the only way to set a hook, so changing it also re-applies every other `initialize` argument: the
+`SystemConfig`, the `AnchorStateRegistry`, the `ETHLockbox` and the proof maturity delay. The operator must pass the
+current values. A wrong proof maturity delay, for example, changes when every withdrawal already proven can be
+finalized.
 
 ### Gas Headroom on the Withdrawal Path
 
@@ -411,4 +443,6 @@ L2.
 
 ### Cost When No Hook Is Set
 
-A chain that has not configured a hook pays one `SLOAD`, which short circuits the rest of the hook logic.
+A chain that has not configured a hook pays one `SLOAD`, which short circuits the rest of the hook logic. Proving and
+finalizing also read the `L1StandardBridge` address from `SystemConfig` for the unsafe-target check, which applies on
+every chain.

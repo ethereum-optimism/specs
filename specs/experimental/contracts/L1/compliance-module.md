@@ -211,6 +211,8 @@ Answers the Portal for a deposit at submission.
 **Behavior:**
 
 - MUST revert if the caller is not the Portal.
+- MUST revert if the Portal's `bridgeHook()` is not this module. See
+  [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST return `true` without consulting the policy if [Disable](#disable) is set.
 - MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's `screen`.
 - MUST hoist up any revert from the policy.
@@ -222,6 +224,8 @@ Takes custody of a held deposit.
 **Behavior:**
 
 - MUST revert if the caller is not the Portal.
+- MUST revert if the Portal's `bridgeHook()` is not this module. See
+  [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
 - MUST set the record's `heldAt` for the item's identifier.
 - MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
@@ -238,6 +242,8 @@ Answers the Portal for a withdrawal at finalization.
 **Behavior:**
 
 - MUST revert if the caller is not the Portal.
+- MUST revert if the Portal's `bridgeHook()` is not this module. See
+  [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST return `true` without consulting the policy if [Disable](#disable) is set AND the withdrawal's nonce is at or
   above the cutoff recorded when it was disabled.
 - MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's
@@ -251,6 +257,8 @@ Takes custody of a held withdrawal.
 **Behavior:**
 
 - MUST revert if the caller is not the Portal.
+- MUST revert if the Portal's `bridgeHook()` is not this module. See
+  [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
 - MUST set the record's `heldAt` for the item's identifier.
 - MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
