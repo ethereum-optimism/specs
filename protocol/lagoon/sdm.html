@@ -184,7 +184,11 @@
 </li>
 <li><a href="#transaction-classification">Transaction Classification</a></li>
 <li><a href="#gas-refund-semantics">Gas Refund Semantics</a></li>
-<li><a href="#canonical-gas">Canonical Gas</a></li>
+<li><a href="#canonical-gas">Canonical Gas</a>
+<ul>
+<li><a href="#block-gas-limit">Block Gas Limit</a></li>
+</ul>
+</li>
 <li><a href="#settlement">Settlement</a>
 <ul>
 <li><a href="#per-recipient-deltas">Per-Recipient Deltas</a></li>
@@ -283,6 +287,15 @@ known only once transaction <code>i</code> has executed, so the check is made th
 <p>The receipt of transaction <code>i</code> reports <code>canonicalGasUsed(i)</code> as its gas-used field. The block's <code>cumulativeGasUsed</code>
 and <code>gasUsed</code> are computed using <code>canonicalGasUsed</code> for standard Ethereum transactions and <code>evmGasUsed</code> for <code>Deposit</code>
 transactions. The post-exec transaction contributes zero gas (see <a href="./post-exec.html#receipt">post-exec.md § Receipt</a>).</p>
+<h3 id="block-gas-limit"><a class="header" href="#block-gas-limit">Block Gas Limit</a></h3>
+<p>The block gas limit bounds pre-refund gas, not canonical gas. Before executing transaction <code>i</code>, a verifier MUST check</p>
+<pre><code class="language-text">gasLimit(i) &lt;= blockGasLimit - sum(evmGasUsed(j) for every transaction j &lt; i in the block)
+</code></pre>
+<p>where <code>evmGasUsed(j)</code> is the gas used reported by the EVM for transaction <code>j</code> before any SDM adjustment, for
+<code>Deposit</code> and standard Ethereum transactions alike. A transaction that fails this check invalidates the block.</p>
+<p>Because <code>evmGasUsed(j) &gt;= canonicalGasUsed(j)</code>, this check implies the usual check against the block's canonical
+<code>gasUsed</code>, and the two are identical when a block carries no refunds. SDM refunds therefore lower the gas the
+header reports, but they cannot admit more execution into a block than its gas limit allows.</p>
 <h2 id="settlement"><a class="header" href="#settlement">Settlement</a></h2>
 <p>Because the EVM initially charges fees using <code>evmGasUsed(i)</code>, SDM applies a balance settlement for every standard
 Ethereum transaction with <code>refund(i) &gt; 0</code>.</p>
@@ -361,6 +374,9 @@ block. A payload from one block re-injected into another fails the envelope <cod
 <p><strong>Excessive refunds.</strong> A refund above <code>evmGasUsed(i)</code> invalidates the block. This bound, not the settlement underflow
 check, is what stops a payload from paying senders out of fees accumulated in the fee vaults.</p>
 <p><strong>Settlement underflow.</strong> Any settlement debit underflow invalidates the block.</p>
+<p><strong>Block resource limit.</strong> Refunds do not free block capacity. The <a href="#block-gas-limit">block gas limit</a> applies to
+pre-refund <code>evmGasUsed</code>, so a sequencer cannot use refunds to fit more execution or calldata into a block than the
+gas limit allows. This also preserves the resource bound of the EIP-7623 floor, which is part of <code>evmGasUsed</code>.</p>
 
                     </main>
 
