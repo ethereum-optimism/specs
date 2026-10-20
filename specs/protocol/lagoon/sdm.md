@@ -12,6 +12,7 @@
 - [Transaction Classification](#transaction-classification)
 - [Gas Refund Semantics](#gas-refund-semantics)
 - [Canonical Gas](#canonical-gas)
+  - [Block Gas Limit](#block-gas-limit)
 - [Settlement](#settlement)
   - [Per-Recipient Deltas](#per-recipient-deltas)
   - [Application Rules](#application-rules)
@@ -139,6 +140,21 @@ The receipt of transaction `i` reports `canonicalGasUsed(i)` as its gas-used fie
 and `gasUsed` are computed using `canonicalGasUsed` for standard Ethereum transactions and `evmGasUsed` for `Deposit`
 transactions. The post-exec transaction contributes zero gas (see [post-exec.md § Receipt](./post-exec.md#receipt)).
 
+### Block Gas Limit
+
+The block gas limit bounds pre-refund gas, not canonical gas. Before executing transaction `i`, a verifier MUST check
+
+```text
+gasLimit(i) <= blockGasLimit - sum(evmGasUsed(j) for every transaction j < i in the block)
+```
+
+where `evmGasUsed(j)` is the gas used reported by the EVM for transaction `j` before any SDM adjustment, for
+`Deposit` and standard Ethereum transactions alike. A transaction that fails this check invalidates the block.
+
+Because `evmGasUsed(j) >= canonicalGasUsed(j)`, this check implies the usual check against the block's canonical
+`gasUsed`, and the two are identical when a block carries no refunds. SDM refunds therefore lower the gas the
+header reports, but they cannot admit more execution into a block than its gas limit allows.
+
 ## Settlement
 
 Because the EVM initially charges fees using `evmGasUsed(i)`, SDM applies a balance settlement for every standard
@@ -239,3 +255,7 @@ block. A payload from one block re-injected into another fails the envelope `blo
 check, is what stops a payload from paying senders out of fees accumulated in the fee vaults.
 
 **Settlement underflow.** Any settlement debit underflow invalidates the block.
+
+**Block resource limit.** Refunds do not free block capacity. The [block gas limit](#block-gas-limit) applies to
+pre-refund `evmGasUsed`, so a sequencer cannot use refunds to fit more execution or calldata into a block than the
+gas limit allows. This also preserves the resource bound of the EIP-7623 floor, which is part of `evmGasUsed`.
