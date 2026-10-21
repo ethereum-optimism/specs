@@ -175,6 +175,7 @@
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="#overview">Overview</a></li>
+<li><a href="#invariants">Invariants</a></li>
 <li><a href="#the-deposited-transaction-type">The Deposited Transaction Type</a>
 <ul>
 <li><a href="#source-hash-computation">Source hash computation</a></li>
@@ -227,6 +228,18 @@ type</a> for deposits. It also describes how deposits are initiated on L1, along
 with the authorization and validation conditions on L2.</p>
 <p><strong>Vocabulary note</strong>: <em>deposited transaction</em> refers specifically to an L2 transaction, while
 <em>deposit</em> can refer to the transaction at various stages (for instance when it is deposited on L1).</p>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<p>The deposit rules must maintain the invariants below:</p>
+<ol>
+<li>Any L2 block that contains only the deposited transactions required by the derivation rules must be a valid block.</li>
+<li>Deposited transactions do not pay for gas on L2.</li>
+<li>A deposited transaction mints on L2 exactly the ETH value sent to the deposit contract on L1.
+The mint persists even if execution fails.</li>
+<li>Each deposited transaction must have a unique <code>sourceHash</code>.
+The <code>sourceHash</code> must commit to every component that identifies the deposit.</li>
+<li>The block gas pool is reduced by exactly the gas used that the execution output states for each deposited
+transaction.</li>
+</ol>
 <h2 id="the-deposited-transaction-type"><a class="header" href="#the-deposited-transaction-type">The Deposited Transaction Type</a></h2>
 <p><a href="../glossary.html#deposited">Deposited transactions</a> have the following notable distinctions from existing
 transaction types:</p>

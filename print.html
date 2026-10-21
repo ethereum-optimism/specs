@@ -1027,6 +1027,7 @@ to know if the relayed message actually succeeded.</p>
 <p><strong>Table of Contents</strong></p>
 <ul>
 <li><a href="protocol/deposits.html#overview">Overview</a></li>
+<li><a href="protocol/deposits.html#invariants">Invariants</a></li>
 <li><a href="protocol/deposits.html#the-deposited-transaction-type">The Deposited Transaction Type</a>
 <ul>
 <li><a href="protocol/deposits.html#source-hash-computation">Source hash computation</a></li>
@@ -1079,6 +1080,18 @@ type</a> for deposits. It also describes how deposits are initiated on L1, along
 with the authorization and validation conditions on L2.</p>
 <p><strong>Vocabulary note</strong>: <em>deposited transaction</em> refers specifically to an L2 transaction, while
 <em>deposit</em> can refer to the transaction at various stages (for instance when it is deposited on L1).</p>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<p>The deposit rules must maintain the invariants below:</p>
+<ol>
+<li>Any L2 block that contains only the deposited transactions required by the derivation rules must be a valid block.</li>
+<li>Deposited transactions do not pay for gas on L2.</li>
+<li>A deposited transaction mints on L2 exactly the ETH value sent to the deposit contract on L1.
+The mint persists even if execution fails.</li>
+<li>Each deposited transaction must have a unique <code>sourceHash</code>.
+The <code>sourceHash</code> must commit to every component that identifies the deposit.</li>
+<li>The block gas pool is reduced by exactly the gas used that the execution output states for each deposited
+transaction.</li>
+</ol>
 <h2 id="the-deposited-transaction-type"><a class="header" href="#the-deposited-transaction-type">The Deposited Transaction Type</a></h2>
 <p><a href="protocol/../glossary.html#deposited">Deposited transactions</a> have the following notable distinctions from existing
 transaction types:</p>
@@ -5170,7 +5183,7 @@ required L1 and L2 data as private values to the ZK program.</li>
 </ol>
 <p>Proof generation is permissionless: any party may generate and submit a proof. In practice the
 proposer or a third-party proving service will act as prover.</p>
-<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h2 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h2>
 <h3 id="izkvm-001-private-inputs-must-be-anchored-to-public-values"><a class="header" href="#izkvm-001-private-inputs-must-be-anchored-to-public-values">iZKVM-001: Private Inputs Must Be Anchored to Public Values</a></h3>
 <p>The ZK program receives private inputs (block and transaction data for all chains) that are known
 only to the prover and never seen by the on-chain verifier. The ZK program MUST verify that all
@@ -5480,7 +5493,7 @@ chains share a registry, the delay and any change to it apply to all of them.</p
 <li>Incident response plan</li>
 <li>Monitoring</li>
 </ul>
-<h2 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h2>
+<h2 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h2>
 <h3 id="iasr-001-games-are-represented-as-proper-games-accurately"><a class="header" href="#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001: Games are represented as Proper Games accurately</a></h3>
 <p>When asked if a game is a Proper Game, the <code>AnchorStateRegistry</code> must serve a response that is
 identical to the response that would be given by a perfect oracle for this query.</p>
@@ -6668,7 +6681,7 @@ For verifying the legitimacy of claims, it relies on a synced, trusted rollup no
 as well as a trace provider (ex: <a href="fault-proof/stage-one/../cannon-fault-proof-vm.html">Cannon</a>).
 The trace provider must be configured with the <a href="fault-proof/stage-one/fault-dispute-game.html#execution-trace">ABSOLUTE_PRESTATE</a>
 of the game being interacted with to generate the traces needed to make truthful claims.</p>
-<h2 id="invariants-2"><a class="header" href="#invariants-2">Invariants</a></h2>
+<h2 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h2>
 <p>To ensure an accurate and incentive compatible fault dispute system, the honest challenger behavior must preserve
 three invariants for any game:</p>
 <ol>
@@ -7453,7 +7466,7 @@ creation and proof submission.</p>
 <li>The <code>absolutePrestate</code> encodes which chain set the ZK program was compiled for. A chain set
 change requires a new program and a new <code>absolutePrestate</code>, gated by governance.</li>
 </ul>
-<h2 id="invariants-3"><a class="header" href="#invariants-3">Invariants</a></h2>
+<h2 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h2>
 <h3 id="izkg-001-a-valid-proof-always-wins"><a class="header" href="#izkg-001-a-valid-proof-always-wins">iZKG-001: A Valid Proof Always Wins</a></h3>
 <p>If a valid ZK proof is submitted before the current deadline, the game MUST resolve as
 <code>DEFENDER_WINS</code> (assuming a valid parent chain).</p>
@@ -8550,7 +8563,7 @@ incorrectly resolving games must be invalidated before the pause is deactivated.
 <li><a href="fault-proof/stage-one/./anchor-state-registry.html#iasr-001-games-are-represented-as-proper-games-accurately">iASR-001</a></li>
 <li><a href="fault-proof/stage-one/./anchor-state-registry.html#iasr-002-all-valid-claims-are-truly-valid-claims">iASR-002</a></li>
 </ul>
-<h2 id="invariants-4"><a class="header" href="#invariants-4">Invariants</a></h2>
+<h2 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h2>
 <h3 id="iop-001-invalid-withdrawals-can-never-be-finalized"><a class="header" href="#iop-001-invalid-withdrawals-can-never-be-finalized">iOP-001: Invalid Withdrawals can never be finalized</a></h3>
 <p>We require that <a href="fault-proof/stage-one/optimism-portal.html#invalid-withdrawal">Invalid Withdrawals</a> can never be
 <a href="fault-proof/stage-one/optimism-portal.html#finalized-withdrawal">finalized</a> for any reason.</p>
@@ -9337,7 +9350,7 @@ and network parameters.</p>
 <li><code>PublicRPC</code>: Public RPC endpoint URL for the L1 network</li>
 <li><code>Explorer</code>: Block explorer URL for the L1 network</li>
 </ul>
-<h2 id="invariants-5"><a class="header" href="#invariants-5">Invariants</a></h2>
+<h2 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h2>
 <h3 id="isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism"><a class="header" href="#isupc-001-the-guardian-and-pause-deputy-must-be-able-to-trigger-the-pause-mechanism">iSUPC-001: The Guardian and Pause Deputy must be able to trigger the Pause Mechanism</a></h3>
 <p>We require that the <code>SuperchainConfig</code> is constructed such that both the
 <a href="protocol/./stage-1.html#guardian">Guardian</a> and the <a href="protocol/./stage-1.html#pause-deputy">Pause Deputy</a> must be able to
@@ -10898,7 +10911,7 @@ delay module transactions.</p>
 designed for narrowly scoped actions.</li>
 <li>New modules must explicitly consider whether they should be delayed by a guard.</li>
 </ul>
-<h2 id="invariants-6"><a class="header" href="#invariants-6">Invariants</a></h2>
+<h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
 <h3 id="isafe-001-safe-controls-its-own-extension-configuration"><a class="header" href="#isafe-001-safe-controls-its-own-extension-configuration">iSAFE-001: Safe controls its own extension configuration</a></h3>
 <p>A Safe must control whether SaferSafes is configured for that Safe. No external account may choose
 the Safe's fallback owner, liveness response period, timelock delay, or active timelock generation.</p>
@@ -11256,7 +11269,7 @@ assign this role to any actor it deems fit to utilize the role without violating
 listed as "Out of Protocol", because the decision to follow the version signals in the contract is
 optional. It is included here for completeness, but it does not impact
 <a href="protocol/stage-1.html#withdrawal-safety">Withdrawal Safety</a> or <a href="protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a>.</p>
-<h2 id="invariants-7"><a class="header" href="#invariants-7">Invariants</a></h2>
+<h2 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h2>
 <h3 id="is1-001"><a class="header" href="#is1-001">iS1-001</a></h3>
 <p>A permanent Withdrawal Liveness or Withdrawal Safety failure requires 75% of the Security Council (w/o bugs).</p>
 <p>This is the core invariant for Stage 1 and aligns with <a href="https://forum.l2beat.com/t/stages-update-a-high-level-guiding-principle-for-stage-1/338">the definition by L2BEAT</a> from
@@ -11932,7 +11945,7 @@ data itself is deterministic and chain-independent.</p>
 <li>CI validates bundle determinism through repeated generation</li>
 <li>Fork tests validate execution across different chain configurations</li>
 </ul>
-<h3 id="invariants-8"><a class="header" href="#invariants-8">Invariants</a></h3>
+<h3 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h3>
 <h4 id="iup-001-atomic-upgrade-execution"><a class="header" href="#iup-001-atomic-upgrade-execution">iUP-001: Atomic Upgrade Execution</a></h4>
 <p>All transactions in the upgrade bundle MUST execute atomically within the
 <a href="protocol/l2-upgrades-1-execution.html#fork-activation-block">fork activation block</a>, and the entire upgrade must execute successfully.</p>
@@ -12075,7 +12088,7 @@ identically. Parsing inconsistencies would cause consensus failures.</p>
 <li>Test vectors validate parsing across client implementations</li>
 <li>Acceptance tests should validate bundle execution across implementations</li>
 </ul>
-<h3 id="invariants-9"><a class="header" href="#invariants-9">Invariants</a></h3>
+<h3 id="invariants-10"><a class="header" href="#invariants-10">Invariants</a></h3>
 <h4 id="inutb-001-deterministic-bundle-generation"><a class="header" href="#inutb-001-deterministic-bundle-generation">iNUTB-001: Deterministic Bundle Generation</a></h4>
 <p>Running the <a href="protocol/l2-upgrades-1-execution.html#bundle-generation-script">bundle generation script</a> multiple times on the same source code commit MUST
 produce byte-for-byte identical JSON output. No aspect of bundle generation may depend on timestamps, random values, or
@@ -12209,7 +12222,7 @@ gas allocation is deterministic and applied consistently across all implementati
 <li>All client implementations follow the same derivation rules</li>
 <li>Gas allocation logic is simple and deterministic</li>
 </ul>
-<h3 id="invariants-10"><a class="header" href="#invariants-10">Invariants</a></h3>
+<h3 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h3>
 <h4 id="iubgl-001-sufficient-gas-availability"><a class="header" href="#iubgl-001-sufficient-gas-availability">iUBGL-001: Sufficient Gas Availability</a></h4>
 <p>The <a href="protocol/l2-upgrades-1-execution.html#upgrade-block-gas-allocation">upgrade block gas allocation</a> MUST be sufficient to execute all transactions in the
 <a href="protocol/l2-upgrades-1-execution.html#network-upgrade-transaction-bundle">Network Upgrade Transaction Bundle</a> without running out of gas. No upgrade
@@ -17394,7 +17407,7 @@ with <code>convert</code>.</p>
 </code></pre>
 <p>where <code>from</code> is the address of the input token, <code>to</code> is the address of the output token,
 <code>caller</code> is the <code>msg.sender</code> of the function call and <code>amount</code> is the converted amount.</p>
-<h3 id="invariants-11"><a class="header" href="#invariants-11">Invariants</a></h3>
+<h3 id="invariants-12"><a class="header" href="#invariants-12">Invariants</a></h3>
 <p>The <code>convert</code> function conserves the following invariants:</p>
 <ul>
 <li>Conservation of amount:
@@ -17524,7 +17537,7 @@ sequenceDiagram
   SuperERC20_B--&gt;SuperERC20_B: emit CrosschainMint(to, amount)
   L2SBB--&gt;L2SBB: emit RelayedERC20(tokenAddr, from, to, amount, source)
 </pre>
-<h3 id="invariants-12"><a class="header" href="#invariants-12">Invariants</a></h3>
+<h3 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h3>
 <p>The bridging of <code>SuperchainERC20</code> using the <code>SuperchainTokenBridge</code> will require the following invariants:</p>
 <ul>
 <li>Conservation of bridged <code>amount</code>: The minted <code>amount</code> in <code>relayERC20()</code> should match the <code>amount</code>
@@ -18178,7 +18191,7 @@ for valid addresses.</p>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-13"><a class="header" href="#invariants-13">Invariants</a></h2>
+<h2 id="invariants-14"><a class="header" href="#invariants-14">Invariants</a></h2>
 <h3 id="iel-001-eth-balance-is-always-sufficient-for-minting--burning"><a class="header" href="#iel-001-eth-balance-is-always-sufficient-for-minting--burning">iEL-001: ETH balance is always sufficient for minting / burning</a></h3>
 <p>The <code>ETHLiquidity</code> contract must always have enough ETH to fulfill all legitimate minting / burning
 requests.</p>
@@ -18362,7 +18375,7 @@ for valid addresses.</p>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
-<h2 id="invariants-14"><a class="header" href="#invariants-14">Invariants</a></h2>
+<h2 id="invariants-15"><a class="header" href="#invariants-15">Invariants</a></h2>
 <h3 id="iseb-001-eth-sent-equals-eth-received"><a class="header" href="#iseb-001-eth-sent-equals-eth-received">iSEB-001: ETH sent equals ETH received</a></h3>
 <p>The amount of ETH sent from the source chain must equal the amount of ETH received on the
 destination chain for any given cross-chain transfer.</p>
@@ -18530,7 +18543,7 @@ sequenceDiagram
 <p>New derivation rules are added to guarantee integrity of cross chain messages.
 The fork choice rule is updated to fork out unsafe blocks that contain invalid
 executing messages.</p>
-<h2 id="invariants-15"><a class="header" href="#invariants-15">Invariants</a></h2>
+<h2 id="invariants-16"><a class="header" href="#invariants-16">Invariants</a></h2>
 <ul>
 <li>An executing message MUST have a corresponding initiating message</li>
 <li>The initiating message referenced in an executing message MUST come from a chain in its dependency set</li>
@@ -18850,7 +18863,7 @@ so one scoped pause covers every chain in the set.</p>
     IAnchorStateRegistry newAnchorStateRegistry
 );
 </code></pre>
-<h2 id="invariants-16"><a class="header" href="#invariants-16">Invariants</a></h2>
+<h2 id="invariants-17"><a class="header" href="#invariants-17">Invariants</a></h2>
 <ul>
 <li>
 <p>Deposits MUST lock the ETH in the <code>ETHLockbox</code></p>
@@ -19059,7 +19072,7 @@ lockbox.</p>
 <p>MUST be triggered when <code>receiveLiquidity</code> is called</p>
 <pre><code class="language-solidity">event LiquidityReceived(ETHLockbox indexed lockbox, uint256 amount);
 </code></pre>
-<h2 id="invariants-17"><a class="header" href="#invariants-17">Invariants</a></h2>
+<h2 id="invariants-18"><a class="header" href="#invariants-18">Invariants</a></h2>
 <h3 id="system-level-invariants"><a class="header" href="#system-level-invariants">System level invariants</a></h3>
 <ul>
 <li>
@@ -19385,7 +19398,7 @@ contract will be properly implemented and tested before the upgrade is executed.
 <ul>
 <li><a href="governance/./gov-token.html">GovernanceToken</a> - The ERC20Votes token that this contract has permission to mint</li>
 </ul>
-<h2 id="invariants-18"><a class="header" href="#invariants-18">Invariants</a></h2>
+<h2 id="invariants-19"><a class="header" href="#invariants-19">Invariants</a></h2>
 <h3 id="imm-001-mint-cap-enforcement"><a class="header" href="#imm-001-mint-cap-enforcement">iMM-001: Mint cap enforcement</a></h3>
 <p>No single minting operation can mint more than the <a href="governance/mint-manager.html#mint-cap">Mint Cap</a> of the current total token supply.</p>
 <p><strong>Full Description:</strong>
@@ -20739,7 +20752,7 @@ governance constraints when upgrading SuperchainConfig.</p>
 <li>Superchain governance controls the Superchain ProxyAdmin Owner</li>
 <li>SuperchainConfig changes affect multiple chains, requiring heightened governance scrutiny</li>
 </ul>
-<h2 id="invariants-19"><a class="header" href="#invariants-19">Invariants</a></h2>
+<h2 id="invariants-20"><a class="header" href="#invariants-20">Invariants</a></h2>
 <h3 id="i01-001-code-integrity"><a class="header" href="#i01-001-code-integrity">i01-001: Code Integrity</a></h3>
 <p>OPCM must faithfully deploy or upgrade to the code at the GitHub commit that the
 <a href="experimental/contracts/L1/opcm.html#contract-release">Contract Release</a> was created at. OPCM must not deploy code that is not
@@ -21187,7 +21200,7 @@ games only is a downgrade.</p>
 so the downgrade is not silently accepted</li>
 <li>Migration is a privileged one-off, so the operator is responsible for supplying a valid configuration.</li>
 </ul>
-<h2 id="invariants-20"><a class="header" href="#invariants-20">Invariants</a></h2>
+<h2 id="invariants-21"><a class="header" href="#invariants-21">Invariants</a></h2>
 <h3 id="imig-001-migration-happens-at-most-once-per-chain"><a class="header" href="#imig-001-migration-happens-at-most-once-per-chain">iMIG-001: Migration happens at most once per chain</a></h3>
 <p>A chain that is already a <a href="experimental/contracts/L1/opcm-migrator.html#member-chain">Member Chain</a> of an <a href="experimental/contracts/L1/opcm-migrator.html#interop-set">Interop Set</a> must never
 be migrated again, and an attempt that includes even one such chain must fail in its entirety.</p>
@@ -21417,7 +21430,7 @@ access to their keys.</p>
 function. This timestamp is publicly queryable via the <code>lastLive</code> mapping.</p>
 <h2 id="assumptions-14"><a class="header" href="#assumptions-14">Assumptions</a></h2>
 <p>N/A</p>
-<h2 id="invariants-21"><a class="header" href="#invariants-21">Invariants</a></h2>
+<h2 id="invariants-22"><a class="header" href="#invariants-22">Invariants</a></h2>
 <h3 id="i01-001-liveness-tracking-accuracy"><a class="header" href="#i01-001-liveness-tracking-accuracy">i01-001: Liveness tracking accuracy</a></h3>
 <p>Owner activity is accurately tracked and properly synchronized with the Safe's owner set.</p>
 <h4 id="impact-98"><a class="header" href="#impact-98">Impact</a></h4>
