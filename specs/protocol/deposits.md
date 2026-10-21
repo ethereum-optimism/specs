@@ -5,6 +5,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Invariants](#invariants)
 - [The Deposited Transaction Type](#the-deposited-transaction-type)
   - [Source hash computation](#source-hash-computation)
   - [Kinds of Deposited Transactions](#kinds-of-deposited-transactions)
@@ -46,6 +47,19 @@ with the authorization and validation conditions on L2.
 
 **Vocabulary note**: _deposited transaction_ refers specifically to an L2 transaction, while
 _deposit_ can refer to the transaction at various stages (for instance when it is deposited on L1).
+
+## Invariants
+
+The deposit rules must maintain the invariants below:
+
+1. Any L2 block that contains only the deposited transactions required by the derivation rules must be a valid block.
+2. Deposited transactions do not pay for gas on L2.
+3. A deposited transaction mints on L2 exactly the ETH value sent to the deposit contract on L1.
+   The mint persists even if execution fails.
+4. Each deposited transaction must have a unique `sourceHash`.
+   The `sourceHash` must commit to every component that identifies the deposit.
+5. The block gas pool is reduced by exactly the gas used that the execution output states for each deposited
+   transaction.
 
 ## The Deposited Transaction Type
 
