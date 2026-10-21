@@ -7,7 +7,6 @@
 - [Overview](#overview)
 - [Definitions](#definitions)
   - [Bridge Hook Address](#bridge-hook-address)
-  - [Bridge Hook Feature](#bridge-hook-feature)
   - [Unsafe Target](#unsafe-target)
   - [Deposit Counter](#deposit-counter)
 - [IBridgeHook](#ibridgehook)
@@ -161,15 +160,12 @@ already reach the bridge's escrow.
 
 ```solidity
 mapping(bytes32 => bool) public heldDeposits;    // keyed by the item's identifier
-mapping(bytes32 => bool) public heldWithdrawals; // keyed by the withdrawal hash
+mapping(bytes32 => bool) public heldWithdrawals; // keyed by the item's identifier
 ```
 
 One bit per deferred item, recording the exact terms the protocol agreed to defer, already validated on the way in.
 When the hook asks to complete an item, the Portal rebuilds the key from the arguments it receives and requires the
 matching bit.
-
-A withdrawal is keyed by its own hash, which the Portal recomputes from the exact transaction it will execute, so the
-key already binds every term.
 
 The bridge keeps no commitments. It moves escrow only when the Portal calls, and only for a message the Portal has
 committed to.
@@ -206,8 +202,6 @@ Initializes the Portal. It is the only way to set the [Bridge Hook Address](#bri
 - MUST revert if the caller is not the ProxyAdmin or its owner.
 - MUST leave `bridgeHook` unchanged if `_bridgeHook` is `address(0)`.
 - MUST otherwise set `bridgeHook` to `_bridgeHook`, replacing any hook already set, and emit `BridgeHookSet`.
-- MUST revert with `OptimismPortal_InvalidBridgeHookState` if, after this step, `bridgeHook` is not `address(0)` and
-  the [Bridge Hook Feature](#bridge-hook-feature) is disabled.
 - MUST leave `heldDeposits` and `heldWithdrawals` unchanged.
 
 ### bridgeHook
@@ -274,7 +268,7 @@ Finalizes a withdrawal using a proof submitted by another address.
 - MUST take the normal path, unchanged, when `screenWithdrawal` returns `true`.
 - MUST revert, consuming nothing and leaving the withdrawal finalizable, when `screenWithdrawal` reverts.
 - When `screenWithdrawal` returns `false`, it MUST hold the withdrawal:
-  - MUST set `heldWithdrawals[withdrawalHash]` to `true` before moving any value.
+  - MUST set `heldWithdrawals[identifier]` to `true` before moving any value.
   - MUST NOT forward the withdrawal call to its target.
   - MUST move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
@@ -307,7 +301,7 @@ this function when it is ready to release the withdrawal.
 
 **Parameters:**
 
-- `_item`: the item as it was held. The Portal rebuilds the withdrawal hash from this preimage.
+- `_item`: the item as it was held. The Portal rebuilds the item's identifier from this preimage.
 
 **Behavior:**
 
@@ -315,9 +309,9 @@ this function when it is ready to release the withdrawal.
 - MUST revert if the system is paused.
 - MUST revert if the [L2 Withdrawal Sender](../../fault-proof/stage-one/optimism-portal.md#l2-withdrawal-sender) is
   not `DEFAULT_L2_SENDER`, so a completion cannot run inside another withdrawal's execution.
-- MUST revert if `heldWithdrawals[withdrawalHash]` is not `true`.
+- MUST revert if `heldWithdrawals[identifier]` is not `true`.
 - MUST revert if the ETH sent with the call does not match the item's committed value.
-- MUST delete `heldWithdrawals[withdrawalHash]` before moving any value.
+- MUST delete `heldWithdrawals[identifier]` before moving any value.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
   [Token Bridge Message](./overview.md#token-bridge-message)  by calling `restoreERC20` on the `L1StandardBridge`.
 - MUST set the L2 Withdrawal Sender to the item's committed sender before forwarding the call.
@@ -331,8 +325,12 @@ A held deposit is paid for once, at submission, like any other deposit. Its gas 
 the L1 block where it completes, since that is where it reaches L2. A completion that does not fit reverts and can be
 sent again in the next block.
 
-This splits `ResourceMetering._metered` into an allocate step and a charge step, so a completion is counted against
-its block's limit without being charged again.
+The resource meter is unchanged. A deposit is capped, priced and charged at submission the same way as on a
+default OP Stack chain, so the deposit fee still follows submissions. While a hook is set, the Portal also counts
+the deposit gas published in each L1 block. Ordinary deposits and completions share that count, under the same max
+resource limit.
+
+**A completion is never charged again.**
 
 ## Invariants
 
