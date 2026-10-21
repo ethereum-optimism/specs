@@ -100,7 +100,9 @@ re-proving.
 
 Whoever can upgrade the module can reach every item it holds. That authority is not constrained to be the chain's
 `ProxyAdmin` owner, and what an upgraded module does with value already in its custody is outside the protocol's
-guarantees.
+guarantees. The value at risk is not limited to what the module holds when it is upgraded. The Portal offers it every
+item, so it can hold each new deposit and withdrawal as it arrives. Since removing or replacing the hook is the only
+way to stop that, the loss is bounded by how fast the chain reacts.
 
 #### Mitigations
 
