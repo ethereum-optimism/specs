@@ -162,13 +162,14 @@ direction.
 An **Identifier** is an item's name, a hash of all of the item's fields. The `OptimismPortal` and the hook compute it
 the same way, so both agree on which item a [Verdict](#verdict) names, and the verdict covers every term.
 
-Each direction takes its unique field from a different source. A withdrawal has its withdrawal hash, so its identifier
-is known before finalization. A deposit has no unique field, because identical deposits in the same block are
-otherwise indistinguishable, so the Portal assigns it a counter when it screens it.
+The identifier is built the same way for both directions: the Portal fills the same
+[Item](./optimism-portal.md#item-construction) fields and hashes them. The `direction` field keeps a deposit and a
+withdrawal apart, and the `nonce` field holds the withdrawal's nonce or, for a deposit, the
+[Deposit Counter](./optimism-portal.md#deposit-counter).
 
 Take two deposits from the same address for the same amount, to the same L2 address in the same L1 block. Every field
-the Portal sees is identical, so without the counter both would share one identifier, and a clearance for one would
-release the other.
+except `nonce` is identical, so without the Deposit Counter both would share one identifier, and a clearance for one
+would release the other.
 
 ### Screening
 
@@ -195,8 +196,8 @@ takes custody of held value. Any contract that implements `IBridgeHook` can be a
 ### Terms Commitment
 
 A **Terms Commitment** is the `OptimismPortal`'s record of a held item. It is keyed by the item's
-[Identifier](#identifier) for a deposit, and by the withdrawal hash for a withdrawal, so it binds every term. Only an
-item that matches a commitment can [complete](#completion), and only once.
+[Identifier](#identifier) in both directions, so it binds every term. Only an item that matches a commitment can
+[complete](#completion), and only once.
 
 ### Verdict
 
@@ -295,7 +296,14 @@ Security Council nor the Proxy Admin Owner. Users have to trust the chain operat
 
 **Whoever can upgrade the hook is the custodian of all deferred value.** That authority is not constrained to be the
 chain's `ProxyAdmin` owner. What an upgraded hook does with value already in its custody is outside the protocol's
-guarantees.
+guarantees. The exposure is not limited to what is held at any one moment. A hostile hook holds every new deposit and
+withdrawal as it arrives, so its custody grows with the chain's bridge flow for as long as it stays set. It still
+cannot redirect value or alter an item's terms. See
+[iCM-003](./optimism-portal.md#icm-003-a-hook-can-only-delay-or-refuse-an-item).
+
+**Removing the hook strands held items.** The chain's `ProxyAdmin` owner can remove the hook at any time. New items
+stop being screened, but every item already held stays held. Its commitment stays in the Portal and its value stays
+with the removed hook.
 
 **The policy decides who can clear an item.** A compromised policy can complete held items early, and so can any role
 it trusts. The value still only reaches the item's original destination. A compromised policy can also hold or refuse
