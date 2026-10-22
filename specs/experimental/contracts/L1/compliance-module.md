@@ -177,6 +177,9 @@ completion is sent first.
 ### constructor
 
 - MUST set the immutable `OptimismPortal` address, which is the only permitted caller of the hook entry points.
+- MUST read the `L1CrossDomainMessenger` and `L1StandardBridge` addresses from the Portal's `SystemConfig` and store
+  them as immutables. The module uses them to find the [Resolved Parties](#resolved-parties) and to approve the bridge
+  on token completions.
 
 ### portal
 
