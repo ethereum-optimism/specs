@@ -235,9 +235,10 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
 - When `screenDeposit` returns `false`, it MUST hold the deposit:
   - MUST set `heldDeposits[identifier]` to `true` before moving any value.
   - MUST NOT emit a `TransactionDeposited` event.
-  - MUST move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is identified as a
-    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
+    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`,
+    before calling `holdDeposit`.
+  - MUST move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
 
 ### proveWithdrawalTransaction
 
@@ -270,9 +271,10 @@ Finalizes a withdrawal using a proof submitted by another address.
 - When `screenWithdrawal` returns `false`, it MUST hold the withdrawal:
   - MUST set `heldWithdrawals[identifier]` to `true` before moving any value.
   - MUST NOT forward the withdrawal call to its target.
-  - MUST move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
-    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
+    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`,
+    before calling `holdWithdrawal`.
+  - MUST move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
 
 ### completeDepositTransaction
 
