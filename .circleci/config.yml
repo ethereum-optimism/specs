@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.10.1
-  utils: ethereum-optimism/circleci-utils@1.0.13
+  utils: ethereum-optimism/circleci-utils@1.0.33
 
 executors:
   default:
