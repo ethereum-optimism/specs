@@ -337,6 +337,7 @@ Points the module at a different policy.
 
 - MUST revert if the caller is not the owner.
 - MUST NOT alter any record, so held items and their verdicts survive the change.
+- MUST emit a `PolicySet` event with the new policy.
 
 ### disable
 
@@ -351,6 +352,7 @@ Sets [Disable](#disable).
 - MUST revert if the caller is not the owner.
 - MUST record `_cutoffL2Nonce` as the cutoff used by [screenWithdrawal](#screenwithdrawal).
 - MUST NOT release, complete or otherwise alter any item already held.
+- MUST emit a `Disabled` event with the cutoff.
 
 ### enable
 
@@ -359,3 +361,4 @@ Clears [Disable](#disable), so new items are screened again.
 **Behavior:**
 
 - MUST revert if the caller is not the owner.
+- MUST emit an `Enabled` event.
