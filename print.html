@@ -11254,7 +11254,7 @@ assign this role to any actor it deems fit to utilize the role without violating
     FndUp --&gt; PAO
     Council --&gt; PAO
     Council --&gt; GS
-    FndOps[Foundation Operations Safe] --&gt;|pause| DPM
+    FndUp --&gt;|pause| DPM
     FndUp --&gt;|set versions|PV
     LM --&gt;|execTransactionFromModule| Council
     DPM --&gt;|execTransactionFromModule| GS
@@ -11435,9 +11435,9 @@ that is permitted to act within the <a href="protocol/./superchain-config.html">
 <a href="https://github.com/ethereum-optimism/design-docs/blob/85c0f822/protocol/deputy-pause-module.md">design document</a>.</p>
 <h2 id="upgradeability"><a class="header" href="#upgradeability">Upgradeability</a></h2>
 <p>The <code>DeputyPauseModule</code> is not expected to change frequently and is therefore not a proxied
-contract. The <code>DeputyPauseModule</code> allows basic parameters to be modified by the Operations Safe
+contract. The <code>DeputyPauseModule</code> allows basic parameters to be modified by the Foundation Safe
 directly without needing to deploy a new instance of the contract. Additionally, the address of the
-module itself is only utilized within the Optimism Foundation Operations Safe and can be safely
+module itself is only utilized within the Security Council Guardian Safe and can be safely
 replaced.</p>
 <h2 id="assumptions-4"><a class="header" href="#assumptions-4">Assumptions</a></h2>
 <blockquote>
@@ -11462,7 +11462,7 @@ such a pause.</p>
 <h3 id="adpm-001-contract-is-configured-correctly"><a class="header" href="#adpm-001-contract-is-configured-correctly">aDPM-001: Contract is configured correctly</a></h3>
 <p>We assume that all inputs to the contract are configured correctly including:</p>
 <ul>
-<li>Address of the Operations Safe.</li>
+<li>Address of the Foundation Safe.</li>
 <li>Address of the <code>SuperchainConfig</code> contract.</li>
 <li>Address of the Deputy account.</li>
 </ul>
@@ -11503,7 +11503,7 @@ behaviors to diverge from their specified behaviors.</p>
 </ul>
 <h3 id="adpm-006-safe-contracts-are-free-of-critical-bugs"><a class="header" href="#adpm-006-safe-contracts-are-free-of-critical-bugs">aDPM-006: Safe contracts are free of critical bugs</a></h3>
 <p>We assume that the Safe contract implementations used by the Security Council Safe and Optimism
-Foundation Operations Safe are free of any critical bugs that would cause their behaviors to
+Foundation Upgrade Safe are free of any critical bugs that would cause their behaviors to
 diverge from their specified behaviors.</p>
 <h4 id="mitigations-25"><a class="header" href="#mitigations-25">Mitigations</a></h4>
 <ul>
@@ -11577,8 +11577,8 @@ function on the <code>SuperchainConfig</code>. The Deputy must not be able to tr
 action on behalf of the Guardian.</p>
 <h4 id="impact-45"><a class="header" href="#impact-45">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
-<p>If this invariant is broken, the Deputy would be able to cause the Optimism Foundation Operations
-Safe to execute some unknown set of possible actions. We would treat this as a critical risk.</p>
+<p>If this invariant is broken, the Deputy would be able to cause the Security Council Guardian Safe
+to execute some unknown set of possible actions. We would treat this as a critical risk.</p>
 <h4 id="mitigations-28"><a class="header" href="#mitigations-28">Mitigations</a></h4>
 <ul>
 <li>Strict auditing and verification of the <code>DeputyPauseModule</code>.</li>
@@ -11649,7 +11649,7 @@ remove the module if necessary.</p>
 <ul>
 <li>Sets the EIP-712 domain name to "DeputyPauseModule".</li>
 <li>Sets the EIP-712 domain version to "1".</li>
-<li>Takes the address of the Operations Safe as an authorized input.</li>
+<li>Takes the address of the Foundation Safe as an authorized input.</li>
 <li>Takes the address of the <code>SuperchainConfig</code> as an authorized input.</li>
 <li>Takes the address of the Deputy as an authorized input.</li>
 <li>Takes a signature from the Deputy over a known EIP-712 message.</li>
@@ -11678,7 +11678,7 @@ identifier and was produced by the private key corresponding to the Deputy addre
 </ul>
 <h3 id="foundationsafe"><a class="header" href="#foundationsafe">foundationSafe</a></h3>
 <ul>
-<li>Returns the address of the Operations Safe as set in the constructor.</li>
+<li>Returns the address of the Foundation Safe as set in the constructor.</li>
 </ul>
 <h3 id="superchainconfig-2"><a class="header" href="#superchainconfig-2">superchainConfig</a></h3>
 <ul>
