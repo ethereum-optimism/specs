@@ -312,7 +312,8 @@ Runs a held deposit. Permissionless.
 - MUST revert if the record does not exist or is not held.
 - MUST revert if the record has no clear verdict.
 - MUST delete the record before calling the policy or the Portal.
-- MUST revert if the policy's `screenRelease` does not return `true`, passing a zero `_finalizableAt`.
+- MUST revert if the policy's `screenRelease` does not return `true`, passing the record's `clearedAt` and a zero
+  `_finalizableAt`.
 - MUST approve the `L1StandardBridge` for the item's amount, if the item is a token transfer whose tokens it holds.
 - MUST decrease `heldTokens` for the item's token pair by that amount.
 - MUST call the Portal's `completeDepositTransaction` with the ETH the item carries.
