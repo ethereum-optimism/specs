@@ -333,6 +333,9 @@ default OP Stack chain, so the deposit fee still follows submissions. While a ho
 the deposit gas published in each L1 block. Ordinary deposits and completions share that count, under the same max
 resource limit.
 
+The count covers the whole L1 block in which a hook is set or removed. Setting a hook starts it from the gas the
+block already bought, and removing the hook leaves it running until the block ends.
+
 **A completion is never charged again.**
 
 ## Invariants
