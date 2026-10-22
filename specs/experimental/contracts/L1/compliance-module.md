@@ -49,7 +49,8 @@
 
 The `ComplianceModule` is a reference implementation of the bridge hook an `OptimismPortal` can be pointed at. It
 takes custody of the ETH and tokens of held items, owns the verdict registry, and initiates completion. It is the only
-new contract that holds value.
+new contract that holds value. It supports ETH, [Native L1 Tokens](./l1-standard-bridge.md#native-l1-token) and
+[OptimismMintableERC20](../L2/l2-standard-bridge.md#optimismmintableerc20) tokens.
 
 A separate [Policy](../../compliance/policy.md) contract decides what is acceptable, and the
 module consults it on every item. The feature as a whole is described in the
