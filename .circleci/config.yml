@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.10.1
-  utils: ethereum-optimism/circleci-utils@1.0.13
+  utils: ethereum-optimism/circleci-utils@1.0.33
 
 executors:
   default:
@@ -37,6 +37,8 @@ commands:
 jobs:
   lint-specs:
     executor: default
+    environment:
+      RUSTUP_TOOLCHAIN: "1.83.0"
     steps:
       - utils/checkout-with-mise
       - install-npm-deps
@@ -62,6 +64,8 @@ jobs:
 
   build-book:
     executor: default
+    environment:
+      RUSTUP_TOOLCHAIN: "1.83.0"
     steps:
       - utils/checkout-with-mise
       - run:
