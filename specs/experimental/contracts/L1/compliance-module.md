@@ -27,6 +27,7 @@
   - [portal](#portal)
   - [items](#items)
   - [heldTokens](#heldtokens)
+  - [parties](#parties)
   - [policy](#policy)
   - [disabled](#disabled)
   - [paused](#paused)
@@ -74,9 +75,10 @@ its value. This keeps unbounded calldata out of storage, and lets anyone rebuild
 
 ### Resolved Parties
 
-The **Resolved Parties** of an item are the addresses the module passes to the policy. For a message sent through the
-messengers, the module decodes the real sender and recipient from the envelope rather than passing the messengers
-themselves.
+The **Resolved Parties** of an item are the two addresses the module passes to the policy: the sender, then the
+recipient. For a message the messengers sent (its outer sender and target are the messengers), the module decodes the
+real sender and recipient from the envelope rather than passing the messengers themselves, and for a transfer between
+the standard bridges it takes them from the transfer.
 
 This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation. Anything it cannot
 decode falls back to the outer addresses. Resolving this once in the module, rather than in each policy, keeps the
@@ -194,6 +196,12 @@ Returns the [Record](#record) for an identifier.
 ### heldTokens
 
 Returns the amount the module holds for an L1 token and L2 token pair.
+
+### parties
+
+Returns the [Resolved Parties](#resolved-parties) of an item.
+
+- MUST return the same addresses, in the same order, that the module passes to the policy for that item.
 
 ### policy
 
