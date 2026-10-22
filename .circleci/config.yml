@@ -37,6 +37,8 @@ commands:
 jobs:
   lint-specs:
     executor: default
+    environment:
+      RUSTUP_TOOLCHAIN: "1.83.0"
     steps:
       - utils/checkout-with-mise
       - install-npm-deps
@@ -62,6 +64,8 @@ jobs:
 
   build-book:
     executor: default
+    environment:
+      RUSTUP_TOOLCHAIN: "1.83.0"
     steps:
       - utils/checkout-with-mise
       - run:
