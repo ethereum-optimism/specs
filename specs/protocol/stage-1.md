@@ -257,7 +257,7 @@ flowchart LR
     FndUp --> PAO
     Council --> PAO
     Council --> GS
-    FndOps[Foundation Operations Safe] -->|pause| DPM
+    FndUp -->|pause| DPM
     FndUp -->|set versions|PV
     LM -->|execTransactionFromModule| Council
     DPM -->|execTransactionFromModule| GS
