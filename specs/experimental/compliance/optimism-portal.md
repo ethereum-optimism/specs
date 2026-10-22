@@ -227,6 +227,7 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
 **Behavior, when `bridgeHook` is not `address(0)`:**
 
 - MUST perform every check it performs on a default OP Stack chain before consulting the hook.
+- MUST take today's normal path, unchanged, without consulting the hook, when the caller is the ProxyAdmin owner.
 - MUST assign the [Deposit Counter](#deposit-counter) and build the item from it before calling the hook, so the
   identifier the hook screens is the identifier the Portal commits to if it holds.
 - MUST call `bridgeHook.screenDeposit` with that item.
