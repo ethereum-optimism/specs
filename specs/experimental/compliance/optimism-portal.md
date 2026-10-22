@@ -311,6 +311,7 @@ this function when it is ready to release the withdrawal.
   not `DEFAULT_L2_SENDER`, so a completion cannot run inside another withdrawal's execution.
 - MUST revert if `heldWithdrawals[identifier]` is not `true`.
 - MUST revert if the ETH sent with the call does not match the item's committed value.
+- MUST revert if the item's target is an [Unsafe Target](#unsafe-target) at the time of completion.
 - MUST delete `heldWithdrawals[identifier]` before moving any value.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
   [Token Bridge Message](./overview.md#token-bridge-message)  by calling `restoreERC20` on the `L1StandardBridge`.
@@ -417,8 +418,8 @@ The hook is an Unsafe Target only while it is set. After [`removeHook`](#removeh
 caller. A hook MUST therefore check that it is still the Portal's hook, with `bridgeHook() == address(this)`, and not
 only that its caller is the Portal.
 
-The address can also change between proving and finalizing, so the two checks can disagree. The one at finalization
-is the binding one.
+The address can also change after a withdrawal is proven or held, so the checks can disagree. Finalization decides
+for a withdrawal that pays out directly, and completion decides for a held one.
 
 ### Changing the Hook
 
