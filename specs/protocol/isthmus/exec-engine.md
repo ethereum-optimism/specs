@@ -242,9 +242,7 @@ So implementations don't need to check for overflows if they perform the calcula
 
 #### Deposit Operator Fees
 
-Deposit transactions do not get charged operator fees. For all deposit transactions, regardless of the operator fee
-parameter configuration, the operator fee should be **zero**. Deposit transactions also do not receive operator fee gas
-refunds, since they never buy the operator fee gas to begin with.
+Deposit transactions do not get charged operator fees. See [Deposits](./deposits.md) for details.
 
 #### EVM Fee Semantics
 
