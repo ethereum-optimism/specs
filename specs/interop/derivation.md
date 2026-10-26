@@ -85,7 +85,7 @@ derivation pipeline.
 
 The contents of the transactions are defined by the file
 [`lagoon_nut_bundle.json`](https://github.com/ethereum-optimism/optimism/blob/develop/op-core/nuts/bundles/lagoon_nut_bundle.json)
-in the monorepo, which contains 28 transactions. In addition to the contents of the file, the consensus layer node
+in the monorepo, which contains 29 transactions. In addition to the contents of the file, the consensus layer node
 MUST prefix each intent string with `Interop <index>:` followed by a space, where `<index>` is the zero-based position
 of the transaction within the bundle. The prefix is the concept-level name `Interop` rather than the fork name
 `Lagoon`, so that the derived [upgrade deposit source hashes](../protocol/deposits.md#source-hash-computation) are
@@ -94,7 +94,7 @@ unaffected by the fork rename.
 These transactions can be classified into the following groups:
 
 1. **Implementation Deployments**: One transaction for _each_ predeploy implementation being deployed, including the
-   L2ContractsManager for this upgrade (27 total)
+   L2ContractsManager for this upgrade (28 total)
 2. **Upgrade Execution**: One transaction to call `L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)`
 
 More information regarding the upgrade path implemented by the bundle transactions can be found in
@@ -116,7 +116,7 @@ decide whether to apply the Interop-gated upgrades. The second funds
 [`ETHLiquidity`](./eth-liquidity.md) with a mint and value of `type(uint128).max`; it is the only Interop activation
 deposit with a non-zero mint, and therefore cannot be expressed in the bundle format.
 
-A chain in a single-chain dependency set emits only the bundle's 28 transactions.
+A chain in a single-chain dependency set emits only the bundle's 29 transactions.
 
 ### Upgrade Block Gas Limit
 
