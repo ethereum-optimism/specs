@@ -10,6 +10,7 @@
   - [ETH Liquidity](#eth-liquidity)
   - [Liquidity Minting](#liquidity-minting)
   - [Liquidity Burning](#liquidity-burning)
+- [Pause](#pause)
 - [Assumptions](#assumptions)
   - [aEL-001: SafeSend correctly transfers ETH to recipients](#ael-001-safesend-correctly-transfers-eth-to-recipients)
     - [Mitigations](#mitigations)
@@ -23,9 +24,12 @@
 - [Function Specification](#function-specification)
   - [mint](#mint)
   - [burn](#burn)
+  - [setPaused](#setpaused)
+  - [syncETHLiquidityPause](#syncethliquiditypause)
 - [Events](#events)
   - [LiquidityMinted](#liquidityminted)
   - [LiquidityBurned](#liquidityburned)
+  - [PausedSet](#pausedset)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -40,6 +44,9 @@ The contract is initialized with a very large balance (`type(uint248).max` wei) 
 handle all legitimate minting operations. This design allows the `SuperchainETHBridge` to have a
 guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
 transfer mechanism.
+
+The contract mirrors this chain's [pause](#pause) on L1. While it is paused, ETH can't be burned or minted, so the
+`SuperchainETHBridge` can't send, relay or refund ETH.
 
 ## Constants
 
@@ -67,6 +74,23 @@ a cross-chain transfer.
 Liquidity Burning is the process of depositing ETH into the `ETHLiquidity` contract. This operation
 is performed when ETH is being sent from a source chain to a destination chain as part of a
 cross-chain transfer.
+
+## Pause
+
+The safety of the ETH bridge rests on [message expiry](./message-expiry.md). If that is ever in doubt, the chain's
+existing L1 pause can stop the bridge on L2 too. The L1 pause is this chain's `paused()` on its
+`L1CrossDomainMessenger`, which resolves the `SuperchainConfig`'s local or global pause, and its expiry. There is no
+separate L2 pause role.
+
+`ETHLiquidity` holds a copy of that state. Anyone syncs it by calling
+[`L1CrossDomainMessenger.syncETHLiquidityPause`](#syncethliquiditypause), which sends the current state to L2 as a
+deposit, also while the chain is paused. Call it again after any pause, unpause or pause expiry; until then, L2
+keeps the last state it received. Each update carries the nonce of the `L1CrossDomainMessenger` message that sends
+it, and L2 ignores an update from an earlier message than the one it applied. A sync that failed on L2, such as
+for gas, can be replayed later without undoing a newer state.
+
+Only the `SuperchainETHBridge` is paused. The rest of interop messaging is not; it has the per-operator
+`op-interop-filter` failsafe instead.
 
 ## Assumptions
 
@@ -132,6 +156,7 @@ function mint(uint256 _amount) external
 ```
 
 - MUST revert if called by any address other than the `SuperchainETHBridge`.
+- MUST revert with `ETHLiquidity_Paused` while `paused` is `true`.
 - MUST transfer the `_amount` of ETH to the `msg.sender` using `SafeSend`.
 - MUST emit a `LiquidityMinted` event with the `msg.sender` and `_amount`.
 
@@ -145,7 +170,35 @@ function burn() external payable;
 
 - MUST accept ETH via `msg.value`.
 - MUST revert if called by any address other than the `SuperchainETHBridge`.
+- MUST revert with `ETHLiquidity_Paused` while `paused` is `true`.
 - MUST emit a `LiquidityBurned` event with the `msg.sender` and `msg.value`.
+
+### setPaused
+
+Applies this chain's L1 pause state, as sent by [`syncETHLiquidityPause`](#syncethliquiditypause).
+
+```solidity
+function setPaused(bool _paused, uint256 _messageNonce) external;
+```
+
+- MUST revert with `ETHLiquidity_NotL1CrossDomainMessenger` unless `msg.sender` is the `L2CrossDomainMessenger`
+  and its `xDomainMessageSender()` is this chain's `L1CrossDomainMessenger`.
+- MUST NOT change any state if `_messageNonce` is not greater than `pausedMessageNonce`.
+- Otherwise MUST set `paused` to `_paused` and `pausedMessageNonce` to `_messageNonce`, and emit `PausedSet`.
+
+### syncETHLiquidityPause
+
+On L1, sends this chain's pause state to `ETHLiquidity`.
+
+```solidity
+function syncETHLiquidityPause() external;
+```
+
+- MUST be a function of this chain's `L1CrossDomainMessenger`, callable by anyone.
+- MUST revert unless this chain's `SystemConfig` has the `INTEROP` feature enabled.
+- MUST NOT revert while this chain is paused.
+- MUST send `ETHLiquidity.setPaused(paused(), nonce)` to this chain as a deposit, as itself, with a fixed minimum
+  gas limit, where `nonce` is the versioned nonce of that message.
 
 ## Events
 
@@ -163,4 +216,12 @@ MUST be triggered when `burn` is called.
 
 ```solidity
 event LiquidityBurned(address indexed caller, uint256 value);
+```
+
+### PausedSet
+
+MUST be triggered when `setPaused` applies an update.
+
+```solidity
+event PausedSet(bool paused, uint256 messageNonce);
 ```
