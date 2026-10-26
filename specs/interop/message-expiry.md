@@ -70,9 +70,12 @@ function relayUndeliveredMessage(bytes32 _messageHash, uint256 _undeliveredAt) e
 - It MUST send `L2ToL2CrossDomainMessenger.expireMessage(_messageHash, _undeliveredAt)` to this chain as a
   deposit, as itself, with a fixed minimum gas limit.
 
-The `L1CrossDomainMessenger` refuses to relay messages that target itself, so `relayUndeliveredMessage` is the only
-way it can be the sender of a message on L2. If the call reverts, such as while this chain is paused or when it runs
-out of gas, it is recorded in the calling messenger's failed messages and can be replayed.
+If `relayUndeliveredMessage` reverts, such as while this chain is paused or when it runs out of gas, it is recorded in
+the calling messenger's failed messages and can be replayed.
+
+The `L1CrossDomainMessenger` refuses to relay messages that target itself, so it can be the sender of a message on L2
+only through `relayUndeliveredMessage` and [`syncETHLiquidityPause`](./eth-liquidity.md#syncethliquiditypause). Each
+sends one fixed call to one fixed target.
 
 ## Safety
 

@@ -272,6 +272,10 @@ function refundETH(uint256 _destination, uint256 _nonce, address _to, uint256 _a
 Only the `msg.sender` of `sendETH` can claim its refund, and the ETH goes back to it. A contract that called
 `sendETH` on behalf of someone else calls `refundETH` itself and passes the ETH on.
 
+While `ETHLiquidity` is [paused](./eth-liquidity.md#pause), `sendETH`, `relayETH` and `refundETH` revert, because
+`burn` and `mint` do. Relays and refunds can be retried after the unpause. A send whose message expires during the
+pause is refunded after it.
+
 ## Events
 
 ### SendETH
