@@ -81,9 +81,10 @@ recipient. For a message the messengers sent (its outer sender and target are th
 real sender and recipient from the envelope rather than passing the messengers themselves, and for a transfer between
 the standard bridges it takes them from the transfer.
 
-This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation. Anything it cannot
-decode falls back to the outer addresses. Resolving this once in the module, rather than in each policy, keeps the
-protocol knowledge in one place.
+This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation. Where it
+stops decoding, the module passes the sender and target of the last layer it read, so an item it cannot decode at all
+keeps its outer addresses. Resolving this once in the module, rather than in each policy, keeps the protocol knowledge
+in one place.
 
 ### Disable
 
@@ -201,6 +202,12 @@ Returns the amount the module holds for an L1 token and L2 token pair.
 ### parties
 
 Returns the [Resolved Parties](#resolved-parties) of an item.
+
+**Parameters:**
+
+- `_item`: the item to resolve.
+
+**Behavior:**
 
 - MUST return the same addresses, in the same order, that the module passes to the policy for that item.
 

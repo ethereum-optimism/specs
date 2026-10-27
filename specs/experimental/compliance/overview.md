@@ -220,7 +220,8 @@ an item. The hook asks it when an item is screened and when value moves, and tak
 ### Parties
 
 The **Parties** of an item are the addresses the policy screens for it. For a message sent through the messengers, the
-hook decodes the real sender and recipient from the envelope, and falls back to the outer addresses if it cannot.
+hook decodes the real sender and recipient from the envelope. Where it stops decoding, it uses the sender and target
+of the last layer it read.
 
 ### Token Bridge Message
 
