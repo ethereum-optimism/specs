@@ -102,7 +102,7 @@ What a policy does with `_expiresAt` and `_finalizableAt` is up to the chain. Fo
 - **[Hold Delay](#hold-delay).** Reject an uncleared withdrawal until `_finalizableAt` plus the delay, then hold it. A
   service that clears during the proof maturity window needs a short delay. One that clears only once the withdrawal
   is finalizable needs the delay to cover its own response time.
-- **Expiring clearances.** Honor the `_expiresAt` the [Verdict Writer](#verdict-writer) set, so a verdict written
+- **Expiring clearances.** Honor the `_expiresAt` the [Verdict Writer](#verdict-writer) chose, so a verdict written
   early stops counting once that time passes. An expired clearance counts as none, so a withdrawal finalized after
   it is held like any other uncleared one.
 - **No wait for known flags.** Hold at the first attempt when a party is already flagged, and wait only for

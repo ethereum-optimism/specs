@@ -64,7 +64,7 @@ A **Record** is the module's entry for one item, keyed by the item's
 ```solidity
 struct Record {
     uint64 heldAt;    // non-zero means the item exists and is held
-    uint64 expiresAt; // non-zero means a clear verdict is recorded, and when the writer says it expires
+    uint64 expiresAt; // non-zero means a clear verdict is recorded, and when the policy says it expires
 }
 ```
 
