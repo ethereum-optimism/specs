@@ -64,13 +64,16 @@ A **Record** is the module's entry for one item, keyed by the item's
 ```solidity
 struct Record {
     uint64 heldAt;    // non-zero means the item exists and is held
-    uint64 clearedAt; // non-zero means a clear verdict is recorded, and when
+    uint64 expiresAt; // non-zero means a clear verdict is recorded, and when the writer says it expires
 }
 ```
 
 The module doesn't store any of the item fields. They are emitted in full when the item is held, and re-supplied by
 whoever attempts to move
 its value. This keeps unbounded calldata out of storage, and lets anyone rebuild the set of held items from L1 alone.
+
+The module stores whatever `expiresAt` the policy passes and hands it back when value moves, so whether an
+expired verdict still counts is the policy's decision.
 
 ### Resolved Parties
 
@@ -135,7 +138,7 @@ any held item, or refuse and hold any new one. See
 
 ### iCM-011: Verdicts come only from the policy, and the hook functions only from the Portal
 
-Every write to a record's `clearedAt` requires `msg.sender` to be the policy. The four
+Every write to a record's `expiresAt` requires `msg.sender` to be the policy. The four
 [`IBridgeHook`](../../compliance/optimism-portal.md#ibridgehook) functions require the caller to be the Portal.
 
 [completeDeposit](#completedeposit) and [completeWithdrawal](#completewithdrawal) are permissionless,
@@ -249,7 +252,7 @@ Answers the Portal for a withdrawal at finalization.
 - MUST return `true` without consulting the policy if [Disable](#disable) is set AND the withdrawal's nonce is at or
   above the cutoff recorded when it was disabled.
 - MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's
-  `screenRelease`, passing the record's `clearedAt` and `_finalizableAt`.
+  `screenRelease`, passing the record's `expiresAt` and `_finalizableAt`.
 - MUST NOT catch a revert from the policy.
 
 ### holdWithdrawal
@@ -270,12 +273,17 @@ Takes custody of a held withdrawal.
 
 Records a clear verdict against an identifier.
 
+**Parameters:**
+
+- `_expiresAt`: when the verdict stops being valid. The [Verdict Writer](../../compliance/policy.md#verdict-writer)
+  chooses it.
+
 **Behavior:**
 
 - MUST revert if the caller is not the policy.
 - MUST NOT require that the item exists, so a verdict can be recorded before its item reaches the Portal.
-- MUST set the record's `clearedAt` to the current timestamp.
-- MUST emit a `VerdictRecorded` event with the identifier and the time.
+- MUST set the record's `expiresAt` to `_expiresAt`.
+- MUST emit a `VerdictRecorded` event with the identifier and the expiry.
 
 ### revokeVerdict
 
@@ -284,7 +292,7 @@ Removes a clear verdict.
 **Behavior:**
 
 - MUST revert if the caller is not the policy.
-- MUST clear the record's `clearedAt`.
+- MUST clear the record's `expiresAt`.
 - MUST emit a `VerdictRevoked` event with the identifier.
 
 ### completeDeposit
@@ -301,7 +309,8 @@ Runs a held deposit. Permissionless.
 - MUST revert if the record does not exist or is not held.
 - MUST revert if the record has no clear verdict.
 - MUST delete the record before calling the policy or the Portal.
-- MUST revert if the policy's `screenRelease` does not return `true`, passing a zero `_finalizableAt`.
+- MUST revert if the policy's `screenRelease` does not return `true`, passing the `expiresAt` the record held before
+  the delete, and a zero `_finalizableAt`.
 - MUST approve the `L1StandardBridge` for the item's amount, if the item is a token transfer whose tokens it holds.
 - MUST decrease `heldTokens` for the item's token pair by that amount.
 - MUST call the Portal's `completeDepositTransaction` with the ETH the item carries.
