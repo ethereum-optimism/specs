@@ -27,6 +27,7 @@
   - [portal](#portal)
   - [items](#items)
   - [heldTokens](#heldtokens)
+  - [parties](#parties)
   - [policy](#policy)
   - [disabled](#disabled)
   - [paused](#paused)
@@ -48,7 +49,8 @@
 
 The `ComplianceModule` is a reference implementation of the bridge hook an `OptimismPortal` can be pointed at. It
 takes custody of the ETH and tokens of held items, owns the verdict registry, and initiates completion. It is the only
-new contract that holds value.
+new contract that holds value. It supports ETH, [Native L1 Tokens](./l1-standard-bridge.md#native-l1-token) and
+[OptimismMintableERC20](../L2/l2-standard-bridge.md#optimismmintableerc20) tokens.
 
 A separate [Policy](../../compliance/policy.md) contract decides what is acceptable, and the
 module consults it on every item. The feature as a whole is described in the
@@ -74,13 +76,15 @@ its value. This keeps unbounded calldata out of storage, and lets anyone rebuild
 
 ### Resolved Parties
 
-The **Resolved Parties** of an item are the addresses the module passes to the policy. For a message sent through the
-messengers, the module decodes the real sender and recipient from the envelope rather than passing the messengers
-themselves.
+The **Resolved Parties** of an item are the two addresses the module passes to the policy: the sender, then the
+recipient. For a message the messengers sent (its outer sender and target are the messengers), the module decodes the
+real sender and recipient from the envelope rather than passing the messengers themselves, and for a transfer between
+the standard bridges it takes them from the transfer.
 
-This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation. Anything it cannot
-decode falls back to the outer addresses. Resolving this once in the module, rather than in each policy, keeps the
-protocol knowledge in one place.
+This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation. Where it
+stops decoding, the module passes the sender and target of the last layer it read, so an item it cannot decode at all
+keeps its outer addresses. Resolving this once in the module, rather than in each policy, keeps the protocol knowledge
+in one place.
 
 ### Disable
 
@@ -177,6 +181,9 @@ completion is sent first.
 ### constructor
 
 - MUST set the immutable `OptimismPortal` address, which is the only permitted caller of the hook entry points.
+- MUST read the `L1CrossDomainMessenger` and `L1StandardBridge` addresses from the Portal's `SystemConfig` and store
+  them as immutables. The module uses them to find the [Resolved Parties](#resolved-parties) and to approve the bridge
+  on token completions.
 
 ### portal
 
@@ -191,6 +198,18 @@ Returns the [Record](#record) for an identifier.
 ### heldTokens
 
 Returns the amount the module holds for an L1 token and L2 token pair.
+
+### parties
+
+Returns the [Resolved Parties](#resolved-parties) of an item.
+
+**Parameters:**
+
+- `_item`: the item to resolve.
+
+**Behavior:**
+
+- MUST return the same addresses, in the same order, that the module passes to the policy for that item.
 
 ### policy
 
@@ -301,7 +320,8 @@ Runs a held deposit. Permissionless.
 - MUST revert if the record does not exist or is not held.
 - MUST revert if the record has no clear verdict.
 - MUST delete the record before calling the policy or the Portal.
-- MUST revert if the policy's `screenRelease` does not return `true`, passing a zero `_finalizableAt`.
+- MUST revert if the policy's `screenRelease` does not return `true`, passing the record's `clearedAt` and a zero
+  `_finalizableAt`.
 - MUST approve the `L1StandardBridge` for the item's amount, if the item is a token transfer whose tokens it holds.
 - MUST decrease `heldTokens` for the item's token pair by that amount.
 - MUST call the Portal's `completeDepositTransaction` with the ETH the item carries.
@@ -325,6 +345,7 @@ Points the module at a different policy.
 
 - MUST revert if the caller is not the owner.
 - MUST NOT alter any record, so held items and their verdicts survive the change.
+- MUST emit a `PolicySet` event with the new policy.
 
 ### disable
 
@@ -339,6 +360,7 @@ Sets [Disable](#disable).
 - MUST revert if the caller is not the owner.
 - MUST record `_cutoffL2Nonce` as the cutoff used by [screenWithdrawal](#screenwithdrawal).
 - MUST NOT release, complete or otherwise alter any item already held.
+- MUST emit a `Disabled` event with the cutoff.
 
 ### enable
 
@@ -347,3 +369,4 @@ Clears [Disable](#disable), so new items are screened again.
 **Behavior:**
 
 - MUST revert if the caller is not the owner.
+- MUST emit an `Enabled` event.

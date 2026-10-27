@@ -227,6 +227,7 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
 **Behavior, when `bridgeHook` is not `address(0)`:**
 
 - MUST perform every check it performs on a default OP Stack chain before consulting the hook.
+- MUST take today's normal path, unchanged, without consulting the hook, when the caller is the ProxyAdmin owner.
 - MUST assign the [Deposit Counter](#deposit-counter) and build the item from it before calling the hook, so the
   identifier the hook screens is the identifier the Portal commits to if it holds.
 - MUST call `bridgeHook.screenDeposit` with that item.
@@ -235,9 +236,10 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
 - When `screenDeposit` returns `false`, it MUST hold the deposit:
   - MUST set `heldDeposits[identifier]` to `true` before moving any value.
   - MUST NOT emit a `TransactionDeposited` event.
-  - MUST move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is identified as a
-    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
+    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`,
+    before calling `holdDeposit`.
+  - MUST move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
 
 ### proveWithdrawalTransaction
 
@@ -270,9 +272,10 @@ Finalizes a withdrawal using a proof submitted by another address.
 - When `screenWithdrawal` returns `false`, it MUST hold the withdrawal:
   - MUST set `heldWithdrawals[identifier]` to `true` before moving any value.
   - MUST NOT forward the withdrawal call to its target.
-  - MUST move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
-    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
+    [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`,
+    before calling `holdWithdrawal`.
+  - MUST move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
 
 ### completeDepositTransaction
 
@@ -311,6 +314,7 @@ this function when it is ready to release the withdrawal.
   not `DEFAULT_L2_SENDER`, so a completion cannot run inside another withdrawal's execution.
 - MUST revert if `heldWithdrawals[identifier]` is not `true`.
 - MUST revert if the ETH sent with the call does not match the item's committed value.
+- MUST revert if the item's target is an [Unsafe Target](#unsafe-target) at the time of completion.
 - MUST delete `heldWithdrawals[identifier]` before moving any value.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
   [Token Bridge Message](./overview.md#token-bridge-message)  by calling `restoreERC20` on the `L1StandardBridge`.
@@ -329,6 +333,9 @@ The resource meter is unchanged. A deposit is capped, priced and charged at subm
 default OP Stack chain, so the deposit fee still follows submissions. While a hook is set, the Portal also counts
 the deposit gas published in each L1 block. Ordinary deposits and completions share that count, under the same max
 resource limit.
+
+The count covers the whole L1 block in which a hook is set or removed. Setting a hook starts it from the gas the
+block already bought, and removing the hook leaves it running until the block ends.
 
 **A completion is never charged again.**
 
@@ -417,8 +424,8 @@ The hook is an Unsafe Target only while it is set. After [`removeHook`](#removeh
 caller. A hook MUST therefore check that it is still the Portal's hook, with `bridgeHook() == address(this)`, and not
 only that its caller is the Portal.
 
-The address can also change between proving and finalizing, so the two checks can disagree. The one at finalization
-is the binding one.
+The address can also change after a withdrawal is proven or held, so the checks can disagree. Finalization decides
+for a withdrawal that pays out directly, and completion decides for a held one.
 
 ### Changing the Hook
 

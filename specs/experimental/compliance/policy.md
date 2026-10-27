@@ -76,6 +76,9 @@ interface IPolicy {
 Both functions answer with a [Screening Outcome](./overview.md#screening-outcome): `true` to proceed, `false` to hold,
 and a revert to reject.
 
+`_parties` holds the item's two [Resolved Parties](../contracts/L1/compliance-module.md#resolved-parties):
+`_parties[0]` is the sender and `_parties[1]` is the recipient.
+
 ## What Every Policy May Assume
 
 - The item it is handed is the item that will execute, unchanged.
