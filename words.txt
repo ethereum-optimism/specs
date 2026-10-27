@@ -181,6 +181,7 @@ fastlz
 Fastlz
 feevault
 feevaultconfig
+finalizable
 flashblock
 flashblock's
 flashblocks
