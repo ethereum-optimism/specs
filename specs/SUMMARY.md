@@ -85,6 +85,7 @@
       - [Execution Engine](./protocol/karst/exec-engine.md)
       - [Network upgrade transactions](./protocol/karst/derivation.md)
     - [Lagoon](./protocol/lagoon/overview.md)
+      - [Execution Engine](./protocol/lagoon/exec-engine.md)
       - [Post-Execution Transactions](./protocol/lagoon/post-exec.md)
       - [Sequencer-Defined Metering](./protocol/lagoon/sdm.md)
       - [Derivation](./protocol/lagoon/derivation.md)
