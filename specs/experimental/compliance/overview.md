@@ -202,7 +202,8 @@ A **Terms Commitment** is the `OptimismPortal`'s record of a held item. It is ke
 ### Verdict
 
 A **Verdict** is a decision about one item, recorded through the [Policy](#policy) against the item's
-[Identifier](#identifier). A verdict can be recorded before the item exists. The policy can revoke it.
+[Identifier](#identifier). A verdict can be recorded before the item exists. It carries an expiry set by the
+[Verdict Writer](./policy.md#verdict-writer) when it is written, and the policy can revoke it earlier.
 
 A clear verdict is what lets value move. With one, a withdrawal pays out at finalization and a held item can complete,
 as long as the policy still allows it when the value moves. An item without one is uncleared.
