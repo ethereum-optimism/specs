@@ -40,7 +40,8 @@ what it requires of the answer. It does not specify what a policy decides. See
 ### Verdict Writer
 
 A **Verdict Writer** is the offchain service that checks an item's [Parties](./overview.md#parties) and records
-verdicts through the policy. It belongs to the chain and is outside this specification.
+verdicts through the policy. It sets each verdict's expiry, so how long a verdict stays valid is decided offchain.
+It belongs to the chain and is outside this specification.
 
 ### Hold Delay
 
@@ -65,7 +66,7 @@ interface IPolicy {
     function screenRelease(
         Item calldata _item,
         address[] calldata _parties,
-        uint64 _clearedAt,
+        uint64 _expiresAt,
         uint256 _finalizableAt
     )
         external
@@ -96,14 +97,14 @@ and can be retried with more gas.
 
 ## Policy Choices
 
-What a policy does with `_clearedAt` and `_finalizableAt` is up to the chain. For example, a policy may choose to:
+What a policy does with `_expiresAt` and `_finalizableAt` is up to the chain. For example, a policy may choose to:
 
 - **[Hold Delay](#hold-delay).** Reject an uncleared withdrawal until `_finalizableAt` plus the delay, then hold it. A
   service that clears during the proof maturity window needs a short delay. One that clears only once the withdrawal
   is finalizable needs the delay to cover its own response time.
-- **Fresh clearances.** Count a clearance only up to a maximum age, so a verdict written early has expired by the
-  time the withdrawal moves. A clearance that has aged out counts as none, so a withdrawal finalized after that is
-  held like any other uncleared one.
+- **Expiring clearances.** Honor the `_expiresAt` the [Verdict Writer](#verdict-writer) set, so a verdict written
+  early stops counting once that time passes. An expired clearance counts as none, so a withdrawal finalized after
+  it is held like any other uncleared one.
 - **No wait for known flags.** Hold at the first attempt when a party is already flagged, and wait only for
   withdrawals still pending a verdict.
 - **Synchronous policies.** A policy that reads only onchain state and answers immediately never holds, so it ignores
