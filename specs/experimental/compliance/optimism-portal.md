@@ -239,9 +239,10 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
 - When `screenDeposit` returns `false`, it MUST hold the deposit:
   - MUST set `heldDeposits[identifier]` to `true` before moving any value.
   - MUST NOT emit a `TransactionDeposited` event.
-  - MUST move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
+  - MUST NOT lock the deposit's ETH in the `ETHLockbox`; the ETH goes to the hook instead.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is identified as a
     [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
+  - MUST then move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
 
 ### proveWithdrawalTransaction
 
