@@ -91,9 +91,6 @@ keeps the last state it received. Each update carries the nonce of the `L1CrossD
 it, and L2 ignores an update from an earlier message than the one it applied. A sync that failed on L2, such as
 for gas, can be replayed later without undoing a newer state.
 
-Only the `SuperchainETHBridge` is paused. The rest of interop messaging is not; it has the per-operator
-`op-interop-filter` failsafe instead.
-
 ## Assumptions
 
 ### aEL-001: SafeSend correctly transfers ETH to recipients
