@@ -327,7 +327,8 @@ this function when it is ready to release the withdrawal.
 - MUST set the L2 Withdrawal Sender to the item's committed sender before forwarding the call.
 - MUST forward the call to the target with `SafeCall.callWithMinGas` and the item's committed `gasLimit`.
 - MUST unset the L2 Withdrawal Sender after the call returns.
-- MUST revert if the forwarded call fails.
+- MUST revert if the forwarded call fails, so the withdrawal stays held and can be completed again later. This
+  diverges from `finalizeWithdrawalTransaction`, which records the failure as finalized with `success = false`.
 
 ## Resource Metering
 
