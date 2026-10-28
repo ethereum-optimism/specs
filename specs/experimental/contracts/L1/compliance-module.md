@@ -394,9 +394,11 @@ Sets [Disable](#disable).
 
 ### enable
 
-Clears [Disable](#disable), so new items are screened again.
+Clears [Disable](#disable) and its cutoff, so every item is screened again, including a withdrawal initiated while it
+was set.
 
 **Behavior:**
 
 - MUST revert if the caller is not the owner.
+- MUST clear the cutoff.
 - MUST emit an `Enabled` event.
