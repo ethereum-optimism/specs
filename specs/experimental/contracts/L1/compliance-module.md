@@ -83,9 +83,13 @@ The **Resolved Parties** of an item are the addresses the module passes to the p
 messengers, the module decodes the real sender and recipient from the envelope rather than passing the messengers
 themselves.
 
-This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation. Anything it cannot
-decode falls back to the outer addresses. Resolving this once in the module, rather than in each policy, keeps the
-protocol knowledge in one place.
+This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation:
+
+- `finalizeBridgeERC20` or `finalizeBridgeETH` on the `L1StandardBridge` or `L2StandardBridge`: `_from` and `_to`.
+- Any other `relayMessage` envelope: the messenger's `_sender` and `_target`.
+- Anything else: the outer addresses, with a deposit's `from` unaliased.
+
+Resolving this once in the module, rather than in each policy, keeps the protocol knowledge in one place.
 
 ### Disable
 
