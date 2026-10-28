@@ -296,7 +296,12 @@ this function when it is ready to release the deposit.
 - MUST delete `heldDeposits[identifier]` before moving any value.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
   [Token Bridge Message](./overview.md#token-bridge-message) by calling `restoreERC20` on the `L1StandardBridge`.
-- MUST then run the normal deposit path, emitting a `TransactionDeposited` event with the committed terms.
+- MUST then lock the ETH sent with the call in the `ETHLockbox`, as on the normal deposit path.
+- MUST emit a `TransactionDeposited` event with the committed terms, using the item's `from` unchanged.
+- MUST NOT re-derive `from` from `msg.sender`, aliased or not: the caller is the hook, and the item's `from` already
+  carries the aliasing applied when the deposit was submitted.
+- MUST NOT run the resource meter again: a completion counts only against the per-block count in
+  [Resource Metering](#resource-metering).
 - MUST NOT revert if the system is paused, matching `depositTransaction` on a default OP Stack chain.
 
 ### completeWithdrawalTransaction
