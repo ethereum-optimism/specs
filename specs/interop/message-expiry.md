@@ -26,32 +26,34 @@ in `expiredMessages`, and applications can undo the send, as
 
 ## Flow
 
-For a message `H` sent from chain A to chain B and never relayed on B:
+For a message sent from a source chain to a destination chain and never relayed there:
 
-1. On A, `L2ToL2CrossDomainMessenger.sendMessage` records `sentMessageTimestamps[H]`.
-2. On B, anyone calls [`UndeliveredMessageExporter.exportUndeliveredMessage`](./predeploys.md#undeliveredmessageexporter)
-   with the message's preimage and A's `L1CrossDomainMessenger`. The exporter computes `H` with B as the
-   destination, checks that B has not relayed it, and sends `relayUndeliveredMessage(H, t)` through B's
-   `L2CrossDomainMessenger`, where `t` is B's block timestamp. This is not an executing message, so it can be
-   included through a deposit if B censors it.
-3. On L1, once the withdrawal is proven and finalized, B's `L1CrossDomainMessenger` relays it to A's
-   [`L1CrossDomainMessenger.relayUndeliveredMessage`](#l1crossdomainmessenger), which sends
-   `expireMessage(H, t)` to A as a deposit.
-4. On A, [`expireMessage`](./predeploys.md#expiremessage-invariants) marks `H` expired if
-   `t > sentMessageTimestamps[H] + EXPIRY_PERIOD`.
-5. On A, applications read `expiredMessages(H)` to undo the send.
+1. On the source chain, `L2ToL2CrossDomainMessenger.sendMessage` records `sentMessageTimestamps[messageHash]`.
+2. On the destination chain, anyone calls
+   [`UndeliveredMessageExporter.exportUndeliveredMessage`](./predeploys.md#undeliveredmessageexporter) with the
+   message's preimage and the source chain's `L1CrossDomainMessenger`. The exporter computes `messageHash` with the
+   destination chain as the destination, checks that the destination chain has not relayed it, and sends
+   `relayUndeliveredMessage(messageHash, undeliveredAt)` through the destination chain's `L2CrossDomainMessenger`,
+   where `undeliveredAt` is the destination chain's block timestamp. This is not an executing message, so it can be
+   included through a deposit if the destination chain's sequencer censors it.
+3. On L1, once the withdrawal is proven and finalized, the destination chain's `L1CrossDomainMessenger` relays it to
+   the source chain's [`L1CrossDomainMessenger.relayUndeliveredMessage`](#l1crossdomainmessenger), which sends
+   `expireMessage(messageHash, undeliveredAt)` to the source chain as a deposit.
+4. On the source chain, [`expireMessage`](./predeploys.md#expiremessage-invariants) marks the message expired if
+   `undeliveredAt > sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`.
+5. On the source chain, applications read `expiredMessages(messageHash)` to undo the send.
 
 ```mermaid
 sequenceDiagram
-    participant A as Chain A
+    participant Source as Source chain
     participant L1 as L1
-    participant B as Chain B
-    A->>A: sendMessage records sentMessageTimestamps[H]
-    Note over B: H is never relayed
-    B->>L1: exportUndeliveredMessage withdraws relayUndeliveredMessage(H, t)
-    L1->>L1: B's L1CrossDomainMessenger relays to A's L1CrossDomainMessenger
-    L1->>A: deposit expireMessage(H, t)
-    A->>A: expiredMessages[H] = true if t > sentAt + EXPIRY_PERIOD
+    participant Dest as Destination chain
+    Source->>Source: sendMessage records sentMessageTimestamps[messageHash]
+    Note over Dest: the message is never relayed
+    Dest->>L1: exportUndeliveredMessage withdraws relayUndeliveredMessage(messageHash, undeliveredAt)
+    L1->>L1: destination's L1CrossDomainMessenger relays to source's L1CrossDomainMessenger
+    L1->>Source: deposit expireMessage(messageHash, undeliveredAt)
+    Source->>Source: expiredMessages[messageHash] = true if undeliveredAt > sentAt + EXPIRY_PERIOD
 ```
 
 ## L1CrossDomainMessenger
@@ -83,12 +85,15 @@ A refund MUST NOT be possible for a message that was or can still be relayed. Th
 
 - An executing message is invalid if its block timestamp is more than the expiry window after the timestamp of
   its initiating message (see [Message Expiry Invariant](./messaging.md#message-expiry-invariant)).
-  `sentMessageTimestamps[H]` is that initiating timestamp, and it is written once.
-- The exporter on B attests that `H` was not relayed by B's timestamp `t`. Any later block on B has a timestamp of
-  at least `t`. If `t > sentMessageTimestamps[H] + EXPIRY_PERIOD` and `EXPIRY_PERIOD` is at least the expiry
-  window, no later block can relay `H`.
-- Only B can attest for `H`, because the exporter hashes the message with its own chain id as the destination.
-- Only chains whose portals A's `ETHLockbox` authorizes can attest. Each of them can already withdraw A's ETH.
+  `sentMessageTimestamps[messageHash]` is that initiating timestamp, and it is written once.
+- The exporter on the destination chain attests that the message was not relayed by its block timestamp
+  `undeliveredAt`. Any later block on the destination chain has a timestamp of at least `undeliveredAt`. If
+  `undeliveredAt > sentMessageTimestamps[messageHash] + EXPIRY_PERIOD` and `EXPIRY_PERIOD` is at least the expiry
+  window, no later block can relay the message.
+- Only the destination chain can attest for the message, because the exporter hashes it with its own chain id as the
+  destination.
+- Only chains whose portals the source chain's `ETHLockbox` authorizes can attest. Each of them can already withdraw
+  the source chain's ETH.
 - The trusted L2 sender is the `UndeliveredMessageExporter`, whose proxy had no implementation before the upgrade
   that introduced it, so no withdrawal from it can predate that upgrade.
 
