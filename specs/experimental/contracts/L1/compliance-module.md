@@ -382,7 +382,8 @@ Sets [Disable](#disable).
 
 **Parameters:**
 
-- `_cutoffL2Nonce`: the `L2ToL1MessagePasser` message nonce at the time of the disable.
+- `_cutoffL2Nonce`: the versioned message nonce, as returned by `L2ToL1MessagePasser.messageNonce()`, at the time of
+  the disable. A raw counter sits below every versioned nonce and would let every withdrawal bypass screening.
 
 **Behavior:**
 
