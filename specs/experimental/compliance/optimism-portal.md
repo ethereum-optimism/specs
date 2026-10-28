@@ -147,10 +147,11 @@ The Portal recognizes one shape: a message between the two canonical bridges.
 - For a deposit, the envelope's sender is the messenger, which the Portal derives from its own caller, and the
   messenger stamps the `L1StandardBridge` as the inner sender.
 - For a withdrawal, the proven sender is the L2 messenger and the inner sender is the `L2StandardBridge`.
-- In both, the inner call is `finalizeBridgeERC20`.
+- In both, the inner call is `finalizeBridgeERC20`, and the inner target is the other canonical bridge: the
+  `L2StandardBridge` for a deposit and the `L1StandardBridge` for a withdrawal.
 
-Nobody can choose these fields, so a message that matches came from the bridge. The Portal marks such an item as a
-token transfer, and moves escrow only for it.
+Nobody can choose the senders, so a message that matches came from the bridge, addressing its counterpart. The Portal
+marks such an item as a token transfer, and moves escrow only for it.
 
 The bridge trusts the Portal on the envelope: who sent the message, through which messenger, to which bridge. It never
 sees the envelope itself, only the inner `finalizeBridgeERC20` call, which it decodes on its own.
