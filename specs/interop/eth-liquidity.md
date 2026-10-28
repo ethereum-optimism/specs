@@ -79,8 +79,10 @@ cross-chain transfer.
 
 The safety of the ETH bridge rests on [message expiry](./message-expiry.md). If that is ever in doubt, the chain's
 existing L1 pause can stop the bridge on L2 too. The L1 pause is this chain's `paused()` on its
-`L1CrossDomainMessenger`, which resolves the `SuperchainConfig`'s local or global pause, and its expiry. There is no
-separate L2 pause role.
+`L1CrossDomainMessenger`, which resolves through the chain's `ETHLockbox`, its
+[Pause Identifier](../protocol/stage-1.md#pause-identifier), to the `SuperchainConfig`'s global pause or the pause for
+that identifier, and its expiry. Chains that share an `ETHLockbox` therefore pause together. There is no separate L2
+pause role.
 
 `ETHLiquidity` holds a copy of that state. Anyone syncs it by calling
 [`L1CrossDomainMessenger.syncETHLiquidityPause`](#syncethliquiditypause), which sends the current state to L2 as a
