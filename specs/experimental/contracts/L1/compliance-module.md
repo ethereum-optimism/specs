@@ -44,6 +44,8 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+> **Note:** This document is not finalized and should be considered experimental.
+
 ## Overview
 
 The `ComplianceModule` is a reference implementation of the bridge hook an `OptimismPortal` can be pointed at. It

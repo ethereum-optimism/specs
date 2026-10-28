@@ -43,6 +43,8 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+> **Note:** This document is not finalized and should be considered experimental.
+
 ## Overview
 
 This page specifies what the `OptimismPortal` gains when a chain enables a bridge hook. The model those changes

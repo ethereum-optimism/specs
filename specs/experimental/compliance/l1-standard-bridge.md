@@ -30,6 +30,8 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+> **Note:** This document is not finalized and should be considered experimental.
+
 ## Overview
 
 This page specifies the `L1StandardBridge` changes to support a chain that enables a bridge hook. The model those changes

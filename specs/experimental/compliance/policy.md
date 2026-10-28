@@ -25,6 +25,8 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+> **Note:** This document is not finalized and should be considered experimental.
+
 ## Overview
 
 A **Policy** is a contract the chain owns. It has two jobs:
