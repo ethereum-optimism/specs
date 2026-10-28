@@ -80,7 +80,8 @@ An Unsafe Target is an address a withdrawal may not call. The default set is the
 The **Deposit Counter** is a counter the Portal assigns to a deposit when it screens it. A withdrawal carries its own
 nonce, unique on L2, so it is already unique, but a deposit has no unique field of its own: two identical deposits in
 the same block are otherwise indistinguishable. The counter is what makes a deposit's [Identifier](./overview.md#identifier)
-name exactly one deposit, and the identifier exists only from the moment the counter is assigned.
+name exactly one deposit, and the identifier exists only from the moment the counter is assigned. The counter MUST
+be strictly increasing and MUST never be reused, including across hook changes and re-initialization.
 
 ## IBridgeHook
 
@@ -204,7 +205,7 @@ Initializes the Portal. It is the only way to set the [Bridge Hook Address](#bri
 - MUST revert if the caller is not the ProxyAdmin or its owner.
 - MUST leave `bridgeHook` unchanged if `_bridgeHook` is `address(0)`.
 - MUST otherwise set `bridgeHook` to `_bridgeHook`, replacing any hook already set, and emit `BridgeHookSet`.
-- MUST leave `heldDeposits` and `heldWithdrawals` unchanged.
+- MUST leave `heldDeposits`, `heldWithdrawals` and the [Deposit Counter](#deposit-counter) unchanged.
 
 ### bridgeHook
 
