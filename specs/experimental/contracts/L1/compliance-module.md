@@ -14,6 +14,8 @@
     - [Mitigations](#mitigations)
   - [aCM-005: The policy is trusted](#acm-005-the-policy-is-trusted)
     - [Mitigations](#mitigations-1)
+  - [aCM-006: The module owner is trusted with whatever the policy can do](#acm-006-the-module-owner-is-trusted-with-whatever-the-policy-can-do)
+    - [Mitigations](#mitigations-2)
 - [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [iCM-011: Verdicts come only from the policy, and the hook functions only from the Portal](#icm-011-verdicts-come-only-from-the-policy-and-the-hook-functions-only-from-the-portal)
@@ -24,7 +26,9 @@
     - [Impact](#impact-2)
 - [Function Specification](#function-specification)
   - [constructor](#constructor)
+  - [initialize](#initialize)
   - [portal](#portal)
+  - [owner](#owner)
   - [items](#items)
   - [heldTokens](#heldtokens)
   - [policy](#policy)
@@ -134,6 +138,19 @@ any held item, or refuse and hold any new one. See
   [iCM-003](../../compliance/optimism-portal.md#icm-003-a-hook-can-only-delay-or-refuse-an-item).
 - [Disable](#disable) bounds how long a failing or malicious policy can block new items.
 
+### aCM-006: The module owner is trusted with whatever the policy can do
+
+The owner points the module at a policy with [setPolicy](#setpolicy), so it inherits everything
+[aCM-005](#acm-005-the-policy-is-trusted) grants the policy, and it can stop screening new items with
+[disable](#disable). It is a role separate from the upgrade authority in aCM-004, which reaches held value directly.
+
+#### Mitigations
+
+- The owner cannot alter a record, so held items keep their verdicts across a policy change.
+- A replacement policy can still only delay or refuse. See
+  [iCM-003](../../compliance/optimism-portal.md#icm-003-a-hook-can-only-delay-or-refuse-an-item).
+- Every change is observable on L1: `PolicySet` carries both policies, and `Disabled` carries the cutoff.
+
 ## Dependencies
 
 - The `OptimismPortal`'s [Terms Commitment](../../compliance/optimism-portal.md#terms-commitment), which is what
@@ -187,9 +204,26 @@ completion is sent first.
 
 - MUST set the immutable `OptimismPortal` address, which is the only permitted caller of the hook entry points.
 
+### initialize
+
+Sets the module's owner and its first policy.
+
+**Behavior:**
+
+- MUST revert if the module has already been initialized.
+- MUST revert if the owner or the policy is the zero address.
+- MUST set the owner and the policy.
+- MUST emit a `PolicySet` event with the zero address as the previous policy.
+
 ### portal
 
 Returns the `OptimismPortal` this module is the hook for.
+
+### owner
+
+Returns the address that can call [setPolicy](#setpolicy), [disable](#disable) and [enable](#enable). It is a separate
+role from the upgrade authority in
+[aCM-004](#acm-004-the-modules-upgrade-authority-is-the-custodian-of-all-deferred-value).
 
 ### items
 
@@ -340,6 +374,7 @@ Points the module at a different policy.
 
 - MUST revert if the caller is not the owner.
 - MUST NOT alter any record, so held items and their verdicts survive the change.
+- MUST emit a `PolicySet` event with the previous and the new policy.
 
 ### disable
 
@@ -354,6 +389,7 @@ Sets [Disable](#disable).
 - MUST revert if the caller is not the owner.
 - MUST record `_cutoffL2Nonce` as the cutoff used by [screenWithdrawal](#screenwithdrawal).
 - MUST NOT release, complete or otherwise alter any item already held.
+- MUST emit a `Disabled` event with the cutoff.
 
 ### enable
 
@@ -362,3 +398,4 @@ Clears [Disable](#disable), so new items are screened again.
 **Behavior:**
 
 - MUST revert if the caller is not the owner.
+- MUST emit an `Enabled` event.
