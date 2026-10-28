@@ -322,6 +322,7 @@ this function when it is ready to release the withdrawal.
 - MUST revert if `heldWithdrawals[identifier]` is not `true`.
 - MUST revert if the ETH sent with the call does not match the item's committed value.
 - MUST delete `heldWithdrawals[identifier]` before moving any value.
+- MUST NOT unlock ETH from the `ETHLockbox`, since the withdrawal's ETH is the value sent with the call.
 - MUST ask the `L1StandardBridge` to take its escrow back, if the item is a recognized
   [Token Bridge Message](./overview.md#token-bridge-message)  by calling `restoreERC20` on the `L1StandardBridge`.
 - MUST set the L2 Withdrawal Sender to the item's committed sender before forwarding the call.
