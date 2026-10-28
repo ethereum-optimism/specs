@@ -12,6 +12,10 @@
     - [`proxyAdminOwner`](#proxyadminowner)
   - [Dispute Game Management](#dispute-game-management)
     - [`migrateToSharedDisputeGame`](#migratetoshareddisputegame)
+  - [Pause and guardian](#pause-and-guardian)
+    - [`paused`](#paused)
+    - [`superchainConfig`](#superchainconfig)
+    - [`guardian`](#guardian)
   - [Internal ETH functionality](#internal-eth-functionality)
     - [Locking ETH](#locking-eth)
     - [Unlocking ETH](#unlocking-eth)
@@ -33,8 +37,9 @@ the corresponding chain would need to deploy and manage its own `ETHLockbox`.
 
 The `OptimismPortal` also moves onto shared dispute game contracts when a chain joins the op-governed dependency set.
 Each chain keeps its own `SystemConfig` and `OptimismPortal`. The chains in the set share one `ETHLockbox`, one
-`DisputeGameFactory` and one [`AnchorStateRegistry`](../fault-proof/stage-one/anchor-state-registry.md). A chain
-outside the op-governed dependency set keeps its own copy of each of these contracts.
+`DisputeGameFactory`, one [`AnchorStateRegistry`](../fault-proof/stage-one/anchor-state-registry.md) and one
+`DelayedWETH`. The set adopts the existing `DelayedWETH` of its first member chain rather than deploying a new one.
+A chain outside the op-governed dependency set keeps its own copy of each of these contracts.
 
 ### Integrating `ETHLockbox`
 
@@ -96,6 +101,32 @@ function migrateToSharedDisputeGame(
 when joining the op-governed dependency set. Although the function permits repeated calls, it is not designed for repeated
 migration. Switching to the shared `DisputeGameFactory` invalidates withdrawal proofs against games from the previous
 factory, so users MUST prove those withdrawals again.
+
+### Pause and guardian
+
+The `OptimismPortal` holds no `SuperchainConfig` of its own. Its [`ETHLockbox`](./eth-lockbox.md) serves all three
+values below.
+
+The shared `ETHLockbox` address is the interop set's only [Pause Identifier](../protocol/stage-1.md#pause-identifier),
+so one scoped pause covers every chain in the set.
+
+#### `paused`
+
+Returns whether the portal is paused.
+
+- MUST return [`ETHLockbox.paused()`](./eth-lockbox.md#paused).
+
+#### `superchainConfig`
+
+Returns the `SuperchainConfig` contract.
+
+- MUST return [`ETHLockbox.superchainConfig()`](./eth-lockbox.md#superchainconfig).
+
+#### `guardian`
+
+Returns the [Guardian](../protocol/stage-1.md#guardian).
+
+- MUST return [`ETHLockbox.guardian()`](./eth-lockbox.md#guardian).
 
 ### Internal ETH functionality
 
