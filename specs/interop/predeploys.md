@@ -20,13 +20,15 @@
   - [Reference implementation](#reference-implementation)
   - [Deposit Handling](#deposit-handling)
 - [L2ToL2CrossDomainMessenger](#l2tol2crossdomainmessenger)
+  - [Message Hash](#message-hash)
   - [`relayMessage` Invariants](#relaymessage-invariants)
   - [`sendMessage` Invariants](#sendmessage-invariants)
-  - [`resendMessage` Invariants](#resendmessage-invariants)
+  - [`expireMessage` Invariants](#expiremessage-invariants)
+  - [Unsafe Targets](#unsafe-targets)
   - [Message Versioning](#message-versioning)
   - [Interfaces](#interfaces)
     - [Sending Messages](#sending-messages)
-  - [Re-sending Messages](#re-sending-messages)
+  - [Expiring Messages](#expiring-messages)
     - [Relaying Messages](#relaying-messages)
 - [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
   - [OptimismSuperchainERC20](#optimismsuperchainerc20)
@@ -57,6 +59,7 @@
     - [`Converted`](#converted)
   - [Invariants](#invariants)
   - [Conversion Flow](#conversion-flow)
+- [UndeliveredMessageExporter](#undeliveredmessageexporter)
 - [SuperchainETHBridge](#superchainethbridge)
 - [ETHLiquidity](#ethliquidity)
 - [SuperchainTokenBridge](#superchaintokenbridge)
@@ -74,7 +77,7 @@
 
 ## Overview
 
-Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
+New system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the `OptimismMintableERC20Factory` and `L2StandardBridge` contracts with additional functionalities.
 
 ## CrossL2Inbox
@@ -336,22 +339,69 @@ provides general message passing, utilized for secure transfers ERC20 tokens bet
 Messages sent through the `L2ToL2CrossDomainMessenger` on the source chain receive both replay protection
 as well as domain binding, i.e. the executing transaction can only be valid on a single chain.
 
+### Message Hash
+
+A message is identified by its hash:
+
+```solidity
+keccak256(abi.encode(_destination, _source, _nonce, _sender, _target, _message))
+```
+
+`_destination` and `_source` are chain IDs, `_nonce` is the versioned [message nonce](#message-versioning),
+`_sender` is the `msg.sender` of `sendMessage`, and `_target` and `_message` are its arguments. `sendMessage` returns
+this hash, and `successfulMessages`, `sentMessageTimestamps` and `expiredMessages` are keyed by it. The
+[`UndeliveredMessageExporter`](#undeliveredmessageexporter) and
+[`SuperchainETHBridge.refundETH`](./superchain-eth-bridge.md#refundeth) compute it the same way.
+
 ### `relayMessage` Invariants
 
 - The `Identifier.origin` MUST be `address(L2ToL2CrossDomainMessenger)`
 - The `_destination` chain id MUST be equal to the local chain id
-- Messages MUST NOT be relayed more than once
+- Messages MUST NOT be relayed more than once (`MessageAlreadyRelayed`)
+- The message target MUST NOT be an [unsafe target](#unsafe-targets)
+  (`L2ToL2CrossDomainMessenger_MessageTargetUnsafe`)
 
 ### `sendMessage` Invariants
 
 - Sent Messages MUST be uniquely identifiable
 - It MUST store the message hash in the `sentMessages` mapping
+- It MUST store the timestamp of the block it is sent in, in the `sentMessageTimestamps` mapping
+- It MUST revert with `MessageTargetL2ToL2CrossDomainMessenger` if the message target is the
+  `L2ToL2CrossDomainMessenger` itself. `relayMessage` does not check this.
+- It MUST revert with `L2ToL2CrossDomainMessenger_MessageTargetUnsafe` if the message target is an
+  [unsafe target](#unsafe-targets)
 - It MUST emit the `SentMessage` event
+- It MUST NOT be possible to emit a `SentMessage` event for a message hash more than once
 
-### `resendMessage` Invariants
+### `expireMessage` Invariants
 
-- It MUST NOT be possible to re-emit a `SentMessage` event that has not been sent
-- It MUST emit the `SentMessage` event
+- It MUST revert with `L2ToL2CrossDomainMessenger_NotOtherMessenger` unless it is called by the
+  `L2CrossDomainMessenger` relaying a message whose L1 sender is the `L2CrossDomainMessenger`'s `otherMessenger`,
+  i.e. this chain's `L1CrossDomainMessenger`
+- If the message has already expired (`expiredMessages[messageHash]` is `true`), it MUST return without
+  reverting, changing state or emitting an event
+- Otherwise:
+  - It MUST revert with `InvalidMessage` if the message has no recorded send timestamp
+    (`sentMessageTimestamps[messageHash] == 0`). Such a message was either not sent from this chain or sent before
+    the messenger recorded timestamps, and it can never expire.
+  - It MUST revert with `L2ToL2CrossDomainMessenger_InvalidExpiryPeriod` if `EXPIRY_PERIOD` is unset (`0`), as on an
+    implementation installed without `initialize`, so that it fails closed instead of expiring a message that can
+    still be relayed
+  - It MUST revert with `L2ToL2CrossDomainMessenger_MessageNotExpired` unless
+    `undeliveredAt > sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`
+  - It MUST set `expiredMessages[messageHash]` to `true`
+  - It MUST emit the `MessageExpired` event
+
+### Unsafe Targets
+
+The `L2CrossDomainMessenger` and the `L2ToL1MessagePasser` are unsafe targets. `sendMessage` MUST revert for a
+message with an unsafe target, and `relayMessage` MUST revert when relaying one, so that the
+`L2ToL2CrossDomainMessenger` is never the sender of a message through the `L2CrossDomainMessenger` or the
+`L2ToL1MessagePasser`. This keeps anything that trusts the `L2ToL2CrossDomainMessenger` as the sender of such a
+message from being fooled by a relayed message. A relayed message can still start other withdrawals, such as
+through `L2StandardBridge.bridgeETHTo`, with the `L2ToL2CrossDomainMessenger` as their `from`.
+[Message expiry](./message-expiry.md) does not depend on it: its withdrawals come from the
+[`UndeliveredMessageExporter`](#undeliveredmessageexporter).
 
 ### Message Versioning
 
@@ -401,22 +451,38 @@ every call to `sendMessage`.
 
 Note that `sendMessage` is not `payable`.
 
-### Re-sending Messages
+### Expiring Messages
 
-The `resendMessage` function is used to re-emit a `SentMessage` event for a message that has already been sent.
-It will calculate the message hash using the inputs, and check that the message hash is stored in the `sentMessages`
-mapping prior to emitting the `SentMessage` event.
+A message that is not relayed within the [expiry window](./derivation.md#expiry-window) can never be relayed.
+Messages cannot be re-emitted. Instead, the source chain can learn that a message expired, through the flow in
+[Message Expiry](./message-expiry.md), and applications can undo the send.
+
+`EXPIRY_PERIOD` is set when the messenger is initialized. `initialize` MUST revert with
+`L2ToL2CrossDomainMessenger_InvalidExpiryPeriod` unless `0 < EXPIRY_PERIOD <= 31536000` (365 days), which keeps
+`sentMessageTimestamps[messageHash] + EXPIRY_PERIOD` far from overflow.
+It is read through `expiryPeriod()`.
+On production networks it MUST be `691200 secs` (8 days): [`EXPIRY_WINDOW`](./derivation.md#expiry-window)
+plus one day of margin. The genesis tooling uses that value by default, and the first upgrade that installs this
+messenger initializes it with that value. Later network upgrades MUST keep the configured period.
+
+`EXPIRY_PERIOD` MUST be at least `EXPIRY_WINDOW`, so that a message is only marked expired once no relay of it can
+be valid.
+
+A message with no recorded send timestamp, such as one sent before the messenger recorded timestamps, can never
+expire.
 
 ```solidity
-    function resendMessage(
-        uint256 _destination,
-        uint256 _nonce,
-        address _sender,
-        address _target,
-        bytes calldata _message
-    )
-        external;
+mapping(bytes32 => uint256) public sentMessageTimestamps;
+mapping(bytes32 => bool) public expiredMessages;
+
+function expireMessage(bytes32 _messageHash, uint256 _undeliveredAt) external;
+
+event MessageExpired(bytes32 indexed messageHash, uint256 undeliveredAt);
 ```
+
+`_undeliveredAt` is the timestamp on the message's destination chain at which the message had not been relayed
+there. Applications read `expiredMessages(messageHash)` to undo a send, as
+[`SuperchainETHBridge.refundETH`](./superchain-eth-bridge.md#refundeth) does.
 
 #### Relaying Messages
 
@@ -459,7 +525,7 @@ A message is relayed by providing the [identifier](./messaging.md#message-identi
 event along with its corresponding [message payload](./messaging.md#message-payload).
 
 ```solidity
-function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
+function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable nonReentrant returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
     CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
 
@@ -469,17 +535,24 @@ function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sen
 
     require(selector == SentMessage.selector);
     require(_destination == block.chainid);
+    require(!_isUnsafeTarget(_target));
 
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
-    bool success;
-    (success, returnData_) = _target.call(_target, msg.value, _message);
-    require(success);
+    uint256 _source = _id.chainId;
+    bytes32 messageHash = keccak256(abi.encode(_destination, _source, _nonce, _sender, _target, _message));
+    require(!successfulMessages[messageHash]);
     successfulMessages[messageHash] = true;
+
+    bool success;
+    (success, returnData_) = _target.call{value: msg.value}(_message);
+    require(success);
     emit RelayedMessage(_source, _nonce, messageHash, keccak256(returnData_));
 }
 ```
+
+This pseudocode leaves out how the messenger exposes the `_sender` and `_source` to the target during the call.
 
 Upon successful delivery, an event is emitted with useful information. Notably the hash of the `returnData` that
 can be used to continue execution for anyone that depends on it without needing an explicit callback message to
@@ -788,6 +861,47 @@ sequenceDiagram
   L2StandardBridge-->L2StandardBridge: emit Converted(from, to, Alice, amount)
 ```
 
+## UndeliveredMessageExporter
+
+| Constant | Value                                        |
+| -------- | -------------------------------------------- |
+| Address  | `0x4200000000000000000000000000000000000030` |
+
+The `UndeliveredMessageExporter` tells a message's source chain, through L1, that the message has not been relayed
+on this chain. It is the only L2 sender whose withdrawals the `L1CrossDomainMessenger` accepts for
+[message expiry](./message-expiry.md).
+
+```solidity
+function exportUndeliveredMessage(
+    address _sourceMessenger,
+    uint256 _source,
+    uint256 _nonce,
+    address _sender,
+    address _target,
+    bytes calldata _message,
+    uint32 _minGasLimit
+)
+    external
+    returns (bytes32 messageHash_);
+
+event UndeliveredMessageExported(
+    bytes32 indexed messageHash, uint256 indexed source, address sourceMessenger, uint256 undeliveredAt
+);
+```
+
+- It MUST compute the [message hash](#message-hash) with the local chain id as the destination.
+- It MUST revert with `UndeliveredMessageExporter_MessageRelayed` if the `L2ToL2CrossDomainMessenger` has relayed
+  the message (`successfulMessages[messageHash]`).
+- It MUST send `relayUndeliveredMessage(messageHash, block.timestamp)` to `_sourceMessenger` through the
+  `L2CrossDomainMessenger`, with `_minGasLimit`.
+- It MUST NOT make any other external call that can initiate a withdrawal.
+- It MUST be callable by anyone, including from a deposit transaction.
+- It MUST emit the `UndeliveredMessageExported` event.
+
+`_sourceMessenger` is the source chain's `L1CrossDomainMessenger`. If it is wrong, nothing is marked expired and
+the message can be exported again. An export made before the source chain's `EXPIRY_PERIOD` has passed fails on the
+source chain and can never succeed, and the message can be exported again later.
+
 ## SuperchainETHBridge
 
 | Constant | Value                                        |
@@ -923,7 +1037,11 @@ The bridging of `SuperchainERC20` using the `SuperchainTokenBridge` will require
   - Corollary 3: `SuperchainERC20s` should not charge a token fee or increase the balance when moving cross-chain.
   - Note: if the target chain is not in the initiating chain dependency set,
     funds will be locked, similar to sending funds to the wrong address.
-    If the target chain includes it later, these could be unlocked.
+    If the target chain includes it later, within the [expiry window](./derivation.md#expiry-window),
+    these could be unlocked.
+  - Note: a send that is not relayed within the expiry window can never be relayed
+    (see [Message Expiry](./message-expiry.md)). The `SuperchainTokenBridge` has no refund path,
+    so its tokens stay burned.
 - Freedom of movement: Users should be able to send and receive tokens in any target
   chain with the initiating chain in its dependency set
   using `sendERC20()` and `relayERC20()`, respectively.

@@ -19,6 +19,8 @@
     - [Mitigations](#mitigations-1)
   - [aSEB-003: `SafeSend` correctly transfers ETH to recipients](#aseb-003-safesend-correctly-transfers-eth-to-recipients)
     - [Mitigations](#mitigations-2)
+  - [aSEB-004: ETH sent outside the cluster is lost](#aseb-004-eth-sent-outside-the-cluster-is-lost)
+    - [Mitigations](#mitigations-3)
 - [Invariants](#invariants)
   - [iSEB-001: ETH sent equals ETH received](#iseb-001-eth-sent-equals-eth-received)
     - [Impact](#impact)
@@ -29,12 +31,20 @@
   - [iSEB-003: ETH cannot be sent to the zero address](#iseb-003-eth-cannot-be-sent-to-the-zero-address)
     - [Impact](#impact-2)
     - [Dependencies](#dependencies-2)
+  - [iSEB-004: ETH is refunded only for expired sends, at most once](#iseb-004-eth-is-refunded-only-for-expired-sends-at-most-once)
+    - [Impact](#impact-3)
+    - [Dependencies](#dependencies-3)
+  - [iSEB-005: Each send pays out at most once](#iseb-005-each-send-pays-out-at-most-once)
+    - [Impact](#impact-4)
+    - [Dependencies](#dependencies-4)
 - [Function Specification](#function-specification)
   - [sendETH](#sendeth)
   - [relayETH](#relayeth)
+  - [refundETH](#refundeth)
 - [Events](#events)
-  - [SendETH](#sendeth)
-  - [RelayETH](#relayeth)
+  - [SendETH](#sendeth-1)
+  - [RelayETH](#relayeth-1)
+  - [RefundETH](#refundeth-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -119,12 +129,23 @@ for valid addresses.
 - Extensive testing of the `SafeSend` mechanism
 - Audits of the ETH transfer logic
 
+### aSEB-004: ETH sent outside the cluster is lost
+
+We assume that users send ETH only to chains whose portals this chain's `ETHLockbox` authorizes. ETH sent to any
+other chain ID can never be relayed or refunded. `sendMessage` checks only that the destination is not this chain,
+and `relayUndeliveredMessage` reverts for a portal that the `ETHLockbox` does not authorize.
+
+#### Mitigations
+
+- Applications and wallets should check that the destination chain is in this chain's
+  [dependency set](./dependency-set.md) before sending
+
 ## Invariants
 
 ### iSEB-001: ETH sent equals ETH received
 
 The amount of ETH sent from the source chain must equal the amount of ETH received on the
-destination chain for any given cross-chain transfer.
+destination chain, or refunded on the source chain, for any given cross-chain transfer.
 
 #### Impact
 
@@ -169,6 +190,42 @@ the possibility of recovery.
 
 None
 
+### iSEB-004: ETH is refunded only for expired sends, at most once
+
+`refundETH` must pay out only for a send whose message is marked expired, at most once per message, only the
+amount that the send's message committed to, and only to the address that called `sendETH`, when that address
+calls `refundETH`.
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is broken, ETH could be both delivered on the destination chain and refunded on the source chain,
+leading to inflation.
+
+#### Dependencies
+
+- [aSEB-002](#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity)
+- [iME-001](./message-expiry.md#ime-001-a-message-is-never-both-relayed-and-expired)
+- [aME-003](./message-expiry.md#ame-003-applications-bind-expiry-to-their-own-sends)
+
+### iSEB-005: Each send pays out at most once
+
+The cluster must pay out each `sendETH` at most once, through `relayETH` on the destination chain or `refundETH` on
+the source chain. The payout must equal the amount burned.
+
+#### Impact
+
+**Severity: Critical**
+
+If this invariant is broken, the same ETH could be paid out on both chains, or twice on one, leading to inflation.
+
+#### Dependencies
+
+- [aSEB-001](#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages)
+- [iSEB-004](#iseb-004-eth-is-refunded-only-for-expired-sends-at-most-once)
+- [iME-001](./message-expiry.md#ime-001-a-message-is-never-both-relayed-and-expired)
+
 ## Function Specification
 
 ### sendETH
@@ -183,6 +240,10 @@ function sendETH(address _to, uint256 _chainId) external payable returns (bytes3
 
 - MUST accept ETH via `msg.value`.
 - MUST revert if the `_to` address is the zero address.
+- MUST revert with `SuperchainETHBridge_SenderIsMessenger` if `msg.sender` is the `L2ToL2CrossDomainMessenger`.
+  A relayed message that called `sendETH` would make the messenger the sender, and it could never claim a refund.
+  The `L2CrossDomainMessenger` stays allowed: a message from L1 that reverted here would keep its ETH there. Its
+  sends cannot be refunded to their sender on L1; see [`refundETH`](#refundeth).
 - MUST transfer `msg.value` of ETH from the `msg.sender` to the `ETHLiquidity` contract by calling
 `ETHLiquidity.burn{value: msg.value}()`.
 - MUST create a cross-chain message to the `SuperchainETHBridge` contract on the destination chain
@@ -210,6 +271,39 @@ chain.
 - MUST emit a `RelayETH` event with the `_from` address, `_to` address, `_amount`, and source chain
 ID.
 
+### refundETH
+
+Returns the ETH of a send whose message expired: its destination chain never relayed it, and never can.
+
+```solidity
+function refundETH(uint256 _destination, uint256 _nonce, address _to, uint256 _amount) external;
+
+mapping(bytes32 => bool) public refunded;
+```
+
+- MUST compute the [message hash](./predeploys.md#message-hash) of the send from its arguments, with this chain as
+  the source and the `SuperchainETHBridge` as both sender and target of a `relayETH(msg.sender, _to, _amount)` call.
+- MUST revert with `SuperchainETHBridge_MessageNotExpired` if
+  `L2ToL2CrossDomainMessenger.expiredMessages(messageHash)` is `false`. This covers a caller that did not send it.
+- MUST revert with `SuperchainETHBridge_AlreadyRefunded` if `refunded[messageHash]` is `true`.
+- MUST set `refunded[messageHash]` to `true` before transferring ETH.
+- MUST withdraw `_amount` of ETH from the `ETHLiquidity` contract by calling `ETHLiquidity.mint(_amount)`.
+- MUST transfer the `_amount` of ETH to `msg.sender` using `new SafeSend{value: _amount}(msg.sender)`.
+- MUST emit a `RefundETH` event with `msg.sender`, `_amount`, and the message hash.
+
+Only the `msg.sender` of `sendETH` can claim its refund, and the ETH goes back to it. A contract that called
+`sendETH` on behalf of someone else calls `refundETH` itself and passes the ETH on. Two kinds of sender cannot get
+their ETH back:
+
+- A send made from L1 through the `L2CrossDomainMessenger`. A `refundETH` call made the same way matches the send's
+  hash, but pays the `L2CrossDomainMessenger`, and the ETH stays there. A sender on L1 should deposit through the
+  `OptimismPortal` and call `sendETH` from its own address, or send through a contract on L2.
+- A contract that has no way to call `refundETH`.
+
+While `ETHLiquidity` is [paused](./eth-liquidity.md#pause), `sendETH`, `relayETH` and `refundETH` revert, because
+`burn` and `mint` do. Relays and refunds can be retried after the unpause. A send whose message expires during the
+pause is refunded after it.
+
 ## Events
 
 ### SendETH
@@ -226,4 +320,12 @@ MUST be triggered when `relayETH` is called.
 
 ```solidity
 event RelayETH(address indexed from, address indexed to, uint256 amount, uint256 source);
+```
+
+### RefundETH
+
+MUST be triggered when `refundETH` is called.
+
+```solidity
+event RefundETH(address indexed from, uint256 amount, bytes32 indexed messageHash);
 ```
