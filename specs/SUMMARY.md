@@ -104,6 +104,7 @@
         - [Transaction Pool](./interop/tx-pool.md)
         - [OptimismPortal](./interop/optimism-portal.md)
         - [ETH Lockbox](./interop/eth-lockbox.md)
+        - [L1CrossDomainMessenger](./interop/l1-cross-domain-messenger.md)
 - [Governance]()
   - [Governance Token](./governance/gov-token.md)
   - [MintManager](./governance/mint-manager.md)
