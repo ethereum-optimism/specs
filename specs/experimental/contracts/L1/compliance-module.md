@@ -188,8 +188,8 @@ the module.
 
 ### iCM-013: The module holds at least what it owes
 
-For every held item the module has custody of the ETH and tokens that item carries, and `heldTokens` matches the token
-balances it actually holds.
+For every held item the module has custody of the ETH and tokens that item carries, and `heldTokens` is at most the
+token balance it actually holds.
 
 #### Impact
 
@@ -260,7 +260,7 @@ Answers the Portal for a deposit at submission.
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST return `true` without consulting the policy if [Disable](#disable) is set.
 - MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's `screen`.
-- MUST hoist up any revert from the policy.
+- MUST bubble up any revert from the policy.
 
 ### holdDeposit
 

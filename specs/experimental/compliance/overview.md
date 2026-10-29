@@ -68,9 +68,9 @@ bypassed.
 Screening at the sequencer only covers transactions submitted to it. It does not
 cover deposits submitted to L1, which carry forced inclusion, so the sequencer has no say in whether they are included.
 Withdrawals finalize on L1, outside the sequencer's reach. Since both deposits and withdrawals cross the
-`OptimismPortal`, it is there where the chain can enforce a screening condition that cannot be bypassed.
+`OptimismPortal`, that is where the chain can enforce a screening condition that cannot be bypassed.
 
-Since the condition and the rules under what an item can pass through L1 and L2 boundaries belongs to the chain, the
+Since the condition and the rules under which an item can pass through L1 and L2 boundaries belong to the chain, the
 protocol only supplies: a way to defer an item, take custody of its value, and resume it later on the terms it was
 deferred with.
 
@@ -97,8 +97,8 @@ deferred with.
 The `OptimismPortal` is the screening boundary. It is the only contract that asks the hook, and it asks once per
 item. A deposit is screened when it is submitted while a withdrawal is screened when it is finalized.
 
-A deposit that already emitted `TransactionDeposited` is on its way to L2. A withdrawal whose call the Portal forwarded has
-already run. Neither can be recalled.
+A deposit that already emitted `TransactionDeposited` is on its way to L2. A withdrawal whose call the Portal
+forwarded has already run. Neither can be recalled.
 
 ```mermaid
 graph LR

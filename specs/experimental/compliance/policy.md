@@ -48,7 +48,7 @@ It belongs to the chain and is outside this specification.
 ### Hold Delay
 
 A **Hold Delay** is a common policy choice in which the policy rejects an uncleared withdrawal until a delay after its
-[Finalizable Time](./overview.md#finalizable-time) has passed, and hold it after.
+[Finalizable Time](./overview.md#finalizable-time) has passed, and holds it after.
 
 Take a policy with a two hour hold delay. A 100 USDC withdrawal becomes finalizable at 12:00. Until 14:00 the policy
 rejects every attempt to finalize it, so a clearance that lands at 13:30 still pays the recipient through the normal
