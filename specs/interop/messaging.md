@@ -126,7 +126,7 @@ do not count as executing messages.
 - [ChainID Invariant](#chainid-invariant): The chain id of the initiating message MUST be in the dependency set
 - [Message Expiry Invariant](#message-expiry-invariant): The timestamp at the time of inclusion of the executing
   message MUST be lower than or equal to the initiating message timestamp
-  (as defined in the [`Identifier`]) + `EXPIRY_TIME`.
+  (as defined in the [`Identifier`]) + [`EXPIRY_WINDOW`](./derivation.md#expiry-window).
 
 ### Timestamp Invariant
 
@@ -157,11 +157,12 @@ Message expiry sets a strict bound on the total messaging activity the protocol 
 at the cost of limiting some use-cases.
 
 The expiry invariant invalidates inclusion of any executing message with
-`id.timestamp + EXPIRY_TIME < executing_block.timestamp` where:
+`id.timestamp + EXPIRY_WINDOW < executing_block.timestamp` where:
 
 - `id` is the [`Identifier`] encoded in the executing message, matching the block attributes of the initiating message.
 - `executing_block` is the block where the executing message was included in.
-- `EXPIRY_TIME = 7 * 24 * 60 * 60 = 604800` seconds, i.e. 7 days.
+- `EXPIRY_WINDOW = 7 * 24 * 60 * 60 = 604800` seconds, i.e. 7 days, as defined in
+  [Expiry Window](./derivation.md#expiry-window).
 
 ## Message Graph
 
@@ -246,7 +247,7 @@ outward edges for initiating messages may be attached
 when relevant to resolution of newer lower-safety blocks.
 No inward edges are required anymore however, as the maximum safety has been ensured.
 
-Blocks older than `horizon_timestamp - (2 * EXPIRY_TIME)` cannot be depended
+Blocks older than `horizon_timestamp - (2 * EXPIRY_WINDOW)` cannot be depended
 on from any valid block within the graph, and can thus be safely pruned entirely.
 
 ### Bounding the graph
