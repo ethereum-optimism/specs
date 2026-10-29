@@ -83,8 +83,18 @@ lint-summary-check:
     fi
     echo "Summary linting complete"
 
+# Builds the book and fails if mdbook logs any warning or error.
+# mdbook has no option to treat warnings as errors, and some logged errors do not change its exit code.
 build:
-    mdbook build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    log=$(mktemp)
+    trap 'rm -f "$log"' EXIT
+    mdbook build 2>&1 | tee "$log"
+    if grep -qE '\[(WARN|ERROR)\]' "$log"; then
+      echo "mdbook reported warnings or errors"
+      exit 1
+    fi
 
 # Serves the mdbook locally
 serve *args='':
