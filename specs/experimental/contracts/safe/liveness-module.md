@@ -50,14 +50,14 @@ designated [Fallback Owner](#fallback-owner) and deactivates itself.
 ### Liveness Interval
 
 The time period (in seconds) during which an owner must demonstrate activity to avoid being considered inactive. An
-owner is eligible for removal if their last recorded activity timestamp plus the [Liveness Interval] is less than the
-current block timestamp.
+owner is eligible for removal if their last recorded activity timestamp plus the [Liveness Interval](#liveness-interval)
+is less than the current block timestamp.
 
 ### Minimum Owners
 
-The minimum number of owners that must be maintained in the Safe before triggering [Shutdown]. If owner removals would
-reduce the count below this threshold, all remaining owners must be removed and ownership transferred to the [Fallback
-Owner].
+The minimum number of owners that must be maintained in the Safe before triggering [Shutdown](#shutdown). If owner
+removals would reduce the count below this threshold, all remaining owners must be removed and ownership transferred to
+the [Fallback Owner](#fallback-owner).
 
 ### Threshold Percentage
 
@@ -66,14 +66,14 @@ threshold is computed as the smallest integer greater than or equal to `(numOwne
 
 ### Fallback Owner
 
-The address that receives sole ownership of the Safe during [Shutdown]. This address is expected to be controlled by
-governance and serves as the recovery mechanism when the owner set becomes too small.
+The address that receives sole ownership of the Safe during [Shutdown](#shutdown). This address is expected to be
+controlled by governance and serves as the recovery mechanism when the owner set becomes too small.
 
 ### Shutdown
 
-The process triggered when owner removals would reduce the owner count below [Minimum Owners]. During shutdown, all
-remaining owners are removed, the [Fallback Owner] becomes the sole owner with a threshold of 1, and the module
-permanently deactivates itself by setting `ownershipTransferredToFallback` to true.
+The process triggered when owner removals would reduce the owner count below [Minimum Owners](#minimum-owners). During
+shutdown, all remaining owners are removed, the [Fallback Owner](#fallback-owner) becomes the sole owner with a
+threshold of 1, and the module permanently deactivates itself by setting `ownershipTransferredToFallback` to true.
 
 ## Assumptions
 
@@ -91,14 +91,14 @@ active.
 
 ### a02-002: Fallback owner is trusted
 
-The [Fallback Owner] address is trusted to act in the best interest of the Safe's stakeholders. A malicious fallback
-owner could gain complete control of the Safe during [Shutdown].
+The [Fallback Owner](#fallback-owner) address is trusted to act in the best interest of the Safe's stakeholders. A
+malicious fallback owner could gain complete control of the Safe during [Shutdown](#shutdown).
 
 #### Mitigations
 
 - The [Fallback Owner](#fallback-owner) is set at deployment and cannot be changed without deploying a new module
-- [Shutdown](#shutdown) only occurs when the owner count falls below [Minimum Owners], which requires multiple owner
-  removals
+- [Shutdown](#shutdown) only occurs when the owner count falls below [Minimum Owners](#minimum-owners), which requires
+  multiple owner removals
 - The Safe's existing owners can remove the module before [Shutdown](#shutdown) occurs if they maintain sufficient
   liveness
 
@@ -119,9 +119,9 @@ unauthorized transaction execution.
 
 ### i02-002: Live owners are not removed
 
-Owners who have demonstrated liveness within the [Liveness Interval] cannot be removed through the `removeOwners`
-function, except during [Shutdown] when the owner count has already fallen below [Minimum Owners]. This protects active
-participants from being incorrectly removed.
+Owners who have demonstrated liveness within the [Liveness Interval](#liveness-interval) cannot be removed through the
+`removeOwners` function, except during [Shutdown](#shutdown) when the owner count has already fallen below [Minimum
+Owners](#minimum-owners). This protects active participants from being incorrectly removed.
 
 #### Impact
 
@@ -133,9 +133,9 @@ Safe assets.
 
 ### i03-003: Non-live owners are correctly removed
 
-Owners who have not demonstrated liveness within the [Liveness Interval] can be successfully removed through the
-`removeOwners` function when the owner count is at or above [Minimum Owners]. This ensures the liveness enforcement
-mechanism functions as intended.
+Owners who have not demonstrated liveness within the [Liveness Interval](#liveness-interval) can be successfully removed
+through the `removeOwners` function when the owner count is at or above [Minimum Owners](#minimum-owners). This ensures
+the liveness enforcement mechanism functions as intended.
 
 #### Impact
 
@@ -147,9 +147,9 @@ access to their keys.
 
 ### i04-004: Fallback is properly triggered when owner count is unsafe
 
-When owner removals reduce the count below [Minimum Owners], [Shutdown] is triggered: all remaining owners are removed,
-the [Fallback Owner] becomes the sole owner with threshold 1, and the module deactivates itself. This ensures the Safe
-never remains in an unsafe configuration with too few owners.
+When owner removals reduce the count below [Minimum Owners](#minimum-owners), [Shutdown](#shutdown) is triggered: all
+remaining owners are removed, the [Fallback Owner](#fallback-owner) becomes the sole owner with threshold 1, and the
+module deactivates itself. This ensures the Safe never remains in an unsafe configuration with too few owners.
 
 #### Impact
 
@@ -171,10 +171,10 @@ Initializes the LivenessModule with configuration parameters and validates the i
 
 - `_safe`: The Safe contract instance this module will manage
 - `_livenessGuard`: The LivenessGuard contract instance providing liveness data
-- `_livenessInterval`: The [Liveness Interval] in seconds
-- `_minOwners`: The [Minimum Owners] threshold
-- `_thresholdPercentage`: The [Threshold Percentage] (1-100)
-- `_fallbackOwner`: The [Fallback Owner] address
+- `_livenessInterval`: The [Liveness Interval](#liveness-interval) in seconds
+- `_minOwners`: The [Minimum Owners](#minimum-owners) threshold
+- `_thresholdPercentage`: The [Threshold Percentage](#threshold-percentage) (1-100)
+- `_fallbackOwner`: The [Fallback Owner](#fallback-owner) address
 
 **Behavior:**
 
@@ -201,7 +201,7 @@ Returns the LivenessGuard contract instance used for liveness data.
 
 ### livenessInterval
 
-Returns the [Liveness Interval] in seconds.
+Returns the [Liveness Interval](#liveness-interval) in seconds.
 
 **Behavior:**
 
@@ -209,7 +209,7 @@ Returns the [Liveness Interval] in seconds.
 
 ### minOwners
 
-Returns the [Minimum Owners] threshold.
+Returns the [Minimum Owners](#minimum-owners) threshold.
 
 **Behavior:**
 
@@ -217,7 +217,7 @@ Returns the [Minimum Owners] threshold.
 
 ### thresholdPercentage
 
-Returns the [Threshold Percentage].
+Returns the [Threshold Percentage](#threshold-percentage).
 
 **Behavior:**
 
@@ -225,7 +225,7 @@ Returns the [Threshold Percentage].
 
 ### fallbackOwner
 
-Returns the [Fallback Owner] address.
+Returns the [Fallback Owner](#fallback-owner) address.
 
 **Behavior:**
 
@@ -233,7 +233,7 @@ Returns the [Fallback Owner] address.
 
 ### getRequiredThreshold
 
-Calculates the required Safe threshold for a given number of owners based on the [Threshold Percentage].
+Calculates the required Safe threshold for a given number of owners based on the [Threshold Percentage](#threshold-percentage).
 
 **Parameters:**
 
@@ -261,7 +261,7 @@ Checks whether a specific owner is eligible for removal based on liveness data.
 ### removeOwners
 
 Removes a set of inactive owners from the Safe, updating the threshold after each removal. If the owner count falls
-below [Minimum Owners], triggers [Shutdown].
+below [Minimum Owners](#minimum-owners), triggers [Shutdown](#shutdown).
 
 **Parameters:**
 
@@ -273,17 +273,18 @@ below [Minimum Owners], triggers [Shutdown].
 - MUST revert if the arrays have different lengths
 - MUST revert if `ownershipTransferredToFallback` is true
 - MUST process each owner removal in array order:
-  - If current owner count is at least [Minimum Owners], MUST revert if `canRemove(_ownersToRemove[i])` returns false
-  - If current owner count is below [Minimum Owners], MUST remove the owner regardless of liveness
+  - If current owner count is at least [Minimum Owners](#minimum-owners), MUST revert if `canRemove(_ownersToRemove[i])`
+    returns false
+  - If current owner count is below [Minimum Owners](#minimum-owners), MUST remove the owner regardless of liveness
   - MUST call `OwnerManager.removeOwner` with the new threshold via `execTransactionFromModuleReturnData`
   - MUST emit `RemovedOwner` event for each removed owner
-- MUST trigger [Shutdown] when removing the last non-[Fallback Owner](#fallback-owner):
-  - MUST call `OwnerManager.swapOwner` to replace the last owner with [Fallback Owner]
+- MUST trigger [Shutdown](#shutdown) when removing the last non-[Fallback Owner](#fallback-owner):
+  - MUST call `OwnerManager.swapOwner` to replace the last owner with [Fallback Owner](#fallback-owner)
   - MUST set `ownershipTransferredToFallback` to true
   - MUST emit `OwnershipTransferredToFallback` event
 - MUST verify the final Safe state after all removals:
-  - If one owner remains, MUST be the [Fallback Owner]
-  - If multiple owners remain, MUST be at least [Minimum Owners]
+  - If one owner remains, MUST be the [Fallback Owner](#fallback-owner)
+  - If multiple owners remain, MUST be at least [Minimum Owners](#minimum-owners)
   - MUST have threshold equal to `getRequiredThreshold(numOwners)`
   - MUST have the same LivenessGuard address in the guard storage slot
 - MUST revert with `OwnerRemovalFailed` if any Safe call fails
