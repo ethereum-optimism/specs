@@ -90,6 +90,7 @@ and a revert to reject.
 
 - A policy MUST revert, and MUST NOT return `false`, when something it calls fails.
 - A policy MUST terminate within the gas available in the calling transaction.
+- A policy MUST restrict `screen` and `screenRelease` to the hook, so nobody else can drive its state.
 
 The first requirement protects items the policy never meant to act on. Whoever finalizes a withdrawal chooses how
 much gas it carries, so a policy that catches an internal failure and answers `false` is open to gas griefing. An
