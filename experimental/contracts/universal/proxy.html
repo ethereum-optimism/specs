@@ -1,0 +1,413 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Proxy - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/universal/proxy.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="proxy"><a class="header" href="#proxy">Proxy</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#admin">Admin</a></li>
+<li><a href="#implementation">Implementation</a></li>
+<li><a href="#transparent-proxy-pattern">Transparent Proxy Pattern</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a></li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-proxy-transparency-for-non-admin-users">i01-001: Proxy transparency for non-admin users</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-admin-only-access-to-administrative-interface">i01-002: Admin-only access to administrative interface</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#constructor">constructor</a></li>
+<li><a href="#receive">receive</a></li>
+<li><a href="#fallback">fallback</a></li>
+<li><a href="#upgradeto">upgradeTo</a></li>
+<li><a href="#upgradetoandcall">upgradeToAndCall</a></li>
+<li><a href="#changeadmin">changeAdmin</a></li>
+<li><a href="#admin">admin</a></li>
+<li><a href="#implementation">implementation</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The Proxy contract is a transparent proxy that enables upgradeability for smart contracts while maintaining a stable
+address. It delegates all calls to an <a href="#implementation">Implementation</a> contract, except when called by the
+<a href="#admin">Admin</a>, who can access the
+proxy's <a href="#admin">administrative</a> interface to upgrade the <a href="#implementation">Implementation</a> or transfer ownership.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="admin"><a class="header" href="#admin">Admin</a></h3>
+<p>The address that has exclusive access to the proxy's administrative functions. The admin can upgrade the
+implementation contract and transfer admin rights to a new address. The admin address is stored at the EIP-1967 admin
+storage slot to prevent collisions with the implementation contract's storage.</p>
+<h3 id="implementation"><a class="header" href="#implementation">Implementation</a></h3>
+<p>The address of the contract to which all non-admin calls are delegated. The implementation contains the actual business
+logic while the proxy maintains the state and provides upgradeability. The implementation address is stored at the
+EIP-1967 implementation storage slot.</p>
+<h3 id="transparent-proxy-pattern"><a class="header" href="#transparent-proxy-pattern">Transparent Proxy Pattern</a></h3>
+<p>A proxy pattern where the proxy's administrative interface is only accessible to the admin address, while all other
+callers have their calls transparently delegated to the implementation. This prevents function selector collisions
+between the proxy's administrative functions and the implementation's functions. Additionally, calls from <code>address(0)</code>
+are treated as admin calls to enable off-chain simulations via <code>eth_call</code> without requiring low-level storage
+inspection.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<p>N/A</p>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-proxy-transparency-for-non-admin-users"><a class="header" href="#i01-001-proxy-transparency-for-non-admin-users">i01-001: Proxy transparency for non-admin users</a></h3>
+<p>The proxy MUST be completely transparent to non-<a href="#admin">Admin</a> users, meaning it MUST NOT affect
+<a href="#implementation">Implementation</a> contract
+functionality in any way. All calls from non-<a href="#admin">Admin</a> addresses MUST be delegated to the
+<a href="#implementation">Implementation</a> without
+interception, modification, or validation. The proxy MUST preserve the complete execution context including
+<code>msg.sender</code>, <code>msg.value</code>, calldata, and return data. The proxy's storage MUST be isolated from the implementation's
+storage such that the <a href="#implementation">Implementation</a> cannot access or modify the proxy's <a href="#admin">Admin</a> or
+<a href="#implementation">Implementation</a> addresses. Non-<a href="#admin">Admin</a>
+callers MUST be unable to access the proxy's <a href="#admin">administrative</a> interface, even if they attempt to call
+<a href="#admin">administrative</a>
+functions, ensuring no function selector collisions between proxy and <a href="#implementation">Implementation</a>.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated, the proxy would break the fundamental trust model of transparent proxies. Users would be
+unable to interact with the <a href="#implementation">Implementation</a> contract as intended, potentially losing access to funds
+or functionality.
+<a href="#implementation">Implementation</a> contracts could compromise the proxy by modifying <a href="#admin">Admin</a> or
+<a href="#implementation">Implementation</a> addresses. Unauthorized users
+could upgrade the <a href="#implementation">Implementation</a> to a malicious contract or transfer <a href="#admin">Admin</a> rights, leading
+to complete system
+compromise.</p>
+<h3 id="i01-002-admin-only-access-to-administrative-interface"><a class="header" href="#i01-002-admin-only-access-to-administrative-interface">i01-002: Admin-only access to administrative interface</a></h3>
+<p>The proxy's administrative functions (<code>upgradeTo</code>, <code>upgradeToAndCall</code>, <code>changeAdmin</code>, <code>admin</code>, <code>implementation</code>) MUST
+only be accessible to the admin address or <code>address(0)</code>. The <code>address(0)</code> exception enables off-chain simulations via
+<code>eth_call</code> without compromising security, as <code>address(0)</code> cannot be used as <code>msg.sender</code> during normal EVM execution.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated, unauthorized addresses could upgrade the <a href="#implementation">Implementation</a> to a malicious
+contract, steal
+all funds held by the proxy, or transfer <a href="#admin">Admin</a> rights, leading to complete compromise of the system.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<p>Initializes the proxy with an <a href="#admin">Admin</a> address.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_admin</code>: Address that will have administrative control over the proxy</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST store <code>_admin</code> at the EIP-1967 admin storage slot</li>
+<li>MUST emit <code>AdminChanged</code> event with <code>previousAdmin</code> as <code>address(0)</code> and <code>newAdmin</code> as <code>_admin</code></li>
+</ul>
+<h3 id="receive"><a class="header" href="#receive">receive</a></h3>
+<p>Accepts ETH transfers and delegates to the <a href="#implementation">Implementation</a>.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST delegate the call to the <a href="#implementation">Implementation</a> contract</li>
+<li>MUST forward all ETH received with the call</li>
+<li>MUST preserve the execution context through delegatecall</li>
+<li>MUST return or revert based on the <a href="#implementation">Implementation</a>'s response</li>
+</ul>
+<h3 id="fallback"><a class="header" href="#fallback">fallback</a></h3>
+<p>Handles all calls that don't match other function signatures.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST delegate the call to the <a href="#implementation">Implementation</a> contract</li>
+<li>MUST forward all calldata and ETH with the call</li>
+<li>MUST preserve the execution context through delegatecall</li>
+<li>MUST return the full returndata from the <a href="#implementation">Implementation</a> if the call succeeds</li>
+<li>MUST revert with the full returndata from the <a href="#implementation">Implementation</a> if the call fails</li>
+</ul>
+<h3 id="upgradeto"><a class="header" href="#upgradeto">upgradeTo</a></h3>
+<p>Updates the <a href="#implementation">Implementation</a> contract address.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_implementation</code>: Address of the new implementation contract</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if called by any address other than the admin or <code>address(0)</code></li>
+<li>MUST store <code>_implementation</code> at the EIP-1967 implementation storage slot</li>
+<li>MUST emit <code>Upgraded</code> event with the new implementation address</li>
+<li>MUST delegate to <a href="#implementation">Implementation</a> if called by non-<a href="#admin">Admin</a> address</li>
+</ul>
+<h3 id="upgradetoandcall"><a class="header" href="#upgradetoandcall">upgradeToAndCall</a></h3>
+<p>Updates the <a href="#implementation">Implementation</a> contract and executes an initialization call atomically.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_implementation</code>: Address of the new implementation contract</li>
+<li><code>_data</code>: Calldata to delegatecall the new implementation with</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if called by any address other than the admin or <code>address(0)</code></li>
+<li>MUST store <code>_implementation</code> at the EIP-1967 implementation storage slot</li>
+<li>MUST emit <code>Upgraded</code> event with the new implementation address</li>
+<li>MUST perform delegatecall to <code>_implementation</code> with <code>_data</code></li>
+<li>MUST revert if the delegatecall to the new <a href="#implementation">Implementation</a> fails</li>
+<li>MUST return the returndata from the delegatecall if it succeeds</li>
+<li>MUST delegate to <a href="#implementation">Implementation</a> if called by non-<a href="#admin">Admin</a> address</li>
+</ul>
+<h3 id="changeadmin"><a class="header" href="#changeadmin">changeAdmin</a></h3>
+<p>Transfers <a href="#admin">Admin</a> rights to a new address.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_admin</code>: Address of the new admin</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if called by any address other than the admin or <code>address(0)</code></li>
+<li>MUST store <code>_admin</code> at the EIP-1967 admin storage slot</li>
+<li>MUST emit <code>AdminChanged</code> event with the previous and new admin addresses</li>
+<li>MUST delegate to <a href="#implementation">Implementation</a> if called by non-<a href="#admin">Admin</a> address</li>
+</ul>
+<h3 id="admin-1"><a class="header" href="#admin-1">admin</a></h3>
+<p>Returns the current <a href="#admin">Admin</a> address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if called by any address other than the admin or <code>address(0)</code></li>
+<li>MUST return the address stored at the EIP-1967 <a href="#admin">Admin</a> storage slot</li>
+<li>MUST delegate to <a href="#implementation">Implementation</a> if called by non-<a href="#admin">Admin</a> address</li>
+</ul>
+<h3 id="implementation-1"><a class="header" href="#implementation-1">implementation</a></h3>
+<p>Returns the current <a href="#implementation">Implementation</a> address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if called by any address other than the admin or <code>address(0)</code></li>
+<li>MUST return the address stored at the EIP-1967 <a href="#implementation">Implementation</a> storage slot</li>
+<li>MUST delegate to <a href="#implementation">Implementation</a> if called by non-<a href="#admin">Admin</a> address</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L2/optimism-mintable-erc721-factory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/universal/proxy-admin.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L2/optimism-mintable-erc721-factory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/universal/proxy-admin.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>L1StandardBridge - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L1/l1-standard-bridge.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l1standardbridge"><a class="header" href="#l1standardbridge">L1StandardBridge</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#native-l1-token">Native L1 Token</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-l2standardbridge-is-trusted">a01-001: L2StandardBridge is trusted</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-002-l1crossdomainmessenger-is-trusted">a01-002: L1CrossDomainMessenger is trusted</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-003-systemconfig-and-superchainconfig-are-trusted">a01-003: SystemConfig and SuperchainConfig are trusted</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-004-optimismmintableerc20-tokens-correctly-implement-mint-and-burn">a01-004: OptimismMintableERC20 tokens correctly implement mint and burn</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-users-who-deposit-assets-on-l1-receive-them-on-l2">i01-001: Users who deposit assets on L1 receive them on L2</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-users-who-withdraw-assets-from-l2-can-claim-them-on-l1">i01-002: Users who withdraw assets from L2 can claim them on L1</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-003-one-to-one-custody-across-chains">i01-003: One-to-one custody across chains</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#receive">receive</a></li>
+<li><a href="#depositeth">depositETH</a></li>
+<li><a href="#depositethto">depositETHTo</a></li>
+<li><a href="#depositerc20">depositERC20</a></li>
+<li><a href="#depositerc20to">depositERC20To</a></li>
+<li><a href="#bridgeeth">bridgeETH</a></li>
+<li><a href="#bridgeethto">bridgeETHTo</a></li>
+<li><a href="#bridgeerc20">bridgeERC20</a></li>
+<li><a href="#bridgeerc20to">bridgeERC20To</a></li>
+<li><a href="#finalizeethwithdrawal">finalizeETHWithdrawal</a></li>
+<li><a href="#finalizeerc20withdrawal">finalizeERC20Withdrawal</a></li>
+<li><a href="#finalizebridgeeth">finalizeBridgeETH</a></li>
+<li><a href="#finalizebridgeerc20">finalizeBridgeERC20</a></li>
+<li><a href="#l2tokenbridge">l2TokenBridge</a></li>
+<li><a href="#paused">paused</a></li>
+<li><a href="#superchainconfig">superchainConfig</a></li>
+<li><a href="#messenger">MESSENGER</a></li>
+<li><a href="#other_bridge">OTHER_BRIDGE</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The L1StandardBridge enables ETH and ERC20 token transfers between Ethereum L1 and an OP Stack L2 chain. It escrows
+L1-native tokens when depositing to L2 and releases them when finalizing withdrawals from L2. For L2-native tokens, it
+mints them when finalizing withdrawals and burns them when depositing to L2.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="native-l1-token"><a class="header" href="#native-l1-token">Native L1 Token</a></h3>
+<p>An ERC20 token that is native to the L1 chain and does not implement the
+<a href="../L2/l2-standard-bridge.html#optimismmintableerc20">OptimismMintableERC20</a> interface. These tokens are escrowed in
+the bridge contract when deposited to L2 and released when withdrawals are finalized from L2.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-l2standardbridge-is-trusted"><a class="header" href="#a01-001-l2standardbridge-is-trusted">a01-001: L2StandardBridge is trusted</a></h3>
+<p>The L2StandardBridge contract on L2 is trusted to only send valid finalization messages for legitimate withdrawals.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>The L2StandardBridge address is set during initialization and cannot be changed</li>
+<li>Cross-chain messages are authenticated through the L1CrossDomainMessenger</li>
+</ul>
+<h3 id="a01-002-l1crossdomainmessenger-is-trusted"><a class="header" href="#a01-002-l1crossdomainmessenger-is-trusted">a01-002: L1CrossDomainMessenger is trusted</a></h3>
+<p>The L1CrossDomainMessenger accurately validates cross-chain messages and correctly identifies the sender.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>The messenger is set during initialization and cannot be changed</li>
+<li>Message authentication uses the xDomainMessageSender mechanism</li>
+</ul>
+<h3 id="a01-003-systemconfig-and-superchainconfig-are-trusted"><a class="header" href="#a01-003-systemconfig-and-superchainconfig-are-trusted">a01-003: SystemConfig and SuperchainConfig are trusted</a></h3>
+<p>The SystemConfig and SuperchainConfig contracts accurately report the paused state and are controlled by trusted
+governance.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>The SystemConfig address is set during initialization by the ProxyAdmin or its owner</li>
+<li>The pause mechanism provides emergency protection against detected issues</li>
+</ul>
+<h3 id="a01-004-optimismmintableerc20-tokens-correctly-implement-mint-and-burn"><a class="header" href="#a01-004-optimismmintableerc20-tokens-correctly-implement-mint-and-burn">a01-004: OptimismMintableERC20 tokens correctly implement mint and burn</a></h3>
+<p><a href="../L2/l2-standard-bridge.html#optimismmintableerc20">OptimismMintableERC20</a> tokens correctly implement the mint and burn
+functions and accurately report their remote token address.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>Token pair validation checks that the remote token matches the token's reported remoteToken or l1Token</li>
+<li>Tokens must implement the IOptimismMintableERC20 or ILegacyMintableERC20 interface</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-users-who-deposit-assets-on-l1-receive-them-on-l2"><a class="header" href="#i01-001-users-who-deposit-assets-on-l1-receive-them-on-l2">i01-001: Users who deposit assets on L1 receive them on L2</a></h3>
+<p>Users who successfully deposit ETH or ERC20 tokens through the L1 bridge always receive the corresponding assets on L2
+when the deposit is finalized within a bounded time period (less than 1 day under normal operation).</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, users lose their assets permanently as the L1 assets are locked or burned but the L2 assets are never
+received.</p>
+<h3 id="i01-002-users-who-withdraw-assets-from-l2-can-claim-them-on-l1"><a class="header" href="#i01-002-users-who-withdraw-assets-from-l2-can-claim-them-on-l1">i01-002: Users who withdraw assets from L2 can claim them on L1</a></h3>
+<p>Users who successfully initiate a withdrawal on L2 can always claim the corresponding assets on L1 after the challenge
+period, provided the withdrawal is properly finalized on L1.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, users lose their assets permanently as the L2 assets are burned or escrowed but the L1 assets cannot be
+claimed.</p>
+<h3 id="i01-003-one-to-one-custody-across-chains"><a class="header" href="#i01-003-one-to-one-custody-across-chains">i01-003: One-to-one custody across chains</a></h3>
+<p>For each bridged asset amount, exactly one of the following holds at any time: it is held on L1 by the bridge (locked
+or in original form) or it is represented on L2 (minted or in original form). Transitions between these states occur
+only through the canonical flows: a valid deposit locks or burns the asset on L1 and is paired with a mint or release
+on L2; a valid withdrawal burns or escrows the asset on L2 and is paired with a release or mint on L1. No other
+mechanism may create or release representations.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, attackers could mint arbitrary tokens on L2 without depositing the corresponding L1 tokens, or drain the
+bridge by withdrawing more than was deposited, breaking the 1:1 correspondence between L1 and L2 assets.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initializes the L1StandardBridge contract with the messenger and system configuration.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_messenger</code>: Address of the L1CrossDomainMessenger contract</li>
+<li><code>_systemConfig</code>: Address of the SystemConfig contract</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the ProxyAdmin or ProxyAdmin owner</li>
+<li>MUST set the messenger to the provided L1CrossDomainMessenger address</li>
+<li>MUST set the systemConfig to the provided SystemConfig address</li>
+<li>MUST set the otherBridge to the L2StandardBridge predeploy at 0x4200000000000000000000000000000000000010</li>
+<li>MUST revert if called more than once</li>
+</ul>
+<h3 id="receive"><a class="header" href="#receive">receive</a></h3>
+<p>Allows EOAs to bridge ETH by sending directly to the bridge contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not an externally owned account</li>
+<li>MUST initiate an ETH deposit to the sender's address on L2</li>
+<li>MUST use RECEIVE_DEFAULT_GAS_LIMIT (200,000) as the minimum gas limit</li>
+<li>MUST emit ETHDepositInitiated and ETHBridgeInitiated events</li>
+</ul>
+<h3 id="depositeth"><a class="header" href="#depositeth">depositETH</a></h3>
+<p>Deposits ETH into the sender's account on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_minGasLimit</code>: Minimum gas limit for the deposit message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not an externally owned account</li>
+<li>MUST revert if msg.value does not equal the amount being deposited</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeETH</li>
+<li>MUST emit ETHDepositInitiated and ETHBridgeInitiated events</li>
+</ul>
+<h3 id="depositethto"><a class="header" href="#depositethto">depositETHTo</a></h3>
+<p>Deposits ETH into a target account on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_to</code>: Address to receive the ETH on L2</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the deposit message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if msg.value does not equal the amount being deposited</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeETH</li>
+<li>MUST emit ETHDepositInitiated and ETHBridgeInitiated events</li>
+</ul>
+<h3 id="depositerc20"><a class="header" href="#depositerc20">depositERC20</a></h3>
+<p>Deposits ERC20 tokens into the sender's account on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_l1Token</code>: Address of the L1 token being deposited</li>
+<li><code>_l2Token</code>: Address of the corresponding token on L2</li>
+<li><code>_amount</code>: Amount of the ERC20 to deposit</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the deposit message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not an externally owned account</li>
+<li>MUST revert if msg.value is not zero</li>
+<li>MUST escrow the tokens if <code>_l1Token</code> is a <a href="#native-l1-token">Native L1 Token</a></li>
+<li>MUST burn the tokens if <code>_l1Token</code> is an OptimismMintableERC20</li>
+<li>MUST verify token pair matches for OptimismMintableERC20 tokens</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeERC20</li>
+<li>MUST emit ERC20DepositInitiated and ERC20BridgeInitiated events</li>
+</ul>
+<h3 id="depositerc20to"><a class="header" href="#depositerc20to">depositERC20To</a></h3>
+<p>Deposits ERC20 tokens into a target account on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_l1Token</code>: Address of the L1 token being deposited</li>
+<li><code>_l2Token</code>: Address of the corresponding token on L2</li>
+<li><code>_to</code>: Address to receive the tokens on L2</li>
+<li><code>_amount</code>: Amount of the ERC20 to deposit</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the deposit message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if msg.value is not zero</li>
+<li>MUST escrow the tokens if <code>_l1Token</code> is a <a href="#native-l1-token">Native L1 Token</a></li>
+<li>MUST burn the tokens if <code>_l1Token</code> is an OptimismMintableERC20</li>
+<li>MUST verify token pair matches for OptimismMintableERC20 tokens</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeERC20</li>
+<li>MUST emit ERC20DepositInitiated and ERC20BridgeInitiated events</li>
+</ul>
+<h3 id="bridgeeth"><a class="header" href="#bridgeeth">bridgeETH</a></h3>
+<p>Sends ETH to the sender's address on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_minGasLimit</code>: Minimum gas limit for the bridge message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not an externally owned account</li>
+<li>MUST revert if msg.value does not equal the amount being bridged</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeETH</li>
+<li>MUST emit ETHDepositInitiated and ETHBridgeInitiated events</li>
+</ul>
+<h3 id="bridgeethto"><a class="header" href="#bridgeethto">bridgeETHTo</a></h3>
+<p>Sends ETH to a specified recipient's address on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_to</code>: Address to receive the ETH on L2</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the bridge message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if msg.value does not equal the amount being bridged</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeETH</li>
+<li>MUST emit ETHDepositInitiated and ETHBridgeInitiated events</li>
+</ul>
+<h3 id="bridgeerc20"><a class="header" href="#bridgeerc20">bridgeERC20</a></h3>
+<p>Sends ERC20 tokens to the sender's address on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_localToken</code>: Address of the ERC20 token on L1</li>
+<li><code>_remoteToken</code>: Address of the corresponding token on L2</li>
+<li><code>_amount</code>: Amount of tokens to bridge</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the bridge message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not an externally owned account</li>
+<li>MUST revert if msg.value is not zero</li>
+<li>MUST escrow the tokens if <code>_localToken</code> is a <a href="#native-l1-token">Native L1 Token</a></li>
+<li>MUST burn the tokens if <code>_localToken</code> is an OptimismMintableERC20</li>
+<li>MUST verify token pair matches for OptimismMintableERC20 tokens</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeERC20</li>
+<li>MUST emit ERC20DepositInitiated and ERC20BridgeInitiated events</li>
+</ul>
+<h3 id="bridgeerc20to"><a class="header" href="#bridgeerc20to">bridgeERC20To</a></h3>
+<p>Sends ERC20 tokens to a specified recipient's address on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_localToken</code>: Address of the ERC20 token on L1</li>
+<li><code>_remoteToken</code>: Address of the corresponding token on L2</li>
+<li><code>_to</code>: Address to receive the tokens on L2</li>
+<li><code>_amount</code>: Amount of tokens to bridge</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the bridge message on L2</li>
+<li><code>_extraData</code>: Optional data forwarded to L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if msg.value is not zero</li>
+<li>MUST escrow the tokens if <code>_localToken</code> is a <a href="#native-l1-token">Native L1 Token</a></li>
+<li>MUST burn the tokens if <code>_localToken</code> is an OptimismMintableERC20</li>
+<li>MUST verify token pair matches for OptimismMintableERC20 tokens</li>
+<li>MUST send a cross-chain message to L2StandardBridge calling finalizeBridgeERC20</li>
+<li>MUST emit ERC20DepositInitiated and ERC20BridgeInitiated events</li>
+</ul>
+<h3 id="finalizeethwithdrawal"><a class="header" href="#finalizeethwithdrawal">finalizeETHWithdrawal</a></h3>
+<p>Finalizes a withdrawal of ETH from L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_from</code>: Address of the withdrawer on L2</li>
+<li><code>_to</code>: Address of the recipient on L1</li>
+<li><code>_amount</code>: Amount of ETH to withdraw</li>
+<li><code>_extraData</code>: Optional data forwarded from L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the L1CrossDomainMessenger</li>
+<li>MUST revert if xDomainMessageSender is not the L2StandardBridge</li>
+<li>MUST revert if the bridge is paused</li>
+<li>MUST revert if msg.value does not equal <code>_amount</code></li>
+<li>MUST revert if <code>_to</code> is the bridge contract itself</li>
+<li>MUST revert if <code>_to</code> is the messenger contract</li>
+<li>MUST send <code>_amount</code> of ETH to <code>_to</code></li>
+<li>MUST revert if the ETH transfer fails</li>
+<li>MUST emit ETHWithdrawalFinalized and ETHBridgeFinalized events</li>
+</ul>
+<h3 id="finalizeerc20withdrawal"><a class="header" href="#finalizeerc20withdrawal">finalizeERC20Withdrawal</a></h3>
+<p>Finalizes a withdrawal of ERC20 tokens from L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_l1Token</code>: Address of the token on L1</li>
+<li><code>_l2Token</code>: Address of the corresponding token on L2</li>
+<li><code>_from</code>: Address of the withdrawer on L2</li>
+<li><code>_to</code>: Address of the recipient on L1</li>
+<li><code>_amount</code>: Amount of the ERC20 to withdraw</li>
+<li><code>_extraData</code>: Optional data forwarded from L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the L1CrossDomainMessenger</li>
+<li>MUST revert if xDomainMessageSender is not the L2StandardBridge</li>
+<li>MUST revert if the bridge is paused</li>
+<li>MUST mint tokens to <code>_to</code> if <code>_l1Token</code> is an OptimismMintableERC20</li>
+<li>MUST release escrowed tokens to <code>_to</code> if <code>_l1Token</code> is a <a href="#native-l1-token">Native L1 Token</a></li>
+<li>MUST verify token pair matches for OptimismMintableERC20 tokens</li>
+<li>MUST decrease the deposits mapping for <a href="#native-l1-token">Native L1 Tokens</a></li>
+<li>MUST emit ERC20WithdrawalFinalized and ERC20BridgeFinalized events</li>
+</ul>
+<h3 id="finalizebridgeeth"><a class="header" href="#finalizebridgeeth">finalizeBridgeETH</a></h3>
+<p>Completes an ETH bridge from L2 and sends ETH to the recipient on L1.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_from</code>: Address that initiated the bridge on L2</li>
+<li><code>_to</code>: Address to receive the ETH on L1</li>
+<li><code>_amount</code>: Amount of ETH being withdrawn</li>
+<li><code>_extraData</code>: Optional data forwarded from L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the L1CrossDomainMessenger</li>
+<li>MUST revert if xDomainMessageSender is not the L2StandardBridge</li>
+<li>MUST revert if the bridge is paused</li>
+<li>MUST revert if msg.value does not equal <code>_amount</code></li>
+<li>MUST revert if <code>_to</code> is the bridge contract itself</li>
+<li>MUST revert if <code>_to</code> is the messenger contract</li>
+<li>MUST send <code>_amount</code> of ETH to <code>_to</code></li>
+<li>MUST revert if the ETH transfer fails</li>
+<li>MUST emit ETHWithdrawalFinalized and ETHBridgeFinalized events</li>
+</ul>
+<h3 id="finalizebridgeerc20"><a class="header" href="#finalizebridgeerc20">finalizeBridgeERC20</a></h3>
+<p>Completes an ERC20 bridge from L2 and mints or releases tokens to the recipient on L1.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_localToken</code>: Address of the ERC20 token on L1</li>
+<li><code>_remoteToken</code>: Address of the corresponding token on L2</li>
+<li><code>_from</code>: Address that initiated the bridge on L2</li>
+<li><code>_to</code>: Address to receive the tokens on L1</li>
+<li><code>_amount</code>: Amount of tokens being withdrawn</li>
+<li><code>_extraData</code>: Optional data forwarded from L2 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the L1CrossDomainMessenger</li>
+<li>MUST revert if xDomainMessageSender is not the L2StandardBridge</li>
+<li>MUST revert if the bridge is paused</li>
+<li>MUST mint tokens to <code>_to</code> if <code>_localToken</code> is an OptimismMintableERC20</li>
+<li>MUST release escrowed tokens to <code>_to</code> if <code>_localToken</code> is a <a href="#native-l1-token">Native L1 Token</a></li>
+<li>MUST verify token pair matches for OptimismMintableERC20 tokens</li>
+<li>MUST decrease the deposits mapping for <a href="#native-l1-token">Native L1 Tokens</a></li>
+<li>MUST emit ERC20WithdrawalFinalized and ERC20BridgeFinalized events</li>
+</ul>
+<h3 id="l2tokenbridge"><a class="header" href="#l2tokenbridge">l2TokenBridge</a></h3>
+<p>Returns the address of the L2StandardBridge contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the address of the otherBridge</li>
+</ul>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>Returns whether the bridge is paused.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the paused status from the SystemConfig contract</li>
+</ul>
+<h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
+<p>Returns the SuperchainConfig contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the SuperchainConfig contract from the SystemConfig</li>
+</ul>
+<h3 id="messenger"><a class="header" href="#messenger">MESSENGER</a></h3>
+<p>Legacy getter for the messenger contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the L1CrossDomainMessenger contract address</li>
+</ul>
+<h3 id="other_bridge"><a class="header" href="#other_bridge">OTHER_BRIDGE</a></h3>
+<p>Legacy getter for the other bridge contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the L2StandardBridge contract address</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L1/l1-cross-domain-messenger.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L1/l1-erc721-bridge.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L1/l1-cross-domain-messenger.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L1/l1-erc721-bridge.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

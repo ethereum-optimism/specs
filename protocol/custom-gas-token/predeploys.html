@@ -1,0 +1,501 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Predeploys - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/custom-gas-token/predeploys.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#weth9">WETH9</a></li>
+<li><a href="#l1block">L1Block</a>
+<ul>
+<li><a href="#functions">Functions</a>
+<ul>
+<li><a href="#setcustomgastoken"><code>setCustomGasToken</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#l2crossdomainmessenger">L2CrossDomainMessenger</a></li>
+<li><a href="#l2standardbridge">L2StandardBridge</a></li>
+<li><a href="#sequencerfeevault">SequencerFeeVault</a></li>
+<li><a href="#basefeevault">BaseFeeVault</a></li>
+<li><a href="#l1feevault">L1FeeVault</a></li>
+<li><a href="#native-asset-liquidity">Native Asset Liquidity</a>
+<ul>
+<li><a href="#functions-1">Functions</a>
+<ul>
+<li><a href="#deposit"><code>deposit</code></a></li>
+<li><a href="#withdraw"><code>withdraw</code></a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#liquiditydeposited"><code>LiquidityDeposited</code></a></li>
+<li><a href="#liquiditywithdrawn"><code>LiquidityWithdrawn</code></a></li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a></li>
+</ul>
+</li>
+<li><a href="#liquidity-controller">Liquidity Controller</a>
+<ul>
+<li><a href="#functions-2">Functions</a>
+<ul>
+<li><a href="#authorizeminter"><code>authorizeMinter</code></a></li>
+<li><a href="#deauthorizeminter"><code>deauthorizeMinter</code></a></li>
+<li><a href="#mint"><code>mint</code></a></li>
+<li><a href="#burn"><code>burn</code></a></li>
+<li><a href="#gaspayingassetname"><code>gasPayingAssetName</code></a></li>
+<li><a href="#gaspayingassetsymbol"><code>gasPayingAssetSymbol</code></a></li>
+</ul>
+</li>
+<li><a href="#events-1">Events</a>
+<ul>
+<li><a href="#minterauthorized"><code>MinterAuthorized</code></a></li>
+<li><a href="#minterdeauthorized"><code>MinterDeauthorized</code></a></li>
+<li><a href="#liquidityminted"><code>LiquidityMinted</code></a></li>
+<li><a href="#liquidityburned"><code>LiquidityBurned</code></a></li>
+</ul>
+</li>
+<li><a href="#invariants-1">Invariants</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Address</th><th>Introduced</th><th>Deprecated</th><th>Proxied</th></tr></thead><tbody>
+<tr><td>NativeAssetLiquidity</td><td>0x4200000000000000000000000000000000000029</td><td>Jovian</td><td>No</td><td>Yes</td></tr>
+<tr><td>LiquidityController</td><td>0x420000000000000000000000000000000000002A</td><td>Jovian</td><td>No</td><td>Yes</td></tr>
+</tbody></table>
+</div>
+<h2 id="weth9"><a class="header" href="#weth9">WETH9</a></h2>
+<p>On chains using Custom Gas Token mode, this contract serves as the Wrapped Native
+Asset (WNA) instead of Wrapped Ether. The WETH predeploy implementation remains
+unchanged and continues to fetch metadata from the <code>L1Block</code> predeploy. However,
+the <code>L1Block</code> predeploy is updated to source the name and symbol from the
+<code>LiquidityController</code> instead of using hardcoded ETH values, with the name and
+symbol being prefixed with "Wrapped" and "W" respectively.</p>
+<p><strong>Important</strong>: Currently, a chain using ETH cannot migrate to use a custom gas token,
+as this migration would introduce significant risks and breaking changes to existing
+infrastructure. Custom Gas Token mode is only supported for fresh deployments.
+Migration only focuses on chains utilizing the old CGT implementation.</p>
+<p>For fresh Custom Gas Token deployments, the <code>L1Block</code> is deployed from genesis
+with the metadata functions already configured to fetch from the <code>LiquidityController</code>.</p>
+<h2 id="l1block"><a class="header" href="#l1block">L1Block</a></h2>
+<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<h4 id="setcustomgastoken"><a class="header" href="#setcustomgastoken"><code>setCustomGasToken</code></a></h4>
+<p>Sets the Custom Gas Token flag to <code>true</code>, enabling Custom Gas Token mode for the chain.</p>
+<pre><code class="language-solidity">function setCustomGasToken() external
+</code></pre>
+<ul>
+<li>MUST only be callable by the <code>DEPOSITOR_ACCOUNT</code></li>
+<li>MUST set the internal <code>isCustomGasToken</code> flag to <code>true</code></li>
+<li>MUST be callable only once per chain (the flag cannot be reverted to <code>false</code>)</li>
+</ul>
+<p>Once enabled, various predeploys will check <code>L1Block.isCustomGasToken()</code> to determine if ETH
+bridging operations should be blocked.</p>
+<h2 id="l2crossdomainmessenger"><a class="header" href="#l2crossdomainmessenger">L2CrossDomainMessenger</a></h2>
+<p>The <code>sendMessage</code> function MUST revert if <code>L1Block.isCustomGasToken()</code> returns <code>true</code> and <code>msg.value &gt; 0</code>.
+This revert occurs because <code>L2CrossDomainMessenger</code> internally calls <code>L2ToL1MessagePasser.initiateWithdrawal</code>
+which enforces the CGT restriction.</p>
+<h2 id="l2standardbridge"><a class="header" href="#l2standardbridge">L2StandardBridge</a></h2>
+<p>ETH bridging functions MUST revert if <code>L1Block.isCustomGasToken()</code> returns <code>true</code> and the function involves ETH transfers.
+This revert occurs because <code>L2StandardBridge</code> internally calls <code>L2CrossDomainMessenger.sendMessage</code>,
+which in turn calls <code>L2ToL1MessagePasser.initiateWithdrawal</code> that enforces the CGT restriction.</p>
+<h2 id="sequencerfeevault"><a class="header" href="#sequencerfeevault">SequencerFeeVault</a></h2>
+<p>The contract constructor takes a <code>WithdrawalNetwork</code> parameter that determines whether
+funds are sent to L1 or L2:</p>
+<ul>
+<li><code>WithdrawalNetwork.L1</code>: Funds are withdrawn to an L1 address (default behavior)</li>
+<li><code>WithdrawalNetwork.L2</code>: Funds are withdrawn to an L2 address</li>
+</ul>
+<p>For existing deployments, to change the withdrawal network or recipient address,
+a new implementation must be deployed and the proxy must be upgraded.</p>
+<p>For fresh deployments with Custom Gas Token mode enabled, the withdrawal network
+MUST be set to <code>WithdrawalNetwork.L2</code>.</p>
+<h2 id="basefeevault"><a class="header" href="#basefeevault">BaseFeeVault</a></h2>
+<p>The contract constructor takes a <code>WithdrawalNetwork</code> parameter that determines whether
+funds are sent to L1 or L2:</p>
+<ul>
+<li><code>WithdrawalNetwork.L1</code>: Funds are withdrawn to an L1 address (default behavior)</li>
+<li><code>WithdrawalNetwork.L2</code>: Funds are withdrawn to an L2 address</li>
+</ul>
+<p>For existing deployments, to change the withdrawal network or recipient address,
+a new implementation must be deployed and the proxy must be upgraded.</p>
+<p>For fresh deployments with Custom Gas Token mode enabled, the withdrawal network
+MUST be set to <code>WithdrawalNetwork.L2</code>.</p>
+<h2 id="l1feevault"><a class="header" href="#l1feevault">L1FeeVault</a></h2>
+<p>The contract constructor takes a <code>WithdrawalNetwork</code> parameter that determines whether
+funds are sent to L1 or L2:</p>
+<ul>
+<li><code>WithdrawalNetwork.L1</code>: Funds are withdrawn to an L1 address (default behavior)</li>
+<li><code>WithdrawalNetwork.L2</code>: Funds are withdrawn to an L2 address</li>
+</ul>
+<p>For existing deployments, to change the withdrawal network or recipient address,
+a new implementation must be deployed and the proxy must be upgraded.</p>
+<p>For fresh deployments with Custom Gas Token mode enabled, the withdrawal network
+MUST be set to <code>WithdrawalNetwork.L2</code>.</p>
+<h2 id="native-asset-liquidity"><a class="header" href="#native-asset-liquidity">Native Asset Liquidity</a></h2>
+<p>Address: <code>0x4200000000000000000000000000000000000029</code></p>
+<p>The <code>NativeAssetLiquidity</code> predeploy stores a large amount of pre-minted native asset
+that serves as the central liquidity source for Custom Gas Token chains. This contract
+is only deployed on chains using Custom Gas Token mode and acts as the vault for all
+native asset supply management operations. The contract provides controlled access to
+liquidity through the <code>LiquidityController</code> predeploy only.</p>
+<h3 id="functions-1"><a class="header" href="#functions-1">Functions</a></h3>
+<h4 id="deposit"><a class="header" href="#deposit"><code>deposit</code></a></h4>
+<p>Accepts native asset deposits and locks them in the contract, reducing circulating supply.</p>
+<pre><code class="language-solidity">function deposit() external payable
+</code></pre>
+<ul>
+<li>MUST only be callable by the <code>LiquidityController</code> predeploy</li>
+<li>MUST accept any amount of native asset via <code>msg.value</code></li>
+<li>MUST emit <code>LiquidityDeposited</code> event</li>
+</ul>
+<h4 id="withdraw"><a class="header" href="#withdraw"><code>withdraw</code></a></h4>
+<p>Sends native assets from the contract to the <code>LiquidityController</code>, increasing circulating supply.</p>
+<pre><code class="language-solidity">function withdraw(uint256 _amount) external
+</code></pre>
+<ul>
+<li>MUST only be callable by the <code>LiquidityController</code> predeploy</li>
+<li>MUST send exactly <code>_amount</code> of native asset to the caller</li>
+<li>MUST revert if the contract balance is insufficient</li>
+<li>MUST emit <code>LiquidityWithdrawn</code> event</li>
+</ul>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h4 id="liquiditydeposited"><a class="header" href="#liquiditydeposited"><code>LiquidityDeposited</code></a></h4>
+<p>Emitted when native assets are deposited into the contract.</p>
+<pre><code class="language-solidity">event LiquidityDeposited(address indexed caller, uint256 value)
+</code></pre>
+<h4 id="liquiditywithdrawn"><a class="header" href="#liquiditywithdrawn"><code>LiquidityWithdrawn</code></a></h4>
+<p>Emitted when native assets are withdrawn from the contract.</p>
+<pre><code class="language-solidity">event LiquidityWithdrawn(address indexed caller, uint256 value)
+</code></pre>
+<h3 id="invariants"><a class="header" href="#invariants">Invariants</a></h3>
+<ul>
+<li>Only the <code>LiquidityController</code> predeploy can call <code>deposit()</code> and <code>withdraw()</code></li>
+<li>All native asset supply changes must go through this contract when CGT mode is active</li>
+<li>No direct user interaction is permitted with liquidity management functions</li>
+</ul>
+<h2 id="liquidity-controller"><a class="header" href="#liquidity-controller">Liquidity Controller</a></h2>
+<p>Address: <code>0x420000000000000000000000000000000000002A</code></p>
+<p>The <code>LiquidityController</code> predeploy manages access to the <code>NativeAssetLiquidity</code> contract
+and provides the governance interface for Custom Gas Token chains. This contract is only
+deployed on chains using Custom Gas Token mode and serves as the central authority for
+native asset supply management and metadata provisioning.</p>
+<h3 id="functions-2"><a class="header" href="#functions-2">Functions</a></h3>
+<h4 id="authorizeminter"><a class="header" href="#authorizeminter"><code>authorizeMinter</code></a></h4>
+<p>Authorizes an address to mint native assets from the liquidity pool.</p>
+<pre><code class="language-solidity">function authorizeMinter(address _minter) external
+</code></pre>
+<ul>
+<li>MUST only be callable by the L1 ProxyAdmin owner</li>
+<li>MUST authorize <code>_minter</code> to call the <code>mint()</code> function</li>
+<li>MUST emit <code>MinterAuthorized</code> event</li>
+</ul>
+<h4 id="deauthorizeminter"><a class="header" href="#deauthorizeminter"><code>deauthorizeMinter</code></a></h4>
+<p>Deauthorizes an address from minting native assets from the liquidity pool.</p>
+<pre><code class="language-solidity">function deauthorizeMinter(address _minter) external
+</code></pre>
+<ul>
+<li>MUST only be callable by the L1 ProxyAdmin owner</li>
+<li>MUST deauthorize <code>_minter</code> from calling the <code>mint()</code> function</li>
+<li>MUST emit <code>MinterDeauthorized</code> event</li>
+</ul>
+<h4 id="mint"><a class="header" href="#mint"><code>mint</code></a></h4>
+<p>Unlocks native assets from the <code>NativeAssetLiquidity</code> contract and sends them to a specified address.</p>
+<pre><code class="language-solidity">function mint(address _to, uint256 _amount) external
+</code></pre>
+<ul>
+<li>MUST only be callable by authorized minters</li>
+<li>MUST call <code>NativeAssetLiquidity.withdraw(_amount)</code> to unlock assets</li>
+<li>MUST send exactly <code>_amount</code> of native asset to <code>_to</code> address</li>
+<li>MUST revert if <code>NativeAssetLiquidity</code> has insufficient balance</li>
+<li>MUST emit <code>LiquidityMinted</code> event</li>
+</ul>
+<h4 id="burn"><a class="header" href="#burn"><code>burn</code></a></h4>
+<p>Deposits native assets back into the <code>NativeAssetLiquidity</code> contract, reducing circulating supply.</p>
+<pre><code class="language-solidity">function burn() external payable
+</code></pre>
+<ul>
+<li>MUST accept any amount of native asset via <code>msg.value</code></li>
+<li>MUST call <code>NativeAssetLiquidity.deposit{value: msg.value}()</code> to lock assets</li>
+<li>MUST only be callable by authorized minters</li>
+<li>MUST revert if <code>msg.value</code> is zero</li>
+<li>MUST emit <code>LiquidityBurned</code> event</li>
+</ul>
+<h4 id="gaspayingassetname"><a class="header" href="#gaspayingassetname"><code>gasPayingAssetName</code></a></h4>
+<p>Returns the human-readable name of the gas-paying asset for metadata purposes.</p>
+<pre><code class="language-solidity">function gasPayingAssetName() external view returns (string memory)
+</code></pre>
+<ul>
+<li>MUST return the name of the native asset (e.g., "MyToken")</li>
+<li>MUST be used by L1Block predeploy for <code>name()</code> function</li>
+<li>Returns value used to construct "Wrapped {AssetName}" for WNA</li>
+</ul>
+<h4 id="gaspayingassetsymbol"><a class="header" href="#gaspayingassetsymbol"><code>gasPayingAssetSymbol</code></a></h4>
+<p>Returns the symbol of the gas-paying asset for metadata purposes.</p>
+<pre><code class="language-solidity">function gasPayingAssetSymbol() external view returns (string memory)
+</code></pre>
+<ul>
+<li>MUST return the symbol of the native asset (e.g., "MTK")</li>
+<li>MUST be used by L1Block predeploy for <code>symbol()</code> function</li>
+<li>Returns value used to construct "W{AssetSymbol}" for WNA</li>
+</ul>
+<h3 id="events-1"><a class="header" href="#events-1">Events</a></h3>
+<h4 id="minterauthorized"><a class="header" href="#minterauthorized"><code>MinterAuthorized</code></a></h4>
+<p>Emitted when a new minter is authorized by the contract owner.</p>
+<pre><code class="language-solidity">event MinterAuthorized(address indexed minter)
+</code></pre>
+<p>Where <code>minter</code> is the address being authorized.</p>
+<h4 id="minterdeauthorized"><a class="header" href="#minterdeauthorized"><code>MinterDeauthorized</code></a></h4>
+<p>Emitted when a minter is deauthorized by the contract owner.</p>
+<pre><code class="language-solidity">event MinterDeauthorized(address indexed minter)
+</code></pre>
+<p>Where <code>minter</code> is the address being deauthorized.</p>
+<h4 id="liquidityminted"><a class="header" href="#liquidityminted"><code>LiquidityMinted</code></a></h4>
+<p>Emitted when native assets are unlocked from the liquidity pool and sent to a recipient.</p>
+<pre><code class="language-solidity">event LiquidityMinted(address indexed minter, address indexed to, uint256 amount)
+</code></pre>
+<p>Where <code>minter</code> is the authorized address calling the function, <code>to</code> is the recipient address,
+and <code>amount</code> is the amount of native assets minted.</p>
+<h4 id="liquidityburned"><a class="header" href="#liquidityburned"><code>LiquidityBurned</code></a></h4>
+<p>Emitted when native assets are locked back into the liquidity pool.</p>
+<pre><code class="language-solidity">event LiquidityBurned(address indexed minter, uint256 amount)
+</code></pre>
+<p>Where <code>minter</code> is the <code>msg.sender</code> who burned the assets and <code>amount</code> is the amount of native assets burned.</p>
+<h3 id="invariants-1"><a class="header" href="#invariants-1">Invariants</a></h3>
+<ul>
+<li>Only authorized minters can call <code>mint()</code> to unlock native assets</li>
+<li>Only the L1 ProxyAdmin owner can authorize new minters via <code>authorizeMinter()</code></li>
+<li>All native asset supply changes must flow through this contract's governance</li>
+<li>The contract acts as the sole interface between governance and <code>NativeAssetLiquidity</code></li>
+<li><code>burn()</code> operations always increase locked supply by calling <code>NativeAssetLiquidity.deposit()</code></li>
+<li><code>mint()</code> operations always decrease locked supply by calling <code>NativeAssetLiquidity.withdraw()</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/custom-gas-token/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/custom-gas-token/system-config.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/custom-gas-token/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/custom-gas-token/system-config.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

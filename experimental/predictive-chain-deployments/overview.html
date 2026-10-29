@@ -1,0 +1,344 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Predictive Chain Deployments - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/predictive-chain-deployments/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="predictive-chain-deployments"><a class="header" href="#predictive-chain-deployments">Predictive Chain Deployments</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#problem-statement">Problem Statement</a></li>
+<li><a href="#goals">Goals</a></li>
+<li><a href="#non-goals">Non-goals</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#output-root">Output Root</a></li>
+<li><a href="#super-root">Super Root</a></li>
+<li><a href="#starting-anchor-root">Starting Anchor Root</a></li>
+<li><a href="#selected-prestate">Selected Prestate</a></li>
+<li><a href="#fallback-prestate">Fallback Prestate</a></li>
+<li><a href="#genesis-block">Genesis Block</a></li>
+<li><a href="#l2-allocs">L2 Allocs</a></li>
+<li><a href="#anchor-block">Anchor Block</a></li>
+<li><a href="#salt-mixer">Salt Mixer</a></li>
+</ul>
+</li>
+<li><a href="#references">References</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Predictive Chain Deployments (PCD) eliminate the permissioned dispute game window (~7 days) that new OP Stack chains
+must currently wait through before permissionless dispute games can be enabled. The window exists today because the
+deployment tooling cannot seed the L1 dispute system with a real anchor at deployment time.</p>
+<p>PCD removes the window by computing <strong>every chain artifact off-chain before any transaction lands on L1</strong>. This lets
+<code>OPCM.deploy()</code> be submitted with the real <code>startingAnchorRoot</code> and <code>absolutePrestate</code> rather than placeholders.</p>
+<p>PCD has two parts, each specified on its own page:</p>
+<ul>
+<li><a href="./contracts.html">Contracts</a>: a Forge script that dry-runs <code>OPCM.deploy()</code> to <strong>predict the L1 contract addresses</strong>,
+plus updates to <code>DeployOPChain.s.sol</code> and to <code>OPContractsManagerV2</code> so a permissionless game type can be enabled at
+initial deployment.</li>
+<li><a href="./op-deployer.html">op-deployer Orchestration</a>: the pipeline that consumes the predicted addresses. Three new commands
+(<code>prepare</code>, <code>prestate</code>, <code>continue</code>) build the L2 genesis and the starting anchor root, commit the prestate, and
+submit the deployment.</li>
+</ul>
+<h2 id="problem-statement"><a class="header" href="#problem-statement">Problem Statement</a></h2>
+<p>Deploying a new chain today has a cyclic dependency:</p>
+<ol>
+<li><code>OPCM.deploy()</code> must run first to produce the L1 contract addresses.</li>
+<li>The L2 genesis requires those L1 addresses as inputs.</li>
+<li>The L2 genesis output root feeds back into <code>OPCM.deploy()</code> as the <code>startingAnchorRoot</code>.</li>
+</ol>
+<p>The current workaround deploys with a placeholder <code>startingAnchorRoot</code> and defers permissionless proofs until a real
+dispute resolves the anchor (~7 days). PCD breaks the cycle by predicting the L1 addresses without writing any state.
+The prestate and the starting anchor root are then computed before the real deployment transaction is broadcast.</p>
+<h2 id="goals"><a class="header" href="#goals">Goals</a></h2>
+<ul>
+<li>Permissionless dispute games valid from L2 block 0 on mainnets, testnets, and devnets.</li>
+<li>Support both game families: per-chain output root games (<code>CANNON_KONA</code>) and super root games (<code>SUPER_CANNON_KONA</code>).</li>
+<li>Contain the on-chain change to OPCM's initial-deployment config validation. Permissioned deployments against an OPCM
+in the same mode remain valid (see <a href="./contracts.html#ipcd-002-permissioned-deployments-remain-valid">iPCD-002</a>).</li>
+<li>Deterministic, reproducible artifacts (predicted addresses, genesis, anchor root, prestate) given the same inputs.</li>
+</ul>
+<h2 id="non-goals"><a class="header" href="#non-goals">Non-goals</a></h2>
+<ul>
+<li>Permissionless deployment through <code>apply</code>. That command stays permissioned-only and keeps its placeholder anchor.
+Permissionless chains go through <code>prepare</code> / <code>prestate</code> / <code>continue</code>.</li>
+<li>Sharing one dispute game or one <code>AnchorStateRegistry</code> across chains. Every chain keeps its own registry and its own
+<code>DisputeGameFactory</code>, including in a super root deployment where all chains share a single anchor <strong>value</strong>.</li>
+<li>Enabling <code>ZK_DISPUTE_GAME</code> game type at initial deployment.</li>
+</ul>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="output-root"><a class="header" href="#output-root">Output Root</a></h3>
+<p>A 32-byte commitment to a single chain's L2 state:
+<code>keccak256(version || stateRoot || messagePasserStorageRoot || blockHash)</code>, where <code>version</code> is 32 zero bytes.</p>
+<p>The <code>messagePasserStorageRoot</code> is read from the genesis block header's withdrawals root, so computing a genesis output
+root requires Isthmus to be active at genesis. A chain whose genesis predates Isthmus fails the pipeline.</p>
+<h3 id="super-root"><a class="header" href="#super-root">Super Root</a></h3>
+<p>A commitment to the L2 state of <strong>every chain in a dependency set at one timestamp</strong>, built from each member's
+<a href="#output-root">output root</a>. Super root games (<code>SUPER_CANNON_KONA</code>, <code>SUPER_PERMISSIONED</code>) dispute super roots rather
+than per-chain output roots.</p>
+<p>A super root commits to a timestamp, so every chain in the dependency set must share the same L2 genesis timestamp.</p>
+<h3 id="starting-anchor-root"><a class="header" href="#starting-anchor-root">Starting Anchor Root</a></h3>
+<p>The <code>Proposal</code> seeded into a chain's <code>AnchorStateRegistry</code> at deployment, a root paired with an <code>l2SequenceNumber</code>.
+What fills it depends on the game family:</p>
+<div class="table-wrapper"><table><thead><tr><th>Game family</th><th>Root</th><th><code>l2SequenceNumber</code></th></tr></thead><tbody>
+<tr><td>Output root (<code>CANNON_KONA</code>)</td><td>the chain's own genesis <a href="#output-root">output root</a></td><td><code>0</code>, the L2 genesis block number</td></tr>
+<tr><td>Super root (<code>SUPER_CANNON_KONA</code>)</td><td>one <a href="#super-root">super root</a> shared by the dependency set</td><td>the super root's timestamp</td></tr>
+<tr><td>Permissioned only</td><td>a placeholder</td><td><code>0</code></td></tr>
+</tbody></table>
+</div>
+<p>Every chain keeps its own registry in all three cases. In a super root deployment the registries hold the same value.</p>
+<h3 id="selected-prestate"><a class="header" href="#selected-prestate">Selected Prestate</a></h3>
+<p>The absolute prestate of the game type a chain deploys as its respected game.</p>
+<p>For a permissionless deployment the pipeline commits it: the Cannon hash of the initial MIPS machine state, produced
+by compiling the Kona fault-proof program with the embedded chain config. The hash is deterministic for a given chain
+config.</p>
+<p>A permissioned-only deployment keeps the prestate the chain configuration already supplies. That value is required to
+be non-zero in every case, including the super root permissioned game, which never reads it.</p>
+<h3 id="fallback-prestate"><a class="header" href="#fallback-prestate">Fallback Prestate</a></h3>
+<p>A <code>CANNON_KONA</code> deployment also enables <code>PERMISSIONED_CANNON</code> as a guardian fallback, and that game needs its own
+prestate. op-deployer fills it with a reserved placeholder rather than a real prestate, because the fallback is not
+meant to be played at deployment. The value is reserved and a <a href="#selected-prestate">selected prestate</a> may not use it.</p>
+<p><strong>Super root deployments have no fallback prestate.</strong></p>
+<h3 id="genesis-block"><a class="header" href="#genesis-block">Genesis Block</a></h3>
+<p>L2 block 0 (<code>parentHash = 0x00…00</code>). Header fields derive from the L2 allocs, the chain config, and the committed
+genesis timestamp.</p>
+<h3 id="l2-allocs"><a class="header" href="#l2-allocs">L2 Allocs</a></h3>
+<p>The initial account/storage layout output by <code>L2Genesis.s.sol</code>, computed with the L1 addresses as inputs. Its Merkle
+root becomes the genesis block header <code>stateRoot</code>.</p>
+<h3 id="anchor-block"><a class="header" href="#anchor-block">Anchor Block</a></h3>
+<p>The L1 block selected at the <code>safe</code> tag or deeper whose hash is baked into <code>rollup.json</code> and the prestate.</p>
+<h3 id="salt-mixer"><a class="header" href="#salt-mixer">Salt Mixer</a></h3>
+<p>The <code>saltMixer</code> string in <a href="./contracts.html#fullconfig"><code>FullConfig</code></a> that, together with <code>msg.sender</code>, derives the
+CREATE2 salt for OPCM proxy deployments. The predicted addresses match the deployed addresses only when <strong>the same
+sender and salt mixer are used</strong>.</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://github.com/ethereum-optimism/design-docs/blob/main/ecosystem/op-deployer/predictive-chain-deployments/pcd-design.md">Design doc (<code>pcd-design.md</code>)</a></li>
+<li><a href="https://github.com/ethereum-optimism/design-docs/blob/main/ecosystem/op-deployer/predictive-chain-deployments/fma.md">Failure modes analysis (<code>fma.md</code>)</a></li>
+<li><a href="../op-contracts-manager.html">OP Contracts Manager</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/gov-delegation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../experimental/predictive-chain-deployments/contracts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/gov-delegation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../experimental/predictive-chain-deployments/contracts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

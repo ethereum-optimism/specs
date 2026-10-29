@@ -1,0 +1,428 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>L2ERC721Bridge - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L2/l2-erc721-bridge.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l2erc721bridge"><a class="header" href="#l2erc721bridge">L2ERC721Bridge</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a></li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-l1erc721bridge-is-trusted">a01-001: L1ERC721Bridge is trusted</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-002-l2crossdomainmessenger-is-trusted">a01-002: L2CrossDomainMessenger is trusted</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-users-who-deposit-nfts-on-l1-receive-them-on-l2">i01-001: Users who deposit NFTs on L1 receive them on L2</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-users-who-withdraw-nfts-on-l2-can-claim-them-on-l1">i01-002: Users who withdraw NFTs on L2 can claim them on L1</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-003-one-to-one-custody-across-chains-via-paired-lockmint-and-burnunlock">i01-003: One-to-one custody across chains via paired lock/mint and burn/unlock</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#finalizebridgeerc721">finalizeBridgeERC721</a></li>
+<li><a href="#bridgeerc721">bridgeERC721</a></li>
+<li><a href="#bridgeerc721to">bridgeERC721To</a></li>
+<li><a href="#_initiatebridgeerc721">_initiateBridgeERC721</a></li>
+<li><a href="#paused">paused</a></li>
+<li><a href="#messenger">MESSENGER</a></li>
+<li><a href="#other_bridge">OTHER_BRIDGE</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The L2ERC721Bridge enables ERC721 token transfers between Ethereum L1 and an OP Stack L2 chain. It mints tokens
+on L2 when deposits are finalized from L1 and burns tokens on L2 when withdrawals are initiated to L1.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<p>N/A</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-l1erc721bridge-is-trusted"><a class="header" href="#a01-001-l1erc721bridge-is-trusted">a01-001: L1ERC721Bridge is trusted</a></h3>
+<p>The L1ERC721Bridge contract on L1 is trusted to only send valid finalization messages for legitimate deposits.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>The L1ERC721Bridge address is set during initialization and cannot be changed</li>
+<li>Cross-chain messages are authenticated through the L2CrossDomainMessenger</li>
+</ul>
+<h3 id="a01-002-l2crossdomainmessenger-is-trusted"><a class="header" href="#a01-002-l2crossdomainmessenger-is-trusted">a01-002: L2CrossDomainMessenger is trusted</a></h3>
+<p>The L2CrossDomainMessenger accurately validates cross-chain messages and correctly identifies the sender.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>The messenger is a system predeploy contract maintained by the protocol</li>
+<li>Message authentication uses the xDomainMessageSender mechanism</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-users-who-deposit-nfts-on-l1-receive-them-on-l2"><a class="header" href="#i01-001-users-who-deposit-nfts-on-l1-receive-them-on-l2">i01-001: Users who deposit NFTs on L1 receive them on L2</a></h3>
+<p>Users who successfully deposit an NFT through the L1 bridge always receive the corresponding NFT on L2 when the
+deposit is finalized.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, users lose their NFTs permanently as the L1 token is escrowed but the L2 token is never minted.</p>
+<h3 id="i01-002-users-who-withdraw-nfts-on-l2-can-claim-them-on-l1"><a class="header" href="#i01-002-users-who-withdraw-nfts-on-l2-can-claim-them-on-l1">i01-002: Users who withdraw NFTs on L2 can claim them on L1</a></h3>
+<p>Users who successfully initiate a withdrawal on L2 can always claim the corresponding NFT on L1 after the challenge
+period, provided the withdrawal is properly finalized on L1.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, users lose their NFTs permanently as the L2 token is burned but the L1 token cannot be claimed.</p>
+<h3 id="i01-003-one-to-one-custody-across-chains-via-paired-lockmint-and-burnunlock"><a class="header" href="#i01-003-one-to-one-custody-across-chains-via-paired-lockmint-and-burnunlock">i01-003: One-to-one custody across chains via paired lock/mint and burn/unlock</a></h3>
+<p>For each bridged tokenId, exactly one of the following holds at any time: it is held on L1 by the bridge
+(locked) or it is represented on L2 by exactly one <a href="optimism-mintable-erc721.html">OptimismMintableERC721</a>.
+Transitions between these states occur only through the canonical flows: a valid deposit locks the token on L1 and
+is paired with a mint on L2; a valid withdrawal burns the token on L2 and is paired with an unlock on L1. No other
+mechanism may create or release representations.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, attackers could mint arbitrary NFTs on L2 without depositing the corresponding L1 tokens, breaking the
+1:1 correspondence between L1 and L2 tokens.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initializes the L2ERC721Bridge contract with the L1 bridge address.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_l1ERC721Bridge</code>: Address of the L1ERC721Bridge contract</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST set the messenger to the L2CrossDomainMessenger predeploy at 0x4200000000000000000000000000000000000007</li>
+<li>MUST set the otherBridge to the provided L1ERC721Bridge address</li>
+<li>MUST revert if called more than once (initializer modifier)</li>
+</ul>
+<h3 id="finalizebridgeerc721"><a class="header" href="#finalizebridgeerc721">finalizeBridgeERC721</a></h3>
+<p>Completes an ERC721 bridge from L1 and mints the token to the recipient on L2.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_localToken</code>: Address of the OptimismMintableERC721 token on L2</li>
+<li><code>_remoteToken</code>: Address of the ERC721 token on L1</li>
+<li><code>_from</code>: Address that initiated the bridge on L1</li>
+<li><code>_to</code>: Address to receive the token on L2</li>
+<li><code>_tokenId</code>: ID of the token being deposited</li>
+<li><code>_extraData</code>: Optional data forwarded from L1 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the L2CrossDomainMessenger</li>
+<li>MUST revert if xDomainMessageSender is not the L1ERC721Bridge</li>
+<li>MUST revert if <code>_localToken</code> is the bridge contract itself</li>
+<li>MUST revert if <code>_localToken</code> does not implement IOptimismMintableERC721</li>
+<li>MUST revert if <code>_remoteToken</code> does not match the remoteToken() value of <code>_localToken</code></li>
+<li>MUST call safeMint on <code>_localToken</code> to mint <code>_tokenId</code> to <code>_to</code></li>
+<li>MUST emit ERC721BridgeFinalized event with all parameters</li>
+</ul>
+<h3 id="bridgeerc721"><a class="header" href="#bridgeerc721">bridgeERC721</a></h3>
+<p>Initiates a bridge of an NFT to the caller's account on L1.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_localToken</code>: Address of the OptimismMintableERC721 token on L2</li>
+<li><code>_remoteToken</code>: Address of the ERC721 token on L1</li>
+<li><code>_tokenId</code>: Token ID to bridge</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the bridge message on L1</li>
+<li><code>_extraData</code>: Optional data forwarded to L1 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not an externally owned account (EOA)</li>
+<li>MUST call _initiateBridgeERC721 with msg.sender as both <code>_from</code> and <code>_to</code></li>
+</ul>
+<h3 id="bridgeerc721to"><a class="header" href="#bridgeerc721to">bridgeERC721To</a></h3>
+<p>Initiates a bridge of an NFT to a specified recipient's account on L1.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_localToken</code>: Address of the OptimismMintableERC721 token on L2</li>
+<li><code>_remoteToken</code>: Address of the ERC721 token on L1</li>
+<li><code>_to</code>: Address to receive the token on L1</li>
+<li><code>_tokenId</code>: Token ID to bridge</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the bridge message on L1</li>
+<li><code>_extraData</code>: Optional data forwarded to L1 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if <code>_to</code> is address(0)</li>
+<li>MUST call _initiateBridgeERC721 with msg.sender as <code>_from</code> and provided <code>_to</code></li>
+</ul>
+<h3 id="_initiatebridgeerc721"><a class="header" href="#_initiatebridgeerc721">_initiateBridgeERC721</a></h3>
+<p>Internal function that initiates a token bridge to L1.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_localToken</code>: Address of the OptimismMintableERC721 token on L2</li>
+<li><code>_remoteToken</code>: Address of the ERC721 token on L1</li>
+<li><code>_from</code>: Address of the sender on L2</li>
+<li><code>_to</code>: Address to receive the token on L1</li>
+<li><code>_tokenId</code>: Token ID to bridge</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for the bridge message on L1</li>
+<li><code>_extraData</code>: Optional data forwarded to L1 (not used for execution, only emitted)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if <code>_remoteToken</code> is address(0)</li>
+<li>MUST revert if <code>_from</code> is not the owner of <code>_tokenId</code> in <code>_localToken</code></li>
+<li>MUST retrieve remoteToken from <code>_localToken</code> and verify it matches <code>_remoteToken</code></li>
+<li>MUST call burn on <code>_localToken</code> to burn <code>_tokenId</code> from <code>_from</code></li>
+<li>MUST send a cross-chain message to L1ERC721Bridge calling finalizeBridgeERC721 with the parameters</li>
+<li>MUST emit ERC721BridgeInitiated event with all parameters</li>
+</ul>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>Returns whether the bridge is paused.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST always return false (L2 bridge cannot be paused)</li>
+</ul>
+<h3 id="messenger"><a class="header" href="#messenger">MESSENGER</a></h3>
+<p>Legacy getter for the messenger contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the messenger contract address</li>
+</ul>
+<h3 id="other_bridge"><a class="header" href="#other_bridge">OTHER_BRIDGE</a></h3>
+<p>Legacy getter for the other bridge contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the L1ERC721Bridge contract address</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L2/l2-standard-bridge.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L2/l2-to-l1-message-passer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L2/l2-standard-bridge.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L2/l2-to-l1-message-passer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

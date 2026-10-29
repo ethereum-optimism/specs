@@ -194,7 +194,7 @@
 <p><a href="../delta/span-batches.html">Span batches</a> encode a span of consecutive L2 blocks for submission to the data
 availability layer.</p>
 <p>The <a href="./overview.html">Lagoon network upgrade</a> introduces the <a href="./post-exec.html">post-execution transaction</a>, an
-[EIP-2718] typed transaction with type byte <code>0x7D</code>. Unlike a <a href="../../glossary.html#deposited-transaction">deposited transaction</a>, which is
+<a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> typed transaction with type byte <code>0x7D</code>. Unlike a <a href="../../glossary.html#deposited-transaction">deposited transaction</a>, which is
 derived from L1 and is never present in batch data, a post-exec transaction is produced by the
 <a href="../../glossary.html#sequencer">sequencer</a> and travels to verifiers inside the L2 block body — through the L1 batch as well as the
 unsafe p2p payload. A span batch covering a block that contains a post-exec transaction therefore has to transpose

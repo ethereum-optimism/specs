@@ -1,0 +1,481 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>L1CrossDomainMessenger - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L1/l1-cross-domain-messenger.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l1crossdomainmessenger"><a class="header" href="#l1crossdomainmessenger">L1CrossDomainMessenger</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#message-hash">Message Hash</a></li>
+<li><a href="#message-nonce">Message Nonce</a></li>
+<li><a href="#base-gas">Base Gas</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-optimismportal-relays-valid-messages">a01-001: OptimismPortal Relays Valid Messages</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-002-systemconfig-provides-accurate-pause-state">a01-002: SystemConfig Provides Accurate Pause State</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-all-valid-messages-can-be-executed-within-bounded-time">i01-001: All Valid Messages Can Be Executed Within Bounded Time</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-valid-messages-are-executed-faithfully">i01-002: Valid Messages Are Executed Faithfully</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-003-invalid-messages-cannot-be-executed">i01-003: Invalid Messages Cannot Be Executed</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-004-messages-can-only-be-executed-once">i01-004: Messages Can Only Be Executed Once</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-005-messages-can-always-be-sent-to-the-other-side-by-any-user">i01-005: Messages Can Always Be Sent To The Other Side By Any User</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#sendmessage">sendMessage</a></li>
+<li><a href="#relaymessage">relayMessage</a></li>
+<li><a href="#xdomainmessagesender">xDomainMessageSender</a></li>
+<li><a href="#paused">paused</a></li>
+<li><a href="#superchainconfig">superchainConfig</a></li>
+<li><a href="#portal">PORTAL</a></li>
+<li><a href="#messagenonce">messageNonce</a></li>
+<li><a href="#basegas">baseGas</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The L1CrossDomainMessenger provides a high-level interface for sending messages between L1 and L2. It enables
+applications to communicate across domains without directly interacting with lower-level system contracts. The contract
+handles message replay for failed messages and integrates with the OptimismPortal for cross-chain message delivery.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="message-hash"><a class="header" href="#message-hash">Message Hash</a></h3>
+<p>A unique identifier for a cross-domain message computed from the message parameters including nonce, sender, target,
+value, gas limit, and message data. Version 1 messages use a hash that commits to all parameters.</p>
+<h3 id="message-nonce"><a class="header" href="#message-nonce">Message Nonce</a></h3>
+<p>See <a href="../L2/l2-to-l1-message-passer.html#message-nonce">Message Nonce</a> in the L2ToL1MessagePasser specification.</p>
+<h3 id="base-gas"><a class="header" href="#base-gas">Base Gas</a></h3>
+<p>The total gas required to guarantee a message will be received on the other chain without running out of gas. This
+includes execution gas, calldata costs, and overhead for the relay mechanism.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-optimismportal-relays-valid-messages"><a class="header" href="#a01-001-optimismportal-relays-valid-messages">a01-001: OptimismPortal Relays Valid Messages</a></h3>
+<p>The OptimismPortal contract correctly relays messages from L2 by setting the l2Sender value and only calling
+relayMessage for messages that have been proven and finalized through the withdrawal process.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>OptimismPortal enforces proof verification and finalization delays before allowing message relay</li>
+<li>Messages can only be relayed through the portal, not directly</li>
+</ul>
+<h3 id="a01-002-systemconfig-provides-accurate-pause-state"><a class="header" href="#a01-002-systemconfig-provides-accurate-pause-state">a01-002: SystemConfig Provides Accurate Pause State</a></h3>
+<p>The SystemConfig contract accurately reflects the pause state from the SuperchainConfig, allowing the messenger to
+respect system-wide pause functionality.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Pause state is controlled by governance through the SuperchainConfig guardian role</li>
+<li>Pause functionality is a safety mechanism for emergency situations</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-all-valid-messages-can-be-executed-within-bounded-time"><a class="header" href="#i01-001-all-valid-messages-can-be-executed-within-bounded-time">i01-001: All Valid Messages Can Be Executed Within Bounded Time</a></h3>
+<p>All valid messages sent from L2 to L1 can eventually be relayed and executed on L1 after the proof and finalization
+periods, provided the message does not target blocked addresses and has sufficient gas.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>This liveness property ensures that legitimate cross-domain communication cannot be permanently blocked. Violation
+would allow censorship of cross-domain messages or permanent locking of assets in bridge contracts.</p>
+<h3 id="i01-002-valid-messages-are-executed-faithfully"><a class="header" href="#i01-002-valid-messages-are-executed-faithfully">i01-002: Valid Messages Are Executed Faithfully</a></h3>
+<p>Messages relayed on L1 execute with the exact sender, target, value, and data that were specified when the message was
+sent from L2. No parameter can be modified during transmission.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated, attackers could modify message parameters during transmission, leading to unauthorized
+fund transfers, incorrect state changes, or impersonation of legitimate senders.</p>
+<h3 id="i01-003-invalid-messages-cannot-be-executed"><a class="header" href="#i01-003-invalid-messages-cannot-be-executed">i01-003: Invalid Messages Cannot Be Executed</a></h3>
+<p>Messages that do not originate from the L2CrossDomainMessenger through the OptimismPortal, or messages targeting
+blocked system addresses, cannot be executed.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated, attackers could forge messages that appear to come from L2, bypassing the security
+guarantees of the bridge and potentially stealing funds or compromising system integrity.</p>
+<h3 id="i01-004-messages-can-only-be-executed-once"><a class="header" href="#i01-004-messages-can-only-be-executed-once">i01-004: Messages Can Only Be Executed Once</a></h3>
+<p>Once a message has been successfully relayed and marked in the successfulMessages mapping, it cannot be relayed again
+regardless of who attempts to relay it.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated, an attacker could replay successful messages multiple times, potentially draining funds
+or causing unauthorized state changes on the target contract.</p>
+<h3 id="i01-005-messages-can-always-be-sent-to-the-other-side-by-any-user"><a class="header" href="#i01-005-messages-can-always-be-sent-to-the-other-side-by-any-user">i01-005: Messages Can Always Be Sent To The Other Side By Any User</a></h3>
+<p>Any user can call sendMessage to send a message to L2 at any time when the system is not paused. There are no
+restrictions on who can initiate cross-domain messages.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>This liveness property ensures that the messaging system remains permissionless and censorship-resistant. Violation
+would allow selective blocking of users from sending cross-domain messages.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initializes the L1CrossDomainMessenger with references to the SystemConfig and OptimismPortal contracts.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_systemConfig</code>: The SystemConfig contract address for this network</li>
+<li><code>_portal</code>: The OptimismPortal contract address for this network</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the ProxyAdmin or ProxyAdmin owner</li>
+<li>MUST revert if contract has already been initialized to the current version</li>
+<li>MUST set the systemConfig storage variable to the provided address</li>
+<li>MUST set the portal storage variable to the provided address</li>
+<li>MUST set otherMessenger to the L2CrossDomainMessenger predeploy address</li>
+<li>MUST set xDomainMsgSender to the default value if it is currently zero</li>
+<li>MUST emit an Initialized event</li>
+</ul>
+<h3 id="sendmessage"><a class="header" href="#sendmessage">sendMessage</a></h3>
+<p>Sends a message to a target address on L2 by depositing a transaction through the OptimismPortal.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_target</code>: Target contract or wallet address on L2</li>
+<li><code>_message</code>: Calldata to send to the target</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for executing the message on L2</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST calculate <a href="#base-gas">Base Gas</a> using the baseGas function with the message and minimum gas limit</li>
+<li>MUST encode a call to relayMessage with the current nonce, sender, target, value, gas limit, and message</li>
+<li>MUST call portal.depositTransaction with the encoded message, <a href="#base-gas">Base Gas</a>, and msg.value</li>
+<li>MUST emit SentMessage event with target, sender, message, nonce, and gas limit</li>
+<li>MUST emit SentMessageExtension1 event with sender and value</li>
+<li>MUST increment the <a href="#message-nonce">Message Nonce</a> by one</li>
+<li>MUST accept any value of ETH sent with the call and forward it to the portal</li>
+</ul>
+<h3 id="relaymessage"><a class="header" href="#relaymessage">relayMessage</a></h3>
+<p>Relays a message that was sent from L2 through the OptimismPortal or replays a previously failed message.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_nonce</code>: Versioned nonce of the message</li>
+<li><code>_sender</code>: Address that sent the message on L2</li>
+<li><code>_target</code>: Target address for the message on L1</li>
+<li><code>_value</code>: ETH value to send with the message</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for executing the message</li>
+<li><code>_message</code>: Message data to send to the target</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the contract is paused</li>
+<li>MUST revert if message version is not 0 or 1</li>
+<li>MUST revert if version 0 message has already been successfully relayed using legacy hash</li>
+<li>MUST compute version 1 <a href="#message-hash">Message Hash</a> from all parameters</li>
+<li>MUST revert if caller is not the portal and msg.value is not zero</li>
+<li>MUST revert if caller is not the portal and message is not in failedMessages mapping</li>
+<li>MUST revert if target is the messenger itself or the portal</li>
+<li>MUST revert if message has already been successfully relayed</li>
+<li>MUST mark message as failed and emit FailedRelayedMessage if insufficient gas remains</li>
+<li>MUST mark message as failed and emit FailedRelayedMessage if xDomainMsgSender is not the default value</li>
+<li>MUST set xDomainMsgSender to the sender address before calling target</li>
+<li>MUST call target with remaining gas minus reserved gas, the value, and the message data</li>
+<li>MUST reset xDomainMsgSender to default value after the call completes</li>
+<li>MUST mark message as successful and emit RelayedMessage if call succeeds</li>
+<li>MUST mark message as failed and emit FailedRelayedMessage if call fails</li>
+<li>MUST revert if call fails and transaction origin is the estimation address</li>
+<li>MUST accept ETH value equal to the message value parameter when called by the portal</li>
+</ul>
+<h3 id="xdomainmessagesender"><a class="header" href="#xdomainmessagesender">xDomainMessageSender</a></h3>
+<p>Returns the address of the sender of the currently executing cross-domain message.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if no message is currently being executed</li>
+<li>MUST return the sender address of the active message when called during message execution</li>
+</ul>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>Returns whether the messenger is currently paused.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the pause state from the SystemConfig contract</li>
+<li>MUST query systemConfig.paused() for the current pause status</li>
+</ul>
+<h3 id="superchainconfig"><a class="header" href="#superchainconfig">superchainConfig</a></h3>
+<p>Returns the SuperchainConfig contract address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the SuperchainConfig address from the SystemConfig contract</li>
+<li>MUST query systemConfig.superchainConfig() for the address</li>
+</ul>
+<h3 id="portal"><a class="header" href="#portal">PORTAL</a></h3>
+<p>Legacy getter for the OptimismPortal contract address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the same address as the portal() function</li>
+<li>MUST return the portal storage variable value</li>
+</ul>
+<h3 id="messagenonce"><a class="header" href="#messagenonce">messageNonce</a></h3>
+<p>Returns the nonce for the next message to be sent with the message version encoded in the upper two bytes.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST encode the current msgNonce with MESSAGE_VERSION in the upper two bytes</li>
+<li>MUST return a uint256 with version in bits 240-255 and nonce in bits 0-239</li>
+</ul>
+<h3 id="basegas"><a class="header" href="#basegas">baseGas</a></h3>
+<p>Computes the total gas required to guarantee message delivery on the other chain.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_message</code>: Message data to compute gas for</li>
+<li><code>_minGasLimit</code>: Minimum desired gas limit for message execution</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST calculate execution gas including relay overhead, call overhead, reserved gas, and gas check buffer</li>
+<li>MUST account for EIP-150 gas forwarding by multiplying minimum gas limit by 64/63</li>
+<li>MUST calculate total message size including encoding overhead</li>
+<li>MUST return the maximum of execution gas plus calldata costs or the EIP-7623 floor cost</li>
+<li>MUST ensure returned value covers transaction <a href="#base-gas">Base Gas</a> plus all overhead</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L1/opcm-migrator.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L1/l1-standard-bridge.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L1/opcm-migrator.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L1/l1-standard-bridge.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

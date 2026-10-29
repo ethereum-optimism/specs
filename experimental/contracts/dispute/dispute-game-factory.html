@@ -1,0 +1,522 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>DisputeGameFactory - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/dispute/dispute-game-factory.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="disputegamefactory"><a class="header" href="#disputegamefactory">DisputeGameFactory</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#game-uuid">Game UUID</a></li>
+<li><a href="#game-implementation">Game Implementation</a></li>
+<li><a href="#initialization-bond">Initialization Bond</a></li>
+<li><a href="#game-clone">Game Clone</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#adgf-001-owner-operates-within-governance-constraints">aDGF-001: Owner operates within governance constraints</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#adgf-002-implementation-contracts-are-valid-idisputegame-implementations">aDGF-002: Implementation contracts are valid IDisputeGame Implementations</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#idgf-001-dispute-game-factory-properly-creates-dispute-games">iDGF-001: Dispute game factory properly creates dispute games</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#idgf-002-dispute-game-factory-allows-anyone-to-create-dispute-games">iDGF-002: Dispute game factory allows anyone to create dispute games</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#idgf-003-dispute-game-factory-games-are-unique">iDGF-003: Dispute game factory games are unique</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#idgf-004-dispute-game-factory-can-create-games-for-any-game-type">iDGF-004: Dispute game factory can create games for any game type</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#constructor">constructor</a></li>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#gamecount">gameCount</a></li>
+<li><a href="#games">games</a></li>
+<li><a href="#gameatindex">gameAtIndex</a></li>
+<li><a href="#create">create</a></li>
+<li><a href="#getgameuuid">getGameUUID</a></li>
+<li><a href="#findlatestgames">findLatestGames</a></li>
+<li><a href="#setimplementation-without-args">setImplementation (without args)</a></li>
+<li><a href="#setimplementation-with-args">setImplementation (with args)</a></li>
+<li><a href="#setinitbond">setInitBond</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The DisputeGameFactory serves as the central registry and factory for creating dispute game contracts in the OP Stack
+fault proof system. It manages game type implementations, tracks all created games, and enforces bond requirements for
+game creation.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="game-uuid"><a class="header" href="#game-uuid">Game UUID</a></h3>
+<p>A unique identifier for a dispute game computed as <code>keccak256(gameType || rootClaim || extraData)</code>. This identifier
+ensures that each unique combination of game parameters can only result in one game instance.</p>
+<h3 id="game-implementation"><a class="header" href="#game-implementation">Game Implementation</a></h3>
+<p>A template contract that implements the IDisputeGame interface. The factory clones this implementation using the
+Clone With Immutable Args (CWIA) pattern to create new game instances efficiently.</p>
+<h3 id="initialization-bond"><a class="header" href="#initialization-bond">Initialization Bond</a></h3>
+<p>The amount of ETH (in wei) required to create a dispute game of a specific game type. This bond is forwarded to the
+created game's initialize function and serves as the initial stake in the dispute.</p>
+<h3 id="game-clone"><a class="header" href="#game-clone">Game Clone</a></h3>
+<p>A minimal proxy contract created using the CWIA pattern that delegates all calls to a <a href="#game-implementation">Game
+Implementation</a>
+while storing immutable game-specific parameters (creator address, root claim, parent hash, extra data) in its bytecode.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="adgf-001-owner-operates-within-governance-constraints"><a class="header" href="#adgf-001-owner-operates-within-governance-constraints">aDGF-001: Owner operates within governance constraints</a></h3>
+<p>The owner of the DisputeGameFactory is trusted to set <a href="#game-implementation">Game Implementation</a>s and <a href="#initialization-bond">Initialization
+Bond</a>s according to
+governance processes. Malicious or incorrect configuration by the owner could compromise the security of the dispute
+system.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Owner is controlled by governance multisig</li>
+<li>Configuration changes are subject to governance review</li>
+<li>Monitoring of owner actions</li>
+</ul>
+<h3 id="adgf-002-implementation-contracts-are-valid-idisputegame-implementations"><a class="header" href="#adgf-002-implementation-contracts-are-valid-idisputegame-implementations">aDGF-002: Implementation contracts are valid IDispute<a href="#game-implementation">Game Implementation</a>s</a></h3>
+<p>Implementation contracts registered via setImplementation are assumed to correctly implement the IDisputeGame interface
+and initialize properly when cloned. Invalid implementations could cause game creation to fail or games to behave
+incorrectly.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Implementation contracts undergo security audits</li>
+<li>Testing of implementations before registration</li>
+<li>Gradual rollout of new game types</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="idgf-001-dispute-game-factory-properly-creates-dispute-games"><a class="header" href="#idgf-001-dispute-game-factory-properly-creates-dispute-games">iDGF-001: Dispute game factory properly creates dispute games</a></h3>
+<p>The factory successfully creates functional dispute <a href="#game-clone">Game Clone</a>s when provided with valid parameters.
+Created games are
+properly initialized with the correct immutable arguments (creator, root claim, parent hash, extra data) and can be
+queried through the factory's lookup functions.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated, the factory could create non-functional or incorrectly configured games, breaking the
+entire dispute resolution system and potentially allowing invalid withdrawals.</p>
+<h3 id="idgf-002-dispute-game-factory-allows-anyone-to-create-dispute-games"><a class="header" href="#idgf-002-dispute-game-factory-allows-anyone-to-create-dispute-games">iDGF-002: Dispute game factory allows anyone to create dispute games</a></h3>
+<p>Any address can create a dispute game by calling the create function with valid parameters and the required
+<a href="#initialization-bond">Initialization Bond</a>. There are no access restrictions on game creation beyond the bond
+requirement.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is violated, the permissionless nature of the dispute system would be compromised, potentially
+preventing legitimate challengers from creating games to dispute invalid claims.</p>
+<h3 id="idgf-003-dispute-game-factory-games-are-unique"><a class="header" href="#idgf-003-dispute-game-factory-games-are-unique">iDGF-003: Dispute game factory games are unique</a></h3>
+<p>For any given combination of game type, root claim, and extra data, at most one dispute game can be created. Once a
+game exists for a specific <a href="#game-uuid">Game UUID</a>, attempting to create another game with the same parameters will
+revert.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is violated, multiple games could exist for the same dispute parameters, leading to ambiguity about
+which game result should be considered authoritative. This could enable attackers to create duplicate games and
+potentially exploit race conditions in systems that consume game results.</p>
+<h3 id="idgf-004-dispute-game-factory-can-create-games-for-any-game-type"><a class="header" href="#idgf-004-dispute-game-factory-can-create-games-for-any-game-type">iDGF-004: Dispute game factory can create games for any game type</a></h3>
+<p>The factory can create games for any game type that has a registered implementation, regardless of the specific game
+type value. The factory does not restrict which game types can be used, only requiring that an implementation exists.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: Medium</strong></p>
+<p>If this invariant is violated, the factory could arbitrarily restrict certain game types, limiting the flexibility of
+the dispute system and potentially preventing the deployment of new <a href="#game-implementation">Game Implementation</a>s.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<p>Initializes the contract in a disabled state to prevent implementation contract initialization.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST disable initializers to prevent the implementation contract from being initialized</li>
+<li>MUST set the initial reinitializer version to 1</li>
+</ul>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initializes the proxy contract with an owner address.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_owner</code>: The address that will own the contract and have permission to configure game types</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if not called by ProxyAdmin or ProxyAdmin owner</li>
+<li>MUST initialize the Ownable functionality</li>
+<li>MUST transfer ownership to <code>_owner</code></li>
+<li>MUST only be callable once per reinitializer version</li>
+</ul>
+<h3 id="gamecount"><a class="header" href="#gamecount">gameCount</a></h3>
+<p>Returns the total number of dispute games created by this factory.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the total number of games created</li>
+<li>MUST be a view function with no state changes</li>
+</ul>
+<h3 id="games"><a class="header" href="#games">games</a></h3>
+<p>Queries for a dispute game by its parameters.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_gameType</code>: The type of the dispute game</li>
+<li><code>_rootClaim</code>: The root claim of the dispute game</li>
+<li><code>_extraData</code>: Any extra data provided to the dispute game</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST compute the <a href="#game-uuid">Game UUID</a> from the provided parameters</li>
+<li>MUST return the game proxy address and creation timestamp if a game exists for the given parameters</li>
+<li>MUST return <code>address(0)</code> and timestamp 0 if no game exists for the given parameters</li>
+<li>MUST be a view function with no state changes</li>
+</ul>
+<h3 id="gameatindex"><a class="header" href="#gameatindex">gameAtIndex</a></h3>
+<p>Returns the dispute game at a specific index in the creation order.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_index</code>: The index of the dispute game in the creation list</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if <code>_index</code> is greater than or equal to the total game count</li>
+<li>MUST return the game type, creation timestamp, and proxy address for the game at the specified index</li>
+<li>MUST be a view function with no state changes</li>
+</ul>
+<h3 id="create"><a class="header" href="#create">create</a></h3>
+<p>Creates a new dispute game proxy contract.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_gameType</code>: The type of the dispute game to create</li>
+<li><code>_rootClaim</code>: The root claim of the dispute game</li>
+<li><code>_extraData</code>: Any extra data to provide to the created dispute game</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if no implementation is registered for <code>_gameType</code></li>
+<li>MUST revert if <code>msg.value</code> does not exactly equal the <a href="#initialization-bond">Initialization Bond</a> for <code>_gameType</code></li>
+<li>MUST revert if a game with the same <a href="#game-uuid">Game UUID</a> already exists</li>
+<li>MUST clone the implementation contract using CWIA with immutable arguments: creator address, root claim, parent
+block hash, and extra data</li>
+<li>MUST include game type and implementation args in the clone if implementation args are configured for the game type</li>
+<li>MUST call initialize on the created clone, forwarding the sent ETH</li>
+<li>MUST make the game queryable by both its parameters and its creation index</li>
+<li>MUST increment the total game count</li>
+<li>MUST emit DisputeGameCreated event with the proxy address, game type, and root claim</li>
+<li>MUST return the address of the created game proxy</li>
+</ul>
+<h3 id="getgameuuid"><a class="header" href="#getgameuuid">getGameUUID</a></h3>
+<p>Computes the unique identifier for a set of dispute game parameters.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_gameType</code>: The type of the dispute game</li>
+<li><code>_rootClaim</code>: The root claim of the dispute game</li>
+<li><code>_extraData</code>: Any extra data for the dispute game</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return <code>keccak256(abi.encode(_gameType, _rootClaim, _extraData))</code></li>
+<li>MUST be a pure function with no state access</li>
+</ul>
+<h3 id="findlatestgames"><a class="header" href="#findlatestgames">findLatestGames</a></h3>
+<p>Searches for the most recent games of a specific type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_gameType</code>: The type of game to search for</li>
+<li><code>_start</code>: The index to start the reverse search from</li>
+<li><code>_n</code>: The maximum number of games to return</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return an empty array if <code>_start</code> is greater than or equal to the total game count</li>
+<li>MUST return an empty array if <code>_n</code> is zero</li>
+<li>MUST perform a reverse linear search from <code>_start</code> towards index 0</li>
+<li>MUST include only games matching <code>_gameType</code></li>
+<li>MUST return at most <code>_n</code> games</li>
+<li>MUST return games in reverse chronological order (newest first)</li>
+<li>MUST include the index, metadata (GameId), timestamp, root claim, and extra data for each game</li>
+<li>MUST query the game proxy for root claim and extra data</li>
+<li>MUST be a view function with no state changes</li>
+</ul>
+<h3 id="setimplementation-without-args"><a class="header" href="#setimplementation-without-args">setImplementation (without args)</a></h3>
+<p>Sets the implementation contract for a specific game type without implementation args.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_gameType</code>: The type of the dispute game</li>
+<li><code>_impl</code>: The implementation contract address</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if not called by the owner</li>
+<li>MUST store <code>_impl</code> as the implementation for <code>_gameType</code></li>
+<li>MUST emit ImplementationSet event with the implementation address and game type</li>
+</ul>
+<h3 id="setimplementation-with-args"><a class="header" href="#setimplementation-with-args">setImplementation (with args)</a></h3>
+<p>Sets the implementation contract and configuration args for a specific game type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_gameType</code>: The type of the dispute game</li>
+<li><code>_impl</code>: The implementation contract address</li>
+<li><code>_args</code>: The configuration arguments to pass during clone creation</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if not called by the owner</li>
+<li>MUST store <code>_impl</code> as the implementation for <code>_gameType</code></li>
+<li>MUST store <code>_args</code> as the implementation args for <code>_gameType</code></li>
+<li>MUST emit ImplementationSet event with the implementation address and game type</li>
+<li>MUST emit ImplementationArgsSet event with the game type and args</li>
+</ul>
+<h3 id="setinitbond"><a class="header" href="#setinitbond">setInitBond</a></h3>
+<p>Sets the <a href="#initialization-bond">Initialization Bond</a> for a specific game type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_gameType</code>: The type of the dispute game</li>
+<li><code>_initBond</code>: The bond amount in wei</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if not called by the owner</li>
+<li>MUST store <code>_initBond</code> as the <a href="#initialization-bond">Initialization Bond</a> for <code>_gameType</code></li>
+<li>MUST emit InitBondUpdated event with the game type and new bond amount</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/safe/liveness-module.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/dispute/fault-dispute-game.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/safe/liveness-module.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/dispute/fault-dispute-game.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

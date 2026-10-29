@@ -1,0 +1,378 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>L2ToL1MessagePasser - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L2/l2-to-l1-message-passer.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l2tol1messagepasser"><a class="header" href="#l2tol1messagepasser">L2ToL1MessagePasser</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#withdrawal-transaction">Withdrawal Transaction</a></li>
+<li><a href="#withdrawal-hash">Withdrawal Hash</a></li>
+<li><a href="#message-nonce">Message Nonce</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-optimismportal-validates-withdrawal-proofs">a01-001: OptimismPortal validates withdrawal proofs</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-withdrawal-commitment-immutability">i01-001: Withdrawal commitment immutability</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-nonce-monotonicity">i01-002: Nonce monotonicity</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#receive">receive</a></li>
+<li><a href="#burn">burn</a></li>
+<li><a href="#initiatewithdrawal">initiateWithdrawal</a></li>
+<li><a href="#messagenonce">messageNonce</a></li>
+<li><a href="#sentmessages">sentMessages</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The L2ToL1MessagePasser stores commitments to <a href="#withdrawal-transaction">Withdrawal Transaction</a>s initiated on L2. When
+users withdraw assets
+from L2 to L1, they call this contract to record the withdrawal commitment. The storage root of this contract is
+included in the L2 output root, allowing users to prove on L1 that a withdrawal was initiated on L2.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="withdrawal-transaction"><a class="header" href="#withdrawal-transaction">Withdrawal Transaction</a></h3>
+<p>A withdrawal transaction represents an L2 to L1 message containing the sender address, target address on L1, ETH
+value to transfer, gas limit for L1 execution, and arbitrary calldata. Each withdrawal is uniquely identified by a
+nonce that includes a version number in its upper two bytes.</p>
+<h3 id="withdrawal-hash"><a class="header" href="#withdrawal-hash">Withdrawal Hash</a></h3>
+<p>The withdrawal hash is computed by keccak256 encoding the withdrawal transaction fields (nonce, sender, target,
+value, gasLimit, data). This hash serves as the commitment stored in the sentMessages mapping and is used for
+proving withdrawals on L1.</p>
+<h3 id="message-nonce"><a class="header" href="#message-nonce">Message Nonce</a></h3>
+<p>The message nonce is a 256-bit value where the upper 16 bits encode the message version (currently version 1) and
+the lower 240 bits contain a monotonically increasing counter. This versioning scheme allows for future changes to
+withdrawal transaction structure while maintaining backwards compatibility.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-optimismportal-validates-withdrawal-proofs"><a class="header" href="#a01-001-optimismportal-validates-withdrawal-proofs">a01-001: OptimismPortal validates withdrawal proofs</a></h3>
+<p>The OptimismPortal contract on L1 properly validates withdrawal proofs against the L2ToL1MessagePasser storage root
+before finalizing withdrawals. This ensures that only withdrawals with valid commitments in this contract can be
+executed on L1.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>OptimismPortal uses merkle proofs to verify withdrawal commitments against the storage root</li>
+<li>Dispute game system validates output roots before they can be used for withdrawal finalization</li>
+<li>Proof maturity delay provides time for invalid output roots to be challenged</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-withdrawal-commitment-immutability"><a class="header" href="#i01-001-withdrawal-commitment-immutability">i01-001: Withdrawal commitment immutability</a></h3>
+<p>Once a <a href="#withdrawal-hash">Withdrawal Hash</a> is stored in the sentMessages mapping by setting it to true, it remains
+permanently set and
+cannot be modified or removed. This ensures withdrawal commitments cannot be altered after initiation.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If withdrawal commitments could be modified or removed, attackers could prevent legitimate withdrawals from being
+finalized on L1 or create fraudulent withdrawal proofs. The immutability of commitments is essential for the
+security of the L2 to L1 bridge.</p>
+<h3 id="i01-002-nonce-monotonicity"><a class="header" href="#i01-002-nonce-monotonicity">i01-002: Nonce monotonicity</a></h3>
+<p>Each withdrawal has a unique identifier that prevents replay attacks and maintains withdrawal ordering.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If nonces could be reused or skip values, multiple withdrawals could have identical hashes, allowing one proof to
+finalize multiple withdrawals. Monotonic nonces ensure each withdrawal is uniquely identifiable and can only be
+finalized once on L1.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="receive"><a class="header" href="#receive">receive</a></h3>
+<p>Allows users to withdraw ETH by sending it directly to this contract.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST call initiateWithdrawal with msg.sender as target, RECEIVE_DEFAULT_GAS_LIMIT (100,000) as gas limit, and
+empty bytes as data</li>
+<li>MUST accept any amount of ETH sent with the transaction</li>
+</ul>
+<h3 id="burn"><a class="header" href="#burn">burn</a></h3>
+<p>Removes all ETH held by this contract from the L2 state.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST retrieve the current ETH balance of the contract</li>
+<li>MUST burn the entire balance by creating and self-destructing a Burner contract</li>
+<li>MUST emit WithdrawerBalanceBurnt event with the burned amount</li>
+<li>MUST NOT revert regardless of the contract balance (including zero balance)</li>
+</ul>
+<h3 id="initiatewithdrawal"><a class="header" href="#initiatewithdrawal">initiateWithdrawal</a></h3>
+<p>Initiates a <a href="#withdrawal-transaction">Withdrawal Transaction</a> from L2 to L1 by storing a commitment.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_target</code>: Address on L1 that will receive the withdrawal call</li>
+<li><code>_gasLimit</code>: Minimum gas limit that must be provided when executing the withdrawal on L1</li>
+<li><code>_data</code>: Arbitrary calldata to be forwarded to the target address on L1</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST compute the <a href="#withdrawal-hash">Withdrawal Hash</a> using the current <a href="#message-nonce">Message Nonce</a>, msg.sender,
+target parameter, msg.value,
+gasLimit parameter, and data parameter</li>
+<li>MUST store the <a href="#withdrawal-hash">Withdrawal Hash</a> in sentMessages mapping by setting it to true</li>
+<li>MUST emit MessagePassed event with nonce, sender, target, value, gasLimit, data, and withdrawalHash</li>
+<li>MUST increment the internal nonce counter by one after emitting the event</li>
+<li>MUST accept any amount of ETH sent with the transaction (msg.value)</li>
+<li>MUST NOT revert under any circumstances</li>
+</ul>
+<h3 id="messagenonce"><a class="header" href="#messagenonce">messageNonce</a></h3>
+<p>Returns the nonce that will be used for the next withdrawal.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST encode the current internal nonce counter (240 bits) with MESSAGE_VERSION (1) in the upper 16 bits</li>
+<li>MUST return a 256-bit value where bits 240-255 contain the version and bits 0-239 contain the nonce counter</li>
+<li>MUST NOT modify any state</li>
+</ul>
+<h3 id="sentmessages"><a class="header" href="#sentmessages">sentMessages</a></h3>
+<p>Returns whether a withdrawal commitment exists for a given hash.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>bytes32</code>: The <a href="#withdrawal-hash">Withdrawal Hash</a> to query</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return true if the <a href="#withdrawal-hash">Withdrawal Hash</a> has been stored via initiateWithdrawal</li>
+<li>MUST return false if the <a href="#withdrawal-hash">Withdrawal Hash</a> has never been stored</li>
+<li>MUST NOT revert under any circumstances</li>
+<li>MUST NOT modify any state</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L2/l2-erc721-bridge.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L2/gas-price-oracle.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L2/l2-erc721-bridge.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L2/gas-price-oracle.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

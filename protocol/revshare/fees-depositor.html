@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>FeesDepositor - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/revshare/fees-depositor.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="feesdepositor"><a class="header" href="#feesdepositor">FeesDepositor</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#functions">Functions</a>
+<ul>
+<li><a href="#receive"><code>receive</code></a></li>
+<li><a href="#setmindepositamount"><code>setMinDepositAmount</code></a></li>
+<li><a href="#setl2recipient"><code>setL2Recipient</code></a></li>
+<li><a href="#setgaslimit"><code>setGasLimit</code></a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#feesdeposited"><code>FeesDeposited</code></a></li>
+<li><a href="#mindepositamountupdated"><code>MinDepositAmountUpdated</code></a></li>
+<li><a href="#l2recipientupdated"><code>L2RecipientUpdated</code></a></li>
+<li><a href="#fundsreceived"><code>FundsReceived</code></a></li>
+<li><a href="#gaslimitupdated"><code>GasLimitUpdated</code></a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>A periphery contract on L1 that acts as a recipient of fees sent by the <code>L1Withdrawer</code> contract on L2.
+Its purpose is to perform a deposit transaction to OP Mainnet with those fees via the <code>OptimismPortal</code> once
+it has received sufficient funds.</p>
+<p>It's a proxied contract with the owner of the <code>ProxyAdmin</code> as the address allowed to call the setter functions.</p>
+<p>The following shows how fees flow through the <code>L1Withdrawer</code> and <code>FeesDepositor</code> during the disbursement process once
+they have been pulled from the vaults on L2:</p>
+<pre class="mermaid">flowchart LR
+    subgraph SourceChain[&quot;OP Stack Chain&quot;]
+        FS[FeeSplitter]
+        L1W[L1Withdrawer]
+    end
+
+    subgraph L1[&quot;L1 (Ethereum)&quot;]
+        OP1[&quot;OptimismPortal&lt;br/&gt;(OP Stack Chain)&quot;]
+        FD[FeesDepositor]
+        OP2[&quot;OptimismPortal&lt;br/&gt;(OP Mainnet)&quot;]
+    end
+
+    subgraph TargetChain[&quot;OP Mainnet&quot;]
+        L2R[L2 Recipient]
+    end
+
+    FS --&gt;|&quot;1. Send fees&quot;| L1W
+    L1W --&gt;|&quot;2. Withdraw to L1&lt;br/&gt;(if threshold is reached)&quot;| OP1
+    OP1 --&gt;|&quot;3. Send fees&quot;| FD
+    FD --&gt;|&quot;4. Deposit to OP Mainnet&lt;br/&gt;(if threshold is reached)&quot;| OP2
+    OP2 --&gt;|&quot;5. Execute on OP Mainnet&quot;| L2R
+</pre>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h3 id="receive"><a class="header" href="#receive"><code>receive</code></a></h3>
+<p>Initiates the deposit transaction process to OP Mainnet if and only if the contract holds funds equal to or above
+the <code>minDepositAmount</code> threshold.</p>
+<pre><code class="language-solidity">receive() external payable
+</code></pre>
+<ul>
+<li>MUST initiate a deposit transaction to the recipient on OP Mainnet via <code>L1CrossDomainMessenger.sendMessage()</code> if the
+<code>minDepositAmount</code> threshold is reached, with the following parameters:
+<ul>
+<li><code>_target</code>: the configured <code>l2Recipient</code> address</li>
+<li><code>_message</code>: empty bytes (<code>hex""</code>) for direct ETH transfer</li>
+<li><code>_minGasLimit</code>: the configured <code>gasLimit</code> value</li>
+<li><code>msg.value</code>: the contract's entire balance</li>
+</ul>
+</li>
+<li>MUST emit the <code>FundsReceived</code> event with the sender, amount received, and the current balance of the contract.</li>
+<li>MUST emit the <code>FeesDeposited</code> event only if the threshold is reached.</li>
+</ul>
+<p><strong>Note</strong>: The use of L1CrossDomainMessenger is essential for this flow. In cases where the deposit transaction
+fails due to resource metering constraints (insufficient gas or exceeding block resource limits), the message can be
+replayed with higher gas limits, ensuring funds are never permanently locked.</p>
+<h3 id="setmindepositamount"><a class="header" href="#setmindepositamount"><code>setMinDepositAmount</code></a></h3>
+<p>Updates the minimum deposit amount the contract must hold before the deposit process can be initiated.</p>
+<pre><code class="language-solidity">function setMinDepositAmount(uint96 _newMinDepositAmount) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code>.</li>
+<li>MUST emit the <code>MinDepositAmountUpdated</code> event.</li>
+<li>MUST update the <code>minDepositAmount</code> storage variable.</li>
+</ul>
+<h3 id="setl2recipient"><a class="header" href="#setl2recipient"><code>setL2Recipient</code></a></h3>
+<p>Updates the address that will receive the funds on OP Mainnet during the deposit process.</p>
+<pre><code class="language-solidity">function setL2Recipient(address _newRecipient) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code>.</li>
+<li>MUST emit the <code>RecipientUpdated</code> event.</li>
+<li>MUST update the <code>l2Recipient</code> storage variable.</li>
+</ul>
+<h3 id="setgaslimit"><a class="header" href="#setgaslimit"><code>setGasLimit</code></a></h3>
+<p>Updates the gas limit used for the deposit transaction during the fees deposit process.</p>
+<pre><code class="language-solidity">function setGasLimit(uint32 _gasLimit) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code>.</li>
+<li>MUST emit the <code>GasLimitUpdated</code> event.</li>
+<li>MUST update the <code>gasLimit</code> storage variable.</li>
+</ul>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<h3 id="feesdeposited"><a class="header" href="#feesdeposited"><code>FeesDeposited</code></a></h3>
+<p>Emitted when a deposit to OP Mainnet is initiated.</p>
+<pre><code class="language-solidity">event FeesDeposited(address indexed recipient, uint256 amount)
+</code></pre>
+<h3 id="mindepositamountupdated"><a class="header" href="#mindepositamountupdated"><code>MinDepositAmountUpdated</code></a></h3>
+<p>Emitted when the minimum deposit amount before the deposit process can be initiated is updated.</p>
+<pre><code class="language-solidity">event MinDepositAmountUpdated(uint96 oldMinDepositAmount, uint96 newMinDepositAmount)
+</code></pre>
+<h3 id="l2recipientupdated"><a class="header" href="#l2recipientupdated"><code>L2RecipientUpdated</code></a></h3>
+<p>Emitted when the recipient of the funds on OP Mainnet is updated.</p>
+<pre><code class="language-solidity">event L2RecipientUpdated(address oldL2Recipient, address newL2Recipient)
+</code></pre>
+<h3 id="fundsreceived"><a class="header" href="#fundsreceived"><code>FundsReceived</code></a></h3>
+<p>Emitted whenever funds are received.</p>
+<pre><code class="language-solidity">event FundsReceived(address indexed sender, uint256 amount, uint256 newBalance)
+</code></pre>
+<h3 id="gaslimitupdated"><a class="header" href="#gaslimitupdated"><code>GasLimitUpdated</code></a></h3>
+<p>Emitted when the gas limit for the deposit transaction is updated.</p>
+<pre><code class="language-solidity">event GasLimitUpdated(uint32 oldGasLimit, uint32 newGasLimit)
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/revshare/predeploys.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/revshare/l1-withdrawer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/revshare/predeploys.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/revshare/l1-withdrawer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

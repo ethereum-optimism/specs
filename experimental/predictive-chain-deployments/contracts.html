@@ -1,0 +1,522 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Contracts - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/predictive-chain-deployments/contracts.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="predictive-chain-deployments-contracts"><a class="header" href="#predictive-chain-deployments-contracts">Predictive Chain Deployments: Contracts</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#chaincontracts-struct">ChainContracts struct</a></li>
+<li><a href="#fullconfig">FullConfig</a></li>
+<li><a href="#supported-initial-game-types">Supported initial game types</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#apcd-001-opcm-address-determinism">aPCD-001: OPCM address determinism</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#apcd-002-dry-run-and-broadcast-use-the-same-sender-and-saltmixer">aPCD-002: Dry-run and broadcast use the same sender and <code>saltMixer</code></a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#apcd-003-trusted-l1-rpc">aPCD-003: Trusted L1 RPC</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#ipcd-001-predicting-the-l1-addresses-is-a-no-op">iPCD-001: Predicting the L1 addresses is a no-op</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#ipcd-002-permissioned-deployments-remain-valid">iPCD-002: Permissioned deployments remain valid</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#ipcd-003-invalid-configurations-stay-rejected">iPCD-003: Invalid configurations stay rejected</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#change-specification">Change Specification</a>
+<ul>
+<li><a href="#deployopchain-script">DeployOPChain script</a>
+<ul>
+<li><a href="#address-prediction">Address prediction</a></li>
+<li><a href="#broadcasting-a-permissionless-deployment">Broadcasting a permissionless deployment</a></li>
+<li><a href="#script-inputs">Script inputs</a></li>
+</ul>
+</li>
+<li><a href="#opcmv2-config-validation">OPCMv2 config validation</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This document describes the contracts changes that are part of the implementation of the
+<a href="https://github.com/ethereum-optimism/design-docs/blob/main/ecosystem/op-deployer/predictive-chain-deployments/pcd-design.md">Predictive Chain Deployments (PCD) design</a>.
+The bulk of the work is on the <code>op-deployer</code> side. The Solidity surface is limited to one on-chain contract
+(<code>OPContractsManagerV2</code>) and one Forge script (<code>DeployOPChain.s.sol</code>).</p>
+<ol>
+<li><strong><a href="#deployopchain-script"><code>DeployOPChain</code> script</a></strong>: broadcasts a permissionless deployment with a real
+<code>startingAnchorRoot</code> and <code>absolutePrestate</code> instead of the <code>0xdead</code> placeholder and the permissioned default. It
+also updates the script's post-deploy validation, which today asserts the permissioned dispute game as the
+respected game type and would otherwise reject a permissionless deployment.</li>
+<li><strong><a href="#opcmv2-config-validation"><code>OPCMv2._assertValidFullConfig</code></a></strong>: updated so OPCM config
+validation accepts permissionless deployment configurations instead of reverting.</li>
+</ol>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<p>See <a href="./overview.html#salt-mixer">Salt Mixer</a>, <a href="./overview.html#anchor-block">Anchor Block</a>,
+<a href="./overview.html#selected-prestate">Selected Prestate</a> and <a href="./overview.html#fallback-prestate">Fallback Prestate</a>.</p>
+<h3 id="chaincontracts-struct"><a class="header" href="#chaincontracts-struct">ChainContracts struct</a></h3>
+<p>The struct returned by <code>OPCM.deploy()</code> containing the deployed proxy addresses for the chain's L1 contracts. Defined
+in <code>OPContractsManagerV2</code> (<code>src/L1/opcm/OPContractsManagerV2.sol</code>):</p>
+<pre><code class="language-solidity">struct ChainContracts {
+    ISystemConfig systemConfig;
+    IProxyAdmin proxyAdmin;
+    IAddressManager addressManager;
+    IL1CrossDomainMessenger l1CrossDomainMessenger;
+    IL1ERC721Bridge l1ERC721Bridge;
+    IL1StandardBridge l1StandardBridge;
+    IOptimismPortal optimismPortal;
+    IETHLockbox ethLockbox;
+    IOptimismMintableERC20Factory optimismMintableERC20Factory;
+    IDisputeGameFactory disputeGameFactory;
+    IAnchorStateRegistry anchorStateRegistry;
+    IDelayedWETH delayedWETH;
+}
+</code></pre>
+<p>The <code>op-deployer</code> consumes a subset of these addresses when building the genesis and rollup artifacts:</p>
+<ul>
+<li><code>l1CrossDomainMessenger</code>, <code>l1StandardBridge</code>, <code>l1ERC721Bridge</code> are inputs to <code>L2Genesis.s.sol</code> (the
+<a href="./overview.html#l2-allocs">L2 allocs</a>).</li>
+<li><code>optimismPortal</code> and <code>systemConfig</code> are written into <code>rollup.json</code>.</li>
+</ul>
+<h3 id="fullconfig"><a class="header" href="#fullconfig">FullConfig</a></h3>
+<p>The configuration struct passed into <code>OPCM.deploy()</code>. Defined in <code>OPContractsManagerV2.FullConfig</code>
+(<code>src/L1/opcm/OPContractsManagerV2.sol</code>):</p>
+<pre><code class="language-solidity">struct FullConfig {
+    string saltMixer;
+    ISuperchainConfig superchainConfig;
+    address proxyAdminOwner;
+    address systemConfigOwner;
+    address unsafeBlockSigner;
+    address batcher;
+    Proposal startingAnchorRoot;
+    GameType startingRespectedGameType;
+    uint32 basefeeScalar;
+    uint32 blobBasefeeScalar;
+    uint64 gasLimit;
+    uint256 l2ChainId;
+    IResourceMetering.ResourceConfig resourceConfig;
+    IOPContractsManagerUtils.DisputeGameConfig[] disputeGameConfigs;
+    bool useCustomGasToken;
+}
+</code></pre>
+<p>Once the PCD pipeline has built the <a href="./overview.html#starting-anchor-root">starting anchor root</a> and the
+<a href="./overview.html#selected-prestate">selected prestate</a>, it fills these fields with real values instead of placeholders.
+The prestate is carried inside the permissionless <code>disputeGameConfigs</code> entry being enabled.</p>
+<h3 id="supported-initial-game-types"><a class="header" href="#supported-initial-game-types">Supported initial game types</a></h3>
+<p><code>disputeGameConfigs</code> always holds six entries in a fixed order. Which of them may be <code>enabled</code> at initial deployment
+depends on whether the OPCM has the <code>SUPER_ROOT_GAMES_MIGRATION</code> dev feature on:</p>
+<div class="table-wrapper"><table><thead><tr><th>Index</th><th>Game type</th><th>Enabled at initial deployment</th></tr></thead><tbody>
+<tr><td>0</td><td><code>CANNON</code></td><td>Never. Legacy slot</td></tr>
+<tr><td>1</td><td><code>PERMISSIONED_CANNON</code></td><td>Output root mode only</td></tr>
+<tr><td>2</td><td><code>CANNON_KONA</code></td><td>Output root mode only</td></tr>
+<tr><td>3</td><td><code>SUPER_PERMISSIONED</code></td><td>Super root mode only</td></tr>
+<tr><td>4</td><td><code>SUPER_CANNON_KONA</code></td><td>Super root mode only</td></tr>
+<tr><td>5</td><td><code>ZK_DISPUTE_GAME</code></td><td>Never at initial deployment. Reachable through the upgrade path</td></tr>
+</tbody></table>
+</div>
+<p><code>startingRespectedGameType</code> must be one of the four selectable types and <strong>must belong to the OPCM's mode</strong>.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="apcd-001-opcm-address-determinism"><a class="header" href="#apcd-001-opcm-address-determinism">aPCD-001: OPCM address determinism</a></h3>
+<p>OPCM deploys proxies with CREATE2 using a salt derived from <code>msg.sender</code> and <code>saltMixer</code>, and no other inputs that
+change across executions.
+Given the same sender and salt mixer, against the same OPCM, the produced addresses are identical.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>The dry-run executes the full <code>OPCM.deploy()</code> logic without broadcasting, exercising the same code path as the
+real broadcast.</li>
+<li>The remaining <code>FullConfig</code> fields do not feed the salt, so the placeholders the dry-run substitutes for them (see
+<a href="#address-prediction">Address prediction</a>) cannot change the predicted addresses.</li>
+</ul>
+<h3 id="apcd-002-dry-run-and-broadcast-use-the-same-sender-and-saltmixer"><a class="header" href="#apcd-002-dry-run-and-broadcast-use-the-same-sender-and-saltmixer">aPCD-002: Dry-run and broadcast use the same sender and <code>saltMixer</code></a></h3>
+<p>The address prediction is only valid if the dry-run uses the same <code>from</code> address and <code>saltMixer</code> as the eventual
+broadcast, since <code>msg.sender</code> and <code>saltMixer</code> are inputs to the CREATE2 salt.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>op-deployer MUST use the same <code>from</code> address and <code>saltMixer</code> for the dry-run and the broadcast (see
+<a href="./op-deployer.html#failure-modes">FM2</a>).</li>
+<li>The salt mixer is generated once and stored in op-deployer state, so separate command invocations reuse it rather
+than deriving it again (see <a href="./overview.html#salt-mixer">Salt Mixer</a>).</li>
+<li><code>prepare</code> and <code>continue</code> both reject a run whose deployer or OPCM differs from the one recorded in state.</li>
+<li>A pre-broadcast preflight re-checks the predicted addresses against current L1 state before deploying.</li>
+</ul>
+<h3 id="apcd-003-trusted-l1-rpc"><a class="header" href="#apcd-003-trusted-l1-rpc">aPCD-003: Trusted L1 RPC</a></h3>
+<p>The dry-run result is only trustworthy if the L1 RPC is not compromised and returns honest results.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>Use an independent, trusted RPC.</li>
+<li><code>continue</code> re-simulates the deployment against a fresh fork before broadcasting, and post-deploy validation re-reads
+the deployed system from live L1 (see <a href="./op-deployer.html#failure-modes">FM3</a>).</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="ipcd-001-predicting-the-l1-addresses-is-a-no-op"><a class="header" href="#ipcd-001-predicting-the-l1-addresses-is-a-no-op">iPCD-001: Predicting the L1 addresses is a no-op</a></h3>
+<p>Running the prediction MUST NOT write any state to L1. A write could change the very addresses this stage is meant
+to predict.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>A L1 state write at prediction time also costs the deployer real ETH on what should be a dry-run. Worse, it deploys a
+chain that can never be used. Prediction runs before the prestate and the starting anchor root are known, so the
+deployment would be seeded with neither.</p>
+<h3 id="ipcd-002-permissioned-deployments-remain-valid"><a class="header" href="#ipcd-002-permissioned-deployments-remain-valid">iPCD-002: Permissioned deployments remain valid</a></h3>
+<p>The updated <code>_assertValidFullConfig</code> MUST still accept every permissioned <code>FullConfig</code> that was valid before this
+change <strong>for an OPCM in the matching mode</strong>: <code>PERMISSIONED_CANNON</code> in output root mode, <code>SUPER_PERMISSIONED</code> in super
+root mode.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, valid configurations for permissioned deployments would be blocked.</p>
+<h3 id="ipcd-003-invalid-configurations-stay-rejected"><a class="header" href="#ipcd-003-invalid-configurations-stay-rejected">iPCD-003: Invalid configurations stay rejected</a></h3>
+<p>The updated <code>_assertValidFullConfig</code> MUST still reject every <code>FullConfig</code> that was invalid before this change, apart
+from enabling the permissionless game type of the OPCM's mode at initial deployment.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, OPCM could accept an invalid dispute configuration at deployment.</p>
+<h2 id="change-specification"><a class="header" href="#change-specification">Change Specification</a></h2>
+<p>Two changes are needed on the Solidity surface. <code>DeployOPChain</code> predicts the L1 addresses that seed the genesis
+pipeline and later broadcasts the deployment. The OPCM change lets that broadcast enable a permissionless game at
+initial deployment, and checks the values such a deployment now carries.</p>
+<h3 id="deployopchain-script"><a class="header" href="#deployopchain-script">DeployOPChain script</a></h3>
+<p><code>DeployOPChain.s.sol</code> builds the <code>FullConfig</code> and runs <code>OPCM.deploy()</code>. <code>op-deployer</code> uses the same
+script for two roles: predicting the L1 addresses (a dry-run) and broadcasting the real deployment.
+Using the same script for both ensures the predicted addresses are equal to the deployed ones
+(see <a href="./op-deployer.html#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts">iOPD-001</a>).</p>
+<h4 id="address-prediction"><a class="header" href="#address-prediction">Address prediction</a></h4>
+<p><code>DeployOPChain</code> predicts the <a href="#chaincontracts-struct"><code>ChainContracts</code></a> for a given <a href="#fullconfig"><code>FullConfig</code></a>.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST execute <code>OPCM.deploy()</code> against the current L1 state.</li>
+<li>MUST use the same <code>from</code> address and <code>saltMixer</code> that will be used for the real broadcast.</li>
+<li>MUST NOT broadcast or otherwise write state to L1.</li>
+<li>MUST return the predicted <a href="#chaincontracts-struct"><code>ChainContracts</code></a> addresses to the caller.</li>
+</ul>
+<p>The dry-run uses placeholders for some of the values. The six chain roles are substituted because prediction must not
+depend on them, and the <code>startingAnchorRoot</code> because its real value is not known yet:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Dry-run value</th><th>Why</th></tr></thead><tbody>
+<tr><td>all six chain roles</td><td>a single placeholder address</td><td>Roles do not feed the CREATE2 salt</td></tr>
+<tr><td><code>startingAnchorRoot</code></td><td>a sentinel root for permissionless deploys, the <code>0xdead</code> placeholder otherwise</td><td>The real root is derived from the addresses being predicted</td></tr>
+</tbody></table>
+</div>
+<p>Only <code>msg.sender</code>, <code>saltMixer</code>, <code>l2ChainId</code> and the OPCM address determine the deployed addresses, so these
+substitutions are safe (see <a href="#apcd-001-opcm-address-determinism">aPCD-001</a>).</p>
+<h4 id="broadcasting-a-permissionless-deployment"><a class="header" href="#broadcasting-a-permissionless-deployment">Broadcasting a permissionless deployment</a></h4>
+<p>Before PCD the script hard-coded a permissioned-only initial deployment:</p>
+<ul>
+<li>It rejected any input game type other than <code>PERMISSIONED_CANNON</code>.</li>
+<li>It built the six <code>disputeGameConfigs</code> with the permissionless types disabled.</li>
+<li>It set <code>startingRespectedGameType</code> to the permissioned type and <code>startingAnchorRoot</code> to a placeholder.</li>
+</ul>
+<p>In order to support permissionless deployments the script is updated to:</p>
+<ul>
+<li>MUST accept any of the four <a href="#supported-initial-game-types">supported initial game types</a> as
+<code>startingRespectedGameType</code>, and MUST revert on any other game type.</li>
+<li>MUST revert when the requested game type does not belong to the OPCM's mode, so the caller's prestate and proposal
+format always match the games the OPCM installs.</li>
+<li>MUST enable the permissionless <code>disputeGameConfigs</code> entry, carrying its real
+<a href="./overview.html#selected-prestate">selected prestate</a>.</li>
+<li>MUST also enable the permissioned game of the same family as a guardian fallback, so a permissionless deployment
+enables <strong>two</strong> configs. <code>CANNON_KONA</code> enables <code>PERMISSIONED_CANNON</code>, <code>SUPER_CANNON_KONA</code> enables
+<code>SUPER_PERMISSIONED</code>. The fallback carries the <a href="./overview.html#fallback-prestate">fallback prestate</a>.</li>
+<li>MUST pass the real <a href="./overview.html#starting-anchor-root">starting anchor root</a> instead of the placeholder, and MUST
+reject the placeholder for a permissionless deployment.</li>
+<li>MUST continue to support permissioned-only deployments.</li>
+<li>MUST use a <code>from</code> address consistent with the <a href="#address-prediction">address-prediction</a> dry-run, so the deployed
+addresses match the prediction (see
+<a href="./op-deployer.html#iopd-001-the-deployed-l1-system-matches-the-committed-artifacts">iOPD-001</a>).</li>
+</ul>
+<h4 id="script-inputs"><a class="header" href="#script-inputs">Script inputs</a></h4>
+<p>A permissionless deployment supplies three values the script did not previously take:</p>
+<ul>
+<li>the <a href="./overview.html#starting-anchor-root">starting anchor root</a> seeded into the <code>AnchorStateRegistry</code>,</li>
+<li>the <a href="./overview.html#selected-prestate">selected prestate</a> of the respected game type, and</li>
+<li>for the output root family only, the <a href="./overview.html#fallback-prestate">fallback prestate</a> of the guardian fallback
+game.</li>
+</ul>
+<p>The script MUST reject an output root family input whose selected prestate equals its fallback prestate. They commit
+to different fault-proof programs, <strong>so equal values always indicate a misconfigured producer.</strong></p>
+<h3 id="opcmv2-config-validation"><a class="header" href="#opcmv2-config-validation">OPCMv2 config validation</a></h3>
+<p><code>OPContractsManagerV2._assertValidFullConfig(FullConfig, bool _isInitialDeployment)</code> validates the config before
+<code>_apply</code> runs. An initial deployment always reaches this check with <code>_isInitialDeployment = true</code>. Relaxing the
+script guard in <a href="#deployopchain-script"><code>DeployOPChain</code></a> alone is not enough, because <code>OPCM.deploy()</code> would still
+revert here.</p>
+<p>Before PCD, enabling any permissionless game type during an initial deployment reverted with
+<code>OPContractsManagerV2_InvalidGameConfigs</code>, on the premise that no prestate exists yet. PCD invalidates that premise.
+A real prestate now exists at deployment time.</p>
+<p>The game-type check is replaced by one scoped to the OPCM's mode. PCD then:</p>
+<ul>
+<li>MUST allow the permissionless game type of the OPCM's mode to be <code>enabled</code> during an initial deployment.</li>
+<li>MUST reject a game type from the other mode, and MUST keep <code>CANNON</code> and <code>ZK_DISPUTE_GAME</code> rejected at initial
+deployment (see <a href="#supported-initial-game-types">Supported initial game types</a>).</li>
+<li>MUST apply the checks PCD adds:
+<ul>
+<li><code>startingAnchorRoot.root</code> MUST be non-zero on any initial deployment, and its <code>l2SequenceNumber</code> MUST leave room
+for a <code>uint64</code> successor.</li>
+<li>The <code>0xdead</code> placeholder root MUST be rejected when an enabled config is one of <code>CANNON</code>, <code>CANNON_KONA</code> or
+<code>SUPER_CANNON_KONA</code>. Only a permissioned-only deployment may still carry the placeholder.</li>
+<li>An enabled config among those same three game types MUST carry a non-zero <code>absolutePrestate</code>, decoded from its
+<code>gameArgs</code>.</li>
+<li><code>SUPER_PERMISSIONED</code> MUST carry a zero init bond, whether or not it is enabled.</li>
+</ul>
+</li>
+<li>MUST keep every other validation OPCM already performs intact:
+<ul>
+<li>exactly six configs in the fixed game-type order,</li>
+<li>the init-bond rules for every other game type,</li>
+<li>the <code>ZK_DISPUTE_GAME</code> dev-flag gate plus its non-zero prestate requirement, both reachable only through the
+upgrade path, and</li>
+<li><code>startingRespectedGameType</code> must correspond to an enabled config.</li>
+</ul>
+</li>
+</ul>
+<p>The value checks reject an unset or placeholder input. They cannot reject a wrong one, since any non-zero prestate and
+any non-placeholder root pass (see
+<a href="./op-deployer.html#iopd-003-absoluteprestate-matches-the-committed-chain-config">iOPD-003</a>).</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/predictive-chain-deployments/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../experimental/predictive-chain-deployments/op-deployer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/predictive-chain-deployments/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../experimental/predictive-chain-deployments/op-deployer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

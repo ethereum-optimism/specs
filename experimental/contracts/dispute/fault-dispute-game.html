@@ -1,0 +1,869 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>FaultDisputeGame - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/dispute/fault-dispute-game.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="faultdisputegame"><a class="header" href="#faultdisputegame">FaultDisputeGame</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#contract-variants">Contract Variants</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#split-depth">Split Depth</a></li>
+<li><a href="#game-tree-position">Game Tree Position</a></li>
+<li><a href="#absolute-prestate">Absolute Prestate</a></li>
+<li><a href="#chess-clock">Chess Clock</a></li>
+<li><a href="#subgame">Subgame</a></li>
+<li><a href="#bond-distribution-mode">Bond Distribution Mode</a></li>
+<li><a href="#proposer-role">Proposer Role</a></li>
+<li><a href="#challenger-role">Challenger Role</a></li>
+<li><a href="#immutable-args-pattern">Immutable Args Pattern</a></li>
+<li><a href="#super-root">Super Root</a></li>
+<li><a href="#l2-sequence-number">L2 Sequence Number</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-anchor-state-registry-provides-valid-anchor-states">a01-001: Anchor State Registry Provides Valid Anchor States</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-002-virtual-machine-executes-state-transitions-correctly">a01-002: Virtual Machine Executes State Transitions Correctly</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-003-delayedweth-contract-functions-correctly">a01-003: DelayedWETH Contract Functions Correctly</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-game-resolution-reflects-actual-root-claim-validity">i01-001: Game Resolution Reflects Actual Root Claim Validity</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-game-can-always-be-resolved-in-reasonable-bounded-time">i01-002: Game Can Always Be Resolved In Reasonable Bounded Time</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-003-bond-distribution-is-accurate-according-to-game-result">i01-003: Bond Distribution Is Accurate According To Game Result</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-004-game-is-incentive-compatible">i01-004: Game Is Incentive Compatible</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-005-dispute-game-resolution-is-independent-of-other-games">i01-005: Dispute Game Resolution Is Independent Of Other Games</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-006-default-games-are-permissionless">i01-006: Default Games Are Permissionless</a>
+<ul>
+<li><a href="#impact-5">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#step">step</a></li>
+<li><a href="#attack">attack</a></li>
+<li><a href="#defend">defend</a></li>
+<li><a href="#move">move</a></li>
+<li><a href="#addlocaldata">addLocalData</a></li>
+<li><a href="#challengerootl2block">challengeRootL2Block</a></li>
+<li><a href="#resolve">resolve</a></li>
+<li><a href="#resolveclaim">resolveClaim</a></li>
+<li><a href="#claimcredit">claimCredit</a></li>
+<li><a href="#closegame">closeGame</a></li>
+<li><a href="#getrequiredbond">getRequiredBond</a></li>
+<li><a href="#getchallengerduration">getChallengerDuration</a></li>
+<li><a href="#getnumtoresolve">getNumToResolve</a></li>
+<li><a href="#l2blocknumber">l2BlockNumber</a></li>
+<li><a href="#l2sequencenumber">l2SequenceNumber</a></li>
+<li><a href="#startingblocknumber">startingBlockNumber</a></li>
+<li><a href="#startingroothash">startingRootHash</a></li>
+<li><a href="#startingsequencenumber">startingSequenceNumber</a></li>
+<li><a href="#gametype">gameType</a></li>
+<li><a href="#gamecreator">gameCreator</a></li>
+<li><a href="#rootclaim">rootClaim</a></li>
+<li><a href="#l1head">l1Head</a></li>
+<li><a href="#extradata">extraData</a></li>
+<li><a href="#gamedata">gameData</a></li>
+<li><a href="#claimdatalen">claimDataLen</a></li>
+<li><a href="#credit">credit</a></li>
+<li><a href="#absoluteprestate">absolutePrestate</a></li>
+<li><a href="#maxgamedepth">maxGameDepth</a></li>
+<li><a href="#splitdepth">splitDepth</a></li>
+<li><a href="#maxclockduration">maxClockDuration</a></li>
+<li><a href="#clockextension">clockExtension</a></li>
+<li><a href="#vm">vm</a></li>
+<li><a href="#weth">weth</a></li>
+<li><a href="#anchorstateregistry">anchorStateRegistry</a></li>
+<li><a href="#l2chainid">l2ChainId</a></li>
+<li><a href="#proposer">proposer</a></li>
+<li><a href="#challenger">challenger</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The FaultDisputeGame contract family implements a bisection-based dispute resolution mechanism for verifying L2 output
+root claims through iterative narrowing of disagreement ranges until reaching single instruction steps that can be
+verified on-chain via a fault proof virtual machine. The family includes permissionless variants (FaultDisputeGame,
+FaultDisputeGameV2, SuperFaultDisputeGame) and permissioned variants (PermissionedDisputeGame,
+PermissionedDisputeGameV2, SuperPermissionedDisputeGame) that restrict participation to authorized roles.</p>
+<h2 id="contract-variants"><a class="header" href="#contract-variants">Contract Variants</a></h2>
+<p>The FaultDisputeGame specification covers six contract variants that share the core bisection-based dispute resolution
+mechanism but differ in access control, architectural implementation, and support for <a href="#super-root">Super Root</a>s.</p>
+<p><strong>FaultDisputeGame</strong>: The base permissionless implementation where any address can participate in dispute games by
+making moves and executing steps. Uses constructor parameters for immutable configuration values.</p>
+<p><strong>PermissionedDisputeGame</strong>: Extends FaultDisputeGame with access control restricting step and move functions to
+authorized proposer and <a href="#challenger-role">Challenger Role</a>s. Only the proposer can initialize games. Uses constructor
+parameters for
+immutable configuration values.</p>
+<p><strong>SuperFaultDisputeGame</strong>: A permissionless variant that validates <a href="#super-root">Super Root</a> claims using L2 sequence
+numbers (timestamps) instead of L2 block numbers. Uses the <a href="#immutable-args-pattern">Immutable Args Pattern</a> and
+requires the L2 chain ID to be zero. <a href="#super-root">Super Root</a>s optionally support cross-chain state commitments for
+interoperability.</p>
+<p><strong>SuperPermissionedDisputeGame</strong>: Similar to PermissionedDisputeGame but extends SuperFaultDisputeGame to support super
+root claims with access control. Uses the <a href="#immutable-args-pattern">Immutable Args Pattern</a> to store proposer and
+challenger addresses.</p>
+<p><strong>FaultDisputeGameV2</strong>: The V2 permissionless implementation that refactors the architecture to use the <a href="#immutable-args-pattern">Immutable Args
+Pattern</a> for storing VM, WETH, AnchorStateRegistry, and other configuration values instead of
+constructor parameters. This reduces deployment costs and enables efficient cloning.</p>
+<p><strong>PermissionedDisputeGameV2</strong>: Extends FaultDisputeGameV2 with access control restricting step and move functions to
+authorized proposer and <a href="#challenger-role">Challenger Role</a>s. Only the proposer can initialize games. Uses the
+<a href="#immutable-args-pattern">Immutable Args Pattern</a> for
+all configuration values including proposer and challenger addresses.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="split-depth"><a class="header" href="#split-depth">Split Depth</a></h3>
+<p>The maximum depth in the game tree at which claims represent output roots. Below this depth, claims represent
+execution trace commitments for single block state transitions.</p>
+<h3 id="game-tree-position"><a class="header" href="#game-tree-position">Game Tree Position</a></h3>
+<p>A location in the binary game tree represented by a generalized index where the high-order bit indicates depth and
+remaining bits provide a unique identifier for each node at that depth.</p>
+<h3 id="absolute-prestate"><a class="header" href="#absolute-prestate">Absolute Prestate</a></h3>
+<p>The initial state of the fault proof virtual machine that serves as the starting point for all execution traces. This
+is a constant defined by the VM implementation being used.</p>
+<h3 id="chess-clock"><a class="header" href="#chess-clock">Chess Clock</a></h3>
+<p>A timing mechanism where each claim inherits the accumulated duration from its grandparent claim, tracking total time
+elapsed for each team to prevent indefinite delays in game resolution.</p>
+<h3 id="subgame"><a class="header" href="#subgame">Subgame</a></h3>
+<p>A directed acyclic graph of depth one where a root claim and its direct children form a fundamental dispute unit. A
+claim is considered countered if at least one of its children remains uncountered after resolution.</p>
+<h3 id="bond-distribution-mode"><a class="header" href="#bond-distribution-mode">Bond Distribution Mode</a></h3>
+<p>The mechanism for distributing bonds after game finalization, which can be NORMAL (bonds distributed to winners) or
+REFUND (bonds returned to original depositors) based on whether the game is determined to be proper by the Anchor
+State Registry.</p>
+<h3 id="proposer-role"><a class="header" href="#proposer-role">Proposer Role</a></h3>
+<p>An authorized address that can create dispute game proposals and participate in the game by making moves and executing
+steps. In permissioned variants, only the proposer can initialize games.</p>
+<h3 id="challenger-role"><a class="header" href="#challenger-role">Challenger Role</a></h3>
+<p>An authorized address that can participate in dispute games by making moves and executing steps to challenge proposals.
+In permissioned variants, both proposer and challenger roles are required for game participation.</p>
+<h3 id="immutable-args-pattern"><a class="header" href="#immutable-args-pattern">Immutable Args Pattern</a></h3>
+<p>An architectural pattern where contract parameters are stored in append-only calldata rather than contract storage,
+reducing deployment costs and enabling efficient cloning. Used in V2 variants to store addresses and configuration
+values.</p>
+<h3 id="super-root"><a class="header" href="#super-root">Super Root</a></h3>
+<p>A state commitment that represents the aggregated state of the L2 chains in the dependency set. The dependency set may
+contain a single chain. Super roots are identified by L2 sequence numbers (timestamps) rather than block numbers,
+enabling coordination of state across chains with different block production rates.</p>
+<h3 id="l2-sequence-number"><a class="header" href="#l2-sequence-number">L2 Sequence Number</a></h3>
+<p>A timestamp-based identifier used in SuperFaultDisputeGame variants instead of L2 block numbers. Sequence numbers
+provide a chain-agnostic way to order and reference state commitments where multiple chains need to coordinate.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-anchor-state-registry-provides-valid-anchor-states"><a class="header" href="#a01-001-anchor-state-registry-provides-valid-anchor-states">a01-001: Anchor State Registry Provides Valid Anchor States</a></h3>
+<p>The Anchor State Registry provides valid anchor output roots that serve as the starting point for dispute games.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Anchor states are only updated through resolved dispute games that pass finalization requirements</li>
+<li>The registry maintains a history of anchor states with associated game references</li>
+</ul>
+<h3 id="a01-002-virtual-machine-executes-state-transitions-correctly"><a class="header" href="#a01-002-virtual-machine-executes-state-transitions-correctly">a01-002: Virtual Machine Executes State Transitions Correctly</a></h3>
+<p>The fault proof virtual machine (VM) correctly executes single instruction steps and produces accurate post-states when
+given valid pre-states and proofs.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>VM implementations undergo extensive testing and formal verification</li>
+<li>Multiple VM implementations can be used for different game types</li>
+</ul>
+<h3 id="a01-003-delayedweth-contract-functions-correctly"><a class="header" href="#a01-003-delayedweth-contract-functions-correctly">a01-003: DelayedWETH Contract Functions Correctly</a></h3>
+<p>The DelayedWETH contract correctly holds bonds, enforces withdrawal delays, and processes unlock and withdrawal
+operations as specified.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>DelayedWETH is a well-tested contract with delay mechanisms to prevent immediate bond extraction</li>
+<li>Bonds are locked until game finalization provides sufficient time for dispute resolution</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-game-resolution-reflects-actual-root-claim-validity"><a class="header" href="#i01-001-game-resolution-reflects-actual-root-claim-validity">i01-001: Game Resolution Reflects Actual Root Claim Validity</a></h3>
+<p>After resolution, the game status accurately reflects whether the root claim was successfully defended (DEFENDER_WINS)
+or successfully challenged (CHALLENGER_WINS) based on the <a href="#subgame">Subgame</a> resolution tree.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is violated, invalid output roots could be accepted or valid output roots could be rejected,
+compromising the integrity of the L2 state validation system and potentially enabling theft of funds through invalid
+withdrawals.</p>
+<h3 id="i01-002-game-can-always-be-resolved-in-reasonable-bounded-time"><a class="header" href="#i01-002-game-can-always-be-resolved-in-reasonable-bounded-time">i01-002: Game Can Always Be Resolved In Reasonable Bounded Time</a></h3>
+<p>Games can always be resolved within a reasonable bounded time period (less than 30 days) regardless of participant
+behavior, ensuring that dispute resolution does not stall indefinitely.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If games cannot be resolved in bounded time, the system could be subject to denial-of-service attacks where malicious
+actors prevent legitimate dispute resolution, blocking withdrawals and state finalization.</p>
+<h3 id="i01-003-bond-distribution-is-accurate-according-to-game-result"><a class="header" href="#i01-003-bond-distribution-is-accurate-according-to-game-result">i01-003: Bond Distribution Is Accurate According To Game Result</a></h3>
+<p>Bonds are distributed accurately according to the game result, with winners receiving bonds from losers in NORMAL mode
+and all participants receiving refunds in REFUND mode based on whether the game is proper and finalized.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Incorrect bond distribution undermines the economic incentives that ensure honest participation in the dispute game
+system, potentially allowing attackers to profit from invalid claims or defenders to avoid penalties.</p>
+<h3 id="i01-004-game-is-incentive-compatible"><a class="header" href="#i01-004-game-is-incentive-compatible">i01-004: Game Is Incentive Compatible</a></h3>
+<p>The game's economic incentives ensure that honest behavior (defending valid claims and challenging invalid claims) is
+more profitable than dishonest behavior, maintaining the security of the dispute resolution system.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If the game is not incentive compatible, rational actors may find it profitable to submit invalid claims or fail to
+challenge invalid claims, compromising the integrity of the L2 state validation system.</p>
+<h3 id="i01-005-dispute-game-resolution-is-independent-of-other-games"><a class="header" href="#i01-005-dispute-game-resolution-is-independent-of-other-games">i01-005: Dispute Game Resolution Is Independent Of Other Games</a></h3>
+<p>The resolution of any dispute game is independent of the result of any other game, ensuring that each game's outcome is
+determined solely by its own <a href="#subgame">Subgame</a> tree and not influenced by external game states.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If game resolutions are not independent, attackers could manipulate one game to influence another, potentially causing
+cascading failures or enabling coordinated attacks across multiple games.</p>
+<h3 id="i01-006-default-games-are-permissionless"><a class="header" href="#i01-006-default-games-are-permissionless">i01-006: Default Games Are Permissionless</a></h3>
+<p>By default, participation in FaultDisputeGame is permissionless, allowing any address to initialize games, make moves,
+and execute steps. Only explicitly authenticated game types restrict participation to authorized roles.</p>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If default games are not permissionless, the system loses its censorship resistance and decentralization properties,
+potentially allowing gatekeepers to prevent legitimate challenges to invalid claims.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initializes the dispute game with the root claim and establishes the anchor state from the Anchor State Registry.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the game has already been initialized</li>
+<li>MUST revert if the Anchor State Registry returns a zero anchor root</li>
+<li>MUST revert if the calldata length does not match expected length (122 bytes for V1, varies for V2 based on immutable
+args)</li>
+<li>MUST revert if the root claim's L2 block number is less than or equal to the anchor state's block number (standard
+variants)</li>
+<li>MUST revert if the root claim's <a href="#l2-sequence-number">L2 Sequence Number</a> is less than or equal to the anchor state's
+sequence number
+(SuperFaultDisputeGame variants)</li>
+<li>MUST revert if the root claim equals the INVALID_ROOT_CLAIM constant (SuperFaultDisputeGame variants)</li>
+<li>MUST revert if the L2 chain ID is not zero (SuperFaultDisputeGame variants)</li>
+<li>MUST revert if tx.origin is not the proposer in permissioned variants</li>
+<li>MUST create the root claim at position 1 with the game creator as claimant and msg.value as bond</li>
+<li>MUST deposit the bond into the DelayedWETH contract</li>
+<li>MUST record the bond in refundModeCredit for the game creator</li>
+<li>MUST set createdAt to the current block timestamp</li>
+<li>MUST record whether the game type was respected when created</li>
+</ul>
+<h3 id="step"><a class="header" href="#step">step</a></h3>
+<p>Executes a single instruction step via the on-chain fault proof virtual machine to counter a claim at maximum game
+depth.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimIndex</code>: The index of the claim being stepped against</li>
+<li><code>_isAttack</code>: Whether the step is an attack or defense</li>
+<li><code>_stateData</code>: The preimage of the pre-state claim</li>
+<li><code>_proof</code>: Proof data for accessing the VM's merkle state tree</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if msg.sender is not the proposer or challenger in permissioned variants</li>
+<li>MUST revert if the game status is not IN_PROGRESS</li>
+<li>MUST revert if the step position depth is not exactly MAX_GAME_DEPTH + 1</li>
+<li>MUST revert if the keccak256 hash of _stateData does not match the pre-state claim (ignoring highest order byte)</li>
+<li>MUST revert if the VM step execution result indicates a valid step</li>
+<li>MUST revert if the parent claim has already been countered</li>
+<li>MUST set the parent claim's counteredBy field to msg.sender</li>
+</ul>
+<h3 id="attack"><a class="header" href="#attack">attack</a></h3>
+<p>Creates an attack move against a disagreed upon claim.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_disputed</code>: The claim being attacked</li>
+<li><code>_parentIndex</code>: Index of the claim to attack</li>
+<li><code>_claim</code>: The claim at the relative attack position</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST call the move function with _isAttack set to true</li>
+<li>MUST include msg.value as the bond payment</li>
+</ul>
+<h3 id="defend"><a class="header" href="#defend">defend</a></h3>
+<p>Creates a defense move supporting an agreed upon claim and its parent.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_disputed</code>: The claim being defended</li>
+<li><code>_parentIndex</code>: Index of the claim to defend</li>
+<li><code>_claim</code>: The claim at the relative defense position</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST call the move function with _isAttack set to false</li>
+<li>MUST include msg.value as the bond payment</li>
+</ul>
+<h3 id="move"><a class="header" href="#move">move</a></h3>
+<p>Generic move function handling both attack and defend moves.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_disputed</code>: The disputed claim</li>
+<li><code>_challengeIndex</code>: The index of the claim being moved against</li>
+<li><code>_claim</code>: The claim at the next logical position</li>
+<li><code>_isAttack</code>: Whether the move is an attack or defense</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if msg.sender is not the proposer or challenger in permissioned variants</li>
+<li>MUST revert if the game status is not IN_PROGRESS</li>
+<li>MUST revert if the claim at <code>_challengeIndex</code> does not match <code>_disputed</code></li>
+<li>MUST revert if attempting to defend the root claim or an execution trace bisection root claim</li>
+<li>MUST revert if the root claim has been challenged via challengeRootL2Block and <code>_challengeIndex</code> is 0</li>
+<li>MUST revert if the next position depth exceeds MAX_GAME_DEPTH</li>
+<li>MUST verify execution bisection root claims when next position depth equals SPLIT_DEPTH + 1</li>
+<li>MUST revert if msg.value does not exactly equal the required bond for the next position</li>
+<li>MUST revert if the challenger's clock duration equals MAX_CLOCK_DURATION</li>
+<li>MUST revert if a claim with the same value and position already exists at the challenge index</li>
+<li>MUST apply clock extension if the next duration would leave less than the extension time remaining</li>
+<li>MUST create a new claim with the provided parameters and current timestamp</li>
+<li>MUST add the new claim index to the parent's <a href="#subgame">Subgame</a> array</li>
+<li>MUST deposit msg.value into DelayedWETH</li>
+<li>MUST record msg.value in refundModeCredit for msg.sender</li>
+<li>MUST emit a Move event</li>
+</ul>
+<h3 id="addlocaldata"><a class="header" href="#addlocaldata">addLocalData</a></h3>
+<p>Posts local data to the VM's PreimageOracle for use during execution trace verification.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_ident</code>: The local identifier of the data to post</li>
+<li><code>_execLeafIdx</code>: The index of the leaf claim in an execution <a href="#subgame">Subgame</a> requiring the data</li>
+<li><code>_partOffset</code>: The offset of the data to post</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the game status is not IN_PROGRESS</li>
+<li>MUST revert if _ident is not a valid local preimage key identifier</li>
+<li>MUST compute the local context UUID from the starting and disputed outputs</li>
+<li>MUST load the appropriate data into the PreimageOracle based on _ident (L1_HEAD_HASH, STARTING_OUTPUT_ROOT,
+DISPUTED_OUTPUT_ROOT, DISPUTED_L2_BLOCK_NUMBER)</li>
+<li>MUST load l2SequenceNumber for DISPUTED_L2_BLOCK_NUMBER identifier in SuperFaultDisputeGame variants</li>
+</ul>
+<h3 id="challengerootl2block"><a class="header" href="#challengerootl2block">challengeRootL2Block</a></h3>
+<p>Challenges the root claim by proving the L2 block number in the output root does not match the claimed L2 block number.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_outputRootProof</code>: The output root proof containing state root, message passer storage root, and latest block hash</li>
+<li><code>_headerRLP</code>: The RLP-encoded L2 block header</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the game status is not IN_PROGRESS</li>
+<li>MUST revert if the L2 block number has already been challenged</li>
+<li>MUST revert if the hash of _outputRootProof does not match the root claim</li>
+<li>MUST revert if the keccak256 hash of _headerRLP does not match the latest block hash in the proof</li>
+<li>MUST revert if the block number extracted from the header RLP is longer than 32 bytes</li>
+<li>MUST revert if the extracted block number matches the claimed L2 block number</li>
+<li>MUST set l2BlockNumberChallenger to msg.sender</li>
+<li>MUST set l2BlockNumberChallenged to true</li>
+</ul>
+<h3 id="resolve"><a class="header" href="#resolve">resolve</a></h3>
+<p>Resolves the entire game and determines the final outcome.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the game status is not IN_PROGRESS</li>
+<li>MUST revert if the root <a href="#subgame">Subgame</a> has not been resolved</li>
+<li>MUST set status to DEFENDER_WINS if the root claim is uncountered</li>
+<li>MUST set status to CHALLENGER_WINS if the root claim is countered or if the L2 block number challenge succeeded</li>
+<li>MUST set resolvedAt to the current block timestamp</li>
+<li>MUST emit a Resolved event with the final status</li>
+</ul>
+<h3 id="resolveclaim"><a class="header" href="#resolveclaim">resolveClaim</a></h3>
+<p>Resolves a <a href="#subgame">Subgame</a> rooted at a specific claim by checking its children.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimIndex</code>: The index of the <a href="#subgame">Subgame</a> root claim to resolve</li>
+<li><code>_numToResolve</code>: The number of children to check in this call</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the game status is not IN_PROGRESS</li>
+<li>MUST revert if the challenger's clock duration is less than MAX_CLOCK_DURATION</li>
+<li>MUST revert if the <a href="#subgame">Subgame</a> has already been resolved</li>
+<li>MUST revert if any child <a href="#subgame">Subgame</a> is not yet resolved</li>
+<li>MUST distribute bonds to the claimant for uncontested claims with no children</li>
+<li>MUST distribute bonds to the counteredBy address for claims countered via step</li>
+<li>MUST track the leftmost uncountered child position across resolution iterations</li>
+<li>MUST mark the <a href="#subgame">Subgame</a> as resolved when all children have been checked</li>
+<li>MUST treat the root claim as countered if the L2 block number challenge succeeded</li>
+<li>MUST distribute bonds to the L2 block number challenger if the root claim was challenged that way</li>
+<li>MUST set the claim's counteredBy field based on resolution outcome</li>
+</ul>
+<h3 id="claimcredit"><a class="header" href="#claimcredit">claimCredit</a></h3>
+<p>Claims accumulated credit for a recipient after game finalization.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_recipient</code>: The address to claim credit for</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST call closeGame to ensure <a href="#bond-distribution-mode">Bond Distribution Mode</a> is determined</li>
+<li>MUST revert if the recipient has no credit to claim after unlocking</li>
+<li>MUST unlock credit in DelayedWETH if the recipient has not yet unlocked</li>
+<li>MUST withdraw the credit amount from DelayedWETH</li>
+<li>MUST transfer the credit amount to the recipient</li>
+<li>MUST revert if the transfer fails</li>
+<li>MUST set both refundModeCredit and normalModeCredit to zero for the recipient</li>
+</ul>
+<h3 id="closegame"><a class="header" href="#closegame">closeGame</a></h3>
+<p>Determines the <a href="#bond-distribution-mode">Bond Distribution Mode</a> and attempts to register the game as the anchor game.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return early if <a href="#bond-distribution-mode">Bond Distribution Mode</a> is already REFUND or NORMAL</li>
+<li>MUST revert if <a href="#bond-distribution-mode">Bond Distribution Mode</a> is not UNDECIDED</li>
+<li>MUST revert if the Anchor State Registry is paused</li>
+<li>MUST revert if the game has not been resolved</li>
+<li>MUST revert if the game is not finalized according to the Anchor State Registry</li>
+<li>MUST attempt to set the game as the anchor state in the registry</li>
+<li>MUST set <a href="#bond-distribution-mode">Bond Distribution Mode</a> to NORMAL if the game is proper</li>
+<li>MUST set <a href="#bond-distribution-mode">Bond Distribution Mode</a> to REFUND if the game is not proper</li>
+<li>MUST emit a GameClosed event with the <a href="#bond-distribution-mode">Bond Distribution Mode</a></li>
+</ul>
+<h3 id="getrequiredbond"><a class="header" href="#getrequiredbond">getRequiredBond</a></h3>
+<p>Calculates the required bond amount for a move at a given position.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_position</code>: The position of the bonded interaction</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the position depth exceeds MAX_GAME_DEPTH</li>
+<li>MUST calculate bond using exponential scaling based on position depth</li>
+<li>MUST return bond amount in wei</li>
+</ul>
+<h3 id="getchallengerduration"><a class="header" href="#getchallengerduration">getChallengerDuration</a></h3>
+<p>Returns the time elapsed on the potential challenger's <a href="#chess-clock">Chess Clock</a> for a claim.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimIndex</code>: The index of the <a href="#subgame">Subgame</a> root claim</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the game status is not IN_PROGRESS</li>
+<li>MUST calculate duration from parent clock duration plus time since claim creation</li>
+<li>MUST cap the returned duration at MAX_CLOCK_DURATION</li>
+</ul>
+<h3 id="getnumtoresolve"><a class="header" href="#getnumtoresolve">getNumToResolve</a></h3>
+<p>Returns the number of children remaining to be checked for resolving a <a href="#subgame">Subgame</a>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimIndex</code>: The <a href="#subgame">Subgame</a> root claim's index</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the difference between total children and the resolution checkpoint's <a href="#subgame">Subgame</a> index</li>
+</ul>
+<h3 id="l2blocknumber"><a class="header" href="#l2blocknumber">l2BlockNumber</a></h3>
+<p>Returns the L2 block number from the extraData.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST extract and return the L2 block number from the clone-with-immutable-args data at offset 84</li>
+</ul>
+<h3 id="l2sequencenumber"><a class="header" href="#l2sequencenumber">l2SequenceNumber</a></h3>
+<p>Returns the <a href="#l2-sequence-number">L2 Sequence Number</a> which equals the L2 block number in standard variants, or
+represents a timestamp in
+SuperFaultDisputeGame variants.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the same value as l2BlockNumber in standard variants</li>
+<li>MUST extract and return the <a href="#l2-sequence-number">L2 Sequence Number</a> (timestamp) from clone-with-immutable-args data
+at offset 88 in
+SuperFaultDisputeGame variants</li>
+</ul>
+<h3 id="startingblocknumber"><a class="header" href="#startingblocknumber">startingBlockNumber</a></h3>
+<p>Returns the starting block number from the anchor state.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the l2SequenceNumber from startingOutputRoot</li>
+</ul>
+<h3 id="startingroothash"><a class="header" href="#startingroothash">startingRootHash</a></h3>
+<p>Returns the starting output root hash from the anchor state.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the root hash from startingOutputRoot in standard variants</li>
+<li>MUST return the root hash from startingProposal in SuperFaultDisputeGame variants</li>
+</ul>
+<h3 id="startingsequencenumber"><a class="header" href="#startingsequencenumber">startingSequenceNumber</a></h3>
+<p>Returns the starting sequence number from the anchor state in SuperFaultDisputeGame variants.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the l2SequenceNumber from startingProposal</li>
+<li>MUST NOT exist in standard variants (FaultDisputeGame, PermissionedDisputeGame, FaultDisputeGameV2,
+PermissionedDisputeGameV2)</li>
+</ul>
+<h3 id="gametype"><a class="header" href="#gametype">gameType</a></h3>
+<p>Returns the game type identifier.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the GAME_TYPE immutable value</li>
+</ul>
+<h3 id="gamecreator"><a class="header" href="#gamecreator">gameCreator</a></h3>
+<p>Returns the address that created the dispute game.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST extract and return the creator address from clone-with-immutable-args data at offset 0</li>
+</ul>
+<h3 id="rootclaim"><a class="header" href="#rootclaim">rootClaim</a></h3>
+<p>Returns the root claim being disputed.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST extract and return the root claim from clone-with-immutable-args data at offset 20</li>
+</ul>
+<h3 id="l1head"><a class="header" href="#l1head">l1Head</a></h3>
+<p>Returns the L1 block hash when the game was created.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST extract and return the L1 head hash from clone-with-immutable-args data at offset 52</li>
+</ul>
+<h3 id="extradata"><a class="header" href="#extradata">extraData</a></h3>
+<p>Returns the extra data provided when creating the game.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST extract and return 32 bytes of extra data from clone-with-immutable-args data at offset 84</li>
+</ul>
+<h3 id="gamedata"><a class="header" href="#gamedata">gameData</a></h3>
+<p>Returns the complete game identification data.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the game type, root claim, and extra data as a tuple</li>
+</ul>
+<h3 id="claimdatalen"><a class="header" href="#claimdatalen">claimDataLen</a></h3>
+<p>Returns the length of the claimData array.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the current length of the claimData array</li>
+</ul>
+<h3 id="credit"><a class="header" href="#credit">credit</a></h3>
+<p>Returns the credit balance for a recipient based on current <a href="#bond-distribution-mode">Bond Distribution Mode</a>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_recipient</code>: The address to check credit for</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return refundModeCredit if <a href="#bond-distribution-mode">Bond Distribution Mode</a> is REFUND</li>
+<li>MUST return normalModeCredit otherwise</li>
+</ul>
+<h3 id="absoluteprestate"><a class="header" href="#absoluteprestate">absolutePrestate</a></h3>
+<p>Returns the <a href="#absolute-prestate">Absolute Prestate</a> of the instruction trace.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the ABSOLUTE_PRESTATE immutable value</li>
+</ul>
+<h3 id="maxgamedepth"><a class="header" href="#maxgamedepth">maxGameDepth</a></h3>
+<p>Returns the maximum game depth.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the MAX_GAME_DEPTH immutable value</li>
+</ul>
+<h3 id="splitdepth"><a class="header" href="#splitdepth">splitDepth</a></h3>
+<p>Returns the <a href="#split-depth">Split Depth</a>.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the SPLIT_DEPTH immutable value</li>
+</ul>
+<h3 id="maxclockduration"><a class="header" href="#maxclockduration">maxClockDuration</a></h3>
+<p>Returns the maximum clock duration.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the MAX_CLOCK_DURATION immutable value</li>
+</ul>
+<h3 id="clockextension"><a class="header" href="#clockextension">clockExtension</a></h3>
+<p>Returns the clock extension constant.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the CLOCK_EXTENSION immutable value</li>
+</ul>
+<h3 id="vm"><a class="header" href="#vm">vm</a></h3>
+<p>Returns the address of the fault proof virtual machine.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the VM immutable value</li>
+</ul>
+<h3 id="weth"><a class="header" href="#weth">weth</a></h3>
+<p>Returns the DelayedWETH contract address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the WETH immutable value</li>
+</ul>
+<h3 id="anchorstateregistry"><a class="header" href="#anchorstateregistry">anchorStateRegistry</a></h3>
+<p>Returns the Anchor State Registry contract address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the ANCHOR_STATE_REGISTRY immutable value</li>
+</ul>
+<h3 id="l2chainid"><a class="header" href="#l2chainid">l2ChainId</a></h3>
+<p>Returns the L2 chain ID this game argues about.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the L2_CHAIN_ID immutable value</li>
+</ul>
+<h3 id="proposer"><a class="header" href="#proposer">proposer</a></h3>
+<p>Returns the proposer address for permissioned variants.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the proposer address from immutable args in PermissionedDisputeGameV2 and SuperPermissionedDisputeGame</li>
+<li>MUST return the PROPOSER immutable value in PermissionedDisputeGame</li>
+<li>MUST NOT exist in permissionless variants (FaultDisputeGame, FaultDisputeGameV2)</li>
+</ul>
+<h3 id="challenger"><a class="header" href="#challenger">challenger</a></h3>
+<p>Returns the challenger address for permissioned variants.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the challenger address from immutable args in PermissionedDisputeGameV2 and SuperPermissionedDisputeGame</li>
+<li>MUST return the CHALLENGER immutable value in PermissionedDisputeGame</li>
+<li>MUST NOT exist in permissionless variants (FaultDisputeGame, FaultDisputeGameV2)</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/dispute/dispute-game-factory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/dispute/delayed-weth.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/dispute/dispute-game-factory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/dispute/delayed-weth.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

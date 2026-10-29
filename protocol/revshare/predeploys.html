@@ -1,0 +1,539 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Predeploys - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/protocol/revshare/predeploys.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="predeploys"><a class="header" href="#predeploys">Predeploys</a></h1>
+<!-- cSpell:words TSTORE -->
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a>
+<ul>
+<li><a href="#disburse-fees-flow">Disburse Fees Flow</a></li>
+</ul>
+</li>
+<li><a href="#feevault">FeeVault</a>
+<ul>
+<li><a href="#functions">Functions</a>
+<ul>
+<li><a href="#setminwithdrawalamount"><code>setMinWithdrawalAmount</code></a></li>
+<li><a href="#setrecipient"><code>setRecipient</code></a></li>
+<li><a href="#setwithdrawalnetwork"><code>setWithdrawalNetwork</code></a></li>
+<li><a href="#recipient"><code>recipient</code></a></li>
+<li><a href="#minwithdrawalamount"><code>minWithdrawalAmount</code></a></li>
+<li><a href="#withdrawalnetwork"><code>withdrawalNetwork</code></a></li>
+<li><a href="#withdraw"><code>withdraw</code></a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#minwithdrawalamountupdated"><code>MinWithdrawalAmountUpdated</code></a></li>
+<li><a href="#recipientupdated"><code>RecipientUpdated</code></a></li>
+<li><a href="#withdrawalnetworkupdated"><code>WithdrawalNetworkUpdated</code></a></li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a></li>
+</ul>
+</li>
+<li><a href="#fee-vaults-sequencerfeevault-l1feevault-basefeevault-operatorfeevault">Fee Vaults (SequencerFeeVault, L1FeeVault, BaseFeeVault, OperatorFeeVault)</a></li>
+<li><a href="#feesplitter">FeeSplitter</a>
+<ul>
+<li><a href="#functions-1">Functions</a>
+<ul>
+<li><a href="#initialize"><code>initialize</code></a></li>
+<li><a href="#disbursefees"><code>disburseFees</code></a></li>
+<li><a href="#receive"><code>receive</code></a></li>
+<li><a href="#setsharescalculator"><code>setSharesCalculator</code></a></li>
+<li><a href="#setfeedisbursementinterval"><code>setFeeDisbursementInterval</code></a></li>
+</ul>
+</li>
+<li><a href="#events-1">Events</a>
+<ul>
+<li><a href="#feesdisbursed"><code>FeesDisbursed</code></a></li>
+<li><a href="#feesreceived"><code>FeesReceived</code></a></li>
+<li><a href="#feedisbursementintervalupdated"><code>FeeDisbursementIntervalUpdated</code></a></li>
+<li><a href="#sharescalculatorupdated"><code>SharesCalculatorUpdated</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Address</th><th>Deprecated</th><th>Proxied</th></tr></thead><tbody>
+<tr><td>FeeSplitter</td><td>0x420000000000000000000000000000000000002B</td><td>No</td><td>Yes</td></tr>
+</tbody></table>
+</div>
+<p>The <code>FeeSplitter</code> predeploy manages the distribution of all L2 fees. Fee vault contracts (<code>OperatorFeeVault</code>,
+<code>BaseFeeVault</code>, <code>L1FeeVault</code>, and <code>SequencerFeeVault</code>) update their configuration via setter functions for
+minimum withdrawal amounts, withdrawal networks, and recipients without requiring new deployments.</p>
+<p>Using the <code>FeeSplitter</code> requires vaults to use <code>WithdrawalNetwork.L2</code> and set the <code>FeeSplitter</code> as their
+fee recipient. Chain operators may opt-in at any time or they can continue using other solutions.</p>
+<h3 id="disburse-fees-flow"><a class="header" href="#disburse-fees-flow">Disburse Fees Flow</a></h3>
+<pre class="mermaid">sequenceDiagram
+
+    participant OperatorFeeVault
+    participant L1FeeVault
+    participant BaseFeeVault
+    participant SequencerFeeVault
+    participant FeeSplitter
+    actor Caller
+    participant ISharesCalculator
+    participant Recipient
+
+    Caller -&gt;&gt; FeeSplitter: 1) disburseFees()
+
+    Note over FeeSplitter: Check interval and vault config &lt;br&gt; (WithdrawalNetwork=L2, Recipient=FeeSplitter). &lt;br/&gt;Only withdraw if enough fees collected.
+
+    FeeSplitter -&gt;&gt; SequencerFeeVault: 2) withdraw()
+    SequencerFeeVault --&gt;&gt; FeeSplitter:
+
+    FeeSplitter -&gt;&gt; BaseFeeVault: 3) withdraw()
+    BaseFeeVault --&gt;&gt; FeeSplitter:
+
+    FeeSplitter -&gt;&gt; L1FeeVault: 4) withdraw()
+    L1FeeVault --&gt;&gt; FeeSplitter:
+
+    FeeSplitter -&gt;&gt; OperatorFeeVault: 5) withdraw()
+    OperatorFeeVault --&gt;&gt; FeeSplitter:
+
+    Note over FeeSplitter: If any fees were collected, calculate the share and &lt;br&gt; remaining amounts to transfer based on the rates.
+
+    FeeSplitter -&gt;&gt; ISharesCalculator: 6) getRecipientsAndAmounts(per-vault revenue)
+    ISharesCalculator --&gt;&gt; FeeSplitter: ShareInfo[]
+
+    loop For each ShareInfo
+        FeeSplitter -&gt;&gt; Recipient: 7) send(shareInfo.amount)
+    end
+</pre>
+<h2 id="feevault"><a class="header" href="#feevault">FeeVault</a></h2>
+<p>Legacy uppercase getters (e.g., <code>MIN_WITHDRAWAL_AMOUNT()</code>, <code>RECIPIENT()</code>, <code>WITHDRAWAL_NETWORK()</code>) are preserved for
+backward compatibility but simply return the values from the storage variables.</p>
+<p>The <code>withdraw</code> function returns the value that was withdrawn from the vault at the time of the function call.</p>
+<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<h4 id="setminwithdrawalamount"><a class="header" href="#setminwithdrawalamount"><code>setMinWithdrawalAmount</code></a></h4>
+<p>Updates the minimum amount of funds the vault contract must hold before they can be withdrawn.</p>
+<pre><code class="language-solidity">function setMinWithdrawalAmount(uint256 _newMinWithdrawalAmount) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code></li>
+<li>MUST emit the <code>MinWithdrawalAmountUpdated</code> event</li>
+<li>MUST update the <code>_minWithdrawalAmount</code> storage variable</li>
+</ul>
+<h4 id="setrecipient"><a class="header" href="#setrecipient"><code>setRecipient</code></a></h4>
+<p>Updates the recipient of sequencer fees when they are withdrawn from the vault.</p>
+<pre><code class="language-solidity">function setRecipient(address _newRecipient) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code></li>
+<li>MUST emit the <code>RecipientUpdated</code> event</li>
+<li>MUST update the <code>_recipient</code> storage variable</li>
+</ul>
+<h4 id="setwithdrawalnetwork"><a class="header" href="#setwithdrawalnetwork"><code>setWithdrawalNetwork</code></a></h4>
+<p>Updates the network to which the vault collected fees will be withdrawn.
+This can be either <code>WithdrawalNetwork.L1</code> to withdraw them to an address on L1 by using the <code>L2ToL1MessagePasser</code>
+predeploy, or <code>WithdrawalNetwork.L2</code> to withdraw them to an address on the same chain.</p>
+<pre><code class="language-solidity">function setWithdrawalNetwork(WithdrawalNetwork _newWithdrawalNetwork) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code></li>
+<li>MUST emit the <code>WithdrawalNetworkUpdated</code> event</li>
+<li>MUST update the <code>_withdrawalNetwork</code> storage variable</li>
+</ul>
+<h4 id="recipient"><a class="header" href="#recipient"><code>recipient</code></a></h4>
+<p>Returns the current recipient address from storage.</p>
+<pre><code class="language-solidity">function recipient() external view returns (address)
+</code></pre>
+<ul>
+<li>MUST return the recipient address from storage.</li>
+</ul>
+<h4 id="minwithdrawalamount"><a class="header" href="#minwithdrawalamount"><code>minWithdrawalAmount</code></a></h4>
+<p>Returns the current minimum withdrawal amount from storage.</p>
+<pre><code class="language-solidity">function minWithdrawalAmount() external view returns (uint256)
+</code></pre>
+<ul>
+<li>MUST return the minimum withdrawal amount from storage.</li>
+</ul>
+<h4 id="withdrawalnetwork"><a class="header" href="#withdrawalnetwork"><code>withdrawalNetwork</code></a></h4>
+<p>Returns the current withdrawal network from storage.</p>
+<pre><code class="language-solidity">function withdrawalNetwork() external view returns (WithdrawalNetwork)
+</code></pre>
+<ul>
+<li>MUST return the withdrawal network from storage.</li>
+</ul>
+<h4 id="withdraw"><a class="header" href="#withdraw"><code>withdraw</code></a></h4>
+<p>Withdraws the funds stored in the vault to the recipient. If the recipient is an address on L2, a <code>SafeCall.send</code>
+is performed; if it's an address on L1, <code>IL2ToL1MessagePasser.initiateWithdrawal</code> is used.
+Returns the value of the withdrawal.</p>
+<pre><code class="language-solidity">function withdraw() external returns(uint256)
+</code></pre>
+<ul>
+<li>MUST revert if the vault's balance is below <code>minWithdrawalAmount()</code>.</li>
+<li>MUST increment <code>totalProcessed</code> by the balance the vault had at the time of the function call.</li>
+<li>MUST emit the <code>Withdrawal(uint256 value, address to, address from)</code> event.</li>
+<li>MUST emit the <code>Withdrawal(uint256 value, address to, address from, WithdrawalNetwork withdrawalNetwork)</code> event.</li>
+<li>MUST send the vault's total balance to the appropriate recipient.</li>
+</ul>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h4 id="minwithdrawalamountupdated"><a class="header" href="#minwithdrawalamountupdated"><code>MinWithdrawalAmountUpdated</code></a></h4>
+<p>Emitted when the minimum withdrawal amount for the vault is updated.</p>
+<pre><code class="language-solidity">event MinWithdrawalAmountUpdated(uint256 oldWithdrawalAmount, uint256 newWithdrawalAmount)
+</code></pre>
+<h4 id="recipientupdated"><a class="header" href="#recipientupdated"><code>RecipientUpdated</code></a></h4>
+<p>Emitted when the fee recipient for this vault is updated.</p>
+<pre><code class="language-solidity">event RecipientUpdated(address oldRecipient, address newRecipient)
+</code></pre>
+<h4 id="withdrawalnetworkupdated"><a class="header" href="#withdrawalnetworkupdated"><code>WithdrawalNetworkUpdated</code></a></h4>
+<p>Emitted when the withdrawal network for this vault is updated.</p>
+<pre><code class="language-solidity">event WithdrawalNetworkUpdated(WithdrawalNetwork oldWithdrawalNetwork, WithdrawalNetwork newWithdrawalNetwork)
+</code></pre>
+<h3 id="invariants"><a class="header" href="#invariants">Invariants</a></h3>
+<ul>
+<li>Only <code>ProxyAdmin.owner()</code> is allowed to call the setter functions.</li>
+<li>If using the <code>FeeSplitter</code>, the withdrawal network MUST be set to <code>WithdrawalNetwork.L2</code> and the recipient
+MUST be set to the <code>FeeSplitter</code> predeploy address.</li>
+<li>The balance of the vault MUST be preserved between implementation upgrades.</li>
+<li>On successful <code>withdraw()</code> execution, it MUST withdraw the entire balance.</li>
+</ul>
+<h2 id="fee-vaults-sequencerfeevault-l1feevault-basefeevault-operatorfeevault"><a class="header" href="#fee-vaults-sequencerfeevault-l1feevault-basefeevault-operatorfeevault">Fee Vaults (SequencerFeeVault, L1FeeVault, BaseFeeVault, OperatorFeeVault)</a></h2>
+<p>These contracts inherit the changes made to the <code>FeeVault</code> contract, meaning that they have storage
+variables and setters instead of constants for the configuration values, and they are initializable.</p>
+<p>Their configuration includes the withdrawal network and the recipient to which the fees are sent:</p>
+<ul>
+<li><strong>WithdrawalNetwork.L1</strong>: Funds are withdrawn to an L1 address (default behavior)</li>
+<li><strong>WithdrawalNetwork.L2</strong>: Funds are withdrawn to an L2 address</li>
+</ul>
+<p>For those chains that choose to use the <code>FeeSplitter</code> predeploy, <code>WithdrawalNetwork.L2</code> as the withdrawal
+network, and the <code>FeeSplitter</code> as the recipient MUST be set using the setter functions.</p>
+<h2 id="feesplitter"><a class="header" href="#feesplitter">FeeSplitter</a></h2>
+<p>This contract splits the funds it receives from the vaults using a configured <code>ISharesCalculator</code> compatible
+revenue shares calculator to determine which addresses should receive funds and in what amounts
+by querying <code>ISharesCalculator.getRecipientsAndAmounts</code>:</p>
+<pre><code class="language-solidity">struct ShareInfo {
+  address payable recipient;
+  uint256 amount;
+}
+
+function getRecipientsAndAmounts(
+        uint256 _sequencerFeeVaultBalance,
+        uint256 _baseFeeVaultBalance,
+        uint256 _operatorFeeVaultBalance,
+        uint256 _l1FeeVaultBalance)
+        external
+        view
+        returns (ShareInfo[] memory shareInfo);
+</code></pre>
+<p>The <code>ShareInfo[]</code> array returned represents pairs: a <code>recipient</code> address to receive the funds and an <code>amount</code> of funds
+it should receive; a default <a href="./superchain-revshares-calc.html"><code>SuperchainRevSharesCalculator</code></a>
+implementation of this interface is provided.</p>
+<p>The <code>FeeSplitter</code> integrates with the fee vault system by configuring each Fee Vault to use <code>WithdrawalNetwork.L2</code>
+and setting this predeploy as the recipient in every fee vault.</p>
+<p>The <code>FeeSplitter</code> MUST be proxied and initializable only by the <code>ProxyAdmin.owner()</code>.</p>
+<h3 id="functions-1"><a class="header" href="#functions-1">Functions</a></h3>
+<h4 id="initialize"><a class="header" href="#initialize"><code>initialize</code></a></h4>
+<p>Initializes the contract with the shares calculator and sets disbursement interval to <code>1 days</code> as default.</p>
+<pre><code class="language-solidity">function initialize(
+        ISharesCalculator _sharesCalculator
+    ) external
+</code></pre>
+<ul>
+<li>MUST only be callable once.</li>
+<li>MUST set <code>sharesCalculator</code> to <code>_sharesCalculator</code>.</li>
+<li>MUST set <code>feeDisbursementInterval</code> to <code>1 days</code>.</li>
+<li>MUST set <code>lastDisbursementTime</code> to <code>block.timestamp</code>.</li>
+<li>Emits an <code>Initialized(uint8 version)</code> event via OpenZeppelin's <code>initializer</code> modifier.</li>
+</ul>
+<h4 id="disbursefees"><a class="header" href="#disbursefees"><code>disburseFees</code></a></h4>
+<p>Initiates the routing flow by withdrawing the fees that each of the fee vaults has collected and sends the shares
+to the appropriate addresses according to the amounts returned by the set shares calculator.</p>
+<p>When attempting to withdraw from the vaults, it checks that the withdrawal network is set to <code>WithdrawalNetwork.L2</code>,
+and that the recipient of the vault is the <code>FeeSplitter</code>. It MUST revert if any of these conditions is not met.
+It MUST only withdraw if the vault balance is greater than or equal to its minimum withdrawal amount.
+In addition, it follows a <code>nonReentrant</code> pattern using <code>TSTORE</code>d flags, to avoid receiving balance back
+once the fees are being disbursed.</p>
+<pre><code class="language-solidity">function disburseFees() external
+</code></pre>
+<ul>
+<li>MUST revert if not enough time has passed since the last successful execution.</li>
+<li>MUST revert if any vault has a recipient different from this contract.</li>
+<li>MUST revert if any vault has a withdrawal network different from <code>WithdrawalNetwork.L2</code>.</li>
+<li>MUST revert if total fees collected are 0.</li>
+<li>It MUST set the <code>lastDisbursementTime</code> to the current block timestamp.</li>
+<li>MUST emit <code>FeesDisbursed</code> event if the funds were disbursed.</li>
+</ul>
+<h4 id="receive"><a class="header" href="#receive"><code>receive</code></a></h4>
+<p>Receives funds from any of the <code>FeeVault</code>s if and only if the disbursing process is in progress, and reverts
+otherwise. This is enforced using transient storage flags.</p>
+<pre><code class="language-solidity">receive() external payable
+</code></pre>
+<ul>
+<li>MUST revert if the disbursing process is not in progress.</li>
+<li>MUST accept funds from the <code>BaseFeeVault</code>, <code>L1FeeVault</code>, <code>SequencerFeeVault</code> and <code>OperatorFeeVault</code> only.</li>
+<li>MUST emit a <code>FeesReceived</code> event upon successful execution.</li>
+</ul>
+<h4 id="setsharescalculator"><a class="header" href="#setsharescalculator"><code>setSharesCalculator</code></a></h4>
+<p>Sets the address of the calculator used to partition the fees.</p>
+<pre><code class="language-solidity">function setSharesCalculator(ISharesCalculator _newSharesCalculator) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code></li>
+<li>MUST emit a <code>SharesCalculatorUpdated</code> event upon successful execution.</li>
+<li>MUST update the <code>sharesCalculator</code> storage variable.</li>
+</ul>
+<!-- Fee share basis points are hardcoded constants; no setters are exposed. -->
+<h4 id="setfeedisbursementinterval"><a class="header" href="#setfeedisbursementinterval"><code>setFeeDisbursementInterval</code></a></h4>
+<p>Sets the minimum time, in seconds, that must pass between consecutive calls to <code>disburseFees</code>.</p>
+<pre><code class="language-solidity">function setFeeDisbursementInterval(uint128 _newInterval) external
+</code></pre>
+<ul>
+<li>MUST only be callable by <code>ProxyAdmin.owner()</code></li>
+<li>MUST emit a <code>FeeDisbursementIntervalUpdated</code> event upon successful execution.</li>
+<li>MUST update the <code>feeDisbursementInterval</code> storage variable.</li>
+</ul>
+<h3 id="events-1"><a class="header" href="#events-1">Events</a></h3>
+<h4 id="feesdisbursed"><a class="header" href="#feesdisbursed"><code>FeesDisbursed</code></a></h4>
+<p>Emitted when fees are successfully withdrawn from fee vaults and distributed to recipients.</p>
+<pre><code class="language-solidity">event FeesDisbursed(ShareInfo[] shareInfo, uint256 grossRevenue)
+</code></pre>
+<h4 id="feesreceived"><a class="header" href="#feesreceived"><code>FeesReceived</code></a></h4>
+<p>Emitted when the contract receives funds.</p>
+<pre><code class="language-solidity">event FeesReceived(address indexed sender, uint256 amount)
+</code></pre>
+<h4 id="feedisbursementintervalupdated"><a class="header" href="#feedisbursementintervalupdated"><code>FeeDisbursementIntervalUpdated</code></a></h4>
+<p>Emitted when the minimum time interval between consecutive fee disbursements is successfully updated.</p>
+<pre><code class="language-solidity">event FeeDisbursementIntervalUpdated(uint128 oldFeeDisbursementInterval, uint128 newFeeDisbursementInterval)
+</code></pre>
+<h4 id="sharescalculatorupdated"><a class="header" href="#sharescalculatorupdated"><code>SharesCalculatorUpdated</code></a></h4>
+<p>Emitted when the shares calculator is updated.</p>
+<pre><code class="language-solidity">event SharesCalculatorUpdated(address oldSharesCalculator, address newSharesCalculator)
+</code></pre>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<ul>
+<li>Given that vault recipients can now be updated, it's important to ensure that this can only be done by the
+appropriate address, namely <code>ProxyAdmin.owner()</code>.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../protocol/custom-gas-token/withdrawals.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../protocol/revshare/fees-depositor.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../protocol/custom-gas-token/withdrawals.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../protocol/revshare/fees-depositor.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

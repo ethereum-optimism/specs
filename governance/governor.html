@@ -1,0 +1,706 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Governor - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/governance/governor.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="governor"><a class="header" href="#governor">Governor</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#constants">Constants</a></li>
+<li><a href="#interface">Interface</a>
+<ul>
+<li><a href="#core-functions">Core Functions</a>
+<ul>
+<li><a href="#cancel"><code>cancel</code></a></li>
+<li><a href="#cancelwithmodule"><code>cancelWithModule</code></a></li>
+<li><a href="#castvote"><code>castVote</code></a></li>
+<li><a href="#castvotebysig"><code>castVoteBySig</code></a></li>
+<li><a href="#castvotewithreason"><code>castVoteWithReason</code></a></li>
+<li><a href="#castvotewithreasonandparams"><code>castVoteWithReasonAndParams</code></a></li>
+<li><a href="#castvotewithreasonandparamsbysig"><code>castVoteWithReasonAndParamsBySig</code></a></li>
+<li><a href="#editproposaltype"><code>editProposalType</code></a></li>
+<li><a href="#execute"><code>execute</code></a></li>
+<li><a href="#executewithmodule"><code>executeWithModule</code></a></li>
+<li><a href="#propose"><code>propose</code></a></li>
+<li><a href="#proposewithmodule"><code>proposeWithModule</code></a></li>
+<li><a href="#relay"><code>relay</code></a></li>
+<li><a href="#setmoduleapproval"><code>setModuleApproval</code></a></li>
+<li><a href="#setproposaldeadline"><code>setProposalDeadline</code></a></li>
+<li><a href="#setproposalthreshold"><code>setProposalThreshold</code></a></li>
+<li><a href="#setvotingdelay"><code>setVotingDelay</code></a></li>
+<li><a href="#setvotingperiod"><code>setVotingPeriod</code></a></li>
+<li><a href="#updatequorumnumerator"><code>updateQuorumNumerator</code></a></li>
+</ul>
+</li>
+<li><a href="#getters">Getters</a>
+<ul>
+<li><a href="#approvedmodules"><code>approvedModules</code></a></li>
+<li><a href="#getproposaltype"><code>getProposalType</code></a></li>
+<li><a href="#getvotes"><code>getVotes</code></a></li>
+<li><a href="#getvoteswithparams"><code>getVotesWithParams</code></a></li>
+<li><a href="#hasvoted"><code>hasVoted</code></a></li>
+<li><a href="#hashproposal"><code>hashProposal</code></a></li>
+<li><a href="#hashproposalwithmodule"><code>hashProposalWithModule</code></a></li>
+<li><a href="#manager"><code>manager</code></a></li>
+<li><a href="#name"><code>name</code></a></li>
+<li><a href="#proposaldeadline"><code>proposalDeadline</code></a></li>
+<li><a href="#proposalsnapshot"><code>proposalSnapshot</code></a></li>
+<li><a href="#proposalthreshold"><code>proposalThreshold</code></a></li>
+<li><a href="#proposalvotes"><code>proposalVotes</code></a></li>
+<li><a href="#quorum"><code>quorum</code></a></li>
+<li><a href="#quorumdenominator"><code>quorumDenominator</code></a></li>
+<li><a href="#quorumnumerator"><code>quorumNumerator</code></a></li>
+<li><a href="#quorumnumerator-current"><code>quorumNumerator</code> (current)</a></li>
+<li><a href="#state"><code>state</code></a></li>
+<li><a href="#supportsinterface"><code>supportsInterface</code></a></li>
+<li><a href="#token"><code>token</code></a></li>
+<li><a href="#version"><code>version</code></a></li>
+<li><a href="#votablesupply"><code>votableSupply</code></a></li>
+<li><a href="#votablesupply-specific-block"><code>votableSupply</code> (specific block)</a></li>
+<li><a href="#votingdelay"><code>votingDelay</code></a></li>
+<li><a href="#votingperiod"><code>votingPeriod</code></a></li>
+<li><a href="#weightcast"><code>weightCast</code></a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#proposalcanceled"><code>ProposalCanceled</code></a></li>
+<li><a href="#votecast"><code>VoteCast</code></a></li>
+<li><a href="#votecastwithparams"><code>VoteCastWithParams</code></a></li>
+<li><a href="#proposaltypeupdated"><code>ProposalTypeUpdated</code></a></li>
+<li><a href="#proposalexecuted"><code>ProposalExecuted</code></a></li>
+<li><a href="#proposalcreated"><code>ProposalCreated</code></a></li>
+<li><a href="#proposaldeadlineupdated"><code>ProposalDeadlineUpdated</code></a></li>
+<li><a href="#proposalthresholdset"><code>ProposalThresholdSet</code></a></li>
+<li><a href="#votingdelayset"><code>VotingDelaySet</code></a></li>
+<li><a href="#votingperiodset"><code>VotingPeriodSet</code></a></li>
+<li><a href="#quorumnumeratorupdated"><code>QuorumNumeratorUpdated</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#proposal-types">Proposal Types</a>
+<ul>
+<li><a href="#interface-1">Interface</a></li>
+</ul>
+</li>
+<li><a href="#modules">Modules</a>
+<ul>
+<li><a href="#interface-2">Interface</a></li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>Governor</code> contract implements the core governance logic for creating, voting, and executing proposals.
+This contract uses the <code>GovernanceToken</code> contract for voting power snapshots, and the <code>ProposalTypesConfigurator</code>
+for proposal types.</p>
+<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>COUNTING_MODE</code></td><td><code>support=bravo&amp;quorum=against,for,abstain&amp;params=modules</code></td><td>The configuration for supported values for <code>castVote</code> and how votes are counted, which is also consumed by UIs to show correct vote option and interpret results.</td></tr>
+<tr><td><code>PROPOSAL_TYPES_CONFIGURATOR</code></td><td><code>0x67ecA7B65Baf0342CE7fBf0AA15921524414C09f</code></td><td>The address of the proposal types configurator contract</td></tr>
+<tr><td><code>VERSION</code></td><td><code>2</code></td><td>The version of the <code>Governor</code> contract</td></tr>
+<tr><td><code>TOKEN</code></td><td><code>0x4200000000000000000000000000000000000042</code></td><td>The address of the <code>GovernanceToken</code> contract</td></tr>
+</tbody></table>
+</div>
+<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
+<h3 id="core-functions"><a class="header" href="#core-functions">Core Functions</a></h3>
+<h4 id="cancel"><a class="header" href="#cancel"><code>cancel</code></a></h4>
+<p>Cancels a proposal. A proposal MUST only be cancellable by the manager and ONLY when it's not in a cancelled or executed
+state.</p>
+<pre><code class="language-solidity">function cancel(address[] memory _targets, uint256[] memory _values, bytes[] memory _calldatas, bytes32 _descriptionHash) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>ProposalCanceled</code> event and return the ID of the proposal that was cancelled.</p>
+<h4 id="cancelwithmodule"><a class="header" href="#cancelwithmodule"><code>cancelWithModule</code></a></h4>
+<p>Similar to <code>cancel</code>, but for proposals that were created with a module.</p>
+<pre><code class="language-solidity">function cancelWithModule(address _module, bytes memory _proposalData, bytes32 _descriptionHash) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>ProposalCanceled</code> event and return the ID of the proposal that was cancelled.</p>
+<h4 id="castvote"><a class="header" href="#castvote"><code>castVote</code></a></h4>
+<p>Cast a vote on a proposal. This function MUST adhere to the configuration specified in <code>COUNTING_MODE</code>:</p>
+<ul>
+<li><code>support</code>: MUST support governor-bravo-style voting options: <code>against</code> (0), <code>for</code> (1), and <code>abstain</code> (2).</li>
+<li><code>quorum</code>: MUST be the sum of votes <code>against</code>, <code>for</code>, and <code>abstain</code>.</li>
+<li><code>params</code>: MUST use a module if the proposal was created with one.</li>
+</ul>
+<p>The voting weight of the voter MUST be determined by the number of votes the account had delegated to it at the time
+the proposal state became active. The <code>_support</code> parameter MUST be one of the voting options, noted above.</p>
+<pre><code class="language-solidity">function castVote(uint256 _proposalId, uint8 _support) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>VoteCast</code> event and return the voting weight.</p>
+<h4 id="castvotebysig"><a class="header" href="#castvotebysig"><code>castVoteBySig</code></a></h4>
+<p>Cast a vote on a proposal using a signature. This function MUST calculate the voter address using the <code>v</code>, <code>r</code>, and <code>s</code>
+parameters, and apply the same logic specified in <a href="#castvote"><code>castVote</code></a>.</p>
+<pre><code class="language-solidity">function castVoteBySig(uint256 _proposalId, uint8 _support, uint8 _v, bytes32 _r, bytes32 _s) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>VoteCast</code> event and return the voting weight.</p>
+<h4 id="castvotewithreason"><a class="header" href="#castvotewithreason"><code>castVoteWithReason</code></a></h4>
+<p>Cast a vote on a proposal with a reason. This function MUST apply the same logic specified in <a href="#castvote"><code>castVote</code></a>.</p>
+<pre><code class="language-solidity">function castVoteWithReason(uint256 _proposalId, uint8 _support, string memory _reason) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>VoteCast</code> event and return the voting weight.</p>
+<h4 id="castvotewithreasonandparams"><a class="header" href="#castvotewithreasonandparams"><code>castVoteWithReasonAndParams</code></a></h4>
+<p>Cast a vote on a proposal with a reason and additional encoded parameters. This function MUST apply the same logic
+specified in <a href="#castvote"><code>castVote</code></a>. Additionally, the function MUST call <code>countVote</code> function of the module with the
+additional encoded parameters.</p>
+<pre><code class="language-solidity">function castVoteWithReasonAndParams(uint256 _proposalId, uint8 _support, string memory _reason, bytes memory _params) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>VoteCastWithParams</code> event if the length of the parameters is more than zero. Otherwise,
+the function MUST emit the <code>VoteCast</code> event. The function MUST also return the voting weight.</p>
+<h4 id="castvotewithreasonandparamsbysig"><a class="header" href="#castvotewithreasonandparamsbysig"><code>castVoteWithReasonAndParamsBySig</code></a></h4>
+<p>Cast a vote on a proposal with a reason and additional encoded parameters using the voter address calculated from the
+<code>v</code>, <code>r</code>, and <code>s</code> parameters. This function MUST apply the same logic specified in <a href="#castvote"><code>castVote</code></a>.</p>
+<pre><code class="language-solidity">function castVoteWithReasonAndParams(uint256 _proposalId, uint8 _support, string memory _reason, bytes memory _params, uint8 _v, bytes32 _r, bytes32 _s) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>VoteCastWithParams</code> event if the length of the parameters is more than zero. Otherwise,
+the function MUST emit the <code>VoteCast</code> event. The function MUST also return the voting weight.</p>
+<h4 id="editproposaltype"><a class="header" href="#editproposaltype"><code>editProposalType</code></a></h4>
+<p>Edit the type of a proposal that is still active. This function MUST only be callable by the manager. Additionally,
+this function MUST revert if either the proposal or proposal type doesn't exist.</p>
+<pre><code class="language-solidity">function editProposalType(uint256 _proposalId, uint8 _proposalType) external
+</code></pre>
+<p>This function MUST emit the <code>ProposalTypeUpdated</code> event.</p>
+<h4 id="execute"><a class="header" href="#execute"><code>execute</code></a></h4>
+<p>Execute a successful proposal. This MUST only be possible when the proposal has reached quorum and is considered
+successful in terms of votes.</p>
+<pre><code class="language-solidity">function execute(address[] memory _targets, uint256[] memory _values, bytes[] memory _calldatas, bytes32 _descriptionHash) external payable returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>ProposalExecuted</code> event and return the proposal ID.</p>
+<h4 id="executewithmodule"><a class="header" href="#executewithmodule"><code>executeWithModule</code></a></h4>
+<p>Similar to <a href="#execute"><code>execute</code></a>, but for proposals that were created with a module. This MUST only be possible when the
+proposal has reached quorum and is considered successful in terms of votes.</p>
+<p>This function must call the <code>formatExecuteParams</code> function of the module passing the proposal ID and data to receive
+the formatted <code>targets</code>, <code>values</code>, and <code>calldatas</code> for execution. This MUST adhere to the <a href="#interface-1">module's interface</a>.</p>
+<pre><code class="language-solidity">function executeWithModule(address _module, bytes memory _proposalData, bytes32 _descriptionHash) external payable returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>ProposalExecuted</code> event and return the proposal ID.</p>
+<h4 id="propose"><a class="header" href="#propose"><code>propose</code></a></h4>
+<p>Creates a new proposal. This function MUST check that the lengths of <code>targets</code> and <code>values</code> match, and that the length
+of <code>targets</code> is greater than zero. Additionally, the sender's voting power MUST be greater or equal to the proposal threshold.
+If the proposal uses a proposal type that is not configured, the function MUST revert. The function MUST also check
+that the proposal does not already exist using the hash of the parameters.</p>
+<p>The snapshot of the proposal MUST be the current block number plus the voting delay, and the deadline MUST be the snapshot
+plus the voting period.</p>
+<pre><code class="language-solidity">function propose(address[] memory _targets, uint256[] memory _values, bytes[] memory _calldatas, string memory _description, uint8 _proposalType) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>ProposalCreated</code> event and return the ID of the proposal created.</p>
+<h4 id="proposewithmodule"><a class="header" href="#proposewithmodule"><code>proposeWithModule</code></a></h4>
+<p>Similar to <a href="#propose"><code>propose</code></a>, but for proposals that were created with a module. This function MUST check that the
+module is approved, and apply the same checks specified in <a href="#propose"><code>propose</code></a>. This function MUST call the <code>propose</code>
+function of the module, according to the <a href="#interface-1">interface</a>.</p>
+<pre><code class="language-solidity">function proposeWithModule(address _module, bytes memory _proposalData, bytes32 _descriptionHash, uint8 _proposalType) external returns (uint256)
+</code></pre>
+<p>This function MUST emit the <code>ProposalCreated</code> event and return the ID of the proposal created.</p>
+<h4 id="relay"><a class="header" href="#relay"><code>relay</code></a></h4>
+<p>Relays a transaction or function call to an arbitrary target. This function MUST only be callable as part of a
+governance proposal.</p>
+<p>In cases where the governance executor is some contract other than the <code>Governor</code> itself, like when using a timelock,
+this function CAN be invoked in a governance proposal to recover tokens or Ether that was sent to the <code>Governor</code> contract
+by mistake.</p>
+<pre><code class="language-solidity">function relay(address _target, uint256 _value, bytes calldata _data) external payable
+</code></pre>
+<h4 id="setmoduleapproval"><a class="header" href="#setmoduleapproval"><code>setModuleApproval</code></a></h4>
+<p>Approve or reject a module. This function MUST only be callable by the manager.</p>
+<pre><code class="language-solidity">function setModuleApproval(address _module, bool _approved) external
+</code></pre>
+<h4 id="setproposaldeadline"><a class="header" href="#setproposaldeadline"><code>setProposalDeadline</code></a></h4>
+<p>Updates the voting deadline of a proposal with a new block number. This function MUST only be callable by the manager.</p>
+<pre><code class="language-solidity">function setProposalDeadline(uint256 _proposalId, uint64 _deadline) external
+</code></pre>
+<p>This function MUST emit the <code>ProposalDeadlineUpdated</code> event.</p>
+<h4 id="setproposalthreshold"><a class="header" href="#setproposalthreshold"><code>setProposalThreshold</code></a></h4>
+<p>Updates the threshold of voting power needed to create proposals. This function MUST only be callable by the manager.</p>
+<pre><code class="language-solidity">function setProposalThreshold(uint256 _newProposalThreshold) external
+</code></pre>
+<p>This function MUST emit the <code>ProposalThresholdSet</code> event.</p>
+<h4 id="setvotingdelay"><a class="header" href="#setvotingdelay"><code>setVotingDelay</code></a></h4>
+<p>Updates the voting delay, which is the number of blocks before the voting for a proposal starts. This function MUST
+only be callable by the manager.</p>
+<pre><code class="language-solidity">function setVotingDelay(uint256 _newVotingDelay) external
+</code></pre>
+<p>This function MUST emit the <code>VotingDelaySet</code> event.</p>
+<h4 id="setvotingperiod"><a class="header" href="#setvotingperiod"><code>setVotingPeriod</code></a></h4>
+<p>Updates the voting period, which is the number of blocks the voting for a proposal lasts. This function MUST only be
+callable by the manager.</p>
+<pre><code class="language-solidity">function setVotingPeriod(uint256 _newVotingPeriod) external
+</code></pre>
+<p>This function MUST check that <code>_newVotingPeriod</code> is more than zero, and emit the <code>VotingPeriodSet</code> event.</p>
+<h4 id="updatequorumnumerator"><a class="header" href="#updatequorumnumerator"><code>updateQuorumNumerator</code></a></h4>
+<p>Updates the quorum numerator. This function MUST only be callable by the manager.</p>
+<pre><code class="language-solidity">function updateQuorumNumerator(uint256 _newQuorumNumerator) external
+</code></pre>
+<p>This function MUST check that the <code>_newQuorumNumerator</code> does not exceed the quorum denominator, and emit the
+<code>QuorumNumeratorUpdated</code> event.</p>
+<h3 id="getters"><a class="header" href="#getters">Getters</a></h3>
+<h4 id="approvedmodules"><a class="header" href="#approvedmodules"><code>approvedModules</code></a></h4>
+<p>Retrieves whether a module was approved or not to be used in proposals.</p>
+<pre><code class="language-solidity">function approvedModules(address _module) external view returns (bool)
+</code></pre>
+<h4 id="getproposaltype"><a class="header" href="#getproposaltype"><code>getProposalType</code></a></h4>
+<p>Returns the type of a proposal.</p>
+<pre><code class="language-solidity">function getProposalType(uint256 _proposalId) external view returns (uint8);
+</code></pre>
+<h4 id="getvotes"><a class="header" href="#getvotes"><code>getVotes</code></a></h4>
+<p>Returns the current voting power of an <code>_account</code>, which is the amount of <code>GovernanceToken</code> tokens delegated
+to it.</p>
+<pre><code class="language-solidity">function getVotes(uint256 _account) external view returns (uint256);
+</code></pre>
+<h4 id="getvoteswithparams"><a class="header" href="#getvoteswithparams"><code>getVotesWithParams</code></a></h4>
+<p>Returns the voting power of an account at a specific block number given additional encoded parameters.</p>
+<pre><code class="language-solidity">function getVotesWithParams(address _account, uint256 _blockNumber) external view returns (uint256);
+</code></pre>
+<h4 id="hasvoted"><a class="header" href="#hasvoted"><code>hasVoted</code></a></h4>
+<p>Returns whether an <code>_account</code> has cast a vote for a proposal with ID <code>_proposalId</code>.</p>
+<pre><code class="language-solidity">function hasVoted(uint256 _proposalId, address _account) external view returns (bool);
+</code></pre>
+<h4 id="hashproposal"><a class="header" href="#hashproposal"><code>hashProposal</code></a></h4>
+<p>Hashing function used to build a proposal ID from proposal parameters.</p>
+<pre><code class="language-solidity">function hashProposal(address[] _targets, uint256[] _values, bytes[] _calldatas, bytes32 _descriptionHash) external view returns (uint256);
+</code></pre>
+<h4 id="hashproposalwithmodule"><a class="header" href="#hashproposalwithmodule"><code>hashProposalWithModule</code></a></h4>
+<p>Hashing function used to build a proposal ID from proposal parameters and a module address.</p>
+<pre><code class="language-solidity">function hashProposalWithModule(address _module, bytes _proposalData, bytes32 _descriptionHash) external view returns (uint256);
+</code></pre>
+<h4 id="manager"><a class="header" href="#manager"><code>manager</code></a></h4>
+<p>Returns the manager address of the <code>Governor</code> contract.</p>
+<pre><code class="language-solidity">function manager() external view returns (address);
+</code></pre>
+<h4 id="name"><a class="header" href="#name"><code>name</code></a></h4>
+<p>Returns the name of the <code>Governor</code> contract.</p>
+<pre><code class="language-solidity">function name() external view returns (string memory);
+</code></pre>
+<h4 id="proposaldeadline"><a class="header" href="#proposaldeadline"><code>proposalDeadline</code></a></h4>
+<p>Returns the block number for when voting on a proposal ends.</p>
+<pre><code class="language-solidity">function proposalDeadline(uint256 _proposalId) external view returns (uint256);
+</code></pre>
+<h4 id="proposalsnapshot"><a class="header" href="#proposalsnapshot"><code>proposalSnapshot</code></a></h4>
+<p>Returns the block number for the snapshot of a proposal.</p>
+<pre><code class="language-solidity">function proposalSnapshot(uint256 _proposalId) external view returns (uint256);
+</code></pre>
+<h4 id="proposalthreshold"><a class="header" href="#proposalthreshold"><code>proposalThreshold</code></a></h4>
+<p>Returns the minimum voting power required in order to create a proposal.</p>
+<pre><code class="language-solidity">function proposalThreshold() external view returns (uint256);
+</code></pre>
+<h4 id="proposalvotes"><a class="header" href="#proposalvotes"><code>proposalVotes</code></a></h4>
+<p>Returns the distribution of votes for a proposal, ordered in <code>against</code>, <code>for</code>, and <code>abstain</code>.</p>
+<pre><code class="language-solidity">function proposalVotes(uint256 _proposalId) external view returns (uint256, uint256, uint256);
+</code></pre>
+<h4 id="quorum"><a class="header" href="#quorum"><code>quorum</code></a></h4>
+<p>Returns the quorum of a proposal, which MUST be the sum of votes <code>against</code>, <code>for</code>, and <code>abstain</code>,
+per the <code>quorum</code> configuration in <code>COUNTING_MODE</code>.</p>
+<pre><code class="language-solidity">function quorum(uint256 _proposalId) external view returns (uint256);
+</code></pre>
+<h4 id="quorumdenominator"><a class="header" href="#quorumdenominator"><code>quorumDenominator</code></a></h4>
+<p>Returns the denominator for the quorum calculation.</p>
+<pre><code class="language-solidity">function quorumDenominator() external view returns (uint256);
+</code></pre>
+<h4 id="quorumnumerator"><a class="header" href="#quorumnumerator"><code>quorumNumerator</code></a></h4>
+<p>Returns the quorum numerator at a specific block number.</p>
+<pre><code class="language-solidity">function quorumNumerator(uint256 _blockNumber) external view returns (uint256);
+</code></pre>
+<h4 id="quorumnumerator-current"><a class="header" href="#quorumnumerator-current"><code>quorumNumerator</code> (current)</a></h4>
+<p>Returns the quorum numerator at the current block number.</p>
+<pre><code class="language-solidity">function quorumNumerator() external view returns (uint256);
+</code></pre>
+<h4 id="state"><a class="header" href="#state"><code>state</code></a></h4>
+<p>Returns the state of a proposal. The state MUST adhere to the following control flow:</p>
+<ul>
+<li><code>Pending</code> (0): The proposal's start block is equal or greater than the current block number.</li>
+<li><code>Active</code> (1): The proposal's end block is equal or greater the current block number.</li>
+<li><code>Canceled</code> (2): The proposal has been cancelled.</li>
+<li><code>Defeated</code> (3): The proposal has not reached quorum or has not been considered successful.</li>
+<li><code>Succeeded</code> (4): The proposal has reached quorum and is considered successful.</li>
+<li><code>Queued</code> (5): The proposal has been queued. This state SHOULD NOT be used in the current version.</li>
+<li><code>Expired</code> (6): The grace period for the execution of the proposal has passed. This state SHOULD
+NOT be used in the current version.</li>
+<li><code>Executed</code> (7): The proposal has been executed.</li>
+</ul>
+<p>This function MUST revert if the proposal does not exist.</p>
+<pre><code class="language-solidity">function state(uint256 _proposalId) external view returns (ProposalState);
+</code></pre>
+<h4 id="supportsinterface"><a class="header" href="#supportsinterface"><code>supportsInterface</code></a></h4>
+<p>Returns whether the contract implements the interface defined by <code>_interfaceId</code>. This function MUST return <code>true</code>
+for ID of the following interfaces: <code>ERC165</code>, <code>ERC721</code>, and <code>ERC1155</code>.</p>
+<pre><code class="language-solidity">function supportsInterface(bytes4 _interfaceId) external view returns (bool);
+</code></pre>
+<h4 id="token"><a class="header" href="#token"><code>token</code></a></h4>
+<p>Returns the <code>TOKEN</code> constant, which MUST be the address of the <code>GovernanceToken</code> contract.</p>
+<pre><code class="language-solidity">function token() external view returns (address);
+</code></pre>
+<h4 id="version"><a class="header" href="#version"><code>version</code></a></h4>
+<p>Returns the version of the <code>Governor</code> contract.</p>
+<pre><code class="language-solidity">function version() external view returns (string memory);
+</code></pre>
+<h4 id="votablesupply"><a class="header" href="#votablesupply"><code>votableSupply</code></a></h4>
+<p>Returns the votable supply for the current block number. Votable supply is defined by the total amount
+of <code>GovernanceToken</code> tokens that are currently delegated.</p>
+<pre><code class="language-solidity">function votableSupply() external view returns (uint256);
+</code></pre>
+<h4 id="votablesupply-specific-block"><a class="header" href="#votablesupply-specific-block"><code>votableSupply</code> (specific block)</a></h4>
+<p>Returns the votable supply for the given block number. Votable supply is defined by the total amount
+of <code>GovernanceToken</code> tokens that are currently delegated.</p>
+<pre><code class="language-solidity">function votableSupply(uint256 _blockNumber) external view returns (uint256);
+</code></pre>
+<h4 id="votingdelay"><a class="header" href="#votingdelay"><code>votingDelay</code></a></h4>
+<p>Returns the delay, in terms of block amounts, between proposal creation and voting start.</p>
+<pre><code class="language-solidity">function votingDelay() external view returns (uint256);
+</code></pre>
+<h4 id="votingperiod"><a class="header" href="#votingperiod"><code>votingPeriod</code></a></h4>
+<p>Returns the period, in terms of block amounts, that voting for a proposal is enabled.</p>
+<pre><code class="language-solidity">function votingPeriod() external view returns (uint256);
+</code></pre>
+<h4 id="weightcast"><a class="header" href="#weightcast"><code>weightCast</code></a></h4>
+<p>Returns the total number of votes that <code>_account</code> has cast for <code>_proposalId</code>.</p>
+<pre><code class="language-solidity">function weightCast(uint256 _proposalId, uint256 _account) external view returns (uint256);
+</code></pre>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<h4 id="proposalcanceled"><a class="header" href="#proposalcanceled"><code>ProposalCanceled</code></a></h4>
+<p>MUST trigger when a proposal is cancelled, per the <a href="#cancel"><code>cancel</code></a> and <a href="#cancelwithmodule"><code>cancelWithModule</code></a> functions.</p>
+<pre><code class="language-solidity">event ProposalCanceled(uint256 proposalId);
+</code></pre>
+<h4 id="votecast"><a class="header" href="#votecast"><code>VoteCast</code></a></h4>
+<p>MUST trigger when proposal vote is cast, per the <a href="#castvote"><code>castVote</code></a>, <a href="#castvotebysig"><code>castVoteBySig</code></a>
+and <a href="#castvotewithreason"><code>castVoteWithReason</code></a> functions.</p>
+<pre><code class="language-solidity">event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason);
+</code></pre>
+<h4 id="votecastwithparams"><a class="header" href="#votecastwithparams"><code>VoteCastWithParams</code></a></h4>
+<p>MUST trigger when proposal vote with parameters is cast, per the
+<a href="#castvotewithreasonandparams"><code>castVoteWithReasonAndParams</code></a>, and
+<a href="#castvotewithreasonandparamsbysig"><code>castVoteWithReasonAndParamsBySig</code></a> functions.</p>
+<pre><code class="language-solidity">event VoteCastWithParams(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason, bytes params); 
+</code></pre>
+<h4 id="proposaltypeupdated"><a class="header" href="#proposaltypeupdated"><code>ProposalTypeUpdated</code></a></h4>
+<p>MUST trigger when a proposal type is updated, per the <a href="#editproposaltype"><code>editProposalType</code></a> function.</p>
+<pre><code class="language-solidity">event ProposalTypeUpdated(uint256 indexed proposalId, uint8 proposalType);
+</code></pre>
+<h4 id="proposalexecuted"><a class="header" href="#proposalexecuted"><code>ProposalExecuted</code></a></h4>
+<p>MUST trigger when a proposal is executed, per the <a href="#execute"><code>execute</code></a> and <a href="#executewithmodule">`executeWithModule</a> functions.</p>
+<pre><code class="language-solidity">event ProposalExecuted(uint256 proposalId);
+</code></pre>
+<h4 id="proposalcreated"><a class="header" href="#proposalcreated"><code>ProposalCreated</code></a></h4>
+<p>MUST trigger when a proposal is created, per the <a href="#propose"><code>propose</code></a> and <a href="#proposewithmodule"><code>proposeWithModule</code></a> functions.</p>
+<pre><code class="language-solidity">event ProposalCreated(uint256 indexed proposalId, address indexed proposer, address indexed module, address[] targets, uint256[] values, string[] signatures, bytes[] calldatas, uint256 startBlock, uint256 endBlock, string description, uint8 proposalType);
+</code></pre>
+<h4 id="proposaldeadlineupdated"><a class="header" href="#proposaldeadlineupdated"><code>ProposalDeadlineUpdated</code></a></h4>
+<p>MUST trigger when the proposal voting deadline is updated, per the <a href="#setproposaldeadline"><code>setProposalDeadline</code></a> function.</p>
+<pre><code class="language-solidity">event ProposalDeadlineUpdated(uint256 proposalId, uint64 deadline);
+</code></pre>
+<h4 id="proposalthresholdset"><a class="header" href="#proposalthresholdset"><code>ProposalThresholdSet</code></a></h4>
+<p>MUST trigger when the proposal threshold is updated, per the <a href="#setproposalthreshold"><code>setProposalThreshold</code></a>.</p>
+<pre><code class="language-solidity">event ProposalThresholdSet(uint256 oldProposalThreshold, uint256 newProposalThreshold);
+</code></pre>
+<h4 id="votingdelayset"><a class="header" href="#votingdelayset"><code>VotingDelaySet</code></a></h4>
+<p>MUST trigger when the proposal voting delay is updated, per the <a href="#setvotingdelay"><code>setVotingDelay</code></a>.</p>
+<pre><code class="language-solidity">event VotingDelaySet(uint256 oldVotingDelay, uint256 newVotingDelay);
+</code></pre>
+<h4 id="votingperiodset"><a class="header" href="#votingperiodset"><code>VotingPeriodSet</code></a></h4>
+<p>MUST trigger when the proposal voting period is updated, per the <a href="#setvotingperiod"><code>setVotingPeriod</code></a>.</p>
+<pre><code class="language-solidity">event VotingPeriodSet(uint256 oldVotingPeriod, uint256 newVotingPeriod);
+</code></pre>
+<h4 id="quorumnumeratorupdated"><a class="header" href="#quorumnumeratorupdated"><code>QuorumNumeratorUpdated</code></a></h4>
+<p>MUST trigger when the quorum numerator is updated, per the <a href="#updatequorumnumerator"><code>updateQuorumNumerator</code></a> function.</p>
+<pre><code class="language-solidity">event QuorumNumeratorUpdated(uint256 oldQuorumNumerator, uint256 newQuorumNumerator);
+</code></pre>
+<h2 id="proposal-types"><a class="header" href="#proposal-types">Proposal Types</a></h2>
+<p>The <code>Governor</code> contract uses proposal types to define the quorum and approval threshold for a proposal to pass.
+These proposal types are created and stored as part of an external contract called <code>ProposalTypesConfigurator</code>.
+The <code>Governor</code> contract can only create or edit proposal types, and the amount of proposal types is limited to 255.</p>
+<p>With the <a href="#proposewithmodule"><code>proposeWithModule</code></a> function, proposers can create proposals with any supported proposal
+type.</p>
+<h3 id="interface-1"><a class="header" href="#interface-1">Interface</a></h3>
+<p>The <code>ProposalTypesConfigurator</code> contract MUST adhere to the following interface so that it can be used by the <code>Governor</code>
+contract:</p>
+<pre><code class="language-solidity">interface IProposalTypesConfigurator {
+  /// @notice The proposal type data structure.
+  struct ProposalType {
+    uint16 quorum; // The quorum percentage, denominated in basis points.
+    uint16 approvalThreshold; // The approval threshold percentage, denominated in basis points.
+    string name; // The name of the proposal type.
+  }
+
+  /// @notice Getter function to get the proposal type data for a given ID.
+  function proposalTypes(uint256 _proposalTypeId) external view returns (ProposalType memory);
+
+  /// @notice Creates or updates a proposal type.
+  /// @param _proposalTypeId The ID of the proposal type.
+  /// @param _quorum The quorum percentage.
+  /// @param _approvalThreshold The approval threshold percentage.
+  /// @param _name The proposal type name.
+  function setProposalType(uint256 _proposalTypeId, uint16 _quorum, uint16 _approvalThreshold, string memory _name) external;
+}
+</code></pre>
+<h2 id="modules"><a class="header" href="#modules">Modules</a></h2>
+<p>Additionally, from proposal types, the <code>Governor</code> contract allows to use modules as part of the proposal lifecycle.
+Modules are external contract that override the default proposing and voting logic of the <code>Governor</code> contract,
+and can be used to implement custom voting mechanisms. The common modules are:</p>
+<ul>
+<li><code>ApprovalVotingModule</code>: Allow voting for multiple options in a proposal and execute either the options that exceed
+a threshold or the top voted options.</li>
+<li><code>OptimisticModule</code>: Combined with a optimistic proposal type, allows to pass a proposal without quorum and approval
+threshold. Utilized for signaling proposals.</li>
+</ul>
+<p>With the <a href="#setmoduleapproval"><code>setModuleApproval</code></a> function, modules can be approved to be used as part of proposals.</p>
+<h3 id="interface-2"><a class="header" href="#interface-2">Interface</a></h3>
+<p>In order to be supported by the <code>Governor</code> contract, modules MUST implement the following interface:</p>
+<pre><code class="language-solidity">interface IGovernorModule {
+    /// @notice Executes custom proposal creation logic.
+    /// @param _proposalId The ID of the proposal.
+    /// @param _proposalData The encoded data of the proposal.
+    /// @param _descriptionHash The hash of the proposal description.
+    function propose(uint256 _proposalId, bytes memory _proposalData, bytes32 _descriptionHash) external;
+
+    /// @notice Executes custom proposal voting logic.
+    /// @param _proposalId The ID of the proposal.
+    /// @param _account The account that is voting.
+    /// @param _support The vote option.
+    /// @param _weight The voting weight.
+    /// @param _params The encoded parameters.
+    function countVote(uint256 _proposalId, address _account, uint8 _support, uint256 _weight, bytes memory _params) external;
+
+    /// @notice Getter that returns the formatted targets, values, and calldatas for a proposal.
+    /// @param _proposalId The ID of the proposal.
+    /// @param _proposalData The encoded data of the proposal to extract the parameters from.
+    function formatExecuteParams(uint256 _proposalId, bytes memory _proposalData)
+        external
+        view
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory calldatas);
+      
+    /// @notice Getter that returns if a proposal was successful in terms of votes.
+    /// @param _proposalId The ID of the proposal.
+    function voteSucceeded(uint256 proposalId) external view returns (bool);
+}
+</code></pre>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<p>As proposal types and modules allow for great flexibility of proposal logic, governance MUST be aware of the implications
+of approving certain modules as they are external contracts that could be upgraded or modified after deployment.</p>
+<p>As users are able to choose proposal types and modules when creating a proposal, the combination of proposal types and
+modules MUST be carefully considered to avoid unexpected behaviors.</p>
+<p>Due to the dependency on the <code>GovernanceToken</code>, all proposals are subject to the token's voting power logic.
+Therefore, it MUST be ensured that the <code>GovernanceToken</code> provides accurate and up-to-date balance and delegation
+checkpoints.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../governance/mint-manager.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../experimental/standard-l2-genesis.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../governance/mint-manager.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../experimental/standard-l2-genesis.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+        <script src="../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

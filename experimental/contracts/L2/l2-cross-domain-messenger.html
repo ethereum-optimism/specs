@@ -1,0 +1,470 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>L2CrossDomainMessenger - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L2/l2-cross-domain-messenger.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l2crossdomainmessenger"><a class="header" href="#l2crossdomainmessenger">L2CrossDomainMessenger</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#cross-domain-message">Cross-Domain Message</a></li>
+<li><a href="#message-replay">Message Replay</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-l1crossdomainmessenger-authentication">a01-001: L1CrossDomainMessenger Authentication</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-002-l2tol1messagepasser-availability">a01-002: L2ToL1MessagePasser Availability</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-message-replay-protection">i01-001: Message Replay Protection</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-cross-chain-message-integrity">i01-002: Cross-Chain Message Integrity</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-003-failed-message-recovery">i01-003: Failed Message Recovery</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-004-relayed-call-fidelity">i01-004: Relayed Call Fidelity</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-005-l1%E2%86%92l2-delivery-liveness">i01-005: L1→L2 Delivery Liveness</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#sendmessage">sendMessage</a></li>
+<li><a href="#relaymessage">relayMessage</a></li>
+<li><a href="#xdomainmessagesender">xDomainMessageSender</a></li>
+<li><a href="#messagenonce">messageNonce</a></li>
+<li><a href="#basegas">baseGas</a></li>
+<li><a href="#l1crossdomainmessenger">l1CrossDomainMessenger</a></li>
+<li><a href="#paused">paused</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The L2CrossDomainMessenger provides a high-level interface for sending messages between L2 and L1. It handles
+message passing in both directions, manages nonces for message ordering, provides replay protection for failed
+messages, and ensures messages can only be relayed by the paired L1CrossDomainMessenger contract.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="cross-domain-message"><a class="header" href="#cross-domain-message">Cross-Domain Message</a></h3>
+<p>A message sent from one domain (L1 or L2) to another, containing a target address, calldata, gas limit, and
+optional ETH value. Messages are encoded with metadata including sender address and nonce for authentication and
+replay protection.</p>
+<h3 id="message-replay"><a class="header" href="#message-replay">Message Replay</a></h3>
+<p>The ability to re-execute a failed cross-domain message. Messages that fail during initial relay (due to
+insufficient gas or target revert) are marked as failed and can be replayed by anyone with sufficient gas.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-l1crossdomainmessenger-authentication"><a class="header" href="#a01-001-l1crossdomainmessenger-authentication">a01-001: L1CrossDomainMessenger Authentication</a></h3>
+<p>The L1CrossDomainMessenger contract is trusted to only relay valid messages that were actually sent from L1. The
+address aliasing mechanism correctly identifies messages from the L1CrossDomainMessenger.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Address aliasing is a deterministic protocol-level mechanism</li>
+<li>L1CrossDomainMessenger address is set at initialization and cannot be changed</li>
+</ul>
+<h3 id="a01-002-l2tol1messagepasser-availability"><a class="header" href="#a01-002-l2tol1messagepasser-availability">a01-002: L2ToL1MessagePasser Availability</a></h3>
+<p>The L2ToL1MessagePasser predeploy contract at address 0x4200000000000000000000000000000000000016 is available and
+correctly implements the initiateWithdrawal function for sending messages to L1.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>L2ToL1MessagePasser is a protocol predeploy at a fixed address</li>
+<li>Contract is part of the core L2 system and cannot be modified</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-message-replay-protection"><a class="header" href="#i01-001-message-replay-protection">i01-001: <a href="#message-replay">Message Replay</a> Protection</a></h3>
+<p>Successfully relayed messages cannot be replayed. Each <a href="../L1/l1-cross-domain-messenger.html#message-hash">message hash</a>
+can only be marked as successful once, and attempting to relay an already-successful message will revert.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>Without replay protection, an attacker could replay messages multiple times, potentially draining funds or causing
+unauthorized state changes on the target contract.</p>
+<h3 id="i01-002-cross-chain-message-integrity"><a class="header" href="#i01-002-cross-chain-message-integrity">i01-002: Cross-Chain Message Integrity</a></h3>
+<p>Messages can only be relayed if they originate from the paired L1CrossDomainMessenger or are being replayed after
+an initial failure. Unauthorized parties cannot inject or forge <a href="#cross-domain-message">Cross-Domain Message</a>s.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If message authentication fails, attackers could execute arbitrary calls on L2 with spoofed sender addresses,
+completely compromising the security of cross-chain applications.</p>
+<h3 id="i01-003-failed-message-recovery"><a class="header" href="#i01-003-failed-message-recovery">i01-003: Failed Message Recovery</a></h3>
+<p>Messages that fail during relay (due to insufficient gas or target revert) are marked as failed and can be
+replayed by any party. Failed messages cannot be marked as successful, and successful messages cannot be marked as
+failed.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Without proper failed message handling, users could lose funds or have messages permanently stuck if initial relay
+attempts fail. The replay mechanism ensures messages can eventually be executed with sufficient gas.</p>
+<h3 id="i01-004-relayed-call-fidelity"><a class="header" href="#i01-004-relayed-call-fidelity">i01-004: Relayed Call Fidelity</a></h3>
+<p>Any relayed message executes a call whose target, calldata bytes, and ETH value are exactly those committed by the
+initiating message, and during that call the xDomainMessageSender observed by the target equals the committed
+sender. This holds for the initial relay and any replay.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>Tampering with calldata, value, or sender would enable arbitrary execution or fund loss.</p>
+<h3 id="i01-005-l1l2-delivery-liveness"><a class="header" href="#i01-005-l1l2-delivery-liveness">i01-005: L1→L2 Delivery Liveness</a></h3>
+<p>All valid sent messages from L1 to L2 are received within a bounded amount of time less than 1 day. This time
+bound is provided by the derivation pipeline and sequencing window, while the messenger processes messages as
+they arrive.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>Without timely message delivery, users could experience indefinite delays in cross-chain operations, potentially
+leading to fund loss, failed time-sensitive transactions, or denial of service for critical bridge functionality.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initializes the L2CrossDomainMessenger with the address of the paired L1CrossDomainMessenger contract.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_l1CrossDomainMessenger</code>: Address of the L1CrossDomainMessenger contract on L1</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST only be callable once due to initializer modifier</li>
+<li>MUST set the otherMessenger to the provided L1CrossDomainMessenger address</li>
+<li>MUST initialize xDomainMsgSender to the default value if not already set</li>
+<li>MUST disable further initialization attempts</li>
+</ul>
+<h3 id="sendmessage"><a class="header" href="#sendmessage">sendMessage</a></h3>
+<p>Sends a message from L2 to L1 by encoding it and passing it to the L2ToL1MessagePasser predeploy.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_target</code>: Target contract or wallet address on L1</li>
+<li><code>_message</code>: Calldata to send to the target address</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for executing the message on L1</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST accept ETH value via msg.value to be sent with the message</li>
+<li>MUST compute the full gas limit using baseGas function</li>
+<li>MUST encode the message with relayMessage selector, current nonce, sender, target, value, minGasLimit, and
+message data</li>
+<li>MUST call L2ToL1MessagePasser.initiateWithdrawal with the encoded message and ETH value</li>
+<li>MUST emit SentMessage event with target, sender, message, nonce, and minGasLimit</li>
+<li>MUST emit SentMessageExtension1 event with sender and value</li>
+<li>MUST increment the <a href="../L1/l1-cross-domain-messenger.html#message-nonce">message nonce</a> after sending</li>
+</ul>
+<h3 id="relaymessage"><a class="header" href="#relaymessage">relayMessage</a></h3>
+<p>Relays a message that was sent from L1 to L2. Can be called by the L1CrossDomainMessenger (via deposit transaction)
+or by anyone replaying a previously failed message.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_nonce</code>: Nonce of the message being relayed</li>
+<li><code>_sender</code>: Address of the user who sent the message on L1</li>
+<li><code>_target</code>: Target address on L2</li>
+<li><code>_value</code>: ETH value to send with the message</li>
+<li><code>_minGasLimit</code>: Minimum gas limit for executing the message</li>
+<li><code>_message</code>: Calldata to send to the target</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the contract is paused (always returns false on L2)</li>
+<li>MUST revert if message version is greater than 1</li>
+<li>MUST check legacy version 0 message hash is not already relayed for migrated withdrawals</li>
+<li>MUST compute version 1 message hash from all parameters</li>
+<li>MUST verify msg.value equals _value and message is not already failed when called by L1CrossDomainMessenger</li>
+<li>MUST verify msg.value is zero and message is marked as failed when called by anyone else (replay)</li>
+<li>MUST revert if target is an unsafe system address (self or L2ToL1MessagePasser)</li>
+<li>MUST revert if message hash is already marked as successful</li>
+<li>MUST mark message as failed if insufficient gas remains or reentrancy is detected</li>
+<li>MUST set xDomainMsgSender to _sender before external call</li>
+<li>MUST execute external call to target with remaining gas minus reserved gas</li>
+<li>MUST reset xDomainMsgSender to default value after external call</li>
+<li>MUST mark message as successful and emit RelayedMessage event if call succeeds</li>
+<li>MUST mark message as failed and emit FailedRelayedMessage event if call fails</li>
+<li>MUST revert if called from estimation address and message fails</li>
+</ul>
+<h3 id="xdomainmessagesender"><a class="header" href="#xdomainmessagesender">xDomainMessageSender</a></h3>
+<p>Returns the address of the sender of the currently executing <a href="#cross-domain-message">Cross-Domain Message</a>.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if no message is currently being executed (xDomainMsgSender is default value)</li>
+<li>MUST return the sender address of the currently executing message</li>
+</ul>
+<h3 id="messagenonce"><a class="header" href="#messagenonce">messageNonce</a></h3>
+<p>Returns the nonce that will be used for the next sent message, with the message version encoded in the upper 2
+bytes.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the current msgNonce with MESSAGE_VERSION (1) encoded in the upper 2 bytes</li>
+<li>MUST be a view function with no state changes</li>
+</ul>
+<h3 id="basegas"><a class="header" href="#basegas">baseGas</a></h3>
+<p>Computes the minimum gas required to guarantee a message will be received on L1 without running out of gas.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_message</code>: Message calldata</li>
+<li><code>_minGasLimit</code>: Minimum desired gas limit for the target call</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST compute execution gas including relay overhead, call overhead, reserved gas, gas check buffer, and adjusted
+minGasLimit accounting for EIP-150</li>
+<li>MUST compute total message size including encoding overhead</li>
+<li>MUST return the maximum of execution gas plus calldata gas cost and the EIP-7623 calldata floor cost</li>
+<li>MUST be a pure function with no state access</li>
+</ul>
+<h3 id="l1crossdomainmessenger"><a class="header" href="#l1crossdomainmessenger">l1CrossDomainMessenger</a></h3>
+<p>Legacy getter for the paired L1CrossDomainMessenger address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the otherMessenger address</li>
+<li>MUST be a view function with no state changes</li>
+</ul>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>Returns whether the contract is paused. Always returns false on L2.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return false</li>
+<li>MUST be a view function with no state changes</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L2/l1-block.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L2/l2-standard-bridge.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L2/l1-block.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L2/l2-standard-bridge.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

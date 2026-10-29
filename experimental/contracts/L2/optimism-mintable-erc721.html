@@ -1,0 +1,375 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>OptimismMintableERC721 - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L2/optimism-mintable-erc721.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="optimismmintableerc721"><a class="header" href="#optimismmintableerc721">OptimismMintableERC721</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#remote-token">Remote Token</a></li>
+<li><a href="#remote-chain">Remote Chain</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-bridge-contract-is-trusted">a01-001: Bridge contract is trusted</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a></li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#constructor">constructor</a></li>
+<li><a href="#remotechainid">remoteChainId</a></li>
+<li><a href="#remotetoken">remoteToken</a></li>
+<li><a href="#bridge">bridge</a></li>
+<li><a href="#safemint">safeMint</a></li>
+<li><a href="#burn">burn</a></li>
+<li><a href="#supportsinterface">supportsInterface</a></li>
+<li><a href="#_baseuri">_baseURI</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The OptimismMintableERC721 contract represents an ERC721 token on L2 that corresponds to a native ERC721 token on
+another chain (typically L1). It enables cross-chain NFT transfers through the ERC721 bridge by allowing the bridge to
+mint tokens when NFTs are deposited and burn tokens when NFTs are withdrawn.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="remote-token"><a class="header" href="#remote-token">Remote Token</a></h3>
+<p>The address of the corresponding ERC721 token contract on the remote chain (typically L1) that this L2 token
+represents.</p>
+<h3 id="remote-chain"><a class="header" href="#remote-chain">Remote Chain</a></h3>
+<p>The chain where the <a href="#remote-token">Remote Token</a> is natively deployed, identified by its chain ID.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-bridge-contract-is-trusted"><a class="header" href="#a01-001-bridge-contract-is-trusted">a01-001: Bridge contract is trusted</a></h3>
+<p>The bridge contract specified at deployment is trusted to only mint tokens corresponding to valid deposits from the
+<a href="#remote-chain">Remote Chain</a> and only burn tokens for valid withdrawal requests.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Bridge address is immutable and set at deployment</li>
+<li>Bridge contract is part of the audited OP Stack protocol</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<p>N/A - This contract has no non-obvious cross-function invariants. All critical properties are enforced through
+single-function access control and standard ERC721 behavior.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<p>Initializes the OptimismMintableERC721 contract with bridge configuration and token metadata.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_bridge</code>: Address of the ERC721 bridge contract on this network</li>
+<li><code>_remoteChainId</code>: Chain ID where the <a href="#remote-token">Remote Token</a> is deployed</li>
+<li><code>_remoteToken</code>: Address of the corresponding token on the <a href="#remote-chain">Remote Chain</a></li>
+<li><code>_name</code>: ERC721 token name</li>
+<li><code>_symbol</code>: ERC721 token symbol</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if <code>_bridge</code> is the zero address</li>
+<li>MUST revert if <code>_remoteChainId</code> is zero</li>
+<li>MUST revert if <code>_remoteToken</code> is the zero address</li>
+<li>MUST set <code>BRIDGE</code> to <code>_bridge</code></li>
+<li>MUST set <code>REMOTE_CHAIN_ID</code> to <code>_remoteChainId</code></li>
+<li>MUST set <code>REMOTE_TOKEN</code> to <code>_remoteToken</code></li>
+<li>MUST set <code>baseTokenURI</code> to an EIP-681 formatted URI: <code>ethereum:{_remoteToken}@{_remoteChainId}/tokenURI?uint256=</code></li>
+<li>MUST initialize the ERC721 contract with <code>_name</code> and <code>_symbol</code></li>
+</ul>
+<h3 id="remotechainid"><a class="header" href="#remotechainid">remoteChainId</a></h3>
+<p>Returns the chain ID where the <a href="#remote-token">Remote Token</a> is deployed.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the value of <code>REMOTE_CHAIN_ID</code></li>
+</ul>
+<h3 id="remotetoken"><a class="header" href="#remotetoken">remoteToken</a></h3>
+<p>Returns the address of the token on the <a href="#remote-chain">Remote Chain</a>.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the value of <code>REMOTE_TOKEN</code></li>
+</ul>
+<h3 id="bridge"><a class="header" href="#bridge">bridge</a></h3>
+<p>Returns the address of the ERC721 bridge on this network.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the value of <code>BRIDGE</code></li>
+</ul>
+<h3 id="safemint"><a class="header" href="#safemint">safeMint</a></h3>
+<p>Mints a token to a recipient address, checking that contract recipients implement the ERC721 receiver interface.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_to</code>: Address to mint the token to</li>
+<li><code>_tokenId</code>: Token ID to mint</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the bridge contract</li>
+<li>MUST revert if <code>_to</code> is the zero address</li>
+<li>MUST revert if <code>_tokenId</code> already exists</li>
+<li>MUST revert if <code>_to</code> is a contract that does not implement IERC721Receiver</li>
+<li>MUST mint <code>_tokenId</code> to <code>_to</code></li>
+<li>MUST emit <code>Mint</code> event with <code>_to</code> and <code>_tokenId</code></li>
+<li>MUST emit standard ERC721 <code>Transfer</code> event from zero address to <code>_to</code> with <code>_tokenId</code></li>
+</ul>
+<h3 id="burn"><a class="header" href="#burn">burn</a></h3>
+<p>Burns a token from an owner address.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_from</code>: Address to burn the token from (informational, not used for validation)</li>
+<li><code>_tokenId</code>: Token ID to burn</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if caller is not the bridge contract</li>
+<li>MUST revert if <code>_tokenId</code> does not exist</li>
+<li>MUST burn <code>_tokenId</code> from its current owner</li>
+<li>MUST emit <code>Burn</code> event with <code>_from</code> and <code>_tokenId</code></li>
+<li>MUST emit standard ERC721 <code>Transfer</code> event from current owner to zero address with <code>_tokenId</code></li>
+</ul>
+<h3 id="supportsinterface"><a class="header" href="#supportsinterface">supportsInterface</a></h3>
+<p>Checks if the contract implements a given interface.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_interfaceId</code>: The interface identifier to check</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return true if <code>_interfaceId</code> matches the IOptimismMintableERC721 interface ID</li>
+<li>MUST return true if <code>_interfaceId</code> matches any interface supported by ERC721Enumerable</li>
+<li>MUST return false otherwise</li>
+</ul>
+<h3 id="_baseuri"><a class="header" href="#_baseuri">_baseURI</a></h3>
+<p>Returns the base URI for computing token URIs.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the value of <code>baseTokenURI</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L2/fee-vault.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L2/optimism-mintable-erc721-factory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L2/fee-vault.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L2/optimism-mintable-erc721-factory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

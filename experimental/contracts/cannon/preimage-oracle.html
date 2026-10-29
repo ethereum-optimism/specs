@@ -1,0 +1,675 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>PreimageOracle - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/cannon/preimage-oracle.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="preimageoracle"><a class="header" href="#preimageoracle">PreimageOracle</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#preimage-key">Preimage Key</a></li>
+<li><a href="#large-preimage-proposal">Large Preimage Proposal</a></li>
+<li><a href="#challenge-period">Challenge Period</a></li>
+<li><a href="#preimage-part">Preimage Part</a></li>
+<li><a href="#keccak-block">Keccak Block</a></li>
+<li><a href="#bond">Bond</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#a01-001-challengers-monitor-proposals">a01-001: Challengers Monitor Proposals</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#a01-002-sufficient-gas-for-precompile-calls">a01-002: Sufficient Gas for Precompile Calls</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#i01-001-preimage-data-integrity">i01-001: Preimage Data Integrity</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-002-large-preimage-proposal-finality">i01-002: Large Preimage Proposal Finality</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-003-challenge-correctness">i01-003: Challenge Correctness</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-004-bond-conservation">i01-004: Bond Conservation</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="#i01-005-local-data-isolation">i01-005: Local Data Isolation</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#readpreimage">readPreimage</a></li>
+<li><a href="#loadlocaldata">loadLocalData</a></li>
+<li><a href="#loadkeccak256preimagepart">loadKeccak256PreimagePart</a></li>
+<li><a href="#loadsha256preimagepart">loadSha256PreimagePart</a></li>
+<li><a href="#loadblobpreimagepart">loadBlobPreimagePart</a></li>
+<li><a href="#loadprecompilepreimagepart">loadPrecompilePreimagePart</a></li>
+<li><a href="#initlpp">initLPP</a></li>
+<li><a href="#addleaveslpp">addLeavesLPP</a></li>
+<li><a href="#challengelpp">challengeLPP</a></li>
+<li><a href="#challengefirstlpp">challengeFirstLPP</a></li>
+<li><a href="#squeezelpp">squeezeLPP</a></li>
+<li><a href="#gettreerootlpp">getTreeRootLPP</a></li>
+<li><a href="#proposalcount">proposalCount</a></li>
+<li><a href="#proposalblockslen">proposalBlocksLen</a></li>
+<li><a href="#challengeperiod">challengePeriod</a></li>
+<li><a href="#minproposalsize">minProposalSize</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The PreimageOracle provides data availability for fault proof execution by storing preimage data indexed by
+cryptographic keys. It supports multiple preimage types including local data, hash-based preimages, blob data, and
+precompile results. For large preimages that cannot be submitted in a single transaction, it implements a Large
+Preimage Proposal system with a challenge mechanism to ensure data integrity.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="preimage-key"><a class="header" href="#preimage-key">Preimage Key</a></h3>
+<p>A 32-byte identifier for preimage data where the first byte indicates the preimage type and the remaining 31 bytes
+contain type-specific data. Preimage types include: local (0x01), keccak256 (0x02), sha256 (0x04), blob (0x05), and
+precompile (0x06).</p>
+<h3 id="large-preimage-proposal"><a class="header" href="#large-preimage-proposal">Large Preimage Proposal</a></h3>
+<p>A mechanism for submitting preimages larger than the minimum proposal size through an incremental merkleization
+process. Proposals include keccak256 state commitments for each 136-byte block and are subject to a challenge period
+before finalization.</p>
+<h3 id="challenge-period"><a class="header" href="#challenge-period">Challenge Period</a></h3>
+<p>The time duration after a Large Preimage Proposal is finalized during which anyone can challenge the correctness of
+the keccak256 computation. If no successful challenge occurs during this period, the proposal can be squeezed to make
+the preimage data available.</p>
+<h3 id="preimage-part"><a class="header" href="#preimage-part">Preimage Part</a></h3>
+<p>A 32-byte segment of preimage data at a specific offset. Preimages are stored with an 8-byte big-endian length prefix
+followed by the actual data, and can be read in 32-byte parts at any valid offset.</p>
+<h3 id="keccak-block"><a class="header" href="#keccak-block">Keccak Block</a></h3>
+<p>A 136-byte chunk of data absorbed during keccak256 computation. Large Preimage Proposals process data in keccak blocks
+and commit to the internal state after each block is absorbed and permuted.</p>
+<h3 id="bond"><a class="header" href="#bond">Bond</a></h3>
+<p>ETH locked when creating a Large Preimage Proposal. The bond is returned to the claimant if the proposal passes the
+challenge period unchallenged, or paid to a challenger if the proposal is successfully challenged.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="a01-001-challengers-monitor-proposals"><a class="header" href="#a01-001-challengers-monitor-proposals">a01-001: Challengers Monitor Proposals</a></h3>
+<p>Honest challengers monitor <a href="#large-preimage-proposal">Large Preimage Proposal</a>s and challenge any proposals with
+incorrect keccak256 computations
+during the <a href="#challenge-period">Challenge Period</a>.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li><a href="#challenge-period">Challenge Period</a> provides sufficient time for monitoring</li>
+<li><a href="#bond">Bond</a> incentivizes challenges by rewarding successful challengers</li>
+<li>Proposals are publicly observable through events and storage</li>
+</ul>
+<h3 id="a01-002-sufficient-gas-for-precompile-calls"><a class="header" href="#a01-002-sufficient-gas-for-precompile-calls">a01-002: Sufficient Gas for Precompile Calls</a></h3>
+<p>Callers of loadPrecompilePreimagePart provide sufficient gas to execute the precompile call as specified by the
+requiredGas parameter.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>Contract enforces minimum gas check before calling precompile</li>
+<li>Reserved gas buffer accounts for call setup overhead</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="i01-001-preimage-data-integrity"><a class="header" href="#i01-001-preimage-data-integrity">i01-001: Preimage Data Integrity</a></h3>
+<p>Once a <a href="#preimage-part">Preimage Part</a> is marked as available (preimagePartOk is true), the stored data at that key and
+offset never
+changes and always corresponds to the correct preimage for that key.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If preimage data could be modified after being stored, fault proofs could be invalidated or manipulated, allowing
+invalid state transitions to be proven valid or preventing valid proofs from being generated.</p>
+<h3 id="i01-002-large-preimage-proposal-finality"><a class="header" href="#i01-002-large-preimage-proposal-finality">i01-002: <a href="#large-preimage-proposal">Large Preimage Proposal</a> Finality</a></h3>
+<p>Once a <a href="#large-preimage-proposal">Large Preimage Proposal</a> passes the <a href="#challenge-period">Challenge Period</a> without
+being countered, the preimage data it represents
+becomes permanently available and cannot be modified or removed.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If finalized proposals could be modified or removed, fault proofs depending on that data would fail, breaking the
+security guarantees of the fault proof system.</p>
+<h3 id="i01-003-challenge-correctness"><a class="header" href="#i01-003-challenge-correctness">i01-003: Challenge Correctness</a></h3>
+<p>A <a href="#large-preimage-proposal">Large Preimage Proposal</a> can only be successfully challenged if it contains an incorrect
+keccak256 state transition,
+and all proposals with incorrect state transitions can be successfully challenged.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If incorrect proposals could pass unchallenged or correct proposals could be falsely challenged, the integrity of the
+preimage data would be compromised, allowing invalid fault proofs or preventing valid ones.</p>
+<h3 id="i01-004-bond-conservation"><a class="header" href="#i01-004-bond-conservation">i01-004: <a href="#bond">Bond</a> Conservation</a></h3>
+<p>The total ETH held in proposal <a href="#bond">Bond</a>s equals the sum of all active proposal <a href="#bond">Bond</a>s, and <a href="#bond">Bond</a>s
+are only transferred to
+the claimant (on successful squeeze) or challenger (on successful challenge).</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If <a href="#bond">Bond</a>s could be lost or stolen, the economic security of the <a href="#large-preimage-proposal">Large Preimage
+Proposal</a> system would be compromised,
+reducing incentives for honest behavior.</p>
+<h3 id="i01-005-local-data-isolation"><a class="header" href="#i01-005-local-data-isolation">i01-005: Local Data Isolation</a></h3>
+<p>Preimage data loaded via loadLocalData for a given caller and local context can only be written by that specific
+caller, ensuring isolation between different callers' local data.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If local data could be overwritten by other callers, fault proofs could be manipulated by providing incorrect local
+context data, compromising the security of the dispute resolution process.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="readpreimage"><a class="header" href="#readpreimage">readPreimage</a></h3>
+<p>Reads a <a href="#preimage-part">Preimage Part</a> from storage.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_key</code>: The <a href="#preimage-key">Preimage Key</a> identifying the preimage</li>
+<li><code>_offset</code>: The byte offset within the preimage (including 8-byte length prefix)</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the <a href="#preimage-part">Preimage Part</a> at the specified key and offset has not been loaded (preimagePartOk
+is false)</li>
+<li>MUST return up to 32 bytes of preimage data starting at the offset</li>
+<li>MUST return the actual length of data available, which may be less than 32 bytes if the offset is near the end of
+the preimage</li>
+<li>MUST include the 8-byte big-endian length prefix in offset calculations (offset 0 starts at the length prefix)</li>
+</ul>
+<h3 id="loadlocaldata"><a class="header" href="#loadlocaldata">loadLocalData</a></h3>
+<p>Loads caller-specific local data into the preimage oracle.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_ident</code>: The local data identifier (1=L1 Head Hash, 2=Output Root, 3=Root Claim, 4=L2 Block Number, 5=Chain ID)</li>
+<li><code>_localContext</code>: Context value for key localization</li>
+<li><code>_word</code>: The data word to store</li>
+<li><code>_size</code>: Number of bytes in the word to load (maximum 32)</li>
+<li><code>_partOffset</code>: Offset within the preimage to write</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST compute the localized key using the identifier, caller address, and local context</li>
+<li>MUST revert if partOffset is greater than or equal to size + 8</li>
+<li>MUST revert if size is greater than 32</li>
+<li>MUST store the <a href="#preimage-part">Preimage Part</a> at the computed key and offset</li>
+<li>MUST mark the <a href="#preimage-part">Preimage Part</a> as available</li>
+<li>MUST store the preimage length as the provided size</li>
+<li>MUST return the computed localized key</li>
+</ul>
+<h3 id="loadkeccak256preimagepart"><a class="header" href="#loadkeccak256preimagepart">loadKeccak256PreimagePart</a></h3>
+<p>Prepares a keccak256 <a href="#preimage-part">Preimage Part</a> for reading.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_partOffset</code>: Offset within the preimage to prepare</li>
+<li><code>_preimage</code>: The complete preimage data</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if partOffset is greater than or equal to the preimage size + 8</li>
+<li>MUST compute the <a href="#preimage-key">Preimage Key</a> as keccak256(preimage) with the first byte set to 0x02</li>
+<li>MUST store the 32-byte <a href="#preimage-part">Preimage Part</a> starting at the specified offset (including 8-byte length
+prefix)</li>
+<li>MUST mark the <a href="#preimage-part">Preimage Part</a> as available</li>
+<li>MUST store the preimage length</li>
+</ul>
+<h3 id="loadsha256preimagepart"><a class="header" href="#loadsha256preimagepart">loadSha256PreimagePart</a></h3>
+<p>Prepares a sha256 <a href="#preimage-part">Preimage Part</a> for reading.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_partOffset</code>: Offset within the preimage to prepare</li>
+<li><code>_preimage</code>: The complete preimage data</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if partOffset is greater than or equal to the preimage size + 8</li>
+<li>MUST compute the <a href="#preimage-key">Preimage Key</a> using the SHA-256 precompile with the first byte set to 0x04</li>
+<li>MUST revert if the SHA-256 precompile call fails</li>
+<li>MUST store the 32-byte <a href="#preimage-part">Preimage Part</a> starting at the specified offset (including 8-byte length
+prefix)</li>
+<li>MUST mark the <a href="#preimage-part">Preimage Part</a> as available</li>
+<li>MUST store the preimage length</li>
+</ul>
+<h3 id="loadblobpreimagepart"><a class="header" href="#loadblobpreimagepart">loadBlobPreimagePart</a></h3>
+<p>Verifies and loads a blob <a href="#preimage-part">Preimage Part</a> using KZG proof verification.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_z</code>: The evaluation point (big-endian)</li>
+<li><code>_y</code>: The evaluation result (big-endian), which is the preimage data</li>
+<li><code>_commitment</code>: The KZG commitment (48 bytes)</li>
+<li><code>_proof</code>: The KZG proof (48 bytes)</li>
+<li><code>_partOffset</code>: Offset within the preimage to prepare</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST verify the KZG proof using the point evaluation precompile (address 0x0A)</li>
+<li>MUST revert if the KZG proof verification fails</li>
+<li>MUST revert if partOffset is greater than or equal to 40 (32 bytes data + 8 bytes prefix)</li>
+<li>MUST compute the <a href="#preimage-key">Preimage Key</a> as keccak256(commitment || z) with the first byte set to 0x05</li>
+<li>MUST store the 32-byte <a href="#preimage-part">Preimage Part</a> (the value y) at the specified offset</li>
+<li>MUST mark the <a href="#preimage-part">Preimage Part</a> as available</li>
+<li>MUST store the preimage length as 32</li>
+</ul>
+<h3 id="loadprecompilepreimagepart"><a class="header" href="#loadprecompilepreimagepart">loadPrecompilePreimagePart</a></h3>
+<p>Executes a precompile and stores the result as a preimage.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_partOffset</code>: Offset within the preimage result to prepare</li>
+<li><code>_precompile</code>: Address of the precompile to call</li>
+<li><code>_requiredGas</code>: Minimum gas required for the precompile execution</li>
+<li><code>_input</code>: Input data for the precompile call</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST verify sufficient gas is available (gas &gt;= (requiredGas * 64 / 63) + PRECOMPILE_CALL_RESERVED_GAS)</li>
+<li>MUST revert if insufficient gas is available</li>
+<li>MUST call the precompile with the provided input</li>
+<li>MUST compute the <a href="#preimage-key">Preimage Key</a> as keccak256(precompile || requiredGas || input) with the first byte
+set to 0x06</li>
+<li>MUST store the result as a 1-byte status (success/failure) followed by the return data</li>
+<li>MUST revert if partOffset is greater than or equal to the result size + 8</li>
+<li>MUST store the <a href="#preimage-part">Preimage Part</a> at the specified offset</li>
+<li>MUST mark the <a href="#preimage-part">Preimage Part</a> as available</li>
+<li>MUST store the preimage length as 1 + returndatasize</li>
+</ul>
+<h3 id="initlpp"><a class="header" href="#initlpp">initLPP</a></h3>
+<p>Initializes a new <a href="#large-preimage-proposal">Large Preimage Proposal</a>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_uuid</code>: Unique identifier for the proposal</li>
+<li><code>_partOffset</code>: Offset of the <a href="#preimage-part">Preimage Part</a> to extract</li>
+<li><code>_claimedSize</code>: Total size of the preimage being proposed</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST accept ETH payment as the proposal <a href="#bond">Bond</a></li>
+<li>MUST revert if the <a href="#bond">Bond</a> is less than MIN_<a href="#bond">Bond</a>_SIZE (0.25 ether)</li>
+<li>MUST revert if the caller is not an EOA (legacy check, can be bypassed with EIP-7702)</li>
+<li>MUST revert if partOffset is greater than or equal to claimedSize + 8</li>
+<li>MUST revert if claimedSize is less than MIN_LPP_SIZE_BYTES</li>
+<li>MUST revert if a proposal with the same claimant and uuid already exists</li>
+<li>MUST initialize proposal metadata with the part offset and claimed size</li>
+<li>MUST add the proposal to the proposals array</li>
+<li>MUST store the <a href="#bond">Bond</a> amount</li>
+</ul>
+<h3 id="addleaveslpp"><a class="header" href="#addleaveslpp">addLeavesLPP</a></h3>
+<p>Adds keccak256 state commitments to a <a href="#large-preimage-proposal">Large Preimage Proposal</a> merkle tree.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_uuid</code>: Unique identifier for the proposal</li>
+<li><code>_inputStartBlock</code>: Expected starting block number for this input</li>
+<li><code>_input</code>: Input data to process (must be multiple of 136 bytes)</li>
+<li><code>_stateCommitments</code>: Array of keccak256 state commitments after each block</li>
+<li><code>_finalize</code>: Whether to finalize the proposal after adding these leaves</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST pad the input if finalizing, otherwise use input as-is</li>
+<li>MUST revert if the caller is not an EOA (legacy check, can be bypassed with EIP-7702)</li>
+<li>MUST revert if the proposal has not been initialized</li>
+<li>MUST revert if the proposal has already been finalized</li>
+<li>MUST revert if inputStartBlock does not match the number of blocks already processed</li>
+<li>MUST revert if input length is not a multiple of 136 bytes</li>
+<li>MUST revert if the number of state commitments does not equal input length / 136</li>
+<li>MUST extract and store the <a href="#preimage-part">Preimage Part</a> if the part offset falls within the current input</li>
+<li>MUST add each <a href="#keccak-block">Keccak Block</a> to the merkle tree with its corresponding state commitment</li>
+<li>MUST revert if the total blocks processed exceeds MAX_LEAF_COUNT (2^16 - 1)</li>
+<li>MUST update metadata with blocks processed and bytes processed</li>
+<li>MUST set the timestamp to current block timestamp if finalizing</li>
+<li>MUST revert if finalizing and bytes processed does not equal claimed size</li>
+<li>MUST store the block number where leaves were added</li>
+<li>MUST emit a log0 event with caller address and all calldata</li>
+</ul>
+<h3 id="challengelpp"><a class="header" href="#challengelpp">challengeLPP</a></h3>
+<p>Challenges an incorrect keccak256 state transition in a <a href="#large-preimage-proposal">Large Preimage Proposal</a>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimant</code>: Address of the proposal claimant</li>
+<li><code>_uuid</code>: Unique identifier for the proposal</li>
+<li><code>_stateMatrix</code>: The keccak256 state matrix before the postState block</li>
+<li><code>_preState</code>: The leaf containing the pre-state commitment</li>
+<li><code>_preStateProof</code>: Merkle proof for the pre-state leaf</li>
+<li><code>_postState</code>: The leaf containing the post-state commitment</li>
+<li><code>_postStateProof</code>: Merkle proof for the post-state leaf</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST verify both leaves are present in the proposal's merkle tree</li>
+<li>MUST revert if either merkle proof is invalid</li>
+<li>MUST verify the provided state matrix matches the preState commitment</li>
+<li>MUST revert if the state matrix does not match</li>
+<li>MUST verify preState and postState are contiguous (postState.index = preState.index + 1)</li>
+<li>MUST revert if the states are not contiguous</li>
+<li>MUST absorb the postState input into the state matrix and permute</li>
+<li>MUST verify the resulting state does NOT match the postState commitment</li>
+<li>MUST revert if the resulting state matches (challenge is invalid)</li>
+<li>MUST mark the proposal as countered</li>
+<li>MUST transfer the <a href="#bond">Bond</a> to the challenger</li>
+</ul>
+<h3 id="challengefirstlpp"><a class="header" href="#challengefirstlpp">challengeFirstLPP</a></h3>
+<p>Challenges the first keccak256 block in a <a href="#large-preimage-proposal">Large Preimage Proposal</a>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimant</code>: Address of the proposal claimant</li>
+<li><code>_uuid</code>: Unique identifier for the proposal</li>
+<li><code>_postState</code>: The first leaf in the proposal</li>
+<li><code>_postStateProof</code>: Merkle proof for the first leaf</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST verify the leaf is present in the proposal's merkle tree</li>
+<li>MUST revert if the merkle proof is invalid</li>
+<li>MUST verify the postState index is 0</li>
+<li>MUST revert if the index is not 0</li>
+<li>MUST absorb the postState input into a fresh state matrix and permute</li>
+<li>MUST verify the resulting state does NOT match the postState commitment</li>
+<li>MUST revert if the resulting state matches (challenge is invalid)</li>
+<li>MUST mark the proposal as countered</li>
+<li>MUST transfer the <a href="#bond">Bond</a> to the challenger</li>
+</ul>
+<h3 id="squeezelpp"><a class="header" href="#squeezelpp">squeezeLPP</a></h3>
+<p>Finalizes a <a href="#large-preimage-proposal">Large Preimage Proposal</a> after the <a href="#challenge-period">Challenge Period</a>, making
+the preimage data available.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimant</code>: Address of the proposal claimant</li>
+<li><code>_uuid</code>: Unique identifier for the proposal</li>
+<li><code>_stateMatrix</code>: The keccak256 state matrix before the final block</li>
+<li><code>_preState</code>: The second-to-last leaf in the proposal</li>
+<li><code>_preStateProof</code>: Merkle proof for the pre-state leaf</li>
+<li><code>_postState</code>: The final leaf in the proposal</li>
+<li><code>_postStateProof</code>: Merkle proof for the post-state leaf</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the proposal has been countered</li>
+<li>MUST revert if the proposal has not been finalized (timestamp is 0)</li>
+<li>MUST revert if the <a href="#challenge-period">Challenge Period</a> has not elapsed</li>
+<li>MUST verify both leaves are present in the proposal's merkle tree</li>
+<li>MUST revert if either merkle proof is invalid</li>
+<li>MUST verify the provided state matrix matches the preState commitment</li>
+<li>MUST revert if the state matrix does not match</li>
+<li>MUST verify preState and postState are contiguous and postState is the final block</li>
+<li>MUST revert if the states are not contiguous or postState is not final</li>
+<li>MUST absorb the postState input, permute, and squeeze to get the final keccak256 digest</li>
+<li>MUST set the first byte of the digest to 0x02 (keccak256 preimage type)</li>
+<li>MUST store the <a href="#preimage-part">Preimage Part</a> at the specified offset with the computed key</li>
+<li>MUST mark the <a href="#preimage-part">Preimage Part</a> as available</li>
+<li>MUST store the preimage length</li>
+<li>MUST transfer the <a href="#bond">Bond</a> to the claimant</li>
+</ul>
+<h3 id="gettreerootlpp"><a class="header" href="#gettreerootlpp">getTreeRootLPP</a></h3>
+<p>Computes the merkle root of a <a href="#large-preimage-proposal">Large Preimage Proposal</a>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_owner</code>: Address of the proposal claimant</li>
+<li><code>_uuid</code>: Unique identifier for the proposal</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST compute the merkle root from the proposal's branch and the number of blocks processed</li>
+<li>MUST use zero hashes for empty branches</li>
+<li>MUST return the computed root</li>
+</ul>
+<h3 id="proposalcount"><a class="header" href="#proposalcount">proposalCount</a></h3>
+<p>Returns the total number of <a href="#large-preimage-proposal">Large Preimage Proposal</a>s created.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the length of the proposals array</li>
+</ul>
+<h3 id="proposalblockslen"><a class="header" href="#proposalblockslen">proposalBlocksLen</a></h3>
+<p>Returns the number of addLeavesLPP calls made for a proposal.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_claimant</code>: Address of the proposal claimant</li>
+<li><code>_uuid</code>: Unique identifier for the proposal</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the length of the proposalBlocks array for the specified proposal</li>
+</ul>
+<h3 id="challengeperiod"><a class="header" href="#challengeperiod">challengePeriod</a></h3>
+<p>Returns the <a href="#challenge-period">Challenge Period</a> duration.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the CHALLENGE_PERIOD immutable value</li>
+</ul>
+<h3 id="minproposalsize"><a class="header" href="#minproposalsize">minProposalSize</a></h3>
+<p>Returns the minimum size for <a href="#large-preimage-proposal">Large Preimage Proposal</a>s.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST return the MIN_LPP_SIZE_BYTES immutable value</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/cannon/mips64.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/governance/governance-token.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/cannon/mips64.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/governance/governance-token.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>
