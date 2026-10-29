@@ -61,8 +61,8 @@ Only the contract owner can modify the name-to-address mappings via `setAddress`
 **Severity: High**
 
 If this invariant were violated, unauthorized parties could modify the address registry, potentially redirecting legacy
-contracts to malicious addresses. This would be Critical if assumption [a01-001] fails and the owner is compromised,
-as it could lead to complete system compromise for dependent contracts.
+contracts to malicious addresses. This would be Critical if assumption [a01-001](#a01-001-owner-governance-constraints)
+fails and the owner is compromised, as it could lead to complete system compromise for dependent contracts.
 
 ## Function Specification
 

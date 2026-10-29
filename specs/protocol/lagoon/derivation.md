@@ -19,6 +19,7 @@
 [g-sequencer]: ../../glossary.md#sequencer
 [g-deposited]: ../../glossary.md#deposited-transaction
 [g-post-exec-payload]: ../../glossary.md#post-exec-payload
+[EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718
 
 # Span Batch Updates
 

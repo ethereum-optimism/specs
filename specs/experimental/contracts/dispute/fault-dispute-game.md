@@ -101,20 +101,22 @@ authorized proposer and [Challenger Role](#challenger-role)s. Only the proposer 
 parameters for
 immutable configuration values.
 
-**SuperFaultDisputeGame**: A permissionless variant that validates [Super Root](#super-root) claims using L2
-sequence numbers (timestamps) instead of L2 block numbers. Uses the [Immutable Args Pattern] and requires the L2 chain
-ID to be zero. [Super Root](#super-root)s optionally support cross-chain state commitments for interoperability.
+**SuperFaultDisputeGame**: A permissionless variant that validates [Super Root](#super-root) claims using L2 sequence
+numbers (timestamps) instead of L2 block numbers. Uses the [Immutable Args Pattern](#immutable-args-pattern) and
+requires the L2 chain ID to be zero. [Super Root](#super-root)s optionally support cross-chain state commitments for
+interoperability.
 
 **SuperPermissionedDisputeGame**: Similar to PermissionedDisputeGame but extends SuperFaultDisputeGame to support super
-root claims with access control. Uses the [Immutable Args Pattern] to store proposer and challenger addresses.
+root claims with access control. Uses the [Immutable Args Pattern](#immutable-args-pattern) to store proposer and
+challenger addresses.
 
 **FaultDisputeGameV2**: The V2 permissionless implementation that refactors the architecture to use the [Immutable Args
-Pattern] for storing VM, WETH, AnchorStateRegistry, and other configuration values instead of constructor parameters.
-This reduces deployment costs and enables efficient cloning.
+Pattern](#immutable-args-pattern) for storing VM, WETH, AnchorStateRegistry, and other configuration values instead of
+constructor parameters. This reduces deployment costs and enables efficient cloning.
 
 **PermissionedDisputeGameV2**: Extends FaultDisputeGameV2 with access control restricting step and move functions to
 authorized proposer and [Challenger Role](#challenger-role)s. Only the proposer can initialize games. Uses the
-[Immutable Args Pattern] for
+[Immutable Args Pattern](#immutable-args-pattern) for
 all configuration values including proposer and challenger addresses.
 
 ## Definitions

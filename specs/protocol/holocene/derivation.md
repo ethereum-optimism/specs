@@ -150,8 +150,7 @@ which the span batch was derived, is also immediately dropped (see also [Fast Ch
 Invalidation](#fast-channel-invalidation)). However, a `past` span batch is only dropped, without
 dropping the remaining channel.
 
-> [!Note]
-> A word regarding overlapping span batches: the existing batch queue rules already contain the rule
+> **Note** A word regarding overlapping span batches: the existing batch queue rules already contain the rule
 > to drop batches whose L1 origin is older than that of the L2 safe head. The Delta span batch
 > checks also have an equivalent rule that applies to all singular batches past the safe head.
 > The overlap checks above are still performed on the span batch as a whole. The remaining full span
