@@ -498,7 +498,9 @@ transfer control of the chain. Silently changing a batcher hash or a gas limit w
 
 The [Starting Anchor State](#starting-anchor-state) must not be empty and must leave room for a
 successor proposal. The set's starting respected game type must be a super-root game type, and must
-be one of the game types migration registers on the shared factory.
+be one of the game types migration registers on the shared factory. It must also be a game type that `migrate()`
+supports as a starting respected game type. If the starting respected game type does not meet these conditions,
+`migrate()` reverts with `OPContractsManagerMigrator_InvalidStartingRespectedGameType`.
 
 #### Impact
 
@@ -512,8 +514,8 @@ so no proposal can be made or defended and withdrawals stop for the whole set.
 
 Every dispute game configuration migration installs must be one it can actually install and one that
 can be played: a super-root game type with a registered implementation, enabled, with an
-initialization bond consistent with whether that game type charges bonds, and with a non-zero
-absolute prestate where the game type requires one.
+initialization bond consistent with whether that game type charges bonds, with a non-zero absolute prestate where
+the game type requires one, and with all other game arguments valid under that game type's rules.
 
 A configuration that passes validation must not then fail installation.
 

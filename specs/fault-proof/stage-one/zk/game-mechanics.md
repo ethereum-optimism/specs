@@ -12,6 +12,7 @@
 - [Resolution](#resolution)
   - [Bond Distribution](#bond-distribution)
 - [Closing](#closing)
+- [Pausing](#pausing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -72,7 +73,7 @@ GameCreation ──► Unchallenged ──────────────�
 | Transition | Trigger |
 | --- | --- |
 | `GameCreation → Unchallenged` | `initialize()` called by `DisputeGameFactory` |
-| `Unchallenged → Challenged` | `challenge()` called before deadline |
+| `Unchallenged → Challenged` | `challenge()` called while `gameOver()` is `false` |
 | `Unchallenged → UnchallengedAndValidProofProvided` | `prove()` succeeds |
 | `Challenged → ChallengedAndValidProofProvided` | `prove()` succeeds |
 | Any non-terminal `ProposalStatus` → `Resolved` | `resolve()` succeeds |
@@ -83,9 +84,10 @@ GameCreation ──► Unchallenged ──────────────�
 Game creation is fully permissionless. Anyone may call `DisputeGameFactory.create()` with the
 required `initBond`. The factory deploys an MCP clone, which then validates the proposal.
 
-`initBond` is the ETH value the proposer must send when creating a game. The factory forwards it
-to `initialize()` as `msg.value`. Its exact amount is set per deployment and can be updated by
-governance; the game contract reads it from the factory at creation time.
+`initBond` is the ETH value the proposer must send when creating a game. `DisputeGameFactory.create()` requires
+`msg.value == initBonds[ZK_DISPUTE_GAME]` (otherwise it reverts with `IncorrectBondAmount`) and forwards the value
+to `initialize()`. The game records `msg.value` as the creator's bond. The amount is set per chain through OPCM
+(see [OPCM Integration](zk-dispute-game.md#opcm-integration)).
 
 A game may start from the anchor state by setting `parentIndex = type(uint32).max`, or it may
 reference a parent game.
@@ -95,7 +97,7 @@ The `_extraData` passed to `DisputeGameFactory.create()` has a variable-length l
 | Field | Type | Description |
 | --- | --- | --- |
 | `parentIndex` | `uint32` | Index of the parent game; `type(uint32).max` if starting from the anchor state |
-| `superRootProof` | `bytes` | ABI-encoded `SuperRootProof` preimage committed to by `rootClaim`. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via `l2SequenceNumber()` for convenience. |
+| `superRootProof` | `bytes` | Packed `SuperRootProof` encoding (see [SuperRootProof](zk-dispute-game.md#superrootproof)) committed to by `rootClaim`. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via `l2SequenceNumber()` for convenience. |
 
 The variable-length layout is parsed via `_preExtraDataByteCount()` and `_extraDataByteCount()`
 helpers, following the same pattern as `SuperFaultDisputeGame`. All CWIA field offsets after
@@ -107,6 +109,10 @@ During `initialize()`, the game:
 2. Snapshots `wasRespectedGameTypeWhenCreated`. `AnchorStateRegistry.isGameClaimValid()` reads
    this flag when determining if a game's root claim can advance the anchor state or finalize
    withdrawals via the Portal.
+3. Sets the starting proposal. With a parent, it is the parent's `rootClaim` and `l2SequenceNumber`. Without a
+   parent, it is the `AnchorStateRegistry` anchor root read at `initialize()`. This value is snapshotted, so later
+   anchor updates do not change it. A zero anchor root MUST revert with `AnchorRootNotFound`. The first
+   `ZK_DISPUTE_GAME` after a migration therefore starts from the current anchor root.
 
 ### Parent Validation
 
@@ -115,7 +121,7 @@ any of the following checks fail:
 
 - Parent MUST NOT be blacklisted.
 - Parent MUST NOT be retired (i.e., `createdAt > retirementTimestamp`).
-- Parent MUST be the same game type (`ZK_GAME_TYPE`).
+- Parent MUST be the same game type (`ZK_DISPUTE_GAME`).
 - Parent MUST NOT have resolved as `CHALLENGER_WINS`.
 - If the child's `wasRespectedGameTypeWhenCreated` is `true`, the parent's
   `wasRespectedGameTypeWhenCreated` MUST also be `true`.
@@ -130,11 +136,12 @@ created when that game type was not respected.
 
 ## Challenge
 
-Challenging is fully permissionless. Anyone may call `challenge()` before the challenge deadline.
+Challenging is fully permissionless. Anyone may call `challenge()` at or before the challenge deadline.
 The call MUST include `challengerBond` ETH, which `challenge()` deposits into `DelayedWETH` on
 the caller's behalf.
 
-- `challenge()` MUST revert if `gameOver()` returns `true`.
+- `challenge()` MUST revert if `gameOver()` returns `true`. Because `gameOver()` uses a strict
+  `deadline < block.timestamp` comparison, a challenge at `block.timestamp == deadline` is accepted.
 - `challenge()` MUST revert if `claimData.status != ProposalStatus.Unchallenged`.
 - `challenge()` MUST revert if `msg.value != challengerBond`.
 - Only one challenge is allowed per game.
@@ -142,8 +149,8 @@ the caller's behalf.
 
 ## Proving
 
-Proving is fully permissionless. Anyone may call `prove(proofBytes)` at any point before the
-current deadline, regardless of whether the game has been challenged.
+Proving is fully permissionless. Anyone may call `prove(proofBytes)` at or before the current deadline,
+regardless of whether the game has been challenged.
 
 - `prove()` MUST revert if `status != GameStatus.IN_PROGRESS` (i.e., the game is already
   resolved).
@@ -162,8 +169,9 @@ current deadline, regardless of whether the game has been challenged.
 
 ## Resolution
 
-Resolution is permissionless. Anyone may call `resolve()` once `gameOver()` returns `true` and
-the parent game is resolved.
+Resolution is permissionless. Anyone may call `resolve()` once the parent game is resolved and either
+`gameOver()` returns `true` or the parent resolved as `CHALLENGER_WINS`. In the latter case the child resolves as
+`CHALLENGER_WINS` immediately, without waiting for its own deadline.
 
 - `resolve()` MUST revert if `status != GameStatus.IN_PROGRESS` (i.e., game is already resolved).
 - If the game references a parent (`parentIndex != type(uint32).max`), `resolve()` MUST revert if
@@ -188,6 +196,9 @@ challenged games.
 Note: when a parent resolves as `CHALLENGER_WINS` and the child was never challenged,
 `claimData.challenger == address(0)`, so `normalModeCredit[address(0)] = totalBonds`. This credit
 is effectively burned inside `DelayedWETH` where the owner can recover it via `hold()`/`recover()`.
+
+Games created while `ZK_DISPUTE_GAME` was not the respected game type resolve and pay out bonds normally, but
+they can never become the anchor state or back withdrawals.
 
 ### Bond Distribution
 
@@ -242,8 +253,17 @@ Uses a two-phase `DelayedWETH` withdrawal pattern.
    `DelayedWETH` for a pending withdrawal amount. If the amount is zero and the game was open
    before this call, returns without reverting (so `closeGame()` state changes persist). If the
    amount is zero and the game was already closed, reverts with `NoCreditToClaim`. Otherwise,
-   calls `DelayedWETH.withdraw(recipient)` and transfers ETH to the recipient, reverting on
+   calls `DelayedWETH.withdraw(recipient, amount)` and transfers ETH to the recipient, reverting on
    transfer failure.
 
 The `DelayedWETH` delay allows the Guardian to pause and freeze funds if a critical issue is
 discovered post-resolution.
+
+## Pausing
+
+Only `closeGame()` checks the pause. While `bondDistributionMode == UNDECIDED`, `closeGame()` MUST revert with
+`GamePaused` if the `AnchorStateRegistry` is paused, so `claimCredit()` on a game that is not yet closed also
+reverts. See [iZKG-006](zk-dispute-game.md#izkg-006-closegame-reverts-when-paused).
+
+`initialize()`, `challenge()`, `prove()` and `resolve()` keep working while the system is paused. Withdrawals out
+of `DelayedWETH` are blocked by the pause separately.

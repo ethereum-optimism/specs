@@ -465,9 +465,11 @@ Allows a user to [prove](#proven-withdrawal) a withdrawal transaction.
   timestamp.
 - MUST revert if the proof provided by the user of the preimage of the Output Root that the dispute
   game argues about is invalid. This proof is verified by hashing the user-provided preimage and
-  comparing them to the root claim of the referenced dispute game.
-- MUST revert if the provided merkle trie proof that the withdrawal was included within the root
-  claim of the provided dispute game is invalid.
+  comparing it to the game's output root for this chain: for game types where `GameTypes.isSuperGame()` is true,
+  [`rootClaimByChainId(systemConfig.l2ChainId())`](zk/zk-dispute-game.md#rootclaimbychainid); otherwise
+  `rootClaim()`.
+- MUST revert if the provided merkle trie proof that the withdrawal was included within the
+  `messagePasserStorageRoot` of the user-provided Output Root preimage is invalid.
 - MUST otherwise store a record of the withdrawal proof that includes the hash of the proven
   withdrawal, the address of the game against which it was proven, and the block timestamp at which
   the proof transaction was submitted.
