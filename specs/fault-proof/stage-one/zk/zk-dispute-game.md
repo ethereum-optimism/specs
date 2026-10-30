@@ -29,6 +29,8 @@
 - [initialize Invariants](#initialize-invariants)
 - [OPCM Integration](#opcm-integration)
   - [ZKDisputeGameConfig](#zkdisputegameconfig)
+  - [Configuration Validation](#configuration-validation)
+  - [Standard Configuration](#standard-configuration)
 - [Assumptions](#assumptions)
   - [aZKG-001: ZK Verifier Soundness](#azkg-001-zk-verifier-soundness)
     - [Mitigations](#mitigations)
@@ -300,10 +302,9 @@ to find the entry matching `_chainId`. Returns the corresponding output root as 
 
 MUST revert with `UnknownChainId` if `_chainId` is not present in the preimage.
 
-`OptimismPortal` calls this function during withdrawal verification (via
-`GameTypes.isSuperGame()`) to extract the per-chain output root from the super root commitment.
-Adding `ZK_DISPUTE_GAME` to the `isSuperGame` allowlist is required for Portal withdrawal
-finalization to work correctly.
+`OptimismPortal` calls this function during withdrawal verification to extract the per-chain output root from the
+super root commitment. It does so for every game type for which `GameTypes.isSuperGame()` returns `true`, which
+includes `ZK_DISPUTE_GAME`.
 
 ## initialize Invariants
 
@@ -324,17 +325,20 @@ In addition to the standard parent validation described in
 ## OPCM Integration
 
 `ZKDisputeGame` integrates into OPCM v2 as game type `ZK_DISPUTE_GAME` through
-`DisputeGameConfig`, following the same pattern as other game types.
+`DisputeGameConfig`, following the same pattern as other game types:
 
-Three additions are required:
-
-1. `ZKDisputeGame` is deployed once via the `DeployImplementations` script and tracked in
-   `OPContractsManagerContainer.Implementations`.
-2. A `ZKDisputeGameConfig` struct carries the per-chain parameters that the caller provides.
-   OPCM's `_makeGameArgs()` decodes it, injects the chain-specific values it already knows, and
-   packs the final variable-length CWIA bytes for the factory.
-3. `ZK_DISPUTE_GAME` is added to the `validGameTypes` array in `_assertValidFullConfig()` and
-   to `GameTypes.isSuperGame()`.
+1. `DeployImplementations` deploys the `ZKDisputeGame` implementation and the
+   [`SP1PlonkAdapter`](zk-interface.md#sp1plonkadapter) singleton once per OPCM release. Both are stored in
+   `OPContractsManagerContainer.Implementations` as `zkDisputeGameImpl` and `sp1PlonkAdapterImpl`.
+2. `UpgradeInput.disputeGameConfigs` holds exactly six `DisputeGameConfig` entries, in the fixed
+   `VALID_GAME_TYPES` order: `CANNON`, `PERMISSIONED_CANNON`, `CANNON_KONA`, `SUPER_PERMISSIONED`,
+   `SUPER_CANNON_KONA`, `ZK_DISPUTE_GAME`.
+3. For the `ZK_DISPUTE_GAME` entry, `gameArgs` is `abi.encode(ZKDisputeGameConfig)`. When the entry is enabled,
+   OPCM calls `DisputeGameFactory.setImplementation(ZK_DISPUTE_GAME, zkDisputeGameImpl, makeGameArgs(...))` and
+   `DisputeGameFactory.setInitBond(ZK_DISPUTE_GAME, initBond)`. When the entry is disabled, OPCM sets the
+   implementation to `address(0)` with empty game args and the init bond to `0`, which removes the game type.
+4. `GameTypes.isSuperGame()` includes `ZK_DISPUTE_GAME`, so the `OptimismPortal` reads per-chain output roots
+   through [`rootClaimByChainId`](#rootclaimbychainid).
 
 ### ZKDisputeGameConfig
 
@@ -374,6 +378,45 @@ The verifier slot is always filled with the OPCM release's `SP1PlonkAdapter` (`i
 
 The packed game args are 140 bytes: `absolutePrestate` (32), `verifier` (20), `maxChallengeDuration` (8),
 `maxProveDuration` (8), `challengerBond` (32), `anchorStateRegistry` (20) and `weth` (20).
+
+### Configuration Validation
+
+OPCM's `_assertValidFullConfig` MUST revert with `OPContractsManagerV2_InvalidGameConfigs()` when an enabled
+`ZK_DISPUTE_GAME` config:
+
+- is part of an initial deployment (`ZK_DISPUTE_GAME` can only be enabled through `upgrade()`);
+- has `absolutePrestate == bytes32(0)`;
+- has a `maxChallengeDuration` or `maxProveDuration` outside `(0, type(uint32).max]`;
+- has `challengerBond == 0`; or
+- has `initBond == 0`.
+
+The `type(uint32).max` cap exists because deadlines are computed as `uint64(block.timestamp + duration)`. A larger
+duration could overflow the `uint64` cast and produce a deadline in the past. The game args checks are
+implemented by `_isValidZKDisputeGameConfig` in `OPContractsManagerUtilsCaller`.
+
+### Standard Configuration
+
+`OPContractsManagerStandardValidator` checks a registered `ZK_DISPUTE_GAME` with the following error codes:
+
+| Code | Condition checked |
+| --- | --- |
+| `ZKDG-GARGS-10` | The game args registered in the factory are 140 bytes long. |
+| `ZKDG-20` | The registered implementation has the same `version()` as the OPCM release's `zkDisputeGameImpl`. |
+| `ZKDG-150` | The registered implementation is the OPCM release's `zkDisputeGameImpl`. |
+| `ZKDG-70` | `absolutePrestate` is non-zero. |
+| `ZKDG-80` | `verifier` is the OPCM release's `sp1PlonkAdapterImpl` and has code. |
+| `ZKDG-90` | `maxChallengeDuration` is in `(0, type(uint32).max]`. |
+| `ZKDG-100` | `maxProveDuration` is in `(0, type(uint32).max]`. |
+| `ZKDG-110` | `challengerBond` is non-zero. |
+| `ZKDG-120` | The `AnchorStateRegistry` in the game args has a non-zero anchor root. |
+| `ZKDG-160` | `DisputeGameFactory.initBonds(ZK_DISPUTE_GAME)` is non-zero. |
+| `ZKDG-DWETH-*` | The `DelayedWETH` in the game args passes the same checks as for other dispute games. |
+| `ZKDG-ANCHORP-*` | The `AnchorStateRegistry` in the game args passes the same checks as for other dispute games. |
+
+`ASR-RGT` accepts `ZK_DISPUTE_GAME` as the respected game type only when `ZK_DISPUTE_GAME` is registered in the
+`DisputeGameFactory`. In super-root mode, the validator also requires `SUPER_PERMISSIONED` and `SUPER_CANNON_KONA`
+to remain registered (`SPDG-SHAPE` and `SCKDG-SHAPE`), so `ZK_DISPUTE_GAME` is standard only as an additional game
+type.
 
 ## Assumptions
 
@@ -425,8 +468,9 @@ such that honest participation is economically rational and griefing is costly.
 #### Mitigations
 
 - `challengerBond`, `maxChallengeDuration`, and `maxProveDuration` are in `gameArgs` and can be
-  tuned per deployment by OPCM without redeploying the implementation. `initBond` is a factory
-  parameter updated separately.
+  tuned per deployment by OPCM without redeploying the implementation. `initBond` is part of the same OPCM
+  `DisputeGameConfig`, is applied through `DisputeGameFactory.setInitBond`, and MUST be non-zero.
+- OPCM bounds-checks the durations and bonds (see [Configuration Validation](#configuration-validation)).
 - Benchmark proving costs and document standard values for common configurations.
 - Bonds too low invite spam; bonds too high discourage honest participation. Durations must be
   long enough to allow super-root proof generation but short enough to preserve withdrawal latency
