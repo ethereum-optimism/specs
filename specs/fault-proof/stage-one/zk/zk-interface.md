@@ -19,7 +19,7 @@ proving system. The game always casts the configured verifier address to `IZKVer
 `verify()` through the interface, rather than depending on a concrete verifier type.
 
 The verifier is the [`SP1PlonkAdapter`](#sp1plonkadapter) singleton deployed with each OPCM release. It wraps
-Succinct's PLONK verifier for [SP1](../../zk-fault-proof-vm.md#sp1-plonk) (SP1 PLONK v6.1.0 on Ethereum mainnet
+Succinct's PLONK verifier for [SP1](../../zk-proof-system.md#sp1-plonk) (SP1 PLONK v6.1.0 on Ethereum mainnet
 and Sepolia).
 
 ## Interface
@@ -106,7 +106,7 @@ CWIA data.
 Chain scoping is provided by the `SuperRootProof` preimage committed to by `rootClaim`; the
 `(chainId, outputRoot)` pairs in that preimage cover every chain in the interop set (or a single
 entry in standalone deployments), so no separate `l2ChainId` field is needed in the public values.
-See [ZK Program Inputs](../../zk-fault-proof-vm.md#inputs) for the full public values
+See [ZK Program Inputs](../../zk-proof-system.md#inputs) for the full public values
 specification.
 
 ## Verifier Upgrade Path
