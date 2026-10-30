@@ -91,6 +91,8 @@ and a revert to reject.
 - A policy MUST revert, and MUST NOT return `false`, when something it calls fails.
 - A policy MUST terminate within the gas available in the calling transaction.
 - A policy MUST restrict `screen` and `screenRelease` to the hook, so nobody else can drive its state.
+- A policy MUST treat an expired verdict as no verdict, so an item whose clearance has aged out is held or rejected
+  like any other uncleared one.
 
 The first requirement protects items the policy never meant to act on. Whoever finalizes a withdrawal chooses how
 much gas it carries, so a policy that catches an internal failure and answers `false` is open to gas griefing. An
@@ -100,14 +102,11 @@ and can be retried with more gas.
 
 ## Policy Choices
 
-What a policy does with `_expiresAt` and `_finalizableAt` is up to the chain. For example, a policy may choose to:
+What a policy does with `_finalizableAt` is up to the chain. For example, a policy may choose to:
 
 - **[Hold Delay](#hold-delay).** Reject an uncleared withdrawal until `_finalizableAt` plus the delay, then hold it. A
   service that clears during the proof maturity window needs a short delay. One that clears only once the withdrawal
   is finalizable needs the delay to cover its own response time.
-- **Expiring clearances.** Honor the `_expiresAt` the [Verdict Writer](#verdict-writer) chose, so a verdict written
-  early stops counting once that time passes. An expired clearance counts as none, so a withdrawal finalized after
-  it is held like any other uncleared one.
 - **No wait for known flags.** Hold at the first attempt when a party is already flagged, and wait only for
   withdrawals still pending a verdict.
 - **Synchronous policies.** A policy that reads only onchain state and answers immediately never holds, so it ignores

@@ -16,6 +16,8 @@
     - [Mitigations](#mitigations-1)
   - [aCM-006: The module owner is trusted with whatever the policy can do](#acm-006-the-module-owner-is-trusted-with-whatever-the-policy-can-do)
     - [Mitigations](#mitigations-2)
+  - [aCM-007: Tokens behave as the StandardBridge requires](#acm-007-tokens-behave-as-the-standardbridge-requires)
+    - [Mitigations](#mitigations-3)
 - [Dependencies](#dependencies)
 - [Invariants](#invariants)
   - [iCM-011: Verdicts come only from the policy, and the hook functions only from the Portal](#icm-011-verdicts-come-only-from-the-policy-and-the-hook-functions-only-from-the-portal)
@@ -78,8 +80,8 @@ The module doesn't store any of the item fields. They are emitted in full when t
 whoever attempts to move
 its value. This keeps unbounded calldata out of storage, and lets anyone rebuild the set of held items from L1 alone.
 
-The module stores whatever `expiresAt` the policy passes and hands it back when value moves, so whether an
-expired verdict still counts is the policy's decision.
+The module stores whatever `expiresAt` the policy passes and hands it back when value moves. The module does not
+judge it; the policy does, and it treats an expired verdict as none.
 
 ### Resolved Parties
 
@@ -150,6 +152,18 @@ The owner points the module at a policy with [setPolicy](#setpolicy), so it inhe
 - A replacement policy can still only delay or refuse. See
   [iCM-003](../../compliance/optimism-portal.md#icm-003-a-hook-can-only-delay-or-refuse-an-item).
 - Every change is observable on L1: `PolicySet` carries both policies, and `Disabled` carries the cutoff.
+
+### aCM-007: Tokens behave as the StandardBridge requires
+
+The module inherits the `StandardBridge`'s token support. A token that takes a fee on transfer, rebases, or otherwise
+moves a balance its transfer did not name breaks
+[iCM-013](#icm-013-the-module-holds-at-least-what-it-owes), because `heldTokens` records the amount the message names
+while the module ends up holding a different amount.
+
+#### Mitigations
+
+- The bridge has the same constraint, so such a token is already unsupported before a hook is involved.
+- `heldTokens` is kept per token pair, so a token that breaks it cannot reach the escrow of another pair.
 
 ## Dependencies
 
