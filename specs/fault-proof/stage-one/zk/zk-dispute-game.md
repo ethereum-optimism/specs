@@ -137,14 +137,23 @@ timestamp. Computed as `hashSuperRootProof(superRootProof)`. The `rootClaim` of 
 
 ### SuperRootProof
 
-An ABI-encoded struct that is the preimage of a super root. It carries the timestamp and the list
-of per-chain output roots that the super root commits to. Its hash MUST equal `rootClaim`.
+The preimage of a super root. It carries the timestamp and the list of per-chain output roots that the super root
+commits to. Its `keccak256` hash MUST equal `rootClaim`. It uses the packed encoding of
+`Encoding.encodeSuperRootProof`:
 
-The `(chainId, outputRoot)` pairs MUST be sorted in strictly ascending order by `chainId`.
-Encoding the same logical chain set in a different order produces a different hash and therefore a
-different super root. Proposers who submit an unsorted preimage will fail the
-`hashSuperRootProof(decode(extraData.superRootProof)) == rootClaim()` check in `initialize()`, and
-any ZK proof generated over the correct (sorted) super root will not verify against it.
+| Field | Size | Description |
+| --- | --- | --- |
+| `version` | `bytes1` | Encoding version. MUST be `0x01`. |
+| `timestamp` | `bytes8` | Super root timestamp (the game's `l2SequenceNumber`). |
+| `chainId` | `bytes32` | Chain ID of an output root. Repeated `n` times together with `outputRoot`, `n ≥ 1`. |
+| `outputRoot` | `bytes32` | Output root of the chain identified by the preceding `chainId`. |
+
+The `(chainId, outputRoot)` pairs MUST be sorted in strictly ascending order by `chainId` for the claim to be
+provable. The contract does **not** check the ordering. An unsorted preimage whose hash equals `rootClaim` is
+accepted by `initialize()`, but no proof can be produced for it, because the ZK program rejects chain IDs that are
+not strictly increasing. An honest challenger therefore challenges such a game and it resolves `CHALLENGER_WINS`.
+Every chain ID MUST also fit in a `uint64` for the claim to be provable, because the ZK program rejects larger
+chain IDs.
 
 ### Chain Set
 
@@ -156,7 +165,8 @@ exactly one chain.
 
 The super root timestamp asserted by a game's `rootClaim`. Used to validate parent–child ordering.
 Unlike the classic output-root model where this field holds an L2 block number, here it is a
-timestamp, following `SuperFaultDisputeGame` convention. The value MUST fit within a `uint64`.
+timestamp, following `SuperFaultDisputeGame` convention. It is stored as an 8-byte field of the preimage, so it
+always fits in a `uint64`.
 
 ### Parent Game
 
@@ -234,7 +244,7 @@ Starting at offset `0x58`. The total byte count is returned by `_extraDataByteCo
 | Field | Type | Description |
 | --- | --- | --- |
 | `parentIndex` | `uint32` | Index of the parent game; `type(uint32).max` if starting from the anchor state. |
-| `superRootProof` | `bytes` | ABI-encoded `SuperRootProof` preimage committed to by `rootClaim`. Variable length. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via `l2SequenceNumber()` for convenience. |
+| `superRootProof` | `bytes` | Packed `SuperRootProof` encoding (see [SuperRootProof](#superrootproof)) committed to by `rootClaim`. Variable length. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via `l2SequenceNumber()` for convenience. |
 
 `_preExtraDataByteCount()` returns the byte count of the fixed prefix (`0x58`).
 `_extraDataByteCount()` returns the total byte count of the variable extraData section.
@@ -260,23 +270,21 @@ from the chain's existing deployment.
 ## rootClaim Semantics
 
 `rootClaim` is always a **super root hash**: the result of `hashSuperRootProof(superRootProof)`,
-where `superRootProof` is the ABI-encoded `SuperRootProof` struct stored in `extraData`.
+where `superRootProof` is the packed [`SuperRootProof`](#superrootproof) encoding stored in `extraData`.
 
 The `SuperRootProof` preimage carries:
 - The super root timestamp (`l2SequenceNumber`).
-- A list of `(chainId, outputRoot)` pairs for every chain in the interop set, sorted in strictly
-  ascending order by `chainId`.
+- A list of `(chainId, outputRoot)` pairs for every chain in the interop set, which MUST be sorted in strictly
+  ascending order by `chainId` for the claim to be provable.
 
 In a standalone deployment, this list contains exactly one entry. In an interop set, it contains
 one entry per chain. The contract does not distinguish between these cases; the preimage size is
 the only difference.
 
-> **Note on chain ordering:** The ZK program identified by `absolutePrestate` is compiled to
-> produce and verify proofs over preimages with chains sorted ascending by `chainId`. A proposer
-> who submits an unsorted preimage will produce a `rootClaim` that differs from any super root a
-> correct prover can generate a proof for — the game will expire unchallenged only if no one
-> notices, but any subsequent `prove()` call against the correctly sorted super root will not
-> match `rootClaim` and will therefore revert.
+> **Note on chain ordering:** The ZK program identified by `absolutePrestate` only produces proofs for preimages
+> with chains sorted in strictly ascending order by `chainId`. `initialize()` does not check the ordering, so a
+> game whose preimage is unsorted can be created, but its claim can never be proven. If it is challenged, it
+> resolves `CHALLENGER_WINS` once the prove deadline passes.
 
 `rootClaim` MUST NOT be interpreted as an L2 output root for any specific chain. Per-chain output
 roots are extracted via [`rootClaimByChainId`](#rootclaimbychainid).
@@ -284,7 +292,7 @@ roots are extracted via [`rootClaimByChainId`](#rootclaimbychainid).
 ## rootClaimByChainId
 
 ```solidity
-function rootClaimByChainId(uint256 _chainId) public view returns (Claim rootClaim_)
+function rootClaimByChainId(uint256 _chainId) public pure returns (Claim outputRootClaim_)
 ```
 
 Decodes the `SuperRootProof` preimage from `extraData` and iterates over the `outputRoots` array
@@ -303,12 +311,15 @@ In addition to the standard parent validation described in
 [Game Mechanics — Parent Validation](game-mechanics.md#parent-validation),
 `initialize()` enforces the following:
 
-- `hashSuperRootProof(decode(extraData.superRootProof)) MUST equal rootClaim()`. A mismatch MUST
-  revert.
-- `l2SequenceNumber() MUST be strictly greater than startingProposal.l2SequenceNumber`.
-- `l2SequenceNumber() MUST fit within uint64` (i.e., `<= type(uint64).max`).
-- The calldata size MUST match the expected length derived from `_extraDataByteCount()` to prevent
+- `extraData` length MUST equal `4 + 1 + 8 + 64n` bytes for some `n ≥ 1` (parent index, version, timestamp and
+  `n` `(chainId, outputRoot)` pairs), otherwise `initialize()` MUST revert with `BadExtraData`. This prevents
   UUID collisions in the factory from extra or missing bytes in `extraData`.
+- The `SuperRootProof` version byte MUST be `0x01`, otherwise `initialize()` MUST revert with
+  `Encoding_InvalidSuperRootVersion`.
+- `hashSuperRootProof(decode(extraData.superRootProof)) MUST equal rootClaim()`. A mismatch MUST
+  revert with `BadExtraData`.
+- `l2SequenceNumber() MUST be strictly greater than startingProposal.l2SequenceNumber`. Otherwise
+  `initialize()` MUST revert with `UnexpectedRootClaim(rootClaim)`.
 
 ## OPCM Integration
 
@@ -458,10 +469,9 @@ set with correct chain IDs and output roots. No chain is omitted, duplicated, or
   An incorrect preimage cannot produce a matching hash.
 - The ZK program independently verifies that the output roots in the preimage match the actual
   chain states (see [iZKVM-002](../../zk-fault-proof-vm.md#izkvm-002-super-root-preimage-must-commit-to-all-chain-outputs)).
-- The ZK program (identified by `absolutePrestate`) is compiled to produce and verify proofs over
-  preimages with chains sorted in strictly ascending order by `chainId`. An unsorted preimage
-  produces a different hash and therefore a different `rootClaim`; no valid proof can be generated
-  for it, so verification will always fail for such proposals.
+- Chain ordering is enforced by the ZK program (identified by `absolutePrestate`), not by `initialize()`. The
+  program only proves preimages with chains sorted in strictly ascending order by `chainId`, so no valid proof
+  can be generated for an unsorted preimage and such proposals can never be proven.
 
 ### aZKG-009: Chain Set Is Stable During the Prove Window
 
