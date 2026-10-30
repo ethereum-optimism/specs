@@ -106,6 +106,8 @@ Moves the escrow of a held token transfer out of the bridge and to the hook.
 - MUST revert if the selector of `_message` is not `finalizeBridgeERC20`.
 - MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
   arguments is the L1 token.
+- MUST record whether the L1 token is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token),
+  keyed by `_direction` and `_message`.
 - MUST transfer that amount of the L1 token to the bridge hook, if the L1 token is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
 - MUST decrease the `deposits` mapping for that token pair by that amount, if the L1 token is a
@@ -127,13 +129,15 @@ Takes the escrow of a held token transfer back into the bridge, so the normal pa
 - MUST revert if the caller is not the `OptimismPortal`.
 - MUST revert if the Portal's `bridgeHook()` is `address(0)`.
 - MUST revert if the selector of `_message` is not `finalizeBridgeERC20`.
+- MUST revert if `holdERC20` recorded no classification for the same `_direction` and `_message`.
 - MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
   arguments is the L1 token.
-- MUST pull that amount of the L1 token from the bridge hook, using the allowance the hook granted, if the L1 token
-  is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
-- MUST increase the `deposits` mapping for that token pair by that amount, if the L1 token is a
+- MUST pull that amount of the L1 token from the bridge hook, using the allowance the hook granted, if the recorded
+  classification is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
+- MUST increase the `deposits` mapping for that token pair by that amount, if the recorded classification is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
-- MUST NOT move any tokens if the L1 token is an `OptimismMintableERC20`.
+- MUST NOT move any tokens if the recorded classification is an `OptimismMintableERC20`.
+- MUST clear the recorded classification.
 - MUST NOT pay the recipient. The normal path runs after the escrow is back, so a deposit is emitted to L2 and a
   withdrawal is relayed, and it is the relay that pays the recipient from escrow.
 
@@ -169,6 +173,9 @@ by other users of the same token.
 Both `holdERC20` and `restoreERC20` take their amount from the inner `finalizeBridgeERC20` call they decode. A hold
 and the restore that reverses it therefore move the same amount, so an item's round trip through the hook leaves the
 escrow where it started.
+
+Whether the L1 token is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token) is recorded at
+hold and reused on restore, rather than derived again, so a token whose answer changes cannot break the round trip.
 
 #### Impact
 
