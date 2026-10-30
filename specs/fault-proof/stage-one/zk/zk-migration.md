@@ -15,20 +15,14 @@
 
 ## Overview
 
-Migrations to `ZKDisputeGame` target chains that already run super-root dispute games. The standard end state
-registers `ZK_DISPUTE_GAME` **in addition to** `SUPER_PERMISSIONED` and `SUPER_CANNON_KONA`, and makes
-`ZK_DISPUTE_GAME` the respected game type. Both existing super-root game types MUST stay registered, because the
-`OPContractsManagerStandardValidator` requires them (see
-[Standard Configuration](zk-dispute-game.md#standard-configuration)).
+Migrations to `ZKDisputeGame` target chains that already run super-root dispute games. A migration registers
+`ZK_DISPUTE_GAME` alongside the existing super-root game types and makes `ZK_DISPUTE_GAME` the respected game type.
 
 | Path | Respected game type before migration | Context |
 | --- | --- | --- |
 | **A** | `SUPER_CANNON_KONA` (`SuperFaultDisputeGame`, SFDG) | Isolated chain |
 | **B** | `SUPER_PERMISSIONED` (`SuperPermissionedDisputeGame`, SPDG) | Isolated chain |
 | **C** | A super-root game type | Interop set with shared contracts |
-
-Disabling the source game type (`enabled: false`) during the migration is mechanically possible, but it leaves the
-chain non-standard (`SPDG-SHAPE` or `SCKDG-SHAPE`).
 
 ## In-Flight Withdrawal Safety
 
@@ -58,9 +52,8 @@ and `setRespectedGameType()` does not touch it. Games created before the switch 
 
 2. **Register `ZK_DISPUTE_GAME` with `OPCMv2.upgrade()`.** The upgrade input contains all six
    `disputeGameConfigs`. The `ZK_DISPUTE_GAME` entry is enabled, has a non-zero `initBond`, and carries
-   `abi.encode(ZKDisputeGameConfig)` as `gameArgs`. The `SUPER_PERMISSIONED` and `SUPER_CANNON_KONA` entries stay
-   enabled with their current configs. OPCM registers the ZK game with the 3-argument overload and sets its
-   init bond:
+   `abi.encode(ZKDisputeGameConfig)` as `gameArgs`. OPCM registers the ZK game with the 3-argument overload and sets
+   its init bond:
 
    ```solidity
    disputeGameFactory.setImplementation(
