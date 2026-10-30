@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
 - [Interface](#interface)
+- [SP1PlonkAdapter](#sp1plonkadapter)
 - [Usage in `prove()`](#usage-in-prove)
 - [Verifier Upgrade Path](#verifier-upgrade-path)
 
@@ -15,17 +16,17 @@
 
 `IZKVerifier` is the on-chain interface that decouples `ZKDisputeGame` from any specific
 proving system. The game always casts the configured verifier address to `IZKVerifier` and calls
-`verify()` through the interface, rather than depending on a concrete verifier type. The verifier
-can be swapped without redeploying the game implementation.
+`verify()` through the interface, rather than depending on a concrete verifier type.
 
-The concrete deployment for the initial release uses Succinct's PLONK verifier for
-[SP1](../../zk-fault-proof-vm.md#sp1-plonk).
+The verifier is the [`SP1PlonkAdapter`](#sp1plonkadapter) singleton deployed with each OPCM release. It wraps
+Succinct's PLONK verifier for [SP1](../../zk-fault-proof-vm.md#sp1-plonk) (SP1 PLONK v6.1.0 on Ethereum mainnet
+and Sepolia).
 
 ## Interface
 
 ```solidity
 interface IZKVerifier is ISemver {
-    function verifierType() external pure returns (string memory);
+    function verifierType() external view returns (string memory);
 
     function verify(
         bytes32 programId,
@@ -35,8 +36,9 @@ interface IZKVerifier is ISemver {
 }
 ```
 
-`verifierType()` returns a string identifying the proving system (e.g., `"SP1_PLONK"`). Callers
-can use it to check which backend is deployed without inspecting the bytecode.
+`verifierType()` returns a string identifying the proving system. For the `SP1PlonkAdapter` it is `"SP1-PLONK-"`
+followed by the wrapped verifier's `VERSION()` (e.g., `"SP1-PLONK-v6.1.0"`). Callers can use it to check which
+backend is deployed without inspecting the bytecode.
 
 | Parameter | Description |
 | --- | --- |
@@ -47,6 +49,21 @@ can use it to check which backend is deployed without inspecting the bytecode.
 The verifier MUST revert on an invalid proof. A call that returns without reverting is treated as
 proof acceptance; the game will set `claimData.prover = msg.sender` and transition
 `claimData.status` to `UnchallengedAndValidProofProvided` or `ChallengedAndValidProofProvided`.
+
+## SP1PlonkAdapter
+
+`SP1PlonkAdapter` (version `1.0.0`) implements `IZKVerifier` on top of an SP1 PLONK verifier. It is deployed as a
+non-proxied singleton once per OPCM release.
+
+- The constructor takes the wrapped `ISP1Verifier` and MUST revert with `SP1PlonkAdapter_InvalidVerifier()` if the
+  given address has no code.
+- `sp1Verifier()` returns the wrapped `ISP1Verifier`.
+- `verify(programId, publicValues, proof)` forwards its arguments unchanged to
+  `ISP1Verifier.verifyProof(programId, publicValues, proof)` and reverts if that call reverts.
+
+The wrapped verifier's `VERIFIER_HASH()` identifies the PLONK circuit it accepts proofs for. It MUST match the
+circuit used by the prover's SP1 SDK, otherwise every proof fails verification. OPCM release verification
+(`VerifyOPCM`) checks both the wrapped verifier address and its `VERIFIER_HASH()`.
 
 ## Usage in `prove()`
 
@@ -95,13 +112,13 @@ specification.
 ## Verifier Upgrade Path
 
 The `verifier` and `absolutePrestate` fields live in the CWIA game args (see
-[CWIA Layout](zk-dispute-game.md#cwia-layout)), so they can be updated per chain
-without redeploying the `ZKDisputeGame` implementation.
+[CWIA Layout](zk-dispute-game.md#cwia-layout)). They are not configured the same way:
 
-Upgrade process:
+- `verifier` is not chain-configurable. OPCM always fills it with the OPCM release's `SP1PlonkAdapter`
+  (see [ZKDisputeGameConfig](zk-dispute-game.md#zkdisputegameconfig)). Rotating the verifier requires a new OPCM
+  release that deploys a new adapter, followed by an `upgrade()` for each chain.
+- `absolutePrestate` is chain-configurable through `ZKDisputeGameConfig`. If the ZK program changes, the chain
+  computes a new `absolutePrestate` and applies it with an OPCM `upgrade()`.
 
-1. Deploy a new verifier contract.
-2. If the ZK program changed, compute a new `absolutePrestate`.
-3. OPCM updates the game args with the new `verifier` and/or `absolutePrestate`.
-4. In-progress games play out under the old configuration.
-5. New games use the updated configuration.
+Existing game clones keep the `verifier` and `absolutePrestate` stored in their own CWIA data, so in-progress
+games play out under the old configuration. New games use the updated game args.
