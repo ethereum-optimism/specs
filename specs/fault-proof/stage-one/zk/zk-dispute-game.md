@@ -54,6 +54,8 @@
     - [Mitigations](#mitigations-7)
   - [aZKG-009: Chain Set Is Stable During the Prove Window](#azkg-009-chain-set-is-stable-during-the-prove-window)
     - [Mitigations](#mitigations-8)
+  - [aZKG-010: Valid Claims Are Provable](#azkg-010-valid-claims-are-provable)
+    - [Mitigations](#mitigations-9)
 - [Invariants](#invariants)
   - [iZKG-001: A Valid Proof Always Wins](#izkg-001-a-valid-proof-always-wins)
     - [Impact](#impact)
@@ -592,6 +594,8 @@ generate a valid super-root proof within `maxProveDuration` under normal operati
 - Multiple independent provers reduce the risk of a single point of failure in proof delivery.
 - Off-chain monitoring on the ratio of successful `prove()` calls to challenged games can detect
   when proving infrastructure is unable to keep up with the configured window.
+- Proof generation can also fail because of resource limits rather than time (see
+  [aZKG-010](#azkg-010-valid-claims-are-provable)).
 
 ### aZKG-008: Super Root Preimage Faithfully Represents the Chain Set
 
@@ -616,8 +620,25 @@ creation and proof submission.
 #### Mitigations
 
 - The `SuperRootProof` preimage is immutable once embedded in `extraData` at creation time.
-- The `absolutePrestate` encodes which chain set the ZK program was compiled for. A chain set
-  change requires a new program and a new `absolutePrestate`, gated by governance.
+- The chain set is taken from the starting super root preimage and MUST equal the dependency set compiled into the
+  program identified by `absolutePrestate`. A chain set change requires a new program and a new
+  `absolutePrestate`, gated by governance.
+
+### aZKG-010: Valid Claims Are Provable
+
+A valid claim can always be proven within the prover's resource limits.
+
+A sound ZK program may still be unable to prove an honest claim. Each proving request has witness size, memory,
+cycle and proving gas limits, and the smallest unit of work is one chain at one timestamp. Adversarial L2
+content, for example a large number of interop messages, can inflate proving cost. If a challenged valid claim
+cannot be proven, it resolves `CHALLENGER_WINS`, and so do all of its descendants.
+
+#### Mitigations
+
+- The `log-commitment` program lets initiating messages be checked without loading the block's receipts.
+- Provers split a span into chunks, and split a single timestamp by chain, to keep each request within limits.
+- The Guardian can blacklist games or pause the system, and the dispute game finality delay gives time to do so.
+- Off-chain monitoring of challenged games that remain unproven can detect claims that cannot be proven.
 
 ## Invariants
 
