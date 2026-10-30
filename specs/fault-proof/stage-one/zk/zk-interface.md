@@ -28,11 +28,7 @@ and Sepolia).
 interface IZKVerifier is ISemver {
     function verifierType() external view returns (string memory);
 
-    function verify(
-        bytes32 programId,
-        bytes calldata publicValues,
-        bytes calldata proof
-    ) external view;
+    function verify(bytes32 _programId, bytes calldata _publicValues, bytes calldata _proof) external view;
 }
 ```
 

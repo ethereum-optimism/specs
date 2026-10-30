@@ -499,9 +499,9 @@ transfer control of the chain. Silently changing a batcher hash or a gas limit w
 The [Starting Anchor State](#starting-anchor-state) must not be empty and must leave room for a
 successor proposal. The set's starting respected game type must be a super-root game type, and must
 be one of the game types migration registers on the shared factory. It must also be a game type that `migrate()`
-supports as a starting respected game type, otherwise `migrate()` reverts with
-`OPContractsManagerMigrator_InvalidStartingRespectedGameType`. A set MAY switch its respected game type to
-`ZK_DISPUTE_GAME` after migration (see
+supports as a starting respected game type. If the starting respected game type does not meet these conditions,
+`migrate()` reverts with `OPContractsManagerMigrator_InvalidStartingRespectedGameType`. A set can switch its
+respected game type to `ZK_DISPUTE_GAME` after migration (see
 [ZK Dispute Game Migration](../../../fault-proof/stage-one/zk/zk-migration.md#path-c-interop-set-shared-contracts)).
 
 #### Impact

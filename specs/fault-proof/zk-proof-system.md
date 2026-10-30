@@ -118,15 +118,15 @@ PLONK proof, and it is the proof submitted on-chain. It is verified by the
 
 Proofs are generated off-chain by a prover that:
 
-1. Reads `l1Head`, `startingProposal.root` (`startingRootHash()`), `rootClaim`, `l2SequenceNumber`,
-   `absolutePrestate` and `verifier` from the game.
+1. Reads `l1Head`, `startingProposal` (`startingRootHash()` and `startingSequenceNumber()`), `rootClaim`,
+   `l2SequenceNumber`, `absolutePrestate` and `verifier` from the game.
 2. Fetches the verified super root for every timestamp from the starting timestamp to `l2SequenceNumber` via
    [`superroot_atTimestamp`](../interop/superroot.md#superroot_attimestamp), from a source synced past `l1Head`.
    The super root at the starting timestamp MUST equal `startingProposal.root`, the super root at
    `l2SequenceNumber` MUST equal `rootClaim`, and `verified_required_l1` MUST be at or below `l1Head`. Otherwise
    the claim is unprovable.
 3. Collects the L1 data (including blobs) and the L2 witness data for every chain.
-4. Generates the range, consolidation and aggregation proofs.
+4. Generates the log-commitment, range, consolidation and aggregation proofs.
 5. Submits the aggregation proof via `ZKDisputeGame.prove(proofBytes)` from the address committed to as
    `prover`.
 

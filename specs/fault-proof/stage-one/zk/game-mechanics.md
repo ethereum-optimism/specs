@@ -112,8 +112,7 @@ During `initialize()`, the game:
 3. Sets the starting proposal. With a parent, it is the parent's `rootClaim` and `l2SequenceNumber`. Without a
    parent, it is the `AnchorStateRegistry` anchor root read at `initialize()`. This value is snapshotted, so later
    anchor updates do not change it. A zero anchor root MUST revert with `AnchorRootNotFound`. The first
-   `ZK_DISPUTE_GAME` after a migration therefore starts from the anchor produced by the previously respected game
-   type.
+   `ZK_DISPUTE_GAME` after a migration therefore starts from the current anchor root.
 
 ### Parent Validation
 
@@ -150,8 +149,8 @@ the caller's behalf.
 
 ## Proving
 
-Proving is fully permissionless. Anyone may call `prove(proofBytes)` at any point before the
-current deadline, regardless of whether the game has been challenged.
+Proving is fully permissionless. Anyone may call `prove(proofBytes)` at or before the current deadline,
+regardless of whether the game has been challenged.
 
 - `prove()` MUST revert if `status != GameStatus.IN_PROGRESS` (i.e., the game is already
   resolved).
@@ -264,7 +263,7 @@ discovered post-resolution.
 
 Only `closeGame()` checks the pause. While `bondDistributionMode == UNDECIDED`, `closeGame()` MUST revert with
 `GamePaused` if the `AnchorStateRegistry` is paused, so `claimCredit()` on a game that is not yet closed also
-reverts. Once the bond distribution mode is set, `closeGame()` returns early without checking the pause.
+reverts. See [iZKG-006](zk-dispute-game.md#izkg-006-closegame-reverts-when-paused).
 
 `initialize()`, `challenge()`, `prove()` and `resolve()` keep working while the system is paused. Withdrawals out
 of `DelayedWETH` are blocked by the pause separately.
