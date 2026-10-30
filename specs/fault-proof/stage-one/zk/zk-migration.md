@@ -28,8 +28,7 @@ Migrations to `ZKDisputeGame` target chains that already run super-root dispute 
 
 MCP clones embed the implementation address at deployment time. Old SFDG/SPDG game clones created
 before the migration retain their original implementation bytecode forever. New `ZK_DISPUTE_GAME` clones
-created after `setImplementation()` in `DisputeGameFactory` use the `ZKDG` implementation, while
-`SUPER_PERMISSIONED` and `SUPER_CANNON_KONA` stay registered and keep using their own implementations.
+created after `setImplementation()` in `DisputeGameFactory` use the `ZKDG` implementation.
 
 `wasRespectedGameTypeWhenCreated` is snapshotted at game creation. `AnchorStateRegistry.isGameClaimValid()`
 reads this flag during withdrawal finalization. Games created under the old respected type remain
@@ -43,7 +42,9 @@ games during Portal withdrawal verification.
 Source-type games created after the respected game type switches to `ZK_DISPUTE_GAME` are not respected
 (`wasRespectedGameTypeWhenCreated == false`), so they cannot back withdrawals. Neither mechanism for switching the
 respected game type changes `retirementTimestamp`: `AnchorStateRegistry.initialize()` only sets it when it is zero,
-and `setRespectedGameType()` does not touch it. Games created before the switch therefore stay valid.
+and `setRespectedGameType()` does not touch it. Games created before the switch therefore stay valid. Forming an
+interop set with `migrate()` is different: it retires all pre-migration games; see
+[iMIG-014](../../../experimental/contracts/L1/opcm-migrator.md#imig-014-withdrawal-proofs-do-not-survive-migration).
 
 ## Common Mechanics
 
