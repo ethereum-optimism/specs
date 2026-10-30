@@ -208,7 +208,7 @@ The condition under which a game can be resolved. `gameOver()` returns `true` wh
 | **DisputeGameFactory** | Creates MCP clones via `create(...)`. Appends per-chain `gameArgs` (CWIA). |
 | **AnchorStateRegistry** | Source of truth for finalization, anchor state, respected game type, and blacklisting. Enforces pause checks. |
 | **DelayedWETH** | Bond custody with a deposit → unlock → withdraw lifecycle. Provides a time window for the Guardian to freeze funds post-resolution. |
-| **IZKVerifier** | Generic verifier interface. The concrete deployment for the initial release uses Succinct's PLONK verifier. |
+| **IZKVerifier** | Generic verifier interface. The verifier is the OPCM release's [`SP1PlonkAdapter`](zk-interface.md#sp1plonkadapter), which wraps Succinct's SP1 PLONK verifier. |
 
 ## Actors
 
@@ -218,7 +218,7 @@ The condition under which a game can be resolved. `gameOver()` returns `true` wh
 | **Challenger** | Fully permissionless. Disputes a proposal by calling `challenge()` and depositing `challengerBond`. |
 | **Prover** | Fully permissionless. Submits a valid ZK proof via `prove(proofBytes)`. May be the same address as the proposer or the challenger. |
 | **Guardian** | Pauses the system, blacklists games, sets the respected game type, and retires old games via `updateRetirementTimestamp()`. |
-| **OPCM / ProxyAdmin Owner** | Deploys implementations, configures game types in the factory, and manages `absolutePrestate` and verifier versions. |
+| **OPCM / ProxyAdmin Owner** | Deploys implementations, configures game types in the factory, and manages `absolutePrestate` per chain. The verifier is fixed by the OPCM release. |
 
 ## CWIA Layout
 
@@ -252,20 +252,20 @@ All game args fields use dynamic offsets computed from these helpers.
 
 ### Dynamic Game Args
 
-Fields at dynamic offsets, after `extraData`. Injected by `OPCM._makeGameArgs()`.
+Fields at dynamic offsets, after `extraData`. Injected by `OPContractsManagerUtils.makeGameArgs()`.
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `absolutePrestate` | `bytes32` | Super-root ZK program identity (e.g., SP1 verification key) |
-| `verifier` | `address` | Address of the `IZKVerifier` contract |
+| `verifier` | `address` | Address of the `IZKVerifier` contract: the OPCM release's `SP1PlonkAdapter` |
 | `maxChallengeDuration` | `Duration` | Time window for challenges after game creation |
 | `maxProveDuration` | `Duration` | Time window for proof submission after a challenge |
 | `challengerBond` | `uint256` | Bond required to challenge a proposal |
 | `anchorStateRegistry` | `address` | Address of `AnchorStateRegistry` |
 | `weth` | `address` | Address of per-chain `DelayedWETH` |
 
-`anchorStateRegistry` and `weth` are injected by `OPContractManager._makeGameArgs()` directly
-from the chain's existing deployment.
+`verifier`, `anchorStateRegistry` and `weth` are injected by `OPContractsManagerUtils.makeGameArgs()`: the
+verifier from the OPCM release, the other two from the chain's existing deployment.
 
 ## rootClaim Semantics
 
@@ -338,30 +338,42 @@ Three additions are required:
 
 ### ZKDisputeGameConfig
 
+The caller provides the per-chain ZK parameters as `abi.encode(ZKDisputeGameConfig)`:
+
 ```solidity
 struct ZKDisputeGameConfig {
     Claim absolutePrestate;
-    address verifier;
     Duration maxChallengeDuration;
     Duration maxProveDuration;
     uint256 challengerBond;
 }
 ```
 
+`OPContractsManagerUtils.makeGameArgs()` decodes it and packs the game args. The encoded config MUST be exactly
+128 bytes, otherwise `makeGameArgs()` MUST revert with `OPContractsManagerUtils_InvalidZKGameArgsLength(uint256)`.
+The verifier slot is always filled with the OPCM release's `SP1PlonkAdapter` (`impls.sp1PlonkAdapterImpl`):
+
 ```solidity
-if (_gcfg.gameType.raw() == GameTypes.ZK_DISPUTE_GAME.raw()) {
-    ZKDisputeGameConfig memory cfg = abi.decode(_gcfg.gameArgs, (ZKDisputeGameConfig));
+} else if (rawGT == GameTypes.ZK_DISPUTE_GAME.raw()) {
+    if (_gcfg.gameArgs.length != ZK_DISPUTE_GAME_CONFIG_LENGTH) {
+        revert IOPContractsManagerUtils.OPContractsManagerUtils_InvalidZKGameArgsLength(_gcfg.gameArgs.length);
+    }
+    IOPContractsManagerUtils.ZKDisputeGameConfig memory parsedInputArgs =
+        abi.decode(_gcfg.gameArgs, (IOPContractsManagerUtils.ZKDisputeGameConfig));
     return abi.encodePacked(
-        cfg.absolutePrestate,
-        cfg.verifier,
-        cfg.maxChallengeDuration,
-        cfg.maxProveDuration,
-        cfg.challengerBond,
+        parsedInputArgs.absolutePrestate,
+        impls.sp1PlonkAdapterImpl,
+        parsedInputArgs.maxChallengeDuration,
+        parsedInputArgs.maxProveDuration,
+        parsedInputArgs.challengerBond,
         address(_anchorStateRegistry),
         address(_delayedWETH)
     );
 }
 ```
+
+The packed game args are 140 bytes: `absolutePrestate` (32), `verifier` (20), `maxChallengeDuration` (8),
+`maxProveDuration` (8), `challengerBond` (32), `anchorStateRegistry` (20) and `weth` (20).
 
 ## Assumptions
 
@@ -373,7 +385,8 @@ that passes `verify()` for an incorrect state transition.
 #### Mitigations
 
 - The PLONK verifier for SP1 is independently audited.
-- The verifier address comes from `gameArgs`, managed by OPCM. Governance controls upgrades.
+- The verifier is fixed per OPCM release: OPCM always installs the release's `SP1PlonkAdapter`, and the release is
+  approved by governance. The verifier can only be swapped by a new OPCM release.
 - The `IZKVerifier` interface intentionally decouples the game from any specific proving system.
   A verifier can be swapped without redeploying the game implementation.
 
