@@ -115,7 +115,7 @@ any of the following checks fail:
 
 - Parent MUST NOT be blacklisted.
 - Parent MUST NOT be retired (i.e., `createdAt > retirementTimestamp`).
-- Parent MUST be the same game type (`ZK_GAME_TYPE`).
+- Parent MUST be the same game type (`ZK_DISPUTE_GAME`).
 - Parent MUST NOT have resolved as `CHALLENGER_WINS`.
 - If the child's `wasRespectedGameTypeWhenCreated` is `true`, the parent's
   `wasRespectedGameTypeWhenCreated` MUST also be `true`.

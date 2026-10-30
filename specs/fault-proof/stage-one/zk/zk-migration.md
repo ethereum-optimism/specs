@@ -55,7 +55,7 @@ The following steps are executed in every migration path via `OPCMv2.upgrade()`:
 
    ```solidity
    disputeGameFactory.setImplementation(
-       GameTypes.ZK_GAME_TYPE,
+       GameTypes.ZK_DISPUTE_GAME,
        address(zkImpl),
        gameArgs  // variable-length CWIA bytes
    );
@@ -74,10 +74,10 @@ The following steps are executed in every migration path via `OPCMv2.upgrade()`:
 4. **Update the respected game type in `AnchorStateRegistry`.**
 
    ```solidity
-   anchorStateRegistry.setRespectedGameType(GameTypes.ZK_GAME_TYPE);
+   anchorStateRegistry.setRespectedGameType(GameTypes.ZK_DISPUTE_GAME);
    ```
 
-5. **Add `ZK_GAME_TYPE` to `GameTypes.isSuperGame()`.** Required for `OptimismPortal`
+5. **Add `ZK_DISPUTE_GAME` to `GameTypes.isSuperGame()`.** Required for `OptimismPortal`
    to call `rootClaimByChainId` on `ZKDG` games during withdrawal verification. If this was
    already shipped at initial `ZKDG` launch, this step is a no-op.
 
@@ -107,7 +107,7 @@ Execute [Common Mechanics](#common-mechanics) in a single `OPCMv2.upgrade()` cal
 following additional considerations:
 
 - Cross-mode transition: this is a permissioned → permissionless transition. The OPCM upgrade
-  logic MUST explicitly allow `SPDG → ZK_GAME_TYPE` as a valid source-to-target game type
+  logic MUST explicitly allow `SPDG → ZK_DISPUTE_GAME` as a valid source-to-target game type
   pair (i.e., it cannot assume source and target share the same permission model).
 - Operational readiness: permissionless infrastructure (op-challenger, prover network) MUST be
   operational and funded before the respected game type is switched. This is the chain operator's

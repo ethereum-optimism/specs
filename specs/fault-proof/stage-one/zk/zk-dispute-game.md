@@ -83,8 +83,8 @@
 ## Overview
 
 The `ZKDisputeGame` is a dispute game that resolves disputes in a single round using ZK
-(zero-knowledge) proofs, registered as game type `ZK_GAME_TYPE`. It integrates into the OP
-Stack dispute infrastructure — `DisputeGameFactory`, `AnchorStateRegistry`, `DelayedWETH`, and
+(zero-knowledge) proofs, registered as game type `ZK_DISPUTE_GAME` (`GameType.wrap(10)`). It integrates
+into the OP Stack dispute infrastructure — `DisputeGameFactory`, `AnchorStateRegistry`, `DelayedWETH`, and
 `OPContractsManager`.
 
 Unlike the classic output-root model, the game commits to a **super root**: a hash of the
@@ -225,7 +225,7 @@ Fields at fixed offsets, present before `extraData`:
 | `gameCreator` | `0x00` | `address` | Creator of the dispute game |
 | `rootClaim` | `0x14` | `bytes32` | Super root hash asserted by this game |
 | `l1Head` | `0x34` | `bytes32` | L1 block hash at game creation |
-| `gameType` | `0x54` | `uint32` | Game type identifier (`ZK_GAME_TYPE`) |
+| `gameType` | `0x54` | `uint32` | Game type identifier (`ZK_DISPUTE_GAME`) |
 
 ### Variable extraData
 
@@ -294,7 +294,7 @@ MUST revert with `UnknownChainId` if `_chainId` is not present in the preimage.
 
 `OptimismPortal` calls this function during withdrawal verification (via
 `GameTypes.isSuperGame()`) to extract the per-chain output root from the super root commitment.
-Adding `ZK_GAME_TYPE` to the `isSuperGame` allowlist is required for Portal withdrawal
+Adding `ZK_DISPUTE_GAME` to the `isSuperGame` allowlist is required for Portal withdrawal
 finalization to work correctly.
 
 ## initialize Invariants
@@ -312,7 +312,7 @@ In addition to the standard parent validation described in
 
 ## OPCM Integration
 
-`ZKDisputeGame` integrates into OPCM v2 as game type `ZK_GAME_TYPE` through
+`ZKDisputeGame` integrates into OPCM v2 as game type `ZK_DISPUTE_GAME` through
 `DisputeGameConfig`, following the same pattern as other game types.
 
 Three additions are required:
@@ -322,7 +322,7 @@ Three additions are required:
 2. A `ZKDisputeGameConfig` struct carries the per-chain parameters that the caller provides.
    OPCM's `_makeGameArgs()` decodes it, injects the chain-specific values it already knows, and
    packs the final variable-length CWIA bytes for the factory.
-3. `ZK_GAME_TYPE` is added to the `validGameTypes` array in `_assertValidFullConfig()` and
+3. `ZK_DISPUTE_GAME` is added to the `validGameTypes` array in `_assertValidFullConfig()` and
    to `GameTypes.isSuperGame()`.
 
 ### ZKDisputeGameConfig
@@ -338,7 +338,7 @@ struct ZKDisputeGameConfig {
 ```
 
 ```solidity
-if (_gcfg.gameType.raw() == GameTypes.ZK_GAME_TYPE.raw()) {
+if (_gcfg.gameType.raw() == GameTypes.ZK_DISPUTE_GAME.raw()) {
     ZKDisputeGameConfig memory cfg = abi.decode(_gcfg.gameArgs, (ZKDisputeGameConfig));
     return abi.encodePacked(
         cfg.absolutePrestate,
