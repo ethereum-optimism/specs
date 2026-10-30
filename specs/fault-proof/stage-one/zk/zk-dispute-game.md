@@ -107,7 +107,8 @@ A proposer posts a super root with a bond. Anyone can challenge it by depositing
 bond. If no challenge is submitted before the challenge window expires, the proposer wins by
 default. If a challenge is submitted, either a prover submits a valid ZK proof to defend the
 claim and the proposer wins, or the proving window expires without a valid proof and the challenger
-wins. Resolution is permissionless once the game is over and the parent game is resolved.
+wins. Resolution is permissionless once the parent game is resolved and either the game is over or the parent
+resolved `CHALLENGER_WINS` (see [Resolution](game-mechanics.md#resolution)).
 
 The proving system is accessed through the generic [`IZKVerifier`](zk-interface.md)
 interface. The first supported backend is SP1 (PLONK) by Succinct. See
@@ -191,7 +192,7 @@ The timestamp after which a game can no longer be challenged. Computed as
 
 The timestamp after which a challenged game can no longer receive a proof submission. Set to
 `block.timestamp + maxProveDuration` when `challenge()` is called, resetting the prior challenge
-deadline.
+deadline. A proof at exactly the deadline is still accepted.
 
 ### Absolute Prestate
 
@@ -202,7 +203,8 @@ details.
 
 ### Game Over
 
-The condition under which a game can be resolved. `gameOver()` returns `true` when:
+The condition under which a game whose parent did not resolve `CHALLENGER_WINS` can be resolved. `gameOver()`
+returns `true` when:
 
 - `claimData.prover != address(0)` (a valid proof has been submitted), or
 - `claimData.deadline < block.timestamp` (the current deadline has expired).
@@ -289,10 +291,7 @@ In a standalone deployment, this list contains exactly one entry. In an interop 
 one entry per chain. The contract does not distinguish between these cases; the preimage size is
 the only difference.
 
-> **Note on chain ordering:** The ZK program identified by `absolutePrestate` only produces proofs for preimages
-> with chains sorted in strictly ascending order by `chainId`. `initialize()` does not check the ordering, so a
-> game whose preimage is unsorted can be created, but its claim can never be proven. If it is challenged, it
-> resolves `CHALLENGER_WINS` once the prove deadline passes.
+Chain ordering is not checked on-chain; see [SuperRootProof](#superrootproof).
 
 `rootClaim` MUST NOT be interpreted as an L2 output root for any specific chain. Per-chain output
 roots are extracted via [`rootClaimByChainId`](#rootclaimbychainid).
@@ -320,7 +319,8 @@ In addition to the standard parent validation described in
 
 - `extraData` length MUST equal `4 + 1 + 8 + 64n` bytes for some `n ≥ 1` (parent index, version, timestamp and
   `n` `(chainId, outputRoot)` pairs), otherwise `initialize()` MUST revert with `BadExtraData`. This prevents
-  UUID collisions in the factory from extra or missing bytes in `extraData`.
+  creating several games for the same proposal by adding or omitting bytes in `extraData`, which would change
+  the game UUID.
 - The `SuperRootProof` version byte MUST be `0x01`, otherwise `initialize()` MUST revert with
   `Encoding_InvalidSuperRootVersion`.
 - `hashSuperRootProof(decode(extraData.superRootProof)) MUST equal rootClaim()`. A mismatch MUST
@@ -364,7 +364,7 @@ struct ZKDisputeGameConfig {
 The verifier slot is always filled with the OPCM release's `SP1PlonkAdapter` (`impls.sp1PlonkAdapterImpl`):
 
 ```solidity
-} else if (rawGT == GameTypes.ZK_DISPUTE_GAME.raw()) {
+if (rawGT == GameTypes.ZK_DISPUTE_GAME.raw()) {
     if (_gcfg.gameArgs.length != ZK_DISPUTE_GAME_CONFIG_LENGTH) {
         revert IOPContractsManagerUtils.OPContractsManagerUtils_InvalidZKGameArgsLength(_gcfg.gameArgs.length);
     }
@@ -390,7 +390,7 @@ The packed game args are 140 bytes: `absolutePrestate` (32), `verifier` (20), `m
 OPCM's `_assertValidFullConfig` MUST revert with `OPContractsManagerV2_InvalidGameConfigs()` when an enabled
 `ZK_DISPUTE_GAME` config:
 
-- is part of an initial deployment (`ZK_DISPUTE_GAME` can only be enabled through `upgrade()`);
+- is part of an initial deployment (`ZK_DISPUTE_GAME` cannot be enabled by an initial deployment);
 - has `absolutePrestate == bytes32(0)`;
 - has a `maxChallengeDuration` or `maxProveDuration` outside `(0, type(uint32).max]`;
 - has `challengerBond == 0`; or
@@ -420,9 +420,9 @@ implemented by `_isValidZKDisputeGameConfig` in `OPContractsManagerUtilsCaller`.
 | `ZKDG-ANCHORP-*` | The `AnchorStateRegistry` in the game args passes the same checks as for other dispute games. |
 
 `ASR-RGT` accepts `ZK_DISPUTE_GAME` as the respected game type only when `ZK_DISPUTE_GAME` is registered in the
-`DisputeGameFactory`. In super-root mode, the validator also requires `SUPER_PERMISSIONED` and `SUPER_CANNON_KONA`
-to remain registered (`SPDG-SHAPE` and `SCKDG-SHAPE`), so `ZK_DISPUTE_GAME` is standard only as an additional game
-type.
+`DisputeGameFactory`. When the respected game type is a super-root game type, the validator also requires
+`SUPER_PERMISSIONED` and `SUPER_CANNON_KONA` to remain registered (`SPDG-SHAPE` and `SCKDG-SHAPE`), so
+`ZK_DISPUTE_GAME` is standard only as an additional game type.
 
 ## Interface
 
@@ -511,7 +511,8 @@ that passes `verify()` for an incorrect state transition.
 - The verifier is fixed per OPCM release: OPCM always installs the release's `SP1PlonkAdapter`, and the release is
   approved by governance. The verifier can only be swapped by a new OPCM release.
 - The `IZKVerifier` interface intentionally decouples the game from any specific proving system.
-  A verifier can be swapped without redeploying the game implementation.
+  The verifier address lives in the CWIA game args, so supporting a new verifier needs no change to the
+  `ZKDisputeGame` code.
 
 ### aZKG-002: Absolute Prestate Uniquely Identifies the ZK Program
 
@@ -520,8 +521,8 @@ MUST NOT share the same `absolutePrestate`.
 
 #### Mitigations
 
-- For SP1, `absolutePrestate` corresponds to the program's verification key, which is derived from
-  the program binary and circuit structure.
+- For SP1, `absolutePrestate` is the aggregation program's verification key, which commits transitively to all
+  three programs (see [Absolute Prestate](../../zk-proof-system.md#absolute-prestate)).
 - OPCM manages `absolutePrestate` per deployment; program updates require a corresponding
   `absolutePrestate` update via governance.
 
@@ -608,9 +609,7 @@ set with correct chain IDs and output roots. No chain is omitted, duplicated, or
   An incorrect preimage cannot produce a matching hash.
 - The ZK program independently verifies that the output roots in the preimage match the actual
   chain states (see [iZKVM-002](../../zk-proof-system.md#izkvm-002-super-root-preimage-must-commit-to-all-chain-outputs)).
-- Chain ordering is enforced by the ZK program (identified by `absolutePrestate`), not by `initialize()`. The
-  program only proves preimages with chains sorted in strictly ascending order by `chainId`, so no valid proof
-  can be generated for an unsorted preimage and such proposals can never be proven.
+- Chain ordering is enforced by the ZK program, not by `initialize()` (see [SuperRootProof](#superrootproof)).
 
 ### aZKG-009: Chain Set Is Stable During the Prove Window
 
@@ -622,21 +621,24 @@ creation and proof submission.
 - The `SuperRootProof` preimage is immutable once embedded in `extraData` at creation time.
 - The chain set is taken from the starting super root preimage and MUST equal the dependency set compiled into the
   program identified by `absolutePrestate`. A chain set change requires a new program and a new
-  `absolutePrestate`, gated by governance.
+  `absolutePrestate`, gated by governance, but these alone are not sufficient; the process for changing the chain
+  set is not yet fully specified.
 
 ### aZKG-010: Valid Claims Are Provable
 
 A valid claim can always be proven within the prover's resource limits.
 
 A sound ZK program may still be unable to prove an honest claim. Each proving request has witness size, memory,
-cycle and proving gas limits, and the smallest unit of work is one chain at one timestamp. Adversarial L2
+cycle and proving gas limits. The smallest range request covers one chain at one timestamp, but a consolidation
+request always covers every chain at one timestamp and cannot be split further. Adversarial L2
 content, for example a large number of interop messages, can inflate proving cost. If a challenged valid claim
 cannot be proven, it resolves `CHALLENGER_WINS`, and so do all of its descendants.
 
 #### Mitigations
 
 - The `log-commitment` program lets initiating messages be checked without loading the block's receipts.
-- Provers split a span into chunks, and split a single timestamp by chain, to keep each request within limits.
+- Provers split a span into chunks, and split a single timestamp's range by chain, to keep each request within
+  limits.
 - The Guardian can blacklist games or pause the system, and the dispute game finality delay gives time to do so.
 - Off-chain monitoring of challenged games that remain unproven can detect claims that cannot be proven.
 
@@ -644,7 +646,7 @@ cannot be proven, it resolves `CHALLENGER_WINS`, and so do all of its descendant
 
 ### iZKG-001: A Valid Proof Always Wins
 
-If a valid ZK proof is submitted before the current deadline, the game MUST resolve as
+If a valid ZK proof is submitted at or before the current deadline, the game MUST resolve as
 `DEFENDER_WINS` (assuming a valid parent chain).
 
 #### Impact

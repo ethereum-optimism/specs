@@ -25,7 +25,7 @@ registers `ZK_DISPUTE_GAME` **in addition to** `SUPER_PERMISSIONED` and `SUPER_C
 | --- | --- | --- |
 | **A** | `SUPER_CANNON_KONA` (`SuperFaultDisputeGame`, SFDG) | Isolated chain |
 | **B** | `SUPER_PERMISSIONED` (`SuperPermissionedDisputeGame`, SPDG) | Isolated chain |
-| **C** | `SUPER_CANNON_KONA` or `SUPER_PERMISSIONED` | Interop set with shared contracts |
+| **C** | A super-root game type | Interop set with shared contracts |
 
 Disabling the source game type (`enabled: false`) during the migration is mechanically possible, but it leaves the
 chain non-standard (`SPDG-SHAPE` or `SCKDG-SHAPE`).
@@ -33,8 +33,9 @@ chain non-standard (`SPDG-SHAPE` or `SCKDG-SHAPE`).
 ## In-Flight Withdrawal Safety
 
 MCP clones embed the implementation address at deployment time. Old SFDG/SPDG game clones created
-before the migration retain their original implementation bytecode forever. New game clones
-created after `setImplementation()` in `DisputeGameFactory` use the `ZKDG` implementation.
+before the migration retain their original implementation bytecode forever. New `ZK_DISPUTE_GAME` clones
+created after `setImplementation()` in `DisputeGameFactory` use the `ZKDG` implementation, while
+`SUPER_PERMISSIONED` and `SUPER_CANNON_KONA` stay registered and keep using their own implementations.
 
 `wasRespectedGameTypeWhenCreated` is snapshotted at game creation. `AnchorStateRegistry.isGameClaimValid()`
 reads this flag during withdrawal finalization. Games created under the old respected type remain
@@ -65,7 +66,7 @@ and `setRespectedGameType()` does not touch it. Games created before the switch 
    disputeGameFactory.setImplementation(
        GameTypes.ZK_DISPUTE_GAME,
        zkDisputeGameImpl,
-       gameArgs  // variable-length CWIA bytes
+       makeGameArgs(...)  // 140-byte packed CWIA args built from ZKDisputeGameConfig
    );
    disputeGameFactory.setInitBond(GameTypes.ZK_DISPUTE_GAME, initBond);
    ```
@@ -84,47 +85,47 @@ and `setRespectedGameType()` does not touch it. Games created before the switch 
 
       This lets operators register `ZK_DISPUTE_GAME` first and switch once honest ZK actors are running.
 
+   Before the switch, an honest ZK proposer, prover and challenger (see [Honest Actors](honest-actors.md)) MUST
+   be operational and funded. This is the chain operator's responsibility and is not enforced by OPCM.
+
 4. **Keep the anchor state.** `upgrade()` always re-initializes the `AnchorStateRegistry`, but it preserves the
    anchor root, the anchor game, the blacklist and `retirementTimestamp`. The starting anchor root cannot be
    overridden during an upgrade. SFDG and SPDG already commit to super roots, the same `bytes32` format that `ZKDG`
    uses, so the existing anchor is a valid starting point for the first `ZKDG` game
    (`parentIndex = type(uint32).max`).
 
-Migrating from a classic output-root `FaultDisputeGame` is not supported: its anchor is not a super root and
-cannot be re-seeded during an upgrade.
+Migrating from a classic output-root `FaultDisputeGame` with `upgrade()` is not supported: its anchor is not a
+super root and cannot be re-seeded during an upgrade.
 
 ## Path A: SFDG → ZKDG (Isolated Chain)
 
 Single chain with its own `DisputeGameFactory`, `AnchorStateRegistry`, and `OptimismPortal`.
 
-Execute [Common Mechanics](#common-mechanics) in a single `OPCMv2.upgrade()` call.
+Execute [Common Mechanics](#common-mechanics).
 
 ## Path B: SPDG → ZKDG (Isolated Chain)
 
 Single chain currently using the permissioned dispute game, migrating to permissionless ZK proofs.
 
-Execute [Common Mechanics](#common-mechanics) in a single `OPCMv2.upgrade()` call with the
-following additional consideration:
-
-- Operational readiness: permissionless infrastructure MUST be operational and funded before the respected game
-  type is switched, including an honest ZK proposer/prover and challenger (see
-  [Honest Actors](honest-actors.md)). This is the chain operator's responsibility and is not enforced by OPCM,
-  but MUST be verified prior to executing the upgrade.
+Execute [Common Mechanics](#common-mechanics).
 
 ## Path C: Interop Set (Shared Contracts)
 
 This case covers chains sharing a single `DisputeGameFactory`, `AnchorStateRegistry`, `DelayedWETH`, and
 `ETHLockbox` under the interop model.
 
-- `OPContractsManagerMigrator.migrate()` MAY register `ZK_DISPUTE_GAME` on the shared `DisputeGameFactory`. The
-  config MUST be valid, otherwise `migrate()` reverts with `OPContractsManagerMigrator_InvalidZKDisputeGameConfig`.
-  Whether `ZK_DISPUTE_GAME` is registered during `migrate()` or only by a later `upgrade()` is a deployment choice.
+- `OPContractsManagerMigrator.migrate()` forms an interop set from independent chains and deploys its shared
+  contracts. It MAY register `ZK_DISPUTE_GAME` on the new shared `DisputeGameFactory`. The `ZK_DISPUTE_GAME`
+  config MUST have a non-zero `initBond`, otherwise `migrate()` reverts with
+  `OPContractsManagerMigrator_InvalidInitBond`, and a valid `ZKDisputeGameConfig` (see
+  [Configuration Validation](zk-dispute-game.md#configuration-validation)), otherwise `migrate()` reverts with
+  `OPContractsManagerMigrator_InvalidZKDisputeGameConfig`.
 - The starting respected game type passed to `migrate()` MUST be one that `migrate()` supports, otherwise
   `migrate()` reverts with `OPContractsManagerMigrator_InvalidStartingRespectedGameType`.
-- Making `ZK_DISPUTE_GAME` the respected game type is OPTIONAL at migration time. `ZK_DISPUTE_GAME` becomes the
-  respected game type either directly through `migrate()`, where `migrate()` supports it, or after migration
-  through mechanism 3.1 on a member's `upgrade()` or mechanism 3.2 (see [Common Mechanics](#common-mechanics)).
-- `OPCMv2.upgrade()` on any member routes the upgrade of each shared contract through the `ProxyAdmin` that
-  administers it. The shared `AnchorStateRegistry` and `DisputeGameFactory` updates are therefore applied once
-  per call and are idempotent across members, as long as every member's upgrade uses the same dispute game
-  configs.
+- A set that already shares contracts registers `ZK_DISPUTE_GAME` through `OPCMv2.upgrade()` on a member
+  ([Common Mechanics](#common-mechanics) step 2). `migrate()` reverts with
+  `OPContractsManagerMigrator_ChainAlreadyMigrated` for a chain that is already in a set.
+- `ZK_DISPUTE_GAME` becomes the respected game type either directly through `migrate()`, where `migrate()`
+  supports it, or later through mechanism 3.1 on a member's `upgrade()` or mechanism 3.2 (see
+  [Common Mechanics](#common-mechanics)).
+- `OPCMv2.upgrade()` on any member upgrades the shared contracts for the whole set.
