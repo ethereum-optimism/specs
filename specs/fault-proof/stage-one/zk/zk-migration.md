@@ -16,7 +16,7 @@
 ## Overview
 
 Migrations to `ZKDisputeGame` target chains that already run super-root dispute games. A migration registers
-`ZK_DISPUTE_GAME` alongside the existing super-root game types and makes `ZK_DISPUTE_GAME` the respected game type.
+`ZK_DISPUTE_GAME` and makes it the respected game type.
 
 | Path | Respected game type before migration | Context |
 | --- | --- | --- |

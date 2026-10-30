@@ -45,7 +45,7 @@
     - [Mitigations](#mitigations-3)
   - [aZKG-005: Guardian Acts Honestly and Timely](#azkg-005-guardian-acts-honestly-and-timely)
     - [Mitigations](#mitigations-4)
-  - [aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency](#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency)
+  - [aZKG-006: Anchor State Advancement Rarely Orphans Proposals](#azkg-006-anchor-state-advancement-rarely-orphans-proposals)
     - [Mitigations](#mitigations-5)
   - [aZKG-007: Proof Generation Is Feasible Within the Prove Window](#azkg-007-proof-generation-is-feasible-within-the-prove-window)
     - [Mitigations](#mitigations-6)
@@ -217,7 +217,7 @@ returns `true` when:
 | **DisputeGameFactory** | Creates MCP clones via `create(...)`. Appends per-chain `gameArgs` (CWIA). |
 | **AnchorStateRegistry** | Source of truth for finalization, anchor state, respected game type, and blacklisting. Enforces pause checks. |
 | **DelayedWETH** | Bond custody with a deposit → unlock → withdraw lifecycle. Provides a time window for the Guardian to freeze funds post-resolution. |
-| **IZKVerifier** | Generic verifier interface. The verifier is the OPCM release's [`SP1PlonkAdapter`](zk-interface.md#sp1plonkadapter), which wraps Succinct's SP1 PLONK verifier. |
+| **IZKVerifier** | Generic verifier interface. OPCM installs the release's [`SP1PlonkAdapter`](zk-interface.md#sp1plonkadapter), which wraps Succinct's SP1 PLONK verifier, by default. |
 
 ## Actors
 
@@ -227,7 +227,7 @@ returns `true` when:
 | **Challenger** | Fully permissionless. Disputes a proposal by calling `challenge()` and depositing `challengerBond`. |
 | **Prover** | Fully permissionless. Submits a valid ZK proof via `prove(proofBytes)`. May be the same address as the proposer or the challenger. |
 | **Guardian** | Pauses the system, blacklists games, sets the respected game type, and retires old games via `updateRetirementTimestamp()`. |
-| **OPCM / ProxyAdmin Owner** | Deploys implementations, configures game types in the factory, and manages `absolutePrestate` per chain. The verifier is fixed by the OPCM release. |
+| **OPCM / ProxyAdmin Owner** | Deploys implementations and configures game types in the factory. OPCM sets `absolutePrestate` per chain and installs the release's verifier by default; the `DisputeGameFactory` owner can also replace both out of band (see [Verifier Upgrade Path](zk-interface.md#verifier-upgrade-path)). |
 
 ## CWIA Layout
 
@@ -266,7 +266,7 @@ Fields at dynamic offsets, after `extraData`. Injected by `OPContractsManagerUti
 | Field | Type | Description |
 | --- | --- | --- |
 | `absolutePrestate` | `bytes32` | Super-root ZK program identity (e.g., SP1 verification key) |
-| `verifier` | `address` | Address of the `IZKVerifier` contract: the OPCM release's `SP1PlonkAdapter` |
+| `verifier` | `address` | Address of the `IZKVerifier` contract. OPCM sets it to the release's `SP1PlonkAdapter` |
 | `maxChallengeDuration` | `Duration` | Time window for challenges after game creation |
 | `maxProveDuration` | `Duration` | Time window for proof submission after a challenge |
 | `challengerBond` | `uint256` | Bond required to challenge a proposal |
@@ -482,8 +482,9 @@ that passes `verify()` for an incorrect state transition.
 #### Mitigations
 
 - The PLONK verifier for SP1 is independently audited.
-- The verifier is fixed per OPCM release: OPCM always installs the release's `SP1PlonkAdapter`, and the release is
-  approved by governance. The verifier can only be swapped by a new OPCM release.
+- OPCM installs the release's `SP1PlonkAdapter` by default, and the release is approved by governance. Any other
+  verifier must be set by the `DisputeGameFactory` owner (see
+  [Verifier Upgrade Path](zk-interface.md#verifier-upgrade-path)).
 - The `IZKVerifier` interface intentionally decouples the game from any specific proving system.
   The verifier address lives in the CWIA game args, so supporting a new verifier needs no change to the
   `ZKDisputeGame` code.
@@ -512,8 +513,9 @@ state.
   value, which cryptographically links consecutive games.
 - Parent validation at creation time prevents games from chaining off blacklisted, retired, or
   `CHALLENGER_WINS` parents.
-- If a parent is blacklisted or retired after child games have been created, the Guardian MUST
-  individually blacklist or retire those child games to place them in REFUND mode.
+- If a parent is blacklisted after child games have been created, the Guardian MUST also blacklist those child
+  games to place them in REFUND mode. Retirement needs no such step, because it covers every game created at or
+  before the retirement timestamp, including the children.
 
 ### aZKG-004: Bonds Are Economically Rational
 
@@ -542,13 +544,14 @@ types before fraudulent games achieve Valid Claims.
   the Guardian a window to act.
 - `DelayedWETH` provides an additional window after `closeGame` to freeze funds.
 
-### aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency
+### aZKG-006: Anchor State Advancement Rarely Orphans Proposals
 
-There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
-game that passes the finality delay can call `closeGame()` and advance it. However, the minimum
-time for a game to advance the anchor state is `maxChallengeDuration + disputeGameFinalityDelaySeconds`
-(12+ hours in practice), and under normal operation this is expected to be much larger than
-typical proposal frequency. Orphan risk from parent validation is therefore negligible.
+Any resolved game that passes the finality delay can call `closeGame()` and advance the anchor state. An unproven
+game advances it no earlier than `maxChallengeDuration + disputeGameFinalityDelaySeconds` after creation. A game
+proven while unchallenged can resolve as soon as its parent has resolved, so it can advance the anchor state
+`disputeGameFinalityDelaySeconds` after its proof. If the anchor state reaches a game that a proposer intended to
+use as a parent, `initialize()` reverts with `InvalidParentGame` for the new child. This costs the proposer gas and
+a retry, not funds.
 
 #### Mitigations
 
