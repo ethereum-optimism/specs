@@ -179,7 +179,7 @@ state directly.
 ### Challenge Deadline
 
 The timestamp after which a game can no longer be challenged. Computed as
-`createdAt + maxChallengeDuration`.
+`createdAt + maxChallengeDuration`. A challenge at exactly the deadline is still accepted.
 
 ### Prove Deadline
 
