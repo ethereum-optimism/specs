@@ -498,7 +498,11 @@ transfer control of the chain. Silently changing a batcher hash or a gas limit w
 
 The [Starting Anchor State](#starting-anchor-state) must not be empty and must leave room for a
 successor proposal. The set's starting respected game type must be a super-root game type, and must
-be one of the game types migration registers on the shared factory.
+be one of the game types migration registers on the shared factory. It must also be a game type that `migrate()`
+supports as a starting respected game type, otherwise `migrate()` reverts with
+`OPContractsManagerMigrator_InvalidStartingRespectedGameType`. A set MAY switch its respected game type to
+`ZK_DISPUTE_GAME` after migration (see
+[ZK Dispute Game Migration](../../../fault-proof/stage-one/zk/zk-migration.md#path-c-interop-set-shared-contracts)).
 
 #### Impact
 
@@ -513,7 +517,8 @@ so no proposal can be made or defended and withdrawals stop for the whole set.
 Every dispute game configuration migration installs must be one it can actually install and one that
 can be played: a super-root game type with a registered implementation, enabled, with an
 initialization bond consistent with whether that game type charges bonds, and with a non-zero
-absolute prestate where the game type requires one.
+absolute prestate where the game type requires one. A `ZK_DISPUTE_GAME` configuration is installable only with a
+non-zero absolute prestate, both durations in `(0, type(uint32).max]`, and a non-zero challenger bond.
 
 A configuration that passes validation must not then fail installation.
 
