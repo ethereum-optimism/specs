@@ -1,4 +1,4 @@
-# ZK Fault Proof VM
+# ZK Proof System
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -22,7 +22,7 @@
 
 ## Overview
 
-The ZK Fault Proof VM is a succinct proof system that verifies a super root state
+The ZK proof system is a succinct proof system that verifies a super root state
 transition across all chains in the interop set through a single cryptographic proof. It consists
 of two components:
 

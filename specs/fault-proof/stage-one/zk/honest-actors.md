@@ -16,7 +16,7 @@
 ## Overview
 
 The `ZKDisputeGame` has three honest roles: the proposer, the prover and the challenger. Only the prover runs the
-[ZK program](../../zk-fault-proof-vm.md#zk-program). All roles read super roots through
+[ZK program](../../zk-proof-system.md#zk-program). All roles read super roots through
 [`superroot_atTimestamp`](../../../interop/superroot.md#superroot_attimestamp) from a source that follows the
 chains in the interop set.
 
@@ -60,7 +60,7 @@ An honest proposer:
 An honest prover:
 
 - MUST prove every challenged game that it considers valid before the game's prove deadline. See
-  [Proof Generation](../../zk-fault-proof-vm.md#proof-generation).
+  [Proof Generation](../../zk-proof-system.md#proof-generation).
 - MUST submit each proof from the address committed to as `prover` in the proof's public values, because the
   proof binds `msg.sender`.
 - MAY prove unchallenged valid games to end them before the challenge deadline.

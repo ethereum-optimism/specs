@@ -111,7 +111,7 @@ wins. Resolution is permissionless once the game is over and the parent game is 
 
 The proving system is accessed through the generic [`IZKVerifier`](zk-interface.md)
 interface. The first supported backend is SP1 (PLONK) by Succinct. See
-[ZK Fault Proof VM](../../zk-fault-proof-vm.md) for details on the off-chain proving
+[ZK Proof System](../../zk-proof-system.md) for details on the off-chain proving
 component.
 
 For the full game lifecycle and bond accounting see
@@ -197,7 +197,7 @@ deadline.
 
 A `bytes32` value that uniquely identifies the ZK program version being proven. It is the program
 identity passed to `IZKVerifier.verify()` and is injected into each game instance via the CWIA
-game args. See [Absolute Prestate](../../zk-fault-proof-vm.md#absolute-prestate) for
+game args. See [Absolute Prestate](../../zk-proof-system.md#absolute-prestate) for
 details.
 
 ### Game Over
@@ -607,7 +607,7 @@ set with correct chain IDs and output roots. No chain is omitted, duplicated, or
 - `initialize()` enforces `hashSuperRootProof(decode(extraData.superRootProof)) == rootClaim()`.
   An incorrect preimage cannot produce a matching hash.
 - The ZK program independently verifies that the output roots in the preimage match the actual
-  chain states (see [iZKVM-002](../../zk-fault-proof-vm.md#izkvm-002-super-root-preimage-must-commit-to-all-chain-outputs)).
+  chain states (see [iZKVM-002](../../zk-proof-system.md#izkvm-002-super-root-preimage-must-commit-to-all-chain-outputs)).
 - Chain ordering is enforced by the ZK program (identified by `absolutePrestate`), not by `initialize()`. The
   program only proves preimages with chains sorted in strictly ascending order by `chainId`, so no valid proof
   can be generated for an unsorted preimage and such proposals can never be proven.
