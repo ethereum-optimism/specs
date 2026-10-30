@@ -31,6 +31,10 @@
   - [ZKDisputeGameConfig](#zkdisputegameconfig)
   - [Configuration Validation](#configuration-validation)
   - [Standard Configuration](#standard-configuration)
+- [Interface](#interface)
+  - [Functions](#functions)
+  - [Events](#events)
+  - [Errors](#errors)
 - [Assumptions](#assumptions)
   - [aZKG-001: ZK Verifier Soundness](#azkg-001-zk-verifier-soundness)
     - [Mitigations](#mitigations)
@@ -417,6 +421,80 @@ implemented by `_isValidZKDisputeGameConfig` in `OPContractsManagerUtilsCaller`.
 `DisputeGameFactory`. In super-root mode, the validator also requires `SUPER_PERMISSIONED` and `SUPER_CANNON_KONA`
 to remain registered (`SPDG-SHAPE` and `SCKDG-SHAPE`), so `ZK_DISPUTE_GAME` is standard only as an additional game
 type.
+
+## Interface
+
+This section summarizes the public interface of `ZKDisputeGame` (`version` `2.1.0`). Behavior is specified in
+[Game Mechanics](game-mechanics.md).
+
+### Functions
+
+| Function | Behavior | Reverts |
+| --- | --- | --- |
+| `initialize() external payable` | Validates the proposal and records the creator's bond. See [Creation](game-mechanics.md#creation). | `AlreadyInitialized`, `BadExtraData`, `Encoding_InvalidSuperRootVersion`, `InvalidParentGame`, `UnexpectedGameType`, `AnchorRootNotFound`, `UnexpectedRootClaim` |
+| `challenge() external payable returns (ProposalStatus)` | Challenges the claim. See [Challenge](game-mechanics.md#challenge). | `GameOver`, `ClaimAlreadyChallenged`, `IncorrectBondAmount` |
+| `prove(bytes calldata _proofBytes) external returns (ProposalStatus)` | Verifies a proof for the claim. See [Proving](game-mechanics.md#proving). | `ClaimAlreadyResolved`, `InvalidParentGame`, `GameOver`, or the verifier's revert |
+| `resolve() external returns (GameStatus)` | Resolves the game and allocates credit. See [Resolution](game-mechanics.md#resolution). | `ClaimAlreadyResolved`, `ParentGameNotResolved`, `GameNotOver`, `InvalidProposalStatus` |
+| `closeGame() public` | Sets the bond distribution mode and tries to update the anchor state. See [Closing](game-mechanics.md#closing). | `InvalidBondDistributionMode`, `GamePaused`, `GameNotResolved`, `GameNotFinalized` |
+| `claimCredit(address _recipient) external` | Closes the game if needed, then unlocks or withdraws the recipient's credit. See [Closing](game-mechanics.md#closing). | `closeGame()` errors, `InvalidBondDistributionMode`, `NoCreditToClaim`, `BondTransferFailed` |
+| `gameOver() public view returns (bool gameOver_)` | See [Game Over](#game-over). | — |
+| `credit(address _recipient) external view returns (uint256 credit_)` | Returns `refundModeCredit[_recipient]` in REFUND mode, otherwise `normalModeCredit[_recipient]`. | — |
+| `rootClaimByChainId(uint256 _chainId) public pure returns (Claim outputRootClaim_)` | See [rootClaimByChainId](#rootclaimbychainid). | `UnknownChainId` |
+| `startingSequenceNumber() external view returns (uint256 startingSequenceNumber_)` | Returns `startingProposal.l2SequenceNumber`. | — |
+| `startingRootHash() external view returns (Hash startingRootHash_)` | Returns `startingProposal.root`. | — |
+| `gameData() external pure returns (GameType gameType_, Claim rootClaim_, bytes memory extraData_)` | Returns the components of the game's UUID preimage. | — |
+| CWIA getters: `gameCreator`, `rootClaim`, `l1Head`, `gameType`, `parentIndex`, `l2SequenceNumber`, `absolutePrestate`, `verifier`, `maxChallengeDuration`, `maxProveDuration`, `challengerBond`, `anchorStateRegistry`, `weth`, `extraData` | Return the values in the [CWIA Layout](#cwia-layout). | — |
+| Storage getters: `createdAt`, `resolvedAt`, `status`, `claimData`, `normalModeCredit`, `refundModeCredit`, `startingProposal`, `bondDistributionMode`, `wasRespectedGameTypeWhenCreated`, `disputeGameFactory`, `totalBonds` | Return the game's state variables. | — |
+
+`claimData` returns the `ClaimData` struct:
+
+```solidity
+struct ClaimData {
+    uint32 parentIndex; // 4 bytes
+    ProposalStatus status; // 1 byte
+    address challenger; // 20 bytes |-- slot 1 (25 bytes)
+    address prover; // 20 bytes
+    Timestamp deadline; // 8 bytes  |-- slot 2 (28 bytes)
+    Claim claim; // 32 bytes |-- slot 3
+}
+```
+
+### Events
+
+| Event | Emitted by |
+| --- | --- |
+| `Challenged(address indexed challenger)` | `challenge()` |
+| `Proved(address indexed prover)` | `prove()` |
+| `Resolved(GameStatus indexed status)` (inherited from `IDisputeGame`) | `resolve()` |
+| `GameClosed(BondDistributionMode bondDistributionMode)` | `closeGame()`, including when called from `claimCredit()` |
+
+### Errors
+
+| Error | Raised by | Condition |
+| --- | --- | --- |
+| `AlreadyInitialized` | `initialize()` | The game is already initialized. |
+| `BadExtraData` | `initialize()` | `extraData` has the wrong length, or the preimage hash does not equal `rootClaim`. |
+| `Encoding_InvalidSuperRootVersion` | `initialize()` | The `SuperRootProof` version byte is not `0x01`. |
+| `Encoding_EmptySuperRoot` | `Encoding.decodeSuperRootProof` | The preimage has no output roots. Not reachable once the `BadExtraData` length check passes. |
+| `Encoding_InvalidSuperRootEncoding` | `Encoding.decodeSuperRootProof` | The preimage length is malformed. Not reachable once the `BadExtraData` length check passes. |
+| `InvalidParentGame` | `initialize()`, `prove()` | `initialize()`: the parent resolved `CHALLENGER_WINS`, is blacklisted or retired, was not respected while the child is, or is at or below the anchor. `prove()`: the parent resolved `CHALLENGER_WINS`. |
+| `UnexpectedGameType` | `initialize()` | The parent is not a `ZK_DISPUTE_GAME`. |
+| `AnchorRootNotFound` | `initialize()` | There is no parent and the anchor root is zero. |
+| `UnexpectedRootClaim(Claim rootClaim)` | `initialize()` | `l2SequenceNumber` is not above the starting proposal's sequence number. |
+| `GameOver` | `challenge()`, `prove()` | `gameOver()` returns `true`. |
+| `ClaimAlreadyChallenged` | `challenge()` | `claimData.status` is not `Unchallenged`. |
+| `IncorrectBondAmount` | `challenge()`, `DisputeGameFactory.create()` | `msg.value` is not `challengerBond` (challenge) or the factory's `initBond` (creation). |
+| `ClaimAlreadyResolved` | `prove()`, `resolve()` | The game is already resolved. |
+| `ParentGameNotResolved` | `resolve()` | The parent game is still `IN_PROGRESS`. |
+| `GameNotOver` | `resolve()` | The parent did not resolve `CHALLENGER_WINS` and `gameOver()` returns `false`. |
+| `InvalidProposalStatus` | `resolve()` | `claimData.status` is not a resolvable status (sanity check). |
+| `InvalidBondDistributionMode` | `closeGame()`, `claimCredit()` | The bond distribution mode is not a known value (sanity check). |
+| `GamePaused` | `closeGame()` | The `AnchorStateRegistry` is paused and the game is not closed yet. |
+| `GameNotResolved` | `closeGame()` | The game is not resolved. |
+| `GameNotFinalized` | `closeGame()` | `AnchorStateRegistry.isGameFinalized` returns `false`. |
+| `NoCreditToClaim` | `claimCredit()` | The recipient has no credit and no pending `DelayedWETH` withdrawal, and the game was already closed before the call. |
+| `BondTransferFailed` | `claimCredit()` | The ETH transfer to the recipient failed. |
+| `UnknownChainId` | `rootClaimByChainId()` | The chain ID is not in the preimage. |
 
 ## Assumptions
 
