@@ -30,7 +30,6 @@
 - [OPCM Integration](#opcm-integration)
   - [ZKDisputeGameConfig](#zkdisputegameconfig)
   - [Configuration Validation](#configuration-validation)
-  - [Standard Configuration](#standard-configuration)
 - [Interface](#interface)
   - [Functions](#functions)
   - [Events](#events)
@@ -390,7 +389,6 @@ The packed game args are 140 bytes: `absolutePrestate` (32), `verifier` (20), `m
 OPCM's `_assertValidFullConfig` MUST revert with `OPContractsManagerV2_InvalidGameConfigs()` when an enabled
 `ZK_DISPUTE_GAME` config:
 
-- is part of an initial deployment (`ZK_DISPUTE_GAME` cannot be enabled by an initial deployment);
 - has `absolutePrestate == bytes32(0)`;
 - has a `maxChallengeDuration` or `maxProveDuration` outside `(0, type(uint32).max]`;
 - has `challengerBond == 0`; or
@@ -399,30 +397,6 @@ OPCM's `_assertValidFullConfig` MUST revert with `OPContractsManagerV2_InvalidGa
 The `type(uint32).max` cap exists because deadlines are computed as `uint64(block.timestamp + duration)`. A larger
 duration could overflow the `uint64` cast and produce a deadline in the past. The game args checks are
 implemented by `_isValidZKDisputeGameConfig` in `OPContractsManagerUtilsCaller`.
-
-### Standard Configuration
-
-`OPContractsManagerStandardValidator` checks a registered `ZK_DISPUTE_GAME` with the following error codes:
-
-| Code | Condition checked |
-| --- | --- |
-| `ZKDG-GARGS-10` | The game args registered in the factory are 140 bytes long. |
-| `ZKDG-20` | The registered implementation has the same `version()` as the OPCM release's `zkDisputeGameImpl`. |
-| `ZKDG-150` | The registered implementation is the OPCM release's `zkDisputeGameImpl`. |
-| `ZKDG-70` | `absolutePrestate` is non-zero. |
-| `ZKDG-80` | `verifier` is the OPCM release's `sp1PlonkAdapterImpl` and has code. |
-| `ZKDG-90` | `maxChallengeDuration` is in `(0, type(uint32).max]`. |
-| `ZKDG-100` | `maxProveDuration` is in `(0, type(uint32).max]`. |
-| `ZKDG-110` | `challengerBond` is non-zero. |
-| `ZKDG-120` | The `AnchorStateRegistry` in the game args has a non-zero anchor root. |
-| `ZKDG-160` | `DisputeGameFactory.initBonds(ZK_DISPUTE_GAME)` is non-zero. |
-| `ZKDG-DWETH-*` | The `DelayedWETH` in the game args passes the same checks as for other dispute games. |
-| `ZKDG-ANCHORP-*` | The `AnchorStateRegistry` in the game args passes the same checks as for other dispute games. |
-
-`ASR-RGT` accepts `ZK_DISPUTE_GAME` as the respected game type only when `ZK_DISPUTE_GAME` is registered in the
-`DisputeGameFactory`. When the respected game type is a super-root game type, the validator also requires
-`SUPER_PERMISSIONED` and `SUPER_CANNON_KONA` to remain registered (`SPDG-SHAPE` and `SCKDG-SHAPE`), so
-`ZK_DISPUTE_GAME` is standard only as an additional game type.
 
 ## Interface
 

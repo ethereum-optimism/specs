@@ -69,9 +69,7 @@ An honest prover:
 
 ## Honest Challenger
 
-An honest challenger MUST NOT prove games.
-
-It challenges a game when all of the following hold:
+An honest challenger challenges a game when all of the following hold:
 
 - `claimData.status` is `Unchallenged` and the challenge deadline has not passed; and
 - the parent resolved as `CHALLENGER_WINS`, or the claim is invalid per [Valid Claim](#valid-claim).
