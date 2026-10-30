@@ -63,6 +63,15 @@ library GameTypes {
     /// @dev A dispute game type that performs output bisection and then uses the cannon vm.
     GameType internal constant OUTPUT_CANNON = GameType.wrap(1);
 
+    /// @notice A permissioned dispute game type for Super Roots.
+    GameType internal constant SUPER_PERMISSIONED = GameType.wrap(5);
+
+    /// @notice A dispute game type that uses the cannon vm with Kona (Super Roots).
+    GameType internal constant SUPER_CANNON_KONA = GameType.wrap(9);
+
+    /// @notice A dispute game type that uses optimistic + ZK proofs for dispute resolution (Super Roots).
+    GameType internal constant ZK_DISPUTE_GAME = GameType.wrap(10);
+
     /// @notice A dispute game type that performs output bisection and then uses an alphabet vm.
     ///         Not intended for production use.
     GameType internal constant OUTPUT_ALPHABET = GameType.wrap(254);
