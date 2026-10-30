@@ -108,7 +108,7 @@ following additional consideration:
 
 - Operational readiness: permissionless infrastructure MUST be operational and funded before the respected game
   type is switched, including an honest ZK proposer/prover and challenger (see
-  [Actors](zk-dispute-game.md#actors)). This is the chain operator's responsibility and is not enforced by OPCM,
+  [Honest Actors](honest-actors.md)). This is the chain operator's responsibility and is not enforced by OPCM,
   but MUST be verified prior to executing the upgrade.
 
 ## Path C: Interop Set (Shared Contracts)
