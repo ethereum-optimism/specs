@@ -18,8 +18,8 @@
 proving system. The game always casts the configured verifier address to `IZKVerifier` and calls
 `verify()` through the interface, rather than depending on a concrete verifier type.
 
-The verifier is the [`SP1PlonkAdapter`](#sp1plonkadapter) singleton deployed with each OPCM release. It wraps
-Succinct's PLONK verifier for [SP1](../../zk-proof-system.md#sp1-plonk) (SP1 PLONK v6.1.0 on Ethereum mainnet
+By default, the verifier is the [`SP1PlonkAdapter`](#sp1plonkadapter) singleton deployed with each OPCM release. It
+wraps Succinct's PLONK verifier for [SP1](../../zk-proof-system.md#sp1-plonk) (SP1 PLONK v6.1.0 on Ethereum mainnet
 and Sepolia).
 
 ## Interface
@@ -108,13 +108,15 @@ specification.
 ## Verifier Upgrade Path
 
 The `verifier` and `absolutePrestate` fields live in the CWIA game args (see
-[CWIA Layout](zk-dispute-game.md#cwia-layout)). They are not configured the same way:
+[CWIA Layout](zk-dispute-game.md#cwia-layout)). Both change by setting new game args for `ZK_DISPUTE_GAME` in the
+`DisputeGameFactory`:
 
-- `verifier` is not chain-configurable. OPCM always fills it with the OPCM release's `SP1PlonkAdapter`
-  (see [ZKDisputeGameConfig](zk-dispute-game.md#zkdisputegameconfig)). Rotating the verifier requires a new OPCM
-  release that deploys a new adapter, followed by an `upgrade()` for each chain.
-- `absolutePrestate` is chain-configurable through `ZKDisputeGameConfig`. If the ZK program changes, the chain
-  computes a new `absolutePrestate` and applies it with an OPCM `upgrade()`.
+- An OPCM `upgrade()` applies the current release defaults: `verifier` is always the release's `SP1PlonkAdapter`
+  (see [ZKDisputeGameConfig](zk-dispute-game.md#zkdisputegameconfig)), and `absolutePrestate` comes from
+  `ZKDisputeGameConfig`.
+- The `DisputeGameFactory` owner can also manage them out of band with
+  `setImplementation(ZK_DISPUTE_GAME, impl, gameArgs)`. A later OPCM `upgrade()` resets `verifier` to the release's
+  `SP1PlonkAdapter`.
 
 Existing game clones keep the `verifier` and `absolutePrestate` stored in their own CWIA data, so in-progress
 games play out under the old configuration. New games use the updated game args.

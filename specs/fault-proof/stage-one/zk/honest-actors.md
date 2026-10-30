@@ -50,6 +50,7 @@ An honest proposer:
   `ZK_DISPUTE_GAME` that was created while `ZK_DISPUTE_GAME` was the respected game type, is not blacklisted or
   retired, has not resolved as `CHALLENGER_WINS`, and is not the anchor game itself. It SHOULD choose the highest
   such game.
+- SHOULD NOT create games when the anchor root differs from the verified super root at the anchor's timestamp.
 - MUST NOT create a game unless it can produce proofs for the registered `absolutePrestate` and `verifier`. For
   SP1, the aggregation program's verification key MUST equal `absolutePrestate`, and the `VERIFIER_HASH()` of the
   verifier wrapped by the registered [`SP1PlonkAdapter`](zk-interface.md#sp1plonkadapter) MUST match the PLONK
