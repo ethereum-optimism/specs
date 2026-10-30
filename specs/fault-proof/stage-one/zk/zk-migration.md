@@ -67,6 +67,12 @@ interop set with `migrate()` is different: it retires all pre-migration games; s
 
    Old game clones are unaffected. New `ZK_DISPUTE_GAME` games use `zkDisputeGameImpl`.
 
+   The same upgrade MAY disable the source game type by setting its entry to `enabled = false` with a zero
+   `initBond`. This requires switching the respected game type in the same upgrade with mechanism 3.1, because OPCM
+   requires the resulting respected game type to be enabled. Disabling clears the source type's implementation and
+   init bond, so no new games of that type can be created. Existing clones keep their implementation and resolve as
+   before.
+
 3. **Switch the respected game type to `ZK_DISPUTE_GAME`** with one of:
 
    1. the same `upgrade()` call, with the extra instruction key `overrides.cfg.startingRespectedGameType` and data
