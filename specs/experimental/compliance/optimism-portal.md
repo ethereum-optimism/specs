@@ -243,6 +243,7 @@ Accepts deposits of ETH and data. Behavior must remain unchanged while `bridgeHo
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is identified as a
     [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
   - MUST then move any ETH the deposit carries to the hook by calling `holdDeposit` with that value.
+  - MUST emit `DepositHeld` with the item's identifier.
 
 ### proveWithdrawalTransaction
 
@@ -275,9 +276,11 @@ Finalizes a withdrawal using a proof submitted by another address.
 - When `screenWithdrawal` returns `false`, it MUST hold the withdrawal:
   - MUST set `heldWithdrawals[identifier]` to `true` before moving any value.
   - MUST NOT forward the withdrawal call to its target.
+  - MUST NOT emit `WithdrawalFinalized`, so a held withdrawal is not reported as paid.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
     [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
   - MUST then move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.
+  - MUST emit `WithdrawalHeld` with the item's identifier and the withdrawal hash.
 
 ### completeDepositTransaction
 
@@ -330,6 +333,7 @@ this function when it is ready to release the withdrawal.
 - MUST unset the L2 Withdrawal Sender after the call returns.
 - MUST revert if the forwarded call fails, so the withdrawal stays held and can be completed again later. This
   diverges from `finalizeWithdrawalTransaction`, which records the failure as finalized with `success = false`.
+- MUST emit `WithdrawalFinalized` with `success` as `true`.
 
 ## Resource Metering
 
