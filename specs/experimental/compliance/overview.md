@@ -120,7 +120,7 @@ graph LR
     SB <-->|"messages, through the messenger"| OP
     OP -->|"hold / restore escrow"| SB
     OP <-->|"screen / hold / complete"| CM
-    CM <-->|"screen / screenRelease"| POL
+    CM <-->|"screenDeposit / screenWithdrawal / screenRelease"| POL
     POL -->|recordVerdict| CM
 ```
 

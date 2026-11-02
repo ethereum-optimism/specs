@@ -58,14 +58,14 @@ path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook
 
 ```solidity
 interface IPolicy {
-    function screen(
+    function screenDeposit(
         Item calldata _item,
         address[] calldata _parties
     )
         external
         returns (bool pass_);
 
-    function screenRelease(
+    function screenWithdrawal(
         Item calldata _item,
         address[] calldata _parties,
         uint64 _expiresAt,
@@ -73,10 +73,18 @@ interface IPolicy {
     )
         external
         returns (bool pass_);
+
+    function screenRelease(
+        Item calldata _item,
+        address[] calldata _parties,
+        uint64 _expiresAt
+    )
+        external
+        returns (bool pass_);
 }
 ```
 
-Both functions answer with a [Screening Outcome](./overview.md#screening-outcome): `true` to proceed, `false` to hold,
+All three answer with a [Screening Outcome](./overview.md#screening-outcome): `true` to proceed, `false` to hold,
 and a revert to reject.
 
 ## What Every Policy May Assume
@@ -90,7 +98,7 @@ and a revert to reject.
 
 - A policy MUST revert, and MUST NOT return `false`, when something it calls fails.
 - A policy MUST terminate within the gas available in the calling transaction.
-- A policy MUST restrict `screen` and `screenRelease` to the hook, so nobody else can drive its state.
+- A policy MUST restrict all three functions to the hook, so nobody else can drive its state.
 - A policy MUST treat an expired verdict as no verdict, so an item whose clearance has aged out is held or rejected
   like any other uncleared one.
 

@@ -273,7 +273,8 @@ Answers the Portal for a deposit at submission.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST return `true` without consulting the policy if [Disable](#disable) is set.
-- MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's `screen`.
+- MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's
+  `screenDeposit`.
 - MUST bubble up any revert from the policy.
 
 ### holdDeposit
@@ -306,7 +307,7 @@ Answers the Portal for a withdrawal at finalization.
 - MUST return `true` without consulting the policy if [Disable](#disable) is set AND the withdrawal's nonce is at or
   above the cutoff recorded when it was disabled.
 - MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's
-  `screenRelease`, passing the record's `expiresAt` and `_finalizableAt`.
+  `screenWithdrawal`, passing the record's `expiresAt` and `_finalizableAt`.
 - MUST NOT catch a revert from the policy.
 
 ### holdWithdrawal
@@ -364,7 +365,7 @@ Runs a held deposit. Permissionless.
 - MUST revert if the record has no clear verdict.
 - MUST delete the record before calling the policy or the Portal.
 - MUST revert if the policy's `screenRelease` does not return `true`, passing the `expiresAt` the record held before
-  the delete, and a zero `_finalizableAt`.
+  the delete.
 - MUST approve the `L1StandardBridge` for the item's amount, if the item is a token transfer whose tokens it holds.
 - MUST decrease `heldTokens` for the item's token pair by that amount.
 - MUST call the Portal's `completeDepositTransaction` with the ETH the item carries.
