@@ -103,8 +103,8 @@ return:
 | Hold | returns `false` | the Portal commits the item's terms and moves its value to the hook |
 | Reject | reverts | the whole transaction reverts and nothing is consumed |
 
-`screenWithdrawal` also receives `finalizableAt`, the [Finalizable Time](./overview.md#finalizable-time) of the
-withdrawal, so a hook can reject an uncleared withdrawal until it is ready to hold it. See
+`screenWithdrawal` also receives `finalizableAt`, the [Finalizable Time](./overview.md#finalizable-time) of the proof
+being finalized, so a hook can reject an uncleared withdrawal until it is ready to hold it. See
 [Withdrawals and When They Are Held](#withdrawals-and-when-they-are-held).
 
 The Portal builds its own items and commits to their terms itself. It asks the hook only what to do with them.
@@ -269,8 +269,8 @@ Finalizes a withdrawal using a proof submitted by another address.
 - MUST perform every check it performs on a default OP Stack chain, including `checkWithdrawal`, before consulting the
   hook.
 - MUST mark the withdrawal as finalized before calling the hook.
-- MUST call `bridgeHook.screenWithdrawal` with the item and the withdrawal's
-  [Finalizable Time](./overview.md#finalizable-time), before forwarding the withdrawal call to the appropriate target.
+- MUST call `bridgeHook.screenWithdrawal` with the item and the [Finalizable Time](./overview.md#finalizable-time) of
+  the proof it is finalizing, before forwarding the withdrawal call to the appropriate target.
 - MUST take the normal path, unchanged, when `screenWithdrawal` returns `true`.
 - MUST revert, consuming nothing and leaving the withdrawal finalizable, when `screenWithdrawal` reverts.
 - When `screenWithdrawal` returns `false`, it MUST hold the withdrawal:

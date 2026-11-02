@@ -297,7 +297,8 @@ Answers the Portal for a withdrawal at finalization.
 
 **Parameters:**
 
-- `_finalizableAt`: when the withdrawal became finalizable.
+- `_finalizableAt`: the withdrawal's [Finalizable Time](../../compliance/overview.md#finalizable-time) for the proof
+  being finalized.
 
 **Behavior:**
 

@@ -233,8 +233,16 @@ call, and moves escrow only for such a message.
 
 ### Finalizable Time
 
-The **Finalizable Time** of a withdrawal is when it became finalizable. The `OptimismPortal` passes it to the hook at
-screening, so a policy can decide how long to wait before it holds an uncleared withdrawal.
+The **Finalizable Time** of a withdrawal is the later of `proofMaturityDelaySeconds` after its proof was submitted
+and `disputeGameFinalityDelaySeconds` after that proof's dispute game resolved. The `OptimismPortal` requires both
+delays before it finalizes, so neither alone decides when a withdrawal can move. The game must also be proper,
+respected and resolved in the defender's favour, but those conditions carry no time and so are not part of this value.
+
+A withdrawal can be proven more than once, by different submitters and against different games, and whoever finalizes
+names which proof to use. The Finalizable Time belongs to that proof, not to the withdrawal.
+
+The Portal passes it to the hook at screening, so a policy can decide how long to wait before it holds an uncleared
+withdrawal.
 
 ## Item Lifecycle
 
