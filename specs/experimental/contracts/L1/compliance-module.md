@@ -33,6 +33,7 @@
   - [owner](#owner)
   - [items](#items)
   - [heldTokens](#heldtokens)
+  - [parties](#parties)
   - [policy](#policy)
   - [disabled](#disabled)
   - [paused](#paused)
@@ -85,9 +86,9 @@ judge it; the policy does, and it treats an expired verdict as none.
 
 ### Resolved Parties
 
-The **Resolved Parties** of an item are the addresses the module passes to the policy. For a message sent through the
-messengers, the module decodes the real sender and recipient from the envelope rather than passing the messengers
-themselves.
+The **Resolved Parties** of an item are the two addresses the module passes to the policy: the sender, then the
+recipient. For a message sent through the messengers, the module decodes the real sender and recipient from the
+envelope rather than passing the messengers themselves.
 
 This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation:
 
@@ -155,8 +156,14 @@ The owner points the module at a policy with [setPolicy](#setpolicy), so it inhe
 
 ### aCM-007: Tokens behave as the StandardBridge requires
 
-The module inherits the `StandardBridge`'s token support. A token that takes a fee on transfer, rebases, or otherwise
-moves a balance its transfer did not name breaks
+The module inherits the `StandardBridge`'s token support:
+
+- ETH.
+- [Native L1 Tokens](./l1-standard-bridge.md#native-l1-token), which the bridge escrows.
+- [OptimismMintableERC20](../L2/l2-standard-bridge.md#optimismmintableerc20) tokens, which have no L1 escrow, so a
+  held item carrying one holds only its message.
+
+A token that takes a fee on transfer, rebases, or otherwise moves a balance its transfer did not name breaks
 [iCM-013](#icm-013-the-module-holds-at-least-what-it-owes), because `heldTokens` records the amount the message names
 while the module ends up holding a different amount.
 
@@ -247,6 +254,12 @@ role from the upgrade authority in
 Returns the [Record](#record) for an identifier.
 
 - MUST return a zero record for an identifier that has never been held or cleared.
+
+### parties
+
+Returns the [Resolved Parties](#resolved-parties) of an item.
+
+- MUST return the same addresses, in the same order, that the module passes to the policy for that item.
 
 ### heldTokens
 
