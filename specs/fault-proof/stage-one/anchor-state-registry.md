@@ -546,6 +546,7 @@ Determines if a game is a Resolved Game.
 
 Determines if a game is a Finalized Game.
 
+- MUST return `false` if `disputeGameFinalityDelaySeconds` is 0.
 - MUST return `true` if and only if `isGameResolved(game)` and the game has resolved a result more
   than the review period seconds ago as defined by the `disputeGameFinalityDelaySeconds` variable in
   the `AnchorStateRegistry` contract.
