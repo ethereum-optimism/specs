@@ -126,8 +126,8 @@ emergency backstop if the Fault Dispute Game distributes bonds incorrectly.
 
 If this invariant is violated, the owner cannot correct erroneous bond distributions from buggy dispute games,
 potentially resulting in permanent loss of funds that should have been awarded to honest participants. The
-severity is High because it depends on the [Owner operates within governance constraints](#a01-001-owner-
-operates-within-governance-constraints) assumption - the owner must act correctly to utilize this capability
+severity is High because it depends on the [Owner operates within governance constraints](#a01-001-owner-operates-within-governance-constraints)
+assumption - the owner must act correctly to utilize this capability
 for its intended purpose.
 
 ## Function Specification

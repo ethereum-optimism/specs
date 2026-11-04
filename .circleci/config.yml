@@ -51,6 +51,9 @@ jobs:
       - run: 
           name: spellcheck
           command: just lint-specs-spelling-check
+      - run:
+          name: summary
+          command: just lint-summary-check
 
   lint-links:
     executor: default
