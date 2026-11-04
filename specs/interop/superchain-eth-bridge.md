@@ -101,12 +101,12 @@ between chains, maintaining the integrity and authenticity of the message conten
 ### aSEB-002: `ETHLiquidity` contract maintains sufficient liquidity
 
 We assume that the `ETHLiquidity` contract maintains sufficient liquidity to fulfill all valid ETH
-minting requests. This is ensured by initializing the contract with `type(uint248).max` wei.
+minting requests. This is ensured by initializing the contract with `type(uint128).max` wei.
 
 #### Mitigations
 
 - Total ETH supply is much less than the initial balance of the `ETHLiquidity` contract
-- Contract is initially initialized with `type(uint248).max` wei and can hold up to
+- Contract is initially initialized with `type(uint128).max` wei and can hold up to
 `type(uint256).max` wei to prevent balance overflow
 
 ### aSEB-003: `SafeSend` correctly transfers ETH to recipients
