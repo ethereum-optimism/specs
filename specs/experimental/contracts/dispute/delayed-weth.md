@@ -242,6 +242,7 @@ Withdraws ETH to `msg.sender` after the [Withdrawal Delay](#withdrawal-delay) ha
 - MUST revert if `ethLockbox.paused()` returns true
 - MUST revert if `withdrawals[msg.sender][_guy].amount` is less than `_wad`
 - MUST revert if `withdrawals[msg.sender][_guy].timestamp` is 0
+- MUST revert if `delay()` is 0
 - MUST revert if `withdrawals[msg.sender][_guy].timestamp + delay()` is greater than `block.timestamp`
 - MUST decrease `withdrawals[msg.sender][_guy].amount` by `_wad`
 - MUST call the parent `WETH98.withdraw(_wad)` function to transfer ETH to `msg.sender`
