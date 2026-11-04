@@ -364,6 +364,7 @@ of either the Challenger or the Defender.</p>
 <p>A Dispute Game is considered to be a <strong>Finalized Game</strong> if all of the following are true:</p>
 <ul>
 <li>The game is a <a href="#resolved-game">Resolved Game</a></li>
+<li>The <a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> is nonzero</li>
 <li>The game resolved a result more than
 <a href="#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> seconds ago as defined by the
 <code>disputeGameFinalityDelaySeconds</code> variable in the <code>AnchorStateRegistry</code> contract.</li>
@@ -653,9 +654,10 @@ Challenger or the Defender as determined by the <code>FaultDisputeGame.status()<
 <h3 id="isgamefinalized"><a class="header" href="#isgamefinalized">isGameFinalized</a></h3>
 <p>Determines if a game is a Finalized Game.</p>
 <ul>
-<li>MUST return <code>true</code> if and only if <code>isGameResolved(game)</code> and the game has resolved a result more
-than the review period seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
-the <code>AnchorStateRegistry</code> contract.</li>
+<li>MUST return <code>false</code> if <code>disputeGameFinalityDelaySeconds</code> is 0.</li>
+<li>MUST return <code>true</code> if and only if <code>disputeGameFinalityDelaySeconds</code> is nonzero,
+<code>isGameResolved(game)</code> is <code>true</code>, and the game resolved a result more than
+<code>disputeGameFinalityDelaySeconds</code> seconds ago.</li>
 </ul>
 <h3 id="isgameclaimvalid"><a class="header" href="#isgameclaimvalid">isGameClaimValid</a></h3>
 <p>Determines if a game has a Valid Claim.</p>

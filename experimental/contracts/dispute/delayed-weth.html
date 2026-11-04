@@ -390,6 +390,7 @@ the unlock timestamp to the current block timestamp and increasing the unlocked 
 <li>MUST revert if <code>ethLockbox.paused()</code> returns true</li>
 <li>MUST revert if <code>withdrawals[msg.sender][_guy].amount</code> is less than <code>_wad</code></li>
 <li>MUST revert if <code>withdrawals[msg.sender][_guy].timestamp</code> is 0</li>
+<li>MUST revert if <code>delay()</code> is 0</li>
 <li>MUST revert if <code>withdrawals[msg.sender][_guy].timestamp + delay()</code> is greater than <code>block.timestamp</code></li>
 <li>MUST decrease <code>withdrawals[msg.sender][_guy].amount</code> by <code>_wad</code></li>
 <li>MUST call the parent <code>WETH98.withdraw(_wad)</code> function to transfer ETH to <code>msg.sender</code></li>

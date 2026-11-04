@@ -306,12 +306,13 @@ meets a number of additional conditions that allow the withdrawal to be executed
 meets the following conditions:</p>
 <ul>
 <li>Withdrawal is a <a href="#proven-withdrawal">Proven Withdrawal</a></li>
-<li>Withdrawal was proven at least <a href="#proof-maturity-delay">Proof Maturity Delay</a> seconds ago</li>
+<li>The <a href="#proof-maturity-delay">Proof Maturity Delay</a> is nonzero</li>
+<li>Withdrawal was proven more than <a href="#proof-maturity-delay">Proof Maturity Delay</a> seconds ago</li>
 <li>Withdrawal was proven against a game with a <a href="./anchor-state-registry.html#valid-claim">Valid Claim</a></li>
 <li>Withdrawal was not previously finalized</li>
 </ul>
 <p>A withdrawal proven at <code>provenAt</code> against a game that resolved at <code>resolvedAt</code> can be finalized
-no earlier than:</p>
+strictly after:</p>
 <pre><code class="language-text">max(provenAt + proofMaturityDelaySeconds, resolvedAt + disputeGameFinalityDelaySeconds)
 </code></pre>
 <h3 id="deleted-withdrawal-proof"><a class="header" href="#deleted-withdrawal-proof">Deleted Withdrawal Proof</a></h3>
@@ -581,7 +582,8 @@ the proof transaction was submitted.</li>
 timestamp of the dispute game it was proven against, which would signal an unexpected proving
 bug. Note that prevents withdrawals from being proven in the same block that a dispute game is
 created.</li>
-<li>MUST revert if the withdrawal being finalized has been proven less than
+<li>MUST revert if <code>proofMaturityDelaySeconds</code> is 0.</li>
+<li>MUST revert if the withdrawal being finalized has been proven less than or equal to
 <a href="#proof-maturity-delay">Proof Maturity Delay</a> seconds ago.</li>
 <li>MUST revert if the withdrawal being finalized was proven against a game that does not have a
 <a href="./anchor-state-registry.html#valid-claim">Valid Claim</a>.</li>

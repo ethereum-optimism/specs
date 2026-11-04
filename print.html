@@ -5437,6 +5437,7 @@ of either the Challenger or the Defender.</p>
 <p>A Dispute Game is considered to be a <strong>Finalized Game</strong> if all of the following are true:</p>
 <ul>
 <li>The game is a <a href="fault-proof/stage-one/anchor-state-registry.html#resolved-game">Resolved Game</a></li>
+<li>The <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> is nonzero</li>
 <li>The game resolved a result more than
 <a href="fault-proof/stage-one/anchor-state-registry.html#dispute-game-finality-delay-review-period">Dispute Game Finality Delay</a> seconds ago as defined by the
 <code>disputeGameFinalityDelaySeconds</code> variable in the <code>AnchorStateRegistry</code> contract.</li>
@@ -5726,9 +5727,10 @@ Challenger or the Defender as determined by the <code>FaultDisputeGame.status()<
 <h3 id="isgamefinalized"><a class="header" href="#isgamefinalized">isGameFinalized</a></h3>
 <p>Determines if a game is a Finalized Game.</p>
 <ul>
-<li>MUST return <code>true</code> if and only if <code>isGameResolved(game)</code> and the game has resolved a result more
-than the review period seconds ago as defined by the <code>disputeGameFinalityDelaySeconds</code> variable in
-the <code>AnchorStateRegistry</code> contract.</li>
+<li>MUST return <code>false</code> if <code>disputeGameFinalityDelaySeconds</code> is 0.</li>
+<li>MUST return <code>true</code> if and only if <code>disputeGameFinalityDelaySeconds</code> is nonzero,
+<code>isGameResolved(game)</code> is <code>true</code>, and the game resolved a result more than
+<code>disputeGameFinalityDelaySeconds</code> seconds ago.</li>
 </ul>
 <h3 id="isgameclaimvalid"><a class="header" href="#isgameclaimvalid">isGameClaimValid</a></h3>
 <p>Determines if a game has a Valid Claim.</p>
@@ -8430,12 +8432,13 @@ meets a number of additional conditions that allow the withdrawal to be executed
 meets the following conditions:</p>
 <ul>
 <li>Withdrawal is a <a href="fault-proof/stage-one/optimism-portal.html#proven-withdrawal">Proven Withdrawal</a></li>
-<li>Withdrawal was proven at least <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> seconds ago</li>
+<li>The <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> is nonzero</li>
+<li>Withdrawal was proven more than <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> seconds ago</li>
 <li>Withdrawal was proven against a game with a <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a></li>
 <li>Withdrawal was not previously finalized</li>
 </ul>
 <p>A withdrawal proven at <code>provenAt</code> against a game that resolved at <code>resolvedAt</code> can be finalized
-no earlier than:</p>
+strictly after:</p>
 <pre><code class="language-text">max(provenAt + proofMaturityDelaySeconds, resolvedAt + disputeGameFinalityDelaySeconds)
 </code></pre>
 <h3 id="deleted-withdrawal-proof"><a class="header" href="#deleted-withdrawal-proof">Deleted Withdrawal Proof</a></h3>
@@ -8705,7 +8708,8 @@ the proof transaction was submitted.</li>
 timestamp of the dispute game it was proven against, which would signal an unexpected proving
 bug. Note that prevents withdrawals from being proven in the same block that a dispute game is
 created.</li>
-<li>MUST revert if the withdrawal being finalized has been proven less than
+<li>MUST revert if <code>proofMaturityDelaySeconds</code> is 0.</li>
+<li>MUST revert if the withdrawal being finalized has been proven less than or equal to
 <a href="fault-proof/stage-one/optimism-portal.html#proof-maturity-delay">Proof Maturity Delay</a> seconds ago.</li>
 <li>MUST revert if the withdrawal being finalized was proven against a game that does not have a
 <a href="fault-proof/stage-one/./anchor-state-registry.html#valid-claim">Valid Claim</a>.</li>
@@ -29343,6 +29347,7 @@ the unlock timestamp to the current block timestamp and increasing the unlocked 
 <li>MUST revert if <code>ethLockbox.paused()</code> returns true</li>
 <li>MUST revert if <code>withdrawals[msg.sender][_guy].amount</code> is less than <code>_wad</code></li>
 <li>MUST revert if <code>withdrawals[msg.sender][_guy].timestamp</code> is 0</li>
+<li>MUST revert if <code>delay()</code> is 0</li>
 <li>MUST revert if <code>withdrawals[msg.sender][_guy].timestamp + delay()</code> is greater than <code>block.timestamp</code></li>
 <li>MUST decrease <code>withdrawals[msg.sender][_guy].amount</code> by <code>_wad</code></li>
 <li>MUST call the parent <code>WETH98.withdraw(_wad)</code> function to transfer ETH to <code>msg.sender</code></li>
