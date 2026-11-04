@@ -40,6 +40,9 @@
   - [guardian](#guardian)
   - [ethLockbox](#ethlockbox)
   - [proofMaturityDelaySeconds](#proofmaturitydelayseconds)
+  - [minProofMaturityDelaySeconds](#minproofmaturitydelayseconds)
+  - [maxProofMaturityDelaySeconds](#maxproofmaturitydelayseconds)
+  - [setProofMaturityDelaySeconds](#setproofmaturitydelayseconds)
   - [disputeGameFactory](#disputegamefactory)
   - [disputeGameFinalityDelaySeconds](#disputegamefinalitydelayseconds)
   - [respectedGameType](#respectedgametype)
@@ -77,6 +80,16 @@ that have been declared valid by the L1 Fault Proof system.
 The **Proof Maturity Delay** is the minimum amount of time that a withdrawal must be a
 [Proven Withdrawal](#proven-withdrawal) before it can be finalized.
 
+The Proof Maturity Delay is configured per chain. It may be changed by the L1 ProxyAdmin owner,
+but only within a lower and upper bound that cannot be changed without an upgrade. The value in
+effect is the one configured at the time a withdrawal is checked for finalization, so a change
+applies to withdrawals that were already proven, in either direction. Upgrades carry the
+configured value forward; see
+[i01-003](../../experimental/contracts/L1/opcm.md#i01-003-no-unexpected-mutations). When several
+`OptimismPortal` contracts share an `ETHLockbox`, the pooled funds are exposed through the earliest
+[Finalized Withdrawal](#finalized-withdrawal) on any of those portals, which depends on both that
+portal's Proof Maturity Delay and the finality of the game it was proven against.
+
 ### Proven Withdrawal
 
 A **Proven Withdrawal** is a withdrawal transaction that has been proven against some Output Root
@@ -112,6 +125,13 @@ meets the following conditions:
 - Withdrawal was proven at least [Proof Maturity Delay](#proof-maturity-delay) seconds ago
 - Withdrawal was proven against a game with a [Valid Claim](./anchor-state-registry.md#valid-claim)
 - Withdrawal was not previously finalized
+
+A withdrawal proven at `provenAt` against a game that resolved at `resolvedAt` can be finalized
+no earlier than:
+
+```text
+max(provenAt + proofMaturityDelaySeconds, resolvedAt + disputeGameFinalityDelaySeconds)
+```
 
 ### Deleted Withdrawal Proof
 
@@ -296,7 +316,7 @@ We assume that any games that are resolved incorrectly will be invalidated eithe
 [Valid Claims](./anchor-state-registry.md#valid-claim).
 
 Proper Games that resolve in favor the Defender will be considered to have Valid Claims after the
-[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) has
+[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-review-period) has
 elapsed UNLESS the Pause Mechanism is active. Therefore, in the absence of the Pause Mechanism,
 parties responsible for game invalidation have exactly the Dispute Game Finality Delay to
 invalidate a withdrawal after it resolves incorrectly. If the Pause Mechanism is active, then any
@@ -343,25 +363,30 @@ see this as a critical system risk.
 
 ### constructor
 
-- MUST set the value of the [Proof Maturity Delay](#proof-maturity-delay).
+- MUST revert if the lower bound is zero or greater than the upper bound.
+- MUST set the lower and upper bounds of the [Proof Maturity Delay](#proof-maturity-delay) and
+  disable initializers for the implementation contract.
 
 ### initialize
 
 - MUST only be callable by the ProxyAdmin or its owner.
+- MUST revert if the provided Proof Maturity Delay is outside of the bounds set in the constructor.
 - MUST set the value of the `SystemConfig` contract.
 - MUST set the value of the `AnchorStateRegistry` contract.
 - MUST assert that the ETHLockbox state is valid based on the feature flag.
+- MUST set the value of the [Proof Maturity Delay](#proof-maturity-delay) and emit a
+  `ProofMaturityDelaySecondsSet` event with the new value.
 - MUST set the value of the [L2 Withdrawal Sender](#l2-withdrawal-sender) variable to the default
   value if the value is not set already.
 - MUST initialize the resource metering configuration.
 
 ### paused
 
-Returns the current state of the `SystemConfig.paused()` function.
+Returns the current state of the `ETHLockbox.paused()` function.
 
 ### guardian
 
-Returns the address of the Guardian as per `SystemConfig.guardian()`.
+Returns the address of the Guardian as per `ETHLockbox.guardian()`.
 
 ### ethLockbox
 
@@ -370,7 +395,24 @@ configured for this OptimismPortal, this function will return `address(0)`.
 
 ### proofMaturityDelaySeconds
 
-Returns the value of the [Proof Maturity Delay](#proof-maturity-delay).
+Returns the current value of the [Proof Maturity Delay](#proof-maturity-delay).
+
+### minProofMaturityDelaySeconds
+
+Returns the lower bound of the [Proof Maturity Delay](#proof-maturity-delay).
+
+### maxProofMaturityDelaySeconds
+
+Returns the upper bound of the [Proof Maturity Delay](#proof-maturity-delay).
+
+### setProofMaturityDelaySeconds
+
+Permits the ProxyAdmin owner to set the [Proof Maturity Delay](#proof-maturity-delay).
+
+- MUST revert if called by any address other than the ProxyAdmin owner.
+- MUST revert if the new value is outside of the bounds set in the constructor.
+- MUST update the Proof Maturity Delay with the provided value.
+- MUST emit a `ProofMaturityDelaySecondsSet` event with the new value.
 
 ### disputeGameFactory
 
@@ -381,7 +423,7 @@ Returns the DisputeGameFactory contract from the AnchorStateRegistry contract.
 **Legacy Function**
 
 Returns the value of the
-[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-airgap) as per
+[Dispute Game Finality Delay](./anchor-state-registry.md#dispute-game-finality-delay-review-period) as per
 a call to `AnchorStateRegistry.disputeGameFinalityDelaySeconds()`.
 
 ### respectedGameType
@@ -531,8 +573,7 @@ Computes the minimum gas limit for a deposit transaction based on calldata size.
 
 Returns the `SuperchainConfig` contract address.
 
-- MUST return the address of the `SuperchainConfig` contract stored in the `SystemConfig` contract
-  that was set during initialization.
+- MUST return the address of the `SuperchainConfig` contract as per `ETHLockbox.superchainConfig()`.
 
 ### disputeGameBlacklist
 

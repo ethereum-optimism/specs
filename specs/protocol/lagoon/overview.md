@@ -14,6 +14,7 @@ This document is not finalized and should be considered experimental.
 
 ## Execution Layer
 
+- [Reduce BLS12-381 precompile input sizes](./exec-engine.md#precompile-input-size-restrictions)
 - [Post-Execution Transactions](./post-exec.md)
 - [Sequencer-Defined Metering](./sdm.md)
 - Interop:

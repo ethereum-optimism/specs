@@ -85,9 +85,9 @@ Additional context and motivation for this component can be found in the corresp
 ## Upgradeability
 
 The `DeputyPauseModule` is not expected to change frequently and is therefore not a proxied
-contract. The `DeputyPauseModule` allows basic parameters to be modified by the Operations Safe
+contract. The `DeputyPauseModule` allows basic parameters to be modified by the Foundation Safe
 directly without needing to deploy a new instance of the contract. Additionally, the address of the
-module itself is only utilized within the Optimism Foundation Operations Safe and can be safely
+module itself is only utilized within the Security Council Guardian Safe and can be safely
 replaced.
 
 ## Assumptions
@@ -120,7 +120,7 @@ such a pause.
 
 We assume that all inputs to the contract are configured correctly including:
 
-- Address of the Operations Safe.
+- Address of the Foundation Safe.
 - Address of the `SuperchainConfig` contract.
 - Address of the Deputy account.
 
@@ -170,7 +170,7 @@ behaviors to diverge from their specified behaviors.
 ### aDPM-006: Safe contracts are free of critical bugs
 
 We assume that the Safe contract implementations used by the Security Council Safe and Optimism
-Foundation Operations Safe are free of any critical bugs that would cause their behaviors to
+Foundation Upgrade Safe are free of any critical bugs that would cause their behaviors to
 diverge from their specified behaviors.
 
 #### Mitigations
@@ -268,8 +268,8 @@ action on behalf of the Guardian.
 
 **Severity: Critical**
 
-If this invariant is broken, the Deputy would be able to cause the Optimism Foundation Operations
-Safe to execute some unknown set of possible actions. We would treat this as a critical risk.
+If this invariant is broken, the Deputy would be able to cause the Security Council Guardian Safe
+to execute some unknown set of possible actions. We would treat this as a critical risk.
 
 #### Mitigations
 
@@ -357,7 +357,7 @@ remove the module if necessary.
 
 - Sets the EIP-712 domain name to "DeputyPauseModule".
 - Sets the EIP-712 domain version to "1".
-- Takes the address of the Operations Safe as an authorized input.
+- Takes the address of the Foundation Safe as an authorized input.
 - Takes the address of the `SuperchainConfig` as an authorized input.
 - Takes the address of the Deputy as an authorized input.
 - Takes a signature from the Deputy over a known EIP-712 message.
@@ -386,7 +386,7 @@ remove the module if necessary.
 
 ### foundationSafe
 
-- Returns the address of the Operations Safe as set in the constructor.
+- Returns the address of the Foundation Safe as set in the constructor.
 
 ### superchainConfig
 

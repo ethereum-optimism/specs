@@ -16,6 +16,7 @@
     - [`receiveLiquidity`](#receiveliquidity)
     - [`paused`](#paused)
     - [`superchainConfig`](#superchainconfig)
+    - [`guardian`](#guardian)
     - [`proxyAdminOwner`](#proxyadminowner)
   - [Events](#events)
     - [`ETHLocked`](#ethlocked)
@@ -61,9 +62,14 @@ The `ETHLockbox` contract is proxied and managed by the L1 `ProxyAdmin`.
 Initializes the ETHLockbox contract.
 
 - MUST only be callable by the ProxyAdmin or its owner.
-- MUST set the SystemConfig contract.
+- MUST set the `SuperchainConfig` contract.
 - MUST authorize all portals provided in the initialization array.
-- MUST check that all portals have the same SuperchainConfig as the ETHLockbox.
+- MUST check that all portals have the same `SuperchainConfig` as the `ETHLockbox`. The `SuperchainConfig` is read
+  through each portal's `SystemConfig`.
+
+```solidity
+function initialize(ISuperchainConfig _superchainConfig, IOptimismPortal[] calldata _portals) external;
+```
 
 #### `lockETH`
 
@@ -102,7 +108,10 @@ Authorizes an `OptimismPortal` to interact with the `ETHLockbox`.
 
 - Only the `ProxyAdmin` owner can call the function.
 - The `ProxyAdmin` owner of the `OptimismPortal` must be the same as the `ProxyAdmin` owner of the `ETHLockbox`.
-- The `OptimismPortal` and `ETHLockbox` MUST share the same `SuperchainConfig` address
+- The `OptimismPortal` and `ETHLockbox` MUST share the same `SuperchainConfig` address.
+- The portal's `SuperchainConfig` MUST be read from its `SystemConfig`, not from the portal itself. This
+  `ETHLockbox` already serves `superchainConfig()` for any portal that points to it. Therefore, reading it from
+  the portal would compare the lockbox's stored value against itself.
 - The function MUST emit the `PortalAuthorized` event with the `portal`.
 
 ```solidity
@@ -153,11 +162,24 @@ function receiveLiquidity() external payable;
 
 #### `paused`
 
-Returns whether the contract is paused, delegating to the SystemConfig.
+Returns whether the contract is paused.
+
+- MUST return `superchainConfig.isLocalOrGlobalPaused(address(this))`.
+
+The lockbox passes its own address, which makes the lockbox the
+[Pause Identifier](../protocol/stage-1.md#pause-identifier) for its chain, or for the interop set
+that shares it. Both the global pause and a pause scoped to that address therefore pause the
+lockbox.
 
 #### `superchainConfig`
 
-Returns the SuperchainConfig contract from the SystemConfig.
+Returns the `SuperchainConfig` contract stored when the lockbox was initialized.
+
+#### `guardian`
+
+Returns the [Guardian](../protocol/stage-1.md#guardian) of the `SuperchainConfig`.
+
+- MUST return `superchainConfig.guardian()`.
 
 #### `proxyAdminOwner`
 
@@ -231,7 +253,8 @@ event LiquidityReceived(ETHLockbox indexed lockbox, uint256 amount);
 
 - It MUST allow only authorized portals to unlock ETH
 
-- It MUST be in paused state if the `SuperchainConfig` is paused
+- It MUST be in paused state if the global pause is active, or if a pause is active for its own
+  address as the [Pause Identifier](../protocol/stage-1.md#pause-identifier)
 
 - No Ether MUST flow out of the contract when in a paused state
 

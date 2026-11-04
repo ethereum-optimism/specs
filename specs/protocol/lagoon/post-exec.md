@@ -27,6 +27,7 @@
   - [The post-exec transaction is carried in `diff`](#the-post-exec-transaction-is-carried-in-diff)
   - [The post-exec transaction never appears in `transactions`](#the-post-exec-transaction-never-appears-in-transactions)
   - [Only the last subblock's post-exec transaction is canonical](#only-the-last-subblocks-post-exec-transaction-is-canonical)
+  - [The in-progress block includes the latest post-exec transaction](#the-in-progress-block-includes-the-latest-post-exec-transaction)
   - [A subblock's `transactions` may be empty](#a-subblocks-transactions-may-be-empty)
   - [No receipt is streamed for the post-exec transaction](#no-receipt-is-streamed-for-the-post-exec-transaction)
 - [Rationale](#rationale)
@@ -369,6 +370,34 @@ or one more than usual. A consumer therefore MUST NOT treat any subblock's `post
 is still being built. Determine that the block was sealed by other means, such as observing the next `payload_id`
 or the canonical block arriving through normal L2 block propagation, and note that the in-progress block may be
 abandoned rather than sealed, in which case no value from it was ever canonical.
+
+### The in-progress block includes the latest post-exec transaction
+
+The in-progress block a subblock describes has as its transaction list the concatenation of `diff.transactions`
+across the payload's subblocks up to and including that subblock, followed by that subblock's `diff.post_exec_tx`
+when present. Its canonical gas, settlement and receipts follow from that list exactly as for a sealed block: see
+[Canonical Gas](./sdm.md#canonical-gas), [Settlement](./sdm.md#settlement) and
+[Receipt Extension](./sdm.md#receipt-extension).
+
+_Rationale (non-normative, subject to change)._ The stream keeps the post-exec transaction out of `transactions` only
+so that the append-only list never carries a value a later subblock supersedes. The block being described still
+contains it when it exists, and its refunds change the receipts and balances derived from that block. A description
+without it would be a different block from the one the sequencer is building and will seal.
+
+_Consumer implication._ A consumer that executes the in-progress block, for example to serve pending-state queries
+or preconfirmed receipts, MUST execute it as a [verifier](./sdm.md#producer-and-verifier) does, using the
+`gasRefundEntries` of the latest subblock's `post_exec_tx`. Each entry's `index` is a position in the subblock's
+transaction list, and the settlement for transaction `i` is [applied atomically with it](./sdm.md#application-rules),
+so later transactions observe the settled balances. Executing `diff.transactions` without these entries yields
+pre-refund gas used, no `opGasRefund`, and balances that omit the [settlement](./sdm.md#per-recipient-deltas).
+
+Because the payload is provisional and the refund policy is sequencer-defined, the entries for transactions streamed
+in earlier subblocks may change from one subblock to the next, and an absent `post_exec_tx` means every refund is
+zero. A consumer MAY reuse its execution of a prefix of the transaction list from an earlier subblock only if the
+latest entries for every index in that prefix equal the entries it executed that prefix with, treating a missing entry
+as a zero refund; otherwise it MUST re-execute from the first index whose entry differs. Under the version-1 policy a
+refund depends only on earlier transactions, so entries for already-streamed transactions are not expected to change
+(non-normative).
 
 ### A subblock's `transactions` may be empty
 

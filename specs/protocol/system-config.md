@@ -232,6 +232,18 @@ version written as `SystemConfig` vX.Y.Z is the contract's own semver.
 - Takes a bytes32 feature string and a boolean as an input.
 - MUST only be triggerable by the ProxyAdmin or its owner.
 - MUST toggle the feature flag on or off, based on the value of the boolean.
+- (+op-contracts/v8.0.0) MUST revert when disabling the `ETHLockbox` feature while the chain's
+  `OptimismPortal` still has an `ETHLockbox` configured. The system would otherwise start keeping
+  ETH in the `OptimismPortal`.
+- (+op-contracts/v8.0.0) MUST revert when enabling or disabling the `ETHLockbox` feature while
+  [paused](#paused) returns true. The change moves the
+  [Pause Identifier](./stage-1.md#pause-identifier), which could unpause the system unexpectedly.
+- (+op-contracts/v9.0.0) MUST revert when disabling the `ETHLockbox` feature. Once enabled, it
+  cannot be disabled.
+- (+op-contracts/v9.0.0) MUST revert when enabling the `ETHLockbox` feature while
+  `SuperchainConfig.paused(optimismPortal())` returns true. Enabling it moves the
+  [Pause Identifier](./stage-1.md#pause-identifier) from the `OptimismPortal` address to the
+  `ETHLockbox` address, which could unpause the system unexpectedly.
 
 ### isFeatureEnabled
 
@@ -298,17 +310,25 @@ using the chain's `ETHLockbox` address as the [Pause Identifier](./stage-1.md#pa
 Returns the current pause state of the system by checking if the `SuperchainConfig` is paused for
 this chain's `ETHLockbox`.
 
-(+op-contracts/v4.1.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
+(-op-contracts/v9.0.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism) by
 using either the chain's `ETHLockbox` address or the chain's `OptimismPortal` address as the
 [Pause Identifier](./stage-1.md#pause-identifier).
 
+(+op-contracts/v9.0.0) This function integrates with the [Pause Mechanism](./stage-1.md#pause-mechanism)
+by using the chain's `ETHLockbox` address as the [Pause Identifier](./stage-1.md#pause-identifier).
+The `ETHLockbox` resolves the pause state, so the chain is paused whenever the global pause or a
+pause scoped to that `ETHLockbox` is active.
+
 - (-op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
   true OR if `SuperchainConfig.paused(address(0))` returns true.
-- (+op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
+- (-op-contracts/v9.0.0) MUST return true if `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns
   true AND the system is configured to use the `ETHLockbox` contract.
-- (+op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(optimismPortal())` returns true AND the
+- (-op-contracts/v9.0.0) MUST return true if `SuperchainConfig.paused(optimismPortal())` returns true AND the
   system is NOT configured to use the `ETHLockbox` contract.
-- (+op-contracts/v4.1.0) MUST return true if `SuperchainConfig.paused(address(0))` returns true.
+- (-op-contracts/v9.0.0) MUST return true if `SuperchainConfig.paused(address(0))` returns true.
+- (+op-contracts/v9.0.0) MUST return `optimismPortal().ethLockbox().paused()`, which is true if
+  `SuperchainConfig.paused(address(0))` returns true OR if
+  `SuperchainConfig.paused(optimismPortal().ethLockbox())` returns true.
 - MUST return false otherwise.
 
 ### superchainConfig

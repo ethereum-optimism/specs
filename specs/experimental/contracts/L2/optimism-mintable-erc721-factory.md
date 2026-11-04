@@ -50,7 +50,7 @@ and burning of tokens created by this factory.
 
 ### i01-001: Permissionless deployment
 
-Any address can deploy a [Local Token] via this factory. The factory does not restrict the caller for
+Any address can deploy a [Local Token](#local-token) via this factory. The factory does not restrict the caller for
 deployments.
 
 #### Impact
@@ -62,7 +62,7 @@ experience.
 
 ### i01-002: Deterministic uniqueness for identical parameters
 
-For any tuple (Remote Token, name, symbol), at most one [Local Token] exists. Re-invoking deployment with
+For any tuple (Remote Token, name, symbol), at most one [Local Token](#local-token) exists. Re-invoking deployment with
 identical parameters does not result in an additional token contract.
 
 #### Impact

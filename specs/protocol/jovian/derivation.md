@@ -64,9 +64,9 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `nonce`: `0`
 - `gasLimit`: `447315`
-- `data`: `0x0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-l1-block-deployment.txt))
-- `sourceHash`: `0x98faf23b9795967bc0b1c543144739d50dba3ea40420e77ad6ca9848dbfb62e8`,
-  computed with the "Upgrade-deposited" type, with `intent = "Jovian: L1Block Deployment"`
+- `data`: `0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-l1-block-deployment.txt))
+- `sourceHash`: `0xbb1a656f65401240fac3db12e7a79ebb954b11e62f7626eb11691539b798d3bf`,
+  computed with the "Upgrade-deposited" type, with `intent = "Jovian: L1 Block Deployment"`
 
 This results in the Jovian L1Block contract being deployed to
 `0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C`, to verify:
@@ -79,8 +79,8 @@ Computed Address: 0x3Ba4007f5C922FBb33C454B41ea7a1f11E83df2C
 Verify `sourceHash`:
 
 ```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: L1Block Deployment"))
-# 0x98faf23b9795967bc0b1c543144739d50dba3ea40420e77ad6ca9848dbfb62e8
+cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: L1 Block Deployment"))
+# 0xbb1a656f65401240fac3db12e7a79ebb954b11e62f7626eb11691539b798d3bf
 ```
 
 Verify `data`:
@@ -115,8 +115,8 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `gasLimit`: `50,000`
 - `data`: `0x3659cfe60000000000000000000000003ba4007f5c922fbb33c454b41ea7a1f11e83df2c`
-- `sourceHash`: `0x08447273a4fbce97bc8c515f97ac74efc461f6a4001553712f31ebc11288bad2`
-  computed with the "Upgrade-deposited" type, with `intent = "Jovian: L1Block Proxy Update"`
+- `sourceHash`: `0xf3275f829340521028f9ad5bce4ecb1c64a45d448794effa2a77674627338e76`
+  computed with the "Upgrade-deposited" type, with `intent = "Jovian: L1 Block Proxy Update"`
 
 Verify data:
 
@@ -128,8 +128,8 @@ cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(ad
 Verify `sourceHash`:
 
 ```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: L1Block Proxy Update"))
-# 0x08447273a4fbce97bc8c515f97ac74efc461f6a4001553712f31ebc11288bad2
+cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: L1 Block Proxy Update"))
+# 0xf3275f829340521028f9ad5bce4ecb1c64a45d448794effa2a77674627338e76
 ```
 
 ### GasPriceOracle Deployment
@@ -153,9 +153,9 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `nonce`: `0`
 - `gasLimit`: `1750714`
-- `data`: `0x0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-gas-price-oracle-deployment.txt))
-- `sourceHash`: `0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545`,
-  computed with the "Upgrade-deposited" type, with `intent = "Jovian: GasPriceOracle Deployment"`
+- `data`: `0x608060405234801561001057600080...` ([full bytecode](../../../specs/static/bytecode/jovian-gas-price-oracle-deployment.txt))
+- `sourceHash`: `0x239b7021a6c2cf3a918481242bbb5a9499057f24501539467536c691bb133962`,
+  computed with the "Upgrade-deposited" type, with `intent = "Jovian: Gas Price Oracle Deployment"`
 
 This results in the Jovian GasPriceOracle contract being deployed to
 `0x4f1db3c6AbD250ba86E0928471A8F7DB3AFd88F1`, to verify:
@@ -168,8 +168,8 @@ Computed Address: 0x4f1db3c6AbD250ba86E0928471A8F7DB3AFd88F1
 Verify `sourceHash`:
 
 ```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Deployment"))
-# 0xd939cca6eca7bd0ee0c7e89f7e5b5cf7bf6f7afe7b6966bb45dfb95344b31545
+cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: Gas Price Oracle Deployment"))
+# 0x239b7021a6c2cf3a918481242bbb5a9499057f24501539467536c691bb133962
 ```
 
 Verify `data`:
@@ -204,8 +204,8 @@ A deposit transaction is derived with the following attributes:
 - `value`: `0`
 - `gasLimit`: `50,000`
 - `data`: `0x3659cfe60000000000000000000000004f1db3c6abd250ba86e0928471a8f7db3afd88f1`
-- `sourceHash`: `0x46b597e2d8346ed7749b46734074361e0b41a0ab9af7afda5bb4e367e072bcb8`
-  computed with the "Upgrade-deposited" type, with `intent = "Jovian: GasPriceOracle Proxy Update"`
+- `sourceHash`: `0xa70c60aa53b8c1c0d52b39b1e901e7d7c09f7819595cb24048a6bb1983b401ff`
+  computed with the "Upgrade-deposited" type, with `intent = "Jovian: Gas Price Oracle Proxy Update"`
 
 Verify data:
 
@@ -217,8 +217,8 @@ cast concat-hex $(cast sig "upgradeTo(address)") $(cast abi-encode "upgradeTo(ad
 Verify `sourceHash`:
 
 ```bash
-cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: GasPriceOracle Proxy Update"))
-# 0x46b597e2d8346ed7749b46734074361e0b41a0ab9af7afda5bb4e367e072bcb8
+cast keccak $(cast concat-hex 0x0000000000000000000000000000000000000000000000000000000000000002 $(cast keccak "Jovian: Gas Price Oracle Proxy Update"))
+# 0xa70c60aa53b8c1c0d52b39b1e901e7d7c09f7819595cb24048a6bb1983b401ff
 ```
 
 ### GasPriceOracle Enable Jovian

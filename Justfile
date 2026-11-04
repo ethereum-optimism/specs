@@ -10,7 +10,7 @@ deps:
     pnpm i --frozen-lockfile
 
 # Lint the workspace for all available targets
-lint-check: lint-specs-md-check lint-specs-toc-check lint-specs-spelling-check lint-links-check lint-filenames-check
+lint-check: lint-specs-md-check lint-specs-toc-check lint-specs-spelling-check lint-links-check lint-filenames-check lint-summary-check
 
 # Updates all files to fix linting issues
 lint: lint-specs-md lint-specs-toc
@@ -67,6 +67,21 @@ lint-filenames-check:
       fi
     done
     echo "Filename linting complete"
+
+# Every spec file must be listed in SUMMARY.md, because mdbook does not render unlisted files
+lint-summary-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd specs
+    missing=$(comm -23 \
+      <(find . -name '*.md' ! -name SUMMARY.md | sed 's|^\./||' | sort) \
+      <(grep -oE '\]\([^)]+\.md\)' SUMMARY.md | sed -E 's/^\]\((\.\/)?//; s/\)$//' | sort -u))
+    if [[ -n "$missing" ]]; then
+      echo "Files not listed in specs/SUMMARY.md:"
+      echo "$missing"
+      exit 1
+    fi
+    echo "Summary linting complete"
 
 build:
     mdbook build
