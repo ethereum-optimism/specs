@@ -33,9 +33,9 @@ of two components:
 
 This is the ZK analogue of `SuperFaultDisputeGame`. The program proves the
 [Super Root State Transition](stage-one/super-fault-dispute-game.md#super-root-state-transition) for every
-timestamp from `startingTimestamp + 1` to `l2SequenceNumber`: local-safe derivation for each chain, followed by
-consolidation. This is the same statement that the Super Fault Dispute Game bisects over, proven in a single
-on-chain call.
+timestamp from `startingProposal.l2SequenceNumber + 1` to `l2SequenceNumber`: local-safe derivation for each chain,
+followed by consolidation. This is the same statement that the Super Fault Dispute Game bisects over, proven in a
+single on-chain call.
 
 In a standalone deployment (single chain), the interop set contains exactly one chain. The program
 is identical; the `SuperRootProof` preimage carries one entry. No separate standalone mode exists.
@@ -120,11 +120,13 @@ Proofs are generated off-chain by a prover that:
 
 1. Reads `l1Head`, `startingProposal` (`startingRootHash()` and `startingSequenceNumber()`), `rootClaim`,
    `l2SequenceNumber`, `absolutePrestate` and `verifier` from the game.
-2. Fetches the verified super root for every timestamp from the starting timestamp to `l2SequenceNumber` via
-   [`superroot_atTimestamp`](../interop/superroot.md#superroot_attimestamp), from a source synced past `l1Head`.
-   The super root at the starting timestamp MUST equal `startingProposal.root`, the super root at
-   `l2SequenceNumber` MUST equal `rootClaim`, and `verified_required_l1` MUST be at or below `l1Head`. Otherwise
-   the claim is unprovable.
+2. Fetches the verified super root for every timestamp from `startingProposal.l2SequenceNumber` to
+   `l2SequenceNumber` via [`superroot_atTimestamp`](../interop/superroot.md#superroot_attimestamp), trusting a
+   response only when its `current_l1` is above `verified_required_l1`. If the super root at `l2SequenceNumber`
+   differs from `rootClaim`, or `verified_required_l1` is above `l1Head`, the claim is unprovable. If the super root
+   at `startingProposal.l2SequenceNumber` differs from `startingProposal.root`, the parent is invalid and the game
+   loses through [iZKG-005](stage-one/zk/zk-dispute-game.md#izkg-005-parent-invalidity-propagates-to-children), so
+   an honest prover does not attempt it.
 3. Collects the L1 data (including blobs) and the L2 witness data for every chain.
 4. Generates the log-commitment, range, consolidation and aggregation proofs.
 5. Submits the aggregation proof via `ZKDisputeGame.prove(proofBytes)` from the address committed to as

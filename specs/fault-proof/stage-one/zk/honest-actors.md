@@ -48,8 +48,8 @@ An honest proposer:
   the safe (or finalized) timestamp reported by the super root source.
 - MUST use as parent either `parentIndex = type(uint32).max`, to start from the anchor state, or a valid
   `ZK_DISPUTE_GAME` that was created while `ZK_DISPUTE_GAME` was the respected game type, is not blacklisted or
-  retired, has not resolved as `CHALLENGER_WINS`, and is not the anchor game itself. It SHOULD choose the highest
-  such game.
+  retired, has not resolved as `CHALLENGER_WINS`, and has an `l2SequenceNumber` strictly above the anchor's. It
+  SHOULD choose the highest such game.
 - SHOULD NOT create games when the anchor root differs from the verified super root at the anchor's timestamp.
 - MUST NOT create a game unless it can produce proofs for the registered `absolutePrestate` and `verifier`. For
   SP1, the aggregation program's verification key MUST equal `absolutePrestate`, and the `VERIFIER_HASH()` of the
@@ -60,7 +60,7 @@ An honest proposer:
 
 An honest prover:
 
-- MUST prove every challenged game that it considers valid before the game's prove deadline. See
+- SHOULD prove every challenged game that it considers valid before the game's prove deadline. See
   [Proof Generation](../../zk-proof-system.md#proof-generation).
 - MUST submit each proof from the address committed to as `prover` in the proof's public values, because the
   proof binds `msg.sender`.

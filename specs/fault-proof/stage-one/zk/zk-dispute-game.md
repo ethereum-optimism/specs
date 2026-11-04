@@ -360,6 +360,7 @@ struct ZKDisputeGameConfig {
 
 `OPContractsManagerUtils.makeGameArgs()` decodes it and packs the game args. The encoded config MUST be exactly
 128 bytes, otherwise `makeGameArgs()` MUST revert with `OPContractsManagerUtils_InvalidZKGameArgsLength(uint256)`.
+Through OPCM, a shorter config already reverts in [Configuration Validation](#configuration-validation).
 The verifier slot is always filled with the OPCM release's `SP1PlonkAdapter` (`impls.sp1PlonkAdapterImpl`):
 
 ```solidity
@@ -412,7 +413,7 @@ This section summarizes the public interface of `ZKDisputeGame` (`version` `2.1.
 | `prove(bytes calldata _proofBytes) external returns (ProposalStatus)` | Verifies a proof for the claim. See [Proving](game-mechanics.md#proving). | `ClaimAlreadyResolved`, `InvalidParentGame`, `GameOver`, or the verifier's revert |
 | `resolve() external returns (GameStatus)` | Resolves the game and allocates credit. See [Resolution](game-mechanics.md#resolution). | `ClaimAlreadyResolved`, `ParentGameNotResolved`, `GameNotOver`, `InvalidProposalStatus` |
 | `closeGame() public` | Sets the bond distribution mode and tries to update the anchor state. See [Closing](game-mechanics.md#closing). | `InvalidBondDistributionMode`, `GamePaused`, `GameNotResolved`, `GameNotFinalized` |
-| `claimCredit(address _recipient) external` | Closes the game if needed, then unlocks or withdraws the recipient's credit. See [Closing](game-mechanics.md#closing). | `closeGame()` errors, `InvalidBondDistributionMode`, `NoCreditToClaim`, `BondTransferFailed` |
+| `claimCredit(address _recipient) external` | Closes the game if needed, then unlocks or withdraws the recipient's credit. See [Closing](game-mechanics.md#closing). | `closeGame()` errors, `InvalidBondDistributionMode`, `NoCreditToClaim`, `BondTransferFailed`, or `DelayedWETH`'s revert |
 | `gameOver() public view returns (bool gameOver_)` | See [Game Over](#game-over). | — |
 | `credit(address _recipient) external view returns (uint256 credit_)` | Returns `refundModeCredit[_recipient]` in REFUND mode, otherwise `normalModeCredit[_recipient]`. | — |
 | `rootClaimByChainId(uint256 _chainId) public pure returns (Claim outputRootClaim_)` | See [rootClaimByChainId](#rootclaimbychainid). | `UnknownChainId` |
@@ -454,7 +455,7 @@ struct ClaimData {
 | `Encoding_EmptySuperRoot` | `Encoding.decodeSuperRootProof` | The preimage has no output roots. Not reachable once the `BadExtraData` length check passes. |
 | `Encoding_InvalidSuperRootEncoding` | `Encoding.decodeSuperRootProof` | The preimage length is malformed. Not reachable once the `BadExtraData` length check passes. |
 | `InvalidParentGame` | `initialize()`, `prove()` | `initialize()`: the parent resolved `CHALLENGER_WINS`, is blacklisted or retired, was not respected while the child is, or is at or below the anchor. `prove()`: the parent resolved `CHALLENGER_WINS`. |
-| `UnexpectedGameType` | `initialize()` | The parent is not a `ZK_DISPUTE_GAME`. |
+| `UnexpectedGameType` | `initialize()` | The parent is not a `ZK_DISPUTE_GAME`. Checked after the `InvalidParentGame` checks other than the anchor check. |
 | `AnchorRootNotFound` | `initialize()` | There is no parent and the anchor root is zero. |
 | `UnexpectedRootClaim(Claim rootClaim)` | `initialize()` | `l2SequenceNumber` is not above the starting proposal's sequence number. |
 | `GameOver` | `challenge()`, `prove()` | `gameOver()` returns `true`. |
@@ -606,10 +607,10 @@ creation and proof submission.
 A valid claim can always be proven within the prover's resource limits.
 
 A sound ZK program may still be unable to prove an honest claim. Each proving request has witness size, memory,
-cycle and proving gas limits. The smallest range request covers one chain at one timestamp, but a consolidation
-request always covers every chain at one timestamp and cannot be split further. Adversarial L2
-content, for example a large number of interop messages, can inflate proving cost. If a challenged valid claim
-cannot be proven, it resolves `CHALLENGER_WINS`, and so do all of its descendants.
+cycle and proving gas limits. The smallest range request covers one chain at one timestamp. A consolidation request
+always covers every chain at one timestamp, and a log-commitment batch of one block cannot be split further either.
+Adversarial L2 content, for example a large number of interop messages, can inflate proving cost. If a challenged
+valid claim cannot be proven, it resolves `CHALLENGER_WINS`, and so do all of its descendants.
 
 #### Mitigations
 

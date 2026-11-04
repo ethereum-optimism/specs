@@ -114,8 +114,9 @@ Execute [Common Mechanics](#common-mechanics).
 This case covers chains sharing a single `DisputeGameFactory`, `AnchorStateRegistry`, `DelayedWETH`, and
 `ETHLockbox` under the interop model.
 
-- `OPContractsManagerMigrator.migrate()` forms an interop set from independent chains and deploys its shared
-  contracts. It MAY register `ZK_DISPUTE_GAME` on the new shared `DisputeGameFactory`. The `ZK_DISPUTE_GAME`
+- `OPContractsManagerMigrator.migrate()` forms an interop set from independent chains. It deploys the shared
+  `DisputeGameFactory`, `AnchorStateRegistry` and `ETHLockbox`, and reuses the first chain's `DelayedWETH` as the
+  shared one. It MAY register `ZK_DISPUTE_GAME` on the new shared `DisputeGameFactory`. The `ZK_DISPUTE_GAME`
   config MUST have a non-zero `initBond`, otherwise `migrate()` reverts with
   `OPContractsManagerMigrator_InvalidInitBond`, and a valid `ZKDisputeGameConfig` (see
   [Configuration Validation](zk-dispute-game.md#configuration-validation)), otherwise `migrate()` reverts with

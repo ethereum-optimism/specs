@@ -517,7 +517,8 @@ can be played: a super-root game type with a registered implementation, enabled,
 initialization bond consistent with whether that game type charges bonds, with a non-zero absolute prestate where
 the game type requires one, and with all other game arguments valid under that game type's rules.
 
-A configuration that passes validation must not then fail installation.
+A configuration that passes validation should not then fail installation. ZK game args longer than 128 bytes are a
+known exception: they pass validation and revert in `makeGameArgs()`.
 
 #### Impact
 

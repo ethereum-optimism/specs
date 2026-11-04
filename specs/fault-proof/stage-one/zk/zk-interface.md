@@ -38,9 +38,9 @@ backend is deployed without inspecting the bytecode.
 
 | Parameter | Description |
 | --- | --- |
-| `programId` | Corresponds to `absolutePrestate()` in the dispute game — identifies the ZK program version. |
-| `publicValues` | ABI-encoded public inputs committed to by the proof (see [Usage in `prove()`](#usage-in-prove)). |
-| `proof` | The raw proof blob submitted by the prover. |
+| `_programId` | Corresponds to `absolutePrestate()` in the dispute game — identifies the ZK program version. |
+| `_publicValues` | ABI-encoded public inputs committed to by the proof (see [Usage in `prove()`](#usage-in-prove)). |
+| `_proof` | The raw proof blob submitted by the prover. |
 
 The verifier MUST revert on an invalid proof. A call that returns without reverting is treated as
 proof acceptance; the game will set `claimData.prover = msg.sender` and transition
