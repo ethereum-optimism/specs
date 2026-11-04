@@ -140,7 +140,7 @@ any held item, or refuse and hold any new one. See
   held.
 - A policy can only delay or refuse. See
   [iCM-003](../../compliance/optimism-portal.md#icm-003-a-hook-can-only-delay-or-refuse-an-item).
-- [Disable](#disable) bounds how long a failing or malicious policy can block new items.
+- [Disable Switch](#disable-switch) bounds how long a failing or compromised policy can block new items.
 
 ### aCM-006: The module owner is trusted with whatever the policy can do
 
