@@ -36,7 +36,7 @@ transfers within the Superchain interop set. It works in conjunction with the
 `SuperchainETHBridge` to facilitate the movement of ETH between chains without requiring
 modifications to the EVM to generate new ETH.
 
-The contract is initialized with a very large balance (`type(uint248).max` wei) to ensure it can
+The contract is initialized with a very large balance (`type(uint128).max` wei) to ensure it can
 handle all legitimate minting operations. This design allows the `SuperchainETHBridge` to have a
 guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
 transfer mechanism.
@@ -46,7 +46,7 @@ transfer mechanism.
 | Name                    | Value                                        |
 | ----------------------- | -------------------------------------------- |
 | `ETHLiquidity` Address  | `0x4200000000000000000000000000000000000025` |
-| Initial Balance         | `type(uint248).max` wei                      |
+| Initial Balance         | `type(uint128).max` wei                      |
 
 ## Definitions
 
