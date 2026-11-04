@@ -89,8 +89,9 @@ Returns:
 
 `OBJECT`:
 
-- `current_l1`: `BlockID` - the highest L1 block that has been fully processed
-  by all chains in the dependency set. This is the minimum `currentL1` across all chains.
+- `current_l1`: `BlockID` - the minimum `currentL1` across all chains in the dependency set.
+  All chains have fully processed all L1 blocks up to and including the parent of this block.
+  The chains MAY include only part of the effects of this block itself.
 - `safe_timestamp`: `NUMBER` - the highest L2 timestamp that is cross-safe across
   all chains. This is the minimum per-chain cross-safe L2 head timestamp.
 - `local_safe_timestamp`: `NUMBER` - the highest L2 timestamp that is local-safe
