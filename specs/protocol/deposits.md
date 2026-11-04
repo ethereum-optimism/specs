@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
 - [Invariants](#invariants)
+- [Fork amendments](#fork-amendments)
 - [The Deposited Transaction Type](#the-deposited-transaction-type)
   - [Source hash computation](#source-hash-computation)
   - [Kinds of Deposited Transactions](#kinds-of-deposited-transactions)
@@ -60,6 +61,27 @@ The deposit rules must maintain the invariants below:
    The `sourceHash` must commit to every component that identifies the deposit.
 5. The block gas pool is reduced by exactly the gas used that the execution output states for each deposited
    transaction.
+
+## Fork amendments
+
+Deposit rules change across forks. This table lists each amended rule and the fork that
+introduced the change. Read the linked fork page for the full rule.
+
+| Rule | Fork |
+| --- | --- |
+| `isSystemTx` disabled | [Regolith](./regolith/overview.md) |
+| Actual gas usage recorded in the receipt | [Regolith](./regolith/overview.md) |
+| `depositNonce` added to the receipt | [Regolith](./regolith/overview.md) |
+| `depositNonce` and `depositNonceVersion` always present | [Canyon](./canyon/overview.md) |
+| L1 attributes calldata format | [Ecotone](./ecotone/overview.md) |
+| Upgrade deposits | [Isthmus](./isthmus/overview.md) |
+| Operator fee exemption | [Isthmus](./isthmus/overview.md) |
+| EIP-6110 request exclusion | [Isthmus](./isthmus/overview.md) |
+| Upgrade deposits | [Jovian](./jovian/overview.md) |
+| DA footprint gas | [Jovian](./jovian/overview.md) |
+| EIP-7825 gas-cap exemption | [Karst](./karst/overview.md) |
+| Post-exec transactions | [Lagoon](./lagoon/overview.md) |
+| SDM refund eligibility | [Lagoon](./lagoon/overview.md) |
 
 ## The Deposited Transaction Type
 
