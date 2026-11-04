@@ -8,7 +8,7 @@
 - [Definitions](#definitions)
   - [Record](#record)
   - [Resolved Parties](#resolved-parties)
-  - [Disable](#disable)
+  - [Disable Switch](#disable-switch)
 - [Assumptions](#assumptions)
   - [aCM-004: The module's upgrade authority is the custodian of all deferred value](#acm-004-the-modules-upgrade-authority-is-the-custodian-of-all-deferred-value)
     - [Mitigations](#mitigations)
@@ -92,13 +92,14 @@ envelope rather than passing the messengers themselves.
 
 This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation:
 
-- `finalizeBridgeERC20` or `finalizeBridgeETH` on the `L1StandardBridge` or `L2StandardBridge`: `_from` and `_to`.
-- Any other `relayMessage` envelope: the messenger's `_sender` and `_target`.
-- Anything else: the outer addresses, with a deposit's `from` unaliased.
+- A `relayMessage` envelope to the direction's messenger whose inner call is `finalizeBridgeERC20` or
+  `finalizeBridgeETH`, from the counterpart standard bridge to this side's standard bridge: `_from` and `_to`.
+- Any other `relayMessage` envelope to the direction's messenger: the messenger's `_sender` and `_target`.
+- Anything else: the outer addresses, with a deposit's `from` unaliased when the item's `aliased` flag is set.
 
 Resolving this once in the module, rather than in each policy, keeps the protocol knowledge in one place.
 
-### Disable
+### Disable Switch
 
 **Disable** is the module's emergency switch, intended for a failing policy or a long outage of the Verdict Writer.
 
@@ -271,7 +272,7 @@ Returns the policy the module consults and accepts verdicts from.
 
 ### disabled
 
-Returns whether [Disable](#disable) is set.
+Returns whether the [Disable Switch](#disable-switch) is set.
 
 ### paused
 
@@ -288,7 +289,7 @@ Answers the Portal for a deposit at submission.
 - MUST revert if the caller is not the Portal.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
-- MUST return `true` without consulting the policy if [Disable](#disable) is set.
+- MUST return `true` without consulting the policy if the [Disable Switch](#disable-switch) is set.
 - MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's
   `screenDeposit`.
 - MUST bubble up any revert from the policy.
@@ -321,8 +322,8 @@ Answers the Portal for a withdrawal at finalization.
 - MUST revert if the caller is not the Portal.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
-- MUST return `true` without consulting the policy if [Disable](#disable) is set AND the withdrawal's nonce is at or
-  above the cutoff recorded when it was disabled.
+- MUST return `true` without consulting the policy if the [Disable Switch](#disable-switch) is set AND the
+  withdrawal's nonce is at or above the cutoff recorded when it was disabled.
 - MUST otherwise resolve the [Resolved Parties](#resolved-parties) and return the result of the policy's
   `screenWithdrawal`, passing the record's `expiresAt` and `_finalizableAt`.
 - MUST NOT catch a revert from the policy.
@@ -381,10 +382,10 @@ Runs a held deposit. Permissionless.
 - MUST revert if the record does not exist or is not held.
 - MUST revert if the record has no clear verdict.
 - MUST delete the record before calling the policy or the Portal.
-- MUST revert if the policy's `screenRelease` does not return `true`, passing the `expiresAt` the record held before
-  the delete.
-- MUST approve the `L1StandardBridge` for the item's amount, if the item is a token transfer whose tokens it holds.
-- MUST decrease `heldTokens` for the item's token pair by that amount.
+- MUST resolve the [Resolved Parties](#resolved-parties) and revert if the policy's `screenRelease` does not return
+  `true`, passing the item, those parties, and the `expiresAt` the record held before the delete.
+- MUST approve the `L1StandardBridge` for the item's amount and decrease `heldTokens` for the item's token pair by
+  that amount, if the item is a token transfer whose tokens it holds.
 - MUST call the Portal's `completeDepositTransaction` with the ETH the item carries.
 - MUST emit a `Completed` event with the identifier.
 
@@ -405,12 +406,14 @@ Points the module at a different policy.
 **Behavior:**
 
 - MUST revert if the caller is not the owner.
+- MUST revert if the new policy is the zero address.
+- MUST set the policy to the new policy.
 - MUST NOT alter any record, so held items and their verdicts survive the change.
 - MUST emit a `PolicySet` event with the previous and the new policy.
 
 ### disable
 
-Sets [Disable](#disable).
+Sets the [Disable Switch](#disable-switch).
 
 **Parameters:**
 
@@ -421,16 +424,18 @@ Sets [Disable](#disable).
 
 - MUST revert if the caller is not the owner.
 - MUST record `_cutoffL2Nonce` as the cutoff used by [screenWithdrawal](#screenwithdrawal).
+- MUST set `disabled` to `true`.
 - MUST NOT release, complete or otherwise alter any item already held.
 - MUST emit a `Disabled` event with the cutoff.
 
 ### enable
 
-Clears [Disable](#disable) and its cutoff, so every item is screened again, including a withdrawal initiated while it
+Clears the [Disable Switch](#disable-switch) and its cutoff, so every item is screened again, including a withdrawal
 was set.
 
 **Behavior:**
 
 - MUST revert if the caller is not the owner.
 - MUST clear the cutoff.
+- MUST set `disabled` to `false`.
 - MUST emit an `Enabled` event.

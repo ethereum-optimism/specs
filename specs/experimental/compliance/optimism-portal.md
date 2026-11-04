@@ -278,6 +278,8 @@ Finalizes a withdrawal using a proof submitted by another address.
   - MUST set `heldWithdrawals[identifier]` to `true` before moving any value.
   - MUST NOT forward the withdrawal call to its target.
   - MUST NOT emit `WithdrawalFinalized`, so a held withdrawal is not reported as paid.
+  - MUST unlock the withdrawal's ETH from the `ETHLockbox` before moving it, since the Portal pays the hook from its
+    own balance.
   - MUST ask the `L1StandardBridge` to move its escrow for the item, if the item is a recognized
     [Token Bridge Message](./overview.md#token-bridge-message) by calling `holdERC20` on the `L1StandardBridge`.
   - MUST then move the withdrawal's ETH to the hook by calling `holdWithdrawal` with that value.

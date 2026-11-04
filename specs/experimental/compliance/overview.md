@@ -320,9 +320,9 @@ it trusts. The value still only reaches the item's original destination. A compr
 any new item.
 
 **A failing policy can halt bridging.** The `ComplianceModule`'s
-[disable switch](../contracts/L1/compliance-module.md#disable) exists so that a problem in the policy, or a long
+[disable switch](../contracts/L1/compliance-module.md#disable-switch) exists so that a problem in the policy, or a long
 outage of the Verdict Writer, cannot block new deposits and withdrawals indefinitely. It is not a release. While it
-is on, every deposit proceeds without the policy being asked, and so does every withdrawal initiated after the
+is on, every deposit proceeds without the policy being asked, and so does every withdrawal initiated at or after the
 cutoff. Items already held, and withdrawals initiated before the cutoff, are still screened. A problem in the hook
 itself is fixed by upgrading it.
 
@@ -332,10 +332,12 @@ The change is limited to L1 contracts, with no multi-client or consensus impact.
 `TransactionDeposited` event, so the derivation pipeline sees nothing until the deposit completes, and then sees an
 ordinary deposit.
 
-For a chain that does not set a hook, behavior does not change, but two things change either way:
+For a chain that does not set a hook, behavior does not change, but three things change either way:
 
 - The `L1StandardBridge` gains two entry points that only the `OptimismPortal` can call.
 - The `OptimismPortal` gains completion functions, while existing user entry points are unchanged.
+- The `OptimismPortal` makes the `L1StandardBridge` an [Unsafe Target](./optimism-portal.md#unsafe-target), so a
+  withdrawal that calls the bridge directly can no longer be finalized.
 
 For a chain that enables it, these assumptions break:
 
