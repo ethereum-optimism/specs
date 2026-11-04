@@ -122,6 +122,7 @@ Users can finalize a withdrawal if they have previously proven the withdrawal an
 meets the following conditions:
 
 - Withdrawal is a [Proven Withdrawal](#proven-withdrawal)
+- The [Proof Maturity Delay](#proof-maturity-delay) is nonzero
 - Withdrawal was proven more than [Proof Maturity Delay](#proof-maturity-delay) seconds ago
 - Withdrawal was proven against a game with a [Valid Claim](./anchor-state-registry.md#valid-claim)
 - Withdrawal was not previously finalized
@@ -485,6 +486,7 @@ Checks that a withdrawal transaction can be [finalized](#finalized-withdrawal).
   timestamp of the dispute game it was proven against, which would signal an unexpected proving
   bug. Note that prevents withdrawals from being proven in the same block that a dispute game is
   created.
+- MUST revert if `proofMaturityDelaySeconds` is 0.
 - MUST revert if the withdrawal being finalized has been proven less than or equal to
   [Proof Maturity Delay](#proof-maturity-delay) seconds ago.
 - MUST revert if the withdrawal being finalized was proven against a game that does not have a
