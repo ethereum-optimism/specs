@@ -284,11 +284,11 @@ between chains, maintaining the integrity and authenticity of the message conten
 </ul>
 <h3 id="aseb-002-ethliquidity-contract-maintains-sufficient-liquidity"><a class="header" href="#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002: <code>ETHLiquidity</code> contract maintains sufficient liquidity</a></h3>
 <p>We assume that the <code>ETHLiquidity</code> contract maintains sufficient liquidity to fulfill all valid ETH
-minting requests. This is ensured by initializing the contract with <code>type(uint248).max</code> wei.</p>
+minting requests. This is ensured by initializing the contract with <code>type(uint128).max</code> wei.</p>
 <h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
 <ul>
 <li>Total ETH supply is much less than the initial balance of the <code>ETHLiquidity</code> contract</li>
-<li>Contract is initially initialized with <code>type(uint248).max</code> wei and can hold up to
+<li>Contract is initially initialized with <code>type(uint128).max</code> wei and can hold up to
 <code>type(uint256).max</code> wei to prevent balance overflow</li>
 </ul>
 <h3 id="aseb-003-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#aseb-003-safesend-correctly-transfers-eth-to-recipients">aSEB-003: <code>SafeSend</code> correctly transfers ETH to recipients</a></h3>

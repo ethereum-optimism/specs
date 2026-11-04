@@ -230,14 +230,14 @@
 transfers within the Superchain interop set. It works in conjunction with the
 <code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
 modifications to the EVM to generate new ETH.</p>
-<p>The contract is initialized with a very large balance (<code>type(uint248).max</code> wei) to ensure it can
+<p>The contract is initialized with a very large balance (<code>type(uint128).max</code> wei) to ensure it can
 handle all legitimate minting operations. This design allows the <code>SuperchainETHBridge</code> to have a
 guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
 transfer mechanism.</p>
 <h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
-<tr><td>Initial Balance</td><td><code>type(uint248).max</code> wei</td></tr>
+<tr><td>Initial Balance</td><td><code>type(uint128).max</code> wei</td></tr>
 </tbody></table>
 </div>
 <h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>

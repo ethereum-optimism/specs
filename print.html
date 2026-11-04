@@ -19337,14 +19337,14 @@ function relayERC20(SuperchainERC20 _token, address _from, address _to, uint256 
 transfers within the Superchain interop set. It works in conjunction with the
 <code>SuperchainETHBridge</code> to facilitate the movement of ETH between chains without requiring
 modifications to the EVM to generate new ETH.</p>
-<p>The contract is initialized with a very large balance (<code>type(uint248).max</code> wei) to ensure it can
+<p>The contract is initialized with a very large balance (<code>type(uint128).max</code> wei) to ensure it can
 handle all legitimate minting operations. This design allows the <code>SuperchainETHBridge</code> to have a
 guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
 transfer mechanism.</p>
 <h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
-<tr><td>Initial Balance</td><td><code>type(uint248).max</code> wei</td></tr>
+<tr><td>Initial Balance</td><td><code>type(uint128).max</code> wei</td></tr>
 </tbody></table>
 </div>
 <h2 id="definitions-13"><a class="header" href="#definitions-13">Definitions</a></h2>
@@ -19538,11 +19538,11 @@ between chains, maintaining the integrity and authenticity of the message conten
 </ul>
 <h3 id="aseb-002-ethliquidity-contract-maintains-sufficient-liquidity"><a class="header" href="#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity">aSEB-002: <code>ETHLiquidity</code> contract maintains sufficient liquidity</a></h3>
 <p>We assume that the <code>ETHLiquidity</code> contract maintains sufficient liquidity to fulfill all valid ETH
-minting requests. This is ensured by initializing the contract with <code>type(uint248).max</code> wei.</p>
+minting requests. This is ensured by initializing the contract with <code>type(uint128).max</code> wei.</p>
 <h4 id="mitigations-45"><a class="header" href="#mitigations-45">Mitigations</a></h4>
 <ul>
 <li>Total ETH supply is much less than the initial balance of the <code>ETHLiquidity</code> contract</li>
-<li>Contract is initially initialized with <code>type(uint248).max</code> wei and can hold up to
+<li>Contract is initially initialized with <code>type(uint128).max</code> wei and can hold up to
 <code>type(uint256).max</code> wei to prevent balance overflow</li>
 </ul>
 <h3 id="aseb-003-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#aseb-003-safesend-correctly-transfers-eth-to-recipients">aSEB-003: <code>SafeSend</code> correctly transfers ETH to recipients</a></h3>
