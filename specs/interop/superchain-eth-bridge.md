@@ -42,9 +42,9 @@
   - [relayETH](#relayeth)
   - [refundETH](#refundeth)
 - [Events](#events)
-  - [SendETH](#sendeth-1)
-  - [RelayETH](#relayeth-1)
-  - [RefundETH](#refundeth-1)
+  - [SendETH](#sendeth)
+  - [RelayETH](#relayeth)
+  - [RefundETH](#refundeth)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
