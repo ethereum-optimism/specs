@@ -252,7 +252,7 @@ deposits from L1, a set of deposit transaction-based upgrade transactions are de
 derivation pipeline.</p>
 <p>The contents of the transactions are defined by the file
 <a href="https://github.com/ethereum-optimism/optimism/blob/develop/op-core/nuts/bundles/lagoon_nut_bundle.json"><code>lagoon_nut_bundle.json</code></a>
-in the monorepo, which contains 28 transactions. In addition to the contents of the file, the consensus layer node
+in the monorepo, which contains 29 transactions. In addition to the contents of the file, the consensus layer node
 MUST prefix each intent string with <code>Interop &lt;index&gt;:</code> followed by a space, where <code>&lt;index&gt;</code> is the zero-based position
 of the transaction within the bundle. The prefix is the concept-level name <code>Interop</code> rather than the fork name
 <code>Lagoon</code>, so that the derived <a href="../protocol/deposits.html#source-hash-computation">upgrade deposit source hashes</a> are
@@ -260,7 +260,7 @@ unaffected by the fork rename.</p>
 <p>These transactions can be classified into the following groups:</p>
 <ol>
 <li><strong>Implementation Deployments</strong>: One transaction for <em>each</em> predeploy implementation being deployed, including the
-L2ContractsManager for this upgrade (27 total)</li>
+L2ContractsManager for this upgrade (28 total)</li>
 <li><strong>Upgrade Execution</strong>: One transaction to call <code>L2ProxyAdmin.upgradePredeploys(l2ContractsManagerAddress)</code></li>
 </ol>
 <p>More information regarding the upgrade path implemented by the bundle transactions can be found in
@@ -278,7 +278,7 @@ upgrades and the ETH liquidity pool is funded:</p>
 decide whether to apply the Interop-gated upgrades. The second funds
 <a href="./eth-liquidity.html"><code>ETHLiquidity</code></a> with a mint and value of <code>type(uint128).max</code>; it is the only Interop activation
 deposit with a non-zero mint, and therefore cannot be expressed in the bundle format.</p>
-<p>A chain in a single-chain dependency set emits only the bundle's 28 transactions.</p>
+<p>A chain in a single-chain dependency set emits only the bundle's 29 transactions.</p>
 <h3 id="upgrade-block-gas-limit"><a class="header" href="#upgrade-block-gas-limit">Upgrade Block Gas Limit</a></h3>
 <p>The gas added to the activation block's gas limit is specified in
 <a href="../protocol/l2-upgrades-1-execution.html#custom-upgrade-block-gas-limit">Custom Upgrade Block Gas Limit</a>.</p>
@@ -303,8 +303,9 @@ instability, therefore deposits are prevented from triggering executing messages
 <h3 id="expiry-window-1"><a class="header" href="#expiry-window-1">Expiry Window</a></h3>
 <p>The expiry window ensures that the proof can execute in a reasonable amount of time. <a href="https://eips.ethereum.org/EIPS/eip-2935"><code>EIP-2935</code></a> introduced
 the capability to traverse history with sub-linear complexity, however deep lookups remain expensive. App developers and
-users, in the event that they encounter a message that has expired but has yet to be relayed, can
-<a href="https://github.com/ethereum-optimism/design-docs/blob/25ef5537e39b63cddf1c83479cee9f0e02431dce/protocol/resend-messages.md#L4">resend the message</a> in order to complete the process.</p>
+users, in the event that they encounter a message that has expired but has yet to be relayed, can use
+<a href="./message-expiry.html">message expiry</a> to learn on the source chain that it can never be delivered, and undo the
+send.</p>
 <h3 id="reliance-on-history"><a class="header" href="#reliance-on-history">Reliance on History</a></h3>
 <p>When fully executing historical blocks, a dependency on historical receipts from remote chains is present.
 <a href="https://eips.ethereum.org/EIPS/eip-4444">EIP-4444</a> will eventually provide a solution for making historical receipts available without

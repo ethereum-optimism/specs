@@ -223,6 +223,11 @@
 <li><a href="#impact-4">Impact</a></li>
 </ul>
 </li>
+<li><a href="#i01-006-message-nonces-only-increase">i01-006: Message Nonces Only Increase</a>
+<ul>
+<li><a href="#impact-5">Impact</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#function-specification">Function Specification</a>
@@ -306,6 +311,14 @@ restrictions on who can initiate cross-domain messages.</p>
 <p><strong>Severity: High</strong></p>
 <p>This liveness property ensures that the messaging system remains permissionless and censorship-resistant. Violation
 would allow selective blocking of users from sending cross-domain messages.</p>
+<h3 id="i01-006-message-nonces-only-increase"><a class="header" href="#i01-006-message-nonces-only-increase">i01-006: Message Nonces Only Increase</a></h3>
+<p>Each message that the messenger sends carries a greater <a href="#message-nonce">Message Nonce</a> than every message it sent
+before. This holds across upgrades of the messenger.</p>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is violated, a contract on L2 that orders messages from the messenger by nonce could ignore a newer
+message or apply an older one over it. The interop <a href="../../../interop/eth-liquidity.html#pause"><code>ETHLiquidity</code> pause</a>
+depends on this order.</p>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
 <p>Initializes the L1CrossDomainMessenger with references to the SystemConfig and OptimismPortal contracts.</p>

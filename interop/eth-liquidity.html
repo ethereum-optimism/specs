@@ -183,6 +183,7 @@
 <li><a href="#liquidity-burning">Liquidity Burning</a></li>
 </ul>
 </li>
+<li><a href="#pause">Pause</a></li>
 <li><a href="#assumptions">Assumptions</a>
 <ul>
 <li><a href="#ael-001-safesend-correctly-transfers-eth-to-recipients">aEL-001: SafeSend correctly transfers ETH to recipients</a>
@@ -209,18 +210,26 @@
 <li><a href="#impact-2">Impact</a></li>
 </ul>
 </li>
+<li><a href="#iel-004-pause-updates-apply-in-l1-order">iEL-004: Pause updates apply in L1 order</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#function-specification">Function Specification</a>
 <ul>
 <li><a href="#mint">mint</a></li>
 <li><a href="#burn">burn</a></li>
+<li><a href="#setpaused">setPaused</a></li>
 </ul>
 </li>
 <li><a href="#events">Events</a>
 <ul>
 <li><a href="#liquidityminted">LiquidityMinted</a></li>
 <li><a href="#liquidityburned">LiquidityBurned</a></li>
+<li><a href="#pausedset">PausedSet</a></li>
 </ul>
 </li>
 </ul>
@@ -234,6 +243,8 @@ modifications to the EVM to generate new ETH.</p>
 handle all legitimate minting operations. This design allows the <code>SuperchainETHBridge</code> to have a
 guaranteed source of ETH liquidity on each chain, which is essential for the cross-chain ETH
 transfer mechanism.</p>
+<p>The contract mirrors this chain's <a href="#pause">pause</a> on L1. While it is paused, ETH can't be burned or minted, so the
+<code>SuperchainETHBridge</code> can't send, relay or refund ETH.</p>
 <h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
 <tr><td><code>ETHLiquidity</code> Address</td><td><code>0x4200000000000000000000000000000000000025</code></td></tr>
@@ -248,11 +259,27 @@ cross-chain transfers.</p>
 <h3 id="liquidity-minting"><a class="header" href="#liquidity-minting">Liquidity Minting</a></h3>
 <p>Liquidity Minting is the process of withdrawing ETH from the <code>ETHLiquidity</code> contract. This
 operation is performed when ETH needs to be sent to a recipient on a destination chain as part of
-a cross-chain transfer.</p>
+a cross-chain transfer, or refunded to its sender on the source chain after the transfer's message
+<a href="./message-expiry.html">expired</a>.</p>
 <h3 id="liquidity-burning"><a class="header" href="#liquidity-burning">Liquidity Burning</a></h3>
 <p>Liquidity Burning is the process of depositing ETH into the <code>ETHLiquidity</code> contract. This operation
 is performed when ETH is being sent from a source chain to a destination chain as part of a
 cross-chain transfer.</p>
+<h2 id="pause"><a class="header" href="#pause">Pause</a></h2>
+<p>The <a href="../protocol/stage-1.html#pause-mechanism">pause mechanism</a> is designed to impact the liveness of the system such
+that an attack on the system is unable to actually remove ETH or ERC-20 tokens from the bridge or any other contract
+that stores ETH and/or tokens. The existing pause from L1 can also stop the cross-chain bridge on L2. The L1 pause
+is this chain's <code>paused()</code> on its <code>L1CrossDomainMessenger</code>, which resolves through the chain's <code>ETHLockbox</code>, its
+<a href="../protocol/stage-1.html#pause-identifier">Pause Identifier</a>, to the <code>SuperchainConfig</code>'s global pause or the pause for
+that identifier, and its expiry. Chains that share an <code>ETHLockbox</code> therefore pause together. There is no separate L2
+pause role.</p>
+<p><code>ETHLiquidity</code> holds a copy of that state. Anyone syncs it by calling
+<a href="./l1-cross-domain-messenger.html#syncethliquiditypause"><code>L1CrossDomainMessenger.syncETHLiquidityPause</code></a>, which
+sends the current state to L2 as a deposit, also while the chain is paused. L2 keeps the last state it received. An
+L1 pause, unpause or pause expiry does not change it until someone calls <code>syncETHLiquidityPause</code>. Each update carries
+the nonce of the <code>L1CrossDomainMessenger</code> message that sends it, and L2 ignores an update from an earlier message
+than the one it applied (<a href="#iel-004-pause-updates-apply-in-l1-order">iEL-004</a>). A sync that failed on L2, such as for
+gas, can be replayed later without undoing a newer state.</p>
 <h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
 <h3 id="ael-001-safesend-correctly-transfers-eth-to-recipients"><a class="header" href="#ael-001-safesend-correctly-transfers-eth-to-recipients">aEL-001: SafeSend correctly transfers ETH to recipients</a></h3>
 <p>We assume that the <code>SafeSend</code> mechanism correctly transfers ETH to recipients without reverting
@@ -286,6 +313,19 @@ cross-chain ETH transfer mechanism. The invariant that avoids overflow is mainta
 <code>SuperchainETHBridge</code>, but could theoretically be broken by some future contract that is allowed to
 integrate with <code>ETHLiquidity</code>. Maintainers should be careful to ensure that such future contracts
 do not break this invariant.</p>
+<h3 id="iel-004-pause-updates-apply-in-l1-order"><a class="header" href="#iel-004-pause-updates-apply-in-l1-order">iEL-004: Pause updates apply in L1 order</a></h3>
+<p><code>ETHLiquidity</code> MUST apply pause updates in the order that this chain's <code>L1CrossDomainMessenger</code> sent them: an update
+MUST NOT replace one sent after it. <code>paused</code> MUST change only through an update sent by this chain's
+<code>L1CrossDomainMessenger</code>.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, a stale unpause could replace a newer pause and reopen the bridge during an attack, or
+someone other than the chain's pause could stop or restart the bridge.</p>
+<h4 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h4>
+<ul>
+<li><a href="../experimental/contracts/L1/l1-cross-domain-messenger.html#i01-006-message-nonces-only-increase">i01-006</a></li>
+<li><a href="./message-expiry.html#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger">iME-003</a></li>
+</ul>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="mint"><a class="header" href="#mint">mint</a></h3>
 <p>Withdraws ETH from the <code>ETHLiquidity</code> contract equal to the <code>_amount</code> and sends it to the
@@ -294,6 +334,7 @@ do not break this invariant.</p>
 </code></pre>
 <ul>
 <li>MUST revert if called by any address other than the <code>SuperchainETHBridge</code>.</li>
+<li>MUST revert with <code>ETHLiquidity_Paused</code> while <code>paused</code> is <code>true</code>.</li>
 <li>MUST transfer the <code>_amount</code> of ETH to the <code>msg.sender</code> using <code>SafeSend</code>.</li>
 <li>MUST emit a <code>LiquidityMinted</code> event with the <code>msg.sender</code> and <code>_amount</code>.</li>
 </ul>
@@ -304,7 +345,19 @@ do not break this invariant.</p>
 <ul>
 <li>MUST accept ETH via <code>msg.value</code>.</li>
 <li>MUST revert if called by any address other than the <code>SuperchainETHBridge</code>.</li>
+<li>MUST revert with <code>ETHLiquidity_Paused</code> while <code>paused</code> is <code>true</code>.</li>
 <li>MUST emit a <code>LiquidityBurned</code> event with the <code>msg.sender</code> and <code>msg.value</code>.</li>
+</ul>
+<h3 id="setpaused"><a class="header" href="#setpaused">setPaused</a></h3>
+<p>Applies this chain's L1 pause state, as sent by
+<a href="./l1-cross-domain-messenger.html#syncethliquiditypause"><code>L1CrossDomainMessenger.syncETHLiquidityPause</code></a>.</p>
+<pre><code class="language-solidity">function setPaused(bool _paused, uint256 _messageNonce) external;
+</code></pre>
+<ul>
+<li>MUST revert with <code>ETHLiquidity_NotL1CrossDomainMessenger</code> unless <code>msg.sender</code> is the <code>L2CrossDomainMessenger</code>
+and its <code>xDomainMessageSender()</code> is this chain's <code>L1CrossDomainMessenger</code>.</li>
+<li>MUST NOT change any state if <code>_messageNonce</code> is not greater than <code>pausedMessageNonce</code>.</li>
+<li>Otherwise MUST set <code>paused</code> to <code>_paused</code> and <code>pausedMessageNonce</code> to <code>_messageNonce</code>, and emit <code>PausedSet</code>.</li>
 </ul>
 <h2 id="events"><a class="header" href="#events">Events</a></h2>
 <h3 id="liquidityminted"><a class="header" href="#liquidityminted">LiquidityMinted</a></h3>
@@ -314,6 +367,10 @@ do not break this invariant.</p>
 <h3 id="liquidityburned"><a class="header" href="#liquidityburned">LiquidityBurned</a></h3>
 <p>MUST be triggered when <code>burn</code> is called.</p>
 <pre><code class="language-solidity">event LiquidityBurned(address indexed caller, uint256 value);
+</code></pre>
+<h3 id="pausedset"><a class="header" href="#pausedset">PausedSet</a></h3>
+<p>MUST be triggered when <code>setPaused</code> applies an update.</p>
+<pre><code class="language-solidity">event PausedSet(bool paused, uint256 messageNonce);
 </code></pre>
 
                     </main>

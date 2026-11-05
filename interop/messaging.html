@@ -281,7 +281,7 @@ be less than or equal to the timestamp of the executing message as well as great
 <li><a href="#chainid-invariant">ChainID Invariant</a>: The chain id of the initiating message MUST be in the dependency set</li>
 <li><a href="#message-expiry-invariant">Message Expiry Invariant</a>: The timestamp at the time of inclusion of the executing
 message MUST be lower than or equal to the initiating message timestamp
-(as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <code>EXPIRY_TIME</code>.</li>
+(as defined in the <a href="#message-identifier"><code>Identifier</code></a>) + <a href="./derivation.html#expiry-window"><code>EXPIRY_WINDOW</code></a>.</li>
 </ul>
 <h3 id="timestamp-invariant"><a class="header" href="#timestamp-invariant">Timestamp Invariant</a></h3>
 <p>The timestamp invariant ensures that initiating messages have a timestamp greater than the Lagoon activation timestamp
@@ -303,11 +303,12 @@ to explicitly define the set of chains that they depend on.</p>
 <p>Message expiry sets a strict bound on the total messaging activity the protocol must support,
 at the cost of limiting some use-cases.</p>
 <p>The expiry invariant invalidates inclusion of any executing message with
-<code>id.timestamp + EXPIRY_TIME &lt; executing_block.timestamp</code> where:</p>
+<code>id.timestamp + EXPIRY_WINDOW &lt; executing_block.timestamp</code> where:</p>
 <ul>
 <li><code>id</code> is the <a href="#message-identifier"><code>Identifier</code></a> encoded in the executing message, matching the block attributes of the initiating message.</li>
 <li><code>executing_block</code> is the block where the executing message was included in.</li>
-<li><code>EXPIRY_TIME = 7 * 24 * 60 * 60 = 604800</code> seconds, i.e. 7 days.</li>
+<li><code>EXPIRY_WINDOW = 7 * 24 * 60 * 60 = 604800</code> seconds, i.e. 7 days, as defined in
+<a href="./derivation.html#expiry-window">Expiry Window</a>.</li>
 </ul>
 <h2 id="message-graph"><a class="header" href="#message-graph">Message Graph</a></h2>
 <p>The dependencies of messages can be modeled as a directed graph:</p>
@@ -368,7 +369,7 @@ may have to be added back to the graph if the set of blocks changes.</p>
 outward edges for initiating messages may be attached
 when relevant to resolution of newer lower-safety blocks.
 No inward edges are required anymore however, as the maximum safety has been ensured.</p>
-<p>Blocks older than <code>horizon_timestamp - (2 * EXPIRY_TIME)</code> cannot be depended
+<p>Blocks older than <code>horizon_timestamp - (2 * EXPIRY_WINDOW)</code> cannot be depended
 on from any valid block within the graph, and can thus be safely pruned entirely.</p>
 <h3 id="bounding-the-graph"><a class="header" href="#bounding-the-graph">Bounding the graph</a></h3>
 <p>With many events, and transitive dependencies, resolving the cross-chain safety may be an intensive task for a verifier.

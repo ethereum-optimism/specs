@@ -202,6 +202,11 @@
 <li><a href="#mitigations-2">Mitigations</a></li>
 </ul>
 </li>
+<li><a href="#aseb-004-eth-sent-to-an-unauthorized-chain-is-lost">aSEB-004: ETH sent to an unauthorized chain is lost</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#invariants">Invariants</a>
@@ -224,18 +229,32 @@
 <li><a href="#dependencies-2">Dependencies</a></li>
 </ul>
 </li>
+<li><a href="#iseb-004-eth-is-refunded-only-for-expired-sends-at-most-once">iSEB-004: ETH is refunded only for expired sends, at most once</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+<li><a href="#dependencies-3">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#iseb-005-each-send-pays-out-at-most-once">iSEB-005: Each send pays out at most once</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+<li><a href="#dependencies-4">Dependencies</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#function-specification">Function Specification</a>
 <ul>
 <li><a href="#sendeth">sendETH</a></li>
 <li><a href="#relayeth">relayETH</a></li>
+<li><a href="#refundeth">refundETH</a></li>
 </ul>
 </li>
 <li><a href="#events">Events</a>
 <ul>
-<li><a href="#sendeth">SendETH</a></li>
-<li><a href="#relayeth">RelayETH</a></li>
+<li><a href="#sendeth-event">SendETH event</a></li>
+<li><a href="#relayeth-event">RelayETH event</a></li>
+<li><a href="#refundeth-event">RefundETH event</a></li>
 </ul>
 </li>
 </ul>
@@ -299,10 +318,20 @@ for valid addresses.</p>
 <li>Extensive testing of the <code>SafeSend</code> mechanism</li>
 <li>Audits of the ETH transfer logic</li>
 </ul>
+<h3 id="aseb-004-eth-sent-to-an-unauthorized-chain-is-lost"><a class="header" href="#aseb-004-eth-sent-to-an-unauthorized-chain-is-lost">aSEB-004: ETH sent to an unauthorized chain is lost</a></h3>
+<p>We assume that users send ETH only to chains whose portals this chain's <code>ETHLockbox</code> authorizes. ETH sent to any
+other chain ID cannot be relayed or refunded until this chain's <code>ETHLockbox</code> authorizes that chain's portal.
+<code>sendMessage</code> checks only that the destination is not this chain, and <code>relayUndeliveredMessage</code> reverts for a portal
+that the <code>ETHLockbox</code> does not authorize.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>Applications and wallets should check that the destination chain is in this chain's
+<a href="./dependency-set.html">dependency set</a> before sending</li>
+</ul>
 <h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
 <h3 id="iseb-001-eth-sent-equals-eth-received"><a class="header" href="#iseb-001-eth-sent-equals-eth-received">iSEB-001: ETH sent equals ETH received</a></h3>
 <p>The amount of ETH sent from the source chain must equal the amount of ETH received on the
-destination chain for any given cross-chain transfer.</p>
+destination chain, or refunded on the source chain, for any given cross-chain transfer.</p>
 <h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If this invariant is broken, users could receive more or less ETH than they sent, leading to
@@ -331,6 +360,31 @@ burning an equivalent amount on the source chain, leading to inflation.</p>
 the possibility of recovery.</p>
 <h4 id="dependencies-2"><a class="header" href="#dependencies-2">Dependencies</a></h4>
 <p>None</p>
+<h3 id="iseb-004-eth-is-refunded-only-for-expired-sends-at-most-once"><a class="header" href="#iseb-004-eth-is-refunded-only-for-expired-sends-at-most-once">iSEB-004: ETH is refunded only for expired sends, at most once</a></h3>
+<p><code>refundETH</code> must pay out only for a send whose message is marked expired, at most once per message, only the
+amount that the send's message committed to, and only to the address that called <code>sendETH</code>, when that address
+calls <code>refundETH</code>.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, ETH could be both delivered on the destination chain and refunded on the source chain,
+leading to inflation.</p>
+<h4 id="dependencies-3"><a class="header" href="#dependencies-3">Dependencies</a></h4>
+<ul>
+<li><a href="./message-expiry.html#ime-001-a-message-is-never-both-relayed-and-expired">iME-001</a></li>
+<li><a href="./message-expiry.html#ime-004-expiry-is-final">iME-004</a></li>
+</ul>
+<h3 id="iseb-005-each-send-pays-out-at-most-once"><a class="header" href="#iseb-005-each-send-pays-out-at-most-once">iSEB-005: Each send pays out at most once</a></h3>
+<p>Across all chains, each <code>sendETH</code> must pay out at most once, through <code>relayETH</code> on the destination chain or <code>refundETH</code> on
+the source chain. The payout must equal the amount burned.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, the same ETH could be paid out on both chains, or twice on one, leading to inflation.</p>
+<h4 id="dependencies-4"><a class="header" href="#dependencies-4">Dependencies</a></h4>
+<ul>
+<li><a href="#aseb-001-l2tol2crossdomainmessenger-properly-delivers-messages">aSEB-001</a></li>
+<li><a href="#iseb-004-eth-is-refunded-only-for-expired-sends-at-most-once">iSEB-004</a></li>
+<li><a href="./message-expiry.html#ime-001-a-message-is-never-both-relayed-and-expired">iME-001</a></li>
+</ul>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="sendeth"><a class="header" href="#sendeth">sendETH</a></h3>
 <p>Deposits the <code>msg.value</code> of ETH into the <code>ETHLiquidity</code> contract and sends a cross-chain message
@@ -341,6 +395,10 @@ to the specified <code>_chainId</code> to call <code>relayETH</code> with the <c
 <ul>
 <li>MUST accept ETH via <code>msg.value</code>.</li>
 <li>MUST revert if the <code>_to</code> address is the zero address.</li>
+<li>MUST revert with <code>SuperchainETHBridge_SenderIsMessenger</code> if <code>msg.sender</code> is the <code>L2ToL2CrossDomainMessenger</code>.
+A relayed message that called <code>sendETH</code> would make the messenger the sender, and it could never claim a refund.
+The <code>L2CrossDomainMessenger</code> stays allowed: a message from L1 that reverted here would keep its ETH there. Its
+sends cannot be refunded to their sender on L1; see <a href="#refundeth"><code>refundETH</code></a>.</li>
 <li>MUST transfer <code>msg.value</code> of ETH from the <code>msg.sender</code> to the <code>ETHLiquidity</code> contract by calling
 <code>ETHLiquidity.burn{value: msg.value}()</code>.</li>
 <li>MUST create a cross-chain message to the <code>SuperchainETHBridge</code> contract on the destination chain
@@ -368,14 +426,47 @@ chain.</li>
 <li>MUST emit a <code>RelayETH</code> event with the <code>_from</code> address, <code>_to</code> address, <code>_amount</code>, and source chain
 ID.</li>
 </ul>
+<h3 id="refundeth"><a class="header" href="#refundeth">refundETH</a></h3>
+<p>Returns the ETH of a send whose message expired: its destination chain never relayed it, and never can.</p>
+<pre><code class="language-solidity">function refundETH(uint256 _destination, uint256 _nonce, address _to, uint256 _amount) external;
+
+mapping(bytes32 =&gt; bool) public refunded;
+</code></pre>
+<ul>
+<li>MUST compute the <a href="./predeploys.html#message-hash">message hash</a> of the send from its arguments, with this chain as
+the source and the <code>SuperchainETHBridge</code> as both sender and target of a <code>relayETH(msg.sender, _to, _amount)</code> call.</li>
+<li>MUST revert with <code>SuperchainETHBridge_MessageNotExpired</code> if
+<code>L2ToL2CrossDomainMessenger.expiredMessages(messageHash)</code> is <code>false</code>. This covers a caller that did not send it.</li>
+<li>MUST revert with <code>SuperchainETHBridge_AlreadyRefunded</code> if <code>refunded[messageHash]</code> is <code>true</code>.</li>
+<li>MUST set <code>refunded[messageHash]</code> to <code>true</code> before transferring ETH.</li>
+<li>MUST withdraw <code>_amount</code> of ETH from the <code>ETHLiquidity</code> contract by calling <code>ETHLiquidity.mint(_amount)</code>.</li>
+<li>MUST transfer the <code>_amount</code> of ETH to <code>msg.sender</code> using <code>new SafeSend{value: _amount}(msg.sender)</code>.</li>
+<li>MUST emit a <code>RefundETH</code> event with <code>msg.sender</code>, <code>_amount</code>, and the message hash.</li>
+</ul>
+<p>Only the <code>msg.sender</code> of <code>sendETH</code> can claim its refund, and the ETH goes back to it. A contract that called
+<code>sendETH</code> on behalf of someone else calls <code>refundETH</code> itself and passes the ETH on. Two kinds of sender cannot get
+their ETH back:</p>
+<ul>
+<li>A send made from L1 through the <code>L2CrossDomainMessenger</code>. A <code>refundETH</code> call made the same way matches the send's
+hash, but pays the <code>L2CrossDomainMessenger</code>, and the ETH stays there. A sender on L1 should deposit through the
+<code>OptimismPortal</code> and call <code>sendETH</code> from its own address, or send through a contract on L2.</li>
+<li>A contract that has no way to call <code>refundETH</code>.</li>
+</ul>
+<p>While <code>ETHLiquidity</code> is <a href="./eth-liquidity.html#pause">paused</a>, <code>sendETH</code>, <code>relayETH</code> and <code>refundETH</code> revert, because
+<code>burn</code> and <code>mint</code> do. Relays and refunds can be retried after the unpause. A send whose message expires during the
+pause can be refunded after the unpause.</p>
 <h2 id="events"><a class="header" href="#events">Events</a></h2>
-<h3 id="sendeth-1"><a class="header" href="#sendeth-1">SendETH</a></h3>
+<h3 id="sendeth-event"><a class="header" href="#sendeth-event">SendETH event</a></h3>
 <p>MUST be triggered when <code>sendETH</code> is called.</p>
 <pre><code class="language-solidity">event SendETH(address indexed from, address indexed to, uint256 amount, uint256 destination);
 </code></pre>
-<h3 id="relayeth-1"><a class="header" href="#relayeth-1">RelayETH</a></h3>
+<h3 id="relayeth-event"><a class="header" href="#relayeth-event">RelayETH event</a></h3>
 <p>MUST be triggered when <code>relayETH</code> is called.</p>
 <pre><code class="language-solidity">event RelayETH(address indexed from, address indexed to, uint256 amount, uint256 source);
+</code></pre>
+<h3 id="refundeth-event"><a class="header" href="#refundeth-event">RefundETH event</a></h3>
+<p>MUST be triggered when <code>refundETH</code> is called.</p>
+<pre><code class="language-solidity">event RefundETH(address indexed from, uint256 amount, bytes32 indexed messageHash);
 </code></pre>
 
                     </main>

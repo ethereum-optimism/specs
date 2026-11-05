@@ -203,18 +203,17 @@
 </li>
 <li><a href="#l2tol2crossdomainmessenger">L2ToL2CrossDomainMessenger</a>
 <ul>
+<li><a href="#message-hash">Message Hash</a></li>
 <li><a href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></li>
 <li><a href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></li>
-<li><a href="#resendmessage-invariants"><code>resendMessage</code> Invariants</a></li>
+<li><a href="#expiremessage-invariants"><code>expireMessage</code> Invariants</a></li>
+<li><a href="#unsafe-targets">Unsafe Targets</a></li>
 <li><a href="#message-versioning">Message Versioning</a></li>
 <li><a href="#interfaces">Interfaces</a>
 <ul>
 <li><a href="#sending-messages">Sending Messages</a></li>
-</ul>
-</li>
-<li><a href="#re-sending-messages">Re-sending Messages</a>
-<ul>
 <li><a href="#relaying-messages">Relaying Messages</a></li>
+<li><a href="#expiring-messages">Expiring Messages</a></li>
 </ul>
 </li>
 </ul>
@@ -278,6 +277,7 @@
 <li><a href="#conversion-flow">Conversion Flow</a></li>
 </ul>
 </li>
+<li><a href="#undeliveredmessageexporter">UndeliveredMessageExporter</a></li>
 <li><a href="#superchainethbridge">SuperchainETHBridge</a></li>
 <li><a href="#ethliquidity">ETHLiquidity</a></li>
 <li><a href="#superchaintokenbridge">SuperchainTokenBridge</a>
@@ -302,7 +302,7 @@
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>Four new system level predeploys are introduced for managing cross chain messaging and tokens, along with
+<p>New system level predeploys are introduced for managing cross chain messaging and tokens, along with
 an update to the <code>OptimismMintableERC20Factory</code> and <code>L2StandardBridge</code> contracts with additional functionalities.</p>
 <h2 id="crossl2inbox"><a class="header" href="#crossl2inbox">CrossL2Inbox</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
@@ -502,23 +502,66 @@ all calls to the <code>CrossL2Inbox</code> originating within a deposit transact
 provides general message passing, utilized for secure transfers ERC20 tokens between L2 chains.
 Messages sent through the <code>L2ToL2CrossDomainMessenger</code> on the source chain receive both replay protection
 as well as domain binding, i.e. the executing transaction can only be valid on a single chain.</p>
+<h3 id="message-hash"><a class="header" href="#message-hash">Message Hash</a></h3>
+<p>A message is identified by its hash:</p>
+<pre><code class="language-solidity">keccak256(abi.encode(_destination, _source, _nonce, _sender, _target, _message))
+</code></pre>
+<p><code>_destination</code> and <code>_source</code> are chain IDs, <code>_nonce</code> is the versioned <a href="#message-versioning">message nonce</a>,
+<code>_sender</code> is the <code>msg.sender</code> of <code>sendMessage</code>, and <code>_target</code> and <code>_message</code> are its arguments. <code>sendMessage</code> returns
+this hash, and <code>successfulMessages</code>, <code>sentMessageTimestamps</code> and <code>expiredMessages</code> are keyed by it. The
+<a href="#undeliveredmessageexporter"><code>UndeliveredMessageExporter</code></a> and
+<a href="./superchain-eth-bridge.html#refundeth"><code>SuperchainETHBridge.refundETH</code></a> compute it the same way.</p>
 <h3 id="relaymessage-invariants"><a class="header" href="#relaymessage-invariants"><code>relayMessage</code> Invariants</a></h3>
 <ul>
 <li>The <code>Identifier.origin</code> MUST be <code>address(L2ToL2CrossDomainMessenger)</code></li>
 <li>The <code>_destination</code> chain id MUST be equal to the local chain id</li>
-<li>Messages MUST NOT be relayed more than once</li>
+<li>Messages MUST NOT be relayed more than once (<code>MessageAlreadyRelayed</code>)</li>
+<li>The message target MUST NOT be an <a href="#unsafe-targets">unsafe target</a>
+(<code>L2ToL2CrossDomainMessenger_MessageTargetUnsafe</code>)</li>
 </ul>
 <h3 id="sendmessage-invariants"><a class="header" href="#sendmessage-invariants"><code>sendMessage</code> Invariants</a></h3>
 <ul>
 <li>Sent Messages MUST be uniquely identifiable</li>
 <li>It MUST store the message hash in the <code>sentMessages</code> mapping</li>
+<li>It MUST store the timestamp of the block it is sent in, in the <code>sentMessageTimestamps</code> mapping</li>
+<li>It MUST revert with <code>MessageTargetL2ToL2CrossDomainMessenger</code> if the message target is the
+<code>L2ToL2CrossDomainMessenger</code> itself. <code>relayMessage</code> does not check this.</li>
+<li>It MUST revert with <code>L2ToL2CrossDomainMessenger_MessageTargetUnsafe</code> if the message target is an
+<a href="#unsafe-targets">unsafe target</a></li>
 <li>It MUST emit the <code>SentMessage</code> event</li>
+<li>It MUST NOT be possible to emit a <code>SentMessage</code> event for a message hash more than once</li>
 </ul>
-<h3 id="resendmessage-invariants"><a class="header" href="#resendmessage-invariants"><code>resendMessage</code> Invariants</a></h3>
+<h3 id="expiremessage-invariants"><a class="header" href="#expiremessage-invariants"><code>expireMessage</code> Invariants</a></h3>
 <ul>
-<li>It MUST NOT be possible to re-emit a <code>SentMessage</code> event that has not been sent</li>
-<li>It MUST emit the <code>SentMessage</code> event</li>
+<li>It MUST revert with <code>L2ToL2CrossDomainMessenger_NotOtherMessenger</code> unless it is called by the
+<code>L2CrossDomainMessenger</code> relaying a message whose L1 sender is the <code>L2CrossDomainMessenger</code>'s <code>otherMessenger</code>,
+i.e. this chain's <code>L1CrossDomainMessenger</code></li>
+<li>If the message has already expired (<code>expiredMessages[messageHash]</code> is <code>true</code>), it MUST return without
+reverting, changing state or emitting an event</li>
+<li>Otherwise:
+<ul>
+<li>It MUST revert with <code>InvalidMessage</code> if the message has no recorded send timestamp
+(<code>sentMessageTimestamps[messageHash] == 0</code>). Such a message was either not sent from this chain or sent before
+the messenger recorded timestamps, and it can never expire.</li>
+<li>It MUST revert with <code>L2ToL2CrossDomainMessenger_InvalidExpiryPeriod</code> if <code>EXPIRY_PERIOD</code> is unset (<code>0</code>), as on an
+implementation installed without <code>initialize</code>, so that it fails closed instead of expiring a message that can
+still be relayed</li>
+<li>It MUST revert with <code>L2ToL2CrossDomainMessenger_MessageNotExpired</code> unless
+<code>undeliveredAt &gt; sentMessageTimestamps[messageHash] + EXPIRY_PERIOD</code></li>
+<li>It MUST set <code>expiredMessages[messageHash]</code> to <code>true</code></li>
+<li>It MUST emit the <code>MessageExpired</code> event</li>
 </ul>
+</li>
+</ul>
+<h3 id="unsafe-targets"><a class="header" href="#unsafe-targets">Unsafe Targets</a></h3>
+<p>The <code>L2CrossDomainMessenger</code> and the <code>L2ToL1MessagePasser</code> are unsafe targets. <code>sendMessage</code> MUST revert for a
+message with an unsafe target, and <code>relayMessage</code> MUST revert when relaying one, so that the
+<code>L2ToL2CrossDomainMessenger</code> is never the sender of a message through the <code>L2CrossDomainMessenger</code> or the
+<code>L2ToL1MessagePasser</code>. This keeps anything that trusts the <code>L2ToL2CrossDomainMessenger</code> as the sender of such a
+message from being fooled by a relayed message. A relayed message can still start other withdrawals, such as
+through <code>L2StandardBridge.bridgeETHTo</code>, with the <code>L2ToL2CrossDomainMessenger</code> as their <code>from</code>.
+<a href="./message-expiry.html">Message expiry</a> does not depend on it: its withdrawals come from the
+<a href="#undeliveredmessageexporter"><code>UndeliveredMessageExporter</code></a>.</p>
 <h3 id="message-versioning"><a class="header" href="#message-versioning">Message Versioning</a></h3>
 <p>Versioning is handled in the most significant bits of the nonce, similarly to how it is handled by
 the <code>CrossDomainMessenger</code>.</p>
@@ -550,19 +593,6 @@ it will be the <code>L2ToL2CrossDomainMessenger</code> and users will need to ca
 <p>The <code>_destination</code> MUST NOT be the chain-ID of the local chain and a locally defined <code>nonce</code> MUST increment on
 every call to <code>sendMessage</code>.</p>
 <p>Note that <code>sendMessage</code> is not <code>payable</code>.</p>
-<h3 id="re-sending-messages"><a class="header" href="#re-sending-messages">Re-sending Messages</a></h3>
-<p>The <code>resendMessage</code> function is used to re-emit a <code>SentMessage</code> event for a message that has already been sent.
-It will calculate the message hash using the inputs, and check that the message hash is stored in the <code>sentMessages</code>
-mapping prior to emitting the <code>SentMessage</code> event.</p>
-<pre><code class="language-solidity">    function resendMessage(
-        uint256 _destination,
-        uint256 _nonce,
-        address _sender,
-        address _target,
-        bytes calldata _message
-    )
-        external;
-</code></pre>
 <h4 id="relaying-messages"><a class="header" href="#relaying-messages">Relaying Messages</a></h4>
 <p>The following diagram shows the flow for sending a cross chain message using the <code>L2ToL2CrossDomainMessenger</code>.
 Each subsequent call is labeled with a number.</p>
@@ -596,7 +626,7 @@ chain. The hash of the message is used for replay protection.</p>
 it is possible to send a message that is not playable.</p>
 <p>A message is relayed by providing the <a href="./messaging.html#message-identifier">identifier</a> of a <code>SentMessage</code>
 event along with its corresponding <a href="./messaging.html#message-payload">message payload</a>.</p>
-<pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable returns (bytes memory returnData_) {
+<pre><code class="language-solidity">function relayMessage(ICrossL2Inbox.Identifier calldata _id, bytes calldata _sentMessage) external payable nonReentrant returns (bytes memory returnData_) {
     require(_id.origin == Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
     CrossL2Inbox(Predeploys.CROSS_L2_INBOX).validateMessage(_id, keccak256(_sentMessage));
 
@@ -606,17 +636,23 @@ event along with its corresponding <a href="./messaging.html#message-payload">me
 
     require(selector == SentMessage.selector);
     require(_destination == block.chainid);
+    require(!_isUnsafeTarget(_target));
 
     // log data
     (address _sender, bytes memory _message) = abi.decode(_sentMessage[128:], (address,bytes));
 
-    bool success;
-    (success, returnData_) = _target.call(_target, msg.value, _message);
-    require(success);
+    uint256 _source = _id.chainId;
+    bytes32 messageHash = keccak256(abi.encode(_destination, _source, _nonce, _sender, _target, _message));
+    require(!successfulMessages[messageHash]);
     successfulMessages[messageHash] = true;
+
+    bool success;
+    (success, returnData_) = _target.call{value: msg.value}(_message);
+    require(success);
     emit RelayedMessage(_source, _nonce, messageHash, keccak256(returnData_));
 }
 </code></pre>
+<p>This pseudocode leaves out how the messenger exposes the <code>_sender</code> and <code>_source</code> to the target during the call.</p>
 <p>Upon successful delivery, an event is emitted with useful information. Notably the hash of the <code>returnData</code> that
 can be used to continue execution for anyone that depends on it without needing an explicit callback message to
 be sent back.</p>
@@ -625,6 +661,30 @@ be sent back.</p>
 <p>Note that the <code>relayMessage</code> function is <code>payable</code> to enable relayers to earn in the gas paying asset.</p>
 <p>To enable cross chain authorization patterns, both the <code>_sender</code> and the <code>_source</code> MUST be exposed via <code>public</code>
 getters.</p>
+<h4 id="expiring-messages"><a class="header" href="#expiring-messages">Expiring Messages</a></h4>
+<p>A message that is not relayed within the <a href="./derivation.html#expiry-window">expiry window</a> can never be relayed.
+Messages cannot be re-emitted. Instead, the source chain can learn that a message expired, through the flow in
+<a href="./message-expiry.html">Message Expiry</a>, and applications can undo the send.</p>
+<p><code>EXPIRY_PERIOD</code> is the value of <code>expiryPeriod()</code>. It is set when the messenger is initialized. <code>initialize</code> MUST
+revert with <code>L2ToL2CrossDomainMessenger_InvalidExpiryPeriod</code> unless <code>0 &lt; EXPIRY_PERIOD &lt;= 31536000</code> (365 days). The
+upper bound rejects values that are clearly wrong.
+On production networks it MUST be <code>691200 secs</code> (8 days): <a href="./derivation.html#expiry-window"><code>EXPIRY_WINDOW</code></a>
+plus one day of margin. The network upgrade that installs this messenger MUST initialize it with that value, and
+later network upgrades MUST keep the configured period.</p>
+<p>Message expiry is safe only if <code>EXPIRY_PERIOD</code> is at least <code>EXPIRY_WINDOW</code>
+(<a href="./message-expiry.html#ame-002-the-expiry-period-is-at-least-the-expiry-window">aME-002</a>).</p>
+<p>A message with no recorded send timestamp, such as one sent before the messenger recorded timestamps, can never
+expire.</p>
+<pre><code class="language-solidity">mapping(bytes32 =&gt; uint256) public sentMessageTimestamps;
+mapping(bytes32 =&gt; bool) public expiredMessages;
+
+function expireMessage(bytes32 _messageHash, uint256 _undeliveredAt) external;
+
+event MessageExpired(bytes32 indexed messageHash, uint256 undeliveredAt);
+</code></pre>
+<p><code>_undeliveredAt</code> is the timestamp on the message's destination chain at which the message had not been relayed
+there. Applications read <code>expiredMessages(messageHash)</code> to undo a send, as
+<a href="./superchain-eth-bridge.html#refundeth"><code>SuperchainETHBridge.refundETH</code></a> does.</p>
 <h2 id="optimismsuperchainerc20factory"><a class="header" href="#optimismsuperchainerc20factory">OptimismSuperchainERC20Factory</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000026</code></td></tr>
@@ -843,6 +903,43 @@ sequenceDiagram
   L2StandardBridge-&gt;&gt;SuperERC20: IERC20(to).mint(Alice, amount)
   L2StandardBridge--&gt;L2StandardBridge: emit Converted(from, to, Alice, amount)
 </pre>
+<h2 id="undeliveredmessageexporter"><a class="header" href="#undeliveredmessageexporter">UndeliveredMessageExporter</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
+<tr><td>Address</td><td><code>0x4200000000000000000000000000000000000030</code></td></tr>
+</tbody></table>
+</div>
+<p>The <code>UndeliveredMessageExporter</code> tells a message's source chain, through L1, that the message has not been relayed
+on this chain. It is the only L2 sender whose withdrawals the <code>L1CrossDomainMessenger</code> accepts for
+<a href="./message-expiry.html">message expiry</a>.</p>
+<pre><code class="language-solidity">function exportUndeliveredMessage(
+    address _sourceMessenger,
+    uint256 _source,
+    uint256 _nonce,
+    address _sender,
+    address _target,
+    bytes calldata _message,
+    uint32 _minGasLimit
+)
+    external
+    returns (bytes32 messageHash_);
+
+event UndeliveredMessageExported(
+    bytes32 indexed messageHash, uint256 indexed source, address sourceMessenger, uint256 undeliveredAt
+);
+</code></pre>
+<ul>
+<li>It MUST compute the <a href="#message-hash">message hash</a> with the local chain id as the destination.</li>
+<li>It MUST revert with <code>UndeliveredMessageExporter_MessageRelayed</code> if the <code>L2ToL2CrossDomainMessenger</code> has relayed
+the message (<code>successfulMessages[messageHash]</code>).</li>
+<li>It MUST send <code>relayUndeliveredMessage(messageHash, block.timestamp)</code> to <code>_sourceMessenger</code> through the
+<code>L2CrossDomainMessenger</code>, with <code>_minGasLimit</code>.</li>
+<li>It MUST NOT make any other external call that can initiate a withdrawal.</li>
+<li>It MUST be callable by anyone, including from a deposit transaction.</li>
+<li>It MUST emit the <code>UndeliveredMessageExported</code> event.</li>
+</ul>
+<p><code>_sourceMessenger</code> is the source chain's <code>L1CrossDomainMessenger</code>. If it is wrong, nothing is marked expired and
+the message can be exported again. An export made before the source chain's <code>EXPIRY_PERIOD</code> has passed fails on the
+source chain and can never succeed, and the message can be exported again later.</p>
 <h2 id="superchainethbridge"><a class="header" href="#superchainethbridge">SuperchainETHBridge</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody>
 <tr><td>Address</td><td><code>0x4200000000000000000000000000000000000024</code></td></tr>
@@ -945,7 +1042,11 @@ will decrease the <code>totalSupply</code> and the initiating user balance preci
 <li>Corollary 3: <code>SuperchainERC20s</code> should not charge a token fee or increase the balance when moving cross-chain.</li>
 <li>Note: if the target chain is not in the initiating chain dependency set,
 funds will be locked, similar to sending funds to the wrong address.
-If the target chain includes it later, these could be unlocked.</li>
+If the target chain includes it later, within the <a href="./derivation.html#expiry-window">expiry window</a>,
+these could be unlocked.</li>
+<li>Note: a send that is not relayed within the expiry window can never be relayed
+(see <a href="./message-expiry.html">Message Expiry</a>). The <code>SuperchainTokenBridge</code> has no refund path,
+so its tokens stay burned.</li>
 </ul>
 </li>
 <li>Freedom of movement: Users should be able to send and receive tokens in any target
@@ -988,7 +1089,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../interop/sequencer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../interop/message-expiry.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -1002,7 +1103,7 @@ i.e. approve a certain address in a certain chainId to spend local funds.</li>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../interop/sequencer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../interop/message-expiry.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

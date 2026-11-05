@@ -1,0 +1,511 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Message Expiry - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/interop/message-expiry.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="message-expiry"><a class="header" href="#message-expiry">Message Expiry</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#flow">Flow</a></li>
+<li><a href="#safety">Safety</a></li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#ame-001-authorized-chains-run-standard-contracts">aME-001: Authorized chains run standard contracts</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#ame-002-the-expiry-period-is-at-least-the-expiry-window">aME-002: The expiry period is at least the expiry window</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#ame-003-applications-bind-expiry-to-their-own-sends">aME-003: Applications bind expiry to their own sends</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#ame-004-every-chain-in-the-dependency-set-is-authorized">aME-004: Every chain in the dependency set is authorized</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#ime-001-a-message-is-never-both-relayed-and-expired">iME-001: A message is never both relayed and expired</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#ime-002-only-the-destination-chain-can-attest">iME-002: Only the destination chain can attest</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+<li><a href="#dependencies-1">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger">iME-003: Only two functions send as the L1CrossDomainMessenger</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+<li><a href="#dependencies-2">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#ime-004-expiry-is-final">iME-004: Expiry is final</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+<li><a href="#dependencies-3">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#ime-005-a-message-that-is-never-relayed-can-always-expire">iME-005: A message that is never relayed can always expire</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+<li><a href="#dependencies-4">Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#ime-006-each-message-is-emitted-once-and-every-relay-is-recorded">iME-006: Each message is emitted once and every relay is recorded</a>
+<ul>
+<li><a href="#impact-5">Impact</a></li>
+<li><a href="#dependencies-5">Dependencies</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#activation">Activation</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Executing messages cannot be included through deposit transactions (see
+<a href="./derivation.html#depositing-an-executing-message">Depositing an Executing Message</a>). A destination chain's sequencer
+that refuses to relay a message can therefore keep it from ever being delivered. Once the
+<a href="./derivation.html#expiry-window">expiry window</a> has passed, no valid block can relay the message at all.</p>
+<p>Message expiry lets the source chain learn that a message can never be delivered, using only withdrawals and
+deposits, which a sequencer cannot censor. The source chain's <code>L2ToL2CrossDomainMessenger</code> records this per message
+in <code>expiredMessages</code>, and applications can undo the send, as
+<a href="./superchain-eth-bridge.html#refundeth"><code>SuperchainETHBridge.refundETH</code></a> does.</p>
+<p>This page describes the design and why it is safe. The contract functions are specified with their contracts:</p>
+<ul>
+<li><a href="./predeploys.html#expiring-messages"><code>L2ToL2CrossDomainMessenger</code></a>: <code>sentMessageTimestamps</code>, <code>expiredMessages</code>,
+<code>expireMessage</code> and <code>EXPIRY_PERIOD</code>;</li>
+<li><a href="./predeploys.html#undeliveredmessageexporter"><code>UndeliveredMessageExporter</code></a>: <code>exportUndeliveredMessage</code>;</li>
+<li><a href="./l1-cross-domain-messenger.html#relayundeliveredmessage"><code>L1CrossDomainMessenger</code></a>: <code>relayUndeliveredMessage</code>.</li>
+</ul>
+<h2 id="flow"><a class="header" href="#flow">Flow</a></h2>
+<p>For a message sent from a source chain to a destination chain and never relayed there:</p>
+<ol>
+<li>On the source chain, <code>L2ToL2CrossDomainMessenger.sendMessage</code> records <code>sentMessageTimestamps[messageHash]</code>.</li>
+<li>On the destination chain, anyone calls <code>UndeliveredMessageExporter.exportUndeliveredMessage</code> with the message's
+preimage and the source chain's <code>L1CrossDomainMessenger</code>. The exporter computes <code>messageHash</code> with the destination
+chain as the destination, checks that the destination chain has not relayed it, and sends
+<code>relayUndeliveredMessage(messageHash, undeliveredAt)</code> through the destination chain's <code>L2CrossDomainMessenger</code>,
+where <code>undeliveredAt</code> is the destination chain's block timestamp. This is not an executing message, so it can be
+included through a deposit if the destination chain's sequencer censors it.</li>
+<li>On L1, once the withdrawal is proven and finalized, the destination chain's <code>L1CrossDomainMessenger</code> relays it to
+the source chain's <code>L1CrossDomainMessenger.relayUndeliveredMessage</code>, which sends
+<code>expireMessage(messageHash, undeliveredAt)</code> to the source chain as a deposit.</li>
+<li>On the source chain, <code>expireMessage</code> marks the message expired if
+<code>undeliveredAt &gt; sentMessageTimestamps[messageHash] + EXPIRY_PERIOD</code>.</li>
+<li>On the source chain, applications read <code>expiredMessages(messageHash)</code> to undo the send.</li>
+</ol>
+<pre class="mermaid">sequenceDiagram
+    participant Source as Source chain
+    participant L1 as L1
+    participant Dest as Destination chain
+    Source-&gt;&gt;Source: sendMessage records sentMessageTimestamps[messageHash]
+    Note over Dest: the message is never relayed
+    Dest-&gt;&gt;L1: exportUndeliveredMessage withdraws relayUndeliveredMessage(messageHash, undeliveredAt)
+    L1-&gt;&gt;L1: destination's L1CrossDomainMessenger relays to source's L1CrossDomainMessenger
+    L1-&gt;&gt;Source: deposit expireMessage(messageHash, undeliveredAt)
+    Source-&gt;&gt;Source: expiredMessages[messageHash] = true if undeliveredAt &gt; sentMessageTimestamps[messageHash] + EXPIRY_PERIOD
+</pre>
+<h2 id="safety"><a class="header" href="#safety">Safety</a></h2>
+<p>A message is never both relayed and expired
+(<a href="#ime-001-a-message-is-never-both-relayed-and-expired">iME-001</a>). This holds because:</p>
+<ul>
+<li>
+<p>An executing message is invalid if its block timestamp is more than <code>EXPIRY_WINDOW</code> after the timestamp of its
+initiating message (see <a href="./messaging.html#message-expiry-invariant">Message Expiry Invariant</a>).
+<code>sentMessageTimestamps[messageHash]</code> is that initiating timestamp, and it is written once.</p>
+</li>
+<li>
+<p>The exporter on the destination chain attests that the message was not relayed by its block timestamp
+<code>undeliveredAt</code>. Any later call on the destination chain, including one later in the same block or the same
+transaction, has a timestamp of at least <code>undeliveredAt</code>. If
+<code>undeliveredAt &gt; sentMessageTimestamps[messageHash] + EXPIRY_PERIOD</code> and <code>EXPIRY_PERIOD</code> is at least
+<code>EXPIRY_WINDOW</code> (<a href="#ame-002-the-expiry-period-is-at-least-the-expiry-window">aME-002</a>), no later call can relay the
+message.</p>
+</li>
+<li>
+<p>Only the destination chain can attest for the message, because the exporter hashes it with its own chain ID as the
+destination (<a href="#ime-002-only-the-destination-chain-can-attest">iME-002</a>).</p>
+</li>
+<li>
+<p>Only chains whose portals the source chain's <code>ETHLockbox</code> authorizes can attest
+(<a href="#ame-001-authorized-chains-run-standard-contracts">aME-001</a>).</p>
+</li>
+<li>
+<p>Only <code>relayUndeliveredMessage</code> can make the source chain's <code>L1CrossDomainMessenger</code> the sender of <code>expireMessage</code>
+(<a href="#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger">iME-003</a>).</p>
+</li>
+<li>
+<p>The trusted L2 sender is the <code>UndeliveredMessageExporter</code>, whose proxy had no implementation before the upgrade
+that introduced it, so no withdrawal from it can predate that upgrade.</p>
+</li>
+<li>
+<p>The source chain emits each message once, and the destination chain records every relay
+(<a href="#ime-006-each-message-is-emitted-once-and-every-relay-is-recorded">iME-006</a>).</p>
+</li>
+</ul>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="ame-001-authorized-chains-run-standard-contracts"><a class="header" href="#ame-001-authorized-chains-run-standard-contracts">aME-001: Authorized chains run standard contracts</a></h3>
+<p>We assume that every chain whose portal the source chain's <code>ETHLockbox</code> authorizes runs the standard
+<code>UndeliveredMessageExporter</code>, <code>L2ToL2CrossDomainMessenger</code>, <code>L2CrossDomainMessenger</code> and <code>L2ToL1MessagePasser</code> at
+their predeploy addresses. We assume that L1 finalizes withdrawals only from blocks that are valid under the interop
+<a href="./derivation.html">derivation rules</a>.</p>
+<p><code>relayUndeliveredMessage</code> does not compare the calling chain with the message's destination. The binding comes only
+from the exporter, which hashes the message with its own chain ID as the destination, so this assumption is
+load-bearing.</p>
+<p>Authorization of a portal in an <code>ETHLockbox</code> is permanent. A chain whose portal moves to another <code>ETHLockbox</code> stays
+authorized in the source chain's <code>ETHLockbox</code>. It can still attest for expiry, but it no longer shares the source
+chain's ETH or pause.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Only the <code>ProxyAdmin</code> owner can authorize a portal in an <code>ETHLockbox</code> (see <a href="./eth-lockbox.html"><code>ETHLockbox</code></a>).</li>
+</ul>
+<h3 id="ame-002-the-expiry-period-is-at-least-the-expiry-window"><a class="header" href="#ame-002-the-expiry-period-is-at-least-the-expiry-window">aME-002: The expiry period is at least the expiry window</a></h3>
+<p>We assume that every node and proof program of each destination chain enforces the
+<a href="./derivation.html#expiry-window">expiry window</a> of <code>EXPIRY_WINDOW</code>. We assume that each chain's <code>EXPIRY_PERIOD</code> is
+at least <code>EXPIRY_WINDOW</code> and stays so across upgrades. The messenger cannot check this: <code>initialize</code> checks only
+<code>0 &lt; EXPIRY_PERIOD &lt;= 365 days</code>.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li><code>EXPIRY_WINDOW</code> is a protocol constant, not a configuration value.</li>
+<li>On production networks, <code>EXPIRY_PERIOD</code> is one day more than <code>EXPIRY_WINDOW</code>, and network upgrades keep it (see
+<a href="./predeploys.html#expiring-messages">Expiring Messages</a>).</li>
+</ul>
+<h3 id="ame-003-applications-bind-expiry-to-their-own-sends"><a class="header" href="#ame-003-applications-bind-expiry-to-their-own-sends">aME-003: Applications bind expiry to their own sends</a></h3>
+<p>We assume that an application that undoes a send on expiry computes the message hash with itself as the sender. We
+assume that it undoes each send at most once and treats an expired message as never delivered. <code>expiredMessages</code> is
+public, so an application that trusts a message hash from its caller can be fooled.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li><a href="./superchain-eth-bridge.html#refundeth"><code>SuperchainETHBridge.refundETH</code></a> is the reference pattern: it computes the
+hash from its own arguments, with itself as the sender, and records each refund.</li>
+</ul>
+<h3 id="ame-004-every-chain-in-the-dependency-set-is-authorized"><a class="header" href="#ame-004-every-chain-in-the-dependency-set-is-authorized">aME-004: Every chain in the dependency set is authorized</a></h3>
+<p>We assume that the source chain's <code>ETHLockbox</code> authorizes the portal of every chain in the source chain's
+<a href="./dependency-set.html">dependency set</a>, and that each such chain runs the <code>UndeliveredMessageExporter</code>. A message to
+a chain whose portal the <code>ETHLockbox</code> does not authorize cannot expire until the <code>ETHLockbox</code> authorizes it.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>The network upgrade that activates interop installs the <code>UndeliveredMessageExporter</code> on every chain.</li>
+<li>A chain joins a dependency set only through a network upgrade.</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="ime-001-a-message-is-never-both-relayed-and-expired"><a class="header" href="#ime-001-a-message-is-never-both-relayed-and-expired">iME-001: A message is never both relayed and expired</a></h3>
+<p>A message MUST NOT be both relayed on its destination chain and marked expired in <code>expiredMessages</code> on its source
+chain.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, every application that undoes a send on expiry pays out twice. The
+<code>SuperchainETHBridge</code> would both relay and refund the same ETH.</p>
+<h4 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h4>
+<ul>
+<li><a href="#ame-001-authorized-chains-run-standard-contracts">aME-001</a></li>
+<li><a href="#ame-002-the-expiry-period-is-at-least-the-expiry-window">aME-002</a></li>
+<li><a href="#ime-002-only-the-destination-chain-can-attest">iME-002</a></li>
+<li><a href="#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger">iME-003</a></li>
+<li><a href="#ime-006-each-message-is-emitted-once-and-every-relay-is-recorded">iME-006</a></li>
+</ul>
+<h3 id="ime-002-only-the-destination-chain-can-attest"><a class="header" href="#ime-002-only-the-destination-chain-can-attest">iME-002: Only the destination chain can attest</a></h3>
+<p><code>expireMessage</code> MUST mark a message expired only on an attestation from the <code>UndeliveredMessageExporter</code> of the chain
+that the message hash names as its destination.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, another chain could attest that a message was not relayed after its destination
+relayed it, breaking <a href="#ime-001-a-message-is-never-both-relayed-and-expired">iME-001</a>.</p>
+<h4 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h4>
+<ul>
+<li><a href="#ame-001-authorized-chains-run-standard-contracts">aME-001</a></li>
+</ul>
+<h3 id="ime-003-only-two-functions-send-as-the-l1crossdomainmessenger"><a class="header" href="#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger">iME-003: Only two functions send as the L1CrossDomainMessenger</a></h3>
+<p>This chain's <code>L1CrossDomainMessenger</code> MUST be the L1 sender of a message on L2 only through
+<a href="./l1-cross-domain-messenger.html#relayundeliveredmessage"><code>relayUndeliveredMessage</code></a> and
+<a href="./l1-cross-domain-messenger.html#syncethliquiditypause"><code>syncETHLiquidityPause</code></a>. Its
+<a href="../experimental/contracts/L1/l1-cross-domain-messenger.html#relaymessage"><code>relayMessage</code></a> refuses messages that target
+itself.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p><code>expireMessage</code> and <code>ETHLiquidity.setPaused</code> both trust this sender. If this invariant is broken, anyone could
+expire a message that can still be relayed, or pause and unpause <code>ETHLiquidity</code>.</p>
+<h4 id="dependencies-2"><a class="header" href="#dependencies-2">Dependencies</a></h4>
+<p>None</p>
+<h3 id="ime-004-expiry-is-final"><a class="header" href="#ime-004-expiry-is-final">iME-004: Expiry is final</a></h3>
+<p><code>expiredMessages[messageHash]</code> MUST change only from <code>false</code> to <code>true</code>, and only for a message with a recorded send
+timestamp.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, an application could see a send that it already undid become deliverable again, or a
+message that was never sent from this chain marked expired.</p>
+<h4 id="dependencies-3"><a class="header" href="#dependencies-3">Dependencies</a></h4>
+<p>None</p>
+<h3 id="ime-005-a-message-that-is-never-relayed-can-always-expire"><a class="header" href="#ime-005-a-message-that-is-never-relayed-can-always-expire">iME-005: A message that is never relayed can always expire</a></h3>
+<p>Anyone MUST be able to make a message expire once its destination chain has not relayed it at a block timestamp
+greater than <code>sentMessageTimestamps[messageHash] + EXPIRY_PERIOD</code>. This requires a destination chain whose portal
+the source chain's <code>ETHLockbox</code> authorizes, withdrawals that finalize on L1, and deposits that are included on the
+source chain. Each step that fails, such as for gas or while a chain is paused, MUST be replayable or repeatable from
+a new export.</p>
+<p>This does not cover a message with no recorded send timestamp, such as one sent before the messenger recorded
+timestamps. Such a message can never expire. It also does not cover a message to a chain whose portal the source chain's
+<code>ETHLockbox</code> does not authorize, until the <code>ETHLockbox</code> authorizes it.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If this invariant is broken, value sent in a message that is never relayed, such as ETH sent through the
+<code>SuperchainETHBridge</code>, can never be recovered.</p>
+<h4 id="dependencies-4"><a class="header" href="#dependencies-4">Dependencies</a></h4>
+<ul>
+<li><a href="#ame-001-authorized-chains-run-standard-contracts">aME-001</a></li>
+<li><a href="#ame-004-every-chain-in-the-dependency-set-is-authorized">aME-004</a></li>
+</ul>
+<h3 id="ime-006-each-message-is-emitted-once-and-every-relay-is-recorded"><a class="header" href="#ime-006-each-message-is-emitted-once-and-every-relay-is-recorded">iME-006: Each message is emitted once and every relay is recorded</a></h3>
+<p>The <code>L2ToL2CrossDomainMessenger</code> MUST NOT emit a <code>SentMessage</code> event for a message hash more than once. Every way of
+relaying a message MUST set <code>successfulMessages[messageHash]</code>.</p>
+<h4 id="impact-5"><a class="header" href="#impact-5">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If this invariant is broken, a message could be relayed after it expired, or the exporter could attest that a
+relayed message was not relayed. Both break <a href="#ime-001-a-message-is-never-both-relayed-and-expired">iME-001</a>.</p>
+<h4 id="dependencies-5"><a class="header" href="#dependencies-5">Dependencies</a></h4>
+<p>None</p>
+<h2 id="activation"><a class="header" href="#activation">Activation</a></h2>
+<ul>
+<li>The network upgrade that activates interop MUST install an <code>L2ToL2CrossDomainMessenger</code> with expiry and the
+<code>UndeliveredMessageExporter</code>.</li>
+<li>An <code>L2ToL2CrossDomainMessenger</code> without expiry MUST NOT be live on a chain with expiry, because it could resend a
+message after the message expired.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../interop/predeploys.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../interop/sequencer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../interop/predeploys.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../interop/sequencer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../specs/static/solidity.min.js"></script>
+        <script src="../specs/static/mermaid.min.js"></script>
+        <script src="../specs/static/mermaid-init.js"></script>
+        <script src="../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>
