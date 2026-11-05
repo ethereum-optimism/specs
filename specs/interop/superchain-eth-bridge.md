@@ -42,9 +42,9 @@
   - [relayETH](#relayeth)
   - [refundETH](#refundeth)
 - [Events](#events)
-  - [SendETH](#sendeth)
-  - [RelayETH](#relayeth)
-  - [RefundETH](#refundeth)
+  - [SendETH event](#sendeth-event)
+  - [RelayETH event](#relayeth-event)
+  - [RefundETH event](#refundeth-event)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -306,7 +306,7 @@ pause is refunded after it.
 
 ## Events
 
-### SendETH
+### SendETH event
 
 MUST be triggered when `sendETH` is called.
 
@@ -314,7 +314,7 @@ MUST be triggered when `sendETH` is called.
 event SendETH(address indexed from, address indexed to, uint256 amount, uint256 destination);
 ```
 
-### RelayETH
+### RelayETH event
 
 MUST be triggered when `relayETH` is called.
 
@@ -322,7 +322,7 @@ MUST be triggered when `relayETH` is called.
 event RelayETH(address indexed from, address indexed to, uint256 amount, uint256 source);
 ```
 
-### RefundETH
+### RefundETH event
 
 MUST be triggered when `refundETH` is called.
 
