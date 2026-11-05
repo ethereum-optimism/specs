@@ -14,7 +14,7 @@
     - [Mitigations](#mitigations-1)
   - [aME-003: Applications bind expiry to their own sends](#ame-003-applications-bind-expiry-to-their-own-sends)
     - [Mitigations](#mitigations-2)
-  - [aME-004: Every chain in the dependency set is in the cluster](#ame-004-every-chain-in-the-dependency-set-is-in-the-cluster)
+  - [aME-004: Every chain in the dependency set is authorized](#ame-004-every-chain-in-the-dependency-set-is-authorized)
     - [Mitigations](#mitigations-3)
 - [Invariants](#invariants)
   - [iME-001: A message is never both relayed and expired](#ime-001-a-message-is-never-both-relayed-and-expired)
@@ -50,8 +50,6 @@ Message expiry lets the source chain learn that a message can never be delivered
 deposits, which a sequencer cannot censor. The source chain's `L2ToL2CrossDomainMessenger` records this per message
 in `expiredMessages`, and applications can undo the send, as
 [`SuperchainETHBridge.refundETH`](./superchain-eth-bridge.md#refundeth) does.
-
-On this page, the cluster of a chain is the set of chains whose portals that chain's `ETHLockbox` authorizes.
 
 This page describes the design and why it is safe. The contract functions are specified with their contracts:
 
@@ -107,7 +105,7 @@ A message is never both relayed and expired
   message.
 - Only the destination chain can attest for the message, because the exporter hashes it with its own chain ID as the
   destination ([iME-002](#ime-002-only-the-destination-chain-can-attest)).
-- Only chains in the source chain's cluster can attest
+- Only chains whose portals the source chain's `ETHLockbox` authorizes can attest
   ([aME-001](#ame-001-authorized-chains-run-standard-contracts)).
 - Only `relayUndeliveredMessage` can make the source chain's `L1CrossDomainMessenger` the sender of `expireMessage`
   ([iME-003](#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger)).
@@ -121,9 +119,9 @@ A message is never both relayed and expired
 
 ### aME-001: Authorized chains run standard contracts
 
-We assume that every chain in the source chain's cluster runs the standard `UndeliveredMessageExporter`,
-`L2ToL2CrossDomainMessenger`, `L2CrossDomainMessenger` and `L2ToL1MessagePasser` at their predeploy addresses. We
-assume that L1 finalizes withdrawals only from blocks that are valid under the interop
+We assume that every chain whose portal the source chain's `ETHLockbox` authorizes runs the standard
+`UndeliveredMessageExporter`, `L2ToL2CrossDomainMessenger`, `L2CrossDomainMessenger` and `L2ToL1MessagePasser` at
+their predeploy addresses. We assume that L1 finalizes withdrawals only from blocks that are valid under the interop
 [derivation rules](./derivation.md).
 
 `relayUndeliveredMessage` does not compare the calling chain with the message's destination. The binding comes only
@@ -131,8 +129,8 @@ from the exporter, which hashes the message with its own chain ID as the destina
 load-bearing.
 
 Authorization of a portal in an `ETHLockbox` is permanent. A chain whose portal moves to another `ETHLockbox` stays
-in the source chain's cluster. It can still attest for expiry, but it no longer shares the source chain's ETH or
-pause.
+authorized in the source chain's `ETHLockbox`. It can still attest for expiry, but it no longer shares the source
+chain's ETH or pause.
 
 #### Mitigations
 
@@ -162,11 +160,11 @@ public, so an application that trusts a message hash from its caller can be fool
 - [`SuperchainETHBridge.refundETH`](./superchain-eth-bridge.md#refundeth) is the reference pattern: it computes the
   hash from its own arguments, with itself as the sender, and records each refund.
 
-### aME-004: Every chain in the dependency set is in the cluster
+### aME-004: Every chain in the dependency set is authorized
 
-We assume that every chain in the source chain's [dependency set](./dependency-set.md) is in the source chain's
-cluster and runs the `UndeliveredMessageExporter`. A message to a chain that is not in the cluster cannot expire
-while that chain stays outside the cluster.
+We assume that the source chain's `ETHLockbox` authorizes the portal of every chain in the source chain's
+[dependency set](./dependency-set.md), and that each such chain runs the `UndeliveredMessageExporter`. A message to
+a chain whose portal the `ETHLockbox` does not authorize cannot expire until the `ETHLockbox` authorizes it.
 
 #### Mitigations
 
@@ -249,13 +247,14 @@ None
 ### iME-005: A message that is never relayed can always expire
 
 Anyone MUST be able to make a message expire once its destination chain has not relayed it at a block timestamp
-greater than `sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`. This requires a destination chain in the source
-chain's cluster, withdrawals that finalize on L1, and deposits that are included on the source chain. Each step that
-fails, such as for gas or while a chain is paused, MUST be replayable or repeatable from a new export.
+greater than `sentMessageTimestamps[messageHash] + EXPIRY_PERIOD`. This requires a destination chain whose portal
+the source chain's `ETHLockbox` authorizes, withdrawals that finalize on L1, and deposits that are included on the
+source chain. Each step that fails, such as for gas or while a chain is paused, MUST be replayable or repeatable from
+a new export.
 
 This does not cover a message with no recorded send timestamp, such as one sent before the messenger recorded
-timestamps. Such a message can never expire. It also does not cover a message to a chain outside the source chain's
-cluster, while that chain stays outside the cluster.
+timestamps. Such a message can never expire. It also does not cover a message to a chain whose portal the source chain's
+`ETHLockbox` does not authorize, until the `ETHLockbox` authorizes it.
 
 #### Impact
 
@@ -267,7 +266,7 @@ If this invariant is broken, value sent in a message that is never relayed, such
 #### Dependencies
 
 - [aME-001](#ame-001-authorized-chains-run-standard-contracts)
-- [aME-004](#ame-004-every-chain-in-the-dependency-set-is-in-the-cluster)
+- [aME-004](#ame-004-every-chain-in-the-dependency-set-is-authorized)
 
 ### iME-006: Each message is emitted once and every relay is recorded
 
