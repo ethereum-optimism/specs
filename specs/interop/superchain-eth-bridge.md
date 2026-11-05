@@ -19,7 +19,7 @@
     - [Mitigations](#mitigations-1)
   - [aSEB-003: `SafeSend` correctly transfers ETH to recipients](#aseb-003-safesend-correctly-transfers-eth-to-recipients)
     - [Mitigations](#mitigations-2)
-  - [aSEB-004: ETH sent outside the cluster is lost](#aseb-004-eth-sent-outside-the-cluster-is-lost)
+  - [aSEB-004: ETH sent to an unauthorized chain is lost](#aseb-004-eth-sent-to-an-unauthorized-chain-is-lost)
     - [Mitigations](#mitigations-3)
 - [Invariants](#invariants)
   - [iSEB-001: ETH sent equals ETH received](#iseb-001-eth-sent-equals-eth-received)
@@ -129,11 +129,12 @@ for valid addresses.
 - Extensive testing of the `SafeSend` mechanism
 - Audits of the ETH transfer logic
 
-### aSEB-004: ETH sent outside the cluster is lost
+### aSEB-004: ETH sent to an unauthorized chain is lost
 
 We assume that users send ETH only to chains whose portals this chain's `ETHLockbox` authorizes. ETH sent to any
-other chain ID can never be relayed or refunded. `sendMessage` checks only that the destination is not this chain,
-and `relayUndeliveredMessage` reverts for a portal that the `ETHLockbox` does not authorize.
+other chain ID cannot be relayed or refunded until this chain's `ETHLockbox` authorizes that chain's portal.
+`sendMessage` checks only that the destination is not this chain, and `relayUndeliveredMessage` reverts for a portal
+that the `ETHLockbox` does not authorize.
 
 #### Mitigations
 
@@ -205,13 +206,12 @@ leading to inflation.
 
 #### Dependencies
 
-- [aSEB-002](#aseb-002-ethliquidity-contract-maintains-sufficient-liquidity)
 - [iME-001](./message-expiry.md#ime-001-a-message-is-never-both-relayed-and-expired)
-- [aME-003](./message-expiry.md#ame-003-applications-bind-expiry-to-their-own-sends)
+- [iME-004](./message-expiry.md#ime-004-expiry-is-final)
 
 ### iSEB-005: Each send pays out at most once
 
-The cluster must pay out each `sendETH` at most once, through `relayETH` on the destination chain or `refundETH` on
+Across all chains, each `sendETH` must pay out at most once, through `relayETH` on the destination chain or `refundETH` on
 the source chain. The payout must equal the amount burned.
 
 #### Impact
@@ -302,7 +302,7 @@ their ETH back:
 
 While `ETHLiquidity` is [paused](./eth-liquidity.md#pause), `sendETH`, `relayETH` and `refundETH` revert, because
 `burn` and `mint` do. Relays and refunds can be retried after the unpause. A send whose message expires during the
-pause is refunded after it.
+pause can be refunded after the unpause.
 
 ## Events
 

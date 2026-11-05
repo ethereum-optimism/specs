@@ -24,8 +24,6 @@
   - [iEL-004: Pause updates apply in L1 order](#iel-004-pause-updates-apply-in-l1-order)
     - [Impact](#impact-3)
     - [Dependencies](#dependencies)
-  - [iEL-005: L1CrossDomainMessenger message nonces only increase](#iel-005-l1crossdomainmessenger-message-nonces-only-increase)
-    - [Impact](#impact-4)
 - [Function Specification](#function-specification)
   - [mint](#mint)
   - [burn](#burn)
@@ -92,11 +90,11 @@ pause role.
 
 `ETHLiquidity` holds a copy of that state. Anyone syncs it by calling
 [`L1CrossDomainMessenger.syncETHLiquidityPause`](./l1-cross-domain-messenger.md#syncethliquiditypause), which
-sends the current state to L2 as a deposit, also while the chain is paused. Call it again after any pause, unpause
-or pause expiry; until then, L2 keeps the last state it received. Each update carries the nonce of the
-`L1CrossDomainMessenger` message that sends it, and L2 ignores an update from an earlier message than the one it
-applied ([iEL-004](#iel-004-pause-updates-apply-in-l1-order)). A sync that failed on L2, such as for gas, can be
-replayed later without undoing a newer state.
+sends the current state to L2 as a deposit, also while the chain is paused. L2 keeps the last state it received. An
+L1 pause, unpause or pause expiry does not change it until someone calls `syncETHLiquidityPause`. Each update carries
+the nonce of the `L1CrossDomainMessenger` message that sends it, and L2 ignores an update from an earlier message
+than the one it applied ([iEL-004](#iel-004-pause-updates-apply-in-l1-order)). A sync that failed on L2, such as for
+gas, can be replayed later without undoing a newer state.
 
 ## Assumptions
 
@@ -165,19 +163,8 @@ someone other than the chain's pause could stop or restart the bridge.
 
 #### Dependencies
 
-- [iEL-005](#iel-005-l1crossdomainmessenger-message-nonces-only-increase)
+- [i01-006](../experimental/contracts/L1/l1-cross-domain-messenger.md#i01-006-message-nonces-only-increase)
 - [iME-003](./message-expiry.md#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger)
-
-### iEL-005: L1CrossDomainMessenger message nonces only increase
-
-The `messageNonce()` of this chain's `L1CrossDomainMessenger` MUST only increase, so that each pause update carries
-a greater nonce than every update sent before it.
-
-#### Impact
-
-**Severity: High**
-
-If this invariant is broken, `ETHLiquidity` could ignore a newer pause update, or apply an older one over it.
 
 ## Function Specification
 

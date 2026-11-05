@@ -6,7 +6,6 @@
 
 - [Overview](#overview)
 - [Constants](#constants)
-- [Unsafe Targets](#unsafe-targets)
 - [Function Specification](#function-specification)
   - [relayUndeliveredMessage](#relayundeliveredmessage)
   - [syncETHLiquidityPause](#syncethliquiditypause)
@@ -24,7 +23,9 @@ a deposit, with the `L1CrossDomainMessenger` itself as the L1 sender:
   [`ETHLiquidity` pause](./eth-liquidity.md#pause).
 
 L2 trusts the `L1CrossDomainMessenger` as the sender of these calls (see
-[iME-003](./message-expiry.md#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger)). The rest of the
+[iME-003](./message-expiry.md#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger)).
+[`relayMessage`](../experimental/contracts/L1/l1-cross-domain-messenger.md#relaymessage) refuses messages that target
+the messenger itself or its portal, so a relayed message cannot make the messenger the L1 sender. The rest of the
 messenger is unchanged; see [Messengers](../protocol/messengers.md).
 
 ## Constants
@@ -33,12 +34,6 @@ messenger is unchanged; see [Messengers](../protocol/messengers.md).
 | ------------------------------------ | -------- |
 | `EXPIRE_MESSAGE_GAS_LIMIT`           | `100000` |
 | `SET_ETH_LIQUIDITY_PAUSED_GAS_LIMIT` | `200000` |
-
-## Unsafe Targets
-
-`relayMessage` MUST refuse to relay a message whose target is the `L1CrossDomainMessenger` itself or its
-`OptimismPortal`. A relayed message therefore cannot make the `L1CrossDomainMessenger` the sender of a message, and
-it is the L1 sender of a message on L2 only through the two functions below.
 
 ## Function Specification
 
@@ -53,7 +48,8 @@ function relayUndeliveredMessage(bytes32 _messageHash, uint256 _undeliveredAt) e
 - MUST revert with `L1CrossDomainMessenger_InteropNotEnabled` unless this chain's `SystemConfig` has the `INTEROP`
   feature enabled.
 - MUST revert with `L1CrossDomainMessenger_Paused` while this chain is paused, as `relayMessage` does.
-- MUST revert with `L1CrossDomainMessenger_NotInteropMessenger` unless all of these hold:
+- MUST revert unless all of these hold. When the caller's getters return, the revert is
+  `L1CrossDomainMessenger_NotInteropMessenger`.
   - the `SystemConfig` of the caller's portal names the caller as its `l1CrossDomainMessenger`;
   - this chain's `ETHLockbox` authorizes the caller's portal;
   - the caller's `xDomainMessageSender()` is the
@@ -64,8 +60,9 @@ function relayUndeliveredMessage(bytes32 _messageHash, uint256 _undeliveredAt) e
 It does not check which chain the message hash names as its destination. That binding comes from the exporter; see
 [aME-001](./message-expiry.md#ame-001-authorized-chains-run-standard-contracts).
 
-If `relayUndeliveredMessage` reverts, such as while this chain is paused or when it runs out of gas, it is recorded in
-the calling messenger's failed messages and can be replayed.
+If `relayUndeliveredMessage` reverts, such as when it runs out of gas, the calling messenger records it as a failed
+message, and it can be replayed. A caller that shares this chain's `ETHLockbox` pauses together with this chain, so it
+cannot relay the call while this chain is paused.
 
 ### syncETHLiquidityPause
 

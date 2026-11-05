@@ -28,8 +28,8 @@
   - [Message Versioning](#message-versioning)
   - [Interfaces](#interfaces)
     - [Sending Messages](#sending-messages)
-  - [Expiring Messages](#expiring-messages)
     - [Relaying Messages](#relaying-messages)
+    - [Expiring Messages](#expiring-messages)
 - [OptimismSuperchainERC20Factory](#optimismsuperchainerc20factory)
   - [OptimismSuperchainERC20](#optimismsuperchainerc20)
   - [Overview](#overview-1)
@@ -451,39 +451,6 @@ every call to `sendMessage`.
 
 Note that `sendMessage` is not `payable`.
 
-### Expiring Messages
-
-A message that is not relayed within the [expiry window](./derivation.md#expiry-window) can never be relayed.
-Messages cannot be re-emitted. Instead, the source chain can learn that a message expired, through the flow in
-[Message Expiry](./message-expiry.md), and applications can undo the send.
-
-`EXPIRY_PERIOD` is set when the messenger is initialized. `initialize` MUST revert with
-`L2ToL2CrossDomainMessenger_InvalidExpiryPeriod` unless `0 < EXPIRY_PERIOD <= 31536000` (365 days), which keeps
-`sentMessageTimestamps[messageHash] + EXPIRY_PERIOD` far from overflow.
-It is read through `expiryPeriod()`.
-On production networks it MUST be `691200 secs` (8 days): [`EXPIRY_WINDOW`](./derivation.md#expiry-window)
-plus one day of margin. The genesis tooling uses that value by default, and the first upgrade that installs this
-messenger initializes it with that value. Later network upgrades MUST keep the configured period.
-
-`EXPIRY_PERIOD` MUST be at least `EXPIRY_WINDOW`, so that a message is only marked expired once no relay of it can
-be valid.
-
-A message with no recorded send timestamp, such as one sent before the messenger recorded timestamps, can never
-expire.
-
-```solidity
-mapping(bytes32 => uint256) public sentMessageTimestamps;
-mapping(bytes32 => bool) public expiredMessages;
-
-function expireMessage(bytes32 _messageHash, uint256 _undeliveredAt) external;
-
-event MessageExpired(bytes32 indexed messageHash, uint256 undeliveredAt);
-```
-
-`_undeliveredAt` is the timestamp on the message's destination chain at which the message had not been relayed
-there. Applications read `expiredMessages(messageHash)` to undo a send, as
-[`SuperchainETHBridge.refundETH`](./superchain-eth-bridge.md#refundeth) does.
-
 #### Relaying Messages
 
 The following diagram shows the flow for sending a cross chain message using the `L2ToL2CrossDomainMessenger`.
@@ -566,6 +533,38 @@ Note that the `relayMessage` function is `payable` to enable relayers to earn in
 
 To enable cross chain authorization patterns, both the `_sender` and the `_source` MUST be exposed via `public`
 getters.
+
+#### Expiring Messages
+
+A message that is not relayed within the [expiry window](./derivation.md#expiry-window) can never be relayed.
+Messages cannot be re-emitted. Instead, the source chain can learn that a message expired, through the flow in
+[Message Expiry](./message-expiry.md), and applications can undo the send.
+
+`EXPIRY_PERIOD` is the value of `expiryPeriod()`. It is set when the messenger is initialized. `initialize` MUST
+revert with `L2ToL2CrossDomainMessenger_InvalidExpiryPeriod` unless `0 < EXPIRY_PERIOD <= 31536000` (365 days). The
+upper bound rejects values that are clearly wrong.
+On production networks it MUST be `691200 secs` (8 days): [`EXPIRY_WINDOW`](./derivation.md#expiry-window)
+plus one day of margin. The network upgrade that installs this messenger MUST initialize it with that value, and
+later network upgrades MUST keep the configured period.
+
+Message expiry is safe only if `EXPIRY_PERIOD` is at least `EXPIRY_WINDOW`
+([aME-002](./message-expiry.md#ame-002-the-expiry-period-is-at-least-the-expiry-window)).
+
+A message with no recorded send timestamp, such as one sent before the messenger recorded timestamps, can never
+expire.
+
+```solidity
+mapping(bytes32 => uint256) public sentMessageTimestamps;
+mapping(bytes32 => bool) public expiredMessages;
+
+function expireMessage(bytes32 _messageHash, uint256 _undeliveredAt) external;
+
+event MessageExpired(bytes32 indexed messageHash, uint256 undeliveredAt);
+```
+
+`_undeliveredAt` is the timestamp on the message's destination chain at which the message had not been relayed
+there. Applications read `expiredMessages(messageHash)` to undo a send, as
+[`SuperchainETHBridge.refundETH`](./superchain-eth-bridge.md#refundeth) does.
 
 ## OptimismSuperchainERC20Factory
 
