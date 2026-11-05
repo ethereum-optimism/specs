@@ -25,6 +25,8 @@
     - [Impact](#impact-3)
   - [i01-005: Messages Can Always Be Sent To The Other Side By Any User](#i01-005-messages-can-always-be-sent-to-the-other-side-by-any-user)
     - [Impact](#impact-4)
+  - [i01-006: Message Nonces Only Increase](#i01-006-message-nonces-only-increase)
+    - [Impact](#impact-5)
 - [Function Specification](#function-specification)
   - [initialize](#initialize)
   - [sendMessage](#sendmessage)
@@ -143,6 +145,19 @@ restrictions on who can initiate cross-domain messages.
 
 This liveness property ensures that the messaging system remains permissionless and censorship-resistant. Violation
 would allow selective blocking of users from sending cross-domain messages.
+
+### i01-006: Message Nonces Only Increase
+
+Each message that the messenger sends carries a greater [Message Nonce](#message-nonce) than every message it sent
+before. This holds across upgrades of the messenger.
+
+#### Impact
+
+**Severity: High**
+
+If this invariant is violated, a contract on L2 that orders messages from the messenger by nonce could ignore a newer
+message or apply an older one over it. The interop [`ETHLiquidity` pause](../../../interop/eth-liquidity.md#pause)
+depends on this order.
 
 ## Function Specification
 
