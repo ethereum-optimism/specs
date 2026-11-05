@@ -14,8 +14,6 @@
 - [Assumptions](#assumptions)
   - [aEL-001: SafeSend correctly transfers ETH to recipients](#ael-001-safesend-correctly-transfers-eth-to-recipients)
     - [Mitigations](#mitigations)
-  - [aEL-002: L1CrossDomainMessenger message nonces only increase](#ael-002-l1crossdomainmessenger-message-nonces-only-increase)
-    - [Mitigations](#mitigations-1)
 - [Invariants](#invariants)
   - [iEL-001: ETH balance is always sufficient for minting / burning](#iel-001-eth-balance-is-always-sufficient-for-minting--burning)
     - [Impact](#impact)
@@ -110,18 +108,6 @@ for valid addresses.
 - Extensive testing of the `SafeSend` mechanism
 - Audits of the ETH transfer logic
 
-### aEL-002: L1CrossDomainMessenger message nonces only increase
-
-We assume that the `messageNonce()` of this chain's `L1CrossDomainMessenger` only increases, so that each pause
-update carries a greater nonce than every update sent before it. If it does not, `ETHLiquidity` could ignore a
-newer pause update, or apply an older one over it.
-
-#### Mitigations
-
-- The `L1CrossDomainMessenger`'s
-  [`sendMessage`](../experimental/contracts/L1/l1-cross-domain-messenger.md#sendmessage) increments the nonce by one
-  for each message.
-
 ## Invariants
 
 ### iEL-001: ETH balance is always sufficient for minting / burning
@@ -177,7 +163,7 @@ someone other than the chain's pause could stop or restart the bridge.
 
 #### Dependencies
 
-- [aEL-002](#ael-002-l1crossdomainmessenger-message-nonces-only-increase)
+- [i01-006](../experimental/contracts/L1/l1-cross-domain-messenger.md#i01-006-message-nonces-only-increase)
 - [iME-003](./message-expiry.md#ime-003-only-two-functions-send-as-the-l1crossdomainmessenger)
 
 ## Function Specification
