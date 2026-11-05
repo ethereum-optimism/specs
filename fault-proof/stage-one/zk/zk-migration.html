@@ -179,28 +179,21 @@
 <li><a href="#common-mechanics">Common Mechanics</a></li>
 <li><a href="#path-a-sfdg-%E2%86%92-zkdg-isolated-chain">Path A: SFDG → ZKDG (Isolated Chain)</a></li>
 <li><a href="#path-b-spdg-%E2%86%92-zkdg-isolated-chain">Path B: SPDG → ZKDG (Isolated Chain)</a></li>
-<li><a href="#path-c-shared-sfdg-%E2%86%92-shared-zkdg">Path C: Shared SFDG → Shared ZKDG</a>
-<ul>
-<li><a href="#shared-infrastructure-and-idempotent-upgrades">Shared Infrastructure and Idempotent Upgrades</a></li>
-</ul>
-</li>
+<li><a href="#path-c-interop-set-shared-contracts">Path C: Interop Set (Shared Contracts)</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>All migrations from an existing dispute game type to <code>ZKDisputeGame</code> are performed via
-<code>OPCMv2.upgrade()</code>. No standalone <code>migrate()</code> contract is in scope. Three migration paths are
-supported:</p>
-<div class="table-wrapper"><table><thead><tr><th>Path</th><th>Source</th><th>Target</th><th>Context</th></tr></thead><tbody>
-<tr><td><strong>A</strong></td><td><code>SuperFaultDisputeGame</code> (SFDG)</td><td><code>ZKDisputeGame</code> (ZKDG)</td><td>Isolated chain</td></tr>
-<tr><td><strong>B</strong></td><td><code>SuperPermissionedDisputeGame</code> (SPDG)</td><td><code>ZKDisputeGame</code> (ZKDG)</td><td>Isolated chain</td></tr>
-<tr><td><strong>C</strong></td><td><code>SuperFaultDisputeGame</code> (SFDG)</td><td><code>ZKDisputeGame</code> (ZKDG)</td><td>Interop set (e.g., OPM + Unichain)</td></tr>
+<p>Migrations to <code>ZKDisputeGame</code> target chains that already run super-root dispute games. A migration registers
+<code>ZK_DISPUTE_GAME</code> and makes it the respected game type.</p>
+<div class="table-wrapper"><table><thead><tr><th>Path</th><th>Respected game type before migration</th><th>Context</th></tr></thead><tbody>
+<tr><td><strong>A</strong></td><td><code>SUPER_CANNON_KONA</code> (<code>SuperFaultDisputeGame</code>, SFDG)</td><td>Isolated chain</td></tr>
+<tr><td><strong>B</strong></td><td><code>SUPER_PERMISSIONED</code> (<code>SuperPermissionedDisputeGame</code>, SPDG)</td><td>Isolated chain</td></tr>
+<tr><td><strong>C</strong></td><td>A super-root game type</td><td>Interop set with shared contracts</td></tr>
 </tbody></table>
 </div>
-<p>All paths share the same core mechanics. Path-specific differences are concentrated in a small
-number of steps.</p>
 <h2 id="in-flight-withdrawal-safety"><a class="header" href="#in-flight-withdrawal-safety">In-Flight Withdrawal Safety</a></h2>
 <p>MCP clones embed the implementation address at deployment time. Old SFDG/SPDG game clones created
-before the migration retain their original implementation bytecode forever. New game clones
+before the migration retain their original implementation bytecode forever. New <code>ZK_DISPUTE_GAME</code> clones
 created after <code>setImplementation()</code> in <code>DisputeGameFactory</code> use the <code>ZKDG</code> implementation.</p>
 <p><code>wasRespectedGameTypeWhenCreated</code> is snapshotted at game creation. <code>AnchorStateRegistry.isGameClaimValid()</code>
 reads this flag during withdrawal finalization. Games created under the old respected type remain
@@ -209,94 +202,91 @@ valid for in-flight withdrawal finalization even after the migration.</p>
 calls it on all games whose type is in the <code>isSuperGame</code> allowlist. Old games already return the
 correct answer via their existing implementation. No special handling is needed for pre-migration
 games during Portal withdrawal verification.</p>
+<p>Source-type games created after the respected game type switches to <code>ZK_DISPUTE_GAME</code> are not respected
+(<code>wasRespectedGameTypeWhenCreated == false</code>), so they cannot back withdrawals. Neither mechanism for switching the
+respected game type changes <code>retirementTimestamp</code>: <code>AnchorStateRegistry.initialize()</code> only sets it when it is zero,
+and <code>setRespectedGameType()</code> does not touch it. Games created before the switch therefore stay valid. Forming an
+interop set with <code>migrate()</code> is different: it retires all pre-migration games; see
+<a href="../../../experimental/contracts/L1/opcm-migrator.html#imig-014-withdrawal-proofs-do-not-survive-migration">iMIG-014</a>.</p>
 <h2 id="common-mechanics"><a class="header" href="#common-mechanics">Common Mechanics</a></h2>
-<p>The following steps are executed in every migration path via <code>OPCMv2.upgrade()</code>:</p>
 <ol>
 <li>
-<p><strong>Deploy the new implementation.</strong> Deploy <code>ZKDisputeGame</code> and register it in
-<code>OPContractsManagerContainer.Implementations</code>.</p>
+<p><strong>Use an OPCM release that carries the ZK contracts.</strong> The release provides <code>zkDisputeGameImpl</code> and
+<code>sp1PlonkAdapterImpl</code> (see <a href="zk-dispute-game.html#opcm-integration">OPCM Integration</a>).</p>
 </li>
 <li>
-<p><strong>Swap the implementation in <code>DisputeGameFactory</code>.</strong> Call the 3-argument overload:</p>
+<p><strong>Register <code>ZK_DISPUTE_GAME</code> with <code>OPCMv2.upgrade()</code>.</strong> The upgrade input contains all six
+<code>disputeGameConfigs</code>. The <code>ZK_DISPUTE_GAME</code> entry is enabled, has a non-zero <code>initBond</code>, and carries
+<code>abi.encode(ZKDisputeGameConfig)</code> as <code>gameArgs</code>. OPCM registers the ZK game with the 3-argument overload and sets
+its init bond:</p>
 <pre><code class="language-solidity">disputeGameFactory.setImplementation(
-    GameTypes.ZK_GAME_TYPE,
-    address(zkImpl),
-    gameArgs  // variable-length CWIA bytes
+    GameTypes.ZK_DISPUTE_GAME,
+    zkDisputeGameImpl,
+    makeGameArgs(...)  // 140-byte packed CWIA args built from ZKDisputeGameConfig
 );
+disputeGameFactory.setInitBond(GameTypes.ZK_DISPUTE_GAME, initBond);
 </code></pre>
-<p>Old game clones are unaffected. New games created after this call use <code>zkImpl</code>.</p>
+<p>Old game clones are unaffected. New <code>ZK_DISPUTE_GAME</code> games use <code>zkDisputeGameImpl</code>.</p>
+<p>The same upgrade MAY disable the source game type by setting its entry to <code>enabled = false</code> with a zero
+<code>initBond</code>. This requires switching the respected game type in the same upgrade with mechanism 3.1, because OPCM
+requires the resulting respected game type to be enabled. Disabling clears the source type's implementation and
+init bond, so no new games of that type can be created. Existing clones keep their implementation and resolve as
+before.</p>
 </li>
 <li>
-<p><strong>Disable the old implementation.</strong></p>
-<pre><code class="language-solidity">disputeGameFactory.setImplementation(sourceGameType, address(0), "");
+<p><strong>Switch the respected game type to <code>ZK_DISPUTE_GAME</code></strong> with one of:</p>
+<ol>
+<li>
+<p>the same <code>upgrade()</code> call, with the extra instruction key <code>overrides.cfg.startingRespectedGameType</code> and data
+<code>abi.encode(GameTypes.ZK_DISPUTE_GAME)</code>. OPCM re-initializes the <code>AnchorStateRegistry</code> with it; or</p>
+</li>
+<li>
+<p>a later Guardian call:</p>
+<pre><code class="language-solidity">anchorStateRegistry.setRespectedGameType(GameTypes.ZK_DISPUTE_GAME);
 </code></pre>
-<p>This prevents new games from being created under the old type.</p>
-</li>
-<li>
-<p><strong>Update the respected game type in <code>AnchorStateRegistry</code>.</strong></p>
-<pre><code class="language-solidity">anchorStateRegistry.setRespectedGameType(GameTypes.ZK_GAME_TYPE);
-</code></pre>
-</li>
-<li>
-<p><strong>Add <code>ZK_GAME_TYPE</code> to <code>GameTypes.isSuperGame()</code>.</strong> Required for <code>OptimismPortal</code>
-to call <code>rootClaimByChainId</code> on <code>ZKDG</code> games during withdrawal verification. If this was
-already shipped at initial <code>ZKDG</code> launch, this step is a no-op.</p>
-</li>
-<li>
-<p><strong>Reinitialize <code>AnchorStateRegistry</code> (no-op for these paths).</strong> Both SFDG and SPDG already
-commit to super roots — the same <code>bytes32</code> hash format that <code>ZKDG</code> uses as its starting
-state. The existing anchor root is therefore a valid starting point for <code>ZKDG</code> parent
-validation without modification. No ASR reinitializer is required for Path A, B, or C.</p>
-<blockquote>
-<p><strong>Note:</strong> An ASR reinitializer would only be necessary when migrating from a classic
-<code>FaultDisputeGame</code> (which commits to a per-chain output root rather than a super root). That
-path is not in scope here.</p>
-</blockquote>
+<p>This lets operators register <code>ZK_DISPUTE_GAME</code> first and switch once honest ZK actors are running.</p>
 </li>
 </ol>
+<p>Before the switch, an honest ZK proposer, prover and challenger (see <a href="honest-actors.html">Honest Actors</a>) MUST
+be operational and funded. This is the chain operator's responsibility and is not enforced by OPCM.</p>
+</li>
+<li>
+<p><strong>Keep the anchor state.</strong> <code>upgrade()</code> always re-initializes the <code>AnchorStateRegistry</code>, but it preserves the
+anchor root, the anchor game, the blacklist and <code>retirementTimestamp</code>. The starting anchor root cannot be
+overridden during an upgrade. SFDG and SPDG already commit to super roots, the same <code>bytes32</code> format that <code>ZKDG</code>
+uses, so the existing anchor is a valid starting point for the first <code>ZKDG</code> game
+(<code>parentIndex = type(uint32).max</code>).</p>
+</li>
+</ol>
+<p>Migrating from a classic output-root <code>FaultDisputeGame</code> with <code>upgrade()</code> is not supported: its anchor is not a
+super root and cannot be re-seeded during an upgrade.</p>
 <h2 id="path-a-sfdg--zkdg-isolated-chain"><a class="header" href="#path-a-sfdg--zkdg-isolated-chain">Path A: SFDG → ZKDG (Isolated Chain)</a></h2>
 <p>Single chain with its own <code>DisputeGameFactory</code>, <code>AnchorStateRegistry</code>, and <code>OptimismPortal</code>.</p>
-<p>Execute <a href="#common-mechanics">Common Mechanics</a> in a single <code>OPCMv2.upgrade()</code> call.</p>
-<p>The ASR reinitializer fires once. No idempotency concerns arise since there is only one chain in
-scope.</p>
+<p>Execute <a href="#common-mechanics">Common Mechanics</a>.</p>
 <h2 id="path-b-spdg--zkdg-isolated-chain"><a class="header" href="#path-b-spdg--zkdg-isolated-chain">Path B: SPDG → ZKDG (Isolated Chain)</a></h2>
 <p>Single chain currently using the permissioned dispute game, migrating to permissionless ZK proofs.</p>
-<p>Execute <a href="#common-mechanics">Common Mechanics</a> in a single <code>OPCMv2.upgrade()</code> call with the
-following additional considerations:</p>
+<p>Execute <a href="#common-mechanics">Common Mechanics</a>.</p>
+<h2 id="path-c-interop-set-shared-contracts"><a class="header" href="#path-c-interop-set-shared-contracts">Path C: Interop Set (Shared Contracts)</a></h2>
+<p>This case covers chains sharing a single <code>DisputeGameFactory</code>, <code>AnchorStateRegistry</code>, <code>DelayedWETH</code>, and
+<code>ETHLockbox</code> under the interop model.</p>
 <ul>
-<li>Cross-mode transition: this is a permissioned → permissionless transition. The OPCM upgrade
-logic MUST explicitly allow <code>SPDG → ZK_GAME_TYPE</code> as a valid source-to-target game type
-pair (i.e., it cannot assume source and target share the same permission model).</li>
-<li>Operational readiness: permissionless infrastructure (op-challenger, prover network) MUST be
-operational and funded before the respected game type is switched. This is the chain operator's
-responsibility and is not enforced by OPCM, but MUST be verified prior to executing the upgrade.</li>
+<li><code>OPContractsManagerMigrator.migrate()</code> forms an interop set from independent chains. It deploys the shared
+<code>DisputeGameFactory</code>, <code>AnchorStateRegistry</code> and <code>ETHLockbox</code>, and reuses the first chain's <code>DelayedWETH</code> as the
+shared one. It MAY register <code>ZK_DISPUTE_GAME</code> on the new shared <code>DisputeGameFactory</code>. The <code>ZK_DISPUTE_GAME</code>
+config MUST have a non-zero <code>initBond</code>, otherwise <code>migrate()</code> reverts with
+<code>OPContractsManagerMigrator_InvalidInitBond</code>, and a valid <code>ZKDisputeGameConfig</code> (see
+<a href="zk-dispute-game.html#configuration-validation">Configuration Validation</a>), otherwise <code>migrate()</code> reverts with
+<code>OPContractsManagerMigrator_InvalidZKDisputeGameConfig</code>.</li>
+<li>The starting respected game type passed to <code>migrate()</code> MUST be one that <code>migrate()</code> supports, otherwise
+<code>migrate()</code> reverts with <code>OPContractsManagerMigrator_InvalidStartingRespectedGameType</code>.</li>
+<li>A set that already shares contracts registers <code>ZK_DISPUTE_GAME</code> through <code>OPCMv2.upgrade()</code> on a member
+(<a href="#common-mechanics">Common Mechanics</a> step 2). <code>migrate()</code> reverts with
+<code>OPContractsManagerMigrator_ChainAlreadyMigrated</code> for a chain that is already in a set.</li>
+<li><code>ZK_DISPUTE_GAME</code> becomes the respected game type either directly through <code>migrate()</code>, where <code>migrate()</code>
+supports it, or later through mechanism 3.1 on a member's <code>upgrade()</code> or mechanism 3.2 (see
+<a href="#common-mechanics">Common Mechanics</a>).</li>
+<li><code>OPCMv2.upgrade()</code> on any member upgrades the shared contracts for the whole set.</li>
 </ul>
-<h2 id="path-c-shared-sfdg--shared-zkdg"><a class="header" href="#path-c-shared-sfdg--shared-zkdg">Path C: Shared SFDG → Shared ZKDG</a></h2>
-<blockquote>
-<p><strong>Note:</strong> This path is intended as future work. The design below documents the intended approach
-but has not yet been implemented.</p>
-</blockquote>
-<p>This case covers chains sharing a single <code>DisputeGameFactory</code>,
-<code>AnchorStateRegistry</code>, and <code>ETHLockbox</code> under the interop model.</p>
-<p>Execute <a href="#common-mechanics">Common Mechanics</a>. Because multiple chains share the same
-<code>AnchorStateRegistry</code>, steps 4 and 5 (updating the respected game type and the <code>isSuperGame</code>
-allowlist) affect the shared ASR and must be applied exactly once regardless of how many chains
-are in the interop set.</p>
-<h3 id="shared-infrastructure-and-idempotent-upgrades"><a class="header" href="#shared-infrastructure-and-idempotent-upgrades">Shared Infrastructure and Idempotent Upgrades</a></h3>
-<p><code>OPCMv2.upgrade()</code> was designed to process one chain at a time. When applied to an interop set,
-the shared <code>AnchorStateRegistry</code> upgrade steps may be triggered multiple times (once per chain
-processed). Two approaches are available:</p>
-<p>Option 1 — Idempotent operations: Design the ASR update steps so that applying them a second time
-for a subsequent chain in the set is a safe no-op (e.g., a stateful check such as "already set to
-this game type").</p>
-<p>Option 2 — Multi-chain bulk function: Introduce a function that accepts multiple <code>SystemConfig</code>
-addresses, upgrades shared infrastructure once, and handles per-chain state in a loop. This
-follows the existing bulk migration patterns but is scoped to the SFDG → ZKDG transition.</p>
-<p>The choice between these options is left to the OPCM implementation. Either approach MUST
-guarantee that shared infrastructure (ASR, ETHLockbox) is updated exactly once, regardless of
-how many chains are in the interop set.</p>
-<p>Because SFDG already commits to super roots, no ASR anchor reinitialization is required (see
-step 6 in <a href="#common-mechanics">Common Mechanics</a>).</p>
 
                     </main>
 
@@ -306,7 +296,7 @@ step 6 in <a href="#common-mechanics">Common Mechanics</a>).</p>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../../fault-proof/stage-one/bridge-integration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../../fault-proof/stage-one/zk/honest-actors.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -320,7 +310,7 @@ step 6 in <a href="#common-mechanics">Common Mechanics</a>).</p>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../../fault-proof/stage-one/bridge-integration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../../fault-proof/stage-one/zk/honest-actors.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -640,7 +640,9 @@ transfer control of the chain. Silently changing a batcher hash or a gas limit w
 <h3 id="imig-011-the-starting-anchor-state-is-well-formed"><a class="header" href="#imig-011-the-starting-anchor-state-is-well-formed">iMIG-011: The Starting Anchor State is well formed</a></h3>
 <p>The <a href="#starting-anchor-state">Starting Anchor State</a> must not be empty and must leave room for a
 successor proposal. The set's starting respected game type must be a super-root game type, and must
-be one of the game types migration registers on the shared factory.</p>
+be one of the game types migration registers on the shared factory. It must also be a game type that <code>migrate()</code>
+supports as a starting respected game type. If the starting respected game type does not meet these conditions,
+<code>migrate()</code> reverts with <code>OPContractsManagerMigrator_InvalidStartingRespectedGameType</code>.</p>
 <h4 id="impact-10"><a class="header" href="#impact-10">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>An empty or out-of-range anchor leaves the shared registry in a state no game can build on, halting
@@ -649,9 +651,10 @@ so no proposal can be made or defended and withdrawals stop for the whole set.</
 <h3 id="imig-012-registered-dispute-games-are-playable"><a class="header" href="#imig-012-registered-dispute-games-are-playable">iMIG-012: Registered dispute games are playable</a></h3>
 <p>Every dispute game configuration migration installs must be one it can actually install and one that
 can be played: a super-root game type with a registered implementation, enabled, with an
-initialization bond consistent with whether that game type charges bonds, and with a non-zero
-absolute prestate where the game type requires one.</p>
-<p>A configuration that passes validation must not then fail installation.</p>
+initialization bond consistent with whether that game type charges bonds, with a non-zero absolute prestate where
+the game type requires one, and with all other game arguments valid under that game type's rules.</p>
+<p>A configuration that passes validation should not then fail installation. ZK game args longer than 128 bytes are a
+known exception: they pass validation and revert in <code>makeGameArgs()</code>.</p>
 <h4 id="impact-11"><a class="header" href="#impact-11">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>An unplayable game blocks proposals, and therefore withdrawals, for every member of the set. A

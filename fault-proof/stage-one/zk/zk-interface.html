@@ -176,6 +176,7 @@
 <ul>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#interface">Interface</a></li>
+<li><a href="#sp1plonkadapter">SP1PlonkAdapter</a></li>
 <li><a href="#usage-in-prove">Usage in <code>prove()</code></a></li>
 <li><a href="#verifier-upgrade-path">Verifier Upgrade Path</a></li>
 </ul>
@@ -183,32 +184,42 @@
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p><code>IZKVerifier</code> is the on-chain interface that decouples <code>ZKDisputeGame</code> from any specific
 proving system. The game always casts the configured verifier address to <code>IZKVerifier</code> and calls
-<code>verify()</code> through the interface, rather than depending on a concrete verifier type. The verifier
-can be swapped without redeploying the game implementation.</p>
-<p>The concrete deployment for the initial release uses Succinct's PLONK verifier for
-<a href="../../zk-fault-proof-vm.html#sp1-plonk">SP1</a>.</p>
+<code>verify()</code> through the interface, rather than depending on a concrete verifier type.</p>
+<p>By default, the verifier is the <a href="#sp1plonkadapter"><code>SP1PlonkAdapter</code></a> singleton deployed with each OPCM release. It
+wraps Succinct's PLONK verifier for <a href="../../zk-proof-system.html#sp1-plonk">SP1</a> (SP1 PLONK v6.1.0 on Ethereum mainnet
+and Sepolia).</p>
 <h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
 <pre><code class="language-solidity">interface IZKVerifier is ISemver {
-    function verifierType() external pure returns (string memory);
+    function verifierType() external view returns (string memory);
 
-    function verify(
-        bytes32 programId,
-        bytes calldata publicValues,
-        bytes calldata proof
-    ) external view;
+    function verify(bytes32 _programId, bytes calldata _publicValues, bytes calldata _proof) external view;
 }
 </code></pre>
-<p><code>verifierType()</code> returns a string identifying the proving system (e.g., <code>"SP1_PLONK"</code>). Callers
-can use it to check which backend is deployed without inspecting the bytecode.</p>
+<p><code>verifierType()</code> returns a string identifying the proving system. For the <code>SP1PlonkAdapter</code> it is <code>"SP1-PLONK-"</code>
+followed by the wrapped verifier's <code>VERSION()</code> (e.g., <code>"SP1-PLONK-v6.1.0"</code>). Callers can use it to check which
+backend is deployed without inspecting the bytecode.</p>
 <div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>programId</code></td><td>Corresponds to <code>absolutePrestate()</code> in the dispute game — identifies the ZK program version.</td></tr>
-<tr><td><code>publicValues</code></td><td>ABI-encoded public inputs committed to by the proof (see <a href="#usage-in-prove">Usage in <code>prove()</code></a>).</td></tr>
-<tr><td><code>proof</code></td><td>The raw proof blob submitted by the prover.</td></tr>
+<tr><td><code>_programId</code></td><td>Corresponds to <code>absolutePrestate()</code> in the dispute game — identifies the ZK program version.</td></tr>
+<tr><td><code>_publicValues</code></td><td>ABI-encoded public inputs committed to by the proof (see <a href="#usage-in-prove">Usage in <code>prove()</code></a>).</td></tr>
+<tr><td><code>_proof</code></td><td>The raw proof blob submitted by the prover.</td></tr>
 </tbody></table>
 </div>
 <p>The verifier MUST revert on an invalid proof. A call that returns without reverting is treated as
 proof acceptance; the game will set <code>claimData.prover = msg.sender</code> and transition
 <code>claimData.status</code> to <code>UnchallengedAndValidProofProvided</code> or <code>ChallengedAndValidProofProvided</code>.</p>
+<h2 id="sp1plonkadapter"><a class="header" href="#sp1plonkadapter">SP1PlonkAdapter</a></h2>
+<p><code>SP1PlonkAdapter</code> (version <code>1.0.0</code>) implements <code>IZKVerifier</code> on top of an SP1 PLONK verifier. It is deployed as a
+non-proxied singleton once per OPCM release.</p>
+<ul>
+<li>The constructor takes the wrapped <code>ISP1Verifier</code> and MUST revert with <code>SP1PlonkAdapter_InvalidVerifier()</code> if the
+given address has no code.</li>
+<li><code>sp1Verifier()</code> returns the wrapped <code>ISP1Verifier</code>.</li>
+<li><code>verify(programId, publicValues, proof)</code> forwards its arguments unchanged to
+<code>ISP1Verifier.verifyProof(programId, publicValues, proof)</code> and reverts if that call reverts.</li>
+</ul>
+<p>The wrapped verifier's <code>VERIFIER_HASH()</code> identifies the PLONK circuit it accepts proofs for. It MUST match the
+circuit used by the prover's SP1 SDK, otherwise every proof fails verification. OPCM release verification
+(<code>VerifyOPCM</code>) checks both the wrapped verifier address and its <code>VERIFIER_HASH()</code>.</p>
 <h2 id="usage-in-prove"><a class="header" href="#usage-in-prove">Usage in <code>prove()</code></a></h2>
 <p><code>ZKDisputeGame.prove()</code> constructs <code>publicValues</code> from on-chain game state and forwards them
 to the verifier:</p>
@@ -245,20 +256,22 @@ CWIA data.</p>
 <p>Chain scoping is provided by the <code>SuperRootProof</code> preimage committed to by <code>rootClaim</code>; the
 <code>(chainId, outputRoot)</code> pairs in that preimage cover every chain in the interop set (or a single
 entry in standalone deployments), so no separate <code>l2ChainId</code> field is needed in the public values.
-See <a href="../../zk-fault-proof-vm.html#inputs">ZK Program Inputs</a> for the full public values
+See <a href="../../zk-proof-system.html#inputs">ZK Program Inputs</a> for the full public values
 specification.</p>
 <h2 id="verifier-upgrade-path"><a class="header" href="#verifier-upgrade-path">Verifier Upgrade Path</a></h2>
 <p>The <code>verifier</code> and <code>absolutePrestate</code> fields live in the CWIA game args (see
-<a href="zk-dispute-game.html#cwia-layout">CWIA Layout</a>), so they can be updated per chain
-without redeploying the <code>ZKDisputeGame</code> implementation.</p>
-<p>Upgrade process:</p>
-<ol>
-<li>Deploy a new verifier contract.</li>
-<li>If the ZK program changed, compute a new <code>absolutePrestate</code>.</li>
-<li>OPCM updates the game args with the new <code>verifier</code> and/or <code>absolutePrestate</code>.</li>
-<li>In-progress games play out under the old configuration.</li>
-<li>New games use the updated configuration.</li>
-</ol>
+<a href="zk-dispute-game.html#cwia-layout">CWIA Layout</a>). Both change by setting new game args for <code>ZK_DISPUTE_GAME</code> in the
+<code>DisputeGameFactory</code>:</p>
+<ul>
+<li>An OPCM <code>upgrade()</code> applies the current release defaults: <code>verifier</code> is always the release's <code>SP1PlonkAdapter</code>
+(see <a href="zk-dispute-game.html#zkdisputegameconfig">ZKDisputeGameConfig</a>), and <code>absolutePrestate</code> comes from
+<code>ZKDisputeGameConfig</code>.</li>
+<li>The <code>DisputeGameFactory</code> owner can also manage them out of band with
+<code>setImplementation(ZK_DISPUTE_GAME, impl, gameArgs)</code>. A later OPCM <code>upgrade()</code> resets <code>verifier</code> to the release's
+<code>SP1PlonkAdapter</code>.</li>
+</ul>
+<p>Existing game clones keep the <code>verifier</code> and <code>absolutePrestate</code> stored in their own CWIA data, so in-progress
+games play out under the old configuration. New games use the updated game args.</p>
 
                     </main>
 

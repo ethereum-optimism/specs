@@ -223,16 +223,46 @@ library GameTypes {
     /// @dev A dispute game type the uses the cannon vm.
     GameType internal constant CANNON = GameType.wrap(0);
 
-    /// @dev A dispute game type that performs output bisection and then uses the cannon vm.
-    GameType internal constant OUTPUT_CANNON = GameType.wrap(1);
+    /// @dev A permissioned dispute game type that uses the cannon vm.
+    GameType internal constant PERMISSIONED_CANNON = GameType.wrap(1);
 
-    /// @notice A dispute game type that performs output bisection and then uses an alphabet vm.
+    /// @notice A dispute game type that uses the asterisc vm.
+    GameType internal constant ASTERISC = GameType.wrap(2);
+
+    /// @notice A dispute game type that uses the asterisc vm with Kona.
+    GameType internal constant ASTERISC_KONA = GameType.wrap(3);
+
+    /// @notice A dispute game type that uses the cannon vm (Super Roots).
+    GameType internal constant SUPER_CANNON = GameType.wrap(4);
+
+    /// @notice A permissioned dispute game type for Super Roots.
+    GameType internal constant SUPER_PERMISSIONED = GameType.wrap(5);
+
+    /// @notice A dispute game type that uses OP Succinct
+    GameType internal constant OP_SUCCINCT = GameType.wrap(6);
+
+    /// @notice A dispute game type that uses the asterisc vm with Kona (Super Roots).
+    GameType internal constant SUPER_ASTERISC_KONA = GameType.wrap(7);
+
+    /// @notice A dispute game type that uses the cannon vm with Kona.
+    GameType internal constant CANNON_KONA = GameType.wrap(8);
+
+    /// @notice A dispute game type that uses the cannon vm with Kona (Super Roots).
+    GameType internal constant SUPER_CANNON_KONA = GameType.wrap(9);
+
+    /// @notice A dispute game type that uses optimistic + ZK proofs for dispute resolution (Super Roots).
+    GameType internal constant ZK_DISPUTE_GAME = GameType.wrap(10);
+
+    /// @notice A dispute game type with short game duration for testing withdrawals.
     ///         Not intended for production use.
-    GameType internal constant OUTPUT_ALPHABET = GameType.wrap(254);
+    GameType internal constant FAST = GameType.wrap(254);
 
     /// @notice A dispute game type that uses an alphabet vm.
     ///         Not intended for production use.
     GameType internal constant ALPHABET = GameType.wrap(255);
+
+    /// @notice A dispute game type that uses RISC Zero's Kailua
+    GameType internal constant KAILUA = GameType.wrap(1337);
 }
 
 /// @notice The current status of the dispute game.

@@ -188,6 +188,7 @@
 </ul>
 </li>
 <li><a href="#closing">Closing</a></li>
+<li><a href="#pausing">Pausing</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="state-transitions"><a class="header" href="#state-transitions">State Transitions</a></h2>
@@ -235,7 +236,7 @@ GameCreation ──► Unchallenged ──────────────�
 </code></pre>
 <div class="table-wrapper"><table><thead><tr><th>Transition</th><th>Trigger</th></tr></thead><tbody>
 <tr><td><code>GameCreation → Unchallenged</code></td><td><code>initialize()</code> called by <code>DisputeGameFactory</code></td></tr>
-<tr><td><code>Unchallenged → Challenged</code></td><td><code>challenge()</code> called before deadline</td></tr>
+<tr><td><code>Unchallenged → Challenged</code></td><td><code>challenge()</code> called while <code>gameOver()</code> is <code>false</code></td></tr>
 <tr><td><code>Unchallenged → UnchallengedAndValidProofProvided</code></td><td><code>prove()</code> succeeds</td></tr>
 <tr><td><code>Challenged → ChallengedAndValidProofProvided</code></td><td><code>prove()</code> succeeds</td></tr>
 <tr><td>Any non-terminal <code>ProposalStatus</code> → <code>Resolved</code></td><td><code>resolve()</code> succeeds</td></tr>
@@ -245,15 +246,16 @@ GameCreation ──► Unchallenged ──────────────�
 <h2 id="creation"><a class="header" href="#creation">Creation</a></h2>
 <p>Game creation is fully permissionless. Anyone may call <code>DisputeGameFactory.create()</code> with the
 required <code>initBond</code>. The factory deploys an MCP clone, which then validates the proposal.</p>
-<p><code>initBond</code> is the ETH value the proposer must send when creating a game. The factory forwards it
-to <code>initialize()</code> as <code>msg.value</code>. Its exact amount is set per deployment and can be updated by
-governance; the game contract reads it from the factory at creation time.</p>
+<p><code>initBond</code> is the ETH value the proposer must send when creating a game. <code>DisputeGameFactory.create()</code> requires
+<code>msg.value == initBonds[ZK_DISPUTE_GAME]</code> (otherwise it reverts with <code>IncorrectBondAmount</code>) and forwards the value
+to <code>initialize()</code>. The game records <code>msg.value</code> as the creator's bond. The amount is set per chain through OPCM
+(see <a href="zk-dispute-game.html#opcm-integration">OPCM Integration</a>).</p>
 <p>A game may start from the anchor state by setting <code>parentIndex = type(uint32).max</code>, or it may
 reference a parent game.</p>
 <p>The <code>_extraData</code> passed to <code>DisputeGameFactory.create()</code> has a variable-length layout:</p>
 <div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>parentIndex</code></td><td><code>uint32</code></td><td>Index of the parent game; <code>type(uint32).max</code> if starting from the anchor state</td></tr>
-<tr><td><code>superRootProof</code></td><td><code>bytes</code></td><td>ABI-encoded <code>SuperRootProof</code> preimage committed to by <code>rootClaim</code>. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via <code>l2SequenceNumber()</code> for convenience.</td></tr>
+<tr><td><code>superRootProof</code></td><td><code>bytes</code></td><td>Packed <code>SuperRootProof</code> encoding (see <a href="zk-dispute-game.html#superrootproof">SuperRootProof</a>) committed to by <code>rootClaim</code>. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via <code>l2SequenceNumber()</code> for convenience.</td></tr>
 </tbody></table>
 </div>
 <p>The variable-length layout is parsed via <code>_preExtraDataByteCount()</code> and <code>_extraDataByteCount()</code>
@@ -265,6 +267,10 @@ helpers, following the same pattern as <code>SuperFaultDisputeGame</code>. All C
 <li>Snapshots <code>wasRespectedGameTypeWhenCreated</code>. <code>AnchorStateRegistry.isGameClaimValid()</code> reads
 this flag when determining if a game's root claim can advance the anchor state or finalize
 withdrawals via the Portal.</li>
+<li>Sets the starting proposal. With a parent, it is the parent's <code>rootClaim</code> and <code>l2SequenceNumber</code>. Without a
+parent, it is the <code>AnchorStateRegistry</code> anchor root read at <code>initialize()</code>. This value is snapshotted, so later
+anchor updates do not change it. A zero anchor root MUST revert with <code>AnchorRootNotFound</code>. The first
+<code>ZK_DISPUTE_GAME</code> after a migration therefore starts from the current anchor root.</li>
 </ol>
 <h3 id="parent-validation"><a class="header" href="#parent-validation">Parent Validation</a></h3>
 <p>When a parent is referenced (<code>parentIndex != type(uint32).max</code>), <code>initialize()</code> MUST revert if
@@ -272,7 +278,7 @@ any of the following checks fail:</p>
 <ul>
 <li>Parent MUST NOT be blacklisted.</li>
 <li>Parent MUST NOT be retired (i.e., <code>createdAt &gt; retirementTimestamp</code>).</li>
-<li>Parent MUST be the same game type (<code>ZK_GAME_TYPE</code>).</li>
+<li>Parent MUST be the same game type (<code>ZK_DISPUTE_GAME</code>).</li>
 <li>Parent MUST NOT have resolved as <code>CHALLENGER_WINS</code>.</li>
 <li>If the child's <code>wasRespectedGameTypeWhenCreated</code> is <code>true</code>, the parent's
 <code>wasRespectedGameTypeWhenCreated</code> MUST also be <code>true</code>.</li>
@@ -285,19 +291,20 @@ the other validation checks. This allows in-progress proposal chains to continue
 switch away from the ZK game type while preventing respected games from building on claims
 created when that game type was not respected.</p>
 <h2 id="challenge"><a class="header" href="#challenge">Challenge</a></h2>
-<p>Challenging is fully permissionless. Anyone may call <code>challenge()</code> before the challenge deadline.
+<p>Challenging is fully permissionless. Anyone may call <code>challenge()</code> at or before the challenge deadline.
 The call MUST include <code>challengerBond</code> ETH, which <code>challenge()</code> deposits into <code>DelayedWETH</code> on
 the caller's behalf.</p>
 <ul>
-<li><code>challenge()</code> MUST revert if <code>gameOver()</code> returns <code>true</code>.</li>
+<li><code>challenge()</code> MUST revert if <code>gameOver()</code> returns <code>true</code>. Because <code>gameOver()</code> uses a strict
+<code>deadline &lt; block.timestamp</code> comparison, a challenge at <code>block.timestamp == deadline</code> is accepted.</li>
 <li><code>challenge()</code> MUST revert if <code>claimData.status != ProposalStatus.Unchallenged</code>.</li>
 <li><code>challenge()</code> MUST revert if <code>msg.value != challengerBond</code>.</li>
 <li>Only one challenge is allowed per game.</li>
 <li>Calling <code>challenge()</code> resets the deadline to <code>block.timestamp + maxProveDuration</code>.</li>
 </ul>
 <h2 id="proving"><a class="header" href="#proving">Proving</a></h2>
-<p>Proving is fully permissionless. Anyone may call <code>prove(proofBytes)</code> at any point before the
-current deadline, regardless of whether the game has been challenged.</p>
+<p>Proving is fully permissionless. Anyone may call <code>prove(proofBytes)</code> at or before the current deadline,
+regardless of whether the game has been challenged.</p>
 <ul>
 <li><code>prove()</code> MUST revert if <code>status != GameStatus.IN_PROGRESS</code> (i.e., the game is already
 resolved).</li>
@@ -315,8 +322,9 @@ the game was challenged). <code>gameOver()</code> returns <code>true</code> imme
 <li><code>claimData.prover != address(0)</code>.</li>
 </ul>
 <h2 id="resolution"><a class="header" href="#resolution">Resolution</a></h2>
-<p>Resolution is permissionless. Anyone may call <code>resolve()</code> once <code>gameOver()</code> returns <code>true</code> and
-the parent game is resolved.</p>
+<p>Resolution is permissionless. Anyone may call <code>resolve()</code> once the parent game is resolved and either
+<code>gameOver()</code> returns <code>true</code> or the parent resolved as <code>CHALLENGER_WINS</code>. In the latter case the child resolves as
+<code>CHALLENGER_WINS</code> immediately, without waiting for its own deadline.</p>
 <ul>
 <li><code>resolve()</code> MUST revert if <code>status != GameStatus.IN_PROGRESS</code> (i.e., game is already resolved).</li>
 <li>If the game references a parent (<code>parentIndex != type(uint32).max</code>), <code>resolve()</code> MUST revert if
@@ -340,6 +348,8 @@ challenged games.</p>
 <p>Note: when a parent resolves as <code>CHALLENGER_WINS</code> and the child was never challenged,
 <code>claimData.challenger == address(0)</code>, so <code>normalModeCredit[address(0)] = totalBonds</code>. This credit
 is effectively burned inside <code>DelayedWETH</code> where the owner can recover it via <code>hold()</code>/<code>recover()</code>.</p>
+<p>Games created while <code>ZK_DISPUTE_GAME</code> was not the respected game type resolve and pay out bonds normally, but
+they can never become the anchor state or back withdrawals.</p>
 <h3 id="bond-distribution"><a class="header" href="#bond-distribution">Bond Distribution</a></h3>
 <p>Bond distribution follows a NORMAL or REFUND mode determined by <code>isGameProper</code> (evaluated in
 <code>closeGame</code>):</p>
@@ -387,11 +397,17 @@ A second call is required to complete the withdrawal once the <code>DelayedWETH<
 <code>DelayedWETH</code> for a pending withdrawal amount. If the amount is zero and the game was open
 before this call, returns without reverting (so <code>closeGame()</code> state changes persist). If the
 amount is zero and the game was already closed, reverts with <code>NoCreditToClaim</code>. Otherwise,
-calls <code>DelayedWETH.withdraw(recipient)</code> and transfers ETH to the recipient, reverting on
+calls <code>DelayedWETH.withdraw(recipient, amount)</code> and transfers ETH to the recipient, reverting on
 transfer failure.</li>
 </ol>
 <p>The <code>DelayedWETH</code> delay allows the Guardian to pause and freeze funds if a critical issue is
 discovered post-resolution.</p>
+<h2 id="pausing"><a class="header" href="#pausing">Pausing</a></h2>
+<p>Only <code>closeGame()</code> checks the pause. While <code>bondDistributionMode == UNDECIDED</code>, <code>closeGame()</code> MUST revert with
+<code>GamePaused</code> if the <code>AnchorStateRegistry</code> is paused, so <code>claimCredit()</code> on a game that is not yet closed also
+reverts. See <a href="zk-dispute-game.html#izkg-006-closegame-reverts-when-paused">iZKG-006</a>.</p>
+<p><code>initialize()</code>, <code>challenge()</code>, <code>prove()</code> and <code>resolve()</code> keep working while the system is paused. Withdrawals out
+of <code>DelayedWETH</code> are blocked by the pause separately.</p>
 
                     </main>
 

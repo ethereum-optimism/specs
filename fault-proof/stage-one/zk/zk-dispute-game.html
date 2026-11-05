@@ -206,6 +206,14 @@
 <li><a href="#opcm-integration">OPCM Integration</a>
 <ul>
 <li><a href="#zkdisputegameconfig">ZKDisputeGameConfig</a></li>
+<li><a href="#configuration-validation">Configuration Validation</a></li>
+</ul>
+</li>
+<li><a href="#interface">Interface</a>
+<ul>
+<li><a href="#functions">Functions</a></li>
+<li><a href="#events">Events</a></li>
+<li><a href="#errors">Errors</a></li>
 </ul>
 </li>
 <li><a href="#assumptions">Assumptions</a>
@@ -235,7 +243,7 @@
 <li><a href="#mitigations-4">Mitigations</a></li>
 </ul>
 </li>
-<li><a href="#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency">aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency</a>
+<li><a href="#azkg-006-anchor-state-advancement-rarely-orphans-proposals">aZKG-006: Anchor State Advancement Rarely Orphans Proposals</a>
 <ul>
 <li><a href="#mitigations-5">Mitigations</a></li>
 </ul>
@@ -253,6 +261,11 @@
 <li><a href="#azkg-009-chain-set-is-stable-during-the-prove-window">aZKG-009: Chain Set Is Stable During the Prove Window</a>
 <ul>
 <li><a href="#mitigations-8">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#azkg-010-valid-claims-are-provable">aZKG-010: Valid Claims Are Provable</a>
+<ul>
+<li><a href="#mitigations-9">Mitigations</a></li>
 </ul>
 </li>
 </ul>
@@ -335,8 +348,8 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>ZKDisputeGame</code> is a dispute game that resolves disputes in a single round using ZK
-(zero-knowledge) proofs, registered as game type <code>ZK_GAME_TYPE</code>. It integrates into the OP
-Stack dispute infrastructure — <code>DisputeGameFactory</code>, <code>AnchorStateRegistry</code>, <code>DelayedWETH</code>, and
+(zero-knowledge) proofs, registered as game type <code>ZK_DISPUTE_GAME</code> (<code>GameType.wrap(10)</code>). It integrates
+into the OP Stack dispute infrastructure — <code>DisputeGameFactory</code>, <code>AnchorStateRegistry</code>, <code>DelayedWETH</code>, and
 <code>OPContractsManager</code>.</p>
 <p>Unlike the classic output-root model, the game commits to a <strong>super root</strong>: a hash of the
 consistent state of all chains in the interop set at a given timestamp. This design works
@@ -350,10 +363,11 @@ branching logic exists in the contract; the chain set size is the only differenc
 bond. If no challenge is submitted before the challenge window expires, the proposer wins by
 default. If a challenge is submitted, either a prover submits a valid ZK proof to defend the
 claim and the proposer wins, or the proving window expires without a valid proof and the challenger
-wins. Resolution is permissionless once the game is over and the parent game is resolved.</p>
+wins. Resolution is permissionless once the parent game is resolved and either the game is over or the parent
+resolved <code>CHALLENGER_WINS</code> (see <a href="game-mechanics.html#resolution">Resolution</a>).</p>
 <p>The proving system is accessed through the generic <a href="zk-interface.html"><code>IZKVerifier</code></a>
 interface. The first supported backend is SP1 (PLONK) by Succinct. See
-<a href="../../zk-fault-proof-vm.html">ZK Fault Proof VM</a> for details on the off-chain proving
+<a href="../../zk-proof-system.html">ZK Proof System</a> for details on the off-chain proving
 component.</p>
 <p>For the full game lifecycle and bond accounting see
 <a href="game-mechanics.html">Game Mechanics</a>.</p>
@@ -375,13 +389,22 @@ field breakdown.</p>
 timestamp. Computed as <code>hashSuperRootProof(superRootProof)</code>. The <code>rootClaim</code> of every
 <code>ZKDisputeGame</code> is a super root.</p>
 <h3 id="superrootproof"><a class="header" href="#superrootproof">SuperRootProof</a></h3>
-<p>An ABI-encoded struct that is the preimage of a super root. It carries the timestamp and the list
-of per-chain output roots that the super root commits to. Its hash MUST equal <code>rootClaim</code>.</p>
-<p>The <code>(chainId, outputRoot)</code> pairs MUST be sorted in strictly ascending order by <code>chainId</code>.
-Encoding the same logical chain set in a different order produces a different hash and therefore a
-different super root. Proposers who submit an unsorted preimage will fail the
-<code>hashSuperRootProof(decode(extraData.superRootProof)) == rootClaim()</code> check in <code>initialize()</code>, and
-any ZK proof generated over the correct (sorted) super root will not verify against it.</p>
+<p>The preimage of a super root. It carries the timestamp and the list of per-chain output roots that the super root
+commits to. Its <code>keccak256</code> hash MUST equal <code>rootClaim</code>. It uses the packed encoding of
+<code>Encoding.encodeSuperRootProof</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Size</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>version</code></td><td><code>bytes1</code></td><td>Encoding version. MUST be <code>0x01</code>.</td></tr>
+<tr><td><code>timestamp</code></td><td><code>bytes8</code></td><td>Super root timestamp (the game's <code>l2SequenceNumber</code>).</td></tr>
+<tr><td><code>chainId</code></td><td><code>bytes32</code></td><td>Chain ID of an output root. Repeated <code>n</code> times together with <code>outputRoot</code>, <code>n ≥ 1</code>.</td></tr>
+<tr><td><code>outputRoot</code></td><td><code>bytes32</code></td><td>Output root of the chain identified by the preceding <code>chainId</code>.</td></tr>
+</tbody></table>
+</div>
+<p>The <code>(chainId, outputRoot)</code> pairs MUST be sorted in strictly ascending order by <code>chainId</code> for the claim to be
+provable. The contract does <strong>not</strong> check the ordering. An unsorted preimage whose hash equals <code>rootClaim</code> is
+accepted by <code>initialize()</code>, but no proof can be produced for it, because the ZK program rejects chain IDs that are
+not strictly increasing. An honest challenger therefore challenges such a game and it resolves <code>CHALLENGER_WINS</code>.
+Every chain ID MUST also fit in a <code>uint64</code> for the claim to be provable, because the ZK program rejects larger
+chain IDs.</p>
 <h3 id="chain-set"><a class="header" href="#chain-set">Chain Set</a></h3>
 <p>The set of chains whose output roots are committed to by a super root. Defined by the
 <code>SuperRootProof</code> preimage in <code>extraData</code>. In a standalone deployment the chain set contains
@@ -389,25 +412,27 @@ exactly one chain.</p>
 <h3 id="l2-sequence-number"><a class="header" href="#l2-sequence-number">L2 Sequence Number</a></h3>
 <p>The super root timestamp asserted by a game's <code>rootClaim</code>. Used to validate parent–child ordering.
 Unlike the classic output-root model where this field holds an L2 block number, here it is a
-timestamp, following <code>SuperFaultDisputeGame</code> convention. The value MUST fit within a <code>uint64</code>.</p>
+timestamp, following <code>SuperFaultDisputeGame</code> convention. It is stored as an 8-byte field of the preimage, so it
+always fits in a <code>uint64</code>.</p>
 <h3 id="parent-game"><a class="header" href="#parent-game">Parent Game</a></h3>
 <p>A previously created <code>ZKDisputeGame</code> whose proven super root serves as the starting state
 for a new game's ZK proof. A game with <code>parentIndex == type(uint32).max</code> starts from the anchor
 state directly.</p>
 <h3 id="challenge-deadline"><a class="header" href="#challenge-deadline">Challenge Deadline</a></h3>
 <p>The timestamp after which a game can no longer be challenged. Computed as
-<code>createdAt + maxChallengeDuration</code>.</p>
+<code>createdAt + maxChallengeDuration</code>. A challenge at exactly the deadline is still accepted.</p>
 <h3 id="prove-deadline"><a class="header" href="#prove-deadline">Prove Deadline</a></h3>
 <p>The timestamp after which a challenged game can no longer receive a proof submission. Set to
 <code>block.timestamp + maxProveDuration</code> when <code>challenge()</code> is called, resetting the prior challenge
-deadline.</p>
+deadline. A proof at exactly the deadline is still accepted.</p>
 <h3 id="absolute-prestate"><a class="header" href="#absolute-prestate">Absolute Prestate</a></h3>
 <p>A <code>bytes32</code> value that uniquely identifies the ZK program version being proven. It is the program
 identity passed to <code>IZKVerifier.verify()</code> and is injected into each game instance via the CWIA
-game args. See <a href="../../zk-fault-proof-vm.html#absolute-prestate">Absolute Prestate</a> for
+game args. See <a href="../../zk-proof-system.html#absolute-prestate">Absolute Prestate</a> for
 details.</p>
 <h3 id="game-over"><a class="header" href="#game-over">Game Over</a></h3>
-<p>The condition under which a game can be resolved. <code>gameOver()</code> returns <code>true</code> when:</p>
+<p>The condition under which a game whose parent did not resolve <code>CHALLENGER_WINS</code> can be resolved. <code>gameOver()</code>
+returns <code>true</code> when:</p>
 <ul>
 <li><code>claimData.prover != address(0)</code> (a valid proof has been submitted), or</li>
 <li><code>claimData.deadline &lt; block.timestamp</code> (the current deadline has expired).</li>
@@ -419,7 +444,7 @@ details.</p>
 <tr><td><strong>DisputeGameFactory</strong></td><td>Creates MCP clones via <code>create(...)</code>. Appends per-chain <code>gameArgs</code> (CWIA).</td></tr>
 <tr><td><strong>AnchorStateRegistry</strong></td><td>Source of truth for finalization, anchor state, respected game type, and blacklisting. Enforces pause checks.</td></tr>
 <tr><td><strong>DelayedWETH</strong></td><td>Bond custody with a deposit → unlock → withdraw lifecycle. Provides a time window for the Guardian to freeze funds post-resolution.</td></tr>
-<tr><td><strong>IZKVerifier</strong></td><td>Generic verifier interface. The concrete deployment for the initial release uses Succinct's PLONK verifier.</td></tr>
+<tr><td><strong>IZKVerifier</strong></td><td>Generic verifier interface. OPCM installs the release's <a href="zk-interface.html#sp1plonkadapter"><code>SP1PlonkAdapter</code></a>, which wraps Succinct's SP1 PLONK verifier, by default.</td></tr>
 </tbody></table>
 </div>
 <h2 id="actors"><a class="header" href="#actors">Actors</a></h2>
@@ -428,7 +453,7 @@ details.</p>
 <tr><td><strong>Challenger</strong></td><td>Fully permissionless. Disputes a proposal by calling <code>challenge()</code> and depositing <code>challengerBond</code>.</td></tr>
 <tr><td><strong>Prover</strong></td><td>Fully permissionless. Submits a valid ZK proof via <code>prove(proofBytes)</code>. May be the same address as the proposer or the challenger.</td></tr>
 <tr><td><strong>Guardian</strong></td><td>Pauses the system, blacklists games, sets the respected game type, and retires old games via <code>updateRetirementTimestamp()</code>.</td></tr>
-<tr><td><strong>OPCM / ProxyAdmin Owner</strong></td><td>Deploys implementations, configures game types in the factory, and manages <code>absolutePrestate</code> and verifier versions.</td></tr>
+<tr><td><strong>OPCM / ProxyAdmin Owner</strong></td><td>Deploys implementations and configures game types in the factory. OPCM sets <code>absolutePrestate</code> per chain and installs the release's verifier by default; the <code>DisputeGameFactory</code> owner can also replace both out of band (see <a href="zk-interface.html#verifier-upgrade-path">Verifier Upgrade Path</a>).</td></tr>
 </tbody></table>
 </div>
 <h2 id="cwia-layout"><a class="header" href="#cwia-layout">CWIA Layout</a></h2>
@@ -441,24 +466,24 @@ pattern as <code>SuperFaultDisputeGame</code>.</p>
 <tr><td><code>gameCreator</code></td><td><code>0x00</code></td><td><code>address</code></td><td>Creator of the dispute game</td></tr>
 <tr><td><code>rootClaim</code></td><td><code>0x14</code></td><td><code>bytes32</code></td><td>Super root hash asserted by this game</td></tr>
 <tr><td><code>l1Head</code></td><td><code>0x34</code></td><td><code>bytes32</code></td><td>L1 block hash at game creation</td></tr>
-<tr><td><code>gameType</code></td><td><code>0x54</code></td><td><code>uint32</code></td><td>Game type identifier (<code>ZK_GAME_TYPE</code>)</td></tr>
+<tr><td><code>gameType</code></td><td><code>0x54</code></td><td><code>uint32</code></td><td>Game type identifier (<code>ZK_DISPUTE_GAME</code>)</td></tr>
 </tbody></table>
 </div>
 <h3 id="variable-extradata"><a class="header" href="#variable-extradata">Variable extraData</a></h3>
 <p>Starting at offset <code>0x58</code>. The total byte count is returned by <code>_extraDataByteCount()</code>.</p>
 <div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>parentIndex</code></td><td><code>uint32</code></td><td>Index of the parent game; <code>type(uint32).max</code> if starting from the anchor state.</td></tr>
-<tr><td><code>superRootProof</code></td><td><code>bytes</code></td><td>ABI-encoded <code>SuperRootProof</code> preimage committed to by <code>rootClaim</code>. Variable length. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via <code>l2SequenceNumber()</code> for convenience.</td></tr>
+<tr><td><code>superRootProof</code></td><td><code>bytes</code></td><td>Packed <code>SuperRootProof</code> encoding (see <a href="#superrootproof">SuperRootProof</a>) committed to by <code>rootClaim</code>. Variable length. The L2 sequence number (super root timestamp) is part of this preimage and is exposed by the contract via <code>l2SequenceNumber()</code> for convenience.</td></tr>
 </tbody></table>
 </div>
 <p><code>_preExtraDataByteCount()</code> returns the byte count of the fixed prefix (<code>0x58</code>).
 <code>_extraDataByteCount()</code> returns the total byte count of the variable extraData section.
 All game args fields use dynamic offsets computed from these helpers.</p>
 <h3 id="dynamic-game-args"><a class="header" href="#dynamic-game-args">Dynamic Game Args</a></h3>
-<p>Fields at dynamic offsets, after <code>extraData</code>. Injected by <code>OPCM._makeGameArgs()</code>.</p>
+<p>Fields at dynamic offsets, after <code>extraData</code>. Injected by <code>OPContractsManagerUtils.makeGameArgs()</code>.</p>
 <div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>absolutePrestate</code></td><td><code>bytes32</code></td><td>Super-root ZK program identity (e.g., SP1 verification key)</td></tr>
-<tr><td><code>verifier</code></td><td><code>address</code></td><td>Address of the <code>IZKVerifier</code> contract</td></tr>
+<tr><td><code>verifier</code></td><td><code>address</code></td><td>Address of the <code>IZKVerifier</code> contract. OPCM sets it to the release's <code>SP1PlonkAdapter</code></td></tr>
 <tr><td><code>maxChallengeDuration</code></td><td><code>Duration</code></td><td>Time window for challenges after game creation</td></tr>
 <tr><td><code>maxProveDuration</code></td><td><code>Duration</code></td><td>Time window for proof submission after a challenge</td></tr>
 <tr><td><code>challengerBond</code></td><td><code>uint256</code></td><td>Bond required to challenge a proposal</td></tr>
@@ -466,87 +491,175 @@ All game args fields use dynamic offsets computed from these helpers.</p>
 <tr><td><code>weth</code></td><td><code>address</code></td><td>Address of per-chain <code>DelayedWETH</code></td></tr>
 </tbody></table>
 </div>
-<p><code>anchorStateRegistry</code> and <code>weth</code> are injected by <code>OPContractManager._makeGameArgs()</code> directly
-from the chain's existing deployment.</p>
+<p><code>verifier</code>, <code>anchorStateRegistry</code> and <code>weth</code> are injected by <code>OPContractsManagerUtils.makeGameArgs()</code>: the
+verifier from the OPCM release, the other two from the chain's existing deployment.</p>
 <h2 id="rootclaim-semantics"><a class="header" href="#rootclaim-semantics">rootClaim Semantics</a></h2>
 <p><code>rootClaim</code> is always a <strong>super root hash</strong>: the result of <code>hashSuperRootProof(superRootProof)</code>,
-where <code>superRootProof</code> is the ABI-encoded <code>SuperRootProof</code> struct stored in <code>extraData</code>.</p>
+where <code>superRootProof</code> is the packed <a href="#superrootproof"><code>SuperRootProof</code></a> encoding stored in <code>extraData</code>.</p>
 <p>The <code>SuperRootProof</code> preimage carries:</p>
 <ul>
 <li>The super root timestamp (<code>l2SequenceNumber</code>).</li>
-<li>A list of <code>(chainId, outputRoot)</code> pairs for every chain in the interop set, sorted in strictly
-ascending order by <code>chainId</code>.</li>
+<li>A list of <code>(chainId, outputRoot)</code> pairs for every chain in the interop set, which MUST be sorted in strictly
+ascending order by <code>chainId</code> for the claim to be provable.</li>
 </ul>
 <p>In a standalone deployment, this list contains exactly one entry. In an interop set, it contains
 one entry per chain. The contract does not distinguish between these cases; the preimage size is
 the only difference.</p>
-<blockquote>
-<p><strong>Note on chain ordering:</strong> The ZK program identified by <code>absolutePrestate</code> is compiled to
-produce and verify proofs over preimages with chains sorted ascending by <code>chainId</code>. A proposer
-who submits an unsorted preimage will produce a <code>rootClaim</code> that differs from any super root a
-correct prover can generate a proof for — the game will expire unchallenged only if no one
-notices, but any subsequent <code>prove()</code> call against the correctly sorted super root will not
-match <code>rootClaim</code> and will therefore revert.</p>
-</blockquote>
+<p>Chain ordering is not checked on-chain; see <a href="#superrootproof">SuperRootProof</a>.</p>
 <p><code>rootClaim</code> MUST NOT be interpreted as an L2 output root for any specific chain. Per-chain output
 roots are extracted via <a href="#rootclaimbychainid"><code>rootClaimByChainId</code></a>.</p>
 <h2 id="rootclaimbychainid"><a class="header" href="#rootclaimbychainid">rootClaimByChainId</a></h2>
-<pre><code class="language-solidity">function rootClaimByChainId(uint256 _chainId) public view returns (Claim rootClaim_)
+<pre><code class="language-solidity">function rootClaimByChainId(uint256 _chainId) public pure returns (Claim outputRootClaim_)
 </code></pre>
 <p>Decodes the <code>SuperRootProof</code> preimage from <code>extraData</code> and iterates over the <code>outputRoots</code> array
 to find the entry matching <code>_chainId</code>. Returns the corresponding output root as a <code>Claim</code>.</p>
 <p>MUST revert with <code>UnknownChainId</code> if <code>_chainId</code> is not present in the preimage.</p>
-<p><code>OptimismPortal</code> calls this function during withdrawal verification (via
-<code>GameTypes.isSuperGame()</code>) to extract the per-chain output root from the super root commitment.
-Adding <code>ZK_GAME_TYPE</code> to the <code>isSuperGame</code> allowlist is required for Portal withdrawal
-finalization to work correctly.</p>
+<p><code>OptimismPortal</code> calls this function during withdrawal verification to extract the per-chain output root from the
+super root commitment. It does so for every game type for which <code>GameTypes.isSuperGame()</code> returns <code>true</code>, which
+includes <code>ZK_DISPUTE_GAME</code>.</p>
 <h2 id="initialize-invariants"><a class="header" href="#initialize-invariants">initialize Invariants</a></h2>
 <p>In addition to the standard parent validation described in
 <a href="game-mechanics.html#parent-validation">Game Mechanics — Parent Validation</a>,
 <code>initialize()</code> enforces the following:</p>
 <ul>
+<li><code>extraData</code> length MUST equal <code>4 + 1 + 8 + 64n</code> bytes for some <code>n ≥ 1</code> (parent index, version, timestamp and
+<code>n</code> <code>(chainId, outputRoot)</code> pairs), otherwise <code>initialize()</code> MUST revert with <code>BadExtraData</code>. This prevents
+creating several games for the same proposal by adding or omitting bytes in <code>extraData</code>, which would change
+the game UUID.</li>
+<li>The <code>SuperRootProof</code> version byte MUST be <code>0x01</code>, otherwise <code>initialize()</code> MUST revert with
+<code>Encoding_InvalidSuperRootVersion</code>.</li>
 <li><code>hashSuperRootProof(decode(extraData.superRootProof)) MUST equal rootClaim()</code>. A mismatch MUST
-revert.</li>
-<li><code>l2SequenceNumber() MUST be strictly greater than startingProposal.l2SequenceNumber</code>.</li>
-<li><code>l2SequenceNumber() MUST fit within uint64</code> (i.e., <code>&lt;= type(uint64).max</code>).</li>
-<li>The calldata size MUST match the expected length derived from <code>_extraDataByteCount()</code> to prevent
-UUID collisions in the factory from extra or missing bytes in <code>extraData</code>.</li>
+revert with <code>BadExtraData</code>.</li>
+<li><code>l2SequenceNumber() MUST be strictly greater than startingProposal.l2SequenceNumber</code>. Otherwise
+<code>initialize()</code> MUST revert with <code>UnexpectedRootClaim(rootClaim)</code>.</li>
 </ul>
 <h2 id="opcm-integration"><a class="header" href="#opcm-integration">OPCM Integration</a></h2>
-<p><code>ZKDisputeGame</code> integrates into OPCM v2 as game type <code>ZK_GAME_TYPE</code> through
-<code>DisputeGameConfig</code>, following the same pattern as other game types.</p>
-<p>Three additions are required:</p>
+<p><code>ZKDisputeGame</code> integrates into OPCM v2 as game type <code>ZK_DISPUTE_GAME</code> through
+<code>DisputeGameConfig</code>, following the same pattern as other game types:</p>
 <ol>
-<li><code>ZKDisputeGame</code> is deployed once via the <code>DeployImplementations</code> script and tracked in
-<code>OPContractsManagerContainer.Implementations</code>.</li>
-<li>A <code>ZKDisputeGameConfig</code> struct carries the per-chain parameters that the caller provides.
-OPCM's <code>_makeGameArgs()</code> decodes it, injects the chain-specific values it already knows, and
-packs the final variable-length CWIA bytes for the factory.</li>
-<li><code>ZK_GAME_TYPE</code> is added to the <code>validGameTypes</code> array in <code>_assertValidFullConfig()</code> and
-to <code>GameTypes.isSuperGame()</code>.</li>
+<li><code>DeployImplementations</code> deploys the <code>ZKDisputeGame</code> implementation and the
+<a href="zk-interface.html#sp1plonkadapter"><code>SP1PlonkAdapter</code></a> singleton once per OPCM release. Both are stored in
+<code>OPContractsManagerContainer.Implementations</code> as <code>zkDisputeGameImpl</code> and <code>sp1PlonkAdapterImpl</code>.</li>
+<li><code>UpgradeInput.disputeGameConfigs</code> holds exactly six <code>DisputeGameConfig</code> entries, in the fixed
+<code>VALID_GAME_TYPES</code> order: <code>CANNON</code>, <code>PERMISSIONED_CANNON</code>, <code>CANNON_KONA</code>, <code>SUPER_PERMISSIONED</code>,
+<code>SUPER_CANNON_KONA</code>, <code>ZK_DISPUTE_GAME</code>.</li>
+<li>For the <code>ZK_DISPUTE_GAME</code> entry, <code>gameArgs</code> is <code>abi.encode(ZKDisputeGameConfig)</code>. When the entry is enabled,
+OPCM calls <code>DisputeGameFactory.setImplementation(ZK_DISPUTE_GAME, zkDisputeGameImpl, makeGameArgs(...))</code> and
+<code>DisputeGameFactory.setInitBond(ZK_DISPUTE_GAME, initBond)</code>. When the entry is disabled, OPCM sets the
+implementation to <code>address(0)</code> with empty game args and the init bond to <code>0</code>, which removes the game type.</li>
+<li><code>GameTypes.isSuperGame()</code> includes <code>ZK_DISPUTE_GAME</code>, so the <code>OptimismPortal</code> reads per-chain output roots
+through <a href="#rootclaimbychainid"><code>rootClaimByChainId</code></a>.</li>
 </ol>
 <h3 id="zkdisputegameconfig"><a class="header" href="#zkdisputegameconfig">ZKDisputeGameConfig</a></h3>
+<p>The caller provides the per-chain ZK parameters as <code>abi.encode(ZKDisputeGameConfig)</code>:</p>
 <pre><code class="language-solidity">struct ZKDisputeGameConfig {
     Claim absolutePrestate;
-    address verifier;
     Duration maxChallengeDuration;
     Duration maxProveDuration;
     uint256 challengerBond;
 }
 </code></pre>
-<pre><code class="language-solidity">if (_gcfg.gameType.raw() == GameTypes.ZK_GAME_TYPE.raw()) {
-    ZKDisputeGameConfig memory cfg = abi.decode(_gcfg.gameArgs, (ZKDisputeGameConfig));
+<p><code>OPContractsManagerUtils.makeGameArgs()</code> decodes it and packs the game args. The encoded config MUST be exactly
+128 bytes, otherwise <code>makeGameArgs()</code> MUST revert with <code>OPContractsManagerUtils_InvalidZKGameArgsLength(uint256)</code>.
+Through OPCM, a shorter config already reverts in <a href="#configuration-validation">Configuration Validation</a>.
+The verifier slot is always filled with the OPCM release's <code>SP1PlonkAdapter</code> (<code>impls.sp1PlonkAdapterImpl</code>):</p>
+<pre><code class="language-solidity">if (rawGT == GameTypes.ZK_DISPUTE_GAME.raw()) {
+    if (_gcfg.gameArgs.length != ZK_DISPUTE_GAME_CONFIG_LENGTH) {
+        revert IOPContractsManagerUtils.OPContractsManagerUtils_InvalidZKGameArgsLength(_gcfg.gameArgs.length);
+    }
+    IOPContractsManagerUtils.ZKDisputeGameConfig memory parsedInputArgs =
+        abi.decode(_gcfg.gameArgs, (IOPContractsManagerUtils.ZKDisputeGameConfig));
     return abi.encodePacked(
-        cfg.absolutePrestate,
-        cfg.verifier,
-        cfg.maxChallengeDuration,
-        cfg.maxProveDuration,
-        cfg.challengerBond,
+        parsedInputArgs.absolutePrestate,
+        impls.sp1PlonkAdapterImpl,
+        parsedInputArgs.maxChallengeDuration,
+        parsedInputArgs.maxProveDuration,
+        parsedInputArgs.challengerBond,
         address(_anchorStateRegistry),
         address(_delayedWETH)
     );
 }
 </code></pre>
+<p>The packed game args are 140 bytes: <code>absolutePrestate</code> (32), <code>verifier</code> (20), <code>maxChallengeDuration</code> (8),
+<code>maxProveDuration</code> (8), <code>challengerBond</code> (32), <code>anchorStateRegistry</code> (20) and <code>weth</code> (20).</p>
+<h3 id="configuration-validation"><a class="header" href="#configuration-validation">Configuration Validation</a></h3>
+<p>OPCM's <code>_assertValidFullConfig</code> MUST revert with <code>OPContractsManagerV2_InvalidGameConfigs()</code> when an enabled
+<code>ZK_DISPUTE_GAME</code> config:</p>
+<ul>
+<li>has <code>absolutePrestate == bytes32(0)</code>;</li>
+<li>has a <code>maxChallengeDuration</code> or <code>maxProveDuration</code> outside <code>(0, type(uint32).max]</code>;</li>
+<li>has <code>challengerBond == 0</code>; or</li>
+<li>has <code>initBond == 0</code>.</li>
+</ul>
+<p>The <code>type(uint32).max</code> cap exists because deadlines are computed as <code>uint64(block.timestamp + duration)</code>. A larger
+duration could overflow the <code>uint64</code> cast and produce a deadline in the past. The game args checks are
+implemented by <code>_isValidZKDisputeGameConfig</code> in <code>OPContractsManagerUtilsCaller</code>.</p>
+<h2 id="interface"><a class="header" href="#interface">Interface</a></h2>
+<p>This section summarizes the public interface of <code>ZKDisputeGame</code> (<code>version</code> <code>2.1.0</code>). Behavior is specified in
+<a href="game-mechanics.html">Game Mechanics</a>.</p>
+<h3 id="functions"><a class="header" href="#functions">Functions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Behavior</th><th>Reverts</th></tr></thead><tbody>
+<tr><td><code>initialize() external payable</code></td><td>Validates the proposal and records the creator's bond. See <a href="game-mechanics.html#creation">Creation</a>.</td><td><code>AlreadyInitialized</code>, <code>BadExtraData</code>, <code>Encoding_InvalidSuperRootVersion</code>, <code>InvalidParentGame</code>, <code>UnexpectedGameType</code>, <code>AnchorRootNotFound</code>, <code>UnexpectedRootClaim</code></td></tr>
+<tr><td><code>challenge() external payable returns (ProposalStatus)</code></td><td>Challenges the claim. See <a href="game-mechanics.html#challenge">Challenge</a>.</td><td><code>GameOver</code>, <code>ClaimAlreadyChallenged</code>, <code>IncorrectBondAmount</code></td></tr>
+<tr><td><code>prove(bytes calldata _proofBytes) external returns (ProposalStatus)</code></td><td>Verifies a proof for the claim. See <a href="game-mechanics.html#proving">Proving</a>.</td><td><code>ClaimAlreadyResolved</code>, <code>InvalidParentGame</code>, <code>GameOver</code>, or the verifier's revert</td></tr>
+<tr><td><code>resolve() external returns (GameStatus)</code></td><td>Resolves the game and allocates credit. See <a href="game-mechanics.html#resolution">Resolution</a>.</td><td><code>ClaimAlreadyResolved</code>, <code>ParentGameNotResolved</code>, <code>GameNotOver</code>, <code>InvalidProposalStatus</code></td></tr>
+<tr><td><code>closeGame() public</code></td><td>Sets the bond distribution mode and tries to update the anchor state. See <a href="game-mechanics.html#closing">Closing</a>.</td><td><code>InvalidBondDistributionMode</code>, <code>GamePaused</code>, <code>GameNotResolved</code>, <code>GameNotFinalized</code></td></tr>
+<tr><td><code>claimCredit(address _recipient) external</code></td><td>Closes the game if needed, then unlocks or withdraws the recipient's credit. See <a href="game-mechanics.html#closing">Closing</a>.</td><td><code>closeGame()</code> errors, <code>InvalidBondDistributionMode</code>, <code>NoCreditToClaim</code>, <code>BondTransferFailed</code>, or <code>DelayedWETH</code>'s revert</td></tr>
+<tr><td><code>gameOver() public view returns (bool gameOver_)</code></td><td>See <a href="#game-over">Game Over</a>.</td><td>—</td></tr>
+<tr><td><code>credit(address _recipient) external view returns (uint256 credit_)</code></td><td>Returns <code>refundModeCredit[_recipient]</code> in REFUND mode, otherwise <code>normalModeCredit[_recipient]</code>.</td><td>—</td></tr>
+<tr><td><code>rootClaimByChainId(uint256 _chainId) public pure returns (Claim outputRootClaim_)</code></td><td>See <a href="#rootclaimbychainid">rootClaimByChainId</a>.</td><td><code>UnknownChainId</code></td></tr>
+<tr><td><code>startingSequenceNumber() external view returns (uint256 startingSequenceNumber_)</code></td><td>Returns <code>startingProposal.l2SequenceNumber</code>.</td><td>—</td></tr>
+<tr><td><code>startingRootHash() external view returns (Hash startingRootHash_)</code></td><td>Returns <code>startingProposal.root</code>.</td><td>—</td></tr>
+<tr><td><code>gameData() external pure returns (GameType gameType_, Claim rootClaim_, bytes memory extraData_)</code></td><td>Returns the components of the game's UUID preimage.</td><td>—</td></tr>
+<tr><td>CWIA getters: <code>gameCreator</code>, <code>rootClaim</code>, <code>l1Head</code>, <code>gameType</code>, <code>parentIndex</code>, <code>l2SequenceNumber</code>, <code>absolutePrestate</code>, <code>verifier</code>, <code>maxChallengeDuration</code>, <code>maxProveDuration</code>, <code>challengerBond</code>, <code>anchorStateRegistry</code>, <code>weth</code>, <code>extraData</code></td><td>Return the values in the <a href="#cwia-layout">CWIA Layout</a>.</td><td>—</td></tr>
+<tr><td>Storage getters: <code>createdAt</code>, <code>resolvedAt</code>, <code>status</code>, <code>claimData</code>, <code>normalModeCredit</code>, <code>refundModeCredit</code>, <code>startingProposal</code>, <code>bondDistributionMode</code>, <code>wasRespectedGameTypeWhenCreated</code>, <code>disputeGameFactory</code>, <code>totalBonds</code></td><td>Return the game's state variables.</td><td>—</td></tr>
+</tbody></table>
+</div>
+<p><code>claimData</code> returns the <code>ClaimData</code> struct:</p>
+<pre><code class="language-solidity">struct ClaimData {
+    uint32 parentIndex; // 4 bytes
+    ProposalStatus status; // 1 byte
+    address challenger; // 20 bytes |-- slot 1 (25 bytes)
+    address prover; // 20 bytes
+    Timestamp deadline; // 8 bytes  |-- slot 2 (28 bytes)
+    Claim claim; // 32 bytes |-- slot 3
+}
+</code></pre>
+<h3 id="events"><a class="header" href="#events">Events</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Event</th><th>Emitted by</th></tr></thead><tbody>
+<tr><td><code>Challenged(address indexed challenger)</code></td><td><code>challenge()</code></td></tr>
+<tr><td><code>Proved(address indexed prover)</code></td><td><code>prove()</code></td></tr>
+<tr><td><code>Resolved(GameStatus indexed status)</code> (inherited from <code>IDisputeGame</code>)</td><td><code>resolve()</code></td></tr>
+<tr><td><code>GameClosed(BondDistributionMode bondDistributionMode)</code></td><td><code>closeGame()</code>, including when called from <code>claimCredit()</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="errors"><a class="header" href="#errors">Errors</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Error</th><th>Raised by</th><th>Condition</th></tr></thead><tbody>
+<tr><td><code>AlreadyInitialized</code></td><td><code>initialize()</code></td><td>The game is already initialized.</td></tr>
+<tr><td><code>BadExtraData</code></td><td><code>initialize()</code></td><td><code>extraData</code> has the wrong length, or the preimage hash does not equal <code>rootClaim</code>.</td></tr>
+<tr><td><code>Encoding_InvalidSuperRootVersion</code></td><td><code>initialize()</code></td><td>The <code>SuperRootProof</code> version byte is not <code>0x01</code>.</td></tr>
+<tr><td><code>Encoding_EmptySuperRoot</code></td><td><code>Encoding.decodeSuperRootProof</code></td><td>The preimage has no output roots. Not reachable once the <code>BadExtraData</code> length check passes.</td></tr>
+<tr><td><code>Encoding_InvalidSuperRootEncoding</code></td><td><code>Encoding.decodeSuperRootProof</code></td><td>The preimage length is malformed. Not reachable once the <code>BadExtraData</code> length check passes.</td></tr>
+<tr><td><code>InvalidParentGame</code></td><td><code>initialize()</code>, <code>prove()</code></td><td><code>initialize()</code>: the parent resolved <code>CHALLENGER_WINS</code>, is blacklisted or retired, was not respected while the child is, or is at or below the anchor. <code>prove()</code>: the parent resolved <code>CHALLENGER_WINS</code>.</td></tr>
+<tr><td><code>UnexpectedGameType</code></td><td><code>initialize()</code></td><td>The parent is not a <code>ZK_DISPUTE_GAME</code>. Checked after the <code>InvalidParentGame</code> checks other than the anchor check.</td></tr>
+<tr><td><code>AnchorRootNotFound</code></td><td><code>initialize()</code></td><td>There is no parent and the anchor root is zero.</td></tr>
+<tr><td><code>UnexpectedRootClaim(Claim rootClaim)</code></td><td><code>initialize()</code></td><td><code>l2SequenceNumber</code> is not above the starting proposal's sequence number.</td></tr>
+<tr><td><code>GameOver</code></td><td><code>challenge()</code>, <code>prove()</code></td><td><code>gameOver()</code> returns <code>true</code>.</td></tr>
+<tr><td><code>ClaimAlreadyChallenged</code></td><td><code>challenge()</code></td><td><code>claimData.status</code> is not <code>Unchallenged</code>.</td></tr>
+<tr><td><code>IncorrectBondAmount</code></td><td><code>challenge()</code>, <code>DisputeGameFactory.create()</code></td><td><code>msg.value</code> is not <code>challengerBond</code> (challenge) or the factory's <code>initBond</code> (creation).</td></tr>
+<tr><td><code>ClaimAlreadyResolved</code></td><td><code>prove()</code>, <code>resolve()</code></td><td>The game is already resolved.</td></tr>
+<tr><td><code>ParentGameNotResolved</code></td><td><code>resolve()</code></td><td>The parent game is still <code>IN_PROGRESS</code>.</td></tr>
+<tr><td><code>GameNotOver</code></td><td><code>resolve()</code></td><td>The parent did not resolve <code>CHALLENGER_WINS</code> and <code>gameOver()</code> returns <code>false</code>.</td></tr>
+<tr><td><code>InvalidProposalStatus</code></td><td><code>resolve()</code></td><td><code>claimData.status</code> is not a resolvable status (sanity check).</td></tr>
+<tr><td><code>InvalidBondDistributionMode</code></td><td><code>closeGame()</code>, <code>claimCredit()</code></td><td>The bond distribution mode is not a known value (sanity check).</td></tr>
+<tr><td><code>GamePaused</code></td><td><code>closeGame()</code></td><td>The <code>AnchorStateRegistry</code> is paused and the game is not closed yet.</td></tr>
+<tr><td><code>GameNotResolved</code></td><td><code>closeGame()</code></td><td>The game is not resolved.</td></tr>
+<tr><td><code>GameNotFinalized</code></td><td><code>closeGame()</code></td><td><code>AnchorStateRegistry.isGameFinalized</code> returns <code>false</code>.</td></tr>
+<tr><td><code>NoCreditToClaim</code></td><td><code>claimCredit()</code></td><td>The recipient has no credit and no pending <code>DelayedWETH</code> withdrawal, and the game was already closed before the call.</td></tr>
+<tr><td><code>BondTransferFailed</code></td><td><code>claimCredit()</code></td><td>The ETH transfer to the recipient failed.</td></tr>
+<tr><td><code>UnknownChainId</code></td><td><code>rootClaimByChainId()</code></td><td>The chain ID is not in the preimage.</td></tr>
+</tbody></table>
+</div>
 <h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
 <h3 id="azkg-001-zk-verifier-soundness"><a class="header" href="#azkg-001-zk-verifier-soundness">aZKG-001: ZK Verifier Soundness</a></h3>
 <p>The <code>IZKVerifier</code> implementation is sound: it is computationally infeasible to produce a proof
@@ -554,17 +667,20 @@ that passes <code>verify()</code> for an incorrect state transition.</p>
 <h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
 <ul>
 <li>The PLONK verifier for SP1 is independently audited.</li>
-<li>The verifier address comes from <code>gameArgs</code>, managed by OPCM. Governance controls upgrades.</li>
+<li>OPCM installs the release's <code>SP1PlonkAdapter</code> by default, and the release is approved by governance. Any other
+verifier must be set by the <code>DisputeGameFactory</code> owner (see
+<a href="zk-interface.html#verifier-upgrade-path">Verifier Upgrade Path</a>).</li>
 <li>The <code>IZKVerifier</code> interface intentionally decouples the game from any specific proving system.
-A verifier can be swapped without redeploying the game implementation.</li>
+The verifier address lives in the CWIA game args, so supporting a new verifier needs no change to the
+<code>ZKDisputeGame</code> code.</li>
 </ul>
 <h3 id="azkg-002-absolute-prestate-uniquely-identifies-the-zk-program"><a class="header" href="#azkg-002-absolute-prestate-uniquely-identifies-the-zk-program">aZKG-002: Absolute Prestate Uniquely Identifies the ZK Program</a></h3>
 <p>The <code>absolutePrestate</code> value uniquely identifies the ZK program version. Two different programs
 MUST NOT share the same <code>absolutePrestate</code>.</p>
 <h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
 <ul>
-<li>For SP1, <code>absolutePrestate</code> corresponds to the program's verification key, which is derived from
-the program binary and circuit structure.</li>
+<li>For SP1, <code>absolutePrestate</code> is the aggregation program's verification key, which commits transitively to all
+three programs (see <a href="../../zk-proof-system.html#absolute-prestate">Absolute Prestate</a>).</li>
 <li>OPCM manages <code>absolutePrestate</code> per deployment; program updates require a corresponding
 <code>absolutePrestate</code> update via governance.</li>
 </ul>
@@ -578,8 +694,9 @@ state.</p>
 value, which cryptographically links consecutive games.</li>
 <li>Parent validation at creation time prevents games from chaining off blacklisted, retired, or
 <code>CHALLENGER_WINS</code> parents.</li>
-<li>If a parent is blacklisted or retired after child games have been created, the Guardian MUST
-individually blacklist or retire those child games to place them in REFUND mode.</li>
+<li>If a parent is blacklisted after child games have been created, the Guardian MUST also blacklist those child
+games to place them in REFUND mode. Retirement needs no such step, because it covers every game created at or
+before the retirement timestamp, including the children.</li>
 </ul>
 <h3 id="azkg-004-bonds-are-economically-rational"><a class="header" href="#azkg-004-bonds-are-economically-rational">aZKG-004: Bonds Are Economically Rational</a></h3>
 <p>The <code>initBond</code>, <code>challengerBond</code>, <code>maxChallengeDuration</code>, and <code>maxProveDuration</code> values are set
@@ -587,8 +704,9 @@ such that honest participation is economically rational and griefing is costly.<
 <h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
 <ul>
 <li><code>challengerBond</code>, <code>maxChallengeDuration</code>, and <code>maxProveDuration</code> are in <code>gameArgs</code> and can be
-tuned per deployment by OPCM without redeploying the implementation. <code>initBond</code> is a factory
-parameter updated separately.</li>
+tuned per deployment by OPCM without redeploying the implementation. <code>initBond</code> is part of the same OPCM
+<code>DisputeGameConfig</code>, is applied through <code>DisputeGameFactory.setInitBond</code>, and MUST be non-zero.</li>
+<li>OPCM bounds-checks the durations and bonds (see <a href="#configuration-validation">Configuration Validation</a>).</li>
 <li>Benchmark proving costs and document standard values for common configurations.</li>
 <li>Bonds too low invite spam; bonds too high discourage honest participation. Durations must be
 long enough to allow super-root proof generation but short enough to preserve withdrawal latency
@@ -603,12 +721,13 @@ types before fraudulent games achieve Valid Claims.</p>
 the Guardian a window to act.</li>
 <li><code>DelayedWETH</code> provides an additional window after <code>closeGame</code> to freeze funds.</li>
 </ul>
-<h3 id="azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency"><a class="header" href="#azkg-006-anchor-state-advances-slowly-relative-to-proposal-frequency">aZKG-006: Anchor State Advances Slowly Relative to Proposal Frequency</a></h3>
-<p>There is no technical mechanism that enforces the anchor state to advance slowly — any resolved
-game that passes the finality delay can call <code>closeGame()</code> and advance it. However, the minimum
-time for a game to advance the anchor state is <code>maxChallengeDuration + disputeGameFinalityDelaySeconds</code>
-(12+ hours in practice), and under normal operation this is expected to be much larger than
-typical proposal frequency. Orphan risk from parent validation is therefore negligible.</p>
+<h3 id="azkg-006-anchor-state-advancement-rarely-orphans-proposals"><a class="header" href="#azkg-006-anchor-state-advancement-rarely-orphans-proposals">aZKG-006: Anchor State Advancement Rarely Orphans Proposals</a></h3>
+<p>Any resolved game that passes the finality delay can call <code>closeGame()</code> and advance the anchor state. An unproven
+game advances it no earlier than <code>maxChallengeDuration + disputeGameFinalityDelaySeconds</code> after creation. A game
+proven while unchallenged can resolve as soon as its parent has resolved, so it can advance the anchor state
+<code>disputeGameFinalityDelaySeconds</code> after its proof. If the anchor state reaches a game that a proposer intended to
+use as a parent, <code>initialize()</code> reverts with <code>InvalidParentGame</code> for the new child. This costs the proposer gas and
+a retry, not funds.</p>
 <h4 id="mitigations-5"><a class="header" href="#mitigations-5">Mitigations</a></h4>
 <ul>
 <li>A rational proposer would never use a parent whose <code>l2SequenceNumber</code> is below the anchor, as
@@ -626,6 +745,8 @@ interop set, accounting for prover network latency, queue depth, and hardware va
 <li>Multiple independent provers reduce the risk of a single point of failure in proof delivery.</li>
 <li>Off-chain monitoring on the ratio of successful <code>prove()</code> calls to challenged games can detect
 when proving infrastructure is unable to keep up with the configured window.</li>
+<li>Proof generation can also fail because of resource limits rather than time (see
+<a href="#azkg-010-valid-claims-are-provable">aZKG-010</a>).</li>
 </ul>
 <h3 id="azkg-008-super-root-preimage-faithfully-represents-the-chain-set"><a class="header" href="#azkg-008-super-root-preimage-faithfully-represents-the-chain-set">aZKG-008: Super Root Preimage Faithfully Represents the Chain Set</a></h3>
 <p>The <code>SuperRootProof</code> preimage stored in <code>extraData</code> faithfully lists every chain in the interop
@@ -635,11 +756,8 @@ set with correct chain IDs and output roots. No chain is omitted, duplicated, or
 <li><code>initialize()</code> enforces <code>hashSuperRootProof(decode(extraData.superRootProof)) == rootClaim()</code>.
 An incorrect preimage cannot produce a matching hash.</li>
 <li>The ZK program independently verifies that the output roots in the preimage match the actual
-chain states (see <a href="../../zk-fault-proof-vm.html#izkvm-002-super-root-preimage-must-commit-to-all-chain-outputs">iZKVM-002</a>).</li>
-<li>The ZK program (identified by <code>absolutePrestate</code>) is compiled to produce and verify proofs over
-preimages with chains sorted in strictly ascending order by <code>chainId</code>. An unsorted preimage
-produces a different hash and therefore a different <code>rootClaim</code>; no valid proof can be generated
-for it, so verification will always fail for such proposals.</li>
+chain states (see <a href="../../zk-proof-system.html#izkvm-002-super-root-preimage-must-commit-to-all-chain-outputs">iZKVM-002</a>).</li>
+<li>Chain ordering is enforced by the ZK program, not by <code>initialize()</code> (see <a href="#superrootproof">SuperRootProof</a>).</li>
 </ul>
 <h3 id="azkg-009-chain-set-is-stable-during-the-prove-window"><a class="header" href="#azkg-009-chain-set-is-stable-during-the-prove-window">aZKG-009: Chain Set Is Stable During the Prove Window</a></h3>
 <p>The interop set (the set of chains committed to by a super root) does not change between game
@@ -647,12 +765,29 @@ creation and proof submission.</p>
 <h4 id="mitigations-8"><a class="header" href="#mitigations-8">Mitigations</a></h4>
 <ul>
 <li>The <code>SuperRootProof</code> preimage is immutable once embedded in <code>extraData</code> at creation time.</li>
-<li>The <code>absolutePrestate</code> encodes which chain set the ZK program was compiled for. A chain set
-change requires a new program and a new <code>absolutePrestate</code>, gated by governance.</li>
+<li>The chain set is taken from the starting super root preimage and MUST equal the dependency set compiled into the
+program identified by <code>absolutePrestate</code>. A chain set change requires a new program and a new
+<code>absolutePrestate</code>, gated by governance, but these alone are not sufficient; the process for changing the chain
+set is not yet fully specified.</li>
+</ul>
+<h3 id="azkg-010-valid-claims-are-provable"><a class="header" href="#azkg-010-valid-claims-are-provable">aZKG-010: Valid Claims Are Provable</a></h3>
+<p>A valid claim can always be proven within the prover's resource limits.</p>
+<p>A sound ZK program may still be unable to prove an honest claim. Each proving request has witness size, memory,
+cycle and proving gas limits. The smallest range request covers one chain at one timestamp. A consolidation request
+always covers every chain at one timestamp, and a log-commitment batch of one block cannot be split further either.
+Adversarial L2 content, for example a large number of interop messages, can inflate proving cost. If a challenged
+valid claim cannot be proven, it resolves <code>CHALLENGER_WINS</code>, and so do all of its descendants.</p>
+<h4 id="mitigations-9"><a class="header" href="#mitigations-9">Mitigations</a></h4>
+<ul>
+<li>The <code>log-commitment</code> program lets initiating messages be checked without loading the block's receipts.</li>
+<li>Provers split a span into chunks, and split a single timestamp's range by chain, to keep each request within
+limits.</li>
+<li>The Guardian can blacklist games or pause the system, and the dispute game finality delay gives time to do so.</li>
+<li>Off-chain monitoring of challenged games that remain unproven can detect claims that cannot be proven.</li>
 </ul>
 <h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
 <h3 id="izkg-001-a-valid-proof-always-wins"><a class="header" href="#izkg-001-a-valid-proof-always-wins">iZKG-001: A Valid Proof Always Wins</a></h3>
-<p>If a valid ZK proof is submitted before the current deadline, the game MUST resolve as
+<p>If a valid ZK proof is submitted at or before the current deadline, the game MUST resolve as
 <code>DEFENDER_WINS</code> (assuming a valid parent chain).</p>
 <h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
