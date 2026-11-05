@@ -224,10 +224,20 @@ completion is sent first.
 
 ### constructor
 
-- MUST set the immutable `OptimismPortal` address, which is the only permitted caller of the hook entry points.
-- MUST read the `L1CrossDomainMessenger` and `L1StandardBridge` addresses from the Portal's `SystemConfig` and store
-  them as immutables. The module uses them to find the [Resolved Parties](#resolved-parties) and to approve the bridge
-  on token completions.
+**Parameters:**
+
+- `_portal`: the `OptimismPortal` this module is the hook for.
+- `_l1CrossDomainMessenger`, `_l1StandardBridge`: the contracts the module decodes a token transfer against.
+
+**Behavior:**
+
+- MUST set all three addresses as immutables. The Portal is the only permitted caller of the hook entry points, and
+  the other two are used to find the [Resolved Parties](#resolved-parties) and to approve the bridge on token
+  completions.
+- MUST revert if any of the three is the zero address.
+
+The messenger and the bridge are arguments, so the module can be deployed before the Portal is initialized and wired
+as its hook in the same deployment. They must be the addresses the chain's `SystemConfig` holds.
 
 ### initialize
 
