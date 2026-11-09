@@ -187,7 +187,11 @@
 <li><a href="#blockid">BlockID</a></li>
 <li><a href="#l1blockref">L1BlockRef</a></li>
 <li><a href="#l2blockref">L2BlockRef</a></li>
-<li><a href="#syncstatus">SyncStatus</a></li>
+<li><a href="#syncstatus">SyncStatus</a>
+<ul>
+<li><a href="#current_l1-guarantees"><code>current_l1</code> guarantees</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#output-method-api">Output Method API</a></li>
@@ -254,7 +258,8 @@ The types defined here are extended from the <a href="https://github.com/ethereu
 <h4 id="syncstatus"><a class="header" href="#syncstatus">SyncStatus</a></h4>
 <p>Represents a snapshot of the rollup driver.</p>
 <ul>
-<li><code>current_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
+<li><code>current_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>. The L1 block that the derivation
+pipeline currently processes. See <a href="#current_l1-guarantees"><code>current_l1</code> guarantees</a>.</li>
 <li><code>current_l1_finalized</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
 <li><code>head_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
 <li><code>safe_l1</code>: <code>Object</code> - instance of <a href="#l1blockref"><code>L1BlockRef</code></a>.</li>
@@ -264,6 +269,17 @@ The types defined here are extended from the <a href="https://github.com/ethereu
 <li><code>finalized_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
 <li><code>pending_safe_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
 <li><code>queued_unsafe_l2</code>: <code>Object</code> - instance of <a href="#l2blockref"><code>L2BlockRef</code></a>.</li>
+</ul>
+<h5 id="current_l1-guarantees"><a class="header" href="#current_l1-guarantees"><code>current_l1</code> guarantees</a></h5>
+<p>Consumers such as the batcher, proposer and challenger use <code>current_l1</code> to find how far derivation has read L1.
+The rollup node MUST keep the invariants below for each <code>current_l1</code> value it reports:</p>
+<ul>
+<li>The node has fully processed all L1 blocks up to and including the parent of <code>current_l1</code>.
+The node includes the effects of these blocks in all data it returns.</li>
+<li>The node MAY include only part of the effects of the <code>current_l1</code> block itself.</li>
+<li>The node MAY report a value that is lower than the block it processes.
+The reported value MUST advance within a reasonable time.</li>
+<li>The node MUST NOT report a value that is higher than the block it processes.</li>
 </ul>
 <h3 id="output-method-api"><a class="header" href="#output-method-api">Output Method API</a></h3>
 <p>The input and return types here are as defined by the <a href="https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#structures">engine API specs</a>.</p>
