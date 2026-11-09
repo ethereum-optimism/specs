@@ -64,40 +64,29 @@ The deposit rules must maintain the invariants below:
 
 ## Fork amendments
 
-Deposit rules change across forks. Each row below states one change and the fork that made it.
-The link goes to the spec section that defines the full rule.
+Deposit rules change across forks. Each row lists the changes that one spec page defines.
 
 | Fork | Change |
 | --- | --- |
-| [Regolith](./regolith/overview.md) | Regolith disables `isSystemTx`. System deposits use the same gas accounting as other deposits. |
-| [Regolith](#l1-attributes-deposited-transaction) | Regolith lowers the L1 attributes deposit gas limit from 150,000,000 to 1,000,000. |
-| [Regolith](./regolith/overview.md) | Regolith records the actual gas use of each deposit in its receipt and in the block gas pool. |
-| [Regolith](./regolith/overview.md) | Regolith adds `depositNonce` to the deposit receipt. The value is the sender nonce before execution. |
-| [Canyon](./canyon/overview.md) | Canyon puts `depositNonce` and `depositNonceVersion` in every deposit receipt. |
-| [Ecotone](./ecotone/l1-attributes.md#overview) | Ecotone packs the L1 attributes calldata and calls `setL1BlockValuesEcotone()`. |
-| [Ecotone](./ecotone/derivation.md#network-upgrade-automation-transactions) | Ecotone adds upgrade deposits to its activation block. That block holds only deposits. |
-| [Fjord](./fjord/derivation.md#network-upgrade-automation-transactions) | Fjord adds upgrade deposits to its activation block. That block holds only deposits. |
-| [Holocene](./holocene/derivation.md#engine-queue) | Holocene replaces an invalid payload with a block that holds only its deposits. |
-| [Pectra Blob Schedule](./pectra-blob-schedule/derivation.md#if-enabled) | Pectra Blob Schedule changes the blob base fee formula for the L1 attributes deposit. |
-| [Isthmus](./isthmus/l1-attributes.md#overview) | Isthmus adds operator fee parameters to the L1 attributes calldata. |
-| [Isthmus](./isthmus/derivation.md#network-upgrade-automation-transactions) | Isthmus adds upgrade deposits to its activation block. That block holds only deposits. |
-| [Isthmus](./isthmus/exec-engine.md#deposit-operator-fees) | Isthmus charges no operator fee on deposits. |
-| [Isthmus](./isthmus/exec-engine.md#receipts) | Isthmus adds `operatorFeeScalar` and `operatorFeeConstant` to all receipts when either is non-zero. |
-| [Jovian](./jovian/l1-attributes.md#overview) | Jovian adds `daFootprintGasScalar` to the L1 attributes calldata. |
-| [Jovian](./jovian/derivation.md#network-upgrade-transactions) | Jovian adds upgrade deposits to its activation block. |
-| [Jovian](./jovian/derivation.md#activation-block-rules) | Jovian allows only deposits in its activation block. Derivation drops a batch that has transactions. |
-| [Jovian](./jovian/exec-engine.md#da-footprint-block-limit) | Jovian leaves deposits out of the DA footprint. |
-| [Jovian](./jovian/exec-engine.md#receipts) | Jovian adds `daFootprintGasScalar` to all receipts. |
-| [Karst](./karst/derivation.md) | Karst derives upgrade deposits from a NUT bundle. Each intent gets a `Karst <index>:` prefix. |
-| [Karst](./karst/overview.md) | Karst does not apply the EIP-7825 transaction gas limit cap to deposits. |
-| [Lagoon](../interop/derivation.md#network-upgrade-transactions) | Lagoon derives upgrade deposits from a NUT bundle. Each intent gets an `Interop <index>:` prefix. |
-| [Lagoon](../interop/derivation.md#dependency-set-conditional-transactions) | Lagoon adds two upgrade deposits for a multi-chain dependency set. One mints `type(uint128).max`. |
-| [Lagoon](../interop/derivation.md#upgrade-block-gas-limit) | Lagoon raises the activation block gas limit to cover its upgrade deposits. |
-| [Lagoon](../interop/derivation.md#activation-block) | Lagoon allows only deposits in its activation block. |
-| [Lagoon](../interop/derivation.md#replacing-invalid-blocks) | Lagoon replaces a block with invalid executing messages by a block that holds only deposits. |
-| [Lagoon](../interop/predeploys.md#deposit-handling) | Lagoon makes each `CrossL2Inbox` call from a deposit revert. Deposits cannot execute messages. |
-| [Lagoon](./lagoon/sdm.md#transaction-classification) | Lagoon bars deposits from SDM refunds. |
-| [Lagoon](./lagoon/sdm.md#block-gas-limit) | Lagoon checks each deposit gas limit against the block gas limit minus the pre-refund gas. |
+| [Regolith](./regolith/overview.md) | Disables `isSystemTx`, records actual gas used and adds `depositNonce` to receipts. |
+| [Regolith](#l1-attributes-deposited-transaction) | Lowers the L1 attributes deposit gas limit to 1,000,000. |
+| [Canyon](./canyon/overview.md) | Always includes `depositNonce` and `depositNonceVersion` in receipts. |
+| [Ecotone](./ecotone/l1-attributes.md) | Changes the L1 attributes calldata format. |
+| [Ecotone](./ecotone/derivation.md#network-upgrade-automation-transactions) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Fjord](./fjord/derivation.md#network-upgrade-automation-transactions) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Holocene](./holocene/derivation.md#engine-queue) | Replaces an invalid payload with a deposit-only block. |
+| [Pectra Blob Schedule](./pectra-blob-schedule/derivation.md) | Changes the blob base fee in the L1 attributes deposit. |
+| [Isthmus](./isthmus/l1-attributes.md) | Adds operator fee parameters to the L1 attributes calldata. |
+| [Isthmus](./isthmus/derivation.md#network-upgrade-automation-transactions) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Isthmus](./isthmus/exec-engine.md#fees) | Exempts deposits from the operator fee and adds operator fee fields to receipts. |
+| [Jovian](./jovian/l1-attributes.md) | Adds `daFootprintGasScalar` to the L1 attributes calldata. |
+| [Jovian](./jovian/derivation.md) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Jovian](./jovian/exec-engine.md#da-footprint-block-limit) | Excludes deposits from the DA footprint and adds `daFootprintGasScalar` to receipts. |
+| [Karst](./karst/derivation.md) | Adds upgrade deposits from a NUT bundle. |
+| [Karst](./karst/overview.md) | Exempts deposits from the EIP-7825 gas limit cap. |
+| [Lagoon](../interop/derivation.md) | Adds upgrade deposits. The activation block holds only deposits and has a higher gas limit. Invalid blocks become deposit-only. |
+| [Lagoon](../interop/predeploys.md#deposit-handling) | Makes `CrossL2Inbox` calls from deposits revert. |
+| [Lagoon](./lagoon/sdm.md) | Excludes deposits from SDM refunds. Checks deposit gas limits against pre-refund gas. |
 
 ## The Deposited Transaction Type
 
