@@ -126,8 +126,8 @@ emergency backstop if the Fault Dispute Game distributes bonds incorrectly.
 
 If this invariant is violated, the owner cannot correct erroneous bond distributions from buggy dispute games,
 potentially resulting in permanent loss of funds that should have been awarded to honest participants. The
-severity is High because it depends on the [Owner operates within governance constraints](#a01-001-owner-
-operates-within-governance-constraints) assumption - the owner must act correctly to utilize this capability
+severity is High because it depends on the [Owner operates within governance constraints](#a01-001-owner-operates-within-governance-constraints)
+assumption - the owner must act correctly to utilize this capability
 for its intended purpose.
 
 ## Function Specification
@@ -242,6 +242,7 @@ Withdraws ETH to `msg.sender` after the [Withdrawal Delay](#withdrawal-delay) ha
 - MUST revert if `ethLockbox.paused()` returns true
 - MUST revert if `withdrawals[msg.sender][_guy].amount` is less than `_wad`
 - MUST revert if `withdrawals[msg.sender][_guy].timestamp` is 0
+- MUST revert if `delay()` is 0
 - MUST revert if `withdrawals[msg.sender][_guy].timestamp + delay()` is greater than `block.timestamp`
 - MUST decrease `withdrawals[msg.sender][_guy].amount` by `_wad`
 - MUST call the parent `WETH98.withdraw(_wad)` function to transfer ETH to `msg.sender`
