@@ -85,7 +85,6 @@ Deposit rules change across forks. Each row lists the changes that one spec page
 | [Karst](./karst/derivation.md) | Adds upgrade deposits from a NUT bundle. |
 | [Karst](./karst/overview.md) | Exempts deposits from the EIP-7825 gas limit cap. |
 | [Lagoon](../interop/derivation.md) | Adds upgrade deposits. The activation block holds only deposits and has a higher gas limit. Invalid blocks become deposit-only. |
-| [Lagoon](../interop/predeploys.md#deposit-handling) | Makes `CrossL2Inbox` calls from deposits revert. |
 | [Lagoon](./lagoon/sdm.md) | Excludes deposits from SDM refunds. Checks deposit gas limits against pre-refund gas. |
 
 ## The Deposited Transaction Type
