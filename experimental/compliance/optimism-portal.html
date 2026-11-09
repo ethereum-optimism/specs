@@ -1,0 +1,632 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>OptimismPortal - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/compliance/optimism-portal.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="optimismportal"><a class="header" href="#optimismportal">OptimismPortal</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#bridge-hook-address">Bridge Hook Address</a></li>
+<li><a href="#unsafe-target">Unsafe Target</a></li>
+<li><a href="#deposit-counter">Deposit Counter</a></li>
+</ul>
+</li>
+<li><a href="#ibridgehook">IBridgeHook</a></li>
+<li><a href="#item-construction">Item Construction</a></li>
+<li><a href="#routing-and-recognition">Routing and Recognition</a></li>
+<li><a href="#terms-commitment">Terms Commitment</a></li>
+<li><a href="#withdrawals-and-when-they-are-held">Withdrawals and When They Are Held</a></li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#bridgehook">bridgeHook</a></li>
+<li><a href="#removehook">removeHook</a></li>
+<li><a href="#deposittransaction">depositTransaction</a></li>
+<li><a href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></li>
+<li><a href="#finalizewithdrawaltransactionexternalproof">finalizeWithdrawalTransactionExternalProof</a></li>
+<li><a href="#completedeposittransaction">completeDepositTransaction</a></li>
+<li><a href="#completewithdrawaltransaction">completeWithdrawalTransaction</a></li>
+</ul>
+</li>
+<li><a href="#resource-metering">Resource Metering</a></li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#icm-001-a-held-item-executes-only-on-its-committed-terms">iCM-001: A held item executes only on its committed terms</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-002-a-held-item-completes-at-most-once">iCM-002: A held item completes at most once</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-003-a-hook-can-only-delay-or-refuse-an-item">iCM-003: A hook can only delay or refuse an item</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-004-a-chain-with-no-hook-configured-is-unaffected">iCM-004: A chain with no hook configured is unaffected</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-005-a-held-withdrawal-keeps-its-minimum-gas-guarantee">iCM-005: A held withdrawal keeps its minimum gas guarantee</a>
+<ul>
+<li><a href="#impact-4">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a></li>
+<li><a href="#changing-the-hook">Changing the Hook</a></li>
+<li><a href="#gas-headroom-on-the-withdrawal-path">Gas Headroom on the Withdrawal Path</a></li>
+<li><a href="#cost-when-no-hook-is-set">Cost When No Hook Is Set</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<blockquote>
+<p><strong>Note:</strong> This document is not finalized and should be considered experimental.</p>
+</blockquote>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This page specifies what the <code>OptimismPortal</code> gains when a chain enables a bridge hook. The model those changes
+serve, and the vocabulary they use, are in the <a href="./overview.html">Compliance Module overview</a>.</p>
+<p>The Portal is the only contract that asks the hook. It builds every <a href="./overview.html#item">Item</a>, offers it to the hook,
+commits the terms of every item the hook defers, and runs a deferred item later on exactly those terms. Everything the
+hook can do, it does through the four functions in <a href="#ibridgehook"><code>IBridgeHook</code></a>.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="bridge-hook-address"><a class="header" href="#bridge-hook-address">Bridge Hook Address</a></h3>
+<p>The <strong>Bridge Hook Address</strong> is network-specific state on the Portal. It is set only through
+<a href="#initialize"><code>initialize</code></a>, by the ProxyAdmin or its owner, and cleared only by <a href="#removehook"><code>removeHook</code></a>. While it
+is <code>address(0)</code>, the Portal behaves as on a default OP Stack chain.</p>
+<p>The <code>L1StandardBridge</code> does not hold the hook address. The Portal is the contract that moves the bridge's escrow when
+an ERC-20 deposit or withdrawal is held.</p>
+<p>Removing the hook stops screening for new items and strands every item already held. Its commitment stays in the
+Portal, and its value stays with the removed hook.</p>
+<h3 id="unsafe-target"><a class="header" href="#unsafe-target">Unsafe Target</a></h3>
+<p>An Unsafe Target is an address a withdrawal may not call. The default set is the <code>OptimismPortal</code> itself and the
+<code>ETHLockbox</code>. This page adds the <code>L1StandardBridge</code> on every chain, and the
+<a href="#bridge-hook-address">Bridge Hook Address</a> while it is set. See
+<a href="#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</p>
+<h3 id="deposit-counter"><a class="header" href="#deposit-counter">Deposit Counter</a></h3>
+<p>The <strong>Deposit Counter</strong> is a counter the Portal assigns to a deposit when it screens it. A withdrawal carries its own
+nonce, unique on L2, so it is already unique, but a deposit has no unique field of its own: two identical deposits in
+the same block are otherwise indistinguishable. The counter is what makes a deposit's <a href="./overview.html#identifier">Identifier</a>
+name exactly one deposit, and the identifier exists only from the moment the counter is assigned. The counter MUST
+be strictly increasing and MUST never be reused, including across hook changes and re-initialization.</p>
+<h2 id="ibridgehook"><a class="header" href="#ibridgehook">IBridgeHook</a></h2>
+<pre><code class="language-solidity">interface IBridgeHook {
+    function screenDeposit(Item calldata item) external returns (bool pass_);
+    function holdDeposit(Item calldata item) external payable;
+    function screenWithdrawal(Item calldata item, uint256 finalizableAt) external returns (bool pass_);
+    function holdWithdrawal(Item calldata item) external payable;
+}
+</code></pre>
+<p><code>screenDeposit</code> and <code>screenWithdrawal</code> carry the <a href="./overview.html#screening-outcome">Screening Outcome</a> in how they
+return:</p>
+<div class="table-wrapper"><table><thead><tr><th>Outcome</th><th>How the hook signals it</th><th>What the Portal does</th></tr></thead><tbody>
+<tr><td>Proceed</td><td>returns <code>true</code></td><td>the item takes the normal path, unchanged</td></tr>
+<tr><td>Hold</td><td>returns <code>false</code></td><td>the Portal commits the item's terms and moves its value to the hook</td></tr>
+<tr><td>Reject</td><td>reverts</td><td>the whole transaction reverts and nothing is consumed</td></tr>
+</tbody></table>
+</div>
+<p><code>screenWithdrawal</code> also receives <code>finalizableAt</code>, the <a href="./overview.html#finalizable-time">Finalizable Time</a> of the proof
+being finalized, so a hook can reject an uncleared withdrawal until it is ready to hold it. See
+<a href="#withdrawals-and-when-they-are-held">Withdrawals and When They Are Held</a>.</p>
+<p>The Portal builds its own items and commits to their terms itself. It asks the hook only what to do with them.</p>
+<h2 id="item-construction"><a class="header" href="#item-construction">Item Construction</a></h2>
+<p>The Portal builds an item from what it sees: the sender, target, value and call. Token transfers are items too, since
+the standard bridges send their messages through the Portal. When the Portal
+<a href="#routing-and-recognition">recognizes</a> a token transfer between the L1 and L2 standard bridges, in either direction, it
+marks the item as one. The tokens and the amount stay in the item's data, where the bridge and the hook read them. The
+sender and target stay the messengers, and the hook decodes the real <a href="./overview.html#parties">Parties</a> for the policy.</p>
+<p>An item's <a href="./overview.html#identifier">Identifier</a> is <code>keccak256(abi.encode(item))</code>, computed the same way by the Portal
+and the hook, so both agree on which item a verdict names and the verdict covers every term. The following shape
+carries the fields the identifier must bind:</p>
+<pre><code class="language-solidity">enum Direction { Deposit, Withdrawal }
+enum Asset { ETH, ERC20 }
+
+struct Item {
+    Direction direction;
+    Asset     asset;       // ERC20 when the Portal recognizes a transfer between the standard bridges
+    address   from;        // a deposit's sender stays aliased
+    bool      aliased;
+    address   to;
+    uint256   ethAmount;   // a deposit's msg.value, or a withdrawal's value
+    uint256   l2Value;     // deposits only
+    uint256   gasLimit;
+    bool      isCreation;  // deposits only
+    bytes     data;        // for a token transfer, carries the tokens and the amount
+    uint256   nonce;       // deposit counter, or withdrawal nonce
+}
+</code></pre>
+<h2 id="routing-and-recognition"><a class="header" href="#routing-and-recognition">Routing and Recognition</a></h2>
+<p>The Portal recognizes one shape: a message between the two canonical bridges.</p>
+<ul>
+<li>For a deposit, the envelope's sender is the messenger, which the Portal derives from its own caller, and the
+messenger stamps the <code>L1StandardBridge</code> as the inner sender.</li>
+<li>For a withdrawal, the proven sender is the L2 messenger and the inner sender is the <code>L2StandardBridge</code>.</li>
+<li>In both, the inner call is <code>finalizeBridgeERC20</code>, and the inner target is the other canonical bridge: the
+<code>L2StandardBridge</code> for a deposit and the <code>L1StandardBridge</code> for a withdrawal.</li>
+</ul>
+<p>Nobody can choose the senders, so a message that matches came from the bridge, addressing its counterpart. The Portal
+marks such an item as a token transfer, and moves escrow only for it.</p>
+<p>The bridge trusts the Portal on the envelope: who sent the message, through which messenger, to which bridge. It never
+sees the envelope itself, only the inner <code>finalizeBridgeERC20</code> call, which it decodes on its own.</p>
+<p>The recognition still has to be correct, because the bridge acts on it. It gives the Portal no new authority: the
+messenger already accepts relays only from the Portal, with a sender the Portal supplies, so a faulty Portal can
+already reach the bridge's escrow.</p>
+<h2 id="terms-commitment"><a class="header" href="#terms-commitment">Terms Commitment</a></h2>
+<pre><code class="language-solidity">mapping(bytes32 =&gt; bool) public heldDeposits;    // keyed by the item's identifier
+mapping(bytes32 =&gt; bool) public heldWithdrawals; // keyed by the item's identifier
+</code></pre>
+<p>One bit per deferred item, recording the exact terms the protocol agreed to defer, already validated on the way in.
+When the hook asks to complete an item, the Portal rebuilds the key from the arguments it receives and requires the
+matching bit.</p>
+<p>The bridge keeps no commitments. It moves escrow only when the Portal calls, and only for a message the Portal has
+committed to.</p>
+<h2 id="withdrawals-and-when-they-are-held"><a class="header" href="#withdrawals-and-when-they-are-held">Withdrawals and When They Are Held</a></h2>
+<p>A withdrawal is screened each time someone tries to finalize it.</p>
+<ul>
+<li>If the hook proceeds, the withdrawal pays out through the normal path. For tokens that is the messenger and the
+bridge, as on a default chain.</li>
+<li>If the hook rejects, the finalization reverts. The withdrawal can be finalized again later, for example once it
+clears.</li>
+<li>If the hook holds, the withdrawal is marked finalized and its value moves to the hook, ETH from the <code>ETHLockbox</code> and
+tokens from the bridge's escrow.</li>
+</ul>
+<p>The protocol cannot force a hold, because the hook can always reject instead. How long flagged value stays in protocol
+contracts is therefore the chain's commitment, not the protocol's. It is kept by finalizing flagged withdrawals once
+the policy would hold them, which is an ordinary finalization that anyone can trigger through the existing
+permissionless entry points.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Initializes the Portal. It is the only way to set the <a href="#bridge-hook-address">Bridge Hook Address</a>. Only the
+<code>_bridgeHook</code> parameter is new, and the rest of the behavior is unchanged.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_bridgeHook</code>: the contract implementing <a href="#ibridgehook"><code>IBridgeHook</code></a>, or <code>address(0)</code> to keep the current hook.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the ProxyAdmin or its owner.</li>
+<li>MUST leave <code>bridgeHook</code> unchanged if <code>_bridgeHook</code> is <code>address(0)</code>.</li>
+<li>MUST otherwise set <code>bridgeHook</code> to <code>_bridgeHook</code>, replacing any hook already set, and emit <code>BridgeHookSet</code>.</li>
+<li>MUST leave <code>heldDeposits</code>, <code>heldWithdrawals</code> and the <a href="#deposit-counter">Deposit Counter</a> unchanged.</li>
+</ul>
+<h3 id="bridgehook"><a class="header" href="#bridgehook">bridgeHook</a></h3>
+<p>Returns the <a href="#bridge-hook-address">Bridge Hook Address</a>.</p>
+<ul>
+<li>MUST return <code>address(0)</code> if the chain has not configured a hook.</li>
+</ul>
+<h3 id="removehook"><a class="header" href="#removehook">removeHook</a></h3>
+<p>Removes the <a href="#bridge-hook-address">Bridge Hook Address</a>.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the ProxyAdmin owner.</li>
+<li>MUST revert with <code>OptimismPortal_InvalidBridgeHookState</code> if <code>bridgeHook</code> is <code>address(0)</code>.</li>
+<li>MUST set <code>bridgeHook</code> to <code>address(0)</code> and emit <code>BridgeHookRemoved</code> with the removed hook.</li>
+</ul>
+<h3 id="deposittransaction"><a class="header" href="#deposittransaction">depositTransaction</a></h3>
+<p>Accepts deposits of ETH and data. Behavior must remain unchanged while <code>bridgeHook</code> is <code>address(0)</code>.</p>
+<p><strong>Behavior, when <code>bridgeHook</code> is not <code>address(0)</code>:</strong></p>
+<ul>
+<li>MUST perform every check it performs on a default OP Stack chain before consulting the hook.</li>
+<li>MUST take today's normal path, unchanged, without consulting the hook, when the caller is the ProxyAdmin owner.</li>
+<li>MUST assign the <a href="#deposit-counter">Deposit Counter</a> and build the item from it before calling the hook, so the
+identifier the hook screens is the identifier the Portal commits to if it holds.</li>
+<li>MUST call <code>bridgeHook.screenDeposit</code> with that item.</li>
+<li>MUST take today's normal path, unchanged, when <code>screenDeposit</code> returns <code>true</code>.</li>
+<li>MUST revert when <code>screenDeposit</code> reverts.</li>
+<li>When <code>screenDeposit</code> returns <code>false</code>, it MUST hold the deposit:
+<ul>
+<li>MUST set <code>heldDeposits[identifier]</code> to <code>true</code> before moving any value.</li>
+<li>MUST NOT emit a <code>TransactionDeposited</code> event.</li>
+<li>MUST NOT lock the deposit's ETH in the <code>ETHLockbox</code>; the ETH goes to the hook instead.</li>
+<li>MUST ask the <code>L1StandardBridge</code> to move its escrow for the item, if the item is identified as a
+<a href="./overview.html#token-bridge-message">Token Bridge Message</a> by calling <code>holdERC20</code> on the <code>L1StandardBridge</code>.</li>
+<li>MUST then move any ETH the deposit carries to the hook by calling <code>holdDeposit</code> with that value.</li>
+<li>MUST emit <code>DepositHeld</code> with the item's identifier.</li>
+</ul>
+</li>
+</ul>
+<h3 id="provewithdrawaltransaction"><a class="header" href="#provewithdrawaltransaction">proveWithdrawalTransaction</a></h3>
+<p>Proves a withdrawal transaction.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the withdrawal target is an <a href="#unsafe-target">Unsafe Target</a>.</li>
+<li>MUST NOT consult the hook since a withdrawal is screened when it is finalized, not when it is proven.</li>
+<li>MUST otherwise behave as on a default OP Stack chain while <code>bridgeHook</code> is <code>address(0)</code>.</li>
+</ul>
+<h3 id="finalizewithdrawaltransactionexternalproof"><a class="header" href="#finalizewithdrawaltransactionexternalproof">finalizeWithdrawalTransactionExternalProof</a></h3>
+<p>Finalizes a withdrawal using a proof submitted by another address.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the withdrawal target is an <a href="#unsafe-target">Unsafe Target</a>.</li>
+<li>MUST otherwise behave as on a default OP Stack chain while <code>bridgeHook</code> is <code>address(0)</code>.</li>
+</ul>
+<p><strong>Behavior, when <code>bridgeHook</code> is not <code>address(0)</code>:</strong></p>
+<ul>
+<li>MUST perform every check it performs on a default OP Stack chain, including <code>checkWithdrawal</code>, before consulting the
+hook.</li>
+<li>MUST mark the withdrawal as finalized before calling the hook.</li>
+<li>MUST call <code>bridgeHook.screenWithdrawal</code> with the item and the <a href="./overview.html#finalizable-time">Finalizable Time</a> of
+the proof it is finalizing, before forwarding the withdrawal call to the appropriate target.</li>
+<li>MUST take the normal path, unchanged, when <code>screenWithdrawal</code> returns <code>true</code>.</li>
+<li>MUST revert, consuming nothing and leaving the withdrawal finalizable, when <code>screenWithdrawal</code> reverts.</li>
+<li>When <code>screenWithdrawal</code> returns <code>false</code>, it MUST hold the withdrawal:
+<ul>
+<li>MUST set <code>heldWithdrawals[identifier]</code> to <code>true</code> before moving any value.</li>
+<li>MUST NOT forward the withdrawal call to its target.</li>
+<li>MUST NOT emit <code>WithdrawalFinalized</code>, so a held withdrawal is not reported as paid.</li>
+<li>MUST unlock the withdrawal's ETH from the <code>ETHLockbox</code> before moving it, since the Portal pays the hook from its
+own balance.</li>
+<li>MUST ask the <code>L1StandardBridge</code> to move its escrow for the item, if the item is a recognized
+<a href="./overview.html#token-bridge-message">Token Bridge Message</a> by calling <code>holdERC20</code> on the <code>L1StandardBridge</code>.</li>
+<li>MUST then move the withdrawal's ETH to the hook by calling <code>holdWithdrawal</code> with that value.</li>
+<li>MUST emit <code>WithdrawalHeld</code> with the item's identifier and the withdrawal hash.</li>
+</ul>
+</li>
+</ul>
+<h3 id="completedeposittransaction"><a class="header" href="#completedeposittransaction">completeDepositTransaction</a></h3>
+<p>Executes a held deposit on the terms the Portal committed to. The <a href="#bridge-hook-address">Bridge Hook Address</a> calls
+this function when it is ready to release the deposit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_item</code>: the item as it was held. The Portal rebuilds its identifier from this preimage.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the <a href="#bridge-hook-address">Bridge Hook Address</a>.</li>
+<li>MUST revert if <code>heldDeposits[identifier]</code> is not <code>true</code>.</li>
+<li>MUST revert if the ETH sent with the call does not match the item's committed value.</li>
+<li>MUST delete <code>heldDeposits[identifier]</code> before moving any value.</li>
+<li>MUST ask the <code>L1StandardBridge</code> to take its escrow back, if the item is a recognized
+<a href="./overview.html#token-bridge-message">Token Bridge Message</a> by calling <code>restoreERC20</code> on the <code>L1StandardBridge</code>.</li>
+<li>MUST then lock the ETH sent with the call in the <code>ETHLockbox</code>, as on the normal deposit path.</li>
+<li>MUST emit a <code>TransactionDeposited</code> event with the committed terms, using the item's <code>from</code> unchanged.</li>
+<li>MUST NOT re-derive <code>from</code> from <code>msg.sender</code>, aliased or not: the caller is the hook, and the item's <code>from</code> already
+carries the aliasing applied when the deposit was submitted.</li>
+<li>MUST NOT run the resource meter again: a completion counts only against the per-block count in
+<a href="#resource-metering">Resource Metering</a>.</li>
+<li>MUST NOT revert if the system is paused, matching <code>depositTransaction</code> on a default OP Stack chain.</li>
+</ul>
+<h3 id="completewithdrawaltransaction"><a class="header" href="#completewithdrawaltransaction">completeWithdrawalTransaction</a></h3>
+<p>Runs a held withdrawal on the terms the Portal committed to. The <a href="#bridge-hook-address">Bridge Hook Address</a> calls
+this function when it is ready to release the withdrawal.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_item</code>: the item as it was held. The Portal rebuilds the item's identifier from this preimage.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the <a href="#bridge-hook-address">Bridge Hook Address</a>.</li>
+<li>MUST revert if the system is paused.</li>
+<li>MUST revert if the <a href="../../fault-proof/stage-one/optimism-portal.html#l2-withdrawal-sender">L2 Withdrawal Sender</a> is
+not <code>DEFAULT_L2_SENDER</code>, so a completion cannot run inside another withdrawal's execution.</li>
+<li>MUST revert if <code>heldWithdrawals[identifier]</code> is not <code>true</code>.</li>
+<li>MUST revert if the ETH sent with the call does not match the item's committed value.</li>
+<li>MUST revert if the item's target is an <a href="#unsafe-target">Unsafe Target</a> at the time of completion.</li>
+<li>MUST delete <code>heldWithdrawals[identifier]</code> before moving any value.</li>
+<li>MUST NOT unlock ETH from the <code>ETHLockbox</code>, since the withdrawal's ETH is the value sent with the call.</li>
+<li>MUST ask the <code>L1StandardBridge</code> to take its escrow back, if the item is a recognized
+<a href="./overview.html#token-bridge-message">Token Bridge Message</a> by calling <code>restoreERC20</code> on the <code>L1StandardBridge</code>.</li>
+<li>MUST set the L2 Withdrawal Sender to the item's committed sender before forwarding the call.</li>
+<li>MUST forward the call to the target with <code>SafeCall.callWithMinGas</code> and the item's committed <code>gasLimit</code>.</li>
+<li>MUST unset the L2 Withdrawal Sender after the call returns.</li>
+<li>MUST revert if the forwarded call fails, so the withdrawal stays held and can be completed again later. This
+diverges from <code>finalizeWithdrawalTransaction</code>, which records the failure as finalized with <code>success = false</code>.</li>
+<li>MUST emit <code>WithdrawalFinalized</code> with <code>success</code> as <code>true</code>.</li>
+</ul>
+<h2 id="resource-metering"><a class="header" href="#resource-metering">Resource Metering</a></h2>
+<p>A held deposit is paid for once, at submission, like any other deposit. Its gas counts against the deposit limit of
+the L1 block where it completes, since that is where it reaches L2. A completion that does not fit reverts and can be
+sent again in the next block.</p>
+<p>The resource meter is unchanged. A deposit is capped, priced and charged at submission the same way as on a
+default OP Stack chain, so the deposit fee still follows submissions. While a hook is set, the Portal also counts
+the deposit gas published in each L1 block. Ordinary deposits and completions share that count, under the same max
+resource limit.</p>
+<p>The count covers the whole L1 block in which a hook is set or removed. Setting a hook starts it from the gas the
+block already bought, and removing the hook leaves it running until the block ends.</p>
+<p><strong>A completion is never charged again.</strong></p>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="icm-001-a-held-item-executes-only-on-its-committed-terms"><a class="header" href="#icm-001-a-held-item-executes-only-on-its-committed-terms">iCM-001: A held item executes only on its committed terms</a></h3>
+<p>A protocol contract only ever executes terms it committed to. The Portal rebuilds the commitment key from the preimage
+it is handed at completion and requires the matching bit, so an item that does not match a commitment cannot be
+executed.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a hook could run an item the protocol never agreed to defer, or run a deferred item on altered terms,
+redirecting value or changing what the item does on L2.</p>
+<h3 id="icm-002-a-held-item-completes-at-most-once"><a class="header" href="#icm-002-a-held-item-completes-at-most-once">iCM-002: A held item completes at most once</a></h3>
+<p>The Portal deletes the commitment registered in either <code>heldDeposits</code> or <code>heldWithdrawals</code> before any value moves.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a held item could be completed repeatedly, draining the Portal, the <code>ETHLockbox</code> or the bridge's escrow.</p>
+<h3 id="icm-003-a-hook-can-only-delay-or-refuse-an-item"><a class="header" href="#icm-003-a-hook-can-only-delay-or-refuse-an-item">iCM-003: A hook can only delay or refuse an item</a></h3>
+<p>The Portal builds every item and commits its terms. The hook chooses which item moves and when, never where the value
+goes or what the item does.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, the contract at the hook address could redirect user value or decide arbitrary execution on both L1 and
+L2. That is far more authority than setting a hook is meant to grant to whoever can upgrade it.</p>
+<h3 id="icm-004-a-chain-with-no-hook-configured-is-unaffected"><a class="header" href="#icm-004-a-chain-with-no-hook-configured-is-unaffected">iCM-004: A chain with no hook configured is unaffected</a></h3>
+<p>While <code>bridgeHook</code> is <code>address(0)</code>, every entry point behaves exactly as on a default OP Stack chain, except that the
+<code>L1StandardBridge</code> is an <a href="#unsafe-target">Unsafe Target</a>.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: High</strong></p>
+<p>If violated, chains that never opted in would change behavior on upgrade, which the feature exists to avoid.</p>
+<h3 id="icm-005-a-held-withdrawal-keeps-its-minimum-gas-guarantee"><a class="header" href="#icm-005-a-held-withdrawal-keeps-its-minimum-gas-guarantee">iCM-005: A held withdrawal keeps its minimum gas guarantee</a></h3>
+<p>A withdrawal carries a gas limit for the call it will make on L1. Holding splits that call into two transactions: the
+finalization that defers it, and the completion that executes it. The gas limit has to survive this deferring.</p>
+<p>A held withdrawal is recorded as finalized and its call does not execute. The commitment is what carries the guarantee
+across. <a href="#completewithdrawaltransaction"><code>completeWithdrawalTransaction</code></a> forwards the call with
+<code>SafeCall.callWithMinGas</code> and the committed <code>gasLimit</code>, and reverts if that call fails. The target receives the gas
+limit the withdrawal carries, whether the withdrawal was held or not.</p>
+<p>Without this, the withdrawal is consumed at finalization, and the gas limit set on L2 would apply to nothing.</p>
+<h4 id="impact-4"><a class="header" href="#impact-4">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a held withdrawal completes with less gas than its sender asked for. The target call might fail.
+The commitment is already deleted and cannot be retried, leaving whichever value it carries stranded.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="why-the-bridge-and-the-hook-are-unsafe-targets"><a class="header" href="#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a></h3>
+<p>The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, which is the only
+check those entry points make. A withdrawal targeting the <code>L1StandardBridge</code> with a <code>restoreERC20</code> call credits
+escrow the Portal never committed to, and one targeting the hook with a <code>holdDeposit</code> call writes a record for an
+item the Portal never held.</p>
+<p>The bridge is unsafe whether or not the chain sets a hook. Gating it on the hook would mean a withdrawal proven
+while <code>bridgeHook</code> is <code>address(0)</code> stops being finalizable once a hook is set. Nothing legitimate targets the
+bridge directly, because a token withdrawal reaches it through the <code>L1CrossDomainMessenger</code>.</p>
+<p>The hook is an Unsafe Target only while it is set. After <a href="#removehook"><code>removeHook</code></a> or a replacement through
+<a href="#initialize"><code>initialize</code></a>, the former hook is an ordinary target, and a withdrawal can call it with the Portal as its
+caller. A hook MUST therefore check that it is still the Portal's hook, with <code>bridgeHook() == address(this)</code>, and not
+only that its caller is the Portal.</p>
+<p>The address can also change after a withdrawal is proven or held, so the checks can disagree. Finalization decides
+for a withdrawal that pays out directly, and completion decides for a held one.</p>
+<h3 id="changing-the-hook"><a class="header" href="#changing-the-hook">Changing the Hook</a></h3>
+<p>Replacing or removing a hook while items are held does not move their value, which stays with the former hook.</p>
+<p><code>initialize</code> is the only way to set a hook, so changing it also re-applies every other <code>initialize</code> argument: the
+<code>SystemConfig</code>, the <code>AnchorStateRegistry</code>, the <code>ETHLockbox</code> and the proof maturity delay. The operator must pass the
+current values. A wrong proof maturity delay, for example, changes when every withdrawal already proven can be
+finalized.</p>
+<h3 id="gas-headroom-on-the-withdrawal-path"><a class="header" href="#gas-headroom-on-the-withdrawal-path">Gas Headroom on the Withdrawal Path</a></h3>
+<p>The hook runs before <code>SafeCall.callWithMinGas</code>, so finalizing a cleared withdrawal also pays for the hook. This cannot
+brick a withdrawal, because <code>callWithMinGas</code> checks the remaining gas when it makes the call, so a finalization
+without enough gas reverts, consumes nothing, and can be retried with more.</p>
+<p>It does cost headroom. A withdrawal whose gas limit is close to the most gas an L1 transaction can use may no longer
+fit in one transaction. Nothing runs inside the relay, so token withdrawals do not depend on the gas the user set on
+L2.</p>
+<h3 id="cost-when-no-hook-is-set"><a class="header" href="#cost-when-no-hook-is-set">Cost When No Hook Is Set</a></h3>
+<p>A chain that has not configured a hook pays one <code>SLOAD</code>, which short circuits the rest of the hook logic. Proving and
+finalizing also read the <code>L1StandardBridge</code> address from <code>SystemConfig</code> for the unsafe-target check, which applies on
+every chain.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/compliance/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../experimental/compliance/l1-standard-bridge.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/compliance/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../experimental/compliance/l1-standard-bridge.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

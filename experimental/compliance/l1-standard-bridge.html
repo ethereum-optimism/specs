@@ -1,0 +1,445 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>L1StandardBridge - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/compliance/l1-standard-bridge.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="l1standardbridge"><a class="header" href="#l1standardbridge">L1StandardBridge</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#what-the-bridge-receives-from-the-portal">What the Bridge Receives From the Portal</a></li>
+<li><a href="#escrowed-and-minted-tokens">Escrowed and Minted Tokens</a></li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#acm-001-the-optimismportal-is-trusted">aCM-001: The OptimismPortal is trusted</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#holderc20">holdERC20</a></li>
+<li><a href="#restoreerc20">restoreERC20</a></li>
+</ul>
+</li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#icm-006-bridge-escrow-moves-only-when-requested-by-the-portal">iCM-006: Bridge escrow moves only when requested by the Portal</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-007-the-deposits-balance-always-matches-what-the-bridge-still-holds">iCM-007: The deposits balance always matches what the bridge still holds</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-008-the-bridge-moves-exactly-the-amount-the-message-names">iCM-008: The bridge moves exactly the amount the message names</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-009-escrow-leaves-the-bridge-only-to-the-hook-or-to-the-recipient">iCM-009: Escrow leaves the bridge only to the hook or to the recipient</a>
+<ul>
+<li><a href="#impact-3">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#security-considerations">Security Considerations</a>
+<ul>
+<li><a href="#a-refused-escrow-move-refuses-the-hold">A Refused Escrow Move Refuses the Hold</a></li>
+<li><a href="#the-portal-could-already-reach-the-escrow">The Portal Could Already Reach the Escrow</a></li>
+<li><a href="#resolving-the-portal">Resolving the Portal</a></li>
+<li><a href="#tokens-native-to-l2-cannot-be-recovered-from-a-held-item">Tokens Native to L2 Cannot Be Recovered From a Held Item</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<blockquote>
+<p><strong>Note:</strong> This document is not finalized and should be considered experimental.</p>
+</blockquote>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>This page specifies the <code>L1StandardBridge</code> changes to support a chain that enables a bridge hook. The model those changes
+serve, and the vocabulary they use, are in the <a href="./overview.html">Compliance Module overview</a>. The bridge's behavior on a
+default OP Stack chain is specified in its <a href="../contracts/L1/l1-standard-bridge.html">contract specification</a>.</p>
+<p>The bridge gains two entry points, callable only by the <code>OptimismPortal</code>, that move the escrow of a held token
+transfer to the hook and back. It does not store the hook address, it keeps no record of which items are held, and
+it never calls the hook directly.</p>
+<p>A hold is the Portal's record. The bridge is handed a message to decode and asked to move escrow for it. See
+<a href="./optimism-portal.html#terms-commitment">Terms Commitment</a>.</p>
+<h2 id="what-the-bridge-receives-from-the-portal"><a class="header" href="#what-the-bridge-receives-from-the-portal">What the Bridge Receives From the Portal</a></h2>
+<p>The bridge only receives the inner <code>finalizeBridgeERC20</code> encoded call carried in a message between the L1 and L2
+bridges, which it decodes on its own: it checks the selector, then reads the token pair and the amount from the
+call's arguments.</p>
+<p>The order of the token pair inside the message depends on the item's direction. A standard bridge encodes its message
+for the chain that will execute it, so the token local to the destination comes first. In a deposit's message the L1
+token is therefore the second token argument, and in a withdrawal's message it is the first. The bridge is told the
+direction because it cannot tell the two apart from the message alone.</p>
+<p>Whether the item is a <a href="./overview.html#token-bridge-message">Token Bridge Message</a> at all is the Portal's judgement, not
+the bridge's. The bridge trusts the Portal on the message envelope: who sent the message, through which messenger,
+and to which bridge. See <a href="./optimism-portal.html#routing-and-recognition">Routing and Recognition</a>.</p>
+<h2 id="escrowed-and-minted-tokens"><a class="header" href="#escrowed-and-minted-tokens">Escrowed and Minted Tokens</a></h2>
+<p>Only <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Tokens</a> are escrowed by the bridge, and only
+those have a <code>deposits</code> balance. An <code>OptimismMintableERC20</code> is burned on deposit and minted on withdrawal, so there is
+no escrow to move for it.</p>
+<p>A held item carrying an <code>OptimismMintableERC20</code> therefore moves no tokens at the bridge. Only its message is held, and
+the value behind it stays in the <code>L2StandardBridge</code>'s escrow on L2 until the item completes.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="acm-001-the-optimismportal-is-trusted"><a class="header" href="#acm-001-the-optimismportal-is-trusted">aCM-001: The OptimismPortal is trusted</a></h3>
+<p>The <code>OptimismPortal</code> only asks for an escrow move for a message it has recognized as a token transfer between the two
+canonical bridges, and only for an item whose terms it has committed to.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>Both new entry points are restricted to the <code>OptimismPortal</code>. The bridge stores no Portal address today, so how it
+resolves one is an open point. See <a href="#resolving-the-portal">Resolving the Portal</a>.</li>
+<li>Both new entry points read the Portal's <code>bridgeHook()</code> and revert while it is <code>address(0)</code>, so a Portal on a chain
+that has configured no hook cannot move escrow at all.</li>
+<li>The bridge decodes the inner call itself rather than trusting the Portal's reading of the token pair and amount.</li>
+<li>The bridge's own escrow checks still apply, so a move that would overdraw the escrow reverts.</li>
+<li>A faulty Portal can already drain the escrow through the <code>L1CrossDomainMessenger</code>, so these entry points add no
+additional capabilities to the Portal. See
+<a href="#the-portal-could-already-reach-the-escrow">The Portal Could Already Reach the Escrow</a>.</li>
+</ul>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="holderc20"><a class="header" href="#holderc20">holdERC20</a></h3>
+<p>Moves the escrow of a held token transfer out of the bridge and to the hook.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_direction</code>: whether the held item is a deposit or a withdrawal.</li>
+<li><code>_message</code>: the inner <code>finalizeBridgeERC20</code> call the Portal is holding.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the <code>OptimismPortal</code>.</li>
+<li>MUST revert if the Portal's <code>bridgeHook()</code> is <code>address(0)</code>.</li>
+<li>MUST revert if the selector of <code>_message</code> is not <code>finalizeBridgeERC20</code>.</li>
+<li>MUST read the token pair and the amount from <code>_message</code>, using <code>_direction</code> to tell which of the two token
+arguments is the L1 token.</li>
+<li>MUST record whether the L1 token is a <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>,
+keyed by <code>_direction</code> and <code>_message</code>.</li>
+<li>MUST transfer that amount of the L1 token to the bridge hook, if the L1 token is a
+<a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
+<li>MUST decrease the <code>deposits</code> mapping for that token pair by that amount, if the L1 token is a
+<a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
+<li>MUST revert if the <code>deposits</code> balance for that token pair is below the amount.</li>
+<li>MUST NOT move any tokens if the L1 token is an <code>OptimismMintableERC20</code>.</li>
+</ul>
+<h3 id="restoreerc20"><a class="header" href="#restoreerc20">restoreERC20</a></h3>
+<p>Takes the escrow of a held token transfer back into the bridge, so the normal path can run.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_direction</code>: the same direction that was passed to <a href="#holderc20">holdERC20</a>.</li>
+<li><code>_message</code>: the same inner <code>finalizeBridgeERC20</code> call that was passed to <a href="#holderc20">holdERC20</a>.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the <code>OptimismPortal</code>.</li>
+<li>MUST revert if the Portal's <code>bridgeHook()</code> is <code>address(0)</code>.</li>
+<li>MUST revert if the selector of <code>_message</code> is not <code>finalizeBridgeERC20</code>.</li>
+<li>MUST revert if <code>holdERC20</code> recorded no classification for the same <code>_direction</code> and <code>_message</code>.</li>
+<li>MUST read the token pair and the amount from <code>_message</code>, using <code>_direction</code> to tell which of the two token
+arguments is the L1 token.</li>
+<li>MUST pull that amount of the L1 token from the bridge hook, using the allowance the hook granted, if the recorded
+classification is a <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
+<li>MUST increase the <code>deposits</code> mapping for that token pair by that amount, if the recorded classification is a
+<a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
+<li>MUST NOT move any tokens if the recorded classification is an <code>OptimismMintableERC20</code>.</li>
+<li>MUST clear the recorded classification.</li>
+<li>MUST NOT pay the recipient. The normal path runs after the escrow is back, so a deposit is emitted to L2 and a
+withdrawal is relayed, and it is the relay that pays the recipient from escrow.</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="icm-006-bridge-escrow-moves-only-when-requested-by-the-portal"><a class="header" href="#icm-006-bridge-escrow-moves-only-when-requested-by-the-portal">iCM-006: Bridge escrow moves only when requested by the Portal</a></h3>
+<p>Tokens leave the bridge's escrow for the hook, and return to it, only when the <code>OptimismPortal</code> calls. The hook never
+calls the bridge, and nobody else is authorized on either entry point.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, any caller could drain the bridge's escrow to any address, taking the tokens of users whether or not
+they ever interacted with the hook.</p>
+<h3 id="icm-007-the-deposits-balance-always-matches-what-the-bridge-still-holds"><a class="header" href="#icm-007-the-deposits-balance-always-matches-what-the-bridge-still-holds">iCM-007: The deposits balance always matches what the bridge still holds</a></h3>
+<p>Every escrow move updates the <code>deposits</code> mapping for the token pair it moves, in both directions. The value of a held
+item is accounted for at the hook, never at the bridge.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, the bridge's accounting moves away from its real balance. Too low, and later legitimate withdrawals revert
+for users unrelated to the hold. Too high, and the bridge releases tokens it no longer has, which is a loss paid for
+by other users of the same token.</p>
+<h3 id="icm-008-the-bridge-moves-exactly-the-amount-the-message-names"><a class="header" href="#icm-008-the-bridge-moves-exactly-the-amount-the-message-names">iCM-008: The bridge moves exactly the amount the message names</a></h3>
+<p>Both <code>holdERC20</code> and <code>restoreERC20</code> take their amount from the inner <code>finalizeBridgeERC20</code> call they decode. A hold
+and the restore that reverses it therefore move the same amount, so an item's round trip through the hook leaves the
+escrow where it started.</p>
+<p>Whether the L1 token is a <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a> is recorded at
+hold and reused on restore, rather than derived again, so a token whose answer changes cannot break the round trip.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a restore could credit more escrow than the matching hold removed, creating a balance the bridge never
+received. Other users of that token pair pay for it, because their withdrawals draw on the same escrow.</p>
+<h3 id="icm-009-escrow-leaves-the-bridge-only-to-the-hook-or-to-the-recipient"><a class="header" href="#icm-009-escrow-leaves-the-bridge-only-to-the-hook-or-to-the-recipient">iCM-009: Escrow leaves the bridge only to the hook or to the recipient</a></h3>
+<p>The new entry points add no way to pay an arbitrary address. <a href="#holderc20">holdERC20</a> sends escrow to the bridge hook
+and nowhere else, and <a href="#restoreerc20">restoreERC20</a> only pulls it back from there. The recipient named in the message
+is paid by the relay on the normal path, once the escrow has returned.</p>
+<p>This is the bridge-side counterpart to
+<a href="./optimism-portal.html#icm-003-a-hook-can-only-delay-or-refuse-an-item">iCM-003</a>.</p>
+<h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a hold could pay an address the item never named, which turns a mechanism for deferring value into one
+for redirecting it.</p>
+<h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
+<h3 id="a-refused-escrow-move-refuses-the-hold"><a class="header" href="#a-refused-escrow-move-refuses-the-hold">A Refused Escrow Move Refuses the Hold</a></h3>
+<p>The bridge's own checks still apply when the Portal asks it to move escrow. If an inner check refuses the move, the whole
+hold reverts, and so does the finalization that triggered it. The withdrawal stays finalizable and can be attempted
+again.</p>
+<p>This is the correct outcome for safety, but it is a liveness risk worth monitoring. A token whose escrow move the
+bridge always refuses is a token whose withdrawals can never be held, so flagged value for that token
+stays in the bridge's escrow indefinitely.</p>
+<p>A cleared withdrawal never needs the move, because it pays through the normal path which should remain unchanged.</p>
+<h3 id="the-portal-could-already-reach-the-escrow"><a class="header" href="#the-portal-could-already-reach-the-escrow">The Portal Could Already Reach the Escrow</a></h3>
+<p>These entry points do not widen what a faulty <code>OptimismPortal</code> can do to the bridge. <code>finalizeBridgeERC20</code> releases
+escrow to whoever the messenger names as the cross-domain sender. The messenger takes that name from a parameter of
+<code>relayMessage</code>. And only the Portal may call <code>relayMessage</code>, with an <code>l2Sender</code> it sets
+itself. A compromised portal can already drain escrow through that path on a default OP Stack chain.</p>
+<p>The existing path needs a well-formed relay through the messenger, and it
+leaves a <code>RelayedMessage</code> event and a <code>successfulMessages</code> entry behind. An escrow move through
+<a href="#holderc20">holdERC20</a> is a single call, reachable from <code>depositTransaction</code>, which never touched the bridge
+before, and it leaves no messenger record. Monitoring built on messenger events does not see it.</p>
+<h3 id="resolving-the-portal"><a class="header" href="#resolving-the-portal">Resolving the Portal</a></h3>
+<p>Both entry points are restricted to the <code>OptimismPortal</code>, but the bridge has no Portal address today. Its
+<code>initialize</code> takes only the <code>L1CrossDomainMessenger</code> and the <code>SystemConfig</code>. Two existing routes could resolve one,
+<code>messenger.portal()</code> or <code>systemConfig.optimismPortal()</code>, and the design this page is drawn from does not choose
+between them.</p>
+<p>The same question applies to the destination of a held transfer. <code>holdERC20</code> sends escrow to the bridge hook, and the
+design states that the bridge does not need the hook address, which leaves the Portal to supply it. Neither point is
+settled.</p>
+<h3 id="tokens-native-to-l2-cannot-be-recovered-from-a-held-item"><a class="header" href="#tokens-native-to-l2-cannot-be-recovered-from-a-held-item">Tokens Native to L2 Cannot Be Recovered From a Held Item</a></h3>
+<p>A held item carrying an <code>OptimismMintableERC20</code> holds only the message. The tokens were burned on deposit, or were
+never minted on withdrawal, so there is nothing in the bridge for the hook to take custody of.</p>
+<p>The consequence is that such an item can only ever complete to its original recipient or stay held. Nothing, including
+upgrading the hook, can redirect the value, because the value is not in the hook's custody. On L2 it remains in the
+<code>L2StandardBridge</code>'s escrow.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/compliance/optimism-portal.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../experimental/compliance/policy.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/compliance/optimism-portal.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../experimental/compliance/policy.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

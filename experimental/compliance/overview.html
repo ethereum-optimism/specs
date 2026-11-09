@@ -1,0 +1,530 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Compliance Module - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/compliance/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="compliance-module"><a class="header" href="#compliance-module">Compliance Module</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#problem-statement">Problem Statement</a></li>
+<li><a href="#goals">Goals</a></li>
+<li><a href="#non-goals">Non-goals</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#item">Item</a></li>
+<li><a href="#identifier">Identifier</a></li>
+<li><a href="#screening">Screening</a></li>
+<li><a href="#screening-outcome">Screening Outcome</a></li>
+<li><a href="#hook">Hook</a></li>
+<li><a href="#terms-commitment">Terms Commitment</a></li>
+<li><a href="#verdict">Verdict</a></li>
+<li><a href="#completion">Completion</a></li>
+<li><a href="#policy">Policy</a></li>
+<li><a href="#parties">Parties</a></li>
+<li><a href="#token-bridge-message">Token Bridge Message</a></li>
+<li><a href="#finalizable-time">Finalizable Time</a></li>
+</ul>
+</li>
+<li><a href="#item-lifecycle">Item Lifecycle</a></li>
+<li><a href="#custody-model">Custody Model</a></li>
+<li><a href="#trust-assumptions">Trust Assumptions</a></li>
+<li><a href="#backward-compatibility">Backward Compatibility</a></li>
+<li><a href="#impact-on-developer-experience">Impact on Developer Experience</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<blockquote>
+<p><strong>Note:</strong> This document is not finalized and should be considered experimental.</p>
+</blockquote>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>An OP Stack chain must be able to condition every deposit and withdrawal that crosses its canonical bridge. The
+<code>OptimismPortal</code> stores one <strong>optional</strong> hook address. While that address is <code>address(0)</code>, the chain behaves exactly
+as any default OP Stack chain. When it is set, the Portal offers every item (see <a href="#item">Item</a>) to the hook before any
+value reaches its recipient.</p>
+<p>For each item, the hook can answer in one of three ways:</p>
+<ul>
+<li><strong>Proceed.</strong> The item executes as it would on any default OP Stack chain.</li>
+<li><strong>Hold.</strong> The item is deferred. The protocol takes custody of its value and commits to running it later, unchanged.</li>
+<li><strong>Reject.</strong> The call reverts and the item is refused while nothing is consumed.</li>
+</ul>
+<p>See <a href="#screening-outcome">Screening Outcome</a> for the mechanics of each answer.</p>
+<p>The hook is an interface, so any contract can implement it. These pages specify the interface, one reference
+implementation called the <code>ComplianceModule</code>, and the interface between that module and the policy owned by the chain, which
+decides what is acceptable. What a policy decides is outside this specification.</p>
+<p>The feature is specified across four further pages:</p>
+<ul>
+<li><a href="./optimism-portal.html">OptimismPortal</a>. The hook address, the <code>IBridgeHook</code> interface, how the Portal names an item,
+commits to its terms, and runs a held item later.</li>
+<li><a href="./l1-standard-bridge.html">L1StandardBridge</a>. How the escrow of a held token transfer moves to the hook and back.</li>
+<li><a href="./policy.html">Policy</a>. The <code>IPolicy</code> interface, and what a hook requires of any policy behind it.</li>
+<li><a href="../contracts/L1/compliance-module.html">ComplianceModule</a>. The reference hook implementation, which owns the verdict
+registry, custody of held value, and completion.</li>
+</ul>
+<h2 id="problem-statement"><a class="header" href="#problem-statement">Problem Statement</a></h2>
+<p>Some chains must condition value crossing their canonical bridge, and must enforce that condition where it cannot be
+bypassed.</p>
+<p>Screening at the sequencer only covers transactions submitted to it. It does not
+cover deposits submitted to L1, which carry forced inclusion, so the sequencer has no say in whether they are included.
+Withdrawals finalize on L1, outside the sequencer's reach. Since both deposits and withdrawals cross the
+<code>OptimismPortal</code>, that is where the chain can enforce a screening condition that cannot be bypassed.</p>
+<p>Since the condition and the rules under which an item can pass through L1 and L2 boundaries belong to the chain, the
+protocol only supplies: a way to defer an item, take custody of its value, and resume it later on the terms it was
+deferred with.</p>
+<h2 id="goals"><a class="header" href="#goals">Goals</a></h2>
+<ul>
+<li>Every deposit and withdrawal that crosses the canonical bridge is screened through the hook, whatever it carries,
+except deposits sent by the ProxyAdmin owner. A zero-value deposit still executes an arbitrary L2 call chosen by an
+L1 sender, such as a transfer between L2 accounts.</li>
+<li>An item the hook defers has its value taken into the hook's custody, out of the protocol contracts, before any of it
+reaches the recipient.</li>
+<li>An item can be deferred and resumed later on <strong>identical terms</strong>, with no user action in between.</li>
+<li>An item is identified unambiguously.</li>
+<li>The condition can be switched off for new items without releasing items already held.</li>
+<li>No policy may redirect value or alter an item's terms.</li>
+</ul>
+<h2 id="non-goals"><a class="header" href="#non-goals">Non-goals</a></h2>
+<ul>
+<li>Support for the <code>L1ERC721Bridge</code> or third-party bridge contracts.</li>
+<li>Transactions users submit to the sequencer.</li>
+<li>The type of policy applied by the chain governor, and the offchain service behind it.</li>
+</ul>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<p>The <code>OptimismPortal</code> is the screening boundary. It is the only contract that asks the hook, and it asks once per
+item. A deposit is screened when it is submitted while a withdrawal is screened when it is finalized.</p>
+<p>A deposit that already emitted <code>TransactionDeposited</code> is on its way to L2. A withdrawal whose call the Portal
+forwarded has already run. Neither can be recalled.</p>
+<pre class="mermaid">graph LR
+    U[User]
+    OP[OptimismPortal]
+    SB[L1StandardBridge]
+    CM[&quot;ComplianceModule (the hook, holds value)&quot;]
+    POL[&quot;Policy (chain-specific)&quot;]
+
+    subgraph onchain [On chain]
+        OP
+        SB
+        CM
+        POL
+    end
+
+    U --&gt;|deposit / finalize| OP
+    U --&gt;|token deposit| SB
+    SB &lt;--&gt;|&quot;messages, through the messenger&quot;| OP
+    OP --&gt;|&quot;hold / restore escrow&quot;| SB
+    OP &lt;--&gt;|&quot;screen / hold / complete&quot;| CM
+    CM &lt;--&gt;|&quot;screenDeposit / screenWithdrawal / screenRelease&quot;| POL
+    POL --&gt;|recordVerdict| CM
+</pre>
+<ul>
+<li>The <strong><code>OptimismPortal</code></strong> stores the hook address and calls the hook from <code>depositTransaction</code> and
+<code>finalizeWithdrawalTransaction</code> when one is set. It recognizes the messages the two canonical bridges exchange, and
+it commits the terms of every item it defers.</li>
+<li>The <strong><code>L1StandardBridge</code></strong> gains two entry points, callable only by the Portal, that move the escrow of a token
+transfer to the hook and back. It keeps its own accounting and reads its own messages.</li>
+<li>The <strong><code>ComplianceModule</code></strong> implements the hook. It owns the verdict registry, custody of any held value, and completion.
+It also decodes canonical messages to name the real parties for the policy. <strong>It is the only new contract that holds
+value.</strong></li>
+<li>The <strong>policy</strong> decides what items go through based on its own set of rules.</li>
+</ul>
+<p>The Portal gains the ability to defer an item and resume it later, which a rate limiter, a per-token pause or a
+circuit breaker would use the same way.</p>
+<p>Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge keeps none. The Portal
+recognizes the messenger envelope and hands the bridge the message inside it. The bridge decodes that inner call
+itself, moves the escrow it names, and updates its own accounting.</p>
+<p>The Portal builds every item and records its terms, and the hook only picks which item moves. No policy, however it is
+written, can redirect value or change what an item does. It can delay an item or refuse it, and nothing else.</p>
+<p>Letting the <code>L1StandardBridge</code> screen its own token transfers looks simpler, because the parties arrive there as
+typed arguments. It does not work for withdrawals. A token withdrawal reaches the bridge inside the messenger's
+relay, after the Portal has already consumed the withdrawal. A revert there becomes a failed message rather than a
+rejection, so the bridge could hold an item but never refuse one.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="item"><a class="header" href="#item">Item</a></h3>
+<p>An <strong>Item</strong> is one deposit or one withdrawal, as the <code>OptimismPortal</code> sees it. It can carry ETH, tokens, or no value
+at all. The Portal builds an item from the sender, target, value and call it sees. Each item is unique in its
+direction.</p>
+<h3 id="identifier"><a class="header" href="#identifier">Identifier</a></h3>
+<p>An <strong>Identifier</strong> is an item's name, a hash of all of the item's fields. The <code>OptimismPortal</code> and the hook compute it
+the same way, so both agree on which item a <a href="#verdict">Verdict</a> names, and the verdict covers every term.</p>
+<p>The identifier is built the same way for both directions: the Portal fills the same
+<a href="./optimism-portal.html#item-construction">Item</a> fields and hashes them. The <code>direction</code> field keeps a deposit and a
+withdrawal apart, and the <code>nonce</code> field holds the withdrawal's nonce or, for a deposit, the
+<a href="./optimism-portal.html#deposit-counter">Deposit Counter</a>.</p>
+<p>Take two deposits from the same address for the same amount, to the same L2 address in the same L1 block. Every field
+except <code>nonce</code> is identical, so without the Deposit Counter both would share one identifier, and a clearance for one
+would release the other.</p>
+<h3 id="screening"><a class="header" href="#screening">Screening</a></h3>
+<p><strong>Screening</strong> is offering an item to the hook, which answers with a <a href="#screening-outcome">Screening Outcome</a>. A deposit
+is screened when it is submitted. A withdrawal is screened when it is finalized.</p>
+<h3 id="screening-outcome"><a class="header" href="#screening-outcome">Screening Outcome</a></h3>
+<p>A <strong>Screening Outcome</strong> is the hook's answer for one item. There are three possible outcomes:</p>
+<ul>
+<li><strong>Proceed.</strong> The item takes the normal path, unchanged.</li>
+<li><strong>Hold.</strong> The item is deferred. The Portal commits its terms and its value moves to the hook.</li>
+<li><strong>Reject.</strong> The call reverts and nothing is consumed. A rejected deposit never happens, and a rejected withdrawal
+remains finalizable and can be attempted again.</li>
+</ul>
+<p>A hook need not use all three. An asynchronous policy proceeds or holds and never rejects. A synchronous policy
+proceeds or rejects and never holds. See <a href="#item-lifecycle">Item Lifecycle</a> for how an item moves between them.</p>
+<h3 id="hook"><a class="header" href="#hook">Hook</a></h3>
+<p>The <strong>Hook</strong> is the contract at the <code>OptimismPortal</code>'s hook address. The Portal asks it about every item and the hook
+takes custody of held value. Any contract that implements <code>IBridgeHook</code> can be a hook.</p>
+<h3 id="terms-commitment"><a class="header" href="#terms-commitment">Terms Commitment</a></h3>
+<p>A <strong>Terms Commitment</strong> is the <code>OptimismPortal</code>'s record of a held item. It is keyed by the item's
+<a href="#identifier">Identifier</a> in both directions, so it binds every term. Only an item that matches a commitment can
+<a href="#completion">complete</a>, and only once.</p>
+<h3 id="verdict"><a class="header" href="#verdict">Verdict</a></h3>
+<p>A <strong>Verdict</strong> is a decision about one item, recorded through the <a href="#policy">Policy</a> against the item's
+<a href="#identifier">Identifier</a>. A verdict can be recorded before the item exists. It carries an expiry set by the
+<a href="./policy.html#verdict-writer">Verdict Writer</a> when it is written, and the policy can revoke it earlier.</p>
+<p>A clear verdict is what lets value move. With one, a withdrawal pays out at finalization and a held item can complete,
+as long as the policy still allows it when the value moves. An item without one is uncleared.</p>
+<h3 id="completion"><a class="header" href="#completion">Completion</a></h3>
+<p><strong>Completion</strong> is moving a held item to its original destination, on the committed terms. Anyone can start it at the
+hook once the item has been cleared. A held item cannot be partially completed, and it is never returned to its sender.</p>
+<h3 id="policy"><a class="header" href="#policy">Policy</a></h3>
+<p>A <strong>Policy</strong> is a contract <strong>the chain owns</strong> that decides the <a href="#screening-outcome">Screening Outcome</a> for
+an item. The hook asks it when an item is screened and when value moves, and takes verdicts only from it.</p>
+<h3 id="parties"><a class="header" href="#parties">Parties</a></h3>
+<p>The <strong>Parties</strong> of an item are the addresses the policy screens for it. For a message sent through the messengers, the
+hook decodes the real sender and recipient from the envelope. Where it stops decoding, it uses the sender and target
+of the last layer it read.</p>
+<h3 id="token-bridge-message"><a class="header" href="#token-bridge-message">Token Bridge Message</a></h3>
+<p>A <strong>Token Bridge Message</strong> is a token transfer between the <code>L1StandardBridge</code> and the <code>L2StandardBridge</code>, sent through
+the messengers. The <code>OptimismPortal</code> recognizes it in two steps. The item's outer sender and target must be the
+messengers, and the envelope must decode to a <code>finalizeBridgeERC20</code> call from the standard bridge. Since nobody can choose
+those fields, a message that matches came from the bridge. The Portal fills the item's token fields from that inner
+call, and moves escrow only for such a message.</p>
+<h3 id="finalizable-time"><a class="header" href="#finalizable-time">Finalizable Time</a></h3>
+<p>The <strong>Finalizable Time</strong> of a withdrawal is the later of <code>proofMaturityDelaySeconds</code> after its proof was submitted
+and <code>disputeGameFinalityDelaySeconds</code> after that proof's dispute game resolved. The <code>OptimismPortal</code> requires both
+delays before it finalizes, so neither alone decides when a withdrawal can move. The game must also be proper,
+respected and resolved in the defender's favour, but those conditions carry no time and so are not part of this value.</p>
+<p>A withdrawal can be proven more than once, by different submitters and against different games, and whoever finalizes
+names which proof to use. The Finalizable Time belongs to that proof, not to the withdrawal.</p>
+<p>The Portal passes it to the hook at screening, so a policy can decide how long to wait before it holds an uncleared
+withdrawal.</p>
+<h2 id="item-lifecycle"><a class="header" href="#item-lifecycle">Item Lifecycle</a></h2>
+<pre class="mermaid">graph LR
+    E[&quot;item enters the Portal&quot;]
+    S{&quot;hook is asked&quot;}
+    P[&quot;proceeds, as on a default chain&quot;]
+    R[&quot;reverted, nothing happened&quot;]
+    H[&quot;held: terms committed, custody with the hook&quot;]
+    V[&quot;verdict recorded&quot;]
+    C[&quot;completed on the original terms&quot;]
+
+    E --&gt; S
+    S --&gt;|proceed| P
+    S --&gt;|reject| R
+    S --&gt;|hold| H
+    H -.-&gt; V
+    V --&gt; C
+</pre>
+<p>An item is offered to the hook once when it enters. If it is held, it is checked again when its value moves, so the
+policy is consulted twice on a held item.</p>
+<p>A verdict lives against an <a href="#identifier">Identifier</a>, not against the item itself. The identifier must name exactly one
+item, otherwise one clearance could release another.</p>
+<h2 id="custody-model"><a class="header" href="#custody-model">Custody Model</a></h2>
+<p>The contract holding the value is the one that hands it to the hook. The <code>OptimismPortal</code> decides when.</p>
+<p><strong>ETH moves through the Portal.</strong> Every ETH route, through the bridge or through the messenger, ends at the Portal. On
+a hold, the Portal sends the ETH to the hook. On completion it comes back as the value of the completion call, and the
+Portal checks it against the committed terms.</p>
+<p><strong>Tokens move through the bridge.</strong> The <code>L1StandardBridge</code> escrows them, and it is the only contract that moves them
+to the hook and back. Tokens native to L2 are burned and minted rather than escrowed, so only their message is held,
+and the value behind such an item stays in the <code>L2StandardBridge</code>'s escrow until it completes.</p>
+<p>For a <a href="#token-bridge-message">Token Bridge Message</a>, the Portal hands the bridge the inner message and asks it to move
+escrow. The bridge decodes that inner call itself, runs its own checks, and records the balance change in its own
+accounting. It records nothing about the hold:</p>
+<ul>
+<li><strong>Hold.</strong> The Portal calls the bridge with the inner <code>finalizeBridgeERC20</code> message it is holding. The bridge checks
+the selector, reads the tokens and the amount from it, and debits its escrow for that token pair, which reverts if
+the escrow is short. It then sends the tokens to the hook.</li>
+<li><strong>Completion.</strong> The hook approves the bridge for the item's amount and calls the Portal, which asks the bridge to
+take the tokens back and credit its escrow. The normal path then runs, so a deposit is emitted to L2 and a withdrawal
+is relayed.</li>
+</ul>
+<p>The bridge does not depend on the hook, because only the Portal can send its escrow to the hook or take it back.</p>
+<h2 id="trust-assumptions"><a class="header" href="#trust-assumptions">Trust Assumptions</a></h2>
+<p>A chain that sets a hook address accepts the following, on top of the trust model of a default OP Stack chain.</p>
+<p><strong>The chain is not a Stage 1 Rollup.</strong> A hook that holds indefinitely is a permanent
+<a href="../../protocol/stage-1.html#withdrawal-liveness">Withdrawal Liveness</a> failure caused by an actor that is neither the
+Security Council nor the Proxy Admin Owner. Users have to trust the chain operator not to censor them.</p>
+<p><strong>Whoever can upgrade the hook is the custodian of all deferred value.</strong> That authority is not constrained to be the
+chain's <code>ProxyAdmin</code> owner. What an upgraded hook does with value already in its custody is outside the protocol's
+guarantees. The exposure is not limited to what is held at any one moment. A hostile hook holds every new deposit and
+withdrawal as it arrives, so its custody grows with the chain's bridge flow for as long as it stays set. It still
+cannot redirect value or alter an item's terms. See
+<a href="./optimism-portal.html#icm-003-a-hook-can-only-delay-or-refuse-an-item">iCM-003</a>.</p>
+<p><strong>Removing the hook strands held items.</strong> The chain's <code>ProxyAdmin</code> owner can remove the hook at any time. New items
+stop being screened, but every item already held stays held. Its commitment stays in the Portal and its value stays
+with the removed hook.</p>
+<p><strong>The policy decides who can clear an item.</strong> A compromised policy can complete held items early, and so can any role
+it trusts. The value still only reaches the item's original destination. A compromised policy can also hold or refuse
+any new item.</p>
+<p><strong>A failing policy can halt bridging.</strong> The <code>ComplianceModule</code>'s
+<a href="../contracts/L1/compliance-module.html#disable-switch">disable switch</a> exists so that a problem in the policy, or a long
+outage of the Verdict Writer, cannot block new deposits and withdrawals indefinitely. It is not a release. While it
+is on, every deposit proceeds without the policy being asked, and so does every withdrawal initiated at or after the
+cutoff. Items already held, and withdrawals initiated before the cutoff, are still screened. A problem in the hook
+itself is fixed by upgrading it.</p>
+<h2 id="backward-compatibility"><a class="header" href="#backward-compatibility">Backward Compatibility</a></h2>
+<p>The change is limited to L1 contracts, with no multi-client or consensus impact. A held deposit emits no
+<code>TransactionDeposited</code> event, so the derivation pipeline sees nothing until the deposit completes, and then sees an
+ordinary deposit.</p>
+<p>For a chain that does not set a hook, behavior does not change, but three things change either way:</p>
+<ul>
+<li>The <code>L1StandardBridge</code> gains two entry points that only the <code>OptimismPortal</code> can call.</li>
+<li>The <code>OptimismPortal</code> gains completion functions, while existing user entry points are unchanged.</li>
+<li>The <code>OptimismPortal</code> makes the <code>L1StandardBridge</code> an <a href="./optimism-portal.html#unsafe-target">Unsafe Target</a>, so a
+withdrawal that calls the bridge directly can no longer be finalized.</li>
+</ul>
+<p>For a chain that enables it, these assumptions break:</p>
+<ul>
+<li>A successful <code>depositTransaction</code> no longer implies that the deposit reaches L2.</li>
+<li>A successful ERC-20 deposit, and the <code>ERC20DepositInitiated</code> and <code>SentMessage</code> events it emits, no longer imply that
+the deposit reaches L2.</li>
+<li><code>finalizeWithdrawalTransaction</code> can revert for a withdrawal that is not cleared, and once the hook holds it, it can
+succeed without paying the recipient.</li>
+<li>Held deposits complete out of submission order, because a verdict for a later item can land first.</li>
+</ul>
+<p>A <code>RelayedMessage</code> event still implies the recipient was paid, because a withdrawal is held before the messenger
+relays it.</p>
+<h2 id="impact-on-developer-experience"><a class="header" href="#impact-on-developer-experience">Impact on Developer Experience</a></h2>
+<p>No hook is set by default, so developers on chains that do not enable it see no difference.</p>
+<p>For a chain that enables it:</p>
+<ul>
+<li>A deposit may be held. The bridge call succeeds, no <code>TransactionDeposited</code> event is emitted, and the value sits with
+the hook. The item completes later with no further action from the user. SDKs and bridge interfaces should watch the
+hook's events and show a pending state rather than success.</li>
+<li>A withdrawal that is not cleared cannot be finalized until it is, and the revert lets a bridge interface show it as
+pending. Once the policy stops waiting, finalizing it holds it, so the recipient is not paid until completion.</li>
+</ul>
+<p>Integrators that bridge programmatically, including contracts that call <code>depositTransaction</code> directly, have to handle
+the held case rather than assuming the deposit succeeds atomically. Bridges and escrows outside the core contracts
+should treat a deposit as pending until it completes.</p>
+<p>Tooling is able to find the hook through the <code>OptimismPortal</code>'s hook address.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../experimental/predictive-chain-deployments/op-deployer.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../experimental/compliance/optimism-portal.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../experimental/predictive-chain-deployments/op-deployer.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../experimental/compliance/optimism-portal.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../specs/static/solidity.min.js"></script>
+        <script src="../../specs/static/mermaid.min.js"></script>
+        <script src="../../specs/static/mermaid-init.js"></script>
+        <script src="../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE HTML>
+<html lang="en" class="ayu sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ComplianceModule - OP Stack Specification</title>
+
+
+        <!-- Custom HTML head -->
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNLKSPKGWN"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-YNLKSPKGWN');
+        </script>
+        <meta name="google-site-verification" content="1XjEcxxHshd6NM_mxbl_uv-SyamI6_99aOpILYI3_mk" />
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../../theme/css/footer.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "ayu";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('ayu')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">OP Stack Specification</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ethereum-optimism/specs/edit/main/specs/experimental/contracts/L1/compliance-module.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<h1 id="compliancemodule"><a class="header" href="#compliancemodule">ComplianceModule</a></h1>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#definitions">Definitions</a>
+<ul>
+<li><a href="#record">Record</a></li>
+<li><a href="#resolved-parties">Resolved Parties</a></li>
+<li><a href="#disable-switch">Disable Switch</a></li>
+</ul>
+</li>
+<li><a href="#assumptions">Assumptions</a>
+<ul>
+<li><a href="#acm-004-the-modules-upgrade-authority-is-the-custodian-of-all-deferred-value">aCM-004: The module's upgrade authority is the custodian of all deferred value</a>
+<ul>
+<li><a href="#mitigations">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#acm-005-the-policy-is-trusted">aCM-005: The policy is trusted</a>
+<ul>
+<li><a href="#mitigations-1">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#acm-006-the-module-owner-is-trusted-with-whatever-the-policy-can-do">aCM-006: The module owner is trusted with whatever the policy can do</a>
+<ul>
+<li><a href="#mitigations-2">Mitigations</a></li>
+</ul>
+</li>
+<li><a href="#acm-007-tokens-behave-as-the-standardbridge-requires">aCM-007: Tokens behave as the StandardBridge requires</a>
+<ul>
+<li><a href="#mitigations-3">Mitigations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#invariants">Invariants</a>
+<ul>
+<li><a href="#icm-011-verdicts-come-only-from-the-policy-and-the-hook-functions-only-from-the-portal">iCM-011: Verdicts come only from the policy, and the hook functions only from the Portal</a>
+<ul>
+<li><a href="#impact">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-012-a-record-is-deleted-before-the-module-calls-out">iCM-012: A record is deleted before the module calls out</a>
+<ul>
+<li><a href="#impact-1">Impact</a></li>
+</ul>
+</li>
+<li><a href="#icm-013-the-module-holds-at-least-what-it-owes">iCM-013: The module holds at least what it owes</a>
+<ul>
+<li><a href="#impact-2">Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#function-specification">Function Specification</a>
+<ul>
+<li><a href="#constructor">constructor</a></li>
+<li><a href="#initialize">initialize</a></li>
+<li><a href="#portal">portal</a></li>
+<li><a href="#owner">owner</a></li>
+<li><a href="#items">items</a></li>
+<li><a href="#parties">parties</a></li>
+<li><a href="#heldtokens">heldTokens</a></li>
+<li><a href="#policy">policy</a></li>
+<li><a href="#disabled">disabled</a></li>
+<li><a href="#paused">paused</a></li>
+<li><a href="#screendeposit">screenDeposit</a></li>
+<li><a href="#holddeposit">holdDeposit</a></li>
+<li><a href="#screenwithdrawal">screenWithdrawal</a></li>
+<li><a href="#holdwithdrawal">holdWithdrawal</a></li>
+<li><a href="#recordverdict">recordVerdict</a></li>
+<li><a href="#revokeverdict">revokeVerdict</a></li>
+<li><a href="#completedeposit">completeDeposit</a></li>
+<li><a href="#completewithdrawal">completeWithdrawal</a></li>
+<li><a href="#setpolicy">setPolicy</a></li>
+<li><a href="#disable">disable</a></li>
+<li><a href="#enable">enable</a></li>
+</ul>
+</li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<blockquote>
+<p><strong>Note:</strong> This document is not finalized and should be considered experimental.</p>
+</blockquote>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>ComplianceModule</code> is a reference implementation of the bridge hook an <code>OptimismPortal</code> can be pointed at. It
+takes custody of the ETH and tokens of held items, owns the verdict registry, and initiates completion. It is the only
+new contract that holds value.</p>
+<p>A separate <a href="../../compliance/policy.html">Policy</a> contract decides what is acceptable, and the
+module consults it on every item. The feature as a whole is described in the
+<a href="../../compliance/overview.html">Compliance Module overview</a>.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<h3 id="record"><a class="header" href="#record">Record</a></h3>
+<p>A <strong>Record</strong> is the module's entry for one item, keyed by the item's
+<a href="../../compliance/overview.html#identifier">Identifier</a>.</p>
+<pre><code class="language-solidity">struct Record {
+    uint64 heldAt;    // non-zero means the item exists and is held
+    uint64 expiresAt; // non-zero means a clear verdict is recorded, and when the policy says it expires
+}
+</code></pre>
+<p>The module doesn't store any of the item fields. They are emitted in full when the item is held, and re-supplied by
+whoever attempts to move
+its value. This keeps unbounded calldata out of storage, and lets anyone rebuild the set of held items from L1 alone.</p>
+<p>The module stores whatever <code>expiresAt</code> the policy passes and hands it back when value moves. The module does not
+judge it; the policy does, and it treats an expired verdict as none.</p>
+<h3 id="resolved-parties"><a class="header" href="#resolved-parties">Resolved Parties</a></h3>
+<p>The <strong>Resolved Parties</strong> of an item are the two addresses the module passes to the policy: the sender, then the
+recipient. For a message sent through the messengers, the module decodes the real sender and recipient from the
+envelope rather than passing the messengers themselves.</p>
+<p>This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation:</p>
+<ul>
+<li>A <code>relayMessage</code> envelope to the direction's messenger whose inner call is <code>finalizeBridgeERC20</code> or
+<code>finalizeBridgeETH</code>, from the counterpart standard bridge to this side's standard bridge: <code>_from</code> and <code>_to</code>.</li>
+<li>Any other <code>relayMessage</code> envelope to the direction's messenger: the messenger's <code>_sender</code> and <code>_target</code>.</li>
+<li>Anything else: the outer addresses, with a deposit's <code>from</code> unaliased when the item's <code>aliased</code> flag is set.</li>
+</ul>
+<p>Resolving this once in the module, rather than in each policy, keeps the protocol knowledge in one place.</p>
+<h3 id="disable-switch"><a class="header" href="#disable-switch">Disable Switch</a></h3>
+<p><strong>Disable</strong> is the module's emergency switch, intended for a failing policy or a long outage of the Verdict Writer.</p>
+<p>While it is set, every deposit proceeds without the policy being asked, and so does every withdrawal initiated at or
+after the cutoff. Withdrawals initiated before the cutoff are still screened. Items already held stay held, and still
+need a clear verdict and the policy's approval to complete.</p>
+<p>The cutoff is an L2 withdrawal nonce rather than a timestamp. Nothing on L1 records when a withdrawal was initiated,
+and a proof's timestamp resets whenever someone proves it again, so a timestamp cutoff could be bypassed by
+re-proving.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<h3 id="acm-004-the-modules-upgrade-authority-is-the-custodian-of-all-deferred-value"><a class="header" href="#acm-004-the-modules-upgrade-authority-is-the-custodian-of-all-deferred-value">aCM-004: The module's upgrade authority is the custodian of all deferred value</a></h3>
+<p>Whoever can upgrade the module can reach every item it holds. That authority is not constrained to be the chain's
+<code>ProxyAdmin</code> owner, and what an upgraded module does with value already in its custody is outside the protocol's
+guarantees. The value at risk is not limited to what the module holds when it is upgraded. The Portal offers it every
+item, so it can hold each new deposit and withdrawal as it arrives. Since removing or replacing the hook is the only
+way to stop that, the loss is bounded by how fast the chain reacts.</p>
+<h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
+<ul>
+<li>The module holds only deferred value. Value on the normal path never passes through it.</li>
+<li>The full item is emitted when it is held, so the set of held items and their owed amounts is auditable from L1.</li>
+<li>The Portal's commitment binds the terms of every held item, so an item that does complete can only complete to its
+original destination under the original terms.</li>
+</ul>
+<h3 id="acm-005-the-policy-is-trusted"><a class="header" href="#acm-005-the-policy-is-trusted">aCM-005: The policy is trusted</a></h3>
+<p>The module takes verdicts only from the policy, and asks it before any value moves. A compromised policy can clear
+any held item, or refuse and hold any new one. See
+<a href="../../compliance/policy.html#acm-002-the-chain-trusts-the-policy-it-sets">aCM-002</a>.</p>
+<h4 id="mitigations-1"><a class="header" href="#mitigations-1">Mitigations</a></h4>
+<ul>
+<li>The module checks its own record before consulting the policy, so a policy cannot complete an item that was never
+held.</li>
+<li>A policy can only delay or refuse. See
+<a href="../../compliance/optimism-portal.html#icm-003-a-hook-can-only-delay-or-refuse-an-item">iCM-003</a>.</li>
+<li><a href="#disable-switch">Disable Switch</a> bounds how long a failing or compromised policy can block new items.</li>
+</ul>
+<h3 id="acm-006-the-module-owner-is-trusted-with-whatever-the-policy-can-do"><a class="header" href="#acm-006-the-module-owner-is-trusted-with-whatever-the-policy-can-do">aCM-006: The module owner is trusted with whatever the policy can do</a></h3>
+<p>The owner points the module at a policy with <a href="#setpolicy">setPolicy</a>, so it inherits everything
+<a href="#acm-005-the-policy-is-trusted">aCM-005</a> grants the policy, and it can stop screening new items with
+<a href="#disable">disable</a>. It is a role separate from the upgrade authority in aCM-004, which reaches held value directly.</p>
+<h4 id="mitigations-2"><a class="header" href="#mitigations-2">Mitigations</a></h4>
+<ul>
+<li>The owner cannot alter a record, so held items keep their verdicts across a policy change.</li>
+<li>A replacement policy can still only delay or refuse. See
+<a href="../../compliance/optimism-portal.html#icm-003-a-hook-can-only-delay-or-refuse-an-item">iCM-003</a>.</li>
+<li>Every change is observable on L1: <code>PolicySet</code> carries both policies, and <code>Disabled</code> carries the cutoff.</li>
+</ul>
+<h3 id="acm-007-tokens-behave-as-the-standardbridge-requires"><a class="header" href="#acm-007-tokens-behave-as-the-standardbridge-requires">aCM-007: Tokens behave as the StandardBridge requires</a></h3>
+<p>The module inherits the <code>StandardBridge</code>'s token support:</p>
+<ul>
+<li>ETH.</li>
+<li><a href="./l1-standard-bridge.html#native-l1-token">Native L1 Tokens</a>, which the bridge escrows.</li>
+<li><a href="../L2/l2-standard-bridge.html#optimismmintableerc20">OptimismMintableERC20</a> tokens, which have no L1 escrow, so a
+held item carrying one holds only its message.</li>
+</ul>
+<p>A token that takes a fee on transfer, rebases, or otherwise moves a balance its transfer did not name breaks
+<a href="#icm-013-the-module-holds-at-least-what-it-owes">iCM-013</a>, because <code>heldTokens</code> records the amount the message names
+while the module ends up holding a different amount.</p>
+<h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
+<ul>
+<li>The bridge has the same constraint, so such a token is already unsupported before a hook is involved.</li>
+<li><code>heldTokens</code> is kept per token pair, so a token that breaks it cannot reach the escrow of another pair.</li>
+</ul>
+<h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
+<ul>
+<li>The <code>OptimismPortal</code>'s <a href="../../compliance/optimism-portal.html#terms-commitment">Terms Commitment</a>, which is what
+binds a held item to the terms it was deferred with.</li>
+<li>The <a href="../../compliance/policy.html#ipolicy"><code>IPolicy</code></a> interface.</li>
+</ul>
+<h2 id="invariants"><a class="header" href="#invariants">Invariants</a></h2>
+<h3 id="icm-011-verdicts-come-only-from-the-policy-and-the-hook-functions-only-from-the-portal"><a class="header" href="#icm-011-verdicts-come-only-from-the-policy-and-the-hook-functions-only-from-the-portal">iCM-011: Verdicts come only from the policy, and the hook functions only from the Portal</a></h3>
+<p>Every write to a record's <code>expiresAt</code> requires <code>msg.sender</code> to be the policy. The four
+<a href="../../compliance/optimism-portal.html#ibridgehook"><code>IBridgeHook</code></a> functions require the caller to be the Portal.</p>
+<p><a href="#completedeposit">completeDeposit</a> and <a href="#completewithdrawal">completeWithdrawal</a> are permissionless,
+so a cleared user never depends on the operator to send the transaction.</p>
+<h4 id="impact"><a class="header" href="#impact">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, anyone could clear a held item and then complete it permissionlessly, releasing value the chain's policy
+never approved.</p>
+<h3 id="icm-012-a-record-is-deleted-before-the-module-calls-out"><a class="header" href="#icm-012-a-record-is-deleted-before-the-module-calls-out">iCM-012: A record is deleted before the module calls out</a></h3>
+<p>The module deletes a held item's record before it calls the policy or the Portal, so a policy that calls back cannot
+move the same item twice.</p>
+<h4 id="impact-1"><a class="header" href="#impact-1">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, a hostile or buggy policy could re-enter completion for an item whose value has already moved, draining
+the module.</p>
+<h3 id="icm-013-the-module-holds-at-least-what-it-owes"><a class="header" href="#icm-013-the-module-holds-at-least-what-it-owes">iCM-013: The module holds at least what it owes</a></h3>
+<p>For every held item the module has custody of the ETH and tokens that item carries, and <code>heldTokens</code> is at most the
+token balance it actually holds.</p>
+<h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
+<p><strong>Severity: Critical</strong></p>
+<p>If violated, the module is insolvent. Some held items can be completed and others cannot, decided by whichever
+completion is sent first.</p>
+<h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_portal</code>: the <code>OptimismPortal</code> this module is the hook for.</li>
+<li><code>_l1CrossDomainMessenger</code>, <code>_l1StandardBridge</code>: the contracts the module decodes a token transfer against.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST set all three addresses as immutables. The Portal is the only permitted caller of the hook entry points, and
+the other two are used to find the <a href="#resolved-parties">Resolved Parties</a> and to approve the bridge on token
+completions.</li>
+<li>MUST revert if any of the three is the zero address.</li>
+</ul>
+<p>The messenger and the bridge are arguments, so the module can be deployed before the Portal is initialized and wired
+as its hook in the same deployment. They must be the addresses the chain's <code>SystemConfig</code> holds.</p>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Sets the module's owner and its first policy.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the module has already been initialized.</li>
+<li>MUST revert if the owner or the policy is the zero address.</li>
+<li>MUST set the owner and the policy.</li>
+<li>MUST emit a <code>PolicySet</code> event with the zero address as the previous policy.</li>
+</ul>
+<h3 id="portal"><a class="header" href="#portal">portal</a></h3>
+<p>Returns the <code>OptimismPortal</code> this module is the hook for.</p>
+<h3 id="owner"><a class="header" href="#owner">owner</a></h3>
+<p>Returns the address that can call <a href="#setpolicy">setPolicy</a>, <a href="#disable">disable</a> and <a href="#enable">enable</a>. It is a separate
+role from the upgrade authority in
+<a href="#acm-004-the-modules-upgrade-authority-is-the-custodian-of-all-deferred-value">aCM-004</a>.</p>
+<h3 id="items"><a class="header" href="#items">items</a></h3>
+<p>Returns the <a href="#record">Record</a> for an identifier.</p>
+<ul>
+<li>MUST return a zero record for an identifier that has never been held or cleared.</li>
+</ul>
+<h3 id="parties"><a class="header" href="#parties">parties</a></h3>
+<p>Returns the <a href="#resolved-parties">Resolved Parties</a> of an item.</p>
+<ul>
+<li>MUST return the same addresses, in the same order, that the module passes to the policy for that item.</li>
+</ul>
+<h3 id="heldtokens"><a class="header" href="#heldtokens">heldTokens</a></h3>
+<p>Returns the amount the module holds for an L1 token and L2 token pair.</p>
+<h3 id="policy"><a class="header" href="#policy">policy</a></h3>
+<p>Returns the policy the module consults and accepts verdicts from.</p>
+<h3 id="disabled"><a class="header" href="#disabled">disabled</a></h3>
+<p>Returns whether the <a href="#disable-switch">Disable Switch</a> is set.</p>
+<h3 id="paused"><a class="header" href="#paused">paused</a></h3>
+<p>Returns the pause state that gates completion of held withdrawals.</p>
+<ul>
+<li>MUST return the result of the Portal's <code>paused()</code>.</li>
+</ul>
+<h3 id="screendeposit"><a class="header" href="#screendeposit">screenDeposit</a></h3>
+<p>Answers the Portal for a deposit at submission.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the Portal.</li>
+<li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
+<a href="../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
+<li>MUST return <code>true</code> without consulting the policy if the <a href="#disable-switch">Disable Switch</a> is set.</li>
+<li>MUST otherwise resolve the <a href="#resolved-parties">Resolved Parties</a> and return the result of the policy's
+<code>screenDeposit</code>.</li>
+<li>MUST bubble up any revert from the policy.</li>
+</ul>
+<h3 id="holddeposit"><a class="header" href="#holddeposit">holdDeposit</a></h3>
+<p>Takes custody of a held deposit.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the Portal.</li>
+<li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
+<a href="../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
+<li>MUST revert if the ETH received does not match the ETH the item carries.</li>
+<li>MUST set the record's <code>heldAt</code> for the item's identifier.</li>
+<li>MUST increase <code>heldTokens</code> for the item's token pair, if the item is a token transfer whose tokens it received.</li>
+<li>MUST emit a <code>Held</code> event carrying the identifier and the full item.</li>
+</ul>
+<h3 id="screenwithdrawal"><a class="header" href="#screenwithdrawal">screenWithdrawal</a></h3>
+<p>Answers the Portal for a withdrawal at finalization.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_finalizableAt</code>: the withdrawal's <a href="../../compliance/overview.html#finalizable-time">Finalizable Time</a> for the proof
+being finalized.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the Portal.</li>
+<li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
+<a href="../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
+<li>MUST return <code>true</code> without consulting the policy if the <a href="#disable-switch">Disable Switch</a> is set AND the
+withdrawal's nonce is at or above the cutoff recorded when it was disabled.</li>
+<li>MUST otherwise resolve the <a href="#resolved-parties">Resolved Parties</a> and return the result of the policy's
+<code>screenWithdrawal</code>, passing the record's <code>expiresAt</code> and <code>_finalizableAt</code>.</li>
+<li>MUST NOT catch a revert from the policy.</li>
+</ul>
+<h3 id="holdwithdrawal"><a class="header" href="#holdwithdrawal">holdWithdrawal</a></h3>
+<p>Takes custody of a held withdrawal.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the Portal.</li>
+<li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
+<a href="../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
+<li>MUST revert if the ETH received does not match the ETH the item carries.</li>
+<li>MUST set the record's <code>heldAt</code> for the item's identifier.</li>
+<li>MUST increase <code>heldTokens</code> for the item's token pair, if the item is a token transfer whose tokens it received.</li>
+<li>MUST emit a <code>Held</code> event carrying the identifier and the full item.</li>
+</ul>
+<h3 id="recordverdict"><a class="header" href="#recordverdict">recordVerdict</a></h3>
+<p>Records a clear verdict against an identifier.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_expiresAt</code>: when the verdict stops being valid. The <a href="../../compliance/policy.html#verdict-writer">Verdict Writer</a>
+chooses it.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the policy.</li>
+<li>MUST NOT require that the item exists, so a verdict can be recorded before its item reaches the Portal.</li>
+<li>MUST set the record's <code>expiresAt</code> to <code>_expiresAt</code>.</li>
+<li>MUST emit a <code>VerdictRecorded</code> event with the identifier and the expiry.</li>
+</ul>
+<h3 id="revokeverdict"><a class="header" href="#revokeverdict">revokeVerdict</a></h3>
+<p>Removes a clear verdict.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the policy.</li>
+<li>MUST clear the record's <code>expiresAt</code>.</li>
+<li>MUST emit a <code>VerdictRevoked</code> event with the identifier.</li>
+</ul>
+<h3 id="completedeposit"><a class="header" href="#completedeposit">completeDeposit</a></h3>
+<p>Runs a held deposit. Permissionless.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_item</code>: the item as it was held. The module derives its identifier from this preimage.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST NOT restrict the caller.</li>
+<li>MUST revert if the record does not exist or is not held.</li>
+<li>MUST revert if the record has no clear verdict.</li>
+<li>MUST delete the record before calling the policy or the Portal.</li>
+<li>MUST resolve the <a href="#resolved-parties">Resolved Parties</a> and revert if the policy's <code>screenRelease</code> does not return
+<code>true</code>, passing the item, those parties, and the <code>expiresAt</code> the record held before the delete.</li>
+<li>MUST approve the <code>L1StandardBridge</code> for the item's amount and decrease <code>heldTokens</code> for the item's token pair by
+that amount, if the item is a token transfer whose tokens it holds.</li>
+<li>MUST call the Portal's <code>completeDepositTransaction</code> with the ETH the item carries.</li>
+<li>MUST emit a <code>Completed</code> event with the identifier.</li>
+</ul>
+<h3 id="completewithdrawal"><a class="header" href="#completewithdrawal">completeWithdrawal</a></h3>
+<p>Runs a held withdrawal. Permissionless.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if <a href="#paused">paused</a> returns true.</li>
+<li>MUST otherwise behave as <a href="#completedeposit">completeDeposit</a>, calling the Portal's
+<code>completeWithdrawalTransaction</code>.</li>
+</ul>
+<h3 id="setpolicy"><a class="header" href="#setpolicy">setPolicy</a></h3>
+<p>Points the module at a different policy.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the owner.</li>
+<li>MUST revert if the new policy is the zero address.</li>
+<li>MUST set the policy to the new policy.</li>
+<li>MUST NOT alter any record, so held items and their verdicts survive the change.</li>
+<li>MUST emit a <code>PolicySet</code> event with the previous and the new policy.</li>
+</ul>
+<h3 id="disable"><a class="header" href="#disable">disable</a></h3>
+<p>Sets the <a href="#disable-switch">Disable Switch</a>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>_cutoffL2Nonce</code>: the versioned message nonce, as returned by <code>L2ToL1MessagePasser.messageNonce()</code>, at the time of
+the disable. A raw counter sits below every versioned nonce and would let every withdrawal bypass screening.</li>
+</ul>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the owner.</li>
+<li>MUST record <code>_cutoffL2Nonce</code> as the cutoff used by <a href="#screenwithdrawal">screenWithdrawal</a>.</li>
+<li>MUST set <code>disabled</code> to <code>true</code>.</li>
+<li>MUST NOT release, complete or otherwise alter any item already held.</li>
+<li>MUST emit a <code>Disabled</code> event with the cutoff.</li>
+</ul>
+<h3 id="enable"><a class="header" href="#enable">enable</a></h3>
+<p>Clears the <a href="#disable-switch">Disable Switch</a> and its cutoff, so every item is screened again, including a withdrawal
+was set.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert if the caller is not the owner.</li>
+<li>MUST clear the cutoff.</li>
+<li>MUST set <code>disabled</code> to <code>false</code>.</li>
+<li>MUST emit an <code>Enabled</code> event.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../experimental/contracts/L1/eth-lockbox.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../experimental/contracts/L2/l1-block.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../experimental/contracts/L1/eth-lockbox.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../experimental/contracts/L2/l1-block.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../../specs/static/solidity.min.js"></script>
+        <script src="../../../specs/static/mermaid.min.js"></script>
+        <script src="../../../specs/static/mermaid-init.js"></script>
+        <script src="../../../theme/js/footer.js"></script>
+
+
+    </div>
+    </body>
+</html>
