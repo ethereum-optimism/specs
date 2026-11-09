@@ -82,21 +82,21 @@ The link goes to the spec section that defines the full rule.
 | [Isthmus](./isthmus/l1-attributes.md#overview) | Isthmus adds operator fee parameters to the L1 attributes calldata. |
 | [Isthmus](./isthmus/derivation.md#network-upgrade-automation-transactions) | Isthmus adds upgrade deposits to its activation block. That block holds only deposits. |
 | [Isthmus](./isthmus/exec-engine.md#deposit-operator-fees) | Isthmus charges no operator fee on deposits. |
+| [Isthmus](./isthmus/exec-engine.md#receipts) | Isthmus adds `operatorFeeScalar` and `operatorFeeConstant` to all receipts when either is non-zero. |
 | [Jovian](./jovian/l1-attributes.md#overview) | Jovian adds `daFootprintGasScalar` to the L1 attributes calldata. |
 | [Jovian](./jovian/derivation.md#network-upgrade-transactions) | Jovian adds upgrade deposits to its activation block. |
 | [Jovian](./jovian/derivation.md#activation-block-rules) | Jovian allows only deposits in its activation block. Derivation drops a batch that has transactions. |
 | [Jovian](./jovian/exec-engine.md#da-footprint-block-limit) | Jovian leaves deposits out of the DA footprint. |
-| [Jovian](./jovian/exec-engine.md#receipts) | Jovian adds `daFootprintGasScalar` to all receipts, deposit receipts included. |
+| [Jovian](./jovian/exec-engine.md#receipts) | Jovian adds `daFootprintGasScalar` to all receipts. |
 | [Karst](./karst/derivation.md) | Karst derives upgrade deposits from a NUT bundle. Each intent gets a `Karst <index>:` prefix. |
-| [Karst](./l2-upgrades-1-execution.md#custom-upgrade-block-gas-limit) | The activation block gas limit increases by the sum of the upgrade deposit gas limits. |
 | [Karst](./karst/overview.md) | Karst does not apply the EIP-7825 transaction gas limit cap to deposits. |
 | [Lagoon](../interop/derivation.md#network-upgrade-transactions) | Lagoon derives upgrade deposits from a NUT bundle. Each intent gets an `Interop <index>:` prefix. |
 | [Lagoon](../interop/derivation.md#dependency-set-conditional-transactions) | Lagoon adds two upgrade deposits for a multi-chain dependency set. One mints `type(uint128).max`. |
+| [Lagoon](../interop/derivation.md#upgrade-block-gas-limit) | Lagoon raises the activation block gas limit to cover its upgrade deposits. |
 | [Lagoon](../interop/derivation.md#activation-block) | Lagoon allows only deposits in its activation block. |
 | [Lagoon](../interop/derivation.md#replacing-invalid-blocks) | Lagoon replaces a block with invalid executing messages by a block that holds only deposits. |
 | [Lagoon](../interop/predeploys.md#deposit-handling) | Lagoon makes each `CrossL2Inbox` call from a deposit revert. Deposits cannot execute messages. |
 | [Lagoon](./lagoon/sdm.md#transaction-classification) | Lagoon bars deposits from SDM refunds. |
-| [Lagoon](./lagoon/sdm.md#canonical-gas) | Lagoon counts the full EVM gas use of each deposit in the block gas totals. |
 | [Lagoon](./lagoon/sdm.md#block-gas-limit) | Lagoon checks each deposit gas limit against the block gas limit minus the pre-refund gas. |
 
 ## The Deposited Transaction Type
