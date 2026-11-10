@@ -172,7 +172,8 @@ while the module ends up holding a different amount.
 #### Mitigations
 
 - The bridge has the same constraint, so such a token is already unsupported before a hook is involved.
-- `heldTokens` is kept per token pair, so a token that breaks it cannot reach the escrow of another pair.
+- The module refuses a hold it cannot back, since it checks its balance of the L1 token against what the hold
+  would make it owe for that token across every pair.
 
 ## Dependencies
 
@@ -211,8 +212,8 @@ the module.
 
 ### iCM-013: The module holds at least what it owes
 
-For every held item the module has custody of the ETH and tokens that item carries, and `heldTokens` is at most the
-token balance it actually holds.
+For every held item the module has custody of the ETH and tokens that item carries, and for each L1 token the sum
+of `heldTokens` across every pair that token appears in is at most the module's balance of it.
 
 #### Impact
 
@@ -315,6 +316,8 @@ Takes custody of a held deposit.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
+- MUST revert if its balance of the L1 token is below what the hold would make it owe for that token across
+  every pair.
 - MUST set the record's `heldAt` for the item's identifier.
 - MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
 - MUST emit a `Held` event carrying the identifier and the full item.
@@ -349,6 +352,8 @@ Takes custody of a held withdrawal.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
+- MUST revert if its balance of the L1 token is below what the hold would make it owe for that token across
+  every pair.
 - MUST set the record's `heldAt` for the item's identifier.
 - MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
 - MUST emit a `Held` event carrying the identifier and the full item.
