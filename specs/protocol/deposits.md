@@ -6,6 +6,7 @@
 
 - [Overview](#overview)
 - [Invariants](#invariants)
+- [Fork amendments](#fork-amendments)
 - [The Deposited Transaction Type](#the-deposited-transaction-type)
   - [Source hash computation](#source-hash-computation)
   - [Kinds of Deposited Transactions](#kinds-of-deposited-transactions)
@@ -60,6 +61,31 @@ The deposit rules must maintain the invariants below:
    The `sourceHash` must commit to every component that identifies the deposit.
 5. The block gas pool is reduced by exactly the gas used that the execution output states for each deposited
    transaction.
+
+## Fork amendments
+
+Deposit rules change across forks. Each row lists the changes that one spec page defines.
+
+| Fork | Change |
+| --- | --- |
+| [Regolith](./regolith/overview.md) | Disables `isSystemTx`, records actual gas used and adds `depositNonce` to receipts. |
+| [Regolith](#l1-attributes-deposited-transaction) | Lowers the L1 attributes deposit gas limit to 1,000,000. |
+| [Canyon](./canyon/overview.md) | Always includes `depositNonce` and `depositNonceVersion` in receipts. |
+| [Ecotone](./ecotone/l1-attributes.md) | Changes the L1 attributes calldata format. |
+| [Ecotone](./ecotone/derivation.md#network-upgrade-automation-transactions) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Fjord](./fjord/derivation.md#network-upgrade-automation-transactions) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Holocene](./holocene/derivation.md#engine-queue) | Replaces an invalid payload with a deposit-only block. |
+| [Pectra Blob Schedule](./pectra-blob-schedule/derivation.md) | Changes the blob base fee in the L1 attributes deposit. |
+| [Isthmus](./isthmus/l1-attributes.md) | Adds operator fee parameters to the L1 attributes calldata. |
+| [Isthmus](./isthmus/derivation.md#network-upgrade-automation-transactions) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Isthmus](./isthmus/exec-engine.md#fees) | Exempts deposits from the operator fee and adds operator fee fields to receipts. |
+| [Jovian](./jovian/l1-attributes.md) | Adds `daFootprintGasScalar` to the L1 attributes calldata. |
+| [Jovian](./jovian/derivation.md) | Adds upgrade deposits. The activation block holds only deposits. |
+| [Jovian](./jovian/exec-engine.md#da-footprint-block-limit) | Excludes deposits from the DA footprint and adds `daFootprintGasScalar` to receipts. |
+| [Karst](./karst/derivation.md) | Adds upgrade deposits from a NUT bundle. |
+| [Karst](./karst/overview.md) | Exempts deposits from the EIP-7825 gas limit cap. |
+| [Lagoon](../interop/derivation.md) | Adds upgrade deposits. The activation block holds only deposits and has a higher gas limit. Invalid blocks become deposit-only. |
+| [Lagoon](./lagoon/sdm.md) | Excludes deposits from SDM refunds. Checks deposit gas limits against pre-refund gas. |
 
 ## The Deposited Transaction Type
 
