@@ -365,6 +365,7 @@ Records a clear verdict against an identifier.
 **Behavior:**
 
 - MUST revert if the caller is not the policy.
+- MUST revert if `_expiresAt` is zero, since a zero expiry is what [revokeVerdict](#revokeverdict) leaves behind.
 - MUST NOT require that the item exists, so a verdict can be recorded before its item reaches the Portal.
 - MUST set the record's `expiresAt` to `_expiresAt`.
 - MUST emit a `VerdictRecorded` event with the identifier and the expiry.
