@@ -1058,6 +1058,7 @@ to know if the relayed message actually succeeded.</p>
 <ul>
 <li><a href="protocol/deposits.html#overview">Overview</a></li>
 <li><a href="protocol/deposits.html#invariants">Invariants</a></li>
+<li><a href="protocol/deposits.html#fork-amendments">Fork amendments</a></li>
 <li><a href="protocol/deposits.html#the-deposited-transaction-type">The Deposited Transaction Type</a>
 <ul>
 <li><a href="protocol/deposits.html#source-hash-computation">Source hash computation</a></li>
@@ -1122,6 +1123,29 @@ The <code>sourceHash</code> must commit to every component that identifies the d
 <li>The block gas pool is reduced by exactly the gas used that the execution output states for each deposited
 transaction.</li>
 </ol>
+<h2 id="fork-amendments"><a class="header" href="#fork-amendments">Fork amendments</a></h2>
+<p>Deposit rules change across forks. Each row lists the changes that one spec page defines.</p>
+<div class="table-wrapper"><table><thead><tr><th>Fork</th><th>Change</th></tr></thead><tbody>
+<tr><td><a href="protocol/./regolith/overview.html">Regolith</a></td><td>Disables <code>isSystemTx</code>, records actual gas used and adds <code>depositNonce</code> to receipts.</td></tr>
+<tr><td><a href="protocol/deposits.html#l1-attributes-deposited-transaction">Regolith</a></td><td>Lowers the L1 attributes deposit gas limit to 1,000,000.</td></tr>
+<tr><td><a href="protocol/./canyon/overview.html">Canyon</a></td><td>Always includes <code>depositNonce</code> and <code>depositNonceVersion</code> in receipts.</td></tr>
+<tr><td><a href="protocol/./ecotone/l1-attributes.html">Ecotone</a></td><td>Changes the L1 attributes calldata format.</td></tr>
+<tr><td><a href="protocol/./ecotone/derivation.html#network-upgrade-automation-transactions">Ecotone</a></td><td>Adds upgrade deposits. The activation block holds only deposits.</td></tr>
+<tr><td><a href="protocol/./fjord/derivation.html#network-upgrade-automation-transactions">Fjord</a></td><td>Adds upgrade deposits. The activation block holds only deposits.</td></tr>
+<tr><td><a href="protocol/./holocene/derivation.html#engine-queue">Holocene</a></td><td>Replaces an invalid payload with a deposit-only block.</td></tr>
+<tr><td><a href="protocol/./pectra-blob-schedule/derivation.html">Pectra Blob Schedule</a></td><td>Changes the blob base fee in the L1 attributes deposit.</td></tr>
+<tr><td><a href="protocol/./isthmus/l1-attributes.html">Isthmus</a></td><td>Adds operator fee parameters to the L1 attributes calldata.</td></tr>
+<tr><td><a href="protocol/./isthmus/derivation.html#network-upgrade-automation-transactions">Isthmus</a></td><td>Adds upgrade deposits. The activation block holds only deposits.</td></tr>
+<tr><td><a href="protocol/./isthmus/exec-engine.html#fees">Isthmus</a></td><td>Exempts deposits from the operator fee and adds operator fee fields to receipts.</td></tr>
+<tr><td><a href="protocol/./jovian/l1-attributes.html">Jovian</a></td><td>Adds <code>daFootprintGasScalar</code> to the L1 attributes calldata.</td></tr>
+<tr><td><a href="protocol/./jovian/derivation.html">Jovian</a></td><td>Adds upgrade deposits. The activation block holds only deposits.</td></tr>
+<tr><td><a href="protocol/./jovian/exec-engine.html#da-footprint-block-limit">Jovian</a></td><td>Excludes deposits from the DA footprint and adds <code>daFootprintGasScalar</code> to receipts.</td></tr>
+<tr><td><a href="protocol/./karst/derivation.html">Karst</a></td><td>Adds upgrade deposits from a NUT bundle.</td></tr>
+<tr><td><a href="protocol/./karst/overview.html">Karst</a></td><td>Exempts deposits from the EIP-7825 gas limit cap.</td></tr>
+<tr><td><a href="protocol/../interop/derivation.html">Lagoon</a></td><td>Adds upgrade deposits. The activation block holds only deposits and has a higher gas limit. Invalid blocks become deposit-only.</td></tr>
+<tr><td><a href="protocol/./lagoon/sdm.html">Lagoon</a></td><td>Excludes deposits from SDM refunds. Checks deposit gas limits against pre-refund gas.</td></tr>
+</tbody></table>
+</div>
 <h2 id="the-deposited-transaction-type"><a class="header" href="#the-deposited-transaction-type">The Deposited Transaction Type</a></h2>
 <p><a href="protocol/../glossary.html#deposited">Deposited transactions</a> have the following notable distinctions from existing
 transaction types:</p>
