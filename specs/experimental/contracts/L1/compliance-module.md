@@ -48,6 +48,7 @@
   - [setPolicy](#setpolicy)
   - [disable](#disable)
   - [enable](#enable)
+  - [renounceOwnership](#renounceownership)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -449,3 +450,12 @@ was set.
 - MUST clear the cutoff.
 - MUST set `disabled` to `false`.
 - MUST emit an `Enabled` event.
+
+### renounceOwnership
+
+Refuses to give up the owner role.
+
+**Behavior:**
+
+- MUST revert. An ownerless module could never change its policy, disable it, or enable it again, so every item it
+  holds would be left to the policy in place at the time.
