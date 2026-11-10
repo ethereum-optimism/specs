@@ -39,8 +39,8 @@ serve, and the vocabulary they use, are in the [Compliance Module overview](./ov
 default OP Stack chain is specified in its [contract specification](../contracts/L1/l1-standard-bridge.md).
 
 The bridge gains two entry points, callable only by the `OptimismPortal`, that move the escrow of a held token
-transfer to the hook and back. It does not store the hook address, it keeps no record of which items are held, and
-it never calls the hook directly.
+transfer to the hook and back. It does not store the hook address and it never calls the hook directly. The only
+record it keeps of a held item is how that item's L1 token is classified.
 
 A hold is the Portal's record. The bridge is handed a message to decode and asked to move escrow for it. See
 [Terms Commitment](./optimism-portal.md#terms-commitment).
@@ -69,6 +69,14 @@ no escrow to move for it.
 A held item carrying an `OptimismMintableERC20` therefore moves no tokens at the bridge. Only its message is held, and
 the value behind it stays in the `L2StandardBridge`'s escrow on L2 until the item completes.
 
+The bridge records how it handled each held transfer:
+
+```solidity
+enum TokenKind { None, Escrowed, Mintable } // None means no hold is recorded
+
+mapping(bytes32 => TokenKind) public heldTokenKinds; // keyed by the item's identifier
+```
+
 ## Assumptions
 
 ### aCM-001: The OptimismPortal is trusted
@@ -96,6 +104,7 @@ Moves the escrow of a held token transfer out of the bridge and to the hook.
 
 **Parameters:**
 
+- `_id`: the [Identifier](./overview.md#identifier) of the held item.
 - `_direction`: whether the held item is a deposit or a withdrawal.
 - `_message`: the inner `finalizeBridgeERC20` call the Portal is holding.
 
@@ -107,12 +116,14 @@ Moves the escrow of a held token transfer out of the bridge and to the hook.
 - MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
   arguments is the L1 token.
 - MUST record whether the L1 token is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token),
-  keyed by `_direction` and `_message`.
+  keyed by `_id`.
 - MUST transfer that amount of the L1 token to the bridge hook, if the L1 token is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
 - MUST decrease the `deposits` mapping for that token pair by that amount, if the L1 token is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
 - MUST revert if the `deposits` balance for that token pair is below the amount.
+- MUST emit an `ERC20Held` event with `_id`, the token pair and the amount, if the L1 token is a
+  [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
 - MUST NOT move any tokens if the L1 token is an `OptimismMintableERC20`.
 
 ### restoreERC20
@@ -121,6 +132,7 @@ Takes the escrow of a held token transfer back into the bridge, so the normal pa
 
 **Parameters:**
 
+- `_id`: the same identifier that was passed to [holdERC20](#holderc20).
 - `_direction`: the same direction that was passed to [holdERC20](#holderc20).
 - `_message`: the same inner `finalizeBridgeERC20` call that was passed to [holdERC20](#holderc20).
 
@@ -129,12 +141,14 @@ Takes the escrow of a held token transfer back into the bridge, so the normal pa
 - MUST revert if the caller is not the `OptimismPortal`.
 - MUST revert if the Portal's `bridgeHook()` is `address(0)`.
 - MUST revert if the selector of `_message` is not `finalizeBridgeERC20`.
-- MUST revert if `holdERC20` recorded no classification for the same `_direction` and `_message`.
+- MUST revert if the recorded classification for `_id` is `None`.
 - MUST read the token pair and the amount from `_message`, using `_direction` to tell which of the two token
   arguments is the L1 token.
 - MUST pull that amount of the L1 token from the bridge hook, using the allowance the hook granted, if the recorded
   classification is a [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
 - MUST increase the `deposits` mapping for that token pair by that amount, if the recorded classification is a
+  [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
+- MUST emit an `ERC20Restored` event with `_id`, the token pair and the amount, if the recorded classification is a
   [Native L1 Token](../contracts/L1/l1-standard-bridge.md#native-l1-token).
 - MUST NOT move any tokens if the recorded classification is an `OptimismMintableERC20`.
 - MUST clear the recorded classification.
