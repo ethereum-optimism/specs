@@ -39,8 +39,10 @@ jobs:
     executor: default
     environment:
       RUSTUP_TOOLCHAIN: "1.83.0"
-      # Parallel cargo: installs each start a rustup toolchain install, which race.
-      MISE_JOBS: "1"
+      # mise installs the toolchain here, but the cargo it runs for cargo: tools doesn't get this
+      # RUSTUP_HOME. Without it each of those parallel installs auto-installs its own copy into
+      # ~/.rustup, and they race on the download directory.
+      RUSTUP_HOME: /data/mise-data/.rustup
     steps:
       - utils/checkout-with-mise
       - install-npm-deps
@@ -72,7 +74,7 @@ jobs:
     environment:
       RUSTUP_TOOLCHAIN: "1.83.0"
       # See lint-specs.
-      MISE_JOBS: "1"
+      RUSTUP_HOME: /data/mise-data/.rustup
     steps:
       - utils/checkout-with-mise
       - run:
