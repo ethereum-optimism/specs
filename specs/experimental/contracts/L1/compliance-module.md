@@ -48,6 +48,7 @@
   - [setPolicy](#setpolicy)
   - [disable](#disable)
   - [enable](#enable)
+  - [renounceOwnership](#renounceownership)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -171,7 +172,8 @@ while the module ends up holding a different amount.
 #### Mitigations
 
 - The bridge has the same constraint, so such a token is already unsupported before a hook is involved.
-- `heldTokens` is kept per token pair, so a token that breaks it cannot reach the escrow of another pair.
+- The module refuses a hold it cannot back, since it checks its balance of the L1 token against what the hold
+  would make it owe for that token across every pair.
 
 ## Dependencies
 
@@ -210,8 +212,8 @@ the module.
 
 ### iCM-013: The module holds at least what it owes
 
-For every held item the module has custody of the ETH and tokens that item carries, and `heldTokens` is at most the
-token balance it actually holds.
+For every held item the module has custody of the ETH and tokens that item carries, and for each L1 token the sum
+of `heldTokens` across every pair that token appears in is at most the module's balance of it.
 
 #### Impact
 
@@ -314,6 +316,8 @@ Takes custody of a held deposit.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
+- MUST revert if its balance of the L1 token is below what the hold would make it owe for that token across
+  every pair.
 - MUST set the record's `heldAt` for the item's identifier.
 - MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
 - MUST emit a `Held` event carrying the identifier and the full item.
@@ -348,6 +352,8 @@ Takes custody of a held withdrawal.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
+- MUST revert if its balance of the L1 token is below what the hold would make it owe for that token across
+  every pair.
 - MUST set the record's `heldAt` for the item's identifier.
 - MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
 - MUST emit a `Held` event carrying the identifier and the full item.
@@ -364,6 +370,7 @@ Records a clear verdict against an identifier.
 **Behavior:**
 
 - MUST revert if the caller is not the policy.
+- MUST revert if `_expiresAt` is zero, since a zero expiry is what [revokeVerdict](#revokeverdict) leaves behind.
 - MUST NOT require that the item exists, so a verdict can be recorded before its item reaches the Portal.
 - MUST set the record's `expiresAt` to `_expiresAt`.
 - MUST emit a `VerdictRecorded` event with the identifier and the expiry.
@@ -449,3 +456,12 @@ was set.
 - MUST clear the cutoff.
 - MUST set `disabled` to `false`.
 - MUST emit an `Enabled` event.
+
+### renounceOwnership
+
+Refuses to give up the owner role.
+
+**Behavior:**
+
+- MUST revert. An ownerless module could never change its policy, disable it, or enable it again, so every item it
+  holds would be left to the policy in place at the time.
