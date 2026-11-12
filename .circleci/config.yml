@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.10.1
-  utils: ethereum-optimism/circleci-utils@1.0.33
+  utils: ethereum-optimism/circleci-utils@1.0.34
 
 executors:
   default:
@@ -39,6 +39,8 @@ jobs:
     executor: default
     environment:
       RUSTUP_TOOLCHAIN: "1.83.0"
+      # Parallel cargo: installs each start a rustup toolchain install, which race.
+      MISE_JOBS: "1"
     steps:
       - utils/checkout-with-mise
       - install-npm-deps
@@ -69,6 +71,8 @@ jobs:
     executor: default
     environment:
       RUSTUP_TOOLCHAIN: "1.83.0"
+      # See lint-specs.
+      MISE_JOBS: "1"
     steps:
       - utils/checkout-with-mise
       - run:
