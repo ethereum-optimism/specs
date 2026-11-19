@@ -504,8 +504,7 @@ transaction is one with the following properties:
 
 - The [`to`] field is equal to the configured batcher inbox address.
 
-- The transaction type is one of `0`, `1`, `2`, `3`, or `0x7e` (L2 [Deposited transaction type][g-deposit-tx-type], to
-  support force-inclusion of batcher transactions on nested OP Stack chains).
+- The transaction type is one of `0`, `1`, `2`, or `3`.
 
 - The sender, as recovered from the transaction signature (`v`, `r`, and `s`), is the batcher
   address loaded from the system config matching the L1 block of the data.
