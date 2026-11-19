@@ -583,8 +583,7 @@ transaction is one with the following properties:</p>
 <p>The <a href="https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/frontier/fork_types.py#L52C31-L52C31"><code>to</code></a> field is equal to the configured batcher inbox address.</p>
 </li>
 <li>
-<p>The transaction type is one of <code>0</code>, <code>1</code>, <code>2</code>, <code>3</code>, or <code>0x7e</code> (L2 <a href="../glossary.html#deposited-transaction-type">Deposited transaction type</a>, to
-support force-inclusion of batcher transactions on nested OP Stack chains).</p>
+<p>The transaction type is one of <code>0</code>, <code>1</code>, <code>2</code>, or <code>3</code>.</p>
 </li>
 <li>
 <p>The sender, as recovered from the transaction signature (<code>v</code>, <code>r</code>, and <code>s</code>), is the batcher
