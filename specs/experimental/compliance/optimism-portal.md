@@ -71,8 +71,8 @@ Portal, and its value stays with the removed hook.
 ### Unsafe Target
 
 An Unsafe Target is an address a withdrawal may not call. The default set is the `OptimismPortal` itself and the
-`ETHLockbox`. This page adds the `L1StandardBridge` on every chain, and the
-[Bridge Hook Address](#bridge-hook-address) while it is set. See
+`ETHLockbox`. While a hook is set, this page adds the `L1StandardBridge` and the
+[Bridge Hook Address](#bridge-hook-address). See
 [Why the Bridge and the Hook Are Unsafe Targets](#why-the-bridge-and-the-hook-are-unsafe-targets).
 
 ### Deposit Counter
@@ -394,8 +394,8 @@ L2. That is far more authority than setting a hook is meant to grant to whoever 
 
 ### iCM-004: A chain with no hook configured is unaffected
 
-While `bridgeHook` is `address(0)`, every entry point behaves exactly as on a default OP Stack chain, except that the
-`L1StandardBridge` is an [Unsafe Target](#unsafe-target).
+While `bridgeHook` is `address(0)`, every entry point behaves exactly as on a default OP Stack chain, apart from the
+[Resource Metering](#resource-metering) count in the block where a hook is removed.
 
 #### Impact
 
@@ -427,13 +427,12 @@ The commitment is already deleted and cannot be retried, leaving whichever value
 ### Why the Bridge and the Hook Are Unsafe Targets
 
 The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, which is the only
-check those entry points make. A withdrawal targeting the `L1StandardBridge` with a `restoreERC20` call credits
+check those entry points make. A withdrawal targeting the `L1StandardBridge` with a `holdERC20` call moves
 escrow the Portal never committed to, and one targeting the hook with a `holdDeposit` call writes a record for an
 item the Portal never held.
 
-The bridge is unsafe whether or not the chain sets a hook. Gating it on the hook would mean a withdrawal proven
-while `bridgeHook` is `address(0)` stops being finalizable once a hook is set. Nothing legitimate targets the
-bridge directly, because a token withdrawal reaches it through the `L1CrossDomainMessenger`.
+The bridge is unsafe only while a hook is set, because its new entry points revert until then. A withdrawal to the
+bridge proven while `bridgeHook` is `address(0)` cannot be finalized while a hook is set.
 
 The hook is an Unsafe Target only while it is set. After [`removeHook`](#removehook) or a replacement through
 [`initialize`](#initialize), the former hook is an ordinary target, and a withdrawal can call it with the Portal as its
@@ -464,6 +463,5 @@ L2.
 
 ### Cost When No Hook Is Set
 
-A chain that has not configured a hook pays one `SLOAD`, which short circuits the rest of the hook logic. Proving and
-finalizing also read the `L1StandardBridge` address from `SystemConfig` for the unsafe-target check, which applies on
-every chain.
+A chain that has not configured a hook pays one `SLOAD`, which short circuits the rest of the hook logic. A deposit
+also reads the published-gas count from [Resource Metering](#resource-metering).
