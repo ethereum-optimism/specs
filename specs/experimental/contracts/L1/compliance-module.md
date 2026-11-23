@@ -226,31 +226,31 @@ completion is sent first.
 
 ### constructor
 
+**Behavior:**
+
+- MUST disable initializers.
+
+### initialize
+
+Sets the module's owner, its first policy, and the addresses it works with.
+
 **Parameters:**
 
+- `_owner`: the module's [owner](#owner).
+- `_policy`: the first policy.
 - `_portal`: the `OptimismPortal` this module is the hook for.
 - `_l1CrossDomainMessenger`, `_l1StandardBridge`: the contracts the module decodes a token transfer against.
 
 **Behavior:**
 
-- MUST set all three addresses as immutables. The Portal is the only permitted caller of the hook entry points, and
-  the other two are used to find the [Resolved Parties](#resolved-parties) and to approve the bridge on token
-  completions.
-- MUST revert if any of the three is the zero address.
-
-The messenger and the bridge are arguments, so the module can be deployed before the Portal is initialized and wired
-as its hook in the same deployment. They must be the addresses the chain's `SystemConfig` holds.
-
-### initialize
-
-Sets the module's owner and its first policy.
-
-**Behavior:**
-
 - MUST revert if the module has already been initialized.
-- MUST revert if the owner or the policy is the zero address.
-- MUST set the owner and the policy.
+- MUST revert if the caller is not the admin of the module's proxy.
+- MUST revert if any argument is the zero address.
+- MUST set the owner, the policy and the three addresses.
 - MUST emit a `PolicySet` event with the zero address as the previous policy.
+
+The three addresses must be the ones the chain's `SystemConfig` holds. `initialize` can run before the Portal sets
+the module as its hook.
 
 ### portal
 
