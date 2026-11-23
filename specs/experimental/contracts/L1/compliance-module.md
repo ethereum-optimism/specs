@@ -273,8 +273,6 @@ Returns the [Resolved Parties](#resolved-parties) of an item.
 
 - MUST return the same sender and recipient that the module passes to the policy for that item.
 
-### heldTokens
-
 ### heldTokensTotal
 
 Returns the amount the module holds for an L1 token, across every L2 token it is paired with.
