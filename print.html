@@ -24394,9 +24394,9 @@ value.</strong></li>
 </ul>
 <p>The Portal gains the ability to defer an item and resume it later, which a rate limiter, a per-token pause or a
 circuit breaker would use the same way.</p>
-<p>Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge keeps none. The Portal
-recognizes the messenger envelope and hands the bridge the message inside it. The bridge decodes that inner call
-itself, moves the escrow it names, and updates its own accounting.</p>
+<p>Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge only notes whether it
+escrowed the token. The Portal recognizes the messenger envelope and hands the bridge the message inside it. The
+bridge decodes that inner call itself, moves the escrow it names, and updates its own accounting.</p>
 <p>The Portal builds every item and records its terms, and the hook only picks which item moves. No policy, however it is
 written, can redirect value or change what an item does. It can delay an item or refuse it, and nothing else.</p>
 <p>Letting the <code>L1StandardBridge</code> screen its own token transfers looks simpler, because the parties arrive there as
@@ -24458,13 +24458,14 @@ of the last layer it read.</p>
 <p>A <strong>Token Bridge Message</strong> is a token transfer between the <code>L1StandardBridge</code> and the <code>L2StandardBridge</code>, sent through
 the messengers. The <code>OptimismPortal</code> recognizes it in two steps. The item's outer sender and target must be the
 messengers, and the envelope must decode to a <code>finalizeBridgeERC20</code> call from the standard bridge. Since nobody can choose
-those fields, a message that matches came from the bridge. The Portal fills the item's token fields from that inner
-call, and moves escrow only for such a message.</p>
+those fields, a message that matches came from the bridge. The item must also carry no ETH. The Portal marks such an
+item as a token transfer, and moves escrow only for it.</p>
 <h3 id="finalizable-time"><a class="header" href="#finalizable-time">Finalizable Time</a></h3>
-<p>The <strong>Finalizable Time</strong> of a withdrawal is the later of <code>proofMaturityDelaySeconds</code> after its proof was submitted
-and <code>disputeGameFinalityDelaySeconds</code> after that proof's dispute game resolved. The <code>OptimismPortal</code> requires both
-delays before it finalizes, so neither alone decides when a withdrawal can move. The game must also be proper,
-respected and resolved in the defender's favour, but those conditions carry no time and so are not part of this value.</p>
+<p>The <strong>Finalizable Time</strong> of a withdrawal is one second after the later of <code>proofMaturityDelaySeconds</code> after its proof
+was submitted and <code>disputeGameFinalityDelaySeconds</code> after that proof's dispute game resolved. The <code>OptimismPortal</code>
+requires both delays to have passed before it finalizes, so neither alone decides when a withdrawal can move. The game
+must also be proper, respected and resolved in the defender's favour, but those conditions carry no time and so are
+not part of this value.</p>
 <p>A withdrawal can be proven more than once, by different submitters and against different games, and whoever finalizes
 names which proof to use. The Finalizable Time belongs to that proof, not to the withdrawal.</p>
 <p>The Portal passes it to the hook at screening, so a policy can decide how long to wait before it holds an uncleared
@@ -24500,7 +24501,7 @@ to the hook and back. Tokens native to L2 are burned and minted rather than escr
 and the value behind such an item stays in the <code>L2StandardBridge</code>'s escrow until it completes.</p>
 <p>For a <a href="experimental/compliance/overview.html#token-bridge-message">Token Bridge Message</a>, the Portal hands the bridge the inner message and asks it to move
 escrow. The bridge decodes that inner call itself, runs its own checks, and records the balance change in its own
-accounting. It records nothing about the hold:</p>
+accounting. Beyond whether it escrowed the token, it records nothing about the hold:</p>
 <ul>
 <li><strong>Hold.</strong> The Portal calls the bridge with the inner <code>finalizeBridgeERC20</code> message it is holding. The bridge checks
 the selector, reads the tokens and the amount from it, and debits its escrow for that token pair, which reverts if
@@ -24537,12 +24538,10 @@ itself is fixed by upgrading it.</p>
 <p>The change is limited to L1 contracts, with no multi-client or consensus impact. A held deposit emits no
 <code>TransactionDeposited</code> event, so the derivation pipeline sees nothing until the deposit completes, and then sees an
 ordinary deposit.</p>
-<p>For a chain that does not set a hook, behavior does not change, but three things change either way:</p>
+<p>For a chain that does not set a hook, behavior does not change, but two things change either way:</p>
 <ul>
 <li>The <code>L1StandardBridge</code> gains two entry points that only the <code>OptimismPortal</code> can call.</li>
 <li>The <code>OptimismPortal</code> gains completion functions, while existing user entry points are unchanged.</li>
-<li>The <code>OptimismPortal</code> makes the <code>L1StandardBridge</code> an <a href="experimental/compliance/./optimism-portal.html#unsafe-target">Unsafe Target</a>, so a
-withdrawal that calls the bridge directly can no longer be finalized.</li>
 </ul>
 <p>For a chain that enables it, these assumptions break:</p>
 <ul>
@@ -24551,6 +24550,8 @@ withdrawal that calls the bridge directly can no longer be finalized.</li>
 the deposit reaches L2.</li>
 <li><code>finalizeWithdrawalTransaction</code> can revert for a withdrawal that is not cleared, and once the hook holds it, it can
 succeed without paying the recipient.</li>
+<li>A withdrawal that calls the <code>L1StandardBridge</code> directly can no longer be finalized, because the bridge is an
+<a href="experimental/compliance/./optimism-portal.html#unsafe-target">Unsafe Target</a> while a hook is set.</li>
 <li>Held deposits complete out of submission order, because a verdict for a later item can land first.</li>
 </ul>
 <p>A <code>RelayedMessage</code> event still implies the recipient was paid, because a withdrawal is held before the messenger
@@ -24660,8 +24661,8 @@ an ERC-20 deposit or withdrawal is held.</p>
 Portal, and its value stays with the removed hook.</p>
 <h3 id="unsafe-target-1"><a class="header" href="#unsafe-target-1">Unsafe Target</a></h3>
 <p>An Unsafe Target is an address a withdrawal may not call. The default set is the <code>OptimismPortal</code> itself and the
-<code>ETHLockbox</code>. This page adds the <code>L1StandardBridge</code> on every chain, and the
-<a href="experimental/compliance/optimism-portal.html#bridge-hook-address">Bridge Hook Address</a> while it is set. See
+<code>ETHLockbox</code>. While a hook is set, this page adds the <code>L1StandardBridge</code> and the
+<a href="experimental/compliance/optimism-portal.html#bridge-hook-address">Bridge Hook Address</a>. See
 <a href="experimental/compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</p>
 <h3 id="deposit-counter"><a class="header" href="#deposit-counter">Deposit Counter</a></h3>
 <p>The <strong>Deposit Counter</strong> is a counter the Portal assigns to a deposit when it screens it. A withdrawal carries its own
@@ -24723,6 +24724,7 @@ messenger stamps the <code>L1StandardBridge</code> as the inner sender.</li>
 <li>For a withdrawal, the proven sender is the L2 messenger and the inner sender is the <code>L2StandardBridge</code>.</li>
 <li>In both, the inner call is <code>finalizeBridgeERC20</code>, and the inner target is the other canonical bridge: the
 <code>L2StandardBridge</code> for a deposit and the <code>L1StandardBridge</code> for a withdrawal.</li>
+<li>In both, the item carries no ETH.</li>
 </ul>
 <p>Nobody can choose the senders, so a message that matches came from the bridge, addressing its counterpart. The Portal
 marks such an item as a token transfer, and moves escrow only for it.</p>
@@ -24890,7 +24892,8 @@ not <code>DEFAULT_L2_SENDER</code>, so a completion cannot run inside another wi
 <li>MUST forward the call to the target with <code>SafeCall.callWithMinGas</code> and the item's committed <code>gasLimit</code>.</li>
 <li>MUST unset the L2 Withdrawal Sender after the call returns.</li>
 <li>MUST revert if the forwarded call fails, so the withdrawal stays held and can be completed again later. This
-diverges from <code>finalizeWithdrawalTransaction</code>, which records the failure as finalized with <code>success = false</code>.</li>
+diverges from <code>finalizeWithdrawalTransaction</code>, which records the failure as finalized with <code>success = false</code>
+unless the withdrawal came from the <code>L2CrossDomainMessenger</code>.</li>
 <li>MUST emit <code>WithdrawalFinalized</code> with <code>success</code> as <code>true</code>.</li>
 </ul>
 <h2 id="resource-metering"><a class="header" href="#resource-metering">Resource Metering</a></h2>
@@ -24926,8 +24929,8 @@ goes or what the item does.</p>
 <p>If violated, the contract at the hook address could redirect user value or decide arbitrary execution on both L1 and
 L2. That is far more authority than setting a hook is meant to grant to whoever can upgrade it.</p>
 <h3 id="icm-004-a-chain-with-no-hook-configured-is-unaffected"><a class="header" href="#icm-004-a-chain-with-no-hook-configured-is-unaffected">iCM-004: A chain with no hook configured is unaffected</a></h3>
-<p>While <code>bridgeHook</code> is <code>address(0)</code>, every entry point behaves exactly as on a default OP Stack chain, except that the
-<code>L1StandardBridge</code> is an <a href="experimental/compliance/optimism-portal.html#unsafe-target">Unsafe Target</a>.</p>
+<p>While <code>bridgeHook</code> is <code>address(0)</code>, every entry point behaves exactly as on a default OP Stack chain, apart from the
+<a href="experimental/compliance/optimism-portal.html#resource-metering">Resource Metering</a> count in the block where a hook is removed.</p>
 <h4 id="impact-94"><a class="header" href="#impact-94">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If violated, chains that never opted in would change behavior on upgrade, which the feature exists to avoid.</p>
@@ -24945,13 +24948,12 @@ limit the withdrawal carries, whether the withdrawal was held or not.</p>
 The commitment is already deleted and cannot be retried, leaving whichever value it carries stranded.</p>
 <h2 id="security-considerations-19"><a class="header" href="#security-considerations-19">Security Considerations</a></h2>
 <h3 id="why-the-bridge-and-the-hook-are-unsafe-targets"><a class="header" href="#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a></h3>
-<p>The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, which is the only
-check those entry points make. A withdrawal targeting the <code>L1StandardBridge</code> with a <code>restoreERC20</code> call credits
+<p>The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, and that is what those
+entry points authenticate. A withdrawal targeting the <code>L1StandardBridge</code> with a <code>holdERC20</code> call moves
 escrow the Portal never committed to, and one targeting the hook with a <code>holdDeposit</code> call writes a record for an
 item the Portal never held.</p>
-<p>The bridge is unsafe whether or not the chain sets a hook. Gating it on the hook would mean a withdrawal proven
-while <code>bridgeHook</code> is <code>address(0)</code> stops being finalizable once a hook is set. Nothing legitimate targets the
-bridge directly, because a token withdrawal reaches it through the <code>L1CrossDomainMessenger</code>.</p>
+<p>The bridge is unsafe only while a hook is set, because its new entry points revert until then. A withdrawal to the
+bridge proven while <code>bridgeHook</code> is <code>address(0)</code> cannot be finalized while a hook is set.</p>
 <p>The hook is an Unsafe Target only while it is set. After <a href="experimental/compliance/optimism-portal.html#removehook"><code>removeHook</code></a> or a replacement through
 <a href="experimental/compliance/optimism-portal.html#initialize"><code>initialize</code></a>, the former hook is an ordinary target, and a withdrawal can call it with the Portal as its
 caller. A hook MUST therefore check that it is still the Portal's hook, with <code>bridgeHook() == address(this)</code>, and not
@@ -24961,9 +24963,9 @@ for a withdrawal that pays out directly, and completion decides for a held one.<
 <h3 id="changing-the-hook"><a class="header" href="#changing-the-hook">Changing the Hook</a></h3>
 <p>Replacing or removing a hook while items are held does not move their value, which stays with the former hook.</p>
 <p><code>initialize</code> is the only way to set a hook, so changing it also re-applies every other <code>initialize</code> argument: the
-<code>SystemConfig</code>, the <code>AnchorStateRegistry</code>, the <code>ETHLockbox</code> and the proof maturity delay. The operator must pass the
-current values. A wrong proof maturity delay, for example, changes when every withdrawal already proven can be
-finalized.</p>
+<code>SystemConfig</code>, the <code>AnchorStateRegistry</code> and the proof maturity delay. The operator must pass the current values. A
+wrong proof maturity delay, for example, changes when every withdrawal already proven can be finalized. A zero
+<code>ETHLockbox</code> keeps the current one, as a zero hook does.</p>
 <h3 id="gas-headroom-on-the-withdrawal-path"><a class="header" href="#gas-headroom-on-the-withdrawal-path">Gas Headroom on the Withdrawal Path</a></h3>
 <p>The hook runs before <code>SafeCall.callWithMinGas</code>, so finalizing a cleared withdrawal also pays for the hook. This cannot
 brick a withdrawal, because <code>callWithMinGas</code> checks the remaining gas when it makes the call, so a finalization
@@ -24972,9 +24974,8 @@ without enough gas reverts, consumes nothing, and can be retried with more.</p>
 fit in one transaction. Nothing runs inside the relay, so token withdrawals do not depend on the gas the user set on
 L2.</p>
 <h3 id="cost-when-no-hook-is-set"><a class="header" href="#cost-when-no-hook-is-set">Cost When No Hook Is Set</a></h3>
-<p>A chain that has not configured a hook pays one <code>SLOAD</code>, which short circuits the rest of the hook logic. Proving and
-finalizing also read the <code>L1StandardBridge</code> address from <code>SystemConfig</code> for the unsafe-target check, which applies on
-every chain.</p>
+<p>A chain that has not configured a hook pays one <code>SLOAD</code>, which short circuits the rest of the hook logic. A deposit
+also reads the published-gas count from <a href="experimental/compliance/optimism-portal.html#resource-metering">Resource Metering</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l1standardbridge-1"><a class="header" href="#l1standardbridge-1">L1StandardBridge</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -25041,8 +25042,8 @@ every chain.</p>
 serve, and the vocabulary they use, are in the <a href="experimental/compliance/./overview.html">Compliance Module overview</a>. The bridge's behavior on a
 default OP Stack chain is specified in its <a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html">contract specification</a>.</p>
 <p>The bridge gains two entry points, callable only by the <code>OptimismPortal</code>, that move the escrow of a held token
-transfer to the hook and back. It does not store the hook address, it keeps no record of which items are held, and
-it never calls the hook directly.</p>
+transfer to the hook and back. It does not store the hook address and it never calls the hook directly. The only
+record it keeps of a held item is how that item's L1 token is classified, see <a href="experimental/compliance/l1-standard-bridge.html#escrowed-and-minted-tokens">Escrowed and Minted Tokens</a>.</p>
 <p>A hold is the Portal's record. The bridge is handed a message to decode and asked to move escrow for it. See
 <a href="experimental/compliance/./optimism-portal.html#terms-commitment">Terms Commitment</a>.</p>
 <h2 id="what-the-bridge-receives-from-the-portal"><a class="header" href="#what-the-bridge-receives-from-the-portal">What the Bridge Receives From the Portal</a></h2>
@@ -25062,14 +25063,19 @@ those have a <code>deposits</code> balance. An <code>OptimismMintableERC20</code
 no escrow to move for it.</p>
 <p>A held item carrying an <code>OptimismMintableERC20</code> therefore moves no tokens at the bridge. Only its message is held, and
 the value behind it stays in the <code>L2StandardBridge</code>'s escrow on L2 until the item completes.</p>
+<p>The bridge records how it handled each held transfer:</p>
+<pre><code class="language-solidity">enum TokenKind { None, Escrowed, Mintable } // None means no hold is recorded
+
+mapping(bytes32 =&gt; TokenKind) public heldTokenKinds; // keyed by the item's identifier
+</code></pre>
 <h2 id="assumptions-15"><a class="header" href="#assumptions-15">Assumptions</a></h2>
 <h3 id="acm-001-the-optimismportal-is-trusted"><a class="header" href="#acm-001-the-optimismportal-is-trusted">aCM-001: The OptimismPortal is trusted</a></h3>
 <p>The <code>OptimismPortal</code> only asks for an escrow move for a message it has recognized as a token transfer between the two
 canonical bridges, and only for an item whose terms it has committed to.</p>
 <h4 id="mitigations-64"><a class="header" href="#mitigations-64">Mitigations</a></h4>
 <ul>
-<li>Both new entry points are restricted to the <code>OptimismPortal</code>. The bridge stores no Portal address today, so how it
-resolves one is an open point. See <a href="experimental/compliance/l1-standard-bridge.html#resolving-the-portal">Resolving the Portal</a>.</li>
+<li>Both new entry points are restricted to the <code>OptimismPortal</code>, which the bridge reads from its <code>SystemConfig</code>. See
+<a href="experimental/compliance/l1-standard-bridge.html#resolving-the-portal">Resolving the Portal</a>.</li>
 <li>Both new entry points read the Portal's <code>bridgeHook()</code> and revert while it is <code>address(0)</code>, so a Portal on a chain
 that has configured no hook cannot move escrow at all.</li>
 <li>The bridge decodes the inner call itself rather than trusting the Portal's reading of the token pair and amount.</li>
@@ -25083,6 +25089,7 @@ additional capabilities to the Portal. See
 <p>Moves the escrow of a held token transfer out of the bridge and to the hook.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
+<li><code>_id</code>: the <a href="experimental/compliance/./overview.html#identifier">Identifier</a> of the held item.</li>
 <li><code>_direction</code>: whether the held item is a deposit or a withdrawal.</li>
 <li><code>_message</code>: the inner <code>finalizeBridgeERC20</code> call the Portal is holding.</li>
 </ul>
@@ -25094,18 +25101,21 @@ additional capabilities to the Portal. See
 <li>MUST read the token pair and the amount from <code>_message</code>, using <code>_direction</code> to tell which of the two token
 arguments is the L1 token.</li>
 <li>MUST record whether the L1 token is a <a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>,
-keyed by <code>_direction</code> and <code>_message</code>.</li>
+keyed by <code>_id</code>.</li>
 <li>MUST transfer that amount of the L1 token to the bridge hook, if the L1 token is a
 <a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST decrease the <code>deposits</code> mapping for that token pair by that amount, if the L1 token is a
 <a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST revert if the <code>deposits</code> balance for that token pair is below the amount.</li>
+<li>MUST emit an <code>ERC20Held</code> event with <code>_id</code>, the token pair and the amount, if the L1 token is a
+<a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST NOT move any tokens if the L1 token is an <code>OptimismMintableERC20</code>.</li>
 </ul>
 <h3 id="restoreerc20"><a class="header" href="#restoreerc20">restoreERC20</a></h3>
 <p>Takes the escrow of a held token transfer back into the bridge, so the normal path can run.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
+<li><code>_id</code>: the same identifier that was passed to <a href="experimental/compliance/l1-standard-bridge.html#holderc20">holdERC20</a>.</li>
 <li><code>_direction</code>: the same direction that was passed to <a href="experimental/compliance/l1-standard-bridge.html#holderc20">holdERC20</a>.</li>
 <li><code>_message</code>: the same inner <code>finalizeBridgeERC20</code> call that was passed to <a href="experimental/compliance/l1-standard-bridge.html#holderc20">holdERC20</a>.</li>
 </ul>
@@ -25114,12 +25124,14 @@ keyed by <code>_direction</code> and <code>_message</code>.</li>
 <li>MUST revert if the caller is not the <code>OptimismPortal</code>.</li>
 <li>MUST revert if the Portal's <code>bridgeHook()</code> is <code>address(0)</code>.</li>
 <li>MUST revert if the selector of <code>_message</code> is not <code>finalizeBridgeERC20</code>.</li>
-<li>MUST revert if <code>holdERC20</code> recorded no classification for the same <code>_direction</code> and <code>_message</code>.</li>
+<li>MUST revert if the recorded classification for <code>_id</code> is <code>None</code>.</li>
 <li>MUST read the token pair and the amount from <code>_message</code>, using <code>_direction</code> to tell which of the two token
 arguments is the L1 token.</li>
 <li>MUST pull that amount of the L1 token from the bridge hook, using the allowance the hook granted, if the recorded
 classification is a <a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST increase the <code>deposits</code> mapping for that token pair by that amount, if the recorded classification is a
+<a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
+<li>MUST emit an <code>ERC20Restored</code> event with <code>_id</code>, the token pair and the amount, if the recorded classification is a
 <a href="experimental/compliance/../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST NOT move any tokens if the recorded classification is an <code>OptimismMintableERC20</code>.</li>
 <li>MUST clear the recorded classification.</li>
@@ -25173,21 +25185,17 @@ stays in the bridge's escrow indefinitely.</p>
 <p>A cleared withdrawal never needs the move, because it pays through the normal path which should remain unchanged.</p>
 <h3 id="the-portal-could-already-reach-the-escrow"><a class="header" href="#the-portal-could-already-reach-the-escrow">The Portal Could Already Reach the Escrow</a></h3>
 <p>These entry points do not widen what a faulty <code>OptimismPortal</code> can do to the bridge. <code>finalizeBridgeERC20</code> releases
-escrow to whoever the messenger names as the cross-domain sender. The messenger takes that name from a parameter of
-<code>relayMessage</code>. And only the Portal may call <code>relayMessage</code>, with an <code>l2Sender</code> it sets
-itself. A compromised portal can already drain escrow through that path on a default OP Stack chain.</p>
+escrow to any recipient the message names, as long as the messenger reports the <code>L2StandardBridge</code> as the
+cross-domain sender. The messenger takes that name from a parameter of <code>relayMessage</code>. And only the Portal may call
+<code>relayMessage</code>, with an <code>l2Sender</code> it sets itself. A compromised portal can already drain escrow through that path
+on a default OP Stack chain.</p>
 <p>The existing path needs a well-formed relay through the messenger, and it
 leaves a <code>RelayedMessage</code> event and a <code>successfulMessages</code> entry behind. An escrow move through
 <a href="experimental/compliance/l1-standard-bridge.html#holderc20">holdERC20</a> is a single call, reachable from <code>depositTransaction</code>, which never touched the bridge
 before, and it leaves no messenger record. Monitoring built on messenger events does not see it.</p>
 <h3 id="resolving-the-portal"><a class="header" href="#resolving-the-portal">Resolving the Portal</a></h3>
-<p>Both entry points are restricted to the <code>OptimismPortal</code>, but the bridge has no Portal address today. Its
-<code>initialize</code> takes only the <code>L1CrossDomainMessenger</code> and the <code>SystemConfig</code>. Two existing routes could resolve one,
-<code>messenger.portal()</code> or <code>systemConfig.optimismPortal()</code>, and the design this page is drawn from does not choose
-between them.</p>
-<p>The same question applies to the destination of a held transfer. <code>holdERC20</code> sends escrow to the bridge hook, and the
-design states that the bridge does not need the hook address, which leaves the Portal to supply it. Neither point is
-settled.</p>
+<p>The bridge reads the Portal from <code>systemConfig.optimismPortal()</code> and the hook from the Portal's <code>bridgeHook()</code> on
+every call, and stores neither.</p>
 <h3 id="tokens-native-to-l2-cannot-be-recovered-from-a-held-item"><a class="header" href="#tokens-native-to-l2-cannot-be-recovered-from-a-held-item">Tokens Native to L2 Cannot Be Recovered From a Held Item</a></h3>
 <p>A held item carrying an <code>OptimismMintableERC20</code> holds only the message. The tokens were burned on deposit, or were
 never minted on withdrawal, so there is nothing in the bridge for the hook to take custody of.</p>
@@ -25263,16 +25271,21 @@ rejects every attempt to finalize it, so a clearance that lands at 13:30 still p
 path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook.</p>
 <h2 id="ipolicy"><a class="header" href="#ipolicy">IPolicy</a></h2>
 <pre><code class="language-solidity">interface IPolicy {
+    struct Parties {
+        address sender;
+        address recipient;
+    }
+
     function screenDeposit(
         Item calldata _item,
-        address[] calldata _parties
+        Parties calldata _parties
     )
         external
         returns (bool pass_);
 
     function screenWithdrawal(
         Item calldata _item,
-        address[] calldata _parties,
+        Parties calldata _parties,
         uint64 _expiresAt,
         uint256 _finalizableAt
     )
@@ -25281,7 +25294,7 @@ path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook
 
     function screenRelease(
         Item calldata _item,
-        address[] calldata _parties,
+        Parties calldata _parties,
         uint64 _expiresAt
     )
         external
@@ -25290,8 +25303,7 @@ path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook
 </code></pre>
 <p>All three answer with a <a href="experimental/compliance/./overview.html#screening-outcome">Screening Outcome</a>: <code>true</code> to proceed, <code>false</code> to hold,
 and a revert to reject.</p>
-<p><code>_parties</code> holds the item's two <a href="experimental/compliance/../contracts/L1/compliance-module.html#resolved-parties">Resolved Parties</a>:
-<code>_parties[0]</code> is the sender and <code>_parties[1]</code> is the recipient.</p>
+<p><code>_parties</code> carries the item's <a href="experimental/compliance/../contracts/L1/compliance-module.html#resolved-parties">Resolved Parties</a>.</p>
 <h2 id="what-every-policy-may-assume"><a class="header" href="#what-every-policy-may-assume">What Every Policy May Assume</a></h2>
 <ul>
 <li>The item it is handed is the item that will execute, unchanged.</li>
@@ -27424,7 +27436,7 @@ non-zero</li>
 <li><a href="experimental/contracts/L1/compliance-module.html#owner">owner</a></li>
 <li><a href="experimental/contracts/L1/compliance-module.html#items">items</a></li>
 <li><a href="experimental/contracts/L1/compliance-module.html#parties">parties</a></li>
-<li><a href="experimental/contracts/L1/compliance-module.html#heldtokens">heldTokens</a></li>
+<li><a href="experimental/contracts/L1/compliance-module.html#heldtokenstotal">heldTokensTotal</a></li>
 <li><a href="experimental/contracts/L1/compliance-module.html#policy">policy</a></li>
 <li><a href="experimental/contracts/L1/compliance-module.html#disabled">disabled</a></li>
 <li><a href="experimental/contracts/L1/compliance-module.html#paused">paused</a></li>
@@ -27439,6 +27451,7 @@ non-zero</li>
 <li><a href="experimental/contracts/L1/compliance-module.html#setpolicy">setPolicy</a></li>
 <li><a href="experimental/contracts/L1/compliance-module.html#disable">disable</a></li>
 <li><a href="experimental/contracts/L1/compliance-module.html#enable">enable</a></li>
+<li><a href="experimental/contracts/L1/compliance-module.html#renounceownership">renounceOwnership</a></li>
 </ul>
 </li>
 </ul>
@@ -27468,9 +27481,9 @@ its value. This keeps unbounded calldata out of storage, and lets anyone rebuild
 <p>The module stores whatever <code>expiresAt</code> the policy passes and hands it back when value moves. The module does not
 judge it; the policy does, and it treats an expired verdict as none.</p>
 <h3 id="resolved-parties"><a class="header" href="#resolved-parties">Resolved Parties</a></h3>
-<p>The <strong>Resolved Parties</strong> of an item are the two addresses the module passes to the policy: the sender, then the
-recipient. For a message sent through the messengers, the module decodes the real sender and recipient from the
-envelope rather than passing the messengers themselves.</p>
+<p>The <strong>Resolved Parties</strong> of an item are the sender and the recipient the module passes to the policy. For a message
+sent through the messengers, the module decodes the real sender and recipient from the envelope rather than passing
+the messengers themselves.</p>
 <p>This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation:</p>
 <ul>
 <li>A <code>relayMessage</code> envelope to the direction's messenger whose inner call is <code>finalizeBridgeERC20</code> or
@@ -27533,12 +27546,12 @@ held.</li>
 held item carrying one holds only its message.</li>
 </ul>
 <p>A token that takes a fee on transfer, rebases, or otherwise moves a balance its transfer did not name breaks
-<a href="experimental/contracts/L1/compliance-module.html#icm-013-the-module-holds-at-least-what-it-owes">iCM-013</a>, because <code>heldTokens</code> records the amount the message names
-while the module ends up holding a different amount.</p>
+<a href="experimental/contracts/L1/compliance-module.html#icm-013-the-module-holds-at-least-what-it-owes">iCM-013</a>, because <code>heldTokensTotal</code> records the amount the message
+names while the module ends up holding a different amount.</p>
 <h4 id="mitigations-93"><a class="header" href="#mitigations-93">Mitigations</a></h4>
 <ul>
 <li>The bridge has the same constraint, so such a token is already unsupported before a hook is involved.</li>
-<li><code>heldTokens</code> is kept per token pair, so a token that breaks it cannot reach the escrow of another pair.</li>
+<li>A hold reverts if the module's balance of the L1 token would not cover <code>heldTokensTotal</code> for that token.</li>
 </ul>
 <h2 id="dependencies-24"><a class="header" href="#dependencies-24">Dependencies</a></h2>
 <ul>
@@ -27564,37 +27577,37 @@ move the same item twice.</p>
 <p>If violated, a hostile or buggy policy could re-enter completion for an item whose value has already moved, draining
 the module.</p>
 <h3 id="icm-013-the-module-holds-at-least-what-it-owes"><a class="header" href="#icm-013-the-module-holds-at-least-what-it-owes">iCM-013: The module holds at least what it owes</a></h3>
-<p>For every held item the module has custody of the ETH and tokens that item carries, and <code>heldTokens</code> is at most the
-token balance it actually holds.</p>
+<p>For every held item the module has custody of the ETH and tokens that item carries, and for each L1 token
+<code>heldTokensTotal</code> is at most the module's balance of it.</p>
 <h4 id="impact-143"><a class="header" href="#impact-143">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If violated, the module is insolvent. Some held items can be completed and others cannot, decided by whichever
 completion is sent first.</p>
 <h2 id="function-specification-15"><a class="header" href="#function-specification-15">Function Specification</a></h2>
 <h3 id="constructor-4"><a class="header" href="#constructor-4">constructor</a></h3>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST disable initializers.</li>
+</ul>
+<h3 id="initialize-11"><a class="header" href="#initialize-11">initialize</a></h3>
+<p>Sets the module's owner, its first policy, and the addresses it works with.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
+<li><code>_owner</code>: the module's <a href="experimental/contracts/L1/compliance-module.html#owner">owner</a>.</li>
+<li><code>_policy</code>: the first policy.</li>
 <li><code>_portal</code>: the <code>OptimismPortal</code> this module is the hook for.</li>
 <li><code>_l1CrossDomainMessenger</code>, <code>_l1StandardBridge</code>: the contracts the module decodes a token transfer against.</li>
 </ul>
 <p><strong>Behavior:</strong></p>
 <ul>
-<li>MUST set all three addresses as immutables. The Portal is the only permitted caller of the hook entry points, and
-the other two are used to find the <a href="experimental/contracts/L1/compliance-module.html#resolved-parties">Resolved Parties</a> and to approve the bridge on token
-completions.</li>
-<li>MUST revert if any of the three is the zero address.</li>
-</ul>
-<p>The messenger and the bridge are arguments, so the module can be deployed before the Portal is initialized and wired
-as its hook in the same deployment. They must be the addresses the chain's <code>SystemConfig</code> holds.</p>
-<h3 id="initialize-11"><a class="header" href="#initialize-11">initialize</a></h3>
-<p>Sets the module's owner and its first policy.</p>
-<p><strong>Behavior:</strong></p>
-<ul>
 <li>MUST revert if the module has already been initialized.</li>
-<li>MUST revert if the owner or the policy is the zero address.</li>
-<li>MUST set the owner and the policy.</li>
+<li>MUST revert if the caller is not the admin of the module's proxy.</li>
+<li>MUST revert if any argument is the zero address.</li>
+<li>MUST set the owner, the policy and the three addresses.</li>
 <li>MUST emit a <code>PolicySet</code> event with the zero address as the previous policy.</li>
 </ul>
+<p>The three addresses must be the ones the chain's <code>SystemConfig</code> holds. <code>initialize</code> can run before the Portal sets
+the module as its hook.</p>
 <h3 id="portal-1"><a class="header" href="#portal-1">portal</a></h3>
 <p>Returns the <code>OptimismPortal</code> this module is the hook for.</p>
 <h3 id="owner-1"><a class="header" href="#owner-1">owner</a></h3>
@@ -27609,10 +27622,10 @@ role from the upgrade authority in
 <h3 id="parties-1"><a class="header" href="#parties-1">parties</a></h3>
 <p>Returns the <a href="experimental/contracts/L1/compliance-module.html#resolved-parties">Resolved Parties</a> of an item.</p>
 <ul>
-<li>MUST return the same addresses, in the same order, that the module passes to the policy for that item.</li>
+<li>MUST return the same sender and recipient that the module passes to the policy for that item.</li>
 </ul>
-<h3 id="heldtokens"><a class="header" href="#heldtokens">heldTokens</a></h3>
-<p>Returns the amount the module holds for an L1 token and L2 token pair.</p>
+<h3 id="heldtokenstotal"><a class="header" href="#heldtokenstotal">heldTokensTotal</a></h3>
+<p>Returns the amount the module holds for an L1 token, across every L2 token it is paired with.</p>
 <h3 id="policy-2"><a class="header" href="#policy-2">policy</a></h3>
 <p>Returns the policy the module consults and accepts verdicts from.</p>
 <h3 id="disabled"><a class="header" href="#disabled">disabled</a></h3>
@@ -27642,8 +27655,11 @@ role from the upgrade authority in
 <li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
 <a href="experimental/contracts/L1/../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
 <li>MUST revert if the ETH received does not match the ETH the item carries.</li>
+<li>MUST revert if the item is a token transfer whose tokens it received and its balance of the L1 token is below
+<code>heldTokensTotal</code> for that token plus the item's amount.</li>
 <li>MUST set the record's <code>heldAt</code> for the item's identifier.</li>
-<li>MUST increase <code>heldTokens</code> for the item's token pair, if the item is a token transfer whose tokens it received.</li>
+<li>MUST increase <code>heldTokensTotal</code> for the item's L1 token by the item's amount, if the item is a token transfer whose
+tokens it received.</li>
 <li>MUST emit a <code>Held</code> event carrying the identifier and the full item.</li>
 </ul>
 <h3 id="screenwithdrawal"><a class="header" href="#screenwithdrawal">screenWithdrawal</a></h3>
@@ -27672,8 +27688,11 @@ withdrawal's nonce is at or above the cutoff recorded when it was disabled.</li>
 <li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
 <a href="experimental/contracts/L1/../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
 <li>MUST revert if the ETH received does not match the ETH the item carries.</li>
+<li>MUST revert if the item is a token transfer whose tokens it received and its balance of the L1 token is below
+<code>heldTokensTotal</code> for that token plus the item's amount.</li>
 <li>MUST set the record's <code>heldAt</code> for the item's identifier.</li>
-<li>MUST increase <code>heldTokens</code> for the item's token pair, if the item is a token transfer whose tokens it received.</li>
+<li>MUST increase <code>heldTokensTotal</code> for the item's L1 token by the item's amount, if the item is a token transfer whose
+tokens it received.</li>
 <li>MUST emit a <code>Held</code> event carrying the identifier and the full item.</li>
 </ul>
 <h3 id="recordverdict"><a class="header" href="#recordverdict">recordVerdict</a></h3>
@@ -27686,6 +27705,7 @@ chooses it.</li>
 <p><strong>Behavior:</strong></p>
 <ul>
 <li>MUST revert if the caller is not the policy.</li>
+<li>MUST revert if <code>_expiresAt</code> is zero, since a zero expiry is what <a href="experimental/contracts/L1/compliance-module.html#revokeverdict">revokeVerdict</a> leaves behind.</li>
 <li>MUST NOT require that the item exists, so a verdict can be recorded before its item reaches the Portal.</li>
 <li>MUST set the record's <code>expiresAt</code> to <code>_expiresAt</code>.</li>
 <li>MUST emit a <code>VerdictRecorded</code> event with the identifier and the expiry.</li>
@@ -27712,8 +27732,8 @@ chooses it.</li>
 <li>MUST delete the record before calling the policy or the Portal.</li>
 <li>MUST resolve the <a href="experimental/contracts/L1/compliance-module.html#resolved-parties">Resolved Parties</a> and revert if the policy's <code>screenRelease</code> does not return
 <code>true</code>, passing the item, those parties, and the <code>expiresAt</code> the record held before the delete.</li>
-<li>MUST approve the <code>L1StandardBridge</code> for the item's amount and decrease <code>heldTokens</code> for the item's token pair by
-that amount, if the item is a token transfer whose tokens it holds.</li>
+<li>MUST approve the <code>L1StandardBridge</code> for the item's amount and decrease <code>heldTokensTotal</code> for the item's L1 token
+by that amount, if the item is a token transfer whose tokens it holds.</li>
 <li>MUST call the Portal's <code>completeDepositTransaction</code> with the ETH the item carries.</li>
 <li>MUST emit a <code>Completed</code> event with the identifier.</li>
 </ul>
@@ -27752,13 +27772,20 @@ the disable. A raw counter sits below every versioned nonce and would let every 
 </ul>
 <h3 id="enable"><a class="header" href="#enable">enable</a></h3>
 <p>Clears the <a href="experimental/contracts/L1/compliance-module.html#disable-switch">Disable Switch</a> and its cutoff, so every item is screened again, including a withdrawal
-was set.</p>
+initiated at or after the cutoff that was set.</p>
 <p><strong>Behavior:</strong></p>
 <ul>
 <li>MUST revert if the caller is not the owner.</li>
 <li>MUST clear the cutoff.</li>
 <li>MUST set <code>disabled</code> to <code>false</code>.</li>
 <li>MUST emit an <code>Enabled</code> event.</li>
+</ul>
+<h3 id="renounceownership"><a class="header" href="#renounceownership">renounceOwnership</a></h3>
+<p>Refuses to give up the owner role.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert. An ownerless module could never change its policy, disable it, or enable it again, so every item it
+holds would be left to the policy in place at the time.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <h1 id="l1block-4"><a class="header" href="#l1block-4">L1Block</a></h1>

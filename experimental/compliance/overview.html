@@ -297,9 +297,9 @@ value.</strong></li>
 </ul>
 <p>The Portal gains the ability to defer an item and resume it later, which a rate limiter, a per-token pause or a
 circuit breaker would use the same way.</p>
-<p>Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge keeps none. The Portal
-recognizes the messenger envelope and hands the bridge the message inside it. The bridge decodes that inner call
-itself, moves the escrow it names, and updates its own accounting.</p>
+<p>Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge only notes whether it
+escrowed the token. The Portal recognizes the messenger envelope and hands the bridge the message inside it. The
+bridge decodes that inner call itself, moves the escrow it names, and updates its own accounting.</p>
 <p>The Portal builds every item and records its terms, and the hook only picks which item moves. No policy, however it is
 written, can redirect value or change what an item does. It can delay an item or refuse it, and nothing else.</p>
 <p>Letting the <code>L1StandardBridge</code> screen its own token transfers looks simpler, because the parties arrive there as
@@ -361,13 +361,14 @@ of the last layer it read.</p>
 <p>A <strong>Token Bridge Message</strong> is a token transfer between the <code>L1StandardBridge</code> and the <code>L2StandardBridge</code>, sent through
 the messengers. The <code>OptimismPortal</code> recognizes it in two steps. The item's outer sender and target must be the
 messengers, and the envelope must decode to a <code>finalizeBridgeERC20</code> call from the standard bridge. Since nobody can choose
-those fields, a message that matches came from the bridge. The Portal fills the item's token fields from that inner
-call, and moves escrow only for such a message.</p>
+those fields, a message that matches came from the bridge. The item must also carry no ETH. The Portal marks such an
+item as a token transfer, and moves escrow only for it.</p>
 <h3 id="finalizable-time"><a class="header" href="#finalizable-time">Finalizable Time</a></h3>
-<p>The <strong>Finalizable Time</strong> of a withdrawal is the later of <code>proofMaturityDelaySeconds</code> after its proof was submitted
-and <code>disputeGameFinalityDelaySeconds</code> after that proof's dispute game resolved. The <code>OptimismPortal</code> requires both
-delays before it finalizes, so neither alone decides when a withdrawal can move. The game must also be proper,
-respected and resolved in the defender's favour, but those conditions carry no time and so are not part of this value.</p>
+<p>The <strong>Finalizable Time</strong> of a withdrawal is one second after the later of <code>proofMaturityDelaySeconds</code> after its proof
+was submitted and <code>disputeGameFinalityDelaySeconds</code> after that proof's dispute game resolved. The <code>OptimismPortal</code>
+requires both delays to have passed before it finalizes, so neither alone decides when a withdrawal can move. The game
+must also be proper, respected and resolved in the defender's favour, but those conditions carry no time and so are
+not part of this value.</p>
 <p>A withdrawal can be proven more than once, by different submitters and against different games, and whoever finalizes
 names which proof to use. The Finalizable Time belongs to that proof, not to the withdrawal.</p>
 <p>The Portal passes it to the hook at screening, so a policy can decide how long to wait before it holds an uncleared
@@ -403,7 +404,7 @@ to the hook and back. Tokens native to L2 are burned and minted rather than escr
 and the value behind such an item stays in the <code>L2StandardBridge</code>'s escrow until it completes.</p>
 <p>For a <a href="#token-bridge-message">Token Bridge Message</a>, the Portal hands the bridge the inner message and asks it to move
 escrow. The bridge decodes that inner call itself, runs its own checks, and records the balance change in its own
-accounting. It records nothing about the hold:</p>
+accounting. Beyond whether it escrowed the token, it records nothing about the hold:</p>
 <ul>
 <li><strong>Hold.</strong> The Portal calls the bridge with the inner <code>finalizeBridgeERC20</code> message it is holding. The bridge checks
 the selector, reads the tokens and the amount from it, and debits its escrow for that token pair, which reverts if
@@ -440,12 +441,10 @@ itself is fixed by upgrading it.</p>
 <p>The change is limited to L1 contracts, with no multi-client or consensus impact. A held deposit emits no
 <code>TransactionDeposited</code> event, so the derivation pipeline sees nothing until the deposit completes, and then sees an
 ordinary deposit.</p>
-<p>For a chain that does not set a hook, behavior does not change, but three things change either way:</p>
+<p>For a chain that does not set a hook, behavior does not change, but two things change either way:</p>
 <ul>
 <li>The <code>L1StandardBridge</code> gains two entry points that only the <code>OptimismPortal</code> can call.</li>
 <li>The <code>OptimismPortal</code> gains completion functions, while existing user entry points are unchanged.</li>
-<li>The <code>OptimismPortal</code> makes the <code>L1StandardBridge</code> an <a href="./optimism-portal.html#unsafe-target">Unsafe Target</a>, so a
-withdrawal that calls the bridge directly can no longer be finalized.</li>
 </ul>
 <p>For a chain that enables it, these assumptions break:</p>
 <ul>
@@ -454,6 +453,8 @@ withdrawal that calls the bridge directly can no longer be finalized.</li>
 the deposit reaches L2.</li>
 <li><code>finalizeWithdrawalTransaction</code> can revert for a withdrawal that is not cleared, and once the hook holds it, it can
 succeed without paying the recipient.</li>
+<li>A withdrawal that calls the <code>L1StandardBridge</code> directly can no longer be finalized, because the bridge is an
+<a href="./optimism-portal.html#unsafe-target">Unsafe Target</a> while a hook is set.</li>
 <li>Held deposits complete out of submission order, because a verdict for a later item can land first.</li>
 </ul>
 <p>A <code>RelayedMessage</code> event still implies the recipient was paid, because a withdrawal is held before the messenger

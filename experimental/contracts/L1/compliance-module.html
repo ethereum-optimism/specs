@@ -234,7 +234,7 @@
 <li><a href="#owner">owner</a></li>
 <li><a href="#items">items</a></li>
 <li><a href="#parties">parties</a></li>
-<li><a href="#heldtokens">heldTokens</a></li>
+<li><a href="#heldtokenstotal">heldTokensTotal</a></li>
 <li><a href="#policy">policy</a></li>
 <li><a href="#disabled">disabled</a></li>
 <li><a href="#paused">paused</a></li>
@@ -249,6 +249,7 @@
 <li><a href="#setpolicy">setPolicy</a></li>
 <li><a href="#disable">disable</a></li>
 <li><a href="#enable">enable</a></li>
+<li><a href="#renounceownership">renounceOwnership</a></li>
 </ul>
 </li>
 </ul>
@@ -278,9 +279,9 @@ its value. This keeps unbounded calldata out of storage, and lets anyone rebuild
 <p>The module stores whatever <code>expiresAt</code> the policy passes and hands it back when value moves. The module does not
 judge it; the policy does, and it treats an expired verdict as none.</p>
 <h3 id="resolved-parties"><a class="header" href="#resolved-parties">Resolved Parties</a></h3>
-<p>The <strong>Resolved Parties</strong> of an item are the two addresses the module passes to the policy: the sender, then the
-recipient. For a message sent through the messengers, the module decodes the real sender and recipient from the
-envelope rather than passing the messengers themselves.</p>
+<p>The <strong>Resolved Parties</strong> of an item are the sender and the recipient the module passes to the policy. For a message
+sent through the messengers, the module decodes the real sender and recipient from the envelope rather than passing
+the messengers themselves.</p>
 <p>This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation:</p>
 <ul>
 <li>A <code>relayMessage</code> envelope to the direction's messenger whose inner call is <code>finalizeBridgeERC20</code> or
@@ -343,12 +344,12 @@ held.</li>
 held item carrying one holds only its message.</li>
 </ul>
 <p>A token that takes a fee on transfer, rebases, or otherwise moves a balance its transfer did not name breaks
-<a href="#icm-013-the-module-holds-at-least-what-it-owes">iCM-013</a>, because <code>heldTokens</code> records the amount the message names
-while the module ends up holding a different amount.</p>
+<a href="#icm-013-the-module-holds-at-least-what-it-owes">iCM-013</a>, because <code>heldTokensTotal</code> records the amount the message
+names while the module ends up holding a different amount.</p>
 <h4 id="mitigations-3"><a class="header" href="#mitigations-3">Mitigations</a></h4>
 <ul>
 <li>The bridge has the same constraint, so such a token is already unsupported before a hook is involved.</li>
-<li><code>heldTokens</code> is kept per token pair, so a token that breaks it cannot reach the escrow of another pair.</li>
+<li>A hold reverts if the module's balance of the L1 token would not cover <code>heldTokensTotal</code> for that token.</li>
 </ul>
 <h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
 <ul>
@@ -374,37 +375,37 @@ move the same item twice.</p>
 <p>If violated, a hostile or buggy policy could re-enter completion for an item whose value has already moved, draining
 the module.</p>
 <h3 id="icm-013-the-module-holds-at-least-what-it-owes"><a class="header" href="#icm-013-the-module-holds-at-least-what-it-owes">iCM-013: The module holds at least what it owes</a></h3>
-<p>For every held item the module has custody of the ETH and tokens that item carries, and <code>heldTokens</code> is at most the
-token balance it actually holds.</p>
+<p>For every held item the module has custody of the ETH and tokens that item carries, and for each L1 token
+<code>heldTokensTotal</code> is at most the module's balance of it.</p>
 <h4 id="impact-2"><a class="header" href="#impact-2">Impact</a></h4>
 <p><strong>Severity: Critical</strong></p>
 <p>If violated, the module is insolvent. Some held items can be completed and others cannot, decided by whichever
 completion is sent first.</p>
 <h2 id="function-specification"><a class="header" href="#function-specification">Function Specification</a></h2>
 <h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST disable initializers.</li>
+</ul>
+<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
+<p>Sets the module's owner, its first policy, and the addresses it works with.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
+<li><code>_owner</code>: the module's <a href="#owner">owner</a>.</li>
+<li><code>_policy</code>: the first policy.</li>
 <li><code>_portal</code>: the <code>OptimismPortal</code> this module is the hook for.</li>
 <li><code>_l1CrossDomainMessenger</code>, <code>_l1StandardBridge</code>: the contracts the module decodes a token transfer against.</li>
 </ul>
 <p><strong>Behavior:</strong></p>
 <ul>
-<li>MUST set all three addresses as immutables. The Portal is the only permitted caller of the hook entry points, and
-the other two are used to find the <a href="#resolved-parties">Resolved Parties</a> and to approve the bridge on token
-completions.</li>
-<li>MUST revert if any of the three is the zero address.</li>
-</ul>
-<p>The messenger and the bridge are arguments, so the module can be deployed before the Portal is initialized and wired
-as its hook in the same deployment. They must be the addresses the chain's <code>SystemConfig</code> holds.</p>
-<h3 id="initialize"><a class="header" href="#initialize">initialize</a></h3>
-<p>Sets the module's owner and its first policy.</p>
-<p><strong>Behavior:</strong></p>
-<ul>
 <li>MUST revert if the module has already been initialized.</li>
-<li>MUST revert if the owner or the policy is the zero address.</li>
-<li>MUST set the owner and the policy.</li>
+<li>MUST revert if the caller is not the admin of the module's proxy.</li>
+<li>MUST revert if any argument is the zero address.</li>
+<li>MUST set the owner, the policy and the three addresses.</li>
 <li>MUST emit a <code>PolicySet</code> event with the zero address as the previous policy.</li>
 </ul>
+<p>The three addresses must be the ones the chain's <code>SystemConfig</code> holds. <code>initialize</code> can run before the Portal sets
+the module as its hook.</p>
 <h3 id="portal"><a class="header" href="#portal">portal</a></h3>
 <p>Returns the <code>OptimismPortal</code> this module is the hook for.</p>
 <h3 id="owner"><a class="header" href="#owner">owner</a></h3>
@@ -419,10 +420,10 @@ role from the upgrade authority in
 <h3 id="parties"><a class="header" href="#parties">parties</a></h3>
 <p>Returns the <a href="#resolved-parties">Resolved Parties</a> of an item.</p>
 <ul>
-<li>MUST return the same addresses, in the same order, that the module passes to the policy for that item.</li>
+<li>MUST return the same sender and recipient that the module passes to the policy for that item.</li>
 </ul>
-<h3 id="heldtokens"><a class="header" href="#heldtokens">heldTokens</a></h3>
-<p>Returns the amount the module holds for an L1 token and L2 token pair.</p>
+<h3 id="heldtokenstotal"><a class="header" href="#heldtokenstotal">heldTokensTotal</a></h3>
+<p>Returns the amount the module holds for an L1 token, across every L2 token it is paired with.</p>
 <h3 id="policy"><a class="header" href="#policy">policy</a></h3>
 <p>Returns the policy the module consults and accepts verdicts from.</p>
 <h3 id="disabled"><a class="header" href="#disabled">disabled</a></h3>
@@ -452,8 +453,11 @@ role from the upgrade authority in
 <li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
 <a href="../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
 <li>MUST revert if the ETH received does not match the ETH the item carries.</li>
+<li>MUST revert if the item is a token transfer whose tokens it received and its balance of the L1 token is below
+<code>heldTokensTotal</code> for that token plus the item's amount.</li>
 <li>MUST set the record's <code>heldAt</code> for the item's identifier.</li>
-<li>MUST increase <code>heldTokens</code> for the item's token pair, if the item is a token transfer whose tokens it received.</li>
+<li>MUST increase <code>heldTokensTotal</code> for the item's L1 token by the item's amount, if the item is a token transfer whose
+tokens it received.</li>
 <li>MUST emit a <code>Held</code> event carrying the identifier and the full item.</li>
 </ul>
 <h3 id="screenwithdrawal"><a class="header" href="#screenwithdrawal">screenWithdrawal</a></h3>
@@ -482,8 +486,11 @@ withdrawal's nonce is at or above the cutoff recorded when it was disabled.</li>
 <li>MUST revert if the Portal's <code>bridgeHook()</code> is not this module. See
 <a href="../../compliance/optimism-portal.html#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</li>
 <li>MUST revert if the ETH received does not match the ETH the item carries.</li>
+<li>MUST revert if the item is a token transfer whose tokens it received and its balance of the L1 token is below
+<code>heldTokensTotal</code> for that token plus the item's amount.</li>
 <li>MUST set the record's <code>heldAt</code> for the item's identifier.</li>
-<li>MUST increase <code>heldTokens</code> for the item's token pair, if the item is a token transfer whose tokens it received.</li>
+<li>MUST increase <code>heldTokensTotal</code> for the item's L1 token by the item's amount, if the item is a token transfer whose
+tokens it received.</li>
 <li>MUST emit a <code>Held</code> event carrying the identifier and the full item.</li>
 </ul>
 <h3 id="recordverdict"><a class="header" href="#recordverdict">recordVerdict</a></h3>
@@ -496,6 +503,7 @@ chooses it.</li>
 <p><strong>Behavior:</strong></p>
 <ul>
 <li>MUST revert if the caller is not the policy.</li>
+<li>MUST revert if <code>_expiresAt</code> is zero, since a zero expiry is what <a href="#revokeverdict">revokeVerdict</a> leaves behind.</li>
 <li>MUST NOT require that the item exists, so a verdict can be recorded before its item reaches the Portal.</li>
 <li>MUST set the record's <code>expiresAt</code> to <code>_expiresAt</code>.</li>
 <li>MUST emit a <code>VerdictRecorded</code> event with the identifier and the expiry.</li>
@@ -522,8 +530,8 @@ chooses it.</li>
 <li>MUST delete the record before calling the policy or the Portal.</li>
 <li>MUST resolve the <a href="#resolved-parties">Resolved Parties</a> and revert if the policy's <code>screenRelease</code> does not return
 <code>true</code>, passing the item, those parties, and the <code>expiresAt</code> the record held before the delete.</li>
-<li>MUST approve the <code>L1StandardBridge</code> for the item's amount and decrease <code>heldTokens</code> for the item's token pair by
-that amount, if the item is a token transfer whose tokens it holds.</li>
+<li>MUST approve the <code>L1StandardBridge</code> for the item's amount and decrease <code>heldTokensTotal</code> for the item's L1 token
+by that amount, if the item is a token transfer whose tokens it holds.</li>
 <li>MUST call the Portal's <code>completeDepositTransaction</code> with the ETH the item carries.</li>
 <li>MUST emit a <code>Completed</code> event with the identifier.</li>
 </ul>
@@ -562,13 +570,20 @@ the disable. A raw counter sits below every versioned nonce and would let every 
 </ul>
 <h3 id="enable"><a class="header" href="#enable">enable</a></h3>
 <p>Clears the <a href="#disable-switch">Disable Switch</a> and its cutoff, so every item is screened again, including a withdrawal
-was set.</p>
+initiated at or after the cutoff that was set.</p>
 <p><strong>Behavior:</strong></p>
 <ul>
 <li>MUST revert if the caller is not the owner.</li>
 <li>MUST clear the cutoff.</li>
 <li>MUST set <code>disabled</code> to <code>false</code>.</li>
 <li>MUST emit an <code>Enabled</code> event.</li>
+</ul>
+<h3 id="renounceownership"><a class="header" href="#renounceownership">renounceOwnership</a></h3>
+<p>Refuses to give up the owner role.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>MUST revert. An ownerless module could never change its policy, disable it, or enable it again, so every item it
+holds would be left to the policy in place at the time.</li>
 </ul>
 
                     </main>

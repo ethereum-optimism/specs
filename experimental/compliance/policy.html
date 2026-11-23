@@ -237,16 +237,21 @@ rejects every attempt to finalize it, so a clearance that lands at 13:30 still p
 path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook.</p>
 <h2 id="ipolicy"><a class="header" href="#ipolicy">IPolicy</a></h2>
 <pre><code class="language-solidity">interface IPolicy {
+    struct Parties {
+        address sender;
+        address recipient;
+    }
+
     function screenDeposit(
         Item calldata _item,
-        address[] calldata _parties
+        Parties calldata _parties
     )
         external
         returns (bool pass_);
 
     function screenWithdrawal(
         Item calldata _item,
-        address[] calldata _parties,
+        Parties calldata _parties,
         uint64 _expiresAt,
         uint256 _finalizableAt
     )
@@ -255,7 +260,7 @@ path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook
 
     function screenRelease(
         Item calldata _item,
-        address[] calldata _parties,
+        Parties calldata _parties,
         uint64 _expiresAt
     )
         external
@@ -264,8 +269,7 @@ path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook
 </code></pre>
 <p>All three answer with a <a href="./overview.html#screening-outcome">Screening Outcome</a>: <code>true</code> to proceed, <code>false</code> to hold,
 and a revert to reject.</p>
-<p><code>_parties</code> holds the item's two <a href="../contracts/L1/compliance-module.html#resolved-parties">Resolved Parties</a>:
-<code>_parties[0]</code> is the sender and <code>_parties[1]</code> is the recipient.</p>
+<p><code>_parties</code> carries the item's <a href="../contracts/L1/compliance-module.html#resolved-parties">Resolved Parties</a>.</p>
 <h2 id="what-every-policy-may-assume"><a class="header" href="#what-every-policy-may-assume">What Every Policy May Assume</a></h2>
 <ul>
 <li>The item it is handed is the item that will execute, unchanged.</li>

@@ -234,8 +234,8 @@
 serve, and the vocabulary they use, are in the <a href="./overview.html">Compliance Module overview</a>. The bridge's behavior on a
 default OP Stack chain is specified in its <a href="../contracts/L1/l1-standard-bridge.html">contract specification</a>.</p>
 <p>The bridge gains two entry points, callable only by the <code>OptimismPortal</code>, that move the escrow of a held token
-transfer to the hook and back. It does not store the hook address, it keeps no record of which items are held, and
-it never calls the hook directly.</p>
+transfer to the hook and back. It does not store the hook address and it never calls the hook directly. The only
+record it keeps of a held item is how that item's L1 token is classified, see <a href="#escrowed-and-minted-tokens">Escrowed and Minted Tokens</a>.</p>
 <p>A hold is the Portal's record. The bridge is handed a message to decode and asked to move escrow for it. See
 <a href="./optimism-portal.html#terms-commitment">Terms Commitment</a>.</p>
 <h2 id="what-the-bridge-receives-from-the-portal"><a class="header" href="#what-the-bridge-receives-from-the-portal">What the Bridge Receives From the Portal</a></h2>
@@ -255,14 +255,19 @@ those have a <code>deposits</code> balance. An <code>OptimismMintableERC20</code
 no escrow to move for it.</p>
 <p>A held item carrying an <code>OptimismMintableERC20</code> therefore moves no tokens at the bridge. Only its message is held, and
 the value behind it stays in the <code>L2StandardBridge</code>'s escrow on L2 until the item completes.</p>
+<p>The bridge records how it handled each held transfer:</p>
+<pre><code class="language-solidity">enum TokenKind { None, Escrowed, Mintable } // None means no hold is recorded
+
+mapping(bytes32 =&gt; TokenKind) public heldTokenKinds; // keyed by the item's identifier
+</code></pre>
 <h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
 <h3 id="acm-001-the-optimismportal-is-trusted"><a class="header" href="#acm-001-the-optimismportal-is-trusted">aCM-001: The OptimismPortal is trusted</a></h3>
 <p>The <code>OptimismPortal</code> only asks for an escrow move for a message it has recognized as a token transfer between the two
 canonical bridges, and only for an item whose terms it has committed to.</p>
 <h4 id="mitigations"><a class="header" href="#mitigations">Mitigations</a></h4>
 <ul>
-<li>Both new entry points are restricted to the <code>OptimismPortal</code>. The bridge stores no Portal address today, so how it
-resolves one is an open point. See <a href="#resolving-the-portal">Resolving the Portal</a>.</li>
+<li>Both new entry points are restricted to the <code>OptimismPortal</code>, which the bridge reads from its <code>SystemConfig</code>. See
+<a href="#resolving-the-portal">Resolving the Portal</a>.</li>
 <li>Both new entry points read the Portal's <code>bridgeHook()</code> and revert while it is <code>address(0)</code>, so a Portal on a chain
 that has configured no hook cannot move escrow at all.</li>
 <li>The bridge decodes the inner call itself rather than trusting the Portal's reading of the token pair and amount.</li>
@@ -276,6 +281,7 @@ additional capabilities to the Portal. See
 <p>Moves the escrow of a held token transfer out of the bridge and to the hook.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
+<li><code>_id</code>: the <a href="./overview.html#identifier">Identifier</a> of the held item.</li>
 <li><code>_direction</code>: whether the held item is a deposit or a withdrawal.</li>
 <li><code>_message</code>: the inner <code>finalizeBridgeERC20</code> call the Portal is holding.</li>
 </ul>
@@ -287,18 +293,21 @@ additional capabilities to the Portal. See
 <li>MUST read the token pair and the amount from <code>_message</code>, using <code>_direction</code> to tell which of the two token
 arguments is the L1 token.</li>
 <li>MUST record whether the L1 token is a <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>,
-keyed by <code>_direction</code> and <code>_message</code>.</li>
+keyed by <code>_id</code>.</li>
 <li>MUST transfer that amount of the L1 token to the bridge hook, if the L1 token is a
 <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST decrease the <code>deposits</code> mapping for that token pair by that amount, if the L1 token is a
 <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST revert if the <code>deposits</code> balance for that token pair is below the amount.</li>
+<li>MUST emit an <code>ERC20Held</code> event with <code>_id</code>, the token pair and the amount, if the L1 token is a
+<a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST NOT move any tokens if the L1 token is an <code>OptimismMintableERC20</code>.</li>
 </ul>
 <h3 id="restoreerc20"><a class="header" href="#restoreerc20">restoreERC20</a></h3>
 <p>Takes the escrow of a held token transfer back into the bridge, so the normal path can run.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
+<li><code>_id</code>: the same identifier that was passed to <a href="#holderc20">holdERC20</a>.</li>
 <li><code>_direction</code>: the same direction that was passed to <a href="#holderc20">holdERC20</a>.</li>
 <li><code>_message</code>: the same inner <code>finalizeBridgeERC20</code> call that was passed to <a href="#holderc20">holdERC20</a>.</li>
 </ul>
@@ -307,12 +316,14 @@ keyed by <code>_direction</code> and <code>_message</code>.</li>
 <li>MUST revert if the caller is not the <code>OptimismPortal</code>.</li>
 <li>MUST revert if the Portal's <code>bridgeHook()</code> is <code>address(0)</code>.</li>
 <li>MUST revert if the selector of <code>_message</code> is not <code>finalizeBridgeERC20</code>.</li>
-<li>MUST revert if <code>holdERC20</code> recorded no classification for the same <code>_direction</code> and <code>_message</code>.</li>
+<li>MUST revert if the recorded classification for <code>_id</code> is <code>None</code>.</li>
 <li>MUST read the token pair and the amount from <code>_message</code>, using <code>_direction</code> to tell which of the two token
 arguments is the L1 token.</li>
 <li>MUST pull that amount of the L1 token from the bridge hook, using the allowance the hook granted, if the recorded
 classification is a <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST increase the <code>deposits</code> mapping for that token pair by that amount, if the recorded classification is a
+<a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
+<li>MUST emit an <code>ERC20Restored</code> event with <code>_id</code>, the token pair and the amount, if the recorded classification is a
 <a href="../contracts/L1/l1-standard-bridge.html#native-l1-token">Native L1 Token</a>.</li>
 <li>MUST NOT move any tokens if the recorded classification is an <code>OptimismMintableERC20</code>.</li>
 <li>MUST clear the recorded classification.</li>
@@ -366,21 +377,17 @@ stays in the bridge's escrow indefinitely.</p>
 <p>A cleared withdrawal never needs the move, because it pays through the normal path which should remain unchanged.</p>
 <h3 id="the-portal-could-already-reach-the-escrow"><a class="header" href="#the-portal-could-already-reach-the-escrow">The Portal Could Already Reach the Escrow</a></h3>
 <p>These entry points do not widen what a faulty <code>OptimismPortal</code> can do to the bridge. <code>finalizeBridgeERC20</code> releases
-escrow to whoever the messenger names as the cross-domain sender. The messenger takes that name from a parameter of
-<code>relayMessage</code>. And only the Portal may call <code>relayMessage</code>, with an <code>l2Sender</code> it sets
-itself. A compromised portal can already drain escrow through that path on a default OP Stack chain.</p>
+escrow to any recipient the message names, as long as the messenger reports the <code>L2StandardBridge</code> as the
+cross-domain sender. The messenger takes that name from a parameter of <code>relayMessage</code>. And only the Portal may call
+<code>relayMessage</code>, with an <code>l2Sender</code> it sets itself. A compromised portal can already drain escrow through that path
+on a default OP Stack chain.</p>
 <p>The existing path needs a well-formed relay through the messenger, and it
 leaves a <code>RelayedMessage</code> event and a <code>successfulMessages</code> entry behind. An escrow move through
 <a href="#holderc20">holdERC20</a> is a single call, reachable from <code>depositTransaction</code>, which never touched the bridge
 before, and it leaves no messenger record. Monitoring built on messenger events does not see it.</p>
 <h3 id="resolving-the-portal"><a class="header" href="#resolving-the-portal">Resolving the Portal</a></h3>
-<p>Both entry points are restricted to the <code>OptimismPortal</code>, but the bridge has no Portal address today. Its
-<code>initialize</code> takes only the <code>L1CrossDomainMessenger</code> and the <code>SystemConfig</code>. Two existing routes could resolve one,
-<code>messenger.portal()</code> or <code>systemConfig.optimismPortal()</code>, and the design this page is drawn from does not choose
-between them.</p>
-<p>The same question applies to the destination of a held transfer. <code>holdERC20</code> sends escrow to the bridge hook, and the
-design states that the bridge does not need the hook address, which leaves the Portal to supply it. Neither point is
-settled.</p>
+<p>The bridge reads the Portal from <code>systemConfig.optimismPortal()</code> and the hook from the Portal's <code>bridgeHook()</code> on
+every call, and stores neither.</p>
 <h3 id="tokens-native-to-l2-cannot-be-recovered-from-a-held-item"><a class="header" href="#tokens-native-to-l2-cannot-be-recovered-from-a-held-item">Tokens Native to L2 Cannot Be Recovered From a Held Item</a></h3>
 <p>A held item carrying an <code>OptimismMintableERC20</code> holds only the message. The tokens were burned on deposit, or were
 never minted on withdrawal, so there is nothing in the bridge for the hook to take custody of.</p>

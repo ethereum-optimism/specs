@@ -259,8 +259,8 @@ an ERC-20 deposit or withdrawal is held.</p>
 Portal, and its value stays with the removed hook.</p>
 <h3 id="unsafe-target"><a class="header" href="#unsafe-target">Unsafe Target</a></h3>
 <p>An Unsafe Target is an address a withdrawal may not call. The default set is the <code>OptimismPortal</code> itself and the
-<code>ETHLockbox</code>. This page adds the <code>L1StandardBridge</code> on every chain, and the
-<a href="#bridge-hook-address">Bridge Hook Address</a> while it is set. See
+<code>ETHLockbox</code>. While a hook is set, this page adds the <code>L1StandardBridge</code> and the
+<a href="#bridge-hook-address">Bridge Hook Address</a>. See
 <a href="#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a>.</p>
 <h3 id="deposit-counter"><a class="header" href="#deposit-counter">Deposit Counter</a></h3>
 <p>The <strong>Deposit Counter</strong> is a counter the Portal assigns to a deposit when it screens it. A withdrawal carries its own
@@ -322,6 +322,7 @@ messenger stamps the <code>L1StandardBridge</code> as the inner sender.</li>
 <li>For a withdrawal, the proven sender is the L2 messenger and the inner sender is the <code>L2StandardBridge</code>.</li>
 <li>In both, the inner call is <code>finalizeBridgeERC20</code>, and the inner target is the other canonical bridge: the
 <code>L2StandardBridge</code> for a deposit and the <code>L1StandardBridge</code> for a withdrawal.</li>
+<li>In both, the item carries no ETH.</li>
 </ul>
 <p>Nobody can choose the senders, so a message that matches came from the bridge, addressing its counterpart. The Portal
 marks such an item as a token transfer, and moves escrow only for it.</p>
@@ -489,7 +490,8 @@ not <code>DEFAULT_L2_SENDER</code>, so a completion cannot run inside another wi
 <li>MUST forward the call to the target with <code>SafeCall.callWithMinGas</code> and the item's committed <code>gasLimit</code>.</li>
 <li>MUST unset the L2 Withdrawal Sender after the call returns.</li>
 <li>MUST revert if the forwarded call fails, so the withdrawal stays held and can be completed again later. This
-diverges from <code>finalizeWithdrawalTransaction</code>, which records the failure as finalized with <code>success = false</code>.</li>
+diverges from <code>finalizeWithdrawalTransaction</code>, which records the failure as finalized with <code>success = false</code>
+unless the withdrawal came from the <code>L2CrossDomainMessenger</code>.</li>
 <li>MUST emit <code>WithdrawalFinalized</code> with <code>success</code> as <code>true</code>.</li>
 </ul>
 <h2 id="resource-metering"><a class="header" href="#resource-metering">Resource Metering</a></h2>
@@ -525,8 +527,8 @@ goes or what the item does.</p>
 <p>If violated, the contract at the hook address could redirect user value or decide arbitrary execution on both L1 and
 L2. That is far more authority than setting a hook is meant to grant to whoever can upgrade it.</p>
 <h3 id="icm-004-a-chain-with-no-hook-configured-is-unaffected"><a class="header" href="#icm-004-a-chain-with-no-hook-configured-is-unaffected">iCM-004: A chain with no hook configured is unaffected</a></h3>
-<p>While <code>bridgeHook</code> is <code>address(0)</code>, every entry point behaves exactly as on a default OP Stack chain, except that the
-<code>L1StandardBridge</code> is an <a href="#unsafe-target">Unsafe Target</a>.</p>
+<p>While <code>bridgeHook</code> is <code>address(0)</code>, every entry point behaves exactly as on a default OP Stack chain, apart from the
+<a href="#resource-metering">Resource Metering</a> count in the block where a hook is removed.</p>
 <h4 id="impact-3"><a class="header" href="#impact-3">Impact</a></h4>
 <p><strong>Severity: High</strong></p>
 <p>If violated, chains that never opted in would change behavior on upgrade, which the feature exists to avoid.</p>
@@ -544,13 +546,12 @@ limit the withdrawal carries, whether the withdrawal was held or not.</p>
 The commitment is already deleted and cannot be retried, leaving whichever value it carries stranded.</p>
 <h2 id="security-considerations"><a class="header" href="#security-considerations">Security Considerations</a></h2>
 <h3 id="why-the-bridge-and-the-hook-are-unsafe-targets"><a class="header" href="#why-the-bridge-and-the-hook-are-unsafe-targets">Why the Bridge and the Hook Are Unsafe Targets</a></h3>
-<p>The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, which is the only
-check those entry points make. A withdrawal targeting the <code>L1StandardBridge</code> with a <code>restoreERC20</code> call credits
+<p>The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, and that is what those
+entry points authenticate. A withdrawal targeting the <code>L1StandardBridge</code> with a <code>holdERC20</code> call moves
 escrow the Portal never committed to, and one targeting the hook with a <code>holdDeposit</code> call writes a record for an
 item the Portal never held.</p>
-<p>The bridge is unsafe whether or not the chain sets a hook. Gating it on the hook would mean a withdrawal proven
-while <code>bridgeHook</code> is <code>address(0)</code> stops being finalizable once a hook is set. Nothing legitimate targets the
-bridge directly, because a token withdrawal reaches it through the <code>L1CrossDomainMessenger</code>.</p>
+<p>The bridge is unsafe only while a hook is set, because its new entry points revert until then. A withdrawal to the
+bridge proven while <code>bridgeHook</code> is <code>address(0)</code> cannot be finalized while a hook is set.</p>
 <p>The hook is an Unsafe Target only while it is set. After <a href="#removehook"><code>removeHook</code></a> or a replacement through
 <a href="#initialize"><code>initialize</code></a>, the former hook is an ordinary target, and a withdrawal can call it with the Portal as its
 caller. A hook MUST therefore check that it is still the Portal's hook, with <code>bridgeHook() == address(this)</code>, and not
@@ -560,9 +561,9 @@ for a withdrawal that pays out directly, and completion decides for a held one.<
 <h3 id="changing-the-hook"><a class="header" href="#changing-the-hook">Changing the Hook</a></h3>
 <p>Replacing or removing a hook while items are held does not move their value, which stays with the former hook.</p>
 <p><code>initialize</code> is the only way to set a hook, so changing it also re-applies every other <code>initialize</code> argument: the
-<code>SystemConfig</code>, the <code>AnchorStateRegistry</code>, the <code>ETHLockbox</code> and the proof maturity delay. The operator must pass the
-current values. A wrong proof maturity delay, for example, changes when every withdrawal already proven can be
-finalized.</p>
+<code>SystemConfig</code>, the <code>AnchorStateRegistry</code> and the proof maturity delay. The operator must pass the current values. A
+wrong proof maturity delay, for example, changes when every withdrawal already proven can be finalized. A zero
+<code>ETHLockbox</code> keeps the current one, as a zero hook does.</p>
 <h3 id="gas-headroom-on-the-withdrawal-path"><a class="header" href="#gas-headroom-on-the-withdrawal-path">Gas Headroom on the Withdrawal Path</a></h3>
 <p>The hook runs before <code>SafeCall.callWithMinGas</code>, so finalizing a cleared withdrawal also pays for the hook. This cannot
 brick a withdrawal, because <code>callWithMinGas</code> checks the remaining gas when it makes the call, so a finalization
@@ -571,9 +572,8 @@ without enough gas reverts, consumes nothing, and can be retried with more.</p>
 fit in one transaction. Nothing runs inside the relay, so token withdrawals do not depend on the gas the user set on
 L2.</p>
 <h3 id="cost-when-no-hook-is-set"><a class="header" href="#cost-when-no-hook-is-set">Cost When No Hook Is Set</a></h3>
-<p>A chain that has not configured a hook pays one <code>SLOAD</code>, which short circuits the rest of the hook logic. Proving and
-finalizing also read the <code>L1StandardBridge</code> address from <code>SystemConfig</code> for the unsafe-target check, which applies on
-every chain.</p>
+<p>A chain that has not configured a hook pays one <code>SLOAD</code>, which short circuits the rest of the hook logic. A deposit
+also reads the published-gas count from <a href="#resource-metering">Resource Metering</a>.</p>
 
                     </main>
 
