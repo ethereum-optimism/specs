@@ -65,7 +65,7 @@ interface IPolicy {
 
     function screenDeposit(
         Item calldata _item,
-        Parties calldata _parties,
+        Parties calldata _parties
     )
         external
         returns (bool pass_);

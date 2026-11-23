@@ -359,6 +359,7 @@ Takes custody of a held withdrawal.
 - MUST set the record's `heldAt` for the item's identifier.
 - MUST increase `heldTokensTotal` for the item's L1 token by the item's amount, if the item is a token transfer whose
   tokens it received.
+- MUST emit a `Held` event carrying the identifier and the full item.
 
 ### recordVerdict
 
