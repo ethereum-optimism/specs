@@ -149,6 +149,7 @@ The Portal recognizes one shape: a message between the two canonical bridges.
 - For a withdrawal, the proven sender is the L2 messenger and the inner sender is the `L2StandardBridge`.
 - In both, the inner call is `finalizeBridgeERC20`, and the inner target is the other canonical bridge: the
   `L2StandardBridge` for a deposit and the `L1StandardBridge` for a withdrawal.
+- In both, the item carries no ETH.
 
 Nobody can choose the senders, so a message that matches came from the bridge, addressing its counterpart. The Portal
 marks such an item as a token transfer, and moves escrow only for it.

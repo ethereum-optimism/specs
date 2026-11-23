@@ -229,8 +229,8 @@ of the last layer it read.
 A **Token Bridge Message** is a token transfer between the `L1StandardBridge` and the `L2StandardBridge`, sent through
 the messengers. The `OptimismPortal` recognizes it in two steps. The item's outer sender and target must be the
 messengers, and the envelope must decode to a `finalizeBridgeERC20` call from the standard bridge. Since nobody can choose
-those fields, a message that matches came from the bridge. The Portal fills the item's token fields from that inner
-call, and moves escrow only for such a message.
+those fields, a message that matches came from the bridge. The item must also carry no ETH. The Portal marks such an
+item as a token transfer, and moves escrow only for it.
 
 ### Finalizable Time
 
