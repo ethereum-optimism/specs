@@ -137,9 +137,9 @@ graph LR
 The Portal gains the ability to defer an item and resume it later, which a rate limiter, a per-token pause or a
 circuit breaker would use the same way.
 
-Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge keeps none. The Portal
-recognizes the messenger envelope and hands the bridge the message inside it. The bridge decodes that inner call
-itself, moves the escrow it names, and updates its own accounting.
+Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge only notes whether it
+escrowed the token. The Portal recognizes the messenger envelope and hands the bridge the message inside it. The
+bridge decodes that inner call itself, moves the escrow it names, and updates its own accounting.
 
 The Portal builds every item and records its terms, and the hook only picks which item moves. No policy, however it is
 written, can redirect value or change what an item does. It can delay an item or refuse it, and nothing else.
@@ -285,7 +285,7 @@ and the value behind such an item stays in the `L2StandardBridge`'s escrow until
 
 For a [Token Bridge Message](#token-bridge-message), the Portal hands the bridge the inner message and asks it to move
 escrow. The bridge decodes that inner call itself, runs its own checks, and records the balance change in its own
-accounting. It records nothing about the hold:
+accounting. Beyond whether it escrowed the token, it records nothing about the hold:
 
 - **Hold.** The Portal calls the bridge with the inner `finalizeBridgeERC20` message it is holding. The bridge checks
   the selector, reads the tokens and the amount from it, and debits its escrow for that token pair, which reverts if
