@@ -86,8 +86,8 @@ canonical bridges, and only for an item whose terms it has committed to.
 
 #### Mitigations
 
-- Both new entry points are restricted to the `OptimismPortal`. The bridge stores no Portal address today, so how it
-  resolves one is an open point. See [Resolving the Portal](#resolving-the-portal).
+- Both new entry points are restricted to the `OptimismPortal`, which the bridge reads from its `SystemConfig`. See
+  [Resolving the Portal](#resolving-the-portal).
 - Both new entry points read the Portal's `bridgeHook()` and revert while it is `address(0)`, so a Portal on a chain
   that has configured no hook cannot move escrow at all.
 - The bridge decodes the inner call itself rather than trusting the Portal's reading of the token pair and amount.
@@ -242,14 +242,8 @@ before, and it leaves no messenger record. Monitoring built on messenger events 
 
 ### Resolving the Portal
 
-Both entry points are restricted to the `OptimismPortal`, but the bridge has no Portal address today. Its
-`initialize` takes only the `L1CrossDomainMessenger` and the `SystemConfig`. Two existing routes could resolve one,
-`messenger.portal()` or `systemConfig.optimismPortal()`, and the design this page is drawn from does not choose
-between them.
-
-The same question applies to the destination of a held transfer. `holdERC20` sends escrow to the bridge hook, and the
-design states that the bridge does not need the hook address, which leaves the Portal to supply it. Neither point is
-settled.
+The bridge reads the Portal from `systemConfig.optimismPortal()` and the hook from the Portal's `bridgeHook()` on
+every call, and stores neither.
 
 ### Tokens Native to L2 Cannot Be Recovered From a Held Item
 
