@@ -33,7 +33,7 @@
   - [owner](#owner)
   - [items](#items)
   - [parties](#parties)
-  - [heldTokens](#heldtokens)
+  - [heldTokensTotal](#heldtokenstotal)
   - [policy](#policy)
   - [disabled](#disabled)
   - [paused](#paused)
@@ -166,14 +166,13 @@ The module inherits the `StandardBridge`'s token support:
   held item carrying one holds only its message.
 
 A token that takes a fee on transfer, rebases, or otherwise moves a balance its transfer did not name breaks
-[iCM-013](#icm-013-the-module-holds-at-least-what-it-owes), because `heldTokens` records the amount the message names
-while the module ends up holding a different amount.
+[iCM-013](#icm-013-the-module-holds-at-least-what-it-owes), because `heldTokensTotal` records the amount the message
+names while the module ends up holding a different amount.
 
 #### Mitigations
 
 - The bridge has the same constraint, so such a token is already unsupported before a hook is involved.
-- The module refuses a hold it cannot back, since it checks its balance of the L1 token against what the hold
-  would make it owe for that token across every pair.
+- A hold reverts if the module's balance of the L1 token would not cover `heldTokensTotal` for that token.
 
 ## Dependencies
 
@@ -212,8 +211,8 @@ the module.
 
 ### iCM-013: The module holds at least what it owes
 
-For every held item the module has custody of the ETH and tokens that item carries, and for each L1 token the sum
-of `heldTokens` across every pair that token appears in is at most the module's balance of it.
+For every held item the module has custody of the ETH and tokens that item carries, and for each L1 token
+`heldTokensTotal` is at most the module's balance of it.
 
 #### Impact
 
@@ -276,7 +275,9 @@ Returns the [Resolved Parties](#resolved-parties) of an item.
 
 ### heldTokens
 
-Returns the amount the module holds for an L1 token and L2 token pair.
+### heldTokensTotal
+
+Returns the amount the module holds for an L1 token, across every L2 token it is paired with.
 
 ### policy
 
@@ -316,10 +317,11 @@ Takes custody of a held deposit.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
-- MUST revert if its balance of the L1 token is below what the hold would make it owe for that token across
-  every pair.
+- MUST revert if the item is a token transfer whose tokens it received and its balance of the L1 token is below
+  `heldTokensTotal` for that token plus the item's amount.
 - MUST set the record's `heldAt` for the item's identifier.
-- MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
+- MUST increase `heldTokensTotal` for the item's L1 token by the item's amount, if the item is a token transfer whose
+  tokens it received.
 - MUST emit a `Held` event carrying the identifier and the full item.
 
 ### screenWithdrawal
@@ -352,11 +354,11 @@ Takes custody of a held withdrawal.
 - MUST revert if the Portal's `bridgeHook()` is not this module. See
   [Why the Bridge and the Hook Are Unsafe Targets](../../compliance/optimism-portal.md#why-the-bridge-and-the-hook-are-unsafe-targets).
 - MUST revert if the ETH received does not match the ETH the item carries.
-- MUST revert if its balance of the L1 token is below what the hold would make it owe for that token across
-  every pair.
+- MUST revert if the item is a token transfer whose tokens it received and its balance of the L1 token is below
+  `heldTokensTotal` for that token plus the item's amount.
 - MUST set the record's `heldAt` for the item's identifier.
-- MUST increase `heldTokens` for the item's token pair, if the item is a token transfer whose tokens it received.
-- MUST emit a `Held` event carrying the identifier and the full item.
+- MUST increase `heldTokensTotal` for the item's L1 token by the item's amount, if the item is a token transfer whose
+  tokens it received.
 
 ### recordVerdict
 
@@ -401,8 +403,8 @@ Runs a held deposit. Permissionless.
 - MUST delete the record before calling the policy or the Portal.
 - MUST resolve the [Resolved Parties](#resolved-parties) and revert if the policy's `screenRelease` does not return
   `true`, passing the item, those parties, and the `expiresAt` the record held before the delete.
-- MUST approve the `L1StandardBridge` for the item's amount and decrease `heldTokens` for the item's token pair by
-  that amount, if the item is a token transfer whose tokens it holds.
+- MUST approve the `L1StandardBridge` for the item's amount and decrease `heldTokensTotal` for the item's L1 token
+  by that amount, if the item is a token transfer whose tokens it holds.
 - MUST call the Portal's `completeDepositTransaction` with the ETH the item carries.
 - MUST emit a `Completed` event with the identifier.
 
