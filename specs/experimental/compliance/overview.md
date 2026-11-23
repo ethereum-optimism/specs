@@ -234,10 +234,11 @@ item as a token transfer, and moves escrow only for it.
 
 ### Finalizable Time
 
-The **Finalizable Time** of a withdrawal is the later of `proofMaturityDelaySeconds` after its proof was submitted
-and `disputeGameFinalityDelaySeconds` after that proof's dispute game resolved. The `OptimismPortal` requires both
-delays before it finalizes, so neither alone decides when a withdrawal can move. The game must also be proper,
-respected and resolved in the defender's favour, but those conditions carry no time and so are not part of this value.
+The **Finalizable Time** of a withdrawal is one second after the later of `proofMaturityDelaySeconds` after its proof
+was submitted and `disputeGameFinalityDelaySeconds` after that proof's dispute game resolved. The `OptimismPortal`
+requires both delays to have passed before it finalizes, so neither alone decides when a withdrawal can move. The game
+must also be proper, respected and resolved in the defender's favour, but those conditions carry no time and so are
+not part of this value.
 
 A withdrawal can be proven more than once, by different submitters and against different games, and whoever finalizes
 names which proof to use. The Finalizable Time belongs to that proof, not to the withdrawal.
