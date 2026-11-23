@@ -87,9 +87,9 @@ judge it; the policy does, and it treats an expired verdict as none.
 
 ### Resolved Parties
 
-The **Resolved Parties** of an item are the two addresses the module passes to the policy: the sender, then the
-recipient. For a message sent through the messengers, the module decodes the real sender and recipient from the
-envelope rather than passing the messengers themselves.
+The **Resolved Parties** of an item are the sender and the recipient the module passes to the policy. For a message
+sent through the messengers, the module decodes the real sender and recipient from the envelope rather than passing
+the messengers themselves.
 
 This decoding is narrow by design with fixed contracts, fixed selectors, no recursion and no simulation:
 
@@ -271,7 +271,7 @@ Returns the [Record](#record) for an identifier.
 
 Returns the [Resolved Parties](#resolved-parties) of an item.
 
-- MUST return the same addresses, in the same order, that the module passes to the policy for that item.
+- MUST return the same sender and recipient that the module passes to the policy for that item.
 
 ### heldTokens
 
