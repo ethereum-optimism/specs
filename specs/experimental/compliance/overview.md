@@ -137,9 +137,9 @@ graph LR
 The Portal gains the ability to defer an item and resume it later, which a rate limiter, a per-token pause or a
 circuit breaker would use the same way.
 
-Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge keeps none. The Portal
-recognizes the messenger envelope and hands the bridge the message inside it. The bridge decodes that inner call
-itself, moves the escrow it names, and updates its own accounting.
+Each contract moves only the value it holds. A hold is the Portal's own record, and the bridge only notes whether it
+escrowed the token. The Portal recognizes the messenger envelope and hands the bridge the message inside it. The
+bridge decodes that inner call itself, moves the escrow it names, and updates its own accounting.
 
 The Portal builds every item and records its terms, and the hook only picks which item moves. No policy, however it is
 written, can redirect value or change what an item does. It can delay an item or refuse it, and nothing else.
@@ -229,15 +229,16 @@ of the last layer it read.
 A **Token Bridge Message** is a token transfer between the `L1StandardBridge` and the `L2StandardBridge`, sent through
 the messengers. The `OptimismPortal` recognizes it in two steps. The item's outer sender and target must be the
 messengers, and the envelope must decode to a `finalizeBridgeERC20` call from the standard bridge. Since nobody can choose
-those fields, a message that matches came from the bridge. The Portal fills the item's token fields from that inner
-call, and moves escrow only for such a message.
+those fields, a message that matches came from the bridge. The item must also carry no ETH. The Portal marks such an
+item as a token transfer, and moves escrow only for it.
 
 ### Finalizable Time
 
-The **Finalizable Time** of a withdrawal is the later of `proofMaturityDelaySeconds` after its proof was submitted
-and `disputeGameFinalityDelaySeconds` after that proof's dispute game resolved. The `OptimismPortal` requires both
-delays before it finalizes, so neither alone decides when a withdrawal can move. The game must also be proper,
-respected and resolved in the defender's favour, but those conditions carry no time and so are not part of this value.
+The **Finalizable Time** of a withdrawal is one second after the later of `proofMaturityDelaySeconds` after its proof
+was submitted and `disputeGameFinalityDelaySeconds` after that proof's dispute game resolved. The `OptimismPortal`
+requires both delays to have passed before it finalizes, so neither alone decides when a withdrawal can move. The game
+must also be proper, respected and resolved in the defender's favour, but those conditions carry no time and so are
+not part of this value.
 
 A withdrawal can be proven more than once, by different submitters and against different games, and whoever finalizes
 names which proof to use. The Finalizable Time belongs to that proof, not to the withdrawal.
@@ -285,7 +286,7 @@ and the value behind such an item stays in the `L2StandardBridge`'s escrow until
 
 For a [Token Bridge Message](#token-bridge-message), the Portal hands the bridge the inner message and asks it to move
 escrow. The bridge decodes that inner call itself, runs its own checks, and records the balance change in its own
-accounting. It records nothing about the hold:
+accounting. Beyond whether it escrowed the token, it records nothing about the hold:
 
 - **Hold.** The Portal calls the bridge with the inner `finalizeBridgeERC20` message it is holding. The bridge checks
   the selector, reads the tokens and the amount from it, and debits its escrow for that token pair, which reverts if
@@ -332,12 +333,10 @@ The change is limited to L1 contracts, with no multi-client or consensus impact.
 `TransactionDeposited` event, so the derivation pipeline sees nothing until the deposit completes, and then sees an
 ordinary deposit.
 
-For a chain that does not set a hook, behavior does not change, but three things change either way:
+For a chain that does not set a hook, behavior does not change, but two things change either way:
 
 - The `L1StandardBridge` gains two entry points that only the `OptimismPortal` can call.
 - The `OptimismPortal` gains completion functions, while existing user entry points are unchanged.
-- The `OptimismPortal` makes the `L1StandardBridge` an [Unsafe Target](./optimism-portal.md#unsafe-target), so a
-  withdrawal that calls the bridge directly can no longer be finalized.
 
 For a chain that enables it, these assumptions break:
 
@@ -346,6 +345,8 @@ For a chain that enables it, these assumptions break:
   the deposit reaches L2.
 - `finalizeWithdrawalTransaction` can revert for a withdrawal that is not cleared, and once the hook holds it, it can
   succeed without paying the recipient.
+- A withdrawal that calls the `L1StandardBridge` directly can no longer be finalized, because the bridge is an
+  [Unsafe Target](./optimism-portal.md#unsafe-target) while a hook is set.
 - Held deposits complete out of submission order, because a verdict for a later item can land first.
 
 A `RelayedMessage` event still implies the recipient was paid, because a withdrawal is held before the messenger

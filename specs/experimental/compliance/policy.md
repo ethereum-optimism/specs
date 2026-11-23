@@ -58,16 +58,21 @@ path. From 14:00 the policy holds it instead, and the 100 USDC moves to the hook
 
 ```solidity
 interface IPolicy {
+    struct Parties {
+        address sender;
+        address recipient;
+    }
+
     function screenDeposit(
         Item calldata _item,
-        address[] calldata _parties
+        Parties calldata _parties
     )
         external
         returns (bool pass_);
 
     function screenWithdrawal(
         Item calldata _item,
-        address[] calldata _parties,
+        Parties calldata _parties,
         uint64 _expiresAt,
         uint256 _finalizableAt
     )
@@ -76,7 +81,7 @@ interface IPolicy {
 
     function screenRelease(
         Item calldata _item,
-        address[] calldata _parties,
+        Parties calldata _parties,
         uint64 _expiresAt
     )
         external
@@ -87,8 +92,7 @@ interface IPolicy {
 All three answer with a [Screening Outcome](./overview.md#screening-outcome): `true` to proceed, `false` to hold,
 and a revert to reject.
 
-`_parties` holds the item's two [Resolved Parties](../contracts/L1/compliance-module.md#resolved-parties):
-`_parties[0]` is the sender and `_parties[1]` is the recipient.
+`_parties` carries the item's [Resolved Parties](../contracts/L1/compliance-module.md#resolved-parties).
 
 ## What Every Policy May Assume
 
