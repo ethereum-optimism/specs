@@ -333,12 +333,10 @@ The change is limited to L1 contracts, with no multi-client or consensus impact.
 `TransactionDeposited` event, so the derivation pipeline sees nothing until the deposit completes, and then sees an
 ordinary deposit.
 
-For a chain that does not set a hook, behavior does not change, but three things change either way:
+For a chain that does not set a hook, behavior does not change, but two things change either way:
 
 - The `L1StandardBridge` gains two entry points that only the `OptimismPortal` can call.
 - The `OptimismPortal` gains completion functions, while existing user entry points are unchanged.
-- The `OptimismPortal` makes the `L1StandardBridge` an [Unsafe Target](./optimism-portal.md#unsafe-target), so a
-  withdrawal that calls the bridge directly can no longer be finalized.
 
 For a chain that enables it, these assumptions break:
 
@@ -347,6 +345,8 @@ For a chain that enables it, these assumptions break:
   the deposit reaches L2.
 - `finalizeWithdrawalTransaction` can revert for a withdrawal that is not cleared, and once the hook holds it, it can
   succeed without paying the recipient.
+- A withdrawal that calls the `L1StandardBridge` directly can no longer be finalized, because the bridge is an
+  [Unsafe Target](./optimism-portal.md#unsafe-target) while a hook is set.
 - Held deposits complete out of submission order, because a verdict for a later item can land first.
 
 A `RelayedMessage` event still implies the recipient was paid, because a withdrawal is held before the messenger

@@ -428,8 +428,8 @@ The commitment is already deleted and cannot be retried, leaving whichever value
 
 ### Why the Bridge and the Hook Are Unsafe Targets
 
-The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, which is the only
-check those entry points make. A withdrawal targeting the `L1StandardBridge` with a `holdERC20` call moves
+The Portal forwards a withdrawal's call itself, so the target sees the Portal as its caller, and that is what those
+entry points authenticate. A withdrawal targeting the `L1StandardBridge` with a `holdERC20` call moves
 escrow the Portal never committed to, and one targeting the hook with a `holdDeposit` call writes a record for an
 item the Portal never held.
 
@@ -449,9 +449,9 @@ for a withdrawal that pays out directly, and completion decides for a held one.
 Replacing or removing a hook while items are held does not move their value, which stays with the former hook.
 
 `initialize` is the only way to set a hook, so changing it also re-applies every other `initialize` argument: the
-`SystemConfig`, the `AnchorStateRegistry`, the `ETHLockbox` and the proof maturity delay. The operator must pass the
-current values. A wrong proof maturity delay, for example, changes when every withdrawal already proven can be
-finalized.
+`SystemConfig`, the `AnchorStateRegistry` and the proof maturity delay. The operator must pass the current values. A
+wrong proof maturity delay, for example, changes when every withdrawal already proven can be finalized. A zero
+`ETHLockbox` keeps the current one, as a zero hook does.
 
 ### Gas Headroom on the Withdrawal Path
 

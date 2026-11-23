@@ -449,7 +449,7 @@ Sets the [Disable Switch](#disable-switch).
 ### enable
 
 Clears the [Disable Switch](#disable-switch) and its cutoff, so every item is screened again, including a withdrawal
-was set.
+initiated at or after the cutoff that was set.
 
 **Behavior:**
 

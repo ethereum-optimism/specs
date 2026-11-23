@@ -40,7 +40,7 @@ default OP Stack chain is specified in its [contract specification](../contracts
 
 The bridge gains two entry points, callable only by the `OptimismPortal`, that move the escrow of a held token
 transfer to the hook and back. It does not store the hook address and it never calls the hook directly. The only
-record it keeps of a held item is how that item's L1 token is classified.
+record it keeps of a held item is how that item's L1 token is classified, see [Escrowed and Minted Tokens](#escrowed-and-minted-tokens).
 
 A hold is the Portal's record. The bridge is handed a message to decode and asked to move escrow for it. See
 [Terms Commitment](./optimism-portal.md#terms-commitment).
@@ -231,9 +231,10 @@ A cleared withdrawal never needs the move, because it pays through the normal pa
 ### The Portal Could Already Reach the Escrow
 
 These entry points do not widen what a faulty `OptimismPortal` can do to the bridge. `finalizeBridgeERC20` releases
-escrow to whoever the messenger names as the cross-domain sender. The messenger takes that name from a parameter of
-`relayMessage`. And only the Portal may call `relayMessage`, with an `l2Sender` it sets
-itself. A compromised portal can already drain escrow through that path on a default OP Stack chain.
+escrow to any recipient the message names, as long as the messenger reports the `L2StandardBridge` as the
+cross-domain sender. The messenger takes that name from a parameter of `relayMessage`. And only the Portal may call
+`relayMessage`, with an `l2Sender` it sets itself. A compromised portal can already drain escrow through that path
+on a default OP Stack chain.
 
 The existing path needs a well-formed relay through the messenger, and it
 leaves a `RelayedMessage` event and a `successfulMessages` entry behind. An escrow move through
